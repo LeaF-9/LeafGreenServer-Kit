@@ -1,0 +1,29 @@
+command /setlobby <text>:
+	permission: sk.admin
+	trigger:
+		set {LobbyLocation::%arg 1%} to player's location
+		message "§6%arg 1%§aのLobby地点をセットしました" to player
+
+command /lobby:
+	trigger:
+		if {Join::%player%} is set:
+			if world of player is world of {LobbyLocation::Kit}:
+				teleport player to {LobbyLocation::Kit}
+				execute console command "/skclass %player% Kit-LobbyInv"
+				set player's gamemode to survival
+			else:
+				message "§c試合中にLobbyに戻ることは出来ません" to player
+		else:
+			teleport player to {LobbyLocation::Kit}
+			execute console command "/skclass %player% Kit-LobbyInv"
+			set player's gamemode to survival
+
+on join:
+	teleport the player to {LobbyLocation::Kit}
+	execute console command "/skclass %player% Kit-LobbyInv"
+
+on damage of player:
+	if world of victim is world of {LobbyLocation::Kit}:
+		if damage was caused by void:
+			teleport victim to {LobbyLocation::Kit}
+		cancel event

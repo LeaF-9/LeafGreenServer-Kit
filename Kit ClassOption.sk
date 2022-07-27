@@ -1,0 +1,257 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+	lp: §2[%{CLS::%loop-player%}%]
+
+command /class <text> <player=%player%> <boolean=true>:
+	trigger:
+		if {Spec::%arg 2%} is set:
+			message "§c観戦状態ではKitを選択できません!" to arg 2
+			stop
+#		if arg 1 is not "Vampire_Bat", "Werewolf_Instinct", "Necromancer_Lich", "Knight", "Wizard", "Archer", "Assassin", "Defender" or "Healer":
+#			if arg 2 does not have permission "class.%arg 1%":
+#				if arg 2 does not have permission "sk.test":
+#					if {Kit-Testing::%arg 2%} is not set:
+#						message "§cあなたはこのKitを所持していません!" to arg 2
+#						stop
+		if arg 3 is true:
+			if {Kit-tochu} is true:
+				if {Join::%arg 2%} is "Kit":
+					loop all players:
+						{Join::%loop-player%} is "Kit"
+						loop-player is not arg 2
+						{TrueTeam::%loop-player%} is {TrueTeam::%arg 2%}
+						{Class::%loop-player%} is arg 1
+						set {_no} to loop-player
+					if {_no} is set:
+						message formatted "§6§l%arg 1% §cは §2%{_no}% §cによって選択されています!" to arg 2
+						wait a tick
+						openKitInv(arg 2)
+						stop
+			if {ClassChose::%arg 2%} is true:
+				if {Class::%arg 2%} is set:
+					message "§c貴方は既に §2§l%{Class::%arg 2%}% §cを選択しています!" to arg 2
+					stop
+				else:
+					delete {ClassChose::%arg 2%}
+		else:
+			delete {ClassChose::%arg 2%}
+		if {ClassChose::%arg 2%} is not set:
+			set {ClassChose::%arg 2%} to true
+			if arg 1 is "Knight":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "KNI"
+				kitTimerKnight(arg 2)
+			if arg 1 is "Archer":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "ARC"
+			if arg 1 is "Wizard":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "WIZ"
+				set {Kit-Mana::%arg 2%} to 30
+				kitTimerWizard(arg 2)
+			if arg 1 is "Healer":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "HEA"
+				set {Kit-Odo::%arg 2%} to 10
+				kitTimerHealer(arg 2)
+			if arg 1 is "Assassin":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "ASN"
+			if arg 1 is "Defender":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "DEF"
+#				set {ShieldSword::%arg 2%} to 10
+			if arg 1 is "Warrior":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "WAR"
+				kitTimerWarrior(arg 2)
+			if arg 1 is "Paladin":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "PAL"
+			if arg 1 is "Bomber":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "BOM"
+				kitTimerBomber(arg 2)
+			if arg 1 is "Rich":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "RIC"
+			if arg 1 is "Windman":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "WND"
+			if arg 1 is "Thunderman":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "TND"
+			if arg 1 is "Teleporter":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "TEL"
+				set {FeedBackLocation::%arg 2%} to location of arg 2
+				set {FeedBackHealth::%arg 2%} to arg 2's health
+			if arg 1 is "HungerGamer":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "HGR"
+			if arg 1 is "Astronaut":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "AST"
+			if arg 1 is "Ninja":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "NIN"
+				kitTimerNinja(arg 2)
+			if arg 1 is "Ghost":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "GHO"
+				set {Kit-Spirits::%arg 2%} to 0
+				set {Kit-NoCorpse::%arg 2%} to true
+				kitTimerGhost(arg 2)
+			if arg 1 is "Thief":
+#				set {ShieldSword::%arg 2%} to 100
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "THI"
+				set {Mana::%arg 2%} to 100
+				set {Odo::%arg 2%} to 100
+				set {GhostLife::%arg 2%} to 60
+				delete {CurseStart::%arg 2%}
+				delete {SoulSpare::%arg 2%}
+				set {Stats.%arg 2%::CropType} to "wheat"
+				kitTimerThief(arg 2)
+			if arg 1 is "Iceman":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "ICE"
+			if arg 1 is "Knocker":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "KNO"
+				kitTimerKnocker(arg 2)
+			if arg 1 is "Sniper":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "SNI"
+			if arg 1 is "Berserker":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "BER"
+				set {Stats.%arg 2%::NoSupport} to true
+			if arg 1 is "Hunter":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "HUN"
+			if arg 1 is "Pyro":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "PYR"
+			if arg 1 is "Bard":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "BAR"
+				set {Stats.%arg 2%::BardMusic} to "resis"
+			if arg 1 is "Vampire":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "VAM"
+			if arg 1 is "Assaulter":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "ASL"
+			if arg 1 is "Necromancer":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "NEC"
+				kitTimerNecromancer(arg 2)
+			if arg 1 is "Ambush":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "AMB"
+			if arg 1 is "Werewolf":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "WER"
+#			if arg 1 is "Werewolf_Instinct":
+			if arg 1 is "Quaker":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "QUA"
+			if arg 1 is "Gunner":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "GUN"
+				set {Stats.%arg 2%::AssaultRifle} to 10
+				set {Stats.%arg 2%::SniperRifle} to 3
+				set {Stats.%arg 2%::ShotGun} to 5
+				set {Stats.%arg 2%::GatlingGun} to 100
+				set {Stats.%arg 2%::MachineGun} to 30
+			if arg 1 is "Engineer":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "ENG"
+				set {Kit-Fuel::%arg 2%} to 100
+				kitTimerEngineer(arg 2)
+			if arg 1 is "Bishop":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "BIS"
+			if arg 1 is "Mercenary":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "MER"
+				kitTimerMercenary(arg 2)
+			if arg 1 is "Lumberjack":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "LUM"
+			if arg 1 is "Thor":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "THO"
+			if arg 1 is "Reflector":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "REF"
+			if arg 1 is "Collector":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "COL"
+			if arg 1 is "Shaman":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "SHA"
+			if arg 1 is "Farmer":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "FAR"
+				set {Stats.%arg 2%::CropType} to "wheat"
+			if arg 1 is "Summoner":
+				set {Class::%arg 2%} to arg 1
+				set {CLS::%arg 2%} to "SUM"
+			execute console command "/skclass %arg 2% Kit-%arg 1%"
+			# add arg 1 to {Kit-AllowClass.%arg 2%::*}
+			if {tochu} is true:
+				add 1 to {Count.%arg 1%::%arg 2's UUID%}
+#				add 1 to {AllCount::%arg 1%}
+#				add 1 to {WeekCount::%arg 1%}
+			set {_uuid} to UUID of arg 2
+			load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%arg 2%.select"
+			if yml value "custom.%arg 1%.weapon" from "player.%arg 2%.select" is not set:
+				set yml value "custom.%arg 1%.weapon" from "player.%arg 2%.select" to 1
+			if yml value "custom.%arg 1%.skill.1" from "player.%arg 2%.select" is not set:
+				set yml value "custom.%arg 1%.skill.1" from "player.%arg 2%.select" to 1
+			if yml value "custom.%arg 1%.skill.2" from "player.%arg 2%.select" is not set:
+				set yml value "custom.%arg 1%.skill.2" from "player.%arg 2%.select" to 2
+			if yml value "custom.%arg 1%.skill.3" from "player.%arg 2%.select" is not set:
+				set yml value "custom.%arg 1%.skill.3" from "player.%arg 2%.select" to 3
+			save yml "player.%arg 2%.select"
+			set {_weapon.main} to kitPlayerWeaponItem(arg 2, arg 1, "main")
+			give {_weapon.main} to arg 2
+			set {_weapon.sub} to kitPlayerWeaponItem(arg 2, arg 1, "sub")
+			set arg 2's offhand tool to {_weapon.sub}
+			loop 3 times:
+				set {_skill} to kitPlayerSkillItem(arg 2, arg 1, loop-number)
+				give {_skill} to arg 2
+				add {_skill} to {_skills::*}
+			set metadata value "gametype" of arg 2 to "Kit"
+			kitTargetTimer(arg 2)
+			if arg 1 is not set:
+				message "§cクラス名を入力して下さい"
+
+command /classreset <player=%player%>:
+	permission: sk.admin
+	trigger:
+		if {Class::%arg 1%} is set:
+			delete {CLS::%arg 1%}
+			delete {Class::%arg 1%}
+			delete {ClassChose::%arg 1%}
+			message "§cClassをリセットしました" to arg 1
+
+command /ctreset <player=%player%>:
+	permission: sk.admin
+	trigger:
+		set {CT.%arg 1%::*} to 0
+		delete {CTStop.%arg 1%::*}
+
+command /ctview <text> <player>:
+	permission: sk.admin
+	trigger:
+		message "§a%arg 1%CT: §6%{CT.%arg 2%::%arg 1%}%"
+
+command /clsview <offline player>:
+	permission: sk.admin
+	trigger:
+		message "§a%arg 1%§2Class: §6%{CLS::%arg 1%}%"

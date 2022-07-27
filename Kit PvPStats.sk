@@ -1,0 +1,235 @@
+options:
+	prefix: §9[§bPvPStats§9]
+
+on death of player:
+# Killerの存在確認
+	{LastKiller::%victim%} is set
+# 自殺であるかどうかの確認
+	{LastKiller::%victim%} is not victim
+# 試合進行中、試合参加中であるかどうかの確認
+	{Kit-tochu} is true
+	{Join::%victim%} is "Kit"
+# Banditでないかどうかの確認
+	{TrueTeam::%victim%} is not "purple"
+	{TrueTeam::%{LastKiller::%victim%}%} is not "purple"
+# Ultのチャージ
+	if {Ulting::%{LastKiller::%victim%}%} is not set:
+		add 5 to {Ultimate::%{LastKiller::%victim%}%}
+# UUIDやKitなど変数の保存
+	set {_attacker.UUID} to {LastKiller::%victim%}'s UUID
+	set {_victim.UUID} to victim's UUID
+	set {_attacker.kit} to {Class::%{LastKiller::%victim%}%}
+	set {_victim.kit} to {Class::%victim%}
+	set {_damagecause} to damage cause
+	set {_now} to now
+# yaml動作 ######################################
+#
+# kill idの設定
+	set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Kills"
+	set {_id.kill} to size of {_files::*}
+	add 1 to {_id.kill}
+#
+# 内容の記述
+	load yml "plugins/skript-yaml/Kit Kills/%{_id.kill}%.yml" as "kill.%{_id.kill}%"
+	set yml value "game" from "kill.%{_id.kill}%" to {Kit-GameID}
+	set yml value "killer-player" from "kill.%{_id.kill}%" to {_attacker.UUID}
+	set yml value "killer-kit" from "kill.%{_id.kill}%" to {_attacker.kit}
+	set yml value "victim-player" from "kill.%{_id.kill}%" to {_victim.UUID}
+	set yml value "victim-kit" from "kill.%{_id.kill}%" to {_victim.kit}
+	set yml value "cause" from "kill.%{_id.kill}%" to {_damagecause}
+	set yml value "time" from "kill.%{_id.kill}%" to {_now}
+	save yml "kill.%{_id.kill}%"
+#
+# ###############################################
+# message送信
+	message "{@prefix} §e%victim% §dをキルしました" to {LastKiller::%victim%}
+# Soulの贈与
+	add 2 to {Kit-Soul::%{_attacker.UUID}%}
+# Assist Check ##################################
+#
+# 自身をAssist候補から省く
+	set {_true.%{LastKiller::%victim%}%} to true
+#
+# victimに攻撃を与えた者をループ
+	loop {damager.%victim%::*}:
+		loop-value is not {LastKiller::%victim%}  # アシスト者とキラーが同一人物でないかどうか
+		{TrueTeam::%loop-value%} is {TrueTeam::%{LastKiller::%victim%}%}  # チームが同一であるかどうか
+		{_true.%loop-value%} is not set  # 既にアシストとして換算済でないかどうか
+		set {_assist.UUID} to loop-value's UUID  # UUIDの保存
+		set {_assist.kit} to {Class::%loop-value%}  # Kitの保存
+		if {Ulting::%loop-value%} is not set:  # Ultのチャージ
+			add 3 to {Ultimate::%loop-value%}
+#
+#	assist ID の取得
+		set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Assists"
+		set {_id.assist} to size of {_files::*}
+		add 1 to {_id.assist}
+#
+#	内容の記述
+		load yml "plugins/skript-yaml/Kit Assists/%{_id.assist}%.yml" as "assist.%{_id.assist}%"
+		set yml value "kill-id" from "assist.%{_id.assist}%" to {_id.kill}
+		set yml value "assist-player" from "assist.%{_id.assist}%" to {_assist.UUID}
+		set yml value "assist-kit" from "assist.%{_id.assist}%" to {_assist.kit}
+		save yml "assist.%{_id.assist}%"
+#
+		set {_true.%loop-value%} to true  # 換算済として設定
+		message "{@prefix} §e%victim% §aのキルアシストをしました" to loop-value  # メッセージ送信
+		add 1 to {Kit-Soul::%loop-value's UUID%}  # Soulの贈与
+#
+# Killerにアシストした者をループ
+	loop {supporter.%{LastKiller::%victim%}%::*}:
+		loop-value is not {LastKiller::%victim%}  # アシスト者とキラーが同一人物でないかどうか
+		{TrueTeam::%loop-value%} is {TrueTeam::%{LastKiller::%victim%}%}  # チームが同一であるかどうか
+		{_true.%loop-value%} is not set  # 既にアシストとして換算済でないかどうか
+		set {_assist.UUID} to loop-value's UUID  # UUIDの保存
+		set {_assist.kit} to {Class::%loop-value%}  # Kitの保存
+		if {Ulting::%loop-value%} is not set:  # Ultのチャージ
+			add 3 to {Ultimate::%loop-value%}
+#
+#	assist ID の取得
+		set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Assists"
+		set {_id.assist} to size of {_files::*}
+		add 1 to {_id.assist}
+#
+#	内容の記述
+		load yml "plugins/skript-yaml/Kit Assists/%{_id.assist}%.yml" as "assist.%{_id.assist}%"
+		set yml value "kill-id" from "assist.%{_id.assist}%" to {_id.kill}
+		set yml value "assist-player" from "assist.%{_id.assist}%" to {_assist.UUID}
+		set yml value "assist-kit" from "assist.%{_id.assist}%" to {_assist.kit}
+		save yml "assist.%{_id.assist}%"
+#
+		set {_true.%loop-value%} to true  # 換算済として設定
+		message "{@prefix} §e%victim% §aのキルアシストをしました" to loop-value  # メッセージ送信
+		add 1 to {Kit-Soul::%loop-value's UUID%}  # Soulの贈与
+	wait 5 ticks
+	delete {damager.%victim%::*}
+	delete {supporter.%victim%::*}
+	delete {supporter.%{LastKiller::%victim%}%::*}
+	delete {LastKiller::%victim%}
+
+#command /topstatslist <text>:
+#	permission: sk.admin
+#	trigger:
+#		make player execute command "/topstats kill %arg 1%"
+#		make player execute command "/topstats kd %arg 1%"
+#		make player execute command "/topstats death %arg 1%"
+#		make player execute command "/topstats count %arg 1%"
+#		make player execute command "/topstats assist %arg 1%"
+
+command /kitclearplayerstats <offline player> <text>:
+	permission: sk.admin
+	trigger:
+		delete {%arg 1%-Kill.all::%arg 1's UUID%}
+		delete {%arg 1%-Kill.GoK::%arg 1's UUID%}
+		delete {%arg 1%-Kill.RtL::%arg 1's UUID%}
+		delete {%arg 1%-Kill.BEC::%arg 1's UUID%}
+		delete {%arg 1%-Kill.StW::%arg 1's UUID%}
+		delete {%arg 1%-Kill.EmJ::%arg 1's UUID%}
+		delete {%arg 1%-Kill.CPA::%arg 1's UUID%}
+		delete {%arg 1%-Death.all::%arg 1's UUID%}
+		delete {%arg 1%-Death.GoK::%arg 1's UUID%}
+		delete {%arg 1%-Death.RtL::%arg 1's UUID%}
+		delete {%arg 1%-Death.BEC::%arg 1's UUID%}
+		delete {%arg 1%-Death.StW::%arg 1's UUID%}
+		delete {%arg 1%-Death.EmJ::%arg 1's UUID%}
+		delete {%arg 1%-Death.CPA::%arg 1's UUID%}
+		delete {%arg 1%-KD.all::%arg 1's UUID%}
+		delete {%arg 1%-KD.GoK::%arg 1's UUID%}
+		delete {%arg 1%-KD.RtL::%arg 1's UUID%}
+		delete {%arg 1%-KD.BEC::%arg 1's UUID%}
+		delete {%arg 1%-KD.StW::%arg 1's UUID%}
+		delete {%arg 1%-KD.EmJ::%arg 1's UUID%}
+		delete {%arg 1%-KD.CPA::%arg 1's UUID%}
+		delete {%arg 1%-Win.all::%arg 1's UUID%}
+		delete {%arg 1%-Win.GoK::%arg 1's UUID%}
+		delete {%arg 1%-Win.RtL::%arg 1's UUID%}
+		delete {%arg 1%-Win.BEC::%arg 1's UUID%}
+		delete {%arg 1%-Win.StW::%arg 1's UUID%}
+		delete {%arg 1%-Win.EmJ::%arg 1's UUID%}
+		delete {%arg 1%-Win.CPA::%arg 1's UUID%}
+		delete {%arg 1%-Assist.all::%arg 1's UUID%}
+		delete {%arg 1%-Assist.GoK::%arg 1's UUID%}
+		delete {%arg 1%-Assist.RtL::%arg 1's UUID%}
+		delete {%arg 1%-Assist.BEC::%arg 1's UUID%}
+		delete {%arg 1%-Assist.StW::%arg 1's UUID%}
+		delete {%arg 1%-Assist.EmJ::%arg 1's UUID%}
+		delete {%arg 1%-Assist.CPA::%arg 1's UUID%}
+		loop {Kits::*}:
+			delete {%arg 1%-Kill.%loop-value%::%arg 1's UUID%}
+			delete {%arg 1%-Death.%loop-value%::%arg 1's UUID%}
+			delete {%arg 1%-KD.%loop-value%::%arg 1's UUID%}
+			delete {%arg 1%-Assist.%loop-value%::%arg 1's UUID%}
+
+#command /kitclearstats:
+#	permission: sk.admin
+#	trigger:
+#		delete {Kit-Kill.all::*}
+#		delete {Kit-Kill.GoK::*}
+#		delete {Kit-Kill.RtL::*}
+#		delete {Kit-Kill.BEC::*}
+#		delete {Kit-Kill.StW::*}
+#		delete {Kit-Kill.EmJ::*}
+#		delete {Kit-Kill.CPA::*}
+#		delete {Kit-Death.all::*}
+#		delete {Kit-Death.GoK::*}
+#		delete {Kit-Death.RtL::*}
+#		delete {Kit-Death.BEC::*}
+#		delete {Kit-Death.StW::*}
+#		delete {Kit-Death.EmJ::*}
+#		delete {Kit-Death.CPA::*}
+#		delete {Kit-KD.all::*}
+#		delete {Kit-KD.GoK::*}
+#		delete {Kit-KD.RtL::*}
+#		delete {Kit-KD.BEC::*}
+#		delete {Kit-KD.StW::*}
+#		delete {Kit-KD.EmJ::*}
+#		delete {Kit-KD.CPA::*}
+#		delete {Kit-Win.all::*}
+#		delete {Kit-Win.GoK::*}
+#		delete {Kit-Win.RtL::*}
+#		delete {Kit-Win.BEC::*}
+#		delete {Kit-Win.StW::*}
+#		delete {Kit-Win.EmJ::*}
+#		delete {Kit-Win.CPA::*}
+#		delete {Kit-Assist.all::*}
+#		delete {Kit-Assist.GoK::*}
+#		delete {Kit-Assist.RtL::*}
+#		delete {Kit-Assist.BEC::*}
+#		delete {Kit-Assist.StW::*}
+#		delete {Kit-Assist.EmJ::*}
+#		delete {Kit-Assist.CPA::*}
+#		loop {Kits::*}:
+#			delete {Kit-Kill.%loop-value%::*}
+#			delete {Kit-Death.%loop-value%::*}
+#			delete {Kit-KD.%loop-value%::*}
+#			delete {Kit-Assist.%loop-value%::*}
+
+function kitClearStats():
+	delete {Kit-Kill.all::*}
+	delete {Kit-Kill.month::*}
+	delete {Kit-Kill.week::*}
+	delete {Kit-Death.all::*}
+	delete {Kit-Death.month::*}
+	delete {Kit-Death.week::*}
+	delete {Kit-KD.all::*}
+	delete {Kit-KD.month::*}
+	delete {Kit-KD.week::*}
+	delete {Kit-Win.all::*}
+	delete {Kit-Win.month::*}
+	delete {Kit-Win.week::*}
+	delete {Kit-Win.GoK::*}
+	delete {Kit-Win.BEC::*}
+	delete {Kit-Win.EmJ::*}
+	delete {Kit-Win.StW::*}
+	delete {Kit-Win.CPA::*}
+	delete {Kit-Assist.all::*}
+	delete {Kit-Assist.month::*}
+	delete {Kit-Assist.week::*}
+	load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "classes"
+	set {_kits::*} to yml list "Classes" from "classes"
+	unload yml "classes"
+	loop {_kits::*}:
+		delete {Kit-Kill.%loop-value%::*}
+		delete {Kit-Death.%loop-value%::*}
+		delete {Kit-KD.%loop-value%::*}
+		delete {Kit-Assist.%loop-value%::*}

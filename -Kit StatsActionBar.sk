@@ -1,0 +1,21 @@
+every a second:
+	loop all players:
+		{Game::%loop-player%} is "Kit"
+		if {Class::%loop-player%} is "Wizard", "Necromancer", "Ghost", "Healer", "Ninja" or "Astronaut":
+			if {Kit-Weapon.%{Class::%loop-player%}%::*} contains loop-player's tool:
+				if {Class::%loop-player%} is "Wizard":
+					send action bar "§b§lMana§5: §9%{Kit-Mana::%loop-player%}%" to loop-player
+				else if {Class::%loop-player%} is "Necromancer":
+					send action bar "§5§lNecromance§0: §4%{Kit-Necromance::%loop-player%}%" to loop-player
+				else if {Class::%loop-player%} is "Ghost":
+					send action bar "§4§lGhost Life§0: §5%{GhostLife::%loop-player%}%" to loop-player
+				else if {Class::%loop-player%} is "Healer":
+					send action bar "§d§lOdo§e: §c%{Kit-Odo::%loop-player%}%" to loop-player
+				else if {Class::%loop-player%} is "Ninja":
+					if {CT.%loop-player%::Double Jump} is set:
+						send action bar "§aDouble Jump §bCT§7: §c%{CT.%loop-player%::Double Jump}%" to loop-player
+				else if {Class::%loop-player%} is "Astronaut":
+					if {CT.%loop-player%::GravityDrop} is set:
+						send action bar "§aGravity Drop §bCT§7: §c%{CT.%loop-player%::GravityDrop}%" to loop-player
+			else if name of loop-player's tool is "§0§lLich Sword":
+				send action bar "§5§lNecromance§0: §4%{Kit-Necromance::%loop-player%}%" to loop-player

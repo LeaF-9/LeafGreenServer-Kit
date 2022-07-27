@@ -1,0 +1,74 @@
+﻿options:
+	prefix: <##00bfff>[<##00FF7F>PvP<##00bfff>]
+
+on death of player:
+	if {Join::%victim%} is "Kit":
+		set death message to ""
+		kitDeathMessage(victim, {DamageCause::%damage cause%})
+		if {DamageCause::%damage cause%} is not set:
+			loop all players:
+				loop-player has permission "sk.admin"
+				message "§e[§6デバッグ§e] §c未知のDamage cause: §d%damage cause% §cです。" to loop-player
+
+function kitDeathMessage(vtm: player, cause: text):
+# victim fake checher
+	if {Stats.%{_vtm}%::FakePlayer} is set:
+		set {_victim} to {Stats.%{_vtm}%::FakePlayer}
+		set {_cls.victim} to {Stats.%{_vtm}%::FakeCLS}
+	else:
+		set {_victim} to {_vtm}
+		set {_cls.victim} to {CLS::%{_vtm}%}
+# victim Display設定
+	set {_team.victim} to {TrueTeam::%{_victim}%}
+	if {_team.victim} is "red":
+		set {_display.victim} to "§c%display name of {_victim}%"
+	else if {_team.victim} is "blue":
+		set {_display.victim} to "§9%display name of {_victim}%"
+	else if {_team.victim} is "yellow":
+		set {_display.victim} to "§e%display name of {_victim}%"
+	else if {_team.victim} is "green":
+		set {_display.victim} to "§a%display name of {_victim}%"
+	else if {_team.victim} is "purple":
+		set {_display.victim} to "§5%display name of {_victim}%"
+# victim Prefix設定
+	set {_prefix.victim} to "<##00FF00>[%{_cls.victim}%<##00FF00>]"
+# attacker fake checker
+	if {LastKiller::%{_vtm}%} is set:
+		set {_atk} to {LastKiller::%{_vtm}%}
+		if {Stats.%{_atk}%::FakePlayer} is set:
+			set {_attacker} to {Stats.%{_atk}%::FakePlayer}
+			set {_cls.attack} to {Stats.%{_atk}%::FakeCLS}
+		else:
+			set {_attacker} to {_atk}
+			set {_cls.attack} to {CLS::%{_atk}%}
+#	attacker Display設定
+		set {_team.attack} to {TrueTeam::%{_attacker}%}
+		if {_team.attack} is "red":
+			set {_display.attack} to "§c%display name of {_attacker}%"
+		else if {_team.attack} is "blue":
+			set {_display.attack} to "§9%display name of {_attacker}%"
+		else if {_team.attack} is "yellow":
+			set {_display.attack} to "§e%display name of {_attacker}%"
+		else if {_team.attack} is "green":
+			set {_display.attack} to "§a%display name of {_attacker}%"
+		else if {_team.attack} is "purple":
+			set {_display.attack} to "§5%display name of {_attacker}%"
+#	attacker Prefix設定
+		set {_prefix.attack} to "<##00FF00>[%{_cls.attack}%<##00FF00>]"
+# damage cause設定
+	set {_damagecause} to "<##7cfc00>><##ffff00>><##7cfc00>> <##ff69b4>[<##dc143c>%{_cause}%<##ff69b4>] <##7cfc00>><##ffff00>><##7cfc00>>"
+# メッセージ送信
+	if {_atk} is set:
+		loop all players:
+			if {Join::%loop-player%} is "Kit":
+				message formatted "{@prefix} %{_prefix.attack}%%{_display.attack}% %{_damagecause}% %{_prefix.victim}%%{_display.victim}%" to loop-player
+	else:
+		loop all players:
+			if {Join::%loop-player%} is "Kit":
+				message formatted "{@prefix} §1Suicide %{_damagecause}% %{_prefix.victim}%%{_display.victim}%" to loop-player
+
+command /damagecause <text> <damage cause>:
+	permission: sk.admin
+	trigger:
+		set {DamageCause::%arg 2%} to arg 1
+		message "{@prefix} §c%arg 2%§7のメッセージを§a%arg 1%§7に設定しました"

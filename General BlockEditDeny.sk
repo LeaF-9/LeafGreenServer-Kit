@@ -1,0 +1,111 @@
+on break:
+	if {BlockEnable::%player%} is true:
+		stop
+	else:
+		cancel event
+
+on place:
+	player's tool is not flint and steel
+	if {BlockEnable::%player%} is true:
+		stop
+	else:
+		cancel the event
+
+on inventory click:
+	if {Join::%player%} is not set:
+		stop
+	else:
+		if world of player is "Lobby_nether" or "Tutorial":
+			stop
+		else if name of player's tool is "§6Skill Customize":
+			stop
+		else:
+			if {Stagerule::%{KitPvP_Stage}%} is "EmJ":
+				if name of item is "§aJewel":
+					stop
+				else if name of item is "§bGem":
+					stop
+				else:
+					cancel the event
+
+on leftclick on netherrack:
+	if {BlockEnable::%player%} is true:
+		stop
+	else:
+		loop all blocks in radius 1.5 around event-block:
+			loop-block is glowstone
+			set {_de} to true
+		{_de} is true
+		cancel the event
+
+aliases:
+	nclick = minecraft:dispenser, minecraft:chest, minecraft:crafting_table, minecraft:furnace, minecraft:jukebox, minecraft:enchanting_table, minecraft:ender_chest, minecraft:shulker_box, minecraft:white_shulker_box, minecraft:orange_shulker_box, minecraft:magenta_shulker_box, minecraft:light_blue_shulker_box, minecraft:yellow_shulker_box, minecraft:lime_shulker_box, minecraft:pink_shulker_box, minecraft:gray_shulker_box, minecraft:light_gray_shulker_box, minecraft:cyan_shulker_box, minecraft:purple_shulker_box, minecraft:blue_shulker_box, minecraft:brown_shulker_box, minecraft:green_shulker_box, minecraft:red_shulker_box, minecraft:black_shulker_box, minecraft:white_bed, minecraft:orange_bed, minecraft:magenta_bed, minecraft:light_blue_bed, minecraft:yellow_bed, minecraft:lime_bed, minecraft:pink_bed, minecraft:gray_bed, minecraft:light_gray_bed, minecraft:cyan_bed, minecraft:purple_bed, minecraft:blue_bed, minecraft:brown_bed, minecraft:green_bed, minecraft:red_bed, minecraft:black_bed, minecraft:smoker, minecraft:blast_furnace, minecraft:cartography_table, minecraft:fletching_table, minecraft:grindstone, minecraft:smithing_table, minecraft:stonecutter, minecraft:loom, minecraft:barrel, minecraft:note_block, minecraft:trapped_chest, minecraft:hopper, minecraft:dropper, minecraft:observer, minecraft:lectern, minecraft:beacon, minecraft:anvil, minecraft:chipped_anvil, minecraft:damaged_anvil, minecraft:campfire, minecraft:repeater, minecraft:comparator, minecraft:daylight_detector, minecraft:composter, minecraft:respawn_anchor, minecraft:soul_campfire, minecraft:lodestone
+
+on rightclick:
+	clicked block is nclick
+	if {BlockEnable::%player%} is true:
+		stop
+	else:
+		cancel the event
+
+on bed enter:
+	if {BlockEnable::%player%} is true:
+		stop
+	else:
+		cancel the event
+
+on drop:
+	if {BlockEnable::%player%} is true:
+		stop
+	else:
+		if {Stagerule::%{KitPvP_Stage}%} is "EmJ":
+			if name of item is "§aJewel":
+				loop all villagers in radius 3 around player:
+					loop-villager's display name is "§aJewel Exchanger"
+					set {_true} to true
+				if {_true} is true:
+					stop
+			else if name of item is "§bGem":
+				loop all villagers in radius 3 around player:
+					loop-villager's display name is "§aJewel Exchanger"
+					set {_true} to true
+				if {_true} is true:
+					stop
+		cancel the event
+
+on craft:
+	if {BlockEnable::%player%} is true:
+		stop
+	else:
+		cancel event
+
+command /be <player=%player%>:
+	permission: sk.admin
+	trigger:
+		if {BlockEnable::%arg 1%} is true:
+			set {BlockEnable::%arg 1%} to false
+			message "§cブロック編集を不可能にしました" to arg 1
+		else:
+			set {BlockEnable::%arg 1%} to true
+			message "§aブロック編集を可能にしました" to arg 1
+
+on join:
+	set {BlockEnable::%player%} to false
+
+on damage of armor stand:
+	if attacker has permission "sk.armorstand":
+		if attacker's tool is stick:
+			stop
+		else:
+			cancel event
+	else:
+		cancel event
+
+on rightclick on armor stand:
+	if player has permission "sk.armorstand":
+		if player has stick:
+			stop
+		else:
+			cancel event
+	else:
+		cancel event

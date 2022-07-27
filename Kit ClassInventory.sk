@@ -1,0 +1,191 @@
+command /kit-classinv <player=%player%>:
+	trigger:
+		openKitInv(arg 1)
+
+function openKitInv(player: player):
+	wait a tick
+	open chest with 6 row named "§6§lKit §e§lGenre" to {_player}
+	wait a tick
+	set {_num} to 0
+	loop 9 times:
+		set slot {_num} of {_player}'s current inventory to white stained glass pane named "§f§lKit ジャンル選択"
+		add 1 to {_num}
+	loop 36 times:
+		if {_num} is 9, 10, 11, 18, 19 or 20:
+			set slot {_num} of {_player}'s current inventory to red concrete named "§c§lAttacker" with lore "§f近接攻撃に特化したKitです", "§f近接戦闘では圧倒的火力で猛威を奮うことが出来ます" and "§f遠距離戦闘は苦手なので,得意な距離で戦いましょう"
+		else if {_num} is 12, 13, 14, 21, 22 or 23:
+			set slot {_num} of {_player}'s current inventory to yellow concrete named "§e§lMagician" with lore "§f特殊な攻撃方法で戦うKitです", "§f戦闘法が独特であり,PvP技術が不必要なのが魅力です" and "§f扱いがとても難しい為,Kitへの深い理解が必要です"
+		else if {_num} is 15, 16, 17, 24, 25 or 26:
+			set slot {_num} of {_player}'s current inventory to lime concrete named "§a§lShooter" with lore "§f遠距離からの攻撃を得意とするKitです", "§f圧倒的な射程距離を誇り,安全な位置から攻撃できます" and "§f接近されると上手く戦えない為,敵とは離れて戦いましょう"
+		else if {_num} is 27, 28, 29, 36, 37 or 38:
+			set slot {_num} of {_player}'s current inventory to light blue concrete named "§b§lAcrobat" with lore "§f高い機動力で敵を翻弄するKitです", "§f3次元的な戦闘が可能であり,容易に急接近出来ます" and "§f防御面は不安な為,攻撃を受けない様に戦いましょう"
+		else if {_num} is 30, 31, 32, 39, 40 or 41:
+			set slot {_num} of {_player}'s current inventory to blue concrete named "§9§lTank" with lore "§f圧倒的な防御力を所持するKitです", "§f防御面でのサポートを行ない,要塞を築くことが出来ます" and "§f攻撃力が低く決定打に欠けるので,連携して戦いましょう"
+		else if {_num} is 33, 34, 35, 42, 43 or 44:
+			set slot {_num} of {_player}'s current inventory to pink concrete named "§d§lSupport" with lore "§f味方の援護を専門とするKitです", "§f味方の援護を行なうことでチームの戦闘力を引き上げます" and "§f自身は戦闘に不向きなので,援護に徹して立ち回りましょう"
+		add 1 to {_num}
+	loop 9 times:
+		set slot {_num} of {_player}'s current inventory to white stained glass pane named "§f§lKit ジャンル選択"
+		add 1 to {_num}
+
+function openKitInvGenre(player: player, genre: text):
+	wait a tick
+	open chest with 2 row named "§6§lKit §a§lSelect" to {_player}
+	wait a tick
+	set {_num} to 0
+	load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "class.all"
+	set {_classes.all::*} to yml list "Classes" from "class.all"
+	unload yml "class.all"
+	set {_slot} to 0
+	loop {_classes.all::*}:
+		delete {_description::*}
+		load yml "plugins/skript-yaml/Kit Classes/%loop-value%.yml" as "class.%{_player}%.select"
+		yml value "type" from "class.%{_player}%.select" is {_genre}
+		add loop-value to {_classes::*}
+		set {_enable.%loop-value%} to yml value "enable" from "class.%{_player}%.select"
+		set {_item.%loop-value%} to yml value "item" from "class.%{_player}%.select"
+		set {_desc.%loop-value%::*} to yml list "menu.descriptions" from "class.%{_player}%.select"
+		loop yaml node keys "menu.stats" from "class.%{_player}%.select":
+			set {_stat.%loop-value-1%::%loop-key%} to yml value "menu.stats.%loop-node%" from "class.%{_player}%.select"
+		set {_diff.%loop-value%} to yml value "menu.difficulty" from "class.%{_player}%.select"
+		unload yml "class.%{_player}%.select"
+		if {_enable.%loop-value%} is false:
+			set {_item.%loop-value%} to a barrier
+			delete {_desc.%loop-value%::*}
+			add "§c§lこのKitは使用できません" to {_description::*}
+		# ここに所持/未所持を感知するコードを記載 else if ~
+		else:  # Kitが使える状態
+			loop {_desc.%loop-value%::*}:
+				add "§f%loop-value-2%" to {_description::*}
+			add "§7§m------------------------------" to {_description::*}
+			loop {_stat.%loop-value%::*}:
+				if loop-index-2 is "attack":
+					set {_prefix} to "§5火力§7:"
+					set {_index} to 1
+				else if loop-index-2 is "defense":
+					set {_prefix} to "§5防御§7:"
+					set {_index} to 2
+				else if loop-index-2 is "range":
+					set {_prefix} to "§5射程§7:"
+					set {_index} to 3
+				else if loop-index-2 is "mobility":
+					set {_prefix} to "§5機動§7:"
+					set {_index} to 4
+				else if loop-index-2 is "assist":
+					set {_prefix} to "§5援護§7:"
+					set {_index} to 5
+				else if loop-index-2 is "debuff":
+					set {_prefix} to "§5妨害§7:"
+					set {_index} to 6
+				set {_linenum} to loop-value-2
+				set {_ln} to 0
+				set {_linetext} to ""
+				loop 10 times:
+					add 1 to {_ln}
+					if {_ln} <= {_linenum}:
+						if {_ln} <= 2:
+							set {_linetext} to "%{_linetext}%§b█"
+						else if {_ln} <= 5:
+							set {_linetext} to "%{_linetext}%§a█"
+						else if {_ln} <= 8:
+							set {_linetext} to "%{_linetext}%§e█"
+						else:
+							set {_linetext} to "%{_linetext}%§c█"
+					else:
+						set {_linetext} to "%{_linetext}%§8█"
+				set {_text} to "%{_prefix}% %{_linetext}%"
+				set {_descstats.%{_index}%} to {_text}
+			set {_ln} to 0
+			loop 6 times:
+				add 1 to {_ln}
+				add {_descstats.%{_ln}%} to {_description::*}
+			add "§7§m------------------------------" to {_description::*}
+			set {_prediff} to "§6難易度§7:"
+			if {_diff.%loop-value%} is 1:
+				set {_difftext} to "§d§l超簡単 §6[§d★☆☆☆☆§6]"
+			else if {_diff.%loop-value%} is 2:
+				set {_difftext} to "§b§l簡単 §6[§b★★☆☆☆§6]"
+			else if {_diff.%loop-value%} is 3:
+				set {_difftext} to "§a§l普通 §6[§a★★★☆☆§6]"
+			else if {_diff.%loop-value%} is 4:
+				set {_difftext} to "§e§l難関 §6[§e★★★★☆§6]"
+			else:
+				set {_difftext} to "§c§l超難関 §6[§c★★★★★§6]"
+			set {_dt} to "%{_prediff}% %{_difftext}%"
+			add {_dt} to {_description::*}
+		set display name of {_item.%loop-value%} to "§6§l%loop-value%"
+		set lore of {_item.%loop-value%} to {_description::*}
+	set {_slot} to 0
+	loop {_classes::*}:
+		set slot {_slot} of {_player}'s current inventory to {_item.%loop-value%}
+		add 1 to {_slot}
+	set slot 17 of {_player}'s current inventory to arrow named "§4§lBack" with lore "&dジャンル選択メニューへ戻ります"
+	delete {_close}
+	while {_close} is not set:
+		if type of {_player}'s current inventory is not chest inventory:
+			set {_close} to true
+		if slot 17 of {_player}'s current inventory is not an arrow named "§4§lBack" with lore "&dジャンル選択メニューへ戻ります":
+			set {_close} to true
+		if {_close} is not set:
+			delete {_used::*}
+			if {Join::%{_player}%} is "Kit":
+				loop all players:
+					metadata value "gametype" of loop-player is "Kit"
+					{Join::%loop-player%} is "Kit"
+					{TrueTeam::%loop-player%} is {TrueTeam::%{_player}%}
+					{Class::%loop-player%} is set
+					set {_used::%loop-player%} to {Class::%loop-player%}
+			set {_slot} to 0
+			loop {_classes::*}:
+				delete {_setitem}
+				set {_slotitem} to slot {_slot} of {_player}'s current inventory
+				if {_used::*} contains loop-value:
+					loop {_used::*}:
+						loop-value-2 is loop-value-1
+						set {_user} to loop-index-2
+					set {_setitem} to a structure void named "§6§l%loop-value%" with lore "§2§l%{_user}% §5が使用中です"
+				else:
+					set {_setitem} to {_item.%loop-value%}
+				if {_slotitem} is not {_setitem}:
+					set slot {_slot} of {_player}'s current inventory to {_setitem}
+				add 1 to {_slot}
+			wait 5 ticks
+
+on inventory click:
+	type of event-inventory is chest inventory
+	if inventory name of event-inventory is "§6§lKit §e§lGenre":
+		cancel event
+		if name of clicked item is "§c§lAttacker":
+			openKitInvGenre(player, "attacker")
+			close player's inventory
+		else if name of clicked item is "§e§lMagician":
+			openKitInvGenre(player, "magician")
+			close player's inventory
+		else if name of clicked item is "§a§lShooter":
+			openKitInvGenre(player, "shooter")
+			close player's inventory
+		else if name of clicked item is "§b§lAcrobat":
+			openKitInvGenre(player, "acrobat")
+			close player's inventory
+		else if name of clicked item is "§9§lTank":
+			openKitInvGenre(player, "tank")
+			close player's inventory
+		else if name of clicked item is "§d§lSupport":
+			openKitInvGenre(player, "support")
+			close player's inventory
+	else if inventory name of event-inventory is "§6§lKit §a§lSelect":
+		cancel event
+		if type of clicked item is a barrier or a structure void:
+			message formatted "§4§lこのKitは選択できません" to player
+			stop
+		load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "class.all"
+		set {_classes::*} to yml list "Classes" from "class.all"
+		unload yml "class.all"
+		set {_kit} to name of clicked item
+		replace "§6§l" with "" in {_kit}
+		if {_classes::*} contains {_kit}:
+			close player's inventory
+			make player execute command "/class %{_kit}%"
+		else if name of clicked item is "§4§lBack":
+			close player's inventory
+			openKitInv(player)

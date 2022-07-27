@@ -1,0 +1,31 @@
+function loadFFAStage(stage: text):
+	set {_stagename} to ffaStageName({_stage})
+	execute console command "/mv import FFA-%{_stagename}% normal -g CleanroomGenerator:."
+	loop 200 times:
+		if {_ok} is not set:
+			loop all worlds:
+				set {_worldname} to "%loop-world%"
+				if {_worldname} is "FFA-%{_stagename}%":
+					set {_ok} to true
+				else:
+					wait a tick
+	if {_ok} is true:
+		load yml "plugins/skript-yaml/FFA Stages/%{_stage}%.yml" as "ffa.stage.read"
+		set {_authors::*} to yml list "authors" from "ffa.stage.read"
+		set {_spn} to 0
+		loop yaml node keys "spawnpoints" from "ffa.stage.read":
+			add 1 to {_spn}
+			set {_loc} to invertLocation("spawnpoints.%{_spn}%.%loop-node%", "ffa.stage.read")
+			add {_loc} to {_respawns::*}
+		unload yml "ffa.stage.read"
+		set {FFA-GameStage.name} to {_stage}
+		set {FFA-GameStage.authors::*} to {_authors::*}
+		set {FFA-GameStage.respawns::*} to {_respawns::*}
+		ffaMsg("§eゲームマップが §a§l%{_stage}% §eにセットされました!")
+	else:
+		staffMsg("§4!!!WARNING!!! §cFFAマップの読み込みに失敗しました")
+
+function ffaStageName(stage: text):
+	set {_sn} to {_stage}
+	replace " " with "" in {_sn}
+	return {_sn}

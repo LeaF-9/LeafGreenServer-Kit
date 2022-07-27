@@ -1,0 +1,50 @@
+command /checkuuid <offline player>:
+	permission: sk.admin
+	trigger:
+		message "§b%arg 1's UUID%" to player
+		message "§e%{UUID::%arg 1's UUID%}%" to player
+
+command /checkitem:
+	permission: sk.admin
+	trigger:
+		message "%type of player's tool%" to player
+		message "%display name of player's tool%" to player
+		set {_tool} to display name of player's tool
+		replace every "§" with "&" in {_tool}
+		message "%{_tool}%" to player
+
+command /checkblock:
+	permission: sk.admin
+	trigger:
+		message "%target block%" to player
+		message "%block data of target block%" to player
+		message "%location of target block%" to player
+
+command /checkentity:
+	permission: sk.admin
+	trigger:
+		message "%target entity%" to player
+
+command /checkloc:
+	permission: sk.admin
+	trigger:
+		message "%location of player%" to player
+		message "%location of player's head%" to player
+		message "%yaw of player% / %pitch of player%" to player
+
+command /checkname <player=%player%>:
+	permission: sk.admin
+	trigger:
+		message "%player's display name%" to player
+
+command /checkworld:
+	permission: sk.admin
+	trigger:
+		message "%world of player%" to player
+
+command /checkeffect:
+	permission: sk.admin
+	trigger:
+		set {_var::*} to particle effect id names
+		loop {_var::*}:
+			message "%loop-value%" to player

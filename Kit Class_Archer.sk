@@ -1,0 +1,770 @@
+# Archerのスキル Ver1.0.0
+
+# Weapons
+on shoot:
+	metadata value "gametype" of shooter is "Kit"
+	{Class::%shooter%} is "Archer"
+	set {_tool} to shooter's tool
+	set {_item.kit} to kitItemKitChecker({_tool})
+	{_item.kit} is "Archer"
+	set {_item.type} to kitItemTypeChecker({_tool})
+	{_item.type} is "Weapon.main"
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if {_item.num} is 2:
+		set metadata value "powerbow" of projectile to "true"
+	else if {_item.num} is 3:
+		set metadata value "holybow" of projectile to "true"
+	else if {_item.num} is 4:
+		set {_c} to kitPercent(shooter, 10, true)
+		chance of {_c}%:
+			damage shooter by 1 heart
+			set metadata value "cursebow" of projectile to "true"
+	else if {_item.num} is 5:
+		{_tool} is enchanted with flame
+		if {Stats.%shooter%::MechanicalBow} < 10:
+			set metadata value "mechanicalbow" of projectile to "true"
+			drawDot count 1, particle "flame", center projectile, visibleRange 32, keepFor 1 seconds
+			set {_to} to vector of location 100 meters in front of shooter
+			set {_from} to vector of location of shooter
+			set {_vector} to {_to} -- {_from}
+			set {_vector} to normalized {_vector}
+			set x of {_vector} to x of {_vector} * 10
+			set y of {_vector} to y of {_vector} * 10
+			set z of {_vector} to z of {_vector} * 10
+			set velocity of projectile to {_vector}
+			add 1 to {Stats.%shooter%::MechanicalBow}
+			if {Stats.%shooter%::MechanicalBow} >= 10:
+				ignite shooter for 10 seconds
+				kitMsg(shooter, "<##d70035>§lオーバーヒートした!")
+				loop all items in shooter's inventory:
+					name of loop-item is "§8Mechanical Bow"
+					if loop-item is enchanted with flame:
+						disenchant loop-item
+						enchant loop-item with quick charge 2
+		else:
+			cancel event
+
+on death of player:
+	{Class::%{LastKiller::%victim%}%} is "Archer"
+	give 16 arrows to {LastKiller::%victim%}
+
+function kitWeaponArcher(player: player):
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	checkCT({_player}, name of {_player}'s tool) is true
+	if {_item.num} is 4:
+		kitWeapon_Archer_4({_player})
+
+function kitWeapon_Archer_4(player: player):
+	if {_player} does not have bad luck:
+		kitBadLuck({_player}, 1)
+	if {_player} has arrow:
+		load yml "plugins/skript-yaml/Kit Classes/Archer.yml" as "cursearrow.%{_player}%"
+		set {_CurseArrow} to yml value "kititems.Curse Arrow" from "cursearrow.%{_player}%"
+		unload yml "cursearrow.%{_player}%"
+		set {_amount} to amount of arrow in {_player}'s inventory
+		set {_amoweak} to amount of {_CurseArrow} in {_player}'s inventory
+		add {_amoweak} to {_amount}
+		set {_s} to 35
+		set {_a} to 0
+		loop {_amount} times:
+			add 1 to {_a}
+			set slot {_s} of {_player} to {_a} of {_CurseArrow}
+			if {_a} is 64:
+				subtract 1 from {_s}
+				set {_a} to 0
+		remove all arrows from {_player}
+
+on leftclick holding a crossbow:
+	{Class::%player%} is "Archer"
+	set {_tool} to player's tool
+	set {_item.kit} to kitItemKitChecker({_tool})
+	{_item.kit} is "Archer"
+	set {_item.type} to kitItemTypeChecker({_tool})
+	{_item.type} is "Weapon.main"
+	set {_item.num} to kitItemNumberChecker({_tool})
+	{_item.num} is 5
+	cancel event
+	if checkCT(player, name of player's tool) is true:
+		setCT(player, name of player's tool, 30, false)
+		playSound("entity.iron_golem.hurt", 1, 2, player)
+		kitMsg(player, "<##8da0b6>ブースターを起動しました!")
+		set {Stats.%player%::MechanicalBow} to 0
+		enchant player's tool with flame
+		enchant player's tool with quick charge 5
+		loop 100 times:
+			delete {_ok}
+			loop all items in player's inventory:
+				name of loop-item is "§8Mechanical Bow"
+				if loop-item is enchanted with flame:
+					set {_ok} to true
+			if {_ok} is true:
+				drawDot count 1, particle "lava", center player, visibleRange 30
+			wait a tick
+		loop all items in player's inventory:
+			name of loop-item is "§8Mechanical Bow"
+			if loop-item is enchanted with flame:
+				disenchant loop-item
+				enchant loop-item with quick charge 2
+				kitMsg(player, "<##c9caca>ブースターが終了しました")
+		delete {Stats.%player%::MechanicalBow}
+
+on damage:
+	type of attacker is player
+	damage was caused by projectile
+	if metadata value "powerbow" of projectile is "true":
+		set {_dis} to distance between attacker and victim
+		if {_dis} >= 50:
+			set damage to damage * 1.25
+			kitMsg(attacker, "§cダメージ倍率! §a1.25倍")
+		else if {_dis} >= 75:
+			set damage to damage * 1.5
+			kitMsg(attacker, "§cダメージ倍率! §a1.5倍")
+		else if {_dis} >= 100:
+			set damage to damage * 2
+			kitMsg(attacker, "§cダメージ倍率! §a2倍")
+	else if metadata value "cursebow" of projectile is "true":
+		apply wither 1 to victim for 10 seconds
+	else if metadata value "mechanicalbow" of projectile is "true":
+		set damage to 3
+
+on projectile hit:
+	metadata value "holybow" of projectile is "true"
+	set {_per} to kitPercent(shooter, 5, true)
+	chance of {_per}%:
+		strike lightning effect at projectile
+		loop all players in radius 3 around projectile:
+			{team::%loop-player%} is not {team::%shooter%}
+			kitDamage(shooter, loop-player, 1, true)
+			strike lightning effect at loop-player
+
+# Skills
+function kitSkillArcher(player: player) :: boolean:
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if checkCT({_player}, name of {_player}'s tool) is true:
+		if {_item.num} is 1:
+			kitSkill_Archer_1({_player})
+		else if {_item.num} is 2:
+			kitSkill_Archer_2({_player})
+		else if {_item.num} is 3:
+			kitSkill_Archer_3({_player})
+		else if {_item.num} is 4:
+			kitSkill_Archer_4({_player})
+		else if {_item.num} is 5:
+			kitSkill_Archer_5({_player})
+		else if {_item.num} is 6:
+			kitSkill_Archer_6({_player})
+		else if {_item.num} is 7:
+			kitSkill_Archer_7({_player})
+		else if {_item.num} is 8:
+			kitSkill_Archer_8({_player})
+	return true
+
+function kitSkill_Archer_1(player: player):
+	if {Stats.%{_player}%::ST} is true:
+		playSound("entity.arrow.shoot", 1, 1.5, {_player})
+		shoot an arrow from {_player} at speed 2.0
+		set metadata value "arrowdamage" of shot arrow to 1
+		set metadata value "shootboost" of shot arrow to "true"
+		drawDot count 1, particle happyvillager, center shot entity, visibleRange 30, keepFor 1 seconds
+	else:
+		playSound("block.wooden_door.open", 1, 0.5, {_player})
+		kitMsg({_player}, "§4§lShoot Booster§cを起動します...")
+		kitMsg({_player}, "§63秒間の間右クリックをした分だけ矢が発射されます!")
+		set {Stats.%{_player}%::ST} to true
+		set {_time} to 60
+		while {_time} > 0:
+			if {_time} is 20, 40 or 60:
+				set {_num} to {_time} / 20
+				kitMsg({_player}, "§a残り時間 §b%{_num}% §a秒...")
+			subtract 1 from {_time}
+			wait a tick
+		kitMsg({_player}, "§4§lShoot Booster§cの効果が終了しました")
+		toolCT({_player}, "Archer", 1)
+		delete {Stats.%{_player}%::ST}
+
+function kitSkill_Archer_2(player: player):
+	toolCT({_player}, "Archer", 2)
+	set {Stats.%{_player}%::ForceSnipe} to true
+	kitMsg({_player}, "§b§lForceSnipe§9を起動しました!")
+	kitMsg({_player}, "§35秒間の間矢の近くにいる敵にダメージを与えます!")
+	set {_time} to 100
+	while {_time} > 0:
+		wait a tick
+		subtract 1 from {_time}
+	kitMsg({_player}, "§b§lForceSnipe§3の効果が切れました")
+	delete {Stats.%{_player}%::ForceSnipe}
+
+on shoot:
+	{Stats.%shooter%::ForceSnipe} is true
+	projectile is an arrow or a spectral arrow
+	drawDot count 1, particle "redstone", RGB 0, 255, 255, center projectile, visibleRange 30, keepFor a second
+
+on projectile hit:
+	{Stats.%shooter%::ForceSnipe} is true
+	projectile is an arrow or a spectral arrow
+	playSound("entity.illusioner.cast_spell", 1, 2, location of projectile)
+	loop all entities in radius 3 around projectile:
+		kitCheckTeam(shooter, loop-entity, false) is true
+		set {_dis} to distance between projectile and loop-entity
+		set {_dis} to {_dis} * 2
+		set {_damage} to 6 - {_dis}
+		make shooter damage loop-entity by {_damage}
+		add loop-entity to {_sp::*}
+	set {_loc} to location of projectile
+	loop 10 times:
+		draw 1 critmagic particle at {_loc} with direction randomVector({_loc}, 1) and speed 3, keepFor 1 tick
+	loop 5 times:
+		add 0.4 to {_h}
+		loop {_sp::*}:
+			set {_rad} to 0
+			loop 10 times:
+				set {_el} to location of loop-value-2
+				add 36 to {_rad}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				add {_h} to y-coordinate of {_el}
+				drawDot count 1, particle "mobspell", RGB 0, 255, 255, center {_el}, visibleRange 30
+		wait a tick
+
+function kitSkill_Archer_3(player: player):
+	toolCT({_player}, "Archer", 3)
+	kitMsg({_player}, "§1矢の雨を降らせる卵を発射します...!")
+	set {Stats.%{_player}%::ArrowRain} to location of {_player}
+	shoot an egg from {_player} at speed 1.5
+	set metadata value "arrowegg" of shot entity to "true"
+	drawDot count 1, particle "redstone", XYZ 0, 0, 255, center shot entity, visibleRange 32, keepFor 1 seconds
+	playSound("entity.arrow.shoot", 1, 0.5, {_player})
+
+on projectile hit:
+	projectile is an egg
+	metadata value "arrowegg" of projectile is set
+	{Stats.%shooter%::ArrowRain} is set
+	playSound("entity.generic.burn", 1, 0.5, projectile)
+	set {_face} to {Stats.%shooter%::ArrowRain}
+	set {_baseloc} to location of block at projectile
+	set {_y} to y-coordinate of {_baseloc}
+	set y-coordinate of {_face} to {_y}
+	set {_dis} to distance between location of {_face} and location of {_baseloc}
+	loop 10 times:
+		set {_n} to loop-number
+		set {_cloud} to location of block {_n} meters upwards {_baseloc}
+		drawDot count 1, particle "cloud", center location of {_cloud}, visibleRange 32
+		wait a tick
+	playSound("entity.lightning_bolt.thunder", 1, 0.5, location of {_sky})
+	loop 10 times:
+		set {_n} to loop-number
+		set {_plus} to {_dis} + {_n}
+		set {_sky} to location of block {_plus} meters in front of {_face}
+		set y-coordinate of {_sky} to {_y}
+		add 10 to y-coordinate of {_sky}
+		loop all blocks in radius 5 around {_sky}:
+			y-coordinate of loop-block is y-coordinate of {_sky}
+			loop-block is air
+			add location of loop-block to {_rain::*}
+		loop 5 times:
+			set {_cloud} to {_sky}
+			set {_x} to a random number between -1 and 1
+			set {_z} to a random number between -1 and 1
+			add {_x} to x-coordinate of {_cloud}
+			add {_z} to z-coordinate of {_cloud}
+			drawDot count 1, particle "cloud", center location of {_cloud}, visibleRange 32
+			loop {_rain::*}:
+				chance of 5%:
+					shoot an arrow from block at loop-value-3 at speed 3 downward
+					set metadata value "arrowdamage" of shot arrow to 2
+					set shooter of shot arrow to shooter
+					set metadata value "arrowrain" of shot arrow to "%shooter%"
+					drawDot count 1, particle "redstone", XYZ 255, 255, 255, center location of loop-value-3, visibleRange 32, keepFor 0.2 seconds
+					drawDot count 1, particle "mobspell", XYZ 0, 0, 255, center shot entity, visibleRange 32, keepFor 0.5 seconds
+			loop all projectiles in radius 5 around shooter:
+				loop-projectile is an arrow
+				metadata value "arrowrain" of loop-projectile is "%shooter%"
+				delete loop-projectile
+			wait a tick
+		delete {_rain::*}
+
+function kitSkill_Archer_4(player: player):
+	toolCT({_player}, "Archer", 4)
+	set {Stats.%{_player}%::HomingTwinkle} to true
+	kitMsg({_player}, "§9敵を感知する矢を上空へ放ちます...")
+	shoot an arrow from block 2 above {_player} at speed 1.5 upwards
+	set metadata value "twinkle" of shot arrow to "true"
+	set shooter of shot arrow to {_player}
+	drawDot count 3, particle "fireworkspark", center shot arrow, visibleRange 32, keepFor 0.5 seconds
+	playSound("entity.firework_rocket.launch", 1, 1, {_player})
+	wait 0.5 seconds
+	if {Stats.%{_player}%::HomingTwinkle} is true:
+		loop all projectiles:
+			loop-projectile is an arrow
+			metadata value "twinkle" of loop-projectile is "true"
+			shooter of loop-projectile is {_player}
+			set {_l} to location of loop-projectile
+			set {_from} to vector of loop-projectile
+			delete loop-projectile
+			playSound("entity.firework_rocket.blast", 1, 1, {_l})
+			loop all players in radius 50 around location of {_l}:
+				{team::%loop-player%} is not {team::%{_player}%}
+				set {_to} to vector of loop-player
+				set {_vector} to {_to} -- {_from}
+				set {_vector} to {_vector} ++ {_vector}
+				set {_vector} to normalized {_vector}
+				shoot an arrow from location of {_l} at speed 0.1 downwards
+				set metadata value "homingtwinkle" of shot arrow to "true"
+				set shooter of shot arrow to {_player}
+				set velocity of shot arrow to {_vector}
+				if {team::%loop-player%} is "red":
+					set {_R} to 255
+					set {_G} to 0
+					set {_B} to 0
+				else if {team::%loop-player%} is "blue":
+					set {_R} to 0
+					set {_G} to 0
+					set {_B} to 255
+				else if {team::%loop-player%} is "yellow":
+					set {_R} to 255
+					set {_G} to 255
+					set {_B} to 0
+				else if {team::%loop-player%} is "green":
+					set {_R} to 0
+					set {_G} to 255
+					set {_B} to 0
+				else:
+					set {_R} to 255
+					set {_G} to 0
+					set {_B} to 255
+				drawDot count 30, particle "redstone", XYZ {_R}, {_G}, {_B}, center shot arrow, visibleRange 32, keepFor 1 seconds
+				drawDot count 30, particle "mobspell", XYZ {_R}, {_G}, {_B}, center shot arrow, visibleRange 32, keepFor 1 seconds
+
+on projectile hit:
+	projectile is an arrow
+	metadata value "twinkle" of projectile is "true"
+	{Stats.%shooter%::HomingTwinkle} is true
+	delete {Stats.%shooter%::HomingTwinkle}
+	set {_l} to location of projectile
+	set {_from} to vector of location of projectile
+	playSound("entity.firework_rocket.blast", 1, 1, {_l})
+	loop all players in radius 50 around location of {_l}:
+		{team::%loop-player%} is not {team::%shooter%}
+		set {_to} to vector of location of loop-player
+		set {_vector} to {_to} -- {_from}
+		set {_vector} to {_vector} ++ {_vector}
+		set {_vector} to normalized {_vector}
+		shoot an arrow from location of {_l} at speed 0.1 downwards
+		set metadata value "homingtwinkle" of shot arrow to "true"
+		set shooter of shot arrow to shooter
+		set velocity of shot arrow to {_vector}
+		if {team::%loop-player%} is "red":
+			set {_R} to 255
+			set {_G} to 0
+			set {_B} to 0
+		else if {team::%loop-player%} is "blue":
+			set {_R} to 0
+			set {_G} to 0
+			set {_B} to 255
+		else if {team::%loop-player%} is "yellow":
+			set {_R} to 255
+			set {_G} to 255
+			set {_B} to 0
+		else if {team::%loop-player%} is "green":
+			set {_R} to 0
+			set {_G} to 255
+			set {_B} to 0
+		else:
+			set {_R} to 255
+			set {_G} to 0
+			set {_B} to 255
+		drawDot count 30, particle "redstone", XYZ {_R}, {_G}, {_B}, center shot arrow, visibleRange 32, keepFor 1 seconds
+		drawDot count 30, particle "mobspell", XYZ {_R}, {_G}, {_B}, center shot arrow, visibleRange 32, keepFor 1 seconds
+
+on damage of player:
+	damage was caused by projectile
+	projectile is an arrow
+	metadata value "homingtwinkle" of projectile is "true"
+	apply glowing 1 to victim for 5 seconds
+
+function kitSkill_Archer_5(player: player):
+	toolCT({_player}, "Archer", 5)
+	set {Stats.%{_player}%::BarrageArrow} to true
+	kitMsg({_player}, "§e5秒間§6放つ矢の本数が§e5本§6になります!")
+	playSound("entity.zombie.attack_iron_door", 1, 1, {_player})
+	drawDot count 3, particle "mobspell", RGB 255, 100, 100, center {_player}, visibleRange 32, keepFor 7 seconds
+	wait 5 seconds
+	delete {Stats.%{_player}%::BarrageArrow}
+	delete {Stats.%{_player}%::DrawTime}
+	kitMsg({_player}, "§cBarrage Arrow§dの効果が切れました")
+
+on rightclick holding a bow:
+	if {Stats.%player%::BarrageArrow} is true:
+		set {Stats.%player%::DrawTime} to 0
+		while {Stats.%player%::DrawTime} is set:
+			if {Stats.%player%::DrawTime} >= 3:
+				stop
+			else:
+				if {Stats.%player%::BarrageArrow} is true:
+					add 0.125 to {Stats.%player%::DrawTime}
+					wait a tick
+				else:
+					delete {Stats.%player%::DrawTime}
+
+on shoot:
+	{Stats.%shooter%::BarrageArrow} is true
+	{Stats.%shooter%::BarrageNG} is not set
+	projectile is an arrow or a spectral arrow
+	cancel event
+	if {Stats.%shooter%::DrawTime} is set:
+		set {_d} to {Stats.%shooter%::DrawTime}
+	else:
+		set {_d} to 3
+	delete {Stats.%shooter%::DrawTime}
+	set {Stats.%shooter%::BarrageNG} to true
+	playSound("entity.ghast.shoot", 1, 1, shooter)
+	set {_l1} to location of head of shooter
+	shoot an arrow from {_l1} at speed {_d}
+	set shooter of shot projectile to shooter
+	drawDot particle "flame", center shot arrow, visibleRange 30, keepFor 1 second
+	set {_l2} to {_l1}
+	set {_yaw} to yaw of {_l2} - 20
+	if {_yaw} < 0:
+		set {_yaw} to 360 + {_yaw}
+	set yaw of {_l2} to {_yaw}
+	shoot an arrow from {_l2} at speed {_d}
+	set shooter of shot projectile to shooter
+	drawDot particle "flame", center shot arrow, visibleRange 30, keepFor 1 second
+	set {_l3} to {_l1}
+	set {_yaw} to yaw of {_l3} + 20
+	if {_yaw} >= 360:
+		set {_yaw} to {_yaw} - 360
+	set yaw of {_l3} to {_yaw}
+	shoot an arrow from {_l3} at speed {_d}
+	set shooter of shot projectile to shooter
+	drawDot particle "flame", center shot arrow, visibleRange 30, keepFor 1 second
+	set {_l4} to {_l1}
+	set {_yaw} to yaw of {_l4} - 40
+	if {_yaw} < 0:
+		set {_yaw} to 360 + {_yaw}
+	set yaw of {_l4} to {_yaw}
+	shoot an arrow from {_l4} at speed {_d}
+	set shooter of shot projectile to shooter
+	drawDot particle "flame", center shot arrow, visibleRange 30, keepFor 1 second
+	set {_l5} to {_l1}
+	set {_yaw} to yaw of {_l5} + 40
+	if {_yaw} >= 360:
+		set {_yaw} to {_yaw} - 360
+	set yaw of {_l5} to {_yaw}
+	shoot an arrow from {_l5} at speed {_d}
+	set shooter of shot projectile to shooter
+	drawDot particle "flame", center shot arrow, visibleRange 30, keepFor 1 second
+#	wait a tick
+	delete {Stats.%shooter%::BarrageNG}
+
+on damage:
+	damage was caused by projectile
+	projectile is an arrow
+	if {Stats.%attacker%::ForceSnipe} is true:
+		cancel event
+		stop
+	if metadata value "arrowdamage" of projectile is set:
+		set {_damage} to metadata value "arrowdamage" of projectile
+		set damage to {_damage}
+	if {Stats.%attacker%::BarrageArrow} is true:
+		set damage to damage * 0.75
+
+function kitSkill_Archer_6(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		toolCT({_player}, "Archer", 6)
+		kitMsg({_player}, "<##696969>矢を拡散するオブジェ<##ffa500>を設置します!")
+		set {_baseloc} to {Stats.%{_player}%::SkillLocation}
+		set pitch of {_baseloc} to 0
+		playSound("entity.guardian.attack", 1, 2, {_baseloc})
+		set {_rad} to 0
+		set {_y} to 0
+		loop 20 times:
+			loop 4 times:
+				set {_el} to {_baseloc}
+				set {_tr} to {_rad} + 90 * loop-number-2
+				add 0.5 * sin({_tr}) to x-coordinate of {_el}
+				add 0.5 * cos({_tr}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				drawDot particle "endrod", center {_el}, visibleRange 30
+			add 18 to {_rad}
+			add 0.1 to {_y}
+			wait a tick
+		playSound("entity.elder_guardian.curse", 1, 1, {_baseloc})
+		set yaw of {_baseloc} to 0
+		spawn armor stand at {_baseloc} with nbt "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Marker:1b,ArmorItems:[{},{},{},{id:""skeleton_skull"",Count:1b}],HandItems:[{},{id:""bow"",Count:1b}],Pose:{RightLeg:[10f,30f,0f],LeftArm:[270f,30f,0f],RightArm:[270f,300f,0f]}}"
+		set metadata value "arrowdiffusion" of spawned armor stand to "%{_player}%"
+		loop 30 times:
+			draw 1 endrod particle at {_baseloc} with direction randomVector({_el}) and speed 0.3, keepFor 1 tick
+		wait 1 second
+		set {_yaw} to -45
+		loop 40 times:
+			add 45 to {_yaw}
+			if {_yaw} >= 360:
+				set {_yaw} to 0
+			set yaw of {_baseloc} to {_yaw}
+			loop all entities:
+				type of loop-entity is armor stand
+				metadata value "arrowdiffusion" of loop-entity is "%{_player}%"
+				teleport loop-entity to {_baseloc}
+			shoot an arrow from location 1.5 meters above {_baseloc} at speed 5
+			set metadata value "arrowdamage" of shot arrow to 2
+			set shooter of shot projectile to {_player}
+			set metadata value "arrowdf" of shot projectile to "true"
+			drawDot count 1, particle "cloud", center shot projectile, visibleRange 32, keepFor 0.5 seconds
+			playSound("entity.arrow.shoot", 1, 2, {_baseloc})
+			wait a tick
+		loop all entities:
+			type of loop-entity is armor stand
+			metadata value "arrowdiffusion" of loop-entity is "%{_player}%"
+			delete loop-entity
+	else:
+		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+
+function kitSkill_Archer_7(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::HawkBlastNow} to {_now}
+	if {Stats.%{_player}%::HawkBlast} is not set:
+		set {Stats.%{_player}%::HawkBlast} to 0
+		set {Stats.%{_player}%::HawkBlastLoc} to location of head of {_player}
+		playSound("entity.phantom.bite", 1, 2, {_player})
+		kitMsg({_player}, "§f鷹を§b放出§fします...")
+	loop 5 times:
+		{_ok} is not set
+		if {Stats.%{_player}%::HawkBlast} < 100:
+			add 1 to {Stats.%{_player}%::HawkBlast}
+			set {_locnow} to location of head of {_player}
+			set {_baseloc} to {Stats.%{_player}%::HawkBlastLoc}
+			set yaw of {_baseloc} to yaw of {_locnow}
+			set pitch of {_baseloc} to pitch of {_locnow}
+			set {_block} to location 1 meter in front of {_baseloc}
+			set {Stats.%{_player}%::HawkBlastLoc} to {_block}
+			if block at {_block} is not passable:
+				set {_ok} to true
+			drawDot count 1, particle "endrod", center {_block}, visibleRange 100, keepFor 5 ticks
+			drawHawkBlast({_block})
+		else:
+			set {_ok} to true
+		wait a tick
+	playSound("entity.phantom.flap", 1, 2, {_block})
+	if {Stats.%{_player}%::HawkBlastNow} is {_now}:
+		set {_ok} to true
+	if {_ok} is true:
+		toolCT({_player}, "Archer", 7)
+		kitMsg({_player}, "<##f0f8ff>鷹が<##00bfff>炸裂<##f0f8ff>した!")
+		set {_bloc} to {Stats.%{_player}%::HawkBlastLoc}
+		delete {Stats.%{_player}%::HawkBlast}
+		delete {Stats.%{_player}%::HawkBlastNow}
+		delete {Stats.%{_player}%::HawkBlastLoc}
+		playSound("entity.phantom.hurt", 1, 0.5, {_bloc})
+		set {_y} to 0
+		set {_rad} to 0
+		set {_len} to 8
+		loop 16 times:
+			loop 9 times:
+				add 10 to {_rad}
+				add 0.06 to {_y}
+				subtract 0.06 from {_len}
+				set {_el} to {_bloc}
+				add {_len} * sin({_rad}) to x-coordinate of {_el}
+				add {_len} * cos({_rad}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				drawDot count 3, particle "redstone", RGB 200, 240, 250, center {_el}, visibleRange 100, keepFor 3 ticks
+				set {_el} to {_bloc}
+				set {_truerad} to {_rad} + 180
+				add {_len} * sin({_truerad}) to x-coordinate of {_el}
+				add {_len} * cos({_truerad}) to z-coordinate of {_el}
+				subtract {_y} from y-coordinate of {_el}
+				drawDot count 3, particle "redstone", RGB 200, 240, 250, center {_el}, visibleRange 100, keepFor 3 ticks
+			wait a tick
+		wait 4 ticks
+		set {_hig} to 8
+		loop 4 times:
+			loop 5 times:
+				subtract 0.4 from {_hig}
+				set {_el} to {_bloc}
+				add {_hig} to y-coordinate of {_el}
+				drawDot count 1, particle "endrod", center {_el}, visibleRange 100
+				set {_el} to {_bloc}
+				subtract {_hig} from y-coordinate of {_el}
+				drawDot count 1, particle "endrod", center {_el}, visibleRange 100
+			wait a tick
+		playSound("entity.phantom.death", 1, 0.8, {_bloc})
+		loop 100 times:
+			draw 1 endrod particle at {_bloc} with direction randomVector({_bloc}, 1) and speed 0.8, keepFor 1 tick
+		loop all entities in radius 8 around {_bloc}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			make {_player} damage loop-entity by 6
+			apply glowing 1 to loop-entity for 3 seconds
+			if type of loop-entity is player:
+				message formatted "§e鷹の閃光§6がヒットした!" to loop-entity
+
+function drawHawkBlast(loc: location):
+	set {_froloc} to location 0.6 meters in front of {_loc}
+	set {_yaw} to yaw of {_froloc} + 180
+	if {_yaw} >= 360:
+		subtract 360 from {_yaw}
+	set yaw of {_froloc} to {_yaw}
+# 胴体中心
+	loop 5 times:
+		set {_el} to location loop-number * 0.2 meters in front of {_froloc}
+		drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+# 尾
+	set {_cariloc} to location 1.2 meters in front of {_froloc}
+	set pitch of {_cariloc} to 0
+	set {_el} to location 0.1 meters to the left of {_cariloc}
+	drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+	set {_el} to location 0.1 meters to the right of {_cariloc}
+	drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+# 胴体端
+	set {_yokloc} to location 0.4 meters in front of {_loc}
+	set {_yaw} to yaw of {_yokloc} + 180
+	if {_yaw} >= 360:
+		subtract 360 from {_yaw}
+	set yaw of {_yokloc} to {_yaw}
+	loop 7 times:
+		set {_cariloc} to location loop-number * 0.1 meters in front of {_yokloc}
+		set pitch of {_cariloc} to 0
+		set {_el} to location 0.1 meters to the left of {_cariloc}
+		drawDot count 1, particle "redstone", RGB 50, 255, 255, center {_el}, visibleRange 100
+		set {_el} to location 0.1 meters to the right of {_cariloc}
+		drawDot count 1, particle "redstone", RGB 50, 255, 255, center {_el}, visibleRange 100
+# 背
+	set {_seloc} to location 0.3 meters in front of {_loc}
+	set {_yaw} to yaw of {_seloc} + 180
+	if {_yaw} >= 360:
+		subtract 360 from {_yaw}
+	set yaw of {_seloc} to {_yaw}
+	set pitch of {_seloc} to pitch of {_seloc} - 90
+	loop 3 times:
+		set {_upbaseloc} to location 0.1 * loop-number meters in front of {_seloc}
+		set {_upfroloc} to {_upbaseloc}
+		set pitch of {_upfroloc} to pitch of {_upfroloc} + 90
+		set {_upfroloc} to location 0.1 * loop-number meters in front of {_upfroloc}
+		loop 3 times:
+			set {_el} to location loop-number-2 * 0.1 meters in front of {_upfroloc}
+			drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+# 翼
+	set {_floc} to location 0.3 meters in front of {_loc}
+	set {_yaw} to yaw of {_floc} + 180
+	if {_yaw} >= 360:
+		subtract 360 from {_yaw}
+	set yaw of {_floc} to {_yaw}
+	loop 3 times:
+		set {_bloc} to location 0.1 * loop-number meters in front of {_floc}
+		loop 3 times:
+			set {_ploc} to {_bloc}
+			set pitch of {_ploc} to 0
+			set {_lloc} to location 0.2 * loop-number-1 meters to the left of {_ploc}
+			set {_rloc} to location 0.2 * loop-number-1 meters to the right of {_ploc}
+			set pitch of {_lloc} to pitch of {_bloc}
+			set pitch of {_rloc} to pitch of {_bloc}
+			set {_el} to location loop-number-2 * 0.1 meters in front of {_lloc}
+			drawDot count 1, particle "redstone", RGB 50 * loop-number-1, 255, 255, center {_el}, visibleRange 100
+			set {_el} to location loop-number-2 * 0.1 meters in front of {_rloc}
+			drawDot count 1, particle "redstone", RGB 50 * loop-number-1, 255, 255, center {_el}, visibleRange 100
+
+function kitSkill_Archer_8(player: player):
+	toolCT({_player}, "Archer", 8)
+	kitMsg({_player}, "<##f8f8ff>矢の護衛<##f0e68c>を展開します!")
+	playSound("item.trident.throw", 1, 0.5, {_player})
+	loop 200 times:
+		{_ok} is not set
+		set {_baseloc} to location of {_player}
+		set {_rad} to 0
+		loop 10 times:
+			set {_el} to {_baseloc}
+			add 3 * sin({_rad}) to x-coordinate of {_el}
+			add 3 * cos({_rad}) to z-coordinate of {_el}
+			add 1 to y-coordinate of {_el}
+			drawDot count 1, particle "redstone", RGB 100, 150, 255, center {_el}, visibleRange 30
+			add 36 to {_rad}
+		loop all entities in radius 3 around {_baseloc}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_ok} to true
+		wait a tick
+	if {_ok} is true:
+		kitMsg({_player}, "§b矢の護衛§cが発動した!")
+		playSound("item.trident.return", 1, 0.5, {_player})
+		set {_loc} to location of {_player}
+		loop 50 times:
+			set {_pl} to {_loc}
+			add 1 to y-coordinate of {_pl}
+			set yaw of {_pl} to a random number between 0 and 360
+			set pitch of {_pl} to a random number between -20 and 20
+			shoot an arrow from {_pl} at speed 1.5
+			set shooter of shot arrow to {_player}
+			set metadata value "arrowdamage" of shot arrow to 3
+			drawDot count 1, particle "mobspell", RGB 100, 150, 255, center shot arrow, visibleRange 30, keepFor 1 second
+
+# Ultimate
+function kitUltArcher(player: player):
+	message "§c次に放つ矢が衝撃波に変わります!" to {_player}
+	message "§cこの衝撃波は100m先まで飛んでいきます!" to {_player}
+	message "§cこの衝撃波に当たると10ダメージと発光を10秒付与します!" to {_player}
+	set {Stats.%{_player}%::UltArcher} to true
+	loop 200 times:
+		if {Stats.%{_player}%::UltArcher} is true:
+			set {_el} to aroundEffect({_player})
+			drawDot count 1, particle "mobspell", RGB 255, 255, 0, center {_el}, visibleRange 30
+		wait a tick
+	if {Stats.%{_player}%::UltArcher} is true:
+		delete {Stats.%{_player}%::UltArcher}
+
+on shoot:
+	projectile is an arrow or a spectral arrow
+	{Stats.%shooter%::UltArcher} is true
+	cancel event
+	delete {Stats.%shooter%::UltArcher}
+	playSound("item.trident.thunder", 1, 1, shooter)
+	set {_loc} to location of shooter
+	add 1.6 to y-coordinate of {_loc}
+	set {_vector0} to {_loc}
+	set {_vector1} to {_loc}
+	set {_x} to x-coordinate of {_loc}
+	set {_y} to y-coordinate of {_loc}
+	set {_z} to z-coordinate of {_loc}
+	set {_alpha} to 0
+	loop 37 time:
+		set {_vx1} to {_loc}
+		set pitch of {_vx1} to 0
+		set {_vx} to location 1 meters to the right of {_vx1}
+		set {_vy} to {_loc}
+		set {_y1p} to pitch of {_vy}
+		set {_y2p} to abs({_y1p}) - 90
+		if {_y1p} < 0:
+			set {_y3p} to yaw of {_loc}
+			if {_y3p} < 180:
+				add 180 to {_y3p}
+			else:
+				add -180 to {_y3p}
+			set yaw of {_vy} to {_y3p}
+		set pitch of {_vy} to {_y2p}
+		set {_vy} to location 1 meters in front of {_vy}
+		set {_vz} to location 1 meters in front of {_loc}
+		set {_vector0} to location (3 * {_alpha}) meters in front of {_loc}
+		set {_v0x} to x-coordinate of {_vector0}
+		set {_v0y} to y-coordinate of {_vector0}
+		set {_v0z} to z-coordinate of {_vector0}
+		if ({_v0x} - {_x}) ^ 2 + ({_v0y} - {_y}) ^ 2 + ({_v0z} - {_z}) ^ 2 < 10201:
+			drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_vector0}, visibleRange 100, keepFor 1 seconds
+			playSound("entity.arrow.shoot", 1, 1, {_vector0})
+		set {_s} to 0
+		set {_t} to 0
+		loop 8 time:
+			add 1 to {_t}
+			loop 5 time:
+				set x-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-coordinate of {_vx} - {_x}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-coordinate of {_vy} - {_x}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (x-coordinate of {_vz} - {_x}) + {_x}
+				set y-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-coordinate of {_vx} - {_y}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-coordinate of {_vy} - {_y}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (y-coordinate of {_vz} - {_y}) + {_y}
+				set z-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-coordinate of {_vx} - {_z}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-coordinate of {_vy} - {_z}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (z-coordinate of {_vz} - {_z}) + {_z}
+				drawDot count 1, particle "redstone", RGB 255, 255, (32 * {_t}), center {_vector1}, visibleRange 100, keepFor 0.05 seconds
+				loop all entities in radius 1 around {_vector1}:
+					{_hit::%id of loop-entity%} is not set
+					kitCheckTeam(loop-entity, shooter, false, true) is true
+					set {_hit::%id of loop-entity%} to true
+					kitDamage(shooter, loop-entity, 7, true)
+					apply glowing 1 to loop-entity for 10 seconds
+				add 1 to {_s}
+		add 3 to {_alpha}
+		wait a tick

@@ -1,0 +1,12 @@
+command /kit-item <text> <text> <text>:
+	usage: /kit-item <arg> <Kit> <item-name>
+	permission: sk.admin
+	trigger:
+		if {Kit-Classes::%arg 2%} is set:
+			load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class"
+			if arg 1 is "add":
+				set yml value "kititems.%arg 3%" from "class" to player's tool
+				save yml "class"
+				message formatted "§a%arg 2% §eに §6§l%arg 3% §eのアイテムを追加しました" to player
+		else:
+			message formatted "§cこのClassは存在しません" to player

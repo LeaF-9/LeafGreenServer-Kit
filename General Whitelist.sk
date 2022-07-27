@@ -1,0 +1,18 @@
+command /trustonly:
+	permission: sk.admin
+	trigger:
+		if {Whitelist} is not set:
+			set {Whitelist} to true
+			loop all players:
+				if loop-player does not have permission "sk.whitelist":
+					kick loop-player due to "§9§lWhitelist制 §eに移行しました"
+				else:
+					message "§9§lWhitelist制 §eに移行しました" to loop-player
+		else if {Whitelist} is true:
+			delete {Whitelist}
+			broadcast "§9§lWhitelist制 §aを解除しました"
+
+on connect:
+	if {Whitelist} is true:
+		if player does not have permission "sk.whitelist":
+			kick player due to "%nl%§c現在 §9§lWhitelist制 §cとなっています%nl% %nl%§4§l1.16.1§c正式リリース §bをお待ち下さい!"

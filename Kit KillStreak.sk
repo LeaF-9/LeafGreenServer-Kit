@@ -1,0 +1,23 @@
+on death of player:
+	{Join::%victim%} is "Kit"
+	{Kit-tochu} is true
+	if {LastKiller::%victim%} is set:
+		{LastKiller::%victim%} is not victim
+		add 1 to {KillStreak::%{LastKiller::%victim%}%}
+	delete {KillStreak::%victim%}
+	{Ulting::%victim%} is not set
+	if {LastKiller::%victim%} is set:
+		if {Ultimate::%victim%} >= 100:
+			set {Ultimate::%victim%} to 80
+		else if {KillStreak::%victim%} is not set:
+			add 10 to {Ultimate::%victim%}
+		else if {KillStreak::%victim%} is 1:
+			add 5 to {Ultimate::%victim%}
+		else if {KillStreak::%victim%} is 2:
+			add 3 to {Ultimate::%victim%}
+		else if {KillStreak::%victim%} is 4:
+			set {_ult} to round({Ultimate::%victim%} * 0.9)
+			set {Ultimate::%victim%} to {_ult}
+		else if {KillStreak::%victim%} >= 5:
+			set {_ult} to round({Ultimate::%victim%} * 0.8)
+			set {Ultimate::%victim%} to {_ult}

@@ -1,0 +1,185 @@
+options:
+	prefix: §e[§aKit PvP§e]
+
+command /kitstagelist <text> <text>:
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		if arg 1 is "create":
+			if {_stages::*} contains arg 2:
+				message "{@prefix} §cそのステージ名はすでに存在しています" to player
+			else:
+				add arg 2 to {_stages::*}
+				set yml list "Stages" from "KitStages" to {_stages::*}
+				save yml "KitStages"
+				load yml "plugins/skript-yaml/Kit Stages/%arg 2%.yml" as "KitStage"
+				set yml value "name" from "KitStage" to arg 2
+				set yml value "enable" from "KitStage" to true
+				save yml "KitStage"
+				message "{@prefix} §2ステージを作成しました§7: §6%arg 2%" to player
+		else if arg 1 is "enable":
+			if {_stages::*} contains arg 2:
+				load yml "plugins/skript-yaml/Kit Stages/%arg 2%.yml" as "KitStage"
+				if yml value "enable" from "KitStage" is not true:
+					set yml value "enable" from "KitStage" to true
+					save yml "KitStage"
+					message "{@prefix} §6%arg 2%§aを利用可能な状態にしました" to player
+				else:
+					message "{@prefix} §cそのステージは既に利用可能な状態です" to player
+				unload yml "KitStage"
+			else:
+				message "{@prefix} §cこのステージは存在しません" to player
+		else if arg 1 is "disable":
+			if {_stages::*} contains arg 2:
+				load yml "plugins/skript-yaml/Kit Stages/%arg 2%.yml" as "KitStage"
+				if yml value "enable" from "KitStage" is not false:
+					set yml value "enable" from "KitStage" to false
+					save yml "KitStage"
+					message "{@prefix} §6%arg 2%§aを利用不可能な状態にしました" to player
+				else:
+					message "{@prefix} §cそのステージは既に利用不可能な状態です" to player
+				unload yml "KitStage"
+			else:
+				message "{@prefix} §cこのステージは存在しません" to player
+		else if arg 1 is "info":
+			if arg 2 is "list":
+				message "§e==============§aStage list§e================" to player
+				loop {_stages::*}:
+					load yml "plugins/skript-yaml/Kit Stages/%loop-value%.yml" as "KitStage"
+					set {_rule} to yml value "rule" from "KitStage"
+					set {_enable} to yml value "enable" from "KitStage"
+					unload yml "KitStage"
+					message "§6%loop-value% §5Rule§7:§d%{_rule}% §a[§9%{_enable}%§a]" to player
+			else:
+				if {_stages::*} contains arg 2:
+					load yml "plugins/skript-yaml/Kit Stages/%arg 2%.yml" as "KitStage"
+					set {_rule} to yml value "rule" from "KitStage"
+					set {_enable} to yml value "enable" from "KitStage"
+					set {_team} to yml value "team" from "KitStage"
+					set {_authors::*} to yml list "author" from "KitStage"
+					unload yml "KitStage"
+					message "§a%arg 2%§6's Map Infomation" to player
+					message "§2Enable: §7%{_enable}%" to player
+					message "§2Team: §7%{_team}%" to player
+					message "§2Rule: §7%{_rule}%" to player
+					message "§2Author:" to player
+					loop {_authors::*}:
+						set {_author} to {UUID::%loop-value%}
+						message formatted "§e- §7%{_author}%" to player
+				else:
+					message "{@prefix} §cこのステージは存在しません" to player
+		else if arg 1 is "delete":
+			if {Kit-Stagelist::%arg 2%} is set:
+				if {Kit-Stagerule::%arg 2%} is "GoK":
+					delete {Kit-KillGoal::%arg 2%}
+				else if {Kit-Stagerule::%arg 2%} is "BEC":
+					delete {Kit-CoreLocation.%arg 2%::*}
+					delete {Kit-Corered.%arg 2%::*}
+					delete {Kit-Coreblue.%arg 2%::*}
+					delete {Kit-Coreyellow.%arg 2%::*}
+					delete {Kit-Coregreen.%arg 2%::*}
+					delete {Kit-CoreHP.%arg 2%::*}
+					delete {Kit-Stagespawn_purple.%arg 2%::*}
+				else if {Kit-Stagerule::%arg 2%} is "EmJ":
+					delete {Kit-JewelVoid::%arg 2%}
+					delete {Kit-Gembox.%arg 2%::*}
+					delete {Kit-JewelGoal::%arg 2%}
+				else if {Kit-Stagerule::%arg 2%} is "StW":
+					delete {Kit-WoolSpawn.%arg 2%::*}
+					delete {Kit-WoolPlace.%arg 2%::*}
+					delete {Kit-WoolVoid.%arg 2%::*}
+					delete {Kit-WoolGoal::%arg 2%}
+				else if {Kit-Stagerule::%arg 2%} is "CPA":
+					delete {Kit-PAType.%arg 2%::*}
+					delete {Kit-PAList.%arg 2%::*}
+					delete {Kit-PAGoal::%arg 2%}
+					delete {Kit-PATime.%arg 2%::*}
+					delete {Kit-PARange.%arg 2%::*}
+					delete {Kit-PAColor.%arg 2%::*}
+				remove arg 2 from {Kit-Stage::*}
+				delete {Kit-Stagelist::%arg 2%}
+				delete {Kit-Stageteam::%arg 2%}
+				delete {Kit-Stagespawn_red.%arg 2%::*}
+				delete {Kit-Stagespawn_blue.%arg 2%::*}
+				delete {Kit-Stagespawn_yellow.%arg 2%::*}
+				delete {Kit-Stagespawn_green.%arg 2%::*}
+				delete {Kit-Stagerule::%arg 2%}
+				delete {Kit-Stageauthor.%arg 2%::*}
+				delete {Kit-Stagespec::%arg 2%}
+				message "{@prefix} §6%arg 2% §cを消去しました" to player
+			else:
+				message "{@prefix} §cこのステージは存在しません" to player
+		unload yml "KitStages"
+
+command /kitstage <text> <text> <text>:
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+		if {_stages::*} is set:
+			load yml "plugins/skript-yaml/Kit Stages/%arg 3%.yml" as "MapEdit"
+			if arg 1 is "spawn":
+				set {_loc} to location of player
+				if arg 2 is "spec":
+					set yml value "spec.x" from "MapEdit" to x-coordinate of {_loc}
+					set yml value "spec.y" from "MapEdit" to y-coordinate of {_loc}
+					set yml value "spec.z" from "MapEdit" to z-coordinate of {_loc}
+					set yml value "spec.yaw" from "MapEdit" to yaw of {_loc}
+					set yml value "spec.pitch" from "MapEdit" to pitch of {_loc}
+					set yml value "spec.world" from "MapEdit" to kitWorldNC(arg 3)
+					make player execute command "/mv setspawn"
+					make player execute command "/mw setspawn"
+					message "{@prefix} §6%arg 3%§7の§b観戦者Spawn地点§7を設定しました" to player
+				else if arg 2 is "red", "blue", "yellow" or "green":
+					set {_num} to 1
+					loop yaml node keys "respawns.red" from "MapEdit":
+						add 1 to {_num}
+					set yml value "respawns.%arg 2%.%{_num}%.x" from "MapEdit" to x-coordinate of {_loc}
+					set yml value "respawns.%arg 2%.%{_num}%.y" from "MapEdit" to y-coordinate of {_loc}
+					set yml value "respawns.%arg 2%.%{_num}%.z" from "MapEdit" to z-coordinate of {_loc}
+					set yml value "respawns.%arg 2%.%{_num}%.yaw" from "MapEdit" to yaw of {_loc}
+					set yml value "respawns.%arg 2%.%{_num}%.pitch" from "MapEdit" to pitch of {_loc}
+					set yml value "respawns.%arg 2%.%{_num}%.world" from "MapEdit" to kitWorldNC(arg 3)
+					message formatted "{@prefix} §6%arg 3%§7の<%arg 2%>§l%arg 2% §7Spawnpointを現在地点に設定しました" to player
+				else:
+					message "{@prefix} §c正しいチーム名を入力して下さい" to player
+			else if arg 1 is "rule":
+				if arg 2 is "GoK", "BEC", "StW", "EmJ" or "CPA":
+					set yml value "rule" from "MapEdit" to arg 2
+					message "{@prefix} §6%arg 3%§7のルールを§5%arg 2%§7にセットしました" to player
+				else:
+					message "{@prefix} §cそのルールは存在しません" to player
+			else if arg 1 is "team":
+				if arg 2 is "2" or "4":
+					set yml value "team" from "MapEdit" to arg 2
+					message "{@prefix} §6%arg 3%§7のチーム数を§5%arg 2%§7にセットしました" to player
+				else:
+					message "{@prefix} §cその数には設定できません" to player
+			else if arg 1 is "author":
+				set {_authors::*} to yml list "author" from "MapEdit"
+				set {_author} to arg 3 parsed as offline player
+				set {_authorUUID} to UUID of {_author}
+				add {_authorUUID} to {_authors::*}
+				set yml list "author" from "MapEdit" to {_authors::*}
+				message "{@prefix} §a%arg 2%§7を§6%arg 3%§7の製作者に設定しました" to player
+			save yml "MapEdit"
+		else:
+			message "{@prefix} §cこのステージは存在しません" to player
+
+command /kit-stageallyml:
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "AW"
+		set yml list "Stages" from "AW" to {Kit-Stage::*}
+		save yml "AW"
+		loop {Kit-Stage::*}:
+			load yml "plugins/skript-yaml/Kit Stages/%loop-value%.yml" as "WI"
+			set yml value "enable" from "WI" to {Kit-Stagelist::%loop-value%}
+			save yml "WI"
+
+function kitWorldNC(world: text) :: text:
+	replace every " " with "" in {_world}
+	set {_rw} to "Kit-%{_world}%"
+	return {_rw}

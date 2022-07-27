@@ -1,0 +1,409 @@
+on rightclick on respawn anchor:
+	location of event-block is {Kit-SGLocation}
+	if {Join::%player%} is not set:
+		open chest with 5 row named "§5§lSoul Gift" to player
+		wait a tick
+		type of player's current inventory is chest inventory
+		set slot 13 of player's current inventory to nether star named "§5§lSoul Gift" with lore "§5§lSoul §310§f個でガチャを引くことが出来ます" and "§fガチャを引くことで様々な§d景品§fが当たります!"
+		set slot 17 of player's current inventory to beacon named "§5§lSoul Gift §3§oplenty!" with lore "§310§f連続で§5§lSoul Gift§fを引きます"
+		set slot 40 of player's current inventory to chest named "§6Gift list" with lore "§5§lSoul Gift§fの景品一覧です"
+	else:
+		message formatted "§cJoin中はSoul Giftを開くことが出来ません!" to player
+
+options:
+	prefix: §5[§4Soul Gift§5]§r
+
+on inventory click:
+	{Game::%player%} is "Kit"
+	type of event-inventory is chest inventory
+	if inventory name of event-inventory is "§5§lSoul Gift":
+		cancel event
+		if clicked slot is 13:
+			close player's inventory
+			SoulGift(player)
+		else if clicked slot is 17:
+			close player's inventory
+			SoulGift(player, true)
+		else if clicked slot is 40:
+			close player's inventory
+			SoulGiftList(player)
+	else if inventory name of event-inventory is "§5§lSoul Gifting!":
+		cancel event
+
+function SoulGift(player: player, plenty: boolean = false):
+	wait 3 ticks
+	if {_plenty} is false:
+		set {_uuid} to {_player}'s uuid
+		if {Kit-Soul::%{_uuid}%} >= 10:
+			open chest with 3 row named "§5§lSoul Gifting!" to {_player}
+			wait a tick
+			set {_baslot} to 1
+			loop 2 times:
+				add 2 to {_baslot}
+				set {_sloting} to 0
+				loop 3 times:
+					set {_slot} to {_baslot} + {_sloting}
+					set slot {_slot} of {_player}'s current inventory to white stained glass pane named " "
+					add 9 to {_sloting}
+			loop 20 times:
+				if type of {_player}'s current inventory is chest inventory:
+					if {_item.2} is set:
+						set {_item.3} to {_item.2}
+					else:
+						set {_item.3} to SoulGifting()
+					if {_item.1} is set:
+						set {_item.2} to {_item.1}
+					else:
+						set {_item.2} to SoulGifting()
+					set {_item.1} to SoulGifting()
+					set slot 4 of {_player}'s current inventory to {_item.1}
+					set slot 13 of {_player}'s current inventory to {_item.2}
+					set slot 22 of {_player}'s current inventory to {_item.3}
+					playSound("entity.experience_orb.pickup", 1, 2, {_player}, true)
+					wait a tick
+				else:
+					message "{@prefix} §c中断されました §4§lインベントリを閉じないでください!" to {_player}
+					stop
+			loop 10 times:
+				if type of {_player}'s current inventory is chest inventory:
+					if {_item.2} is set:
+						set {_item.3} to {_item.2}
+					else:
+						set {_item.3} to SoulGifting()
+					if {_item.1} is set:
+						set {_item.2} to {_item.1}
+					else:
+						set {_item.2} to SoulGifting()
+					set {_item.1} to SoulGifting()
+					set slot 4 of {_player}'s current inventory to {_item.1}
+					set slot 13 of {_player}'s current inventory to {_item.2}
+					set slot 22 of {_player}'s current inventory to {_item.3}
+					playSound("entity.experience_orb.pickup", 1, 1, {_player}, true)
+					wait 2 ticks
+				else:
+					message "{@prefix} §c中断されました §4§lインベントリを閉じないでください!" to {_player}
+					stop
+			loop 5 times:
+				if type of {_player}'s current inventory is chest inventory:
+					if {_item.2} is set:
+						set {_item.3} to {_item.2}
+					else:
+						set {_item.3} to SoulGifting()
+					if {_item.1} is set:
+						set {_item.2} to {_item.1}
+					else:
+						set {_item.2} to SoulGifting()
+					set {_item.1} to SoulGifting()
+					set slot 4 of {_player}'s current inventory to {_item.1}
+					set slot 13 of {_player}'s current inventory to {_item.2}
+					set slot 22 of {_player}'s current inventory to {_item.3}
+					playSound("entity.experience_orb.pickup", 1, 0.5, {_player}, true)
+					wait 4 ticks
+				else:
+					message "{@prefix} §c中断されました §4§lインベントリを閉じないでください!" to {_player}
+					stop
+			if type of {_player}'s current inventory is chest inventory:
+				subtract 10 from {Kit-Soul::%{_uuid}%}
+				baseSidebar({_player}, "Kit")
+				set {_giftitem} to {_item.2}
+				SoulGiftCommand({_player}, {_item.2})
+				playSound("entity.player.levelup", 1, 0.5, {_player}, true)
+				set {_baslot} to 1
+				loop 2 times:
+					add 2 to {_baslot}
+					set {_sloting} to 0
+					loop 3 times:
+						set {_slot} to {_baslot} + {_sloting}
+						set slot {_slot} of {_player}'s current inventory to red stained glass pane named " "
+						add 9 to {_sloting}
+				set slot 4 of {_player}'s current inventory to {_item.2}
+				set slot 13 of {_player}'s current inventory to {_item.2}
+				set slot 22 of {_player}'s current inventory to {_item.2}
+			else:
+				message "{@prefix} §c中断されました §4§lインベントリを閉じないでください!" to {_player}
+		else:
+			message "{@prefix} §5§lSoul §cが不足しています" to {_player}
+	else:
+		set {_uuid} to {_player}'s uuid
+		if {Kit-Soul::%{_uuid}%} >= 100:
+			open chest with 5 row named "§5§lSoul Gifting!" to {_player}
+			wait a tick
+			set {_baslot} to -5
+			loop 2 times:
+				add 6 to {_baslot}
+				set {_sloting} to 0
+				loop 5 times:
+					set {_slot} to {_baslot} + {_sloting}
+					set slot {_slot} of {_player}'s current inventory to white stained glass pane named " "
+					add 9 to {_sloting}
+			loop 20 times:
+				if type of {_player}'s current inventory is chest inventory:
+					set {_bs} to 10
+					set {_sing} to 0
+					set {_items} to 0
+					loop 5 times:
+						add 1 to {_items}
+						add 1 to {_sing}
+						set {_item.%{_items}%} to SoulGifting()
+						set {_sl} to {_bs} + {_sing}
+						set slot {_sl} of {_player}'s current inventory to {_item.%{_items}%}
+					set {_bs} to 28
+					set {_sing} to 0
+					loop 5 times:
+						add 1 to {_items}
+						add 1 to {_sing}
+						set {_item.%{_items}%} to SoulGifting()
+						set {_sl} to {_bs} + {_sing}
+						set slot {_sl} of {_player}'s current inventory to {_item.%{_items}%}
+					playSound("entity.experience_orb.pickup", 1, 2, {_player}, true)
+					wait a tick
+				else:
+					message "{@prefix} §c中断されました §4§lインベントリを閉じないでください!" to {_player}
+					stop
+			loop 10 times:
+				if type of {_player}'s current inventory is chest inventory:
+					set {_bs} to 10
+					set {_sing} to 0
+					set {_items} to 0
+					loop 5 times:
+						add 1 to {_items}
+						add 1 to {_sing}
+						set {_item.%{_items}%} to SoulGifting()
+						set {_sl} to {_bs} + {_sing}
+						set slot {_sl} of {_player}'s current inventory to {_item.%{_items}%}
+					set {_bs} to 28
+					set {_sing} to 0
+					loop 5 times:
+						add 1 to {_items}
+						add 1 to {_sing}
+						set {_item.%{_items}%} to SoulGifting()
+						set {_sl} to {_bs} + {_sing}
+						set slot {_sl} of {_player}'s current inventory to {_item.%{_items}%}
+					playSound("entity.experience_orb.pickup", 1, 1, {_player}, true)
+					wait 2 ticks
+				else:
+					message "{@prefix} §c中断されました §4§lインベントリを閉じないでください!" to {_player}
+					stop
+			loop 5 times:
+				if type of {_player}'s current inventory is chest inventory:
+					set {_bs} to 10
+					set {_sing} to 0
+					set {_items} to 0
+					loop 5 times:
+						add 1 to {_items}
+						add 1 to {_sing}
+						set {_item.%{_items}%} to SoulGifting()
+						set {_sl} to {_bs} + {_sing}
+						set slot {_sl} of {_player}'s current inventory to {_item.%{_items}%}
+					set {_bs} to 28
+					set {_sing} to 0
+					loop 5 times:
+						add 1 to {_items}
+						add 1 to {_sing}
+						set {_item.%{_items}%} to SoulGifting()
+						set {_sl} to {_bs} + {_sing}
+						set slot {_sl} of {_player}'s current inventory to {_item.%{_items}%}
+					playSound("entity.experience_orb.pickup", 1, 0.5, {_player}, true)
+					wait 4 ticks
+				else:
+					message "{@prefix} §c中断されました §4§lインベントリを閉じないでください!" to {_player}
+					stop
+			if type of {_player}'s current inventory is chest inventory:
+				subtract 100 from {Kit-Soul::%{_uuid}%}
+				baseSidebar({_player}, "Kit")
+				loop 10 times:
+					set {_giftitem} to {_item.%loop-number%}
+					SoulGiftCommand({_player}, {_item.%loop-number%})
+				playSound("entity.player.levelup", 1, 0.5, {_player}, true)
+				set {_baslot} to -5
+				loop 2 times:
+					add 6 to {_baslot}
+					set {_sloting} to 0
+					loop 5 times:
+						set {_slot} to {_baslot} + {_sloting}
+						set slot {_slot} of {_player}'s current inventory to red stained glass pane named " "
+						add 9 to {_sloting}
+			else:
+				message "{@prefix} §c中断されました §4§lインベントリを閉じないでください!" to {_player}
+		else:
+			message "{@prefix} §5§lSoul §cが不足しています" to {_player}
+
+function SoulGifting() :: item:
+	set {_per} to a random integer between 1 and 100
+	if {_per} <= 5:
+		set {_kit} to a random text out of {Kit-ClassList::*}
+		set {_item} to {Kit-ClassItem::%{_kit}%} named "§b§lKit§7: §6§l%{_kit}%"
+		return {_item}
+	else if {_per} <= 8:
+		set {_kit} to a random text out of {Kit-ClassList::*}
+		set {_num} to a random integer between 6 and 8
+		set {_item} to {Kit-Skill.%{_kit}%::%{_num}%}
+		set display name of {_item} to "§a§lSkill §e%{_num}%§7: §6§l%{_kit}%"
+		return {_item}
+	else if {_per} <= 10:
+		set {_kit} to a random text out of {Kit-ClassList::*}
+		set {_num} to a random integer between 4 and 5
+		set {_item} to {Kit-Weapon.%{_kit}%::%{_num}%}
+		set display name of {_item} to "§c§lWeapon §e%{_num}%§7: §6§l%{_kit}%"
+		return {_item}
+	else:
+		set {_cp} to a random integer between 1 and 10
+		if {_cp} <= 2:
+			set {_cn} to a random integer between 400 and 600
+		else if {_cp} <= 5:
+			set {_cn} to a random integer between 200 and 400
+		else:
+			set {_cn} to a random integer between 50 and 150
+		set {_item} to oak leaf named "§2§lLeafs Pack" with lore "§f+ §d§o%{_cn}% §aLeafs"
+		return {_item}
+
+function SoulGiftCommand(player: player, item: item):
+	if display name of {_item} contains "§b§lKit":
+		set {_kit} to display name of {_item}
+		replace "§b§lKit§7: §6§l" with "" in {_kit}
+		execute console command "/pex user %{_player}% add class.%{_kit}%"
+	else if display name of {_item} contains "§a§lSkill":
+		set {_kit} to display name of {_item}
+		replace "§a§lSkill §e" with "" in {_kit}
+		replace "§7: §6§l" with "" in {_kit}
+		replace "6" with "" in {_kit}
+		replace "7" with "" in {_kit}
+		replace "8" with "" in {_kit}
+		set {_num} to display name of {_item}
+		replace "§a§lSkill §e" with "" in {_num}
+		replace "§7: §6§l%{_kit}%" with "" in {_num}
+		execute console command "/pex user %{_player}% add skill.%{_kit}%.%{_num}%"
+	else if display name of {_item} contains "§c§lWeapon":
+		set {_kit} to display name of {_item}
+		replace "§c§lWeapon §e" with "" in {_kit}
+		replace "§7: §6§l" with "" in {_kit}
+		replace "4" with "" in {_kit}
+		replace "5" with "" in {_kit}
+		set {_num} to display name of {_item}
+		replace "§c§lWeapon §e" with "" in {_num}
+		replace "§7: §6§l%{_kit}%" with "" in {_num}
+		execute console command "/pex user %{_player}% add weapon.%{_kit}%.%{_num}%"
+	else if display name of {_item} contains "§2§lLeafs Pack":
+		set {_leaf} to line 1 of lore of {_item}
+		replace "§f+ §d§o" with "" in {_leaf}
+		replace "§aLeafs" with "" in {_leaf}
+		execute console command "/givecoin %{_player}% %{_leaf}% Leafs Pack"
+	else:
+		loop all players:
+			loop-player has permission "sk.admin"
+			message formatted "§5§lSoul Gift§4において§l§n根本的なエラー§4が発生しています!" to loop-player
+			message formatted "§4景品: %display name of {_item}%" to loop-player
+
+# Kit/Ticket/toy-emote/toy-effect/toy-pet/toy-gun
+
+command /kit-sgloc:
+	permission: sk.admin
+	trigger:
+		set {Kit-SGLocation} to location of targeted block
+
+command /kit-souldelete:
+	permission: sk.admin
+	trigger:
+		delete {Kit-Soul::*}
+
+#command /sgitems <text> <text> <text="none">:
+#	permission: sk.admin
+#	trigger:
+#		if arg 1 is "add":
+#			if arg 3 is not "none":
+#				add arg 3 to {Kit-SoulGift.%arg 2%::*}
+#				message "{@prefix} §c%arg 3%§8を§d%arg 2%§8の分類へ追加しました"
+#			else:
+#				message "{@prefix} §c追加するアイテム名を入力してください"
+#		if arg 1 is "remove":
+#			if arg 3 is not "none":
+#				remove arg 3 from {Kit-SoulGift.%arg 2%::*}
+#				message "{@prefix} §c%arg 3%§8を§d%arg 2%§8の分類から消去しました"
+#			else:
+#				message "{@prefix} §c消去するアイテム名を入力してください"
+#		else if arg 1 is "list":
+#			message "{@prefix} §b%arg 2%§5's §4Soul Gift§8:"
+#			loop {Kit-SoulGift.%arg 2%::*}:
+#				message "{@prefix} §7- §d%loop-value%"
+#
+#command /soulgift <player>:
+#	permission: sk.admin
+#	executable by: console
+#	trigger:
+#		set {_uuid} to arg 1's UUID
+#		subtract 10 from {Soul::%{_uuid}%}
+#		message "§5§m==================================================" to arg 1
+#		message " "  to arg 1
+#		set {_sg} to a random integer between 1 and 100
+#		if {Kit-FirstGift::%{_uuid}%} is not set:
+#			set {Kit-FirstGift::%{_uuid}%} to true
+#			set {_sg} to 5
+#		if {_sg} <= 5:
+#			set {_kit} to a random text out of {Kit-SoulGift.Kit::*}
+#			message "     §6§lLEGENDARY     §9Kit§7: §b§l%{_kit}%" to arg 1
+#			if arg 1 does not have permission "class.%{_kit}%":
+#				execute console command "/pex user %arg 1% add class.%{_kit}%"
+#			else:
+#				set {_coin} to a random integer between 4000 and 6000
+#		else if {_sg} <= 20:
+#			set {_tic} to a random integer between 1 and 100
+#			if {_tic} <= 3:
+#				add 1 to {Kit-Ticket.GCB-15::%{_uuid}%}
+#				message "     §6§lLEGENDARY     §6Ticket§7: §e§lGlobal Leaf Boost §8[*1.5]" to arg 1
+#			else if {_tic} <= 10:
+#				add 1 to {Kit-Ticket.CB-2::%{_uuid}%}
+#				message "     §5§lEPIC     §6Ticket§7: §b§lLeaf Boost §8[*2]" to arg 1
+#			else if {_tic} <= 23:
+#				add 1 to {Kit-Ticket.GCB-125::%{_uuid}%}
+#				message "     §5§lEPIC     §6Ticket§7: §e§lGlobal Leaf Boost §8[*1.25]" to arg 1
+#			else if {_tic} <= 40:
+#				add 1 to {Kit-Ticket.CB-15::%{_uuid}%}
+#				message "     §c§lRARE     §6Ticket§7: §b§lLeaf Boost §8[*1.5]" to arg 1
+#			else if {_tic} <= 60:
+#				add 1 to {Kit-Ticket.GCB-11::%{_uuid}%}
+#				message "     §5§lRARE     §6Ticket§7: §e§lGlobal Leaf Boost §8[*1.1]" to arg 1
+#			else:
+#				add 1 to {Kit-Ticket.CB-12::%{_uuid}%}
+#				message "     §b§lUNIQUE     §6Ticket§7: §b§lLeaf Boost §8[*1.2]" to arg 1
+#		else if {_sg} <= 45:
+#			set {_ty} to a random integer between 1 and 3
+#			if {_ty} is 1:
+#				set {_toy-emote} to a random text out of {Kit-SoulGift.toy-emote::*}
+#				message "     §c§lRARE     §dToy§7: §eEmote-§6§l%{_toy-emote}%" to arg 1
+#				if arg 1 does not have permission "toy-emote.%{_toy-emote}%":
+#					execute console command "/pex user %arg 1% add toy-emote.%{_toy-emote}%"
+#				else:
+#					set {_coin} to a random integer between 900 and 1100
+#			else if {_ty} is 2:
+#				set {_toy-effect} to a random text out of {Kit-SoulGift.toy-effect::*}
+#				message "     §c§lRARE     §dToy§7: §bEffect-§6§l%{_toy-effect}%" to arg 1
+#				if arg 1 does not have permission "toy-effect.%{_toy-effect}%":
+#					execute console command "/pex user %arg 1% add toy-effect.%{_toy-effect}%"
+#				else:
+#					set {_coin} to a random integer between 900 and 1100
+#			else:
+#				set {_toy-pet} to a random text out of {Kit-SoulGift.toy-pet::*}
+#				message "     §c§lRARE     §dToy§7: §aPet-§6§l%{_toy-pet}%" to arg 1
+#				if arg 1 does not have permission "toy-pet.%{_toy-pet}%":
+#					execute console command "/pex user %arg 1% add toy-pet.%{_toy-pet}%"
+#				else:
+#					set {_coin} to a random integer between 900 and 1100
+#		else:
+#			set {_cp} to a random integer between 1 and 10
+#			if {_cp} <= 2:
+#				set {_cn} to a random integer between 400 and 600
+#				add {_cn} to {Coin::%{_uuid}%}
+#				message "     §c§lRARE     §aLeaf§7: §2§lBig Leaf Pack §e[%{_cn}%]" to arg 1
+#			else if {_cp} <= 5:
+#				set {_cn} to a random integer between 200 and 400
+#				add {_cn} to {Coin::%{_uuid}%}
+#				message "     §b§lUNIQUE     §aLeaf§7: §2§lNormal Leaf Pack §e[%{_cn}%]" to arg 1
+#			else:
+#				set {_cn} to a random integer between 50 and 150
+#				add {_cn} to {Coin::%{_uuid}%}
+#				message "     §a§lCOMMON     §aLeaf§7: §2§lSmall Leaf Pack §e[%{_cn}%]" to arg 1
+#		message " " to arg 1
+#		message "§5§m==================================================" to arg 1
+#		if {_coin} is set:
+#			execute console command "/givecoin %arg 1% %{_coin}% 景品かぶり"
+#		make a fake explosion at location of {Kit-SGLocation}

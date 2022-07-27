@@ -1,0 +1,337 @@
+#出血
+function kitBlood(player: player):
+	addKitOS("Blood")
+	set {_now} to now
+	{Kit-Blood::%{_player}%} is not set
+	set {Kit-Blood::%{_player}%} to {_now}
+	create bossbar titled "&4&l出血" and id "%{_player}%-Blood" for {_player} with progress 100 with colors red with style solid
+	message "§4出血してしまった!" to {_player}
+	apply blindness 1 to {_player} for 3 seconds
+	loop 10 times:
+		set {_el} to aroundEffect({_player})
+		drawDot count 1, particle "itemcrack", material redstone, center {_el}, visibleRange 30
+	loop 100 times:
+		wait a tick
+		set {_value} to value of bossbar "%{_player}%-Blood"
+		subtract 0.5 from {_value}
+		set bossbar "%{_player}%-Blood" value to {_value}
+	while {Kit-Blood::%{_player}%} is {_now}:
+		message "§4出血している...!" to {_player}
+		set bossbar "%{_player}%-Blood" value to 100
+		if {Stats.%{_player}%::Gaping} is true:
+			damage {_player} by 1 hearts
+			loop 5 times:
+				set {_el} to aroundEffect({_player})
+				drawDot count 1, particle "redstone", RGB 100, 0, 10, center {_el}, visibleRange 30
+			chance of 30%:
+				delete {Kit-Blood::%{_player}%}
+				message "§d出血が収まった!" to {_player}
+				set {_ng} to true
+				remove bossbar "%{_player}%-Blood"
+		else:
+			set {_hp} to health of {_player}
+			subtract 0.5 from {_hp}
+			set health of {_player} to {_hp}
+			playSound("entity.player.hurt", 1, 1, {_player})
+			chance of 50%:
+				delete {Kit-Blood::%{_player}%}
+				message "§d出血が収まった!" to {_player}
+				set {_ng} to true
+				remove bossbar "%{_player}%-Blood"
+		apply blindness 1 to {_player} for 3 seconds
+		loop 10 times:
+			set {_el} to aroundEffect({_player})
+			drawDot count 1, particle "itemcrack", material redstone, center {_el}, visibleRange 30
+		if {_ng} is not set:
+			loop 100 times:
+				wait 2 ticks
+				set {_value} to value of bossbar "%{_player}%-Blood"
+				subtract 1 from {_value}
+				set bossbar "%{_player}%-Blood" value to {_value}
+	if {Kit-Blood::%{_player}%} is not set:
+		remove bossbar "%{_player}%-Blood"
+
+on heal:
+	metadata value "gametype" of player is "Kit"
+	{Kit-Blood::%player%} is set
+	cancel event
+
+#凍結
+function kitFreeze(player: player, time: time span, msg: boolean = true):
+	addKitOS("Freeze")
+	{Kit-Freeze::%{_player}%} is not set
+	{_player} is alive
+	set {_loc} to location of {_player}
+	set {_now} to now
+	set {Kit-Freeze::%{_player}%} to {_now}
+	set {_tick} to "%{_time}%"
+	replace " seconds" with "" in {_tick}
+	replace " second" with "" in {_tick}
+	set {_tick} to {_tick} parsed as number
+	set {_tick} to {_tick} * 20
+	if {_msg} is true:
+		message "§b凍ってしまった!" to {_player}
+		create bossbar titled "&b&l凍結" and id "%{_player}%-Freeze" for {_player} with progress 100 with colors blue with style solid
+	set {_prog} to 100 / {_tick}
+	loop {_tick} times:
+		if {Kit-Freeze::%{_player}%} is {_now}:
+			teleport {_player} to {_loc}
+			if {_msg} is true:
+				loop 3 times:
+					set {_el} to aroundEffect({_player})
+					drawDot count 1, particle "redstone", RGB 0, 200, 255, center {_el}, visibleRange 30
+				set {_value} to value of bossbar "%{_player}%-Freeze"
+				subtract {_prog} from {_value}
+				set bossbar "%{_player}%-Freeze" value to {_value}
+			wait a tick
+	{Kit-Freeze::%{_player}%} is {_now}
+	delete {Kit-Freeze::%{_player}%}
+	if {_msg} is true:
+		remove bossbar "%{_player}%-Freeze"
+
+on damage of player:
+	{Kit-Freeze::%victim%} is set
+	if damage was caused by fire, burning or lava:
+		set damage to 3
+		delete {Kit-Freeze::%victim%}
+	else:
+		set damage to damage * 0.75
+
+#麻痺
+function kitPalsy(player: player, time: time span, eff: boolean = true):
+	addKitOS("Palsy")
+	{Kit-Palsy::%{_player}%} is not set
+	set {Kit-Palsy::%{_player}%} to true
+	if {_eff} is true:
+		message "§e痺れてしまった!" to {_player}
+	create bossbar titled "&e&l麻痺" and id "%{_player}%-Palsy" for {_player} with progress 100 with colors yellow with style solid
+	set {_tick} to "%{_time}%"
+	replace " seconds" with "" in {_tick}
+	replace " second" with "" in {_tick}
+	set {_tick} to {_tick} parsed as number
+	set {_tick} to {_tick} * 20
+	set {_prog} to 100 / {_tick}
+	loop {_tick} times:
+		if {_eff} is true:
+			loop 3 times:
+				set {_el} to aroundEffect({_player})
+				drawDot count 1, particle "critmagic", center {_el}, visibleRange 30
+		set {_value} to value of bossbar "%{_player}%-Palsy"
+		subtract {_prog} from {_value}
+		set bossbar "%{_player}%-Palsy" value to {_value}
+		wait a tick
+	delete {Kit-Palsy::%{_player}%}
+	remove bossbar "%{_player}%-Palsy"
+
+#吸収
+function kitDrain(victim: player, attacker: player, level: number, time: time span):
+	addKitOS("Drain")
+	{Kit-Drain::%{_victim}%} is not set
+	set {Kit-Drain::%{_victim}%} to {_attacker}
+	message "§a%{_attacker}% §2に体力を吸われる!" to {_victim}
+	set {_level} to round({_level})
+	apply poison {_level} to {_victim} for {_time}
+	create bossbar titled "&2&l吸収" and id "%{_player}%-Drain" for {_player} with progress 100 with colors green with style solid
+	set {_tick} to "%{_time}%"
+	replace " seconds" with "" in {_tick}
+	replace " second" with "" in {_tick}
+	set {_tick} to {_tick} parsed as number
+	set {_tick} to {_tick} * 20
+	set {_prog} to 100 / {_tick}
+	loop {_tick} times:
+		set {_value} to value of bossbar "%{_player}%-Drain"
+		subtract {_prog} from {_value}
+		set bossbar "%{_player}%-Drain" value to {_value}
+		wait a tick
+	delete {Kit-Drain::%{_victim}%}
+	message "§a吸収効果が切れました" to {_victim}
+	remove bossbar "%{_player}%-Drain"
+
+on damage of player:
+	damage was caused by poison
+	{Kit-Drain::%victim%} is set
+	{Kit-Drain::%victim%} is alive
+	set {_heal} to a random number between 0 and 1
+	kitHeal({Kit-Drain::%victim%}, {_heal})
+	playSound("block.brewing_stand.brew", 1, 1.5, {Kit-Drain::%victim%})
+	loop all blocks in radius 2 around victim:
+		chance of 20%:
+			set {_loc} to location of loop-block
+			add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
+			add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
+			add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
+			drawDot count 5, particle "happyvillager", center {_loc}, visibleRange 30
+
+#睡眠
+function kitSleep(player: player, time: time span):
+	addKitOS("Sleep")
+	{Kit-Sleep::%{_player}%} is not set
+	message "§bZzz..." to {_player}
+	playSound("entity.wolf.growl", 0.5, 0.5, {_player})
+	apply blindness 1 to {_player} for {_time} replacing existing effect
+	create bossbar titled "&5&l睡眠" and id "%{_player}%-Sleep" for {_player} with progress 100 with colors purple with style solid
+	set {Kit-Sleep::%{_player}%} to true
+	set {_tick} to "%{_time}%"
+	replace " seconds" with "" in {_tick}
+	replace " second" with "" in {_tick}
+	set {_tick} to {_tick} parsed as number
+	set {_tick} to {_tick} * 20
+	set {_prog} to 100 / {_tick}
+	set {_loc} to location of {_player}
+	loop {_tick} times:
+		if {Kit-Sleep::%{_player}%} is true:
+			if block below {_loc} is passable:
+				set {_loc} to location 1 meter below {_loc}
+			set {_tl} to {_loc}
+			teleport {_player} to {_tl}
+			set {_el} to aroundEffect({_player})
+			drawDot count 1, particle "nautilus", center {_el}, visibleRange 30
+			set {_value} to value of bossbar "%{_player}%-Sleep"
+			subtract {_prog} from {_value}
+			set bossbar "%{_player}%-Sleep" value to {_value}
+			wait a tick
+	remove bossbar "%{_player}%-Sleep"
+	if {Kit-Sleep::%{_player}%} is true:
+		delete {Kit-Sleep::%{_player}%}
+
+on damage of player:
+	{Kit-Sleep::%victim%} is set
+	if damage was caused by projectile:
+		if metadata value "sleep" of projectile is "true":
+			stop
+	if damage was caused by fall:
+		set damage to 0
+		stop
+	delete {Kit-Sleep::%victim%}
+	remove blindness from victim
+
+#不死
+function kitImmortal(player: player, time: time span):
+	addKitOS("Immortal")
+	{Kit-Immortal::%{_player}%} is not set
+	set {Kit-Immortal::%{_player}%} to true
+	wait {_time}
+	delete {Kit-Immortal::%{_player}%}
+
+function kitStun(player: player, time: time span):
+	addKitOS("Stun")
+	{Kit-Stun::%{_player}%} is not set
+	set {_now} to now
+	set {Kit-Stun::%{_player}%} to {_now}
+	create bossbar titled "&6&l気絶" and id "%{_player}%-Stun" for {_player} with progress 100 with colors yellow with style solid
+	message "§6気絶してしまった!" to {_player}
+	playSound("entity.iron_golem.hurt", 0.7, 0.7, {_player})
+	set {_tick} to "%{_time}%"
+	replace " seconds" with "" in {_tick}
+	replace " second" with "" in {_tick}
+	set {_tick} to {_tick} parsed as number
+	set {_looptick} to {_tick} * 20
+	set {_prog} to 100 / {_looptick}
+	set walk speed of {_player} to 0.1
+	set attack speed attribute of {_player} to 4
+	loop {_looptick} times:
+		if {Kit-Stun::%{_player}%} is {_now}:
+			loop 5 times:
+				set {_el} to aroundEffect({_player})
+				set y-coordinate of {_el} to y-coordinate of {_player}
+				add a random number between 1.5 and 2 to y-coordinate of {_el}
+				drawDot count 1, particle "blockcrack", material dirt, center {_el}, visibleRange 30
+			set {_value} to value of bossbar "%{_player}%-Stun"
+			subtract {_prog} from {_value}
+			set bossbar "%{_player}%-Stun" value to {_value}
+			wait a tick
+	remove bossbar "%{_player}%-Stun"
+	set walk speed of {_player} to 0.2
+	set attack speed attribute of {_player} to 24
+	delete {Kit-Stun::%{_player}%}
+
+on shoot:
+	metadata value "gametype" of shooter is "Kit"
+	if {Kit-Stun::%shooter%} is set:
+		wait a tick
+		push projectile to the left at speed random number from -1 to 1
+		push projectile upwards at speed random number from -1 to 1
+
+function kitShield(player: player, shield: number):
+	addKitOS("Shield")
+	addKitOS("ShieldTime")
+	if {Kit-Shield::%{_player}%} is set:
+		if {Kit-Shield::%{_player}%} > {_shield}:
+			stop
+		else:
+			set bossbar "%{_player}%-Shield" value to 100
+	else:
+		create bossbar titled "&9&lシールド" and id "%{_player}%-Shield" for {_player} with progress 100 with colors blue with style solid
+	set {_now} to now
+	set {Kit-ShieldTime::%{_player}%} to {_now}
+	set {Kit-Shield::%{_player}%} to {_shield}
+	while {Kit-ShieldTime::%{_player}%} is {_now}:
+		set {_prog} to {Kit-Shield::%{_player}%} / {_shield} * 100
+		set bossbar "%{_player}%-Shield" value to {_prog}
+		set {_loc} to location of {_player}
+		add 0.02 to {_dy}
+		if {_dy} >= 4:
+			set {_dy} to 0
+		if {_dy} > 2:
+			set {_y} to 2 - ({_dy} - 2)
+		else:
+			set {_y} to {_dy}
+		add {_y} to y-coordinate of {_loc}
+		add 9 to {_rad}
+		add 0.5 * sin({_rad}) to x-coordinate of {_loc}
+		add 0.5 * cos({_rad}) to z-coordinate of {_loc}
+		drawDot count 1, particle "redstone", RGB 100, 100, 255, center {_loc}, visibleRange 30
+		wait a tick
+	if {Kit-Shield::%{_player}%} is not set:
+		remove bossbar "%{_player}%-Shield"
+
+on damage of player:
+	{Kit-Shield::%victim%} is set
+	set {_dm} to damage
+	if damage cause is fall:
+		set {_dm} to 0
+	cancel event
+	subtract {_dm} from {Kit-Shield::%victim%}
+	send action bar "§9§lシールドがダメージを無効化した!" to victim
+	send action bar "§c§lシールドが攻撃を阻害した!" to attacker
+	if {Kit-Shield::%victim%} <= 0:
+		delete {Kit-Shield::%victim%}
+		delete {Kit-ShieldTime::%victim%}
+		message formatted "§3§lシールドが崩壊した!" to victim
+		playSound("entity.item.break", 0.7, 1, victim)
+	else:
+		playSound("block.anvil.land", 0.7, 2, victim)
+
+function kitLuck(player: player, lvl: number):
+	addKitOS("Luck")
+	set {_per} to 1 + (0.2 * {_lvl})
+	set {Kit-Luck::%{_player}%} to {_per}
+	if {_lvl} is not 0:
+		message "<##3cb371>幸運だ! 確率が良くなりそうだ!" to {_player}
+	loop 10 times:
+		set {_loc} to location of {_player}
+		add a random number between -1 and 1 to x-coordinate of {_loc}
+		add a random number between 0 and 2 to y-coordinate of {_loc}
+		add a random number between -1 and 1 to z-coordinate of {_loc}
+		drawDot count 1, particle "totem", center {_loc}, visibleRange 30
+	remove luck from {_player}
+	remove bad luck from {_player}
+	if {_lvl} is not 0:
+		apply luck {_lvl} to {_player} for 10000000000 seconds
+	playSound("entity.experience_orb.pickup", 1, {_per}, {_player}, true)
+
+function kitBadLuck(player: player, lvl: number):
+	addKitOS("Luck")
+	set {_per} to 1 - ({_lvl} / 5 * 0.5)
+	set {Kit-Luck::%{_player}%} to {_per}
+	message "<##2e8b57>不運だ! 確率が悪くなりそうだ..." to {_player}
+	loop 10 times:
+		set {_loc} to location of {_player}
+		add a random number between -1 and 1 to x-coordinate of {_loc}
+		add a random number between 0 and 2 to y-coordinate of {_loc}
+		add a random number between -1 and 1 to z-coordinate of {_loc}
+		drawDot count 1, particle "totem", center {_loc}, visibleRange 30
+	remove luck from {_player}
+	remove bad luck from {_player}
+	apply bad luck {_lvl} to {_player} for 10000000000 seconds
+	playSound("entity.experience_orb.pickup", 1, {_per}, {_player}, true)

@@ -1,0 +1,594 @@
+# Weapons
+on damage of player:
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
+	{Class::%attacker%} is "Bomber"
+	set {_tool} to attacker's tool
+	{_item.kit} is "Bomber"
+	set {_item.type} to kitItemTypeChecker({_tool})
+	{_item.type} is "Weapon.main"
+	set {_item.num} to kitItemNumberChecker({_tool})
+	{_item.num} is 1:
+	chance of 10%:
+		cancel event
+		set {_l} to location of victim
+		kitExplosion(attacker, 2, {_l})
+
+on damage of player:
+	damage was caused by projectile
+	projectile is an arrow
+	{Class::%attacker%} is "Bomber"
+	set damage to damage * 0.5
+	if metadata value "present-bow" of projectile is "true":
+		cancel event
+		delete projectile
+		set {_l} to location of victim
+		add 1 to y-coordinate of {_l}
+		loop all blocks in radius 1.5 around {_l}:
+			loop-block is passable
+			set {_num} to a random number between 5 and 15
+			spawn a primed tnt at loop-block
+			set metadata value "attacker" of spawned primed tnt to "%attacker%"
+			set metadata value "kit-bomber" of spawned primed tnt to 2.5
+			set fuse time of spawned primed tnt to {_num}
+
+on shoot:
+	metadata value "gametype" of shooter is "Kit"
+	{Class::%shooter%} is "Bomber"
+	if projectile is an arrow:
+		set {_tool} to shooter's tool
+		set {_item.kit} to kitItemKitChecker({_tool})
+		{_item.kit} is "Bomber"
+		set {_item.type} to kitItemTypeChecker({_tool})
+		{_item.type} is "Weapon.main"
+		set {_item.num} to kitItemNumberChecker({_tool})
+		if {_item.num} is 2:
+			set {_o} to location of shooter
+			loop 3 times:
+				wait 5 ticks
+				set {_l} to location of projectile
+				if {_l} is not {_o}:
+					set {_o} to {_l}
+					distance between shooter and {_l} > 5
+					kitExplosion(shooter, 1, {_l})
+		else if {_item.num} is 3:
+			wait 1 second
+#			set {_d} to distance between shooter and projectile
+#			{_d} > 5
+			set {_l} to location of projectile
+			delete projectile
+			kitExplosion(shooter, 2, {_l})
+		else if {_item.num} is 4:
+			set metadata value "present-bow" of projectile to "true"
+
+# Skills
+
+function kitSkillBomber(player: player) :: boolean:
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if checkCT({_player}, name of {_player}'s tool) is true:
+		if {_item.num} is 1:
+			kitSkill_Bomber_1({_player})
+		else if {_item.num} is 2:
+			kitSkill_Bomber_2({_player})
+		else if {_item.num} is 3:
+			kitSkill_Bomber_3({_player})
+		else if {_item.num} is 4:
+			kitSkill_Bomber_4({_player})
+		else if {_item.num} is 5:
+			kitSkill_Bomber_5({_player})
+		else if {_item.num} is 6:
+			kitSkill_Bomber_6({_player})
+		else if {_item.num} is 7:
+			kitSkill_Bomber_7({_player})
+		else if {_item.num} is 8:
+			kitSkill_Bomber_8({_player})
+	return true
+
+function kitSkill_Bomber_1(player: player):
+	toolCT({_player}, "Bomber", 1)
+	kitMsg({_player}, "§6前方に向けて爆風を放ちます!")
+	set {_num} to 0
+	set {_int} to 1
+	set {_pl} to location of {_player}
+	loop 20 times:
+		add 1 to {_num}
+		if {_num} is 4, 8, 12, 16 or 20:
+			add 0.5 to {_int}
+		set {_loc} to location of block {_num} meters in front of {_pl}
+		kitExplosion({_player}, {_int}, {_loc})
+		wait a tick
+
+function kitSkill_Bomber_2(player: player):
+	toolCT({_player}, "Bomber", 2)
+	kitMsg({_player}, "§6Bomb Attack §7の発動準備をします...")
+	apply slowness 3 to {_player} for 3 seconds replacing existing effect
+	loop 3 times:
+		if gamemode of {_player} is survival:
+			playSound("ui.button.click", 1.5, 1, {_player})
+			wait a second
+		else:
+			kitMsg({_player}, "§d発動がキャンセルされました")
+			stop
+	gamemode of {_player} is survival
+	kitExplosion({_player}, 5, location of {_player})
+	if {Class::%{_player}%} is "Bomber":
+		apply slowness 1 to {_player} for 10000000000 seconds replacing existing effect
+
+function kitSkill_Bomber_3(player: player):
+	toolCT({_player}, "Bomber", 3)
+	kitMsg({_player}, "§6敵を追尾するカート爆弾を投擲します!")
+	set {_baseloc} to location of {_player}
+	set pitch of {_baseloc} to 0
+	set {_loc.b} to {_baseloc}
+	subtract 1.5 from y-coordinate of {_loc.b}
+	set {_loc.s} to {_baseloc}
+	subtract 0.5 from y-coordinate of {_loc.s}
+	spawn an armor stand at {_loc.b} with nbt "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""iron_block"",Count:1b}],HandItems:[{},{}]}"
+	set metadata value "bombkart-big" of spawned armor stand to "%{_player}%"
+	set metadata value "gametype" of spawned armor stand to "Kit"
+	spawn an armor stand at {_loc.s} with nbt "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Small:1b,Marker:1b,ArmorItems:[{},{},{},{id:""tnt"",Count:1b}],HandItems:[{},{}]}"
+	set metadata value "bombkart-small" of spawned armor stand to "%{_player}%"
+	set metadata value "gametype" of spawned armor stand to "Kit"
+	playSound("ui.button.click", 1, 0.8, {_player})
+	loop 100 times:
+		{_bomb} is not set
+		if {_target} is not set:
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "bombkart-big" of loop-entity is "%{_player}%"
+				set {_baseloc} to location of loop-entity
+			add 1.5 to y-coordinate of {_baseloc}
+			set {_loc} to location 0.3 meters in front of {_baseloc}
+			if block below {_loc} is not passable:
+				set {_num.b} to 1.5
+				set {_num.s} to 0.5
+			else:
+				set {_num.b} to 1.8
+				set {_num.s} to 0.8
+			set {_loc.b} to {_loc}
+			subtract {_num.b} from y-coordinate of {_loc.b}
+			set {_loc.s} to {_loc}
+			subtract {_num.s} from y-coordinate of {_loc.s}
+			loop all entities:
+				type of loop-entity is an armor stand
+				if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+					teleport loop-entity to {_loc.b}
+				else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+					teleport loop-entity to {_loc.s}
+#		衝突判定
+			if block at {_loc} is not passable:
+				set {_bomb} to true
+				loop all entities:
+					type of loop-entity is an armor stand
+					if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+						delete loop-entity
+					else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+						delete loop-entity
+				kitExplosion({_player}, 3, {_baseloc})
+#		前方敵サーチ
+			set {_sl} to location 5 meters in front of {_loc}
+			loop all entities in radius 5 around {_loc}:
+				{_target} is not set
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				set {_dis} to distance between loop-entity and {_player}
+				{_dis} > distance between {_loc} and {_player}
+				set {_target} to loop-entity
+				playSound("ui.button.click", 1, 2, {_loc})
+		else:
+			set {_from} to vector of {_target}
+			set {_to} to vector of {_loc}
+			set {_vector} to {_from} -- {_to}
+			set {_vector} to normalized {_vector}
+			set {_yaw} to yaw of {_vector}
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "bombkart-big" of loop-entity is "%{_player}%"
+				set {_baseloc} to location of loop-entity
+			add 1.5 to y-coordinate of {_baseloc}
+			set yaw of {_baseloc} to {_yaw}
+			set {_loc} to location 0.5 meters in front of {_baseloc}
+			if block below {_loc} is not passable:
+				set {_num.b} to 1.5
+				set {_num.s} to 0.5
+			else:
+				set {_num.b} to 1.8
+				set {_num.s} to 0.8
+			set {_loc.b} to {_loc}
+			subtract {_num.b} from y-coordinate of {_loc.b}
+			set {_loc.s} to {_loc}
+			subtract {_num.s} from y-coordinate of {_loc.s}
+			loop all entities:
+				type of loop-entity is an armor stand
+				if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+					teleport loop-entity to {_loc.b}
+				else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+					teleport loop-entity to {_loc.s}
+#		衝突判定
+			if block at {_loc} is not passable:
+				set {_bomb} to true
+				loop all entities:
+					type of loop-entity is an armor stand
+					if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+						delete loop-entity
+					else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+						delete loop-entity
+				kitExplosion({_player}, 3, {_baseloc})
+#		敵衝突判定
+			if distance between {_target} and {_loc} <= 1:
+				set {_bomb} to true
+				loop all entities:
+					type of loop-entity is an armor stand
+					if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+						delete loop-entity
+					else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+						delete loop-entity
+				kitExplosion({_player}, 3, {_baseloc})
+		wait a tick
+	if {_bomb} is not set:
+		loop all entities:
+			type of loop-entity is an armor stand
+			if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+				delete loop-entity
+			else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+				delete loop-entity
+		kitExplosion({_player}, 3, {_baseloc})
+
+function kitSkill_Bomber_4(player: player):
+	toolCT({_player}, "Bomber", 4)
+	kitMsg({_player}, "§2粘着ボムを投擲します...")
+	set {_loc} to location of {_player}
+	add 1.2 to y-coordinate of {_loc}
+	shoot a falling slime block from {_loc} at speed 1.5
+	set metadata value "sticky-bomb" of shot entity to "%{_player}%"
+	drawDot count 1, particle "slime", center shot entity, visibleRange 30, keepFor 3 seconds
+	playSound("entity.slime.jump", 1, 1, {_player})
+	loop 100 times:
+		{_target} is not set
+		loop all falling blocks:
+			metadata value "sticky-bomb" of loop-falling block is "%{_player}%"
+			set {_bl} to location of block at loop-falling block
+			loop all entities in radius 2 around loop-falling block:
+				{_target} is not set
+				kitCheckTeam(loop-entity-2, {_player}, false) is true
+				set {_target} to loop-entity-2
+				set {_type} to "player"
+				set {_loc} to location of {_target}
+				playSound("entity.slime.squish", 1, 1, {_loc})
+			loop all blocks in radius 1 around {_bl}:
+				{_target} is not set
+				loop-block is not passable
+				if y-coordinate of loop-block = y-coordinate of {_bl}:
+					if location of loop-block = {_bl}:
+						set {_target} to location of loop-block
+					else if location of loop-block = location 1 meters north of {_bl}:
+						set {_target} to location 0.5 meters north of {_bl}
+					else if location of loop-block = location 1 meters south of {_bl}:
+						set {_target} to location 0.5 meters south of {_bl}
+					else if location of loop-block = location 1 meters east of {_bl}:
+						set {_target} to location 0.5 meters east of {_bl}
+					else if location of loop-block = location 1 meters west of {_bl}:
+						set {_target} to location 0.5 meters west of {_bl}
+					subtract 1 from y-coordinate of {_target}
+					set {_loc} to {_target}
+				else if y-coordinate of loop-block > y-coordinate of {_bl}:
+					set {_target} to location of {_bl}
+					subtract 1.2 from y-coordinate of {_target}
+					set {_loc} to {_target}
+				else:
+					set {_target} to location of {_bl}
+					subtract 2 from y-coordinate of {_target}
+					set {_loc} to {_target}
+				set {_type} to "block"
+				playSound("entity.slime.squish", 1, 1, {_loc})
+		wait a tick
+	loop all falling blocks:
+		metadata value "sticky-bomb" of loop-falling block is "%{_player}%"
+		delete loop-falling block
+	spawn an armor stand at {_loc} with nbt "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""slime_block"",Count:1b}],HandItems:[{},{}]}"
+	set metadata value "gametype" of spawned armor stand to "Kit"
+	set metadata value "sticky-armor" of spawned armor stand to "%{_player}%"
+	if {_target} is set:
+		if {_type} is "player":
+			loop 40 times:
+				if loop-number is 1, 11, 21 or 31:
+					playSound("ui.button.click", 1, 2, {_loc})
+				if {_target} is set:
+					if {_target} is alive:
+						set {_bl} to location of {_target}
+						add 0.5 to y-coordinate of {_bl}
+						set {_loc} to location of {_target}
+						subtract 0.7 from y-coordinate of {_loc}
+						loop all entities:
+							type of loop-entity is an armor stand
+							metadata value "sticky-armor" of loop-entity is "%{_player}%"
+							teleport loop-entity to {_loc}
+					else:
+						delete {_target}
+#			落ちる演出作る時頑張ってね
+#				else:
+				wait a tick
+		else:
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "sticky-armor" of loop-entity is "%{_player}%"
+				teleport loop-entity to {_target}
+			loop 40 times:
+				if loop-number is 1, 11, 21 or 31:
+					playSound("ui.button.click", 1, 2, {_loc})
+				wait a tick
+		loop all entities:
+			type of loop-entity is an armor stand
+			metadata value "sticky-armor" of loop-entity is "%{_player}%"
+			delete loop-entity
+		kitExplosion({_player}, 3, {_bl})
+
+function kitSkill_Bomber_5(player: player):
+	toolCT({_player}, "Bomber", 5)
+	kitMsg({_player}, "§e弾ける爆弾を投げました!")
+	shoot a primed tnt from {_player} at speed 1
+	set metadata value "attacker" of shot primed tnt to "%{_player}%"
+	set metadata value "kit-bomber" of shot primed tnt to 2
+	set metadata value "pop" of shot primed tnt to "%{_player}%"
+	playSound("entity.tnt.primed", 1, 1.5, {_player})
+	drawDot count 1, particle "lava", center shot primed tnt, visibleRange 30, keepFor 40 ticks
+	set fuse time of shot primed tnt to 40
+	loop 40 times:
+		{_alr} is not set
+		loop all primed tnts:
+			metadata value "pop" of loop-primed tnt is "%{_player}%"
+			loop all entities in radius 3 around loop-primed tnt:
+				kitCheckTeam(loop-entity-2, {_player}, false) is true
+				{_alr} is not set
+				set {_alr} to true
+				set {_to} to location of loop-primed tnt
+				set {_to} to vector of {_to}
+				set {_from} to location of loop-entity-2
+				set {_from} to vector of {_from}
+				set {_vector} to {_from} -- {_to}
+				set {_vector} to normalized {_vector}
+				set velocity of loop-primed tnt to {_vector}
+				set fuse time of loop-primed tnt to 5
+		wait a tick
+
+function kitSkill_Bomber_6(player: player):
+	detectCT({_player}, kitSkillItem("Bomber", 6))
+	kitMsg({_player}, "<##808080>ガス爆弾を投擲します...")
+	playSound("entity.arrow.shoot", 1, 0.5, {_player})
+	shoot a thrown potion of mundane from {_player} at speed 1.2
+	set metadata value "gas-spray" of shot thrown potion to "true"
+	drawDot count 3, particle "mobspell", RGB 100, 100, 100, center shot thrown potion, visibleRange 30, keepFor 1 second
+
+on projectile hit:
+	projectile is a thrown potion of mundane
+	metadata value "gas-spray" of projectile is "true"
+	playSound("block.fire.extinguish", 1, 1, projectile)
+	set {_l} to location of projectile
+	loop 200 times:
+		{_bomb} is not set
+		delete {_eg::*}
+		loop all blocks in radius 5 around {_l}:
+			loop-block is passable
+			chance of 10%:
+				drawDot count 1, particle "mobspell", RGB 100, 100, 100, center location of loop-block, visibleRange 30
+		loop all entities in radius 5 around {_l}:
+			if kitCheckTeam(loop-entity, shooter, false) is true:
+				drawDot count 3, particle "mobspell", RGB 80, 80, 80, center loop-entity, visibleRange 30
+				set {_eg::%id of loop-entity%} to true
+				if {_jb::%id of loop-entity%} is not set:
+					set {_jb::%id of loop-entity%} to true
+					apply poison 1 to loop-entity for 10 seconds replacing existing effect
+		loop all entities:
+			{_eg::%id of loop-entity%} is not set
+			{_jb::%id of loop-entity%} is true
+			remove poison from loop-entity
+			delete {_jb::%id of loop-entity%}
+		loop all projectiles in radius 5 around {_l}:
+			loop-projectile is an arrow
+			loop-projectile is not projectile
+			{_bomb} is not set
+			set {_bomb} to true
+		wait a tick
+	loop all entities:
+		{_eg::%id of loop-entity%} is true
+		{_jb::%id of loop-entity%} is true
+		remove poison from loop-entity
+	kitExplosion(shooter, 4, {_l})
+	loop all blocks in radius 5 around {_l}:
+		loop-block is passable
+		chance of 5%:
+			kitExplosion(shooter, 2, location of loop-block)
+
+on explosion:
+	if metadata value "pop" of event-entity is set:
+		set {_act} to metadata value "pop" of event-entity
+		set {_act} to {_act} parsed as player
+		set {_loc} to event-location
+		wait a tick
+		set {_rum} to a random integer between 5 and 10
+		loop {_rum} times:
+			drop a cocoa bean named "%{_act}%" at event-location
+			set metadata value "gametype" of last dropped item to "Kit"
+			set metadata value "pop-burst" of last dropped item to "%{_act}%"
+			drawDot count 1, particle "lava", center last dropped item, visibleRange 30, keepFor 10 ticks
+			push last dropped item upwards at speed 0.2
+			push last dropped item north at speed random number from -1 to 1
+			push last dropped item east at speed random number from -1 to 1
+		wait 10 ticks
+		loop all dropped items:
+			metadata value "pop-burst" of loop-dropped item is "%{_act}%"
+			add location of loop-dropped item to {_dloc::*}
+			delete loop-dropped item
+		loop {_dloc::*}:
+			kitExplosion({_act}, 1.5, loop-value)
+		wait a tick
+		loop {_dloc::*}:
+			set {_rum} to a random integer between 1 and 2
+			loop {_rum} times:
+				drop a cocoa bean named "%{_act}%" at event-location
+				set metadata value "gametype" of last dropped item to "Kit"
+				set metadata value "pop-burst" of last dropped item to "%{_act}%"
+				drawDot count 1, particle "lava", center last dropped item, visibleRange 30, keepFor 10 ticks
+				push last dropped item upwards at speed 0.1
+				push last dropped item north at speed random number from -1 to 1
+				push last dropped item east at speed random number from -1 to 1
+		wait 10 ticks
+		delete {_dloc::*}
+		loop all dropped items:
+			metadata value "pop-burst" of loop-dropped item is "%{_act}%"
+			add location of loop-dropped item to {_dloc::*}
+			delete loop-dropped item
+		loop {_dloc::*}:
+			kitExplosion({_act}, 1.3, loop-value)
+	else if metadata value "ult-bomber" of event-entity is set:
+		set {_act} to metadata value "attacker" of event-entity
+		set {_act} to {_act} parsed as player
+		set {_loc} to event-location
+		wait a tick
+		set {_ex} to 1
+		set {_rad} to 1
+		set {_chance} to 9
+		loop 4 times:
+			subtract 2 from {_chance}
+			add 1 to {_ex}
+			loop 25 times:
+				add 0.2 to {_rad}
+				delete {_lb::*}
+				set {_rn} to a random integer between 0 and {_ex}
+				loop all blocks in radius {_rad} around {_loc}:
+					loop-block is passable
+					chance of {_chance}%:
+						add location of loop-block to {_lb::*}
+				loop {_rn} times:
+					set {_rl} to a random location out of {_lb::*}
+					remove {_rl} from {_lb::*}
+					loop all entities in radius 5 around {_rl}:
+						kitCheckTeam(loop-entity, {_act}, false, true) is true
+						make {_act} damage loop-entity by 6
+					drawDot count 1, particle "explosionhuge", center {_rl}, visibleRange 100
+					set {_rb} to a random integer between 1 and 2
+					set {_pitch} to a random number between 0.5 and 2
+					if {_rb} is 1:
+						playSound("entity.firework_rocket.large_blast", 1.5, {_pitch}, {_rl})
+					else:
+						playSound("entity.firework_rocket.blast", 1.5, {_pitch}, {_rl})
+				wait a tick
+
+function kitSkill_Bomber_7(player: player):
+	toolCT({_player}, "Bomber", 7)
+	kitMsg({_player}, "<##8b0000>地雷を設置します...")
+	playSound("ui.button.click", 1.2, 0.5, {_player})
+	set {_l} to location of {_player}
+	set {_ln} to 9
+	set {Stats.%{_player}%::SensorMine} to {_l}
+	while {Stats.%{_player}%::SensorMine} is {_l}:
+		add 1 to {_ln}
+		if {_ln} >= 10:
+			set {_ln} to 0
+			set {_rad} to 0
+			loop 10 times:
+				add 36 to {_rad}
+				set {_el} to {_l}
+				add 3 * sin({_rad}) to x-coordinate of {_el}
+				add 3 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 240, 230, 140, center {_el}, visibleRange 20
+		loop all entities in radius 5 around {_l}:
+			{_bomb} is not set
+			{Stats.%{_player}%::SensorMine} is {_l}
+			kitCheckTeam({_player}, loop-entity, false) is true
+			delete {Stats.%{_player}%::SensorMine}
+			set {_bomb} to true
+			playSound("ui.button.click", 1.5, 2, {_l})
+			loop 10 times:
+				add 36 to {_rad}
+				set {_el} to {_l}
+				add 3 * sin({_rad}) to x-coordinate of {_el}
+				add 3 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 139, 0, 0, center {_el}, visibleRange 30
+		wait a second
+	{_bomb} is true
+	kitExplosion({_player}, 3, {_l})
+
+function kitSkill_Bomber_8(player: player):
+	toolCT({_player}, "Bomber", 8)
+	kitMsg({_player}, "<##adff2f>生物兵器を召喚します...")
+	playSound("entity.creeper.hurt", 1, 0.5, {_player})
+	loop all creepers:
+		metadata value "biologic-bomb" of loop-creeper is "%{_player}%"
+		delete loop-creeper
+	loop all blocks in radius 5 around {_player}:
+		loop-block is passable
+		block below loop-block is not passable
+		add location of loop-block to {_loc::*}
+	loop 3 times:
+		set {_rl} to a random location out of {_loc::*}
+		remove {_rl} from {_loc::*}
+		spawn a creeper at {_rl} with nbt "{Attributes:[{Name:""generic.movement_speed"",Base:0.4f}],Silent:1,Fuse:1}"
+		set spawned creeper's display name to "%{_player}%"
+		set metadata value "gametype" of spawned creeper to "Kit"
+		set metadata value "biologic-bomb" of spawned creeper to "%{_player}%"
+		set metadata value "kit-bomber" of spawned creeper to 2
+		set metadata value "attacker" of spawned creeper to "%{_player}%"
+		drawDot count 1, particle "mobspell", RGB 173, 255, 47, center spawned creeper, visibleRange 30, keepFor 3 seconds
+
+on damage of creeper:
+	metadata value "biologic-bomb" of victim is set
+	cancel event
+	damage cause is not block explosion or entity explosion
+	set {_player} to metadata value "biologic-bomb" of victim parsed as player
+	set {_l} to location of victim
+	delete victim
+	kitExplosion({_player}, 2, {_l})
+
+function kitTimerBomber(player: player):
+	while {Class::%{_player}%} is "Bomber":
+		loop 10 times:
+			if {Class::%{_player}%} is "Bomber":
+				wait a second
+		{Class::%{_player}%} is "Bomber"
+		set {_tnt} to amount of tnt in {_player}'s inventory
+		if {_tnt} < 9:
+			give a tnt to {_player}
+		set {_arrow} to amount of arrow in {_player}'s inventory
+		if {_arrow} < 16:
+			give an arrow to {_player}
+	loop all creepers:
+		metadata value "biologic-bomb" of loop-creeper is "%{_player}%"
+		delete loop-creeper
+
+on death of player:
+	if {Class::%victim%} is "Bomber":
+		loop all primed tnts:
+			metadata value "attacker" of loop-primed tnt is "%victim%"
+			delete loop-primed tnt
+		set {_v} to location of victim
+		add 1 to y-coordinate of {_v}
+		loop 3 times:
+			spawn a primed tnt at {_v}
+			push spawned primed tnt east at speed random number from -0.5 to 0.5
+			push spawned primed tnt north at speed random number from -0.5 to 0.5
+			set metadata value "attacker" of spawned primed tnt to "%victim%"
+			set metadata value "kit-bomber" of spawned primed tnt to 2
+			set fuse time of spawned primed tnt to 20
+	if {Class::%{LastKiller::%victim%}%} is "Bomber":
+		give 2 tnt to {LastKiller::%victim%}
+		give 4 arrow to {LastKiller::%victim%}
+
+function kitUltBomber(player: player):
+	message "§4§lNuclear Bomb§cを手に入れました!" to {_player}
+	message "§c右クリックで投擲し,5秒後に爆発します!" to {_player}
+	message "§c爆発後は周辺20mを5秒間かけて爆発し続けます!" to {_player}
+	wait a tick
+	give a redstone block named "§4§lNuclear Bomb" to {_player}
+
+on rightclick holding a redstone block:
+	name of player's tool is "§4§lNuclear Bomb"
+	cancel event
+	remove a redstone block named "§4§lNuclear Bomb" from player
+	playSound("entity.tnt.primed", 1.5, 0.5, player)
+	shoot a primed tnt from player at speed 1.5
+	set metadata value "attacker" of shot primed tnt to "%player%"
+	set metadata value "kit-bomber" of shot primed tnt to 10
+	set metadata value "ult-bomber" of shot primed tnt to "true"
+	set fuse time of shot primed tnt to 100
+	drawDot count 1, particle "lava", center shot primed tnt, visibleRange 100, keepFor 5 seconds

@@ -1,0 +1,166 @@
+options:
+	prefix: §e[§b§l§oSK§6§oClass§e]§r
+
+on tab complete for "/skclass":
+	add "export" to {_tab1::*}
+	loop all players:
+		add "%loop-player%" to {_tab1::*}
+	set {_files::*} to all files of dir path "plugins/skript-yaml/General Classes"
+	loop {_files::*}:
+		set {_filename} to file name of file path "%loop-value%"
+		replace ".yml" with "" in {_filename}
+		add {_filename} to {_tab2::*}
+	set tab completions for position 1 to {_tab1::*}
+	set tab completions for position 2 to {_tab2::*}
+
+
+command /skclass <text> <text="none">:
+	permission: sk.admin
+	trigger:
+		if arg 1 is "export":
+			load yml "plugins/skript-yaml/General Classes/%arg 2%.yml" as "skclass.%arg 2%"
+			delete yml "skclass.%arg 2%"
+			load yml "plugins/skript-yaml/General Classes/%arg 2%.yml" as "skclass.%arg 2%"
+			set yml value "title" from "skclass.%arg 2%" to arg 2
+			set {_invnum} to 0
+			loop 36 times:
+				set {_invitem} to slot {_invnum} of player
+				if {_invitem} is not air:
+					set yml value "items.item%{_invnum}%" from "skclass.%arg 2%" to {_invitem}
+				add 1 to {_invnum}
+			if helmet of player is not air:
+				set {_invitem} to helmet of player
+				set yml value "armors.helmet" from "skclass.%arg 2%" to {_invitem}
+			if chestplate of player is not air:
+				set {_invitem} to chestplate of player
+				set yml value "armors.chestplate" from "skclass.%arg 2%" to {_invitem}
+			if leggings of player is not air:
+				set {_invitem} to leggings of player
+				set yml value "armors.leggings" from "skclass.%arg 2%" to {_invitem}
+			if boots of player is not air:
+				set {_invitem} to boots of player
+				set yml value "armors.boots" from "skclass.%arg 2%" to {_invitem}
+			if offhand tool of player is not air:
+				set {_invitem} to offhand tool of player
+				set yml value "armors.offhand" from "skclass.%arg 2%" to {_invitem}
+			set {_eff::*} to all potion effects of player
+			loop {_eff::*}:
+				delete {_effalls::*}
+				set {_effall} to "%loop-value%"
+				replace " " with ":" in {_effall}
+				set {_effalls::*} to {_effall} split at ":"
+				set {_efftype} to {_effalls::1}
+				delete {_efflevel}
+				set {_efflevel} to {_effalls::2}
+				if {_efflevel} is not set:
+					set {_efflevel} to 0
+				add 1 to {_efflevel}
+				set yml value "effects.%{_efftype}%" from "skclass.%arg 2%" to {_efflevel}
+			save yml "skclass.%arg 2%"
+			message formatted "{@prefix} §eClass: §6§l%arg 2% §7を保存しました" to player
+#		else if arg 1 is "check":
+		else:
+			loop all players:
+				if arg 1 is "%loop-player%":
+					set {_player} to loop-player
+			if {_player} is set:
+				load yml "plugins/skript-yaml/General Classes/%arg 2%.yml" as "skclass.%arg 2%"
+				remove all items from {_player}'s inventory
+				execute console command "/effect clear %{_player}%"
+				set {_invnum} to 0
+				loop 36 times:
+					if yml value "items.item%{_invnum}%" from "skclass.%arg 2%" is set:
+						set {_invitem} to yml value "items.item%{_invnum}%" from "skclass.%arg 2%"
+						set slot {_invnum} of {_player} to {_invitem}
+					add 1 to {_invnum}
+				if yml value "armors.helmet" from "skclass.%arg 2%" is set:
+					set {_invitem} to yml value "armors.helmet" from "skclass.%arg 2%"
+					set helmet of {_player} to {_invitem}
+				if yml value "armors.chestplate" from "skclass.%arg 2%" is set:
+					set {_invitem} to yml value "armors.chestplate" from "skclass.%arg 2%"
+					set chestplate of {_player} to {_invitem}
+				if yml value "armors.leggings" from "skclass.%arg 2%" is set:
+					set {_invitem} to yml value "armors.leggings" from "skclass.%arg 2%"
+					set leggings of {_player} to {_invitem}
+				if yml value "armors.boots" from "skclass.%arg 2%" is set:
+					set {_invitem} to yml value "armors.boots" from "skclass.%arg 2%"
+					set boots of {_player} to {_invitem}
+				if yml value "armors.offhand" from "skclass.%arg 2%" is set:
+					set {_invitem} to yml value "armors.offhand" from "skclass.%arg 2%"
+					set offhand tool of {_player} to {_invitem}
+				loop yaml node keys "effects" from "skclass.%arg 2%":
+					set {_effect} to potionChanger("%loop-key%")
+					set {_level} to yml value "effects.%loop-node%" from "skclass.%arg 2%"
+					# set {_level} to {_level} parsed as number
+					apply {_effect} {_level} without particles to {_player} for 10000000000 seconds
+				unload yml "skclass.%arg 2%"
+				message formatted "{@prefix} §a%{_player}% §7に §eClass: §6§l%arg 2% §7を配布しました" to player
+			else:
+				message formatted "{@prefix} §cプレイヤーが見つかりません" to player
+
+function potionChanger(potion: text) :: potion effect type:
+	if {_potion} is "DOLPHINS_GRACE":
+		set {_effect} to "dolphins grace" parsed as potion effect type
+	else if {_potion} is "DAMAGE_RESISTANCE":
+		set {_effect} to "resistance" parsed as potion effect type
+	else if {_potion} is "ABSORPTION":
+		set {_effect} to "absorption" parsed as potion effect type
+	else if {_potion} is "FAST_DIGGING":
+		set {_effect} to "haste" parsed as potion effect type
+	else if {_potion} is "SPEED":
+		set {_effect} to "speed" parsed as potion effect type
+	else if {_potion} is "UNLUCK":
+		set {_effect} to "bad luck" parsed as potion effect type
+	else if {_potion} is "POISON":
+		set {_effect} to "poison" parsed as potion effect type
+	else if {_potion} is "REGENERATION":
+		set {_effect} to "regeneration" parsed as potion effect type
+	else if {_potion} is "CONDUIT_POWER":
+		set {_effect} to "conduit power" parsed as potion effect type
+	else if {_potion} is "BAD_OMEN":
+		set {_effect} to "bad omen" parsed as potion effect type
+	else if {_potion} is "SLOW":
+		set {_effect} to "slowness" parsed as potion effect type
+	else if {_potion} is "JUMP":
+		set {_effect} to "jump boost" parsed as potion effect type
+	else if {_potion} is "LUCK":
+		set {_effect} to "luck" parsed as potion effect type
+	else if {_potion} is "INVISIBILITY":
+		set {_effect} to "invisibility" parsed as potion effect type
+	else if {_potion} is "BLINDNESS":
+		set {_effect} to "blindness" parsed as potion effect type
+	else if {_potion} is "NIGHT_VISION":
+		set {_effect} to "night vision" parsed as potion effect type
+	else if {_potion} is "SLOW_DIGGING":
+		set {_effect} to "mining fatigue" parsed as potion effect type
+	else if {_potion} is "HERO_OF_THE_VILLAGE":
+		set {_effect} to "hero of the village" parsed as potion effect type
+	else if {_potion} is "SLOW_FALLING":
+		set {_effect} to "slow falling" parsed as potion effect type
+	else if {_potion} is "WITHER":
+		set {_effect} to "wither" parsed as potion effect type
+	else if {_potion} is "GLOWING":
+		set {_effect} to "glowing" parsed as potion effect type
+	else if {_potion} is "WEAKNESS":
+		set {_effect} to "weakness" parsed as potion effect type
+	else if {_potion} is "CONFUSION":
+		set {_effect} to "nausea" parsed as potion effect type
+	else if {_potion} is "FIRE_RESISTANCE":
+		set {_effect} to "fire resistance" parsed as potion effect type
+	else if {_potion} is "WATER_BREATHING":
+		set {_effect} to "water breathing" parsed as potion effect type
+	else if {_potion} is "INCREASE_DAMAGE":
+		set {_effect} to "strength" parsed as potion effect type
+	else if {_potion} is "HEALTH_BOOST":
+		set {_effect} to "health boost" parsed as potion effect type
+	else if {_potion} is "HUNGER":
+		set {_effect} to "hunger" parsed as potion effect type
+	else if {_potion} is "LEVITATION":
+		set {_effect} to "levitation" parsed as potion effect type
+	else if {_potion} is "SATURATION":
+		set {_effect} to "saturation" parsed as potion effect type
+	else if {_potion} is "HEAL":
+		set {_effect} to "instant health" parsed as potion effect type
+	else if {_potion} is "HARM":
+		set {_effect} to "instant damage" parsed as potion effect type
+	return {_effect}

@@ -1,0 +1,56 @@
+options:
+	prefix: <##00bfff>[<##00fa9a>Timer<##00bfff>]
+
+command /timer <text> <text>:
+	permission: sk.admin
+	trigger:
+		if arg 1 is "start":
+			if arg 2 contains "Kit":
+				loop all players:
+					{Join::%loop-player%} is "Kit"
+					message "{@prefix} §d10秒後に試合が開始されます..." to loop-player
+				wait 5 seconds
+				set {_time} to 5
+				loop 5 times:
+					loop all players:
+						{Join::%loop-player%} is "Kit"
+						message "{@prefix} §b%{_time}%§d..." to loop-player
+						play sound "block.note_block.pling" with volume 1 with pitch 1 to loop-player
+					subtract 1 from {_time}
+					wait a second
+				loop all players:
+					{Join::%loop-player%} is "Kit"
+					message "{@prefix} §a開始!" to loop-player
+					play sound "block.note_block.pling" with volume 1 with pitch 2 to loop-player
+					set loop-player's gamemode to survival
+					set {_tp} to a random location out of {Kit-GameStageRespawns.%{TrueTeam::%loop-player%}%::*}
+					teleport loop-player to {_tp}
+				execute console command "/bbt start %arg 2%"
+				kitScore(arg 2)
+				execute console command "/gigives"
+				set {Kit-tochu} to true
+				if arg 2 is "Kit-BEC":
+					execute console command "/kit-BECSetting"
+				else if arg 2 is "Kit-EmJ":
+					execute console command "/kit-EmJSetting"
+				else if arg 2 is "Kit-StW":
+					execute console command "/kit-StWSetting"
+				else if arg 2 is "Kit-CPA":
+					execute console command "/kit-CPASetting"
+		if arg 1 is "end":
+			if arg 2 contains "Kit":
+				loop all players:
+					{Join::%loop-player%} is "Kit"
+					message "{@prefix} §c終了!" to loop-player
+					play sound "block.note_block.pling" with volume 1 with pitch 2 to loop-player
+				execute console command "/bbt stop %arg 2%"
+				if arg 2 is "Kit-GoK":
+					execute console command "/gokend"
+				else if arg 2 is "Kit-BEC":
+					execute console command "/becend"
+				else if arg 2 is "Kit-EmJ":
+					execute console command "/emjend"
+				else if arg 2 is "Kit-StW":
+					execute console command "/stwend"
+				else if arg 2 is "Kit-CPA":
+					execute console command "/cpaend"

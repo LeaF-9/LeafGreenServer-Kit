@@ -1,0 +1,776 @@
+# Weapons
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	{Class::%attacker%} is "Ghost"
+	damage was caused by attack
+	set {_tool} to attacker's tool
+	set {_item.kit} to kitItemKitChecker({_tool})
+	{_item.kit} is "Ghost"
+	set {_item.type} to kitItemTypeChecker({_tool})
+	{_item.type} is "Weapon.main"
+	set {_item.num} to kitItemNumberChecker({_tool})
+	{_item.num} is 4
+	loop all blocks in radius 3 around victim:
+		loop-block is passable
+		add location of loop-block to {_sounds::*}
+	loop 3 times:
+		if loop-number is 1:
+			set {_percent} to 100
+		else:
+			set {_percent} to 30
+		chance of {_percent}%:
+			set {_sound} to a random location out of {_sounds::*}
+			set {_pitch} to a random number between 0.5 and 2
+			playSound("block.glass.break", 0.5, {_pitch}, {_sound})
+
+function kitWeaponGhost(player: player):
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	checkCT({_player}, name of {_player}'s tool) is true
+	if {_item.num} is 1:
+		kitWeapon_Ghost_1({_player})
+	else if {_item.num} is 2:
+		kitWeapon_Ghost_2({_player})
+	else if {_item.num} is 3:
+		kitWeapon_Ghost_3({_player})
+	else if {_item.num} is 4:
+		kitWeapon_Ghost_4({_player})
+	else if {_item.num} is 5:
+		kitWeapon_Ghost_5({_player})
+
+function kitWeapon_Ghost_1(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		set {_tg} to {Stats.%{_player}%::SkillTarget}
+		toolCT({_player}, "Ghost", 1, "Weapon.main")
+		apply blindness 1 to {_tg} for 3 seconds
+		set {_memsg} to kitGhostMessage("§5%{_tg}% §0に暗黒効果を付与した...")
+		set {_youmsg} to kitGhostMessage("§0??????????", true)
+		kitMsg({_player}, {_memsg})
+		message formatted {_youmsg} to {_tg}
+		loop 10 times:
+			set {_el} to aroundEffect({_tg})
+			drawDot count 1, particle "smoke", center {_el}, visibleRange 50
+		playSound("entity.wither.spawn", 1, 1, {_tg})
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+function kitWeapon_Ghost_2(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		set {_loc} to {Stats.%{_player}%::SkillLocation}
+		toolCT({_player}, "Ghost", 2, "Weapon.main")
+		set {_memsg} to kitGhostMessage("§2枯渇地帯を設置した...")
+		kitMsg({_player}, {_memsg})
+		playSound("block.grass.place", 1, 0.5, {_loc})
+		loop all blocks in radius 5 around {_loc}:
+			loop-block is air
+			block below loop-block is not passable
+			add location of loop-block to {_locs::*}
+		loop {_locs::*}:
+			make all players see block at loop-value as dead grass
+		loop 100 times:
+			loop {_locs::*}:
+				chance of 3%:
+					drawDot count 1, particle "mobspell", RGB 87, 138, 61, center loop-value-2, visibleRange 50
+			loop all players in radius 5 around {_loc}:
+				kitCheckTeam({_player}, loop-player, false) is true
+				if {_players::*} does not contain loop-player:
+					add loop-player to {_players::*}
+					set {Stats.%loop-player%::Hunger} to true
+				set {_fl} to food level of loop-player
+				subtract 0.5 from {_fl}
+				set food level of loop-player to {_fl}
+			wait a tick
+		playSound("block.grass.break", 1, 0.5, {_loc})
+		loop {_locs::*}:
+			block at loop-value is air
+			make all players see block at loop-value as air
+		loop {_players::*}:
+			set food level of loop-value to 10
+			delete {Stats.%loop-value%::Hunger}
+	else:
+		send action bar "§c§l対象地点が存在しません!" to {_player}
+
+function kitWeapon_Ghost_3(player: player):
+	if {Stats.%{_player}%::SpareSoul} is not set:
+		if kitCheckSpirit({_player}, 3, "Weapon.main") is true:
+			toolCT({_player}, "Ghost", 3, "Weapon.main")
+			set {Stats.%{_player}%::SpareSoul} to true
+			set {Stats.%{_player}%::Resurrection} to true
+			set {_memsg} to kitGhostMessage("§5Spare Soul §8を獲得した...", true)
+			kitMsg({_player}, {_memsg})
+			loop 10 times:
+				set {_el} to aroundEffect({_player})
+				drawDot count 1, particle "soul", center {_el}, visibleRange 30
+			playSound("entity.zombie_villager.converted", 1, 0.5, {_player})
+	else:
+		send action bar "§c§l既にSpare Soulを所持しています!" to {_player}
+
+function kitWeapon_Ghost_4(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if kitCheckSpirit({_player}, 4, "Weapon.main") is true:
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			toolCT({_player}, "Ghost", 4, "Weapon.main")
+			set {_memsg} to kitGhostMessage("§5%{_tg}% §4に音のいたずらを誘発する...")
+			set {_youmsg} to kitGhostMessage("§8不思議な音が鳴り響く...", true)
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_tg}
+			playSound("ambient.cave", 1, 2, {_tg})
+			apply nausea 1 to {_tg} for 8 seconds
+			loop 100 times:
+				if mod(loop-number, 2) is 0:
+					set {_yaw} to 5
+				else:
+					set {_yaw} to -5
+				playerYawRotation({_tg}, {_yaw}, true)
+				chance of 10%:
+					kitGhostFoot({_tg})
+				set {_el} to aroundEffect({_tg})
+				set y-coordinate of {_el} to y-coordinate of {_tg} + 2
+				set {_n} to a random integer between 0 and 25
+				drawDot count 1, particle "note", RGB {_n}, 0, 0, center {_el}, visibleRange 30
+				wait a tick
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+function kitGhostFoot(player: player):
+	set {_loc} to location of {_player}
+	set {_xnum} to a random number between -5 and 5
+	if {_xnum} >= 0:
+		set {_xnum} to {_xnum} + 5
+	else:
+		set {_xnum} to {_xnum} - 5
+	set {_znum} to a random number between -5 and 5
+	if {_znum} >= 0:
+		set {_znum} to {_znum} + 5
+	else:
+		set {_znum} to {_znum} - 5
+	add {_xnum} to x-coordinate of {_loc}
+	add {_znum} to z-coordinate of {_loc}
+	set {_vector} to setVector({_loc}, location of {_player})
+	set yaw of {_loc} to yaw of {_vector}
+	set pitch of {_loc} to pitch of {_vector}
+	set {_sound} to "block.grass.step"
+	chance of 33%:
+		set {_sound} to "block.stone.step"
+	chance of 33%:
+		set {_sound} to "block.wood.step"
+	set {_frontnum} to 0
+	loop 5 times:
+		set {_soundloc} to location {_frontnum} meters in front of {_loc}
+		play sound {_sound} at {_soundloc} for {_player}
+		add 1.25 to {_frontnum}
+		wait 5 ticks
+
+function kitWeapon_Ghost_5(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		if kitCheckSpirit({_player}, 5, "Weapon.main") is true:
+			set {_loc} to {Stats.%{_player}%::SkillLocation}
+			toolCT({_player}, "Ghost", 5, "Weapon.main")
+			set {_memsg} to kitGhostMessage("§5自身の幻影を召喚します...")
+			kitMsg({_player}, {_memsg})
+			playSound("entity.zombie.infect", 1, 0.8, {_loc})
+			kitInvisible({_player}, 3 seconds)
+			set {_now} to now
+			loop 5 times:
+				add 72 to {_rad}
+				set {_el} to {_loc}
+				add 5 * sin({_rad}) to x-coordinate of {_el}
+				add 5 * cos({_rad}) to z-coordinate of {_el}
+				spawn a skeleton at {_el} with nbt "{Silent:1b,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:wither_skeleton_skull"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}]}"
+				set metadata value "gametype" of spawned skeleton to "Kit"
+				set metadata value "kit-phantasma" of spawned skeleton to "%{_now}%"
+				set spawned skeleton's display name to "%{_player}%"
+				set spawned skeleton's tool to kitWeaponItem("Ghost", 5, "main")
+			wait 5 seconds
+			loop all skeletons:
+				loop-skeleton's display name is "%{_player}%"
+				metadata value "kit-phantasma" of loop-skeleton is "%{_now}%"
+				delete loop-skeleton
+	else:
+		send action bar "§c§l対象地点が存在しません!" to {_player}
+
+# Skills
+function kitSkillGhost(player: player) :: boolean:
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if checkCT({_player}, name of {_player}'s tool) is true:
+		if {_item.num} is 1:
+			kitSkill_Ghost_1({_player})
+		else if {_item.num} is 2:
+			kitSkill_Ghost_2({_player})
+		else if {_item.num} is 3:
+			kitSkill_Ghost_3({_player})
+		else if {_item.num} is 4:
+			kitSkill_Ghost_4({_player})
+		else if {_item.num} is 5:
+			kitSkill_Ghost_5({_player})
+		else if {_item.num} is 6:
+			kitSkill_Ghost_6({_player})
+		else if {_item.num} is 7:
+			kitSkill_Ghost_7({_player})
+		else if {_item.num} is 8:
+			kitSkill_Ghost_8({_player})
+	return true
+
+function kitSkill_Ghost_1(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		toolCT({_player}, "Ghost", 1)
+		set {_tg} to {Stats.%{_player}%::SkillTarget}
+		set {_jewel} to saveJewels({_tg})
+		set {_gem} to saveGems({_tg})
+		set {_wool} to saveWools({_tg})
+		set {_spwool} to saveSpecialWool({_tg})
+		execute console command "/skclass %{_tg}% Kit-Mummy"
+		giveEmJItems({_tg}, {_jewel}, {_gem})
+		giveStWItems({_tg}, {_wool}, {_spwool})
+		set {Stats.%{_tg}%::MutateMummy} to true
+		playSound("entity.wither.spawn", 1, 1, {_tg})
+		set {_memsg} to kitGhostMessage("§5%{_tg}% §8をミイラに変形させた...")
+		set {_youmsg} to kitGhostMessage("§5Noooooooooo!!!!!", true)
+		kitMsg({_player}, {_memsg})
+		message formatted {_youmsg} to {_tg}
+		apply nausea 1 to {_tg} for 5 seconds
+		apply blindness 1 to {_tg} for 5 seconds
+		loop 10 times:
+			set {_el} to aroundEffect({_tg})
+			drawDot count 1, particle "fallingdust", material white concrete powder, center {_el}, visibleRange 30
+		wait 10 seconds
+		if {Stats.%{_tg}%::MutateMummy} is true:
+			set {_jewel} to saveJewels({_tg})
+			set {_gem} to saveGems({_tg})
+			set {_wool} to saveWools({_tg})
+			set {_spwool} to saveSpecialWool({_tg})
+			execute console command "/class %{Class::%{_tg}%}% %{_tg}% false"
+			giveEmJItems({_tg}, {_jewel}, {_gem})
+			giveStWItems({_tg}, {_wool}, {_spwool})
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+function kitSkill_Ghost_2(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if kitCheckSpirit({_player}, 2) is true:
+			toolCT({_player}, "Ghost", 2)
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			if {Stats.%{Stats.%{_player}%::MindDependence}%::MindDependence} is {_player}:
+				delete {Stats.%{Stats.%{_player}%::MindDependence}%::MindDependence}
+				delete {Stats.%{_player}%::MindDependence}
+			set {_memsg} to kitGhostMessage("§5%{_tg}% §4と痛覚の共有を行いました...")
+			set {_youmsg} to kitGhostMessage("§5%{_player}% §cとのダメージが共有される!")
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_tg}
+			set {Stats.%{_tg}%::MindDependence} to {_player}
+			set {Stats.%{_player}%::MindDependence} to {_tg}
+			playSound("entity.iron_golem.death", 1, 0.5, {_player}, true)
+			playSound("entity.iron_golem.death", 1, 0.5, {_tg}, true)
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+on damage of player:
+	metadata value "gametype" of victim is "Kit"
+	if {Stats.%victim%::DeathCursing} is true:
+		delete {Stats.%victim%::DeathCursing}
+	if {Stats.%victim%::LethalSouvenir} is true:
+		set damage to damage * 2
+	if {Stats.%attacker%::LethalSouvenir} is true:
+		set damage to damage * 0.5
+	if {Stats.%victim%::MindDependence} is set:
+		set {_dmg} to damage * 0.75
+		loop all players:
+			{Stats.%victim%::MindDependence} is loop-player
+			kitDamage(victim, loop-player, {_dmg}, true)
+			loop 10 times:
+				set {_el} to aroundEffect(victim)
+				drawDot count 1, particle "fallingdust", material red concrete powder, center {_el}, visibleRange 100
+				set {_el} to aroundEffect(loop-player)
+				drawDot count 1, particle "fallingdust", material red concrete powder, center {_el}, visibleRange 100
+
+on death:
+	metadata value "gametype" of victim is "Kit"
+	{Stats.%victim%::MindDependence} is set
+	loop all players:
+		{Stats.%loop-player%::MindDependence} is victim
+		delete {Stats.%loop-player%::MindDependence}
+
+function kitSkill_Ghost_3(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if kitCheckSpirit({_player}, 3) is true:
+			toolCT({_player}, "Ghost", 3)
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			set {_th} to {_tg}'s health
+			set {_ph} to {_player}'s health
+			set {_sp} to ({_th} + {_ph}) / 2
+			set {_tg}'s health to {_sp}
+			set {_player}'s health to {_sp}
+			playSound("entity.zombie_villager.converted", 1, 1, {_player}, true)
+			playSound("entity.zombie_villager.converted", 1, 1, {_tg}, true)
+			set {_memsg} to kitGhostMessage("§5%{_tg}% §1と互いの体力を分け合った...")
+			set {_youmsg} to kitGhostMessage("§5%{_player}% §cと体力を分け合った...!")
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_tg}
+			set {_d} to rounded distance between {_player} and {_tg}
+			set {_vector} to setVector(location of {_player}, location of {_tg})
+			set {_baseloc} to location of head of {_player}
+			set yaw of {_baseloc} to yaw of {_vector}
+			set pitch of {_baseloc} to pitch of {_vector}
+			loop {_d} times:
+				add 1 to {_n}
+				set {_el} to location {_n} meters in front of {_baseloc}
+				drawDot count 1, particle "endrod", center {_el}, visibleRange 50
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+function kitSkill_Ghost_4(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if kitCheckSpirit({_player}, 4) is true:
+			toolCT({_player}, "Ghost", 4)
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			set {Stats.%{_tg}%::LethalSouvenir} to true
+			kitBadLuck({_tg}, 5)
+			playSound("entity.elder_guardian.death", 1, 1, {_tg})
+			set {_memsg} to kitGhostMessage("§5%{_tg}% §0に置き土産を残した...")
+			set {_youmsg} to kitGhostMessage("§5霊の憑拠を受けてしまった...", true)
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_tg}
+			set health of {_player} to 0
+			set {_baseloc} to location of {_tg}
+			loop 10 times:
+				loop 10 times:
+					add 0.05 to {_y}
+					add 0.05 to {_metre}
+					add 10 to {_rad}
+					set {_effloc} to {_baseloc}
+					add {_y} to y-coordinate of {_effloc}
+					add {_metre} * sin({_rad}) to x-coordinate of {_effloc}
+					add {_metre} * cos({_rad}) to z-coordinate of {_effloc}
+					drawDot count 1, particle "mobspell", RGB 0, 0, 0, center {_effloc}, visibleRange 30
+				wait a tick
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+function kitSkill_Ghost_5(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if health of {_player} = max health of {_player}:
+			if block at {_player} is passable:
+				if kitCheckSpirit({_player}, 5) is true:
+					toolCT({_player}, "Ghost", 5)
+					set {_tg} to {Stats.%{_player}%::SkillTarget}
+					set {_memsg1} to kitGhostMessage("§4%{_tg}% §5に死の呪いをかけた...")
+					set {_memsg2} to kitGhostMessage("§5呪術に体力を捧げます...", true)
+					set {_youmsg} to kitGhostMessage("§5%{_player}% §4に死の呪いをかけられてしまった!", true)
+					kitMsg({_player}, {_memsg1})
+					kitMsg({_player}, {_memsg2})
+					message formatted {_youmsg} to {_tg}
+					kitPalsy({_player}, 10 seconds, false)
+					apply glowing 1 to {_player} for 10 seconds
+					apply slowness 3 to {_player} for 10 seconds
+					set {Stats.%{_player}%::DeathCursing} to true
+					set {_health} to 10
+					loop 11 times:
+						if {Stats.%{_player}%::DeathCursing} is set:
+							if {_health} is 0:
+								set {_ok} to true
+							set health of {_player} to {_health}
+							kitMsg({_player}, "§0§l%{_health}%")
+							send title "§4§l§k! §5§l%{_health}% §4§l§k!" with subtitle "§6§l急いで §5§l%{_player}% §6§lを攻撃しよう!" to {_tg}
+							playSound("entity.wither.hurt", 2, 1, {_player})
+							loop loop-number * 2 times:
+								set {_el} to aroundEffect({_player})
+								drawDot count 1, particle "redstone", RGB 100, 0, 0, center {_el}, visibleRange 100
+							subtract 1 from {_health}
+							wait a second
+					if {_ok} is set:
+						set {_memsg} to kitGhostMessage("§4呪術は成功しました", true)
+						message formatted {_memsg} to {_player}
+						playSound("entity.wither.death", 2, 0.5, {_player})
+						set {_baseloc} to location of {_tg}
+						LastKiller({_tg}, {_player})
+						set health of {_tg} to 0
+						if {Class::%{_player}%} is not "Ghost":
+							set {_youmsg} to kitGhostMessage("§5呪い殺されてしまった...", true)
+							message formatted {_youmsg} to {_tg}
+						else:
+							set {_youmsg} to kitGhostMessage("§8即死効果を無効化しました", true)
+							message formatted {_youmsg} to {_tg}
+						loop all entities in radius 10 around {_baseloc}:
+							loop-entity is not {_tg}
+							kitCheckTeam({_player}, loop-entity, false) is true
+							if type of loop-entity is a player:
+								if {Class::%loop-entity%} is not "Ghost":
+									LastKiller(loop-entity, {_player})
+									set {_youmsg} to kitGhostMessage("§5呪い殺されてしまった...", true)
+									message formatted {_youmsg} to loop-entity
+									set health of loop-entity to 0
+								else:
+									set {_youmsg} to kitGhostMessage("§8即死効果を無効化しました", true)
+									message formatted {_youmsg} to {_tg}
+								add location of loop-entity to {_cursed::*}
+							else:
+								set health of loop-entity to 0
+						loop all blocks in radius 10 around {_baseloc}:
+							loop-block is passable
+							chance of 1%:
+								set {_elbase} to location of loop-block
+								set {_vector} to setVector({_baseloc}, {_elbase}, a random number between 1 and 3)
+								set {_sp} to a random number between 0.75 and 1.5
+								draw 1 smoke particle at {_elbase} with direction {_vector} and speed {_sp}, keepFor 1 tick
+						loop 10 times:
+							loop {_cursed::*}:
+								loop 3 times:
+									set {_l} to loop-value-2
+									add a random number between -1 and 1 to x-coordinate of {_l}
+									add a random number between -1 and 1 to z-coordinate of {_l}
+									add a random number between 0 and 3 to y-coordinate of {_l}
+									drawDot count 1, particle "mobspell", RGB 0, 0, 0, center {_l}, visibleRange 100
+							wait a tick
+					else:
+						set {_memsg} to kitGhostMessage("§7呪術は失敗した...")
+						set {_youmsg} to kitGhostMessage("§e呪術の解除に成功した!", true)
+						kitMsg({_player}, {_memsg})
+						message formatted {_youmsg} to {_tg}
+			else:
+				send action bar "§c§l発動地点が無効です!" to {_player}
+		else:
+			send action bar "§c§l体力が不足しています!" to {_player}
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+function kitSkill_Ghost_6(player: player):
+	toolCT({_player}, "Ghost", 6)
+	playSound("entity.evoker.prepare_summon", 1, 1.5, {_player})
+	set {Stats.%{_player}%::Heautoscopy} to true
+	set gamemode of {_player} to spectator
+	set {_baseloc} to location of {_player}
+	loop 10 times:
+		set {_el} to {_baseloc}
+		add a random number between -0.5 and 0.5 to x-coordinate of {_el}
+		add a random number between -0.5 and 0.5 to z-coordinate of {_el}
+		add a random number between 0 and 2 to y-coordinate of {_el}
+		drawDot count 1, particle "smoke", center {_el}, visibleRange 30
+	loop 20 times:
+		if {_no} is not set:
+			if distance between {_baseloc} and location of {_player} <= 10:
+				wait a tick
+			else:
+				set {_no} to true
+	playSound("entity.evoker.cast_spell", 1, 1, {_player})
+	delete {Stats.%{_player}%::Heautoscopy}
+	set gamemode of {_player} to survival
+	set {_baseloc} to location of {_player}
+	add 1 to y-coordinate of {_baseloc}
+	loop 10 times:
+		set {_speed} to a random number between 0.5 and 2
+		draw 1 endrod particle at {_baseloc} with direction randomVector({_baseloc}) and speed {_speed}, keepFor 1 tick
+
+on teleport:
+	metadata value "gametype" of player is "Kit"
+	{Stats.%player%::Heautoscopy} is true
+	cancel event
+
+function kitSkill_Ghost_7(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if kitCheckSpirit({_player}, 7) is true:
+			toolCT({_player}, "Ghost", 7)
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			playSound("block.end_portal.spawn", 1, 2, {_tg})
+			set {_memsg} to kitGhostMessage("§5%{_tg}% §4の身体を乗っ取った...")
+			set {_youmsg} to kitGhostMessage("§5%{_player}% §4に身体を盗られた!", true)
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_tg}
+			set {_targetbaseloc} to location of {_tg}
+			set {_playerbaseloc} to location of {_player}
+			kitPalsy({_player}, 3 seconds, false)
+			kitPalsy({_tg}, 3 seconds, false)
+			set {Stats.%{_player}%::Invincible} to true
+			set {Stats.%{_tg}%::Invincible} to true
+			teleport {_player} to {_targetbaseloc}
+			loop 60 times:
+				hide {_player} from all players
+				hide {_tg} from {_player}
+				teleport {_tg} to location of {_player}
+				set {_effbaseloc} to location of {_player}
+				set {_rad} to 0
+				loop 6 times:
+					set {_el} to {_effbaseloc}
+					add 60 to {_rad}
+					add 0.5 * sin({_rad}) to x-coordinate of {_el}
+					add 0.5 * cos({_rad}) to z-coordinate of {_el}
+					add 2 to y-coordinate of {_el}
+					drawDot count 1, particle "mobspell", RGB 50, 0, 0, center {_el}, visibleRange 30
+				wait a tick
+			delete {Stats.%{_player}%::Invincible}
+			delete {Stats.%{_tg}%::Invincible}
+			teleport {_player} to {_playerbaseloc}
+			reveal {_player} from all players
+			reveal {_tg} from {_player}
+			set {_memsg} to kitGhostMessage("§1身体の乗っ取りを解除しました")
+			set {_youmsg} to kitGhostMessage("§6自分の身体が返ってきた!", true)
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_tg}
+			set {_checkloc} to location of {_tg}
+			loop 10 times:
+				set {_cl} to location loop-number meters below {_checkloc}
+				if block at {_cl} is not passable:
+					set {_ok} to true
+			if "%block at {_tg}%" contains "lava":
+				delete {_ok}
+			if {_ok} is not set:
+				teleport {_tg} to {_targetbaseloc}
+				extinguish {_tg}
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+function kitSkill_Ghost_8(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		set {_ydis} to y-coordinate of {_player} - y-coordinate of {Stats.%{_player}%::SkillTarget}
+		if {_ydis} <= 5:
+			if block at {_player} is passable:
+				if kitCheckSpirit({_player}, 8) is true:
+					toolCT({_player}, "Ghost", 8)
+					if {Stats.%{_player}%::VoodooDoll} is set:
+						delete {Stats.%{_player}%::VoodooDoll}
+						loop all entities:
+							type of loop-entity is an armor stand
+							metadata value "gametype" of loop-entity is "Kit"
+							metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
+							delete loop-entity
+					set {_tg} to {Stats.%{_player}%::SkillTarget}
+					set {_memsg} to kitGhostMessage("§5%{_tg}% §2の藁人形を生成した...", true)
+					set {_youmsg} to kitGhostMessage("§4自分の藁人形が作成された! §6壊しに行こう!", true)
+					kitMsg({_player}, {_memsg})
+					message formatted {_youmsg} to {_tg}
+					playSound("entity.villager.work_fletcher", 1, 0.5, {_player})
+					set {_armorloc} to location of {_player}
+					set {_now} to now
+					spawn an armor stand at location of {_player}
+					set metadata value "gametype" of spawned armor stand to "Kit"
+					set metadata value "Kit-VoodooDoll" of spawned armor stand to "%{_player}%"
+					set metadata value "Kit-VoodooTime" of spawned armor stand to "%{_now}%"
+					set helmet of spawned armor stand to skull of {_tg}
+					set {Stats.%{_player}%::VoodooDoll} to {_now}
+					set {_vector} to setVector(location of {_tg}, location of {_player})
+					set {_effbaseloc} to location of head of {_tg}
+					set yaw of {_effbaseloc} to yaw of {_vector}
+					set pitch of {_effbaseloc} to pitch of {_vector}
+					set {_t} to round(distance between {_player} and {_tg})
+					loop {_t} times:
+						set {_el} to location loop-number meters in front of {_effbaseloc}
+						drawDot count 1, particle "endrod", center {_el}, visibleRange 100
+					while {Stats.%{_player}%::VoodooDoll} is {_now}:
+						delete {_exist}
+						if {_tg} does not have wither:
+							apply wither 1 to {_tg} for 10 seconds
+						loop all entities:
+							type of loop-entity is an armor stand
+							metadata value "gametype" of loop-entity is "Kit"
+							metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
+							metadata value "Kit-VoodooTime" of loop-entity is "%{_now}%"
+							set {_exist} to true
+							set {_armortarget} to loop-entity
+							set {_id} to id of loop-entity
+							set {_el} to aroundEffect(loop-entity)
+							drawDot count 1, particle "soul", center {_el}, visibleRange 100
+						if {Class::%{_tg}%} is not set:
+							delete {_exist}
+							delete {Stats.%{_player}%::VoodooDoll}
+						if {_exist} is true:
+							set {_pkt} to new play_server_entity_metadata packet
+							set field 0 of {_pkt} to {_id}
+							set {_dw} to new data watcher for {_armortarget}
+							set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
+							set field 1 of {_pkt} to {_dw}
+							send {_tg} packet {_pkt}
+						else:
+							delete {Stats.%{_player}%::VoodooDoll}
+						wait a tick
+					remove wither from {_tg}
+					loop all entities:
+						type of loop-entity is an armor stand
+						metadata value "gametype" of loop-entity is "Kit"
+						metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
+						metadata value "Kit-VoodooTime" of loop-entity is "%{_now}%"
+						delete loop-entity
+			else:
+				send action bar "§c§l設置位置が不適切です!" to {_player}
+		else:
+			send action bar "§c§l設置位置が高すぎます!" to {_player}
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+on damage of armor stand:
+	attacker is set
+	metadata value "Kit-VoodooDoll" of victim is set
+	set {_player} to metadata value "Kit-VoodooDoll" of victim parsed as player
+	if kitCheckTeam(attacker, {_player}, false) is true:
+		delete {Stats.%{_player}%::VoodooDoll}
+		set {_memsg} to kitGhostMessage("§5藁人形が破壊された!", true)
+		kitMsg({_player}, {_memsg})
+		delete victim
+
+on death of player:
+	metadata value "gametype" of victim is "Kit"
+	if {Class::%{LastKiller::%victim%}%} is "Ghost":
+		{Class::%victim%} is not "Ghost"
+		{Stats.%{LastKiller::%victim%}%::SpareSoul} is not set
+		checkCT({_player}, "Spare Soul") is true
+		set {Stats.%{LastKiller::%victim%}%::SpareSoul} to true
+		set {Stats.%{LastKiller::%victim%}%::Resurrection} to true
+		set {_memsg} to kitGhostMessage("§5魂を補充しました...", true)
+		kitMsg({LastKiller::%victim%}, {_memsg})
+	if {Stats.%victim%::SpareSoul} is true:
+		set {_memsg} to kitGhostMessage("§5魂の復活を行いました...", true)
+		kitMsg(victim, {_memsg})
+		playSound("entity.wither.death", 1, 0.5, victim)
+		setCT(victim, "Spare Soul", 10)
+		wait 3 ticks
+		set slot 1 of victim to air
+
+function kitCheckSpirit(player: player, num: number, type: text = "Skill") :: boolean:
+	set {_tool} to {_player}'s tool
+	if kitItemKitChecker({_tool}) is "Ghost":
+		if kitItemTypeChecker({_tool}) is {_type}:
+			if kitItemNumberChecker({_tool}) is {_num}:
+				set {_skill} to {_tool}
+	if {_fueltool} is not set:
+		loop all items in {_player}'s inventory:
+			kitItemKitChecker(loop-item) is "Ghost"
+			kitItemTypeChecker(loop-item) is {_type}
+			kitItemNumberChecker(loop-item) is {_num}
+			set {_skill} to loop-item
+	set {_lore::*} to lore of {_skill}
+	loop {_lore::*}:
+		loop-value contains "§4Spirit§7:"
+		set {_spirit} to loop-value
+	replace every "§4Spirit§7: §5" with "" in {_spirit}
+	set {_spirit} to {_spirit} parsed as number
+	if {Kit-Spirits::%{_player}%} >= {_spirit}:
+		subtract {_spirit} from {Kit-Spirits::%{_player}%}
+		return true
+	else:
+		send action bar "§5§lSpiritが不足しています!" to {_player}
+		return false
+
+function kitGhostMessage(text: text, bold: boolean = false) :: text:
+	set {_colors::*} to {_text} split at "§"
+	set {_finalstring} to ""
+	loop {_colors::*}:
+		set {_texts::*} to loop-value split at ""
+		if {_bold} is true:
+			set {_colorcode} to "§%{_texts::1}%§l"
+		else:
+			set {_colorcode} to "§%{_texts::1}%"
+		loop length of loop-value times:
+			if loop-number is not 1:
+				set {_tx} to {_texts::%loop-number%}
+				set {_lct} to "%{_colorcode}%"
+				chance of 10%:
+					set {_lct} to "%{_lct}%§k"
+				set {_lasttext} to "%{_lct}%%{_tx}%"
+				set {_finalstring} to "%{_finalstring}%%{_lasttext}%"
+	return {_finalstring}
+
+function kitTimerGhost(player: player):
+	while {Class::%{_player}%} is "Ghost":
+		add 1 to {_timer}
+		if {_timer} >= 20:
+			set {_timer} to 0
+		if {_timer} = 0:
+			delete {_spirit}
+			loop all players in radius 30 around {_player}:
+				kitCheckTeam(loop-player, {_player}, false) is true
+				set {_spirit} to true
+			if {_spirit} is true:
+				add 1 to {Kit-Spirits::%{_player}%}
+		delete {_true}
+		if {_player}'s tool is air:
+			set {_true} to true
+		else:
+			set {_name} to name of {_player}'s tool
+			if checkCT({_player}, name of {_player}'s tool, true) is true:
+				set {_true} to true
+		if {_true} is true:
+			send action bar "§4§lSpirit§0: §5%{Kit-Spirits::%{_player}%}%" to {_player}
+		wait a tick
+
+function kitUltGhost(player: player):
+	drawDot count 5, particle "mobspell", RGB 50, 0, 50, center {_player}, visibleRange 30, keepFor 10 seconds
+	message "§cWitherに変身して空を飛べるようになります!" to {_player}
+	message "§c左クリックで弾を発射し,周辺の敵に衰弱 IIIを3秒付与します!" to {_player}
+	remove invisibility from {_player}
+	allow fly for {_player}
+	set {Stats.%{_player}%::UltGhost} to true
+	execute console command "/displayer %{_player}% Wither"
+	loop 200 times:
+		if {Stats.%{_player}%::UltGhost} is true:
+			wait a tick
+	delete {Stats.%{_player}%::UltGhost}
+	if gamemode of {_player} is survival:
+		disallow fly for {_player}
+		apply invisibility 1 to {_player} for 100000000000 seconds
+	execute console command "/undisplayer %{_player}%"
+	set {Stats.%{_player}%::UltGhostFalling} to true
+	wait 5 seconds
+	delete {Stats.%{_player}%::UltGhostFalling}
+
+on damage of player:
+	metadata value "gametype" of victim is "Kit"
+	{Stats.%victim%::UltGhostFalling} is true
+	delete {Stats.%victim%::UltGhostFalling}
+	cancel event
+
+on leftclick:
+	metadata value "gametype" of player is "Kit"
+	{Stats.%player%::UltGhost} is true
+	checkCT(player, "Ghost Ult") is true
+	setCT(player, "Ghost Ult", 1)
+	set {_p} to location of head of player
+	shoot a falling coal block from {_p} at speed 1
+	set {_now} to now
+	set metadata value "kit-ghostult" of shot falling coal block to "%player%"
+	set metadata value "kit-ghostulttime" of shot falling coal block to "%{_now}%"
+	drawDot count 1, particle "mobspell", RGB 0, 0, 0, center shot falling coal block, visibleRange 30, keepFor 3 seconds
+	playSound("entity.wither.shoot", 1, 0.5, player)
+	loop 60 times:
+		{_true} is not set
+		loop all falling coal blocks:
+			metadata value "kit-ghostult" of loop-falling coal block is "%player%"
+			metadata value "kit-ghostulttime" of loop-falling coal block is "%{_now}%"
+			loop all players in radius 2 around loop-falling coal block:
+				{_true} is not set
+				kitCheckTeam(player, loop-player, false) is true
+				set {_true} to true
+				set {_l} to location of loop-falling coal block
+				make a fake explosion at {_l}
+			loop all blocks in radius 2 around loop-falling coal block:
+				{_true} is not set
+				loop-block is not passable
+				set {_true} to true
+				set {_l} to location of loop-falling coal block
+				make a fake explosion at {_l}
+		wait a tick
+	loop all falling coal blocks:
+		metadata value "kit-ghostult" of loop-falling coal block is "%player%"
+		metadata value "kit-ghostulttime" of loop-falling coal block is "%{_now}%"
+		delete loop-falling coal block
+	{_true} is true
+	loop all entities in radius 5 around {_l}:
+		kitCheckTeam(player, loop-entity, false, true) is true
+		kitDamage(player, loop-entity, 2)
+		apply wither 3 to loop-entity for 3 seconds
+		playSound("entity.wither.spawn", 0.75, 0.5, loop-entity)
+	set {_s} to 0
+	set {_t} to 0
+	set {_pl} to {_l}
+	loop 19 time:
+		loop 36 time:
+			set {_loc} to {_pl}
+			set {_vector} to {_loc}
+			set {_x} to x-coordinate of {_loc}
+			set {_y} to y-coordinate of {_loc}
+			set {_z} to z-coordinate of {_loc}
+			set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
+			set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
+			set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
+			chance of 10%:
+				drawDot count 1, particle "redstone", RGB 0, 0, 0, center {_vector}, visibleRange 100
+			add 10 to {_t}
+		add 10 to {_s}

@@ -1,0 +1,480 @@
+# Healerのスキル Ver1.0.0
+
+# Weapons
+function kitWeaponHealer(player: player):
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	checkCT({_player}, name of {_player}'s tool) is true
+	if {_item.num} is 2:
+		kitWeapon_Healer_2({_player})
+	else if {_item.num} is 3:
+		kitWeapon_Healer_3({_player})
+	else if {_item.num} is 4:
+		kitWeapon_Healer_4({_player})
+	else if {_item.num} is 5:
+		kitWeapon_Healer_5({_player})
+
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	{Class::%attacker%} is "Healer"
+	set {_tool} to attacker's tool
+	set {_item.kit} to kitItemKitChecker({_tool})
+	{_item.kit} is "Healer"
+	set {_item.type} to kitItemTypeChecker({_tool})
+	{_item.type} is "Weapon.main"
+	set {_item.num} to kitItemNumberChecker({_tool})
+	{_item.num} is 1
+	ignite victim for 3 seconds
+
+function kitWeapon_Healer_2(player: player):
+	toolCT({_player}, "Healer", 2, "Weapon.main")
+	add 5 to {Kit-Odo::%{_player}%}
+	kitMsg({_player}, "§dオドを回復しました!")
+	playSound("block.note_block.chime", 1, 1.1, {_player})
+	loop all players in radius 5 around {_player}:
+		loop-player is not {_player}
+		{Join::%loop-player%} is "Kit"
+		add 1 to {Kit-Odo::%{_player}%}
+	set {_y} to 0
+	loop 5 times:
+		add 0.4 to {_y}
+		loop 3 times:
+			set {_el} to aroundEffect({_player})
+			set y-coordinate of {_el} to y-coordinate of location of {_player} + {_y}
+			drawDot count 1, particle "mobspell", RGB 0, 175, 204, center {_el}, visibleRange 30
+		wait a tick
+
+function kitWeapon_Healer_3(player: player):
+	toolCT({_player}, "Healer", 3, "Weapon.main")
+	kitMsg({_player}, "§a周囲の味方に§d§l治癒§aを与えました...")
+	playSound("block.conduit.activate", 1, 1.5, {_player})
+	loop all entities in radius 10 around {_player}:
+		kitCheckTeam({_player}, loop-entity, true) is true
+		apply regeneration 1 to loop-entity for 10 seconds
+		healEffect(loop-entity)
+		if type of loop-entity is player:
+			setSupporter(loop-entity, {_player})
+			message formatted "§d%{_player}% §eから回復を授かった!" to loop-entity
+	set {_baseloc} to location of {_player}
+	loop 10 times:
+		add 1 to {_len}
+		loop 36 times:
+			set {_loc} to {_baseloc}
+			add 10 to {_rad}
+			add {_len} * sin({_rad}) to x-coordinate of {_loc}
+			add {_len} * cos({_rad}) to z-coordinate of {_loc}
+			drawDot count 1, particle "endrod", center {_loc}, visibleRange 30
+		add 1 to {_rad}
+		wait a tick
+
+function kitWeapon_Healer_4(player: player):
+	if {Kit-Odo::%{_player}%} >= 1:
+		if {Stats.%{_player}%::SkillTarget} is set:
+			set {_target} to {Stats.%{_player}%::SkillTarget}
+			if max health of {_target} is not health of {_target}:
+				subtract 1 from {Kit-Odo::%{_player}%}
+				setSupporter({_target}, {_player})
+				healEffect({_target})
+				kitHeal({_target}, 0.25)
+				playSound("ambient.underwater.loop.additions", 1, 2, {_target})
+				set {_from} to vector of {_player}
+				set {_to} to vector of {_target}
+				set {_vector} to {_to} -- {_from}
+				set {_vector} to normalized {_vector}
+				set {_baseloc} to location of head of {_player}
+				set yaw of {_baseloc} to yaw of {_vector}
+				set pitch of {_baseloc} to pitch of {_vector}
+				set {_count} to distance between {_baseloc} and {_target} * 0.1
+				loop 10 times:
+					set {_el} to location {_count} * loop-number meters in front of {_baseloc}
+					drawDot count 1, particle "endrod", center {_el}, visibleRange 30
+
+function kitWeapon_Healer_5(player: player):
+	if max health of {_player} is health of {_player}:
+		toolCT({_player}, "Healer", 5, "Weapon.main")
+		kitMsg({_player}, "§5命の取引を行います...")
+		set health of {_player} to 1
+		playSound("block.conduit.deactivate", 1, 0.5, {_player})
+		loop all players in radius 10 around {_player}:
+			metadata value "gametype" of loop-player is "Kit"
+			{team::%loop-player%} is {team::%{_player}%}
+			{Stats.%loop-player%::NoSupport} is not set
+			setSupporter(loop-player, {_player})
+			healEffect(loop-player)
+			if max health of loop-player = health of loop-player:
+				add 1 to max health of loop-player
+			kitHeal(loop-player, 100)
+			message formatted "<##ba55d3>取引により<##9932cc>命<##ba55d3>を頂いた..." to loop-player
+		set {_rad} to -45
+		set {_baseloc} to location of {_player}
+		loop 4 times:
+			add 90 to {_rad}
+			set {_el} to {_baseloc}
+			set yaw of {_el} to {_rad}
+			set pitch of {_el} to 0
+			loop 10 times:
+				set {_e} to location loop-number-2 meters in front of {_el}
+				drawDot count 1, particle "witchspell", center {_e}, visibleRange 30, keepFor a second
+	else:
+		kitMsg({_player}, "§c命が足りません...")
+
+# Skills
+function kitSkillHealer(player: player) :: boolean:
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if checkCT({_player}, name of {_player}'s tool) is true:
+		if {_item.num} is 1:
+			kitSkill_Healer_1({_player})
+		else if {_item.num} is 2:
+			kitSkill_Healer_2({_player})
+		else if {_item.num} is 3:
+			kitSkill_Healer_3({_player})
+		else if {_item.num} is 4:
+			kitSkill_Healer_4({_player})
+		else if {_item.num} is 5:
+			kitSkill_Healer_5({_player})
+		else if {_item.num} is 6:
+			kitSkill_Healer_6({_player})
+		else if {_item.num} is 7:
+			kitSkill_Healer_7({_player})
+		else if {_item.num} is 8:
+			kitSkill_Healer_8({_player})
+	return true
+
+function kitSkill_Healer_1(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		set {_target} to {Stats.%{_player}%::SkillTarget}
+		if {Kit-Odo::%{_player}%} is more than 9:
+			toolCT({_player}, "Healer", 1)
+			subtract 10 from {Kit-Odo::%{_player}%}
+			setSupporter({_target}, {_player})
+			apply regeneration 2 to {_target} for 5 seconds
+			healEffect({_target})
+			kitMsg({_player}, "§a%{_target}% §dを回復しました!")
+			send action bar "§d現在のオド: §c%{Kit-Odo::%{_player}%}%" to {_player}
+			message formatted "§d%{_player}% §cから再生能力を授かった!" to {_target}
+			playSound("block.portal.travel", 0.5, 2, {_target})
+		else:
+			kitMsg({_player}, "§cオドが足りません! 必要オドは §310 §cです!")
+	else:
+		send action bar "§c§l対象を指定してください" to {_player}
+
+function kitSkill_Healer_2(player: player):
+	if {Kit-Odo::%{_player}%} is more than 19:
+		toolCT({_player}, "Healer", 2)
+		subtract 20 from {Kit-Odo::%{_player}%}
+		shoot a snowball from {_player} at speed 2
+		set item of shot entity to heart of the sea
+		set metadata value "cureorb" of shot entity to "true"
+		drawDot count 1, particle "mobspell", RGB 0, 161, 233, center shot entity, visibleRange 30, keepFor 2 seconds
+		playSound("entity.arrow.shoot", 1, 2, {_player})
+	else:
+		kitMsg({_player}, "§cオドが足りません! 必要オドは §310 §cです!")
+
+function kitSkill_Healer_3(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		if {Kit-Odo::%{_player}%} is more than 39:
+			toolCT({_player}, "Healer", 3)
+			subtract 40 from {Kit-Odo::%{_player}%}
+			set {_now} to now
+			set {Stats.%{_player}%::FieldHospital-Time} to {_now}
+			kitFakeDeleteData({_player}, "Field Hospital")
+			set {_loc1} to {Stats.%{_player}%::SkillLocation}
+			kitFakeBlock({_player}, {_loc1}, "minecraft:oak_fence", "Field Hospital")
+			set {_loc2} to {Stats.%{_player}%::SkillLocation}
+			add 1 to y-coordinate of {_loc2}
+			kitFakeBlock({_player}, {_loc2}, "minecraft:torch", "Field Hospital")
+			kitMsg({_player}, "§d周辺の味方を回復する装置を設置しました...")
+			send action bar "§d現在のオド: §c%{Kit-Odo::%{_player}%}%" to {_player}
+			playSound("block.portal.travel", 0.5, 1.5, {_loc1})
+			while {Stats.%{_player}%::FieldHospital-Time} is {_now}:
+				wait a second
+				delete {_exist}
+				loop all entities:
+					type of loop-entity is armor stand
+					metadata value "kit-armor" of loop-entity is "Field Hospital"
+					metadata value "Field Hospital" of loop-entity is "%{_player}%"
+					set {_exist} to true
+				if {_exist} is true:
+					kitFakeReload({_player}, "Field Hospital")
+					loop all players in radius 5 around {_loc1}:
+						if {team::%loop-player%} is {team::%{_player}%}:
+							loop-player is not {_player}
+							{Stats.%loop-player%::NoSupport} is not set
+							setSupporter(loop-player, {_player})
+							apply regeneration 1 to loop-player for 1 second
+							drawDot count 3, particle "mobspell", RGB 255, 102, 255, center loop-player, visibleRange 30, keepFor 1 seconds
+					set {_baseloc} to {_loc1}
+					set {_rad} to 0
+					loop 36 times:
+						set {_el} to {_baseloc}
+						add 10 to {_rad}
+						add 5 * sin({_rad}) to x-coordinate of {_el}
+						add 5 * cos({_rad}) to z-coordinate of {_el}
+						drawDot count 1, particle "mobspell", RGB 255, 255, 153, center {_el}, visibleRange 30, keepFor 1 seconds
+				else:
+					delete {Stats.%{_player}%::FieldHospital-Time}
+		else:
+			kitMsg({_player}, "§cオドが足りません! 必要オドは §340 §cです!")
+	else:
+		send action bar "§c§l地点を指定してください" to {_player}
+
+function kitSkill_Healer_4(player: player):
+	if {_player}'s health <= 5:
+		send action bar "§c§l体力が少なすぎます!" to {_player}
+	else:
+		toolCT({_player}, "Healer", 4)
+		subtract 5 from {_player}'s health
+		add 10 to {Kit-Odo::%{_player}%}
+		kitMsg({_player}, "§dオドを回復しました!")
+		playSound("entity.cat.hiss", 1, 1, {_player})
+
+on projectile hit:
+	projectile is a snowball
+	metadata value "cureorb" of projectile is "true"
+	playSound("block.end_portal_frame.fill", 1, 1.5, projectile)
+	loop all players in radius 5 around projectile:
+		loop-player is not shooter
+		loop-player is alive
+		{team::%loop-player%} is {team::%shooter%}
+		{Stats.%loop-player%::NoSupport} is not set
+		setSupporter(loop-player, shooter)
+		kitHeal(loop-player, 3)
+		kitMsg(shooter, "<##006eb0>%loop-player% <##00a1e9>を回復しました!")
+		message "<##006eb0>%shooter% <##00a1e9>に回復してもらった!" to loop-player
+		healEffect(loop-player)
+	loop all blocks in radius 5 around projectile:
+		loop-block is air
+		block below loop-block is not air
+		set {_l} to location of loop-block
+		subtract 0.4 from y-coordinate of {_l}
+		drawDot count 1, particle "mobspell", RGB 0, 161, 233, center {_l}, visibleRange 30, keepFor 1 second
+
+function kitSkill_Healer_5(player: player):
+	if {Kit-Odo::%{_player}%} is more than 19:
+		toolCT({_player}, "Healer", 5)
+		subtract 20 from {Kit-Odo::%{_player}%}
+		playSound("block.respawn_anchor.charge", 1, 2, {_player})
+		kitMsg({_player}, "<##ff8c00>周辺の全員に<##d2691e>短時間の戦闘強化<##ff8c00>を付与した!")
+		loop all players in radius 5 around {_player}:
+			metadata value "gametype" of loop-player is "Kit"
+			loop-player is not {_player}
+			{Stats.%loop-player%::NoSupport} is not set
+			if {team::%loop-player%} is {team::%{_player}%}:
+				setSupporter(loop-player, {_player})
+			apply regeneration 3 to loop-player for 3 seconds
+			apply resistance 3 to loop-player for 3 seconds
+			drawDot count 3, particle "mobspell", RGB 255, 140, 0, center loop-player, visibleRange 30, keepFor 3 seconds
+			message formatted "<##ffd700>%{_player}% <##d2691e>に戦闘強化の効果を短時間貰った!" to loop-player
+		set {_y} to 0
+		loop 5 times:
+			set {_baseloc} to location of {_player}
+			set {_rad} to 0
+			loop 10 times:
+				add 36 to {_rad}
+				set {_el} to {_baseloc}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 255, 140, 0, center {_el}, visibleRange 30
+			add 0.5 to {_y}
+			wait a tick
+	else:
+		kitMsg({_player}, "§cオドが足りません! 必要オドは §320 §cです!")
+
+function kitSkill_Healer_6(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if {Kit-Odo::%{_player}%} is more than 29:
+			set {_target} to {Stats.%{_player}%::SkillTarget}
+			subtract 30 from {Kit-Odo::%{_player}%}
+			loop all items in {_player}'s inventory:
+				name of loop-item is "§6Peaceful Aid"
+				delete loop-item
+			setSupporter({_target}, {_player})
+			healEffect({_target})
+			playSound("entity.illusioner.prepare_mirror", 1, 1.1, {_target})
+			kitMsg({_player}, "<##ee7800>%{_target}% <##ea618e>に<##d70035>平和の大回復<##ea618e>を付与しました...")
+			message "<##ee7800>%{_player}% <##ea618e>より<##d70035>平和の大回復<##ea618e>を貰った!" to {_target}
+			add 5 to max health of {_target}
+			kitHeal({_target}, 100)
+			apply weakness 10 to {_target} for 10 seconds
+		else:
+			kitMsg({_player}, "§cオドが足りません! 必要オドは §330 §cです!")
+	else:
+		send action bar "§c§l対象を指定してください" to {_player}
+
+function kitSkill_Healer_7(player: player):
+	if {Kit-Odo::%{_player}%} is more than 49:
+		toolCT({_player}, "Healer", 7)
+		subtract 50 from {Kit-Odo::%{_player}%}
+		kitMsg({_player}, "<##fcc800>月の光が皆を癒やします...")
+		apply glowing 1 to {_player} for 5 seconds
+		kitFreeze({_player}, 5 seconds, false)
+		loop 5 times:
+			playSound("block.beacon.ambient", 1, 1, {_player})
+			loop all players:
+				metadata value "gametype" of loop-player is "Kit"
+				loop-player is not {_player}
+				{team::%loop-player%} is {team::%{_player}%}
+				{Stats.%loop-player%::NoSupport} is not set
+				setSupporter(loop-player, {_player})
+				kitHeal(loop-player, 1)
+				healEffect(loop-player)
+			set {_count} to 20
+			set {_baseloc} to location of {_player}
+			loop 20 times:
+				set {_effcount} to 11 - round({_count} / 2)
+				set {_effwide} to 10 - ({_count} / 2)
+				set {_effwideminus} to {_effwide} * -1
+				loop {_effcount} times:
+					set {_loc} to location {_count} meters above {_baseloc}
+					add a random number between {_effwideminus} and {_effwide} to x-coordinate of {_loc}
+					add a random number between {_effwideminus} and {_effwide} to z-coordinate of {_loc}
+					drawDot count 1, particle "endrod", center {_loc}, visibleRange 100
+				subtract 1 from {_count}
+				wait a tick
+	else:
+		kitMsg({_player}, "§cオドが足りません! 必要オドは §350 §cです!")
+
+function kitSkill_Healer_8(player: player):
+	if {Stats.%{_player}%::NaturalFeeling} is not set:
+		set {Stats.%{_player}%::NaturalFeeling} to 10
+	loop 5 times:
+		{Stats.%{_player}%::NaturalFeeling} > 0
+		playSound("block.grass.step", 0.8, 2, {_player})
+		loop all players in radius 10 around {_player}:
+			{Stats.%{_player}%::NaturalFeeling} > 0
+			loop-player is not {_player}
+			loop-player is alive
+			kitCheckTeam(loop-player, {_player}, true) is true
+			health of loop-player is not max health of loop-player
+			subtract 0.05 from {Stats.%{_player}%::NaturalFeeling}
+			setSupporter(loop-player, {_player})
+			kitHeal(loop-player, 0.05)
+			healEffect(loop-player, 1)
+			drawDot count 1, particle "mobspell", RGB 121, 192, 110, center loop-player, visibleRange 30
+		set {_angle} to 0
+		loop 36 times:
+			set {_loc} to location of {_player}
+			add 10 * sin({_angle}) to x-coordinate of {_loc}
+			add 10 * cos({_angle}) to z-coordinate of {_loc}
+			add 1 to y-coordinate of {_loc}
+			drawDot count 1, particle "redstone", RGB 121, 192, 110, center {_loc}, visibleRange 30
+			add 10 to {_angle}
+		if {Stats.%{_player}%::NaturalFeeling} <= 0:
+			loop all items in {_player}'s inventory:
+				name of loop-item is "§aNatural Feeling"
+				delete loop-item
+			playSound("block.grass.break", 1, 1, {_player})
+		else:
+			set {_barcount} to round({Stats.%{_player}%::NaturalFeeling} * 4)
+			set {_bar} to 0
+			set {_bartext} to ""
+			loop 40 times:
+				add 1 to {_bar}
+				if {_bar} <= {_barcount}:
+					set {_bartext} to "%{_bartext}%§a|"
+				else:
+					set {_bartext} to "%{_bartext}%§8|"
+			send action bar "§e§l[ %{_bartext}% §e§l]" to {_player}
+		wait a tick
+
+on death of player:
+	{Class::%attacker%} is "HEA"
+	heal attacker by 3 hearts
+	add 10 to {Kit-Odo::%attacker%}
+
+on damage of player:
+	{Class::%victim%} is "HEA"
+	if damage was caused by void or fall:
+		stop
+	else:
+		set damage to damage * 1.5
+
+command /odoset <number> <player=%player%>:
+	permission: sk.admin
+	trigger:
+		set {Kit-Odo::%arg 2%} to arg 1
+		message colored "§c%arg 2%§dのオドを§b%arg 1%§dに設定しました"
+
+function kitTimerHealer(player: player):
+	set {_odotimer} to 0
+	while {Class::%{_player}%} is "Healer":
+		set {_tool} to {_player}'s tool
+		set {_item.type} to kitItemTypeChecker({_tool})
+		set {_item.num} to kitItemNumberChecker({_tool})
+		add 1 to {_odotimer}
+		if {_odotimer} >= 200:
+			set {_odotimer} to 0
+			add 10 to {Kit-Odo::%{_player}%}
+		delete {_skillok}
+		delete {_true}
+		if {_tool} is air:
+			set {_true} to true
+		else:
+			if {_item.num} is not 8:
+				if checkCT({_player}, name of {_tool}, true) is true:
+					set {_true} to true
+		if {_true} is true:
+			send action bar "§d§lOdo§e: §c%{Kit-Odo::%{_player}%}%" to {_player}
+		loop all players:
+			kitCheckTeam({_player}, loop-player, true) is true
+			loop-player is not {_player}
+			set {_health} to health of loop-player
+			set {_max} to max health of loop-player
+			set {_per} to {_health} / {_max}
+			set {_g} to 255 * {_per}
+			set {_r} to 255 * (1 - {_per})
+			set {_baseloc} to location of loop-player
+			add 2 to y-coordinate of {_baseloc}
+			set {_rad} to 0
+			loop 5 times:
+				add 72 to {_rad}
+				set {_el} to {_baseloc}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle redstone, RGB {_r}, {_g}, 0, center {_el}, isClientside {_player}, visibleRange 300
+		wait a tick
+
+function healEffect(player: entity, count: number = 5):
+	loop {_count} times:
+		set {_loc} to location of {_player}
+		add a random number between -1 and 1 to x-coordinate of {_loc}
+		add a random number between 0 and 2 to y-coordinate of {_loc}
+		add a random number between -1 and 1 to z-coordinate of {_loc}
+		drawDot count 1, particle "heart", center {_loc}, visibleRange 30
+
+# Ultimate
+function kitUltHealer(player: player):
+	message "§c効果中,空を飛ぶことが可能になります!" to {_player}
+	message "§c周辺の味方の体力を回復し,オドを増加させていきます!" to {_player}
+	message "§c既に満タンであれば,徐々に最大体力を増やします!" to {_player}
+	set {_c} to drawCount({_player})
+	drawWings style 6, particle1 "redstone", RGB 255, 255, 255, particle2 "redstone", RGB2 179, 255, 255, particle3 "mobspell", RGB3 229, 151, 178, center {_player}, id "%{_player}%-%{_c}%", angle 110, height 0, space 0.2, visibleRange 30, tps 0, second 3
+	allow fly for {_player}
+	loop 200 times:
+		delete {_og}
+		loop all players in radius 10 around {_player}:
+			loop-player is not {_player}
+			kitCheckTeam({_player}, loop-player, true) is true
+			add {_player} to {supporter.%loop-player%::*}
+			if max health of loop-player = health of loop-player:
+				if max health of loop-player < 13:
+					add 0.1 to {_mh.%loop-player%}
+					if {_mh.%loop-player%} is 4:
+						delete {_mh.%loop-player%}
+						add 1 to max health of loop-player
+						heal loop-player by 1 heart
+			else:
+				delete {_mh.%loop-player%}
+				heal loop-player by 0.1 hearts
+			healEffect(loop-player, 1)
+			set {_og} to true
+		if {_og} is true:
+			add 1 to {_ogn}
+			if {_ogn} is 20:
+				delete {_ogn}
+				add 10 to {Kit-Odo::%{_player}%}
+		wait a tick
+	stopEffect "%{_player}%-%{_c}%"
+	disallow fly for {_player}

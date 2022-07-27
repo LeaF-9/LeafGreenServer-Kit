@@ -1,0 +1,42 @@
+﻿on damage of player:
+	{Join::%victim%} is "Kit"
+	if attacker exists:
+		if attacker is player:
+			set {LastKiller::%victim%} to attacker
+			add attacker to {damager.%victim%::*}
+			if {tochu} is true:
+				if damage was caused by projectile:
+					if metadata value "freezedry" of projectile is "true":
+						stop
+				if {Ulting::%attacker%} is not set:
+					add 1 to {Ultimate::%attacker%}
+		else:
+			if attacker is tnt:
+				set {_attacker} to metadata value "attacker" of attacker
+				set {_attacker} to {_attacker} parsed as player
+				if {team::%{_attacker}%} is {team::%victim%}:
+					cancel event
+				else:
+					set {LastKiller::%victim%} to {_attacker}
+					add {_attacker} to {damager.%victim%::*}
+			else:
+				loop all players:
+					attacker's display name is name of loop-player
+					set {LastKiller::%victim%} to loop-player
+					add loop-player to {damager.%victim%::*}
+	else:
+		if damage was caused by suffocation:
+			set {_bl} to location of block above victim
+			loop all players:
+				delete {_ok}
+				loop-player is not victim
+				loop {Block.%loop-player%::*}:
+					loop-value-2 is {_bl}
+					set {_ok} to true
+				{_ok} is true
+				if {team::%loop-player%} is {team::%victim%}:
+					cancel event
+					teleport victim to location of loop-player
+				else:
+					set {LastKiller::%victim%} to loop-player
+					add loop-player to {damager.%victim%::*}

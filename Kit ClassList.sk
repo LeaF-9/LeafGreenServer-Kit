@@ -1,0 +1,64 @@
+options:
+	prefix: §a[§bClass§a]
+
+command /classlist <text> <text> [<text>]:
+	permission: sk.admin
+	trigger:
+		if arg 1 is "create":
+			if {Kit-Classes::%arg 2%} is not set:
+				set {Kit-Classes::%arg 2%} to true
+				add arg 2 to {Kit-ClassList::*}
+				load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class"
+				set yml value "name" from "class" to arg 2
+				save yml "class"
+				message "{@prefix} §e%arg 2%§7を§bClass List§7に入れました" to player
+			else:
+				message "{@prefix} §c既に入っています" to player
+		else if arg 1 is "remove":
+			if {Kit-Classes::%arg 2%} is set:
+				delete {Kit-Classes::%arg 2%}
+				delete {Kit-ClassType::%arg 2%}
+				remove arg 2 from {Kit-ClassList::*}
+				message "{@prefix} §e%arg 2%§cを削除しました" to player
+			else:
+				message "{@prefix} §cこのClassは存在しません" to player
+		else if arg 1 is "type":
+			if {Kit-Classes::%arg 2%} is set:
+				if arg 3 is set:
+					load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class"
+					set yml value "type" from "class" to arg 3
+					save yml "class"
+					message "{@prefix} §e%arg 2%§7のTypeを§a%arg 3%§7に設定しました" to player
+				else:
+					message "{@prefix} §cTypeを指定してください" to player
+			else:
+				message "{@prefix} §cこのClassは存在しません" to player
+		else if arg 1 is "item":
+			if {Kit-Classes::%arg 2%} is set:
+				load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class"
+				set yml value "item" from "class" to type of player's tool
+				save yml "class"
+				message "{@prefix} §e%arg 2%§7のItemを§a%type of player's tool%§7に設定しました" to player
+			else:
+				message "{@prefix} §cこのClassは存在しません" to player
+		else if arg 1 is "info":
+			if {Kit-Classes::%arg 2%} is set:
+				load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class"
+				message "{@prefix} §bname§7: §a%arg 2%" to player
+				set {_type} to yml value "type" from "class"
+				message "{@prefix} §btype§7: §a%{_type}%" to player
+				set {_item} to yml value "item" from "class"
+				message "{@prefix} §bitem§7: §a%{_item}%" to player
+			else:
+				message "{@prefix} §cこのClassは存在しません" to player
+
+command /kit-classyaml:
+	permission: sk.admin
+	trigger:
+		loop {Kit-ClassList::*}:
+			load yml "plugins/skript-yaml/Kit Classes/%loop-value%.yml" as "class"
+			set yml value "name" from "class" to loop-value
+			set yml value "type" from "class" to {Kit-ClassType::%loop-value%}
+			save yml "class"
+			message "§e%loop-value% §a書込完了" to player
+			wait a tick

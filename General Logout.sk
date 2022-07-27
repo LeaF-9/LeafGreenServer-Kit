@@ -1,0 +1,93 @@
+options:
+	prefix: §9[§bPvPStats§9]
+
+on quit:
+	{Join::%player%} is "Kit"
+	delete {Join::%player%}
+	subtract 1 from {Kit-Join}
+	broadcast "§a%player% §6がゲームから退出しました。 §7(§d%{Kit-Join}%/40§7)"
+	{LastKiller::%player%} is set
+	{LastKiller::%player%} is not player
+	if {Kit-GameStart} is true:
+		{LastKiller::%player%} is set
+		{LastKiller::%player%} is not player
+		add 5 to {Ultimate::%{LastKiller::%player%}%}
+		set {_attacker.UUID} to {LastKiller::%player%}'s UUID
+		add 1 to {Kit-Death.%{Class::%player%}%::%player's UUID%}
+		add 1 to {Kit-Death.%{KitPvP_Rule}%::%player's UUID%}
+		add 1 to {Kit-Death.all::%player's UUID%}
+		add 1 to {Kit-Death.month::%player's UUID%}
+		add 1 to {Kit-Death.week::%player's UUID%}
+		set {Kit-KD.all::%player's UUID%} to {Kit-Kill.all::%player's UUID%} / {Kit-Death.all::%player's UUID%}
+		set {Kit-KD.month::%player's UUID%} to {Kit-Kill.month::%player's UUID%} / {Kit-Death.month::%player's UUID%}
+		set {Kit-KD.week::%player's UUID%} to {Kit-Kill.week::%player's UUID%} / {Kit-Death.week::%player's UUID%}
+		set {Kit-KD.%{KitPvP_Rule}%::%player's UUID%} to {Kit-Kill.%{KitPvP_Rule}%::%player's UUID%} / {Kit-Death.%{KitPvP_Rule}%::%player's UUID%}
+		set {Kit-KD.%{Class::%player%}%::%player's UUID%} to {Kit-Kill.%{Class::%player%}%::%player's UUID%} / {Kit-Death.%{Class::%player%}%::%player's UUID%}
+		add 1 to {Kit-Kill.%{Class::%{LastKiller::%player%}%}%::%{_attacker.UUID}%}
+		add 1 to {Kit-Kill.%{KitPvP_Rule}%::%{_attacker.UUID}%}
+		add 1 to {Kit-Kill.all::%{_attacker.UUID}%}
+		add 1 to {Kit-Kill.month::%{_attacker.UUID}%}
+		add 1 to {Kit-Kill.week::%{_attacker.UUID}%}
+		set {Kit-KD.all::%{_attacker.UUID}%} to {Kit-Kill.all::%{_attacker.UUID}%} / {Kit-Death.all::%{_attacker.UUID}%}
+		set {Kit-KD.month::%{_attacker.UUID}%} to {Kit-Kill.month::%{_attacker.UUID}%} / {Kit-Death.month::%{_attacker.UUID}%}
+		set {Kit-KD.week::%{_attacker.UUID}%} to {Kit-Kill.week::%{_attacker.UUID}%} / {Kit-Death.week::%{_attacker.UUID}%}
+		set {Kit-KD.%{KitPvP_Rule}%::%{_attacker.UUID}%} to {Kit-Kill.%{KitPvP_Rule}%::%{_attacker.UUID}%} / {Kit-Death.%{KitPvP_Rule}%::%{_attacker.UUID}%}
+		set {Kit-KD.%{Class::%{LastKiller::%player%}%}%::%{_attacker.UUID}%} to {Kit-Kill.%{Class::%{LastKiller::%player%}%}%::%{_attacker.UUID}%} / {Kit-Death.%{Class::%{LastKiller::%player%}%}%::%{_attacker.UUID}%}
+		message "{@prefix} §e%player% §dをキルしました" to {LastKiller::%player%}
+		set {_true.%{LastKiller::%player%}%} to true
+		loop {damager.%player%::*}:
+			loop-value is not {LastKiller::%player%}
+			{team::%loop-value%} is {team::%{LastKiller::%player%}%}
+			{_true.%loop-value%} is not set
+			add 3 to {Ultimate::%loop-value%}
+			add 1 to {Kit-Assist.all::%loop-value's UUID%}
+			add 1 to {Kit-Assist.month::%loop-value's UUID%}
+			add 1 to {Kit-Assist.week::%loop-value's UUID%}
+			add 1 to {Kit-Assist.%{KitPvP_Rule}%::%loop-value's UUID%}
+			add 1 to {Kit-Assist.%{Class::%loop-value%}%::%loop-value's UUID%}
+			set {_true.%loop-value%} to true
+			message "{@prefix} §e%player% §aのキルアシストをしました" to loop-value
+		loop {supporter.%{LastKiller::%player%}%::*}:
+			loop-value is not {LastKiller::%player%}
+			{Kit-team::%loop-value%} is {Kit-team::%{LastKiller::%player%}%}
+			{_true.%loop-value%} is not set
+			add 3 to {Ultimate::%loop-value%}
+			add 1 to {Kit-Assist.all::%loop-value's UUID%}
+			add 1 to {Kit-Assist.month::%loop-value's UUID%}
+			add 1 to {Kit-Assist.week::%loop-value's UUID%}
+			add 1 to {Kit-Assist.%{KitPvP_Rule}%::%loop-value's UUID%}
+			add 1 to {Kit-Assist.%{Class::%loop-value%}%::%loop-value's UUID%}
+			set {_true.%loop-value%} to true
+			message "{@prefix} §e%player% §aのキルアシストをしました" to loop-value
+		#各ルール戦績反映
+		set {_rule} to {Kit-Stagerule::%{KitPvP_Stage}%}
+		add 1 to {Kit-%{_rule}%Death::%player%}
+		add 1 to {Kit-TeamDeaths::%{TrueTeam::%player%}%}
+		set {Kit-%{_rule}%KD::%player%} to {Kit-%{_rule}%Kill::%player%} / {Kit-%{_rule}%Death::%player%}
+		if {damager.%player%::*} is set:
+			add 1 to {Kit-%{_rule}%Kill::%{LastKiller::%player%}%}
+			set {Kit-%{_rule}%KD::%{LastKiller::%player%}%} to {Kit-%{_rule}%Kill::%{LastKiller::%player%}%} / {Kit-%{_rule}%Death::%{LastKiller::%player%}%}
+			add 1 to {Kit-TeamKills::%{TrueTeam::%{LastKiller::%player%}%}%}
+			if {_rule} is "GoK":
+				if {Kit-TeamKills::%{team::%{LastKiller::%player%}%}%} is {Kit-KillGoal::%{KitPvP_Stage}%}:
+					set {Kit-WinTeam} to {TrueTeam::%{LastKiller::%player%}%}
+					broadcast "§c§l試合終了！"
+					execute console command "/timer end Kit-GoK"
+		if {_rule} is "EmJ":
+			set {_amount} to amount of emerald named "§aJewel" in player's inventory
+			set {_loc} to location of player
+		if {_rule} is "StW":
+			player's inventory contains sheep egg named "§7Wool"
+			set {_wool} to true
+			set {_loc} to location of player
+		loop {_amount} times:
+			drop a emerald named "§aJewel" at {_loc}
+		if {_wool} is true:
+			drop a sheep egg named "§7Wool" at {_loc}
+		wait 5 ticks
+		delete {damager.%player%::*}
+		delete {supporter.%player%::*}
+		delete {supporter.%{LastKiller::%player%}%::*}
+		delete {LastKiller::%player%}
+		delete {CLS::%player%}
+		delete {Class::%player%}

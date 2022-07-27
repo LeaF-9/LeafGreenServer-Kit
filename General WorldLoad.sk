@@ -1,0 +1,83 @@
+function worldLoad(rule: text, stage: text):
+	set {_stageworld} to {_stage}
+	replace every " " with "" in {_stage}
+	set {_world} to "%{_rule}%-%{_stage}%"
+	execute console command "/mv import %{_world}% normal -g CleanroomGenerator:."
+	set {_ok} to false
+	while {_ok} is false:
+		loop all worlds:
+			if "%loop-world%" is {_world}:
+				set {_ok} to true
+		wait 5 ticks
+	execute console command "/mv reload"
+	if {_rule} is "Kit":
+		execute console command "/kit-stagesetting %{_stageworld}%"
+
+function worldUnload(rule: text, stage: text):
+	set {_stageworld} to {_stage}
+	replace every " " with "" in {_stage}
+	set {_world} to "%{_rule}%-%{_stage}%"
+	execute console command "/mv remove %{_world}%"
+	loop all worlds:
+		"%loop-world%" is "Lobby"
+		set {_setworld} to loop-world
+
+function worldDelete(rule: text, stage: text):
+	replace every " " with "" in {_stage}
+	set {_world} to "%{_rule}%-%{_stage}%"
+	execute console command "/mv delete %{_world}%"
+
+function worldLocChange(var: text, world: world):
+	set {_x} to x-coordinate of {%{_var}%}
+	set {_y} to y-coordinate of {%{_var}%}
+	set {_z} to z-coordinate of {%{_var}%}
+	set {_yaw} to yaw of {%{_var}%}
+	set {_pitch} to pitch of {%{_var}%}
+	set {%{_var}%} to location({_x}, {_y}, {_z}, {_world}, {_yaw}, {_pitch})
+
+function worldSpawnLocation(loc: location) :: location:
+	set {_x} to x-coordinate of {_loc}
+	set {_y} to y-coordinate of {_loc}
+	set {_z} to z-coordinate of {_loc}
+	set {_yaw} to yaw of {_loc}
+	set {_pitch} to pitch of {_loc}
+	loop all worlds:
+		"%loop-world%" is "Lobby"
+		set {_world} to loop-world
+	set {_location} to location({_x}, {_y}, {_z}, {_world}, {_yaw}, {_pitch})
+	return {_location}
+
+#command /worldchanger:
+#	permission: sk.admin
+#	trigger:
+#		loop {Kit-Stage::*}:
+#			worldUnload("Kit", loop-value)
+#			wait a tick
+#		loop {Tag-Stage::*}:
+#			worldUnload("Tag", loop-value)
+#			wait a tick
+
+command /worldcheck <text>:
+	permission: sk.admin
+	trigger:
+		set {_world} to "%world of {Kit-Stagespec::%arg 1%}%"
+		message "%{_world}%" to player
+
+function WorldNameChanger(rule: text, world: text) :: text:
+	replace every " " with "" in {_world}
+	set {_rw} to "%{_rule}%-%{_world}%"
+	return {_rw}
+
+function invertLocation(value: text, loadYML: text) :: location:
+	set {_x} to yml value "%{_value}%.x" from {_loadYML}
+	set {_y} to yml value "%{_value}%.y" from {_loadYML}
+	set {_z} to yml value "%{_value}%.z" from {_loadYML}
+	set {_yaw} to yml value "%{_value}%.yaw" from {_loadYML}
+	set {_pitch} to yml value "%{_value}%.pitch" from {_loadYML}
+	set {_world.false} to yml value "%{_value}%.world" from {_loadYML}
+	loop all worlds:
+		"%loop-world%" is {_world.false}
+		set {_world} to loop-world
+	if {_world} is set:
+		set {_loc} to location({_x}, {_y}, {_z}, {_world}, {_yaw}, {_pitch})
+		return {_loc}

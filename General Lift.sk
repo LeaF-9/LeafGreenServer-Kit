@@ -1,0 +1,170 @@
+command /liftset:
+	permission: sk.admin
+	executable by: player
+	trigger:
+		if target block is wall sign:
+			set {_sign} to targeted block
+			set line 1 of targeted block to "§a[§bLIFT§a]"
+			set {_line} to location of {_sign}
+			set y-coordinate of {_line} to 0
+			set {_floor} to 0
+			set {_y} to 0
+			loop 256 times:
+				add 1 to {_y}
+				set y-coordinate of {_line} to {_y}
+				if block at {_line} is wall sign:
+					if block below {_line} is button:
+						add 1 to {_floor}
+						if block at {_line} is {_sign}:
+							set {_nowfloor} to {_floor}
+			set line 2 of targeted block to "<##ffa500>Floor§7: §0%{_nowfloor}%"
+			if line 3 of targeted block is "":
+				set {_dest} to 0
+			else:
+				set {_destsign} to line 3 of targeted block
+				replace every "§6[" with "" in {_destsign}
+				replace every "§6]" with "" in {_destsign}
+				replace every "<##dc143c>" with "" in {_destsign}
+				set {_dest} to {_destsign} parsed as number
+			add 1 to {_dest}
+			if {_dest} > {_floor}:
+				set {_dest} to 1
+			if {_dest} is {_nowfloor}:
+				add 1 to {_dest}
+			set line 3 of targeted block to "§6[<##dc143c>%{_dest}%§6]"
+			set line 4 of targeted block to ""
+
+on rightclick on a wall sign:
+	if line 1 of targeted block is "§a[§bLIFT§a]":
+		set {_sign} to targeted block
+		set {_line} to location of {_sign}
+		set y-coordinate of {_line} to 0
+		set {_floor} to 0
+		set {_y} to 0
+		loop 256 times:
+			add 1 to {_y}
+			set y-coordinate of {_line} to {_y}
+			if block at {_line} is wall sign:
+				if block below {_line} is button:
+					add 1 to {_floor}
+					if block at {_line} is {_sign}:
+						set {_nowfloor} to {_floor}
+		set line 2 of targeted block to "<##ffa500>Floor§7: §0%{_nowfloor}%"
+		if line 3 of targeted block is "":
+			set {_dest} to 0
+		else:
+			set {_destsign} to line 3 of targeted block
+			replace every "§6[" with "" in {_destsign}
+			replace every "§6]" with "" in {_destsign}
+			replace every "<##dc143c>" with "" in {_destsign}
+			set {_dest} to {_destsign} parsed as number
+		add 1 to {_dest}
+		if {_dest} > {_floor}:
+			set {_dest} to 1
+		if {_dest} is {_nowfloor}:
+			add 1 to {_dest}
+		if {_dest} > {_floor}:
+			set {_dest} to 1
+		set line 3 of targeted block to "§6[<##dc143c>%{_dest}%§6]"
+
+aliases:
+	liftbase = minecraft:iron_block, minecraft:gold_block, minecraft:diamond_block
+	liftglass = minecraft:glass, minecraft:white_stained_glass, minecraft:orange_stained_glass, minecraft:magenta_stained_glass, minecraft:light_blue_stained_glass, minecraft:yellow_stained_glass, minecraft:lime_stained_glass, minecraft:pink_stained_glass, minecraft:gray_stained_glass, minecraft:light_gray_stained_glass, minecraft:cyan_stained_glass, minecraft:purple_stained_glass, minecraft:blue_stained_glass, minecraft:brown_stained_glass, minecraft:green_stained_glass, minecraft:red_stained_glass, minecraft:black_stained_glass
+	liftbutton = unpowered stone button, unpowered oak button, unpowered spruce button, unpowered birch button, unpowered jungle button, unpowered acacia button, unpowered dark oak button, unpowered crimson button, unpowered warped button, unpowered polished blackstone button
+	liftbuttonpow = powered stone button, powered oak button, powered spruce button, powered birch button, powered jungle button, powered acacia button, powered dark oak button, powered crimson button, powered warped button, powered polished blackstone button
+
+on rightclick on a button:
+	event-block is liftbutton
+	block above event-location is wall sign
+	line 1 of block above event-location is "§a[§bLIFT§a]"
+	wait a tick
+	event-block is liftbuttonpow
+	set {_sign} to block above event-location
+	set {_signloc} to location of {_sign}
+#目的地値設定
+	set {_destsign} to line 3 of block at {_signloc}
+	replace every "§6[" with "" in {_destsign}
+	replace every "§6]" with "" in {_destsign}
+	replace every "<##dc143c>" with "" in {_destsign}
+	set {_dest} to {_destsign} parsed as number
+#現在地値設定
+	set {_floorsign} to line 2 of block at {_signloc}
+	replace every "<##ffa500>Floor§7: §0" with "" in {_floorsign}
+	set {_nowfloor} to {_floorsign} parsed as number
+#目的地座標設定
+	set {_line} to location of {_sign}
+	set y-coordinate of {_line} to 0
+	set {_floor} to 0
+	set {_y} to 0
+	loop 256 times:
+		add 1 to {_y}
+		set y-coordinate of {_line} to {_y}
+		if block at {_line} is wall sign:
+			if block below {_line} is button:
+				add 1 to {_floor}
+#			ベースブロック読み取り
+				if {_floor} is 1:
+					set {_speedblock} to block 3 meters below {_line}
+					if {_speedblock} is iron block:
+						set {_speed} to 0.3
+					else if {_speedblock} is gold block:
+						set {_speed} to 0.5
+					else if {_speedblock} is diamond block:
+						set {_speed} to 0.8
+				if {_floor} is {_dest}:
+					set {_destloc} to {_y} - 1.5
+#対象プレイヤー感知
+	set {_base} to block 3 meters below {_sign}
+	set {_depaloc} to y-coordinate of {_base} + 0.5
+	loop all players in radius 5 around location of {_base}:
+		loop-player's gamemode is not spectator
+		if {_nowfloor} is 1:
+			block below loop-player is type of {_speedblock}
+		else:
+			block below loop-player is liftglass
+		delete {_ng}
+		loop all blocks between {_base} and block below loop-player:
+			if {_nowfloor} is 1:
+				loop-block is not type of {_speedblock}
+				set {_ng} to true
+			else:
+				loop-block is not liftglass
+				set {_ng} to true
+		{_ng} is not set
+		add loop-player to {_lift::*}
+		add location of loop-player to {_liftloc::*}
+#対象プレイヤー移動
+	set {_stop} to false
+	set {_addy} to 0
+	if {_nowfloor} < {_dest}:
+		while {_stop} is false:
+			set {_addy} to {_addy} + {_speed}
+			loop {_lift::*}:
+				if loop-value is alive:
+					if "%world of loop-value%" is "%world of {_liftloc::%loop-index%}%":
+						set {_tploc} to location {_addy} meters above {_liftloc::%loop-index%}
+						teleport loop-value to {_tploc}
+					else:
+						remove loop-value from {_lift::*}
+				else:
+					remove loop-value from {_lift::*}
+			set {_basedepart} to {_depaloc} + {_addy}
+			if {_basedepart} > {_destloc}:
+				set {_stop} to true
+			wait a tick
+	else:
+		while {_stop} is false:
+			set {_addy} to {_addy} + {_speed}
+			loop {_lift::*}:
+				if loop-value is alive:
+					if "%world of loop-value%" is "%world of {_liftloc::%loop-index%}%":
+						set {_tploc} to location {_addy} meters below {_liftloc::%loop-index%}
+						teleport loop-value to {_tploc}
+					else:
+						remove loop-value from {_lift::*}
+				else:
+					remove loop-value from {_lift::*}
+			set {_basedepart} to {_depaloc} - {_addy}
+			if {_basedepart} < {_destloc}:
+				set {_stop} to true
+			wait a tick

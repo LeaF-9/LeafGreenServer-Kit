@@ -1,0 +1,124 @@
+﻿on death of player:
+	{Join::%victim%} is "Kit"
+	set {_teamVictim} to {TrueTeam::%victim%}
+	add 1 to {Kit-GoKDeath::%victim%}
+	kitScorePersonal(victim, 1, "§4%{Kit-GoKKill::%victim%}% §7/ §1%{Kit-GoKDeath::%victim%}%")
+	add 1 to {Kit-TeamDeaths::%{_teamVictim}%}
+	set {Kit-GoKKD::%victim%} to {Kit-GoKKill::%victim%} / {Kit-GoKDeath::%victim%}
+	if {LastKiller::%victim%} is set:
+		set {_teamAttacker} to {TrueTeam::%{LastKiller::%victim%}%}
+		add 1 to {Kit-GoKKill::%{LastKiller::%victim%}%}
+		kitScorePersonal({LastKiller::%victim%}, 1, "§4%{Kit-GoKKill::%{LastKiller::%victim%}%}% §7/ §1%{Kit-GoKDeath::%{LastKiller::%victim%}%}%")
+		set {Kit-GoKKD::%{LastKiller::%victim%}%} to {Kit-GoKKill::%{LastKiller::%victim%}%} / {Kit-GoKDeath::%{LastKiller::%victim%}%}
+		chance of {Kit-TeamBuff::%{_teamAttacker}%}%:
+			add 1 to {Kit-TeamKills::%{_teamAttacker}%}
+			if {_teamAttacker} is "red":
+				kitScoreGlobal(7, "§c赤§7: §6%{Kit-TeamKills::red}%")
+			else if {_teamAttacker} is "blue":
+				kitScoreGlobal(6, "§9青§7: §6%{Kit-TeamKills::blue}%")
+			else if {_teamAttacker} is "yellow":
+				kitScoreGlobal(5, "§e黄§7: §6%{Kit-TeamKills::yellow}%")
+			else if {_teamAttacker} is "green":
+				kitScoreGlobal(4, "§a緑§7: §6%{Kit-TeamKills::green}%")
+			if {TeamKills::%{_teamAttacker}%} >= {Kit-GameStage::goal}:
+				add {_teamAttacker} to {Kit-WinTeam::*}
+				gameMsg("Kit", "§c§l試合終了!")
+				execute console command "/timer end Kit-GoK"
+
+# Coin処理
+on death of player:
+	{Join::%victim%} is "Kit"
+	{LastKiller::%victim%} is set
+	execute console command "/givecoin %{LastKiller::%victim%}% 5 キル"
+	set {_true.%{LastKiller::%victim%}%} to true
+	loop {damager.%victim%::*}:
+		loop-value is not {LastKiller::%victim%}
+		{team::%loop-value%} is {team::%{LastKiller::%victim%}%}
+		{_true.%loop-value%} is not set
+		set {_true.%loop-value%} to true
+		execute console command "/givecoin %loop-value% 3 アシスト"
+	loop {supporter.%{LastKiller::%victim%}%::*}:
+		loop-value is not {LastKiller::%victim%}
+		{team::%loop-value%} is {team::%{LastKiller::%victim%}%}
+		{_true.%loop-value%} is not set
+		set {_true.%loop-value%} to true
+		execute console command "/givecoin %loop-value% 3 アシスト"
+
+# Bufflose
+every 5 seconds:
+	{Kit-tochu} is true
+# チーム人数集計
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		set {_tc} to {TrueTeam::%loop-player%}
+		add 1 to {_teampeople::%{_tc}%}
+# 最大人数の算出
+	set {_high} to 10000
+	loop {_teampeople::*}:
+		loop-value < {_high}
+		set {_high} to loop-value
+# 全チームのBuff算出
+	loop {_teampeople::*}:
+		set {_teamnum} to loop-value
+#	最大人数との差の%が算出される
+		set {Kit-TeamBuff::%loop-index%} to round({_high} / {_teamnum} * 100)
+
+command /gokend:
+	permission: sk.admin
+	trigger:
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			set gamemode of loop-player to spectator
+		wait 5 seconds
+		gameMsg("Kit", "§2----------=====§5Game Result§2=====----------")
+		gameMsg("Kit", " ")
+		gameMsg("Kit", "§cRed§7: §a%{Kit-TeamKills::red}%")
+		gameMsg("Kit", "§9Blue§7: §a%{Kit-TeamKills::blue}%")
+		gameMsg("Kit", "§eYellow§7: §a%{Kit-TeamKills::yellow}%")
+		gameMsg("Kit", "§aGreen§7: §a%{Kit-TeamKills::green}%")
+		gameMsg("Kit", " ")
+		if size of {Kit-WinTeam::*} is 0:
+			set {_maxKills} to max({Kit-TeamKills::*})
+			loop {Kit-TeamKills::*}:
+				loop-value = {_maxKills}
+				add loop-index to {Kit-WinTeam::*}
+		loop {Kit-WinTeam::*}:
+			set {_color} to kitTeamColor(loop-value)
+			set {_text} to "%{_color}%§l%loop-value%§r"
+			add {_text} to {_winteams::*}
+		gameMsg("Kit", "§6§lWINNER: %{_winteams::*}%")
+		loop all players:
+			{Kit-WinTeam::*} contains {TrueTeam::%loop-player%}
+			execute console command "/givecoin %loop-player% 100 勝利"
+		gameMsg("Kit", " ")
+		set {_maxKill} to max({Kit-GoKKill::*})
+		loop {Kit-GoKKill::*}:
+			loop-value = {_maxKill}
+			add loop-index to {_highplayer::*}
+		gameMsg("Kit", "§4§lTopKiller§7: §6§l%{_highplayer::*}% §c%{_maxKill}% Kills")
+		gameMsg("Kit", " ")
+		gameMsg("Kit", "§bチームの戦績§7:")
+		loop all players:
+			loop {Kit-GoKKill::*}:
+				{TrueTeam::%loop-index%} is {TrueTeam::%loop-player-1%}
+				message "§e%loop-index%§7: §9%loop-value-2%" to loop-player-1
+		gameMsg("Kit", " ")
+		loop all players:
+			message "§aあなたの戦績§7: §4Kill: %{Kit-GoKKill::%loop-player%}% §1Death: %{Kit-GoKDeath::%loop-player%}% §6K/D: %{Kit-GoKKD::%loop-player%}%" to loop-player
+			send title "§6ゲーム終了!" with subtitle "%{_winteams::*}% §5の勝利です!" to loop-player for 10 seconds
+			delete {damager.%loop-player%::*}
+		kitGameInsert()
+		wait 10 seconds
+		delete {LastKiller::*}
+		delete {Kit-TeamKills::*}
+		delete {Kit-TeamDeaths::*}
+		delete {Kit-GoKKill::*}
+		delete {Kit-GoKDeath::*}
+		delete {Kit-GoKKD::*}
+		delete {Kit-WinTeam::*}
+		delete {Kit-TeamBuff::*}
+		execute console command "/kjclear"
+		execute console command "/sk disable Kit GoK"
+
+on quit:
+	delete {damager.%player%::*}

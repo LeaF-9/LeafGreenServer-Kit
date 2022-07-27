@@ -1,0 +1,123 @@
+options:
+	prefix-Kit: §2[§aKit PvP§2]
+
+command /gamestart <text="none">:
+	trigger:
+		set {_game} to arg 1
+		if {_game} is "none":
+			set {_game} to "Kit"
+		if {_game} is "Kit":
+			if {Kit-Join} is more than 3:
+				if {Kit-GameStart} is not set:
+					set {Kit-GameStart} to false
+				if {Kit-GameStart} is false:
+					set {Kit-GameStart} to true
+					set {_prepareTime} to 20
+					while {_prepareTime} is more than 0:
+						if {_prepareTime} is 1, 2, 3, 5, 10 or 20:
+							loop all players:
+								{Join::%loop-player%} is "Kit"
+								message "{@prefix-Kit} §bチーム分けまで... §e%{_prepareTime}% §b秒" to loop-player
+								play sound "block.note_block.snare" with volume 1 with pitch 1 to loop-player
+								if {_prepareTime} is 20:
+									message formatted "§e⚠ §4§l10§c秒後にステージにTPします! §e⚠" to loop-player
+								else if {_prepareTime} is 10:
+									if world of loop-player is not world of {Kit-GameStage::spec}:
+										teleport loop-player to {Kit-GameStage::spec}
+										message formatted "§dステージにTPしました" to loop-player
+										set gamemode of loop-player to spectator
+						subtract 1 from {_prepareTime}
+						wait a second
+					rtfcheck()
+					setGameID()
+					execute console command "/timer start Kit-%{Kit-GameStage::rule}%"
+					execute console command "/sk enable Kit %{Kit-GameStage::rule}%"
+				else:
+					message "§c既にゲームが開始されています!" to player
+			else:
+				message "§c参加人数が足りません!" to player
+
+function mapVote(rule: text):
+	if {_rule} is "Kit":
+		if {Kit-StageListing} is true:
+			set {_stages::*} to {Kit-StageListUP::*}
+		else:
+			load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+			set {_stages::*} to yml list "Stages" from "KitStages"
+			unload yml "KitStages"
+		loop {_stages::*}:
+			load yml "plugins/skript-yaml/Kit Stages/%loop-value%.yml" as "KitStage"
+			delete {_true}
+			if yml value "enable" from "KitStage" is true:
+				set {_true} to true
+			if {_true} is true:
+				if {Kit-StageRandomize.rule} is set:
+					if yml value "rule" from "KitStage" is {Kit-StageRandomize.rule}:
+						set {_true} to true
+					else:
+						delete {_true}
+			if {_true} is true:
+				if {Kit-StageRandomize.team} is set:
+					if yml value "team" from "KitStage" is {Kit-StageRandomize.team}:
+						set {_true} to true
+					else:
+						delete {_true}
+			if {_true} is true:
+				add loop-value to {_stage::*}
+				set {_stage.rule::%loop-value%} to yml value "rule" from "KitStage"
+				set {_stage.team::%loop-value%} to yml value "team" from "KitStage"
+			unload yml "KitStage"
+		loop {_stage::*}:
+			add 1 to {_num}
+		if {_num} >= 5:
+			set {_am} to 5
+		else:
+			set {_am} to {_num}
+		loop {_am} times:
+			add 1 to {_ln}
+			set {_random} to a random text out of {_stage::*}
+			remove {_random} from {_stage::*}
+			set {_vote::%{_ln}%} to {_random}
+		loop all players:
+			message "§6§lMap Vote§aが始まりました! §eクリック§aでやりたいマップを選んでください!" to loop-player
+		loop {_am} times:
+			loop all players:
+				message formatted "§b%loop-number%§7. <cmd:/vote %loop-number%><tooltip:§e[§c§l%{_stage.rule::%{_vote::%loop-number%}%}%§e] §a§l%{_stage.team::%{_vote::%loop-number%}%}%§eteams>§6§l%{_vote::%loop-number%}%" to loop-player
+			set {Kit-Vote::%loop-number%} to 0
+		set {Kit-Votable} to true
+		set {_rt} to 15
+		loop 15 times:
+			loop all players:
+				send action bar "§b§l%{_rt}%..." to loop-player
+			subtract 1 from {_rt}
+			wait a second
+		delete {Kit-Votable}
+		set {_high} to -1
+		loop {Kit-Vote::*}:
+			loop-value > {_high}
+			set {_high} to loop-value
+			set {_highmn} to loop-index
+		delete {Kit-Vote::*}
+		delete {Kit-VoteAlready::*}
+		set {_highmn} to {_highmn} parsed as number
+		worldLoad("Kit", {_vote::%{_highmn}%})
+		if {Kit-StageListing} is true:
+			remove {_vote::%{_highmn}%} from {Kit-StageListUP::*}
+			set {_mapch} to false
+			loop {Kit-StageListUP::*}:
+				set {_mapch} to true
+			if {_mapch} is false:
+				execute console command "/stagelistwashing"
+
+command /vote <number>:
+	executable by: player
+	trigger:
+		if {Kit-Votable} is true:
+			if {Kit-VoteAlready::%player%} is not set:
+				add 1 to {Kit-Vote::%arg 1%}
+				set {Kit-VoteAlready::%player%} to true
+				message "§a§l投票しました" to player
+			else:
+				message "§c§lあなたは既に投票しています!" to player
+		else:
+			message "§c§l現在Voteは受け付けていません!" to player

@@ -1,0 +1,399 @@
+﻿command /kit-StWSetting:
+	permission: sk.admin
+	trigger:
+		set {Kit-TeamWool::red} to 0
+		set {Kit-TeamWool::blue} to 0
+		set {Kit-TeamWool::yellow} to 0
+		set {Kit-TeamWool::green} to 0
+		loop 20 times:
+			loop 30 times:
+				if {Kit-tochu} is true:
+					wait a second
+			if {Kit-tochu} is true:
+				kitWoolSpawn()
+
+function kitWoolSpawn():
+	loop {Kit-GameStageWools::*}:
+		if block at loop-value is air:
+			set block at loop-value to white wool
+			set {_loc} to loop-value
+			add -0.25 to y-coordinate of {_loc}
+			set {_spwool} to false
+			chance of 10%:
+				set block at loop-value to black wool
+				set {_spwool} to true
+				strike lightning effect at loop-value
+				set {_ul} to true
+			if {_spwool} is true:
+				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""Kit-SPWool""}"
+				set metadata value "gametype" of spawned magma cube to "Kit"
+				set metadata value "kit-wool" of spawned magma cube to true
+			else:
+				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""Kit-Wool""}"
+				set metadata value "gametype" of spawned magma cube to "Kit"
+				set metadata value "kit-wool" of spawned magma cube to true
+	if {_ul} is true:
+		gameMsg("Kit", "§c§l---===[Special Wool spawned!]===---")
+	else:
+		gameMsg("Kit", "§b§l---===[Wool spawned!]===---")
+
+# Bufflose
+every 5 seconds:
+	{Kit-tochu} is true
+# チーム人数集計
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		set {_tc} to {TrueTeam::%loop-player%}
+		add 1 to {_teampeople::%{_tc}%}
+# 最小人数の算出
+	set {_high} to 10000
+	loop {_teampeople::*}:
+		loop-value < {_high}
+		set {_high} to loop-value
+# 全チームのBuff算出
+	loop {_teampeople::*}:
+		set {_teamnum} to loop-value
+#	最小人数との差の%が算出される
+		set {Kit-TeamBuff::%loop-index%} to {_high} / {_teamnum}
+
+on death of player:
+	{Join::%victim%} is "Kit"
+	add 1 to {Kit-StWDeath::%victim%}
+	kitScorePersonal(victim, 1, "§4%{Kit-StWKill::%victim%}% §7/ §1%{Kit-StWDeath::%victim%}%")
+	add 1 to {Kit-TeamDeaths::%{TrueTeam::%victim%}%}
+	set {Kit-StWKD::%victim%} to {Kit-StWKill::%victim%} / {Kit-StWDeath::%victim%}
+	if {LastKiller::%victim%} is set:
+		add 1 to {Kit-StWKill::%{LastKiller::%victim%}%}
+		kitScorePersonal({LastKiller::%victim%}, 1, "§4%{Kit-StWKill::%{LastKiller::%victim%}%}% §7/ §1%{Kit-StWDeath::%{LastKiller::%victim%}%}%")
+		set {Kit-StWKD::%{LastKiller::%victim%}%} to {Kit-StWKill::%{LastKiller::%victim%}%} / {Kit-StWDeath::%{LastKiller::%victim%}%}
+		add 1 to {Kit-TeamKills::%{TrueTeam::%{LastKiller::%victim%}%}%}
+
+on break of white wool:
+	cancel event
+	{Kit-GameStageWools::*} contains location of block
+	if player has 3 sheep egg named "§7Wool":
+		message "§c羊毛を所持しすぎているため取得できません!" to player
+	else if player has llama egg named "§6§lSpecial Wool":
+		message "§c特別な羊毛を所持しているため取得できません!" to player
+	else:
+		set block to air
+		loop all magma cubes in radius 1.5 around location of block:
+			metadata value "kit-wool" of loop-magma cube is true
+			delete loop-magma cube
+		give a sheep egg named "§7Wool" to player
+		message "§6§l羊毛を入手しました!" to player
+
+on break of black wool:
+	cancel event
+	{Kit-GameStageWools::*} contains location of block
+	if player has sheep egg named "§7Wool":
+		message "§c羊毛を所持しているため取得できません!" to player
+	else if player has llama egg named "§6§lSpecial Wool":
+		message "§c特別な羊毛を所持しているため取得できません!" to player
+	else:
+		set block to air
+		loop all magma cubes in radius 1.5 around location of block:
+			metadata value "kit-wool" of loop-magma cube is true
+			delete loop-magma cube
+		give a llama egg named "§6§lSpecial Wool" to player
+		message "§c§l特別な羊毛を入手しました!" to player
+
+on rightclick holding a sheep egg:
+	cancel event
+	if target entity is sheep:
+		stop
+	set {_tb} to target block
+	set {_distance} to distance between player and {_tb}
+	{_distance} is less than 5
+	block below {_tb} is glowstone
+	woolPlace(player, {TrueTeam::%player%}, {_tb}, 1)
+	delete {Kit-AttackPoint::%player%}
+
+on rightclick holding a llama egg:
+	cancel event
+	set {_tb} to target block
+	set {_distance} to distance between player and {_tb}
+	{_distance} is less than 5
+	block below {_tb} is glowstone
+	woolPlace(player, {TrueTeam::%player%}, {_tb}, 3)
+	delete {Kit-AttackPoint::%player%}
+
+function woolPlace(player: player, team: text, block: block, point: number):
+	if type of {_block} is type of {Kit-GameStage::place-%{_team}%}:
+		if {TrueTeam::%{_player}%} is {_team}:
+			if {_point} is 1:
+				spawnMob(sheep, {_team}, location of block above {_block})
+				execute console command "/givecoin %{_player}% 5 Wool設置"
+				remove a sheep egg named "§7Wool" from {_player}
+			else:
+				spawnMob(baby sheep, {_team}, location of block above {_block})
+				execute console command "/givecoin %{_player}% 10 Wool設置"
+				remove a llama egg named "§6§lSpecial Wool" from {_player}
+			set {_color} to {_team} parsed as color
+			set color of spawned sheep to {_color}
+			set metadata value "gametype" of spawned sheep to "Kit"
+			set knockback resistance attribute of spawned sheep to 1
+			apply slowness 100 without particles to spawned sheep for 10000000000 seconds
+			apply jump boost -2 without particles to spawned sheep for 10000000000 seconds
+			apply fire resistance 1 without particles to spawned sheep for 10000000000 seconds
+			add {_point} to {Kit-TeamWool::%{_team}%}
+			if {_team} is "red":
+				kitScoreGlobal(7, "§c赤§7: §6%{Kit-TeamWool::red}%")
+			else if {_team} is "blue":
+				kitScoreGlobal(6, "§9青§7: §6%{Kit-TeamWool::blue}%")
+			else if {_team} is "yellow":
+				kitScoreGlobal(5, "§e黄§7: §6%{Kit-TeamWool::yellow}%")
+			else if {_team} is "green":
+				kitScoreGlobal(4, "§a緑§7: §6%{Kit-TeamWool::green}%")
+			add 1 to {Kit-WoolPlace::%{_player}%}
+			set {_text} to {_team} in pascal case
+			if {_point} is 1:
+				gameMsg("Kit", "<%{_team}%>%{_text}% §7gained the Wool! §bTotal§7: §6§l%{Kit-TeamWool::%{_team}%}%")
+			else:
+				gameMsg("Kit", "<%{_team}%>%{_text}% §7gained the §6§lSpecial Wool§7! §bTotal§7: §6§l%{Kit-TeamWool::%{_team}%}%")
+			if {Kit-TeamWool::%{_team}%} >= {Kit-GameStage::goal}:
+				add {_team} to {Kit-WinTeam::*}
+				gameMsg("Kit", "§c§l試合終了!")
+				execute console command "/timer end Kit-StW"
+
+on death of adult sheep:
+	clear drops
+	victim's display name is set
+	world of victim is worldChecker("Kit", {Kit-GameStage::name})
+	set {_dis} to victim's display name
+	set {_attacker} to metadata value "lastattacker" of victim
+	set {_attacker} to {_attacker} parsed as player
+	give a sheep egg named "§7Wool" to {_attacker}
+	woolDeath({_dis}, 1)
+	execute console command "/givecoin %{_attacker}% 3 Wool奪取"
+
+on death of baby sheep:
+	clear drops
+	victim's display name is set
+	if victim's display name is "§7Wool":
+		drop a sheep egg named "§7Wool"
+		stop
+	world of victim is worldChecker("Kit", {Kit-GameStage::name})
+	set {_dis} to victim's display name
+	give a llama egg named "§6§lSpecial Wool" to attacker
+	woolDeath({_dis}, 3)
+	execute console command "/givecoin %attacker% 5 Wool奪取"
+
+function woolDeath(team: text, point: number):
+	subtract {_point} from {Kit-TeamWool::%{_team}%}
+	if {_team} is "red":
+		kitScoreGlobal(7, "§c赤§7: §6%{Kit-TeamWool::red}%")
+	else if {_team} is "blue":
+		kitScoreGlobal(6, "§9青§7: §6%{Kit-TeamWool::blue}%")
+	else if {_team} is "yellow":
+		kitScoreGlobal(5, "§e黄§7: §6%{Kit-TeamWool::yellow}%")
+	else if {_team} is "green":
+		kitScoreGlobal(4, "§a緑§7: §6%{Kit-TeamWool::green}%")
+	set {_text} to {_team} in pascal case
+	if {_point} is 1:
+		gameMsg("Kit", "<%{_team}%>%{_text}% §8lost the Wool! §bTotal§7: §6§l%{Kit-TeamWool::%{_team}%}%")
+	else:
+		gameMsg("Kit", "<%{_team}%>%{_text}% §8lost the §6§lSpecial Wool§8! §bTotal§7: §6§l%{Kit-TeamWool::%{_team}%}%")
+
+on heal:
+	type of event-entity is sheep
+	world of event-entity is worldChecker("Kit", {Kit-GameStage::name})
+	cancel event
+
+on damage of adult sheep:
+	world of victim is worldChecker("Kit", {Kit-GameStage::name})
+	if attacker is set:
+		if damage cause is not attack:
+			cancel event
+		else:
+			if victim's display name is "%{TrueTeam::%attacker%}%":
+				cancel event
+			else:
+				if attacker has 3 sheep egg named "§7Wool":
+					cancel event
+				else if attacker has llama egg named "§6§lSpecial Wool":
+					cancel event
+				else:
+					if distance between attacker and victim is less than 5:
+						set damage to 0
+						set metadata value "lastattacker" of victim to "%attacker%"
+						if attacker has mining fatigue:
+							set {_HP} to health of victim
+							subtract 0.8 from {_HP}
+							set health of victim to {_HP}
+						else:
+							set {_amount} to amount of sheep egg named "§7Wool" in attacker's inventory
+							set {_base} to 4 * {Kit-TeamBuff::%{TrueTeam::%attacker%}%}
+							set {_damage} to {_base} / ({_amount} + 1)
+							set {_HP} to health of victim
+							subtract {_damage} from {_HP}
+							set health of victim to {_HP}
+						set {Kit-AttackPoint::%attacker%} to location of attacker
+					else:
+						cancel event
+	else:
+		cancel event
+		if damage was caused by void or suffocation:
+			teleport victim to {Kit-GameStage::voidtp-%victim's display name%}
+
+on damage of baby sheep:
+	world of victim is worldChecker("Kit", {Kit-GameStage::name})
+	if attacker is set:
+		if victim's display name is "%{TrueTeam::%attacker%}%":
+			cancel event
+		else if victim's display name is "§7Wool":
+			set damage to 10
+		else:
+			if distance between attacker and victim is less than 20:
+				if attacker has sheep egg named "§7Wool":
+					cancel event
+				else if attacker has llama egg named "§6§lSpecial Wool":
+					cancel event
+				else:
+					set damage to 10
+					set {Kit-AttackPoint::%attacker%} to location of attacker
+			else:
+				cancel event
+	else:
+		cancel event
+		if damage was caused by void or suffocation:
+			teleport victim to {Kit-GameStage::voidtp-%victim's display name%}
+
+on damage of player:
+	damage is caused by void
+	{Kit-AttackPoint::%victim%} is set
+	cancel event
+	teleport victim to {Kit-AttackPoint::%victim%}
+	kill victim
+	if {LastKiller::%victim%} is set:
+		execute console command "/givecoin %{LastKiller::%victim%}% 5 防衛"
+
+on death of player:
+	{Join::%victim%} is "Kit"
+	delete {Kit-AttackPoint::%victim%}
+	if victim has sheep egg named "§7Wool":
+		set {_amount} to amount of sheep egg named "§7Wool" in victim's inventory
+		loop {_amount} times:
+			drop a sheep egg named "§7Wool" at victim
+			set metadata value "undelete" of last dropped item to "true"
+		set {_coin} to 5
+	else if victim has llama egg named "§6§lSpecial Wool":
+		drop a llama egg named "§6§lSpecial Wool" at victim
+		set metadata value "undelete" of last dropped item to "true"
+		set {_coin} to 10
+	if {LastKiller::%victim%} is set:
+		execute console command "/givecoin %{LastKiller::%victim%}% %{_coin}% Wool強奪"
+
+on pick up sheep egg:
+	name of item is "§7Wool"
+	if player has 3 sheep egg named "§7Wool":
+		cancel event
+		stop
+	else if player has llama egg named "§6§lSpecial Wool":
+		cancel event
+		stop
+	execute console command "/givecoin %player% 5 Wool拾得"
+
+on pick up llama egg:
+	name of item is "§6§lSpecial Wool"
+	if player has sheep egg named "§7Wool":
+		cancel event
+		stop
+	else if player has llama egg named "§6§lSpecial Wool":
+		cancel event
+		stop
+	execute console command "/givecoin %player% 10 Wool拾得"
+
+every a second:
+	loop all players:
+		set {_walkremove} to 0
+		if loop-player has sheep egg named "§7Wool":
+			playSound("block.note_block.pling", 1.8, 1.5, loop-player)
+			drawDot count 1, particle "redstone", RGB 255, 255, 255, center location 2 meters above loop-player, visibleRange 32, keepFor 10 ticks
+			set {_amount} to amount of sheep egg named "§7Wool" in loop-player's inventory
+			set {_walkremove} to 0.05 * {_amount}
+		else if loop-player has llama egg named "§6§lSpecial Wool":
+			playSound("block.note_block.pling", 1.8, 0.75, loop-player)
+			apply glowing 1 to loop-player for 1 second
+			set {_walkremove} to 0.1
+		set {_speed} to 0.2 - {_walkremove}
+		if walk speed of loop-player is not {_speed}:
+			set walk speed of loop-player to {_speed}
+	loop all sheeps:
+		loop-sheep's display name is set
+		loop-sheep's display name is not "§7Wool"
+		world of loop-sheep is worldChecker("Kit", {Kit-GameStage::name})
+		set {_name} to loop-sheep's display name
+		if distance between loop-sheep and {Kit-GameStage::voidtp-%{_name}%} is more than 10:
+			teleport loop-sheep to {Kit-GameStage::voidtp-%{_name}%}
+
+command /stwend:
+	permission: sk.admin
+	trigger:
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			set gamemode of loop-player to spectator
+		wait 5 seconds
+		gameMsg("Kit", "§2----------=====§5Game Result§2=====----------")
+		gameMsg("Kit", " ")
+		gameMsg("Kit", "§cRed§7: §6Wool: §a%{Kit-TeamWool::red}% §6Kill: §a%{Kit-TeamKills::red}%")
+		gameMsg("Kit", "§9Blue§7: §6Wool: §a%{Kit-TeamWool::blue}% §6Kill: §a%{Kit-TeamKills::blue}%")
+		gameMsg("Kit", "§eYellow§7: §6Wool: §a%{Kit-TeamWool::yellow}% §6Kill: §a%{Kit-TeamKills::yellow}%")
+		gameMsg("Kit", "§aGreen§7: §6Wool: §a%{Kit-TeamWool::green}% §6Kill: §a%{Kit-TeamKills::green}%")
+		gameMsg("Kit", " ")
+		if size of {Kit-WinTeam::*} is 0:
+			set {_maxWool} to max({Kit-TeamWool::*})
+			loop {Kit-TeamWool::*}:
+				loop-value = {_maxWool}
+				add loop-index to {Kit-WinTeam::*}
+		loop {Kit-WinTeam::*}:
+			set {_color} to kitTeamColor(loop-value)
+			set {_text} to "%{_color}%§l%loop-value%§r"
+			add {_text} to {_winteams::*}
+		gameMsg("Kit", "§6§lWINNER: %{_winteams::*}%")
+		loop all players:
+			{Kit-WinTeam::*} contains {TrueTeam::%loop-player%} 
+			execute console command "/givecoin %loop-player% 100 勝利"
+		gameMsg("Kit", " ")
+		set {_maxKill} to max({Kit-StWKill::*})
+		loop {Kit-StWKill::*}:
+			loop-value = {_maxKill}
+			add loop-index to {_maxKiller::*}
+		gameMsg("Kit", "§4§lTopKiller§7: <##ffffff>§l%{_maxKiller::*}% §c%{_maxKill}% Kills")
+		set {_maxWool} to max({Kit-WoolPlace::*})
+		loop {Kit-WoolPlace::*}:
+			loop-value = {_maxWool}
+			add loop-index to {_maxWooler::*}
+		gameMsg("Kit", "§6§lTopPlacer §7: <##ffffff>§l%{_maxWooler::*}% §e%{_maxWool}% Wools")
+		gameMsg("Kit", " ")
+		gameMsg("Kit", "§bチームの戦績§7:")
+		loop all players:
+			loop all players:
+				{TrueTeam::%loop-player-2%} is {TrueTeam::%loop-player-1%}
+				message "§e%loop-player-2%§7: §6Kill:§9%{Kit-StWKill::%loop-player-2%}% §ePlace:§9%{Kit-WoolPlace::%loop-player-2%}%" to loop-player-1
+		gameMsg("Kit", " ")
+		loop all players:
+			message "§aあなたの戦績§7: §4Kill: %{Kit-StWKill::%loop-player%}% §1Death: %{Kit-StWDeath::%loop-player%}% §6K/D: %{Kit-StWKD::%loop-player%}% §aWool: %{Kit-WoolPlace::%loop-player%}%" to loop-player
+		loop {Kit-GameStageWools::*}:
+			set block at loop-value to white wool
+		loop all players:
+			send title "§6ゲーム終了!" with subtitle "%{_winteams::*}% §5の勝利です!" to loop-player for 10 seconds
+			delete {damager.%loop-player%::*}
+		kitGameInsert()
+		wait 10 seconds
+		delete {LastKiller::*}
+		delete {Kit-TeamKills::*}
+		delete {Kit-TeamDeaths::*}
+		delete {Kit-StWKill::*}
+		delete {Kit-StWDeath::*}
+		delete {Kit-StWKD::*}
+		delete {Kit-WoolPlace::*}
+		delete {Kit-TeamWool::*}
+		delete {Kit-WinTeam}
+		delete {Kit-AttackPoint::*}
+		delete {Kit-TeamBuff::*}
+		execute console command "/kjclear"
+		execute console command "/sk disable Kit StW"
+
+on quit:
+	delete {damager.%player%::*}

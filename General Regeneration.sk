@@ -1,0 +1,25 @@
+on heal:
+	if heal reason is satiated:
+		cancel event
+
+every a second:
+	loop all players:
+		if {Regen::%loop-player%} is set:
+			if gamemode of loop-player is survival:
+				if loop-player is alive:
+					if health of loop-player is not max health of loop-player:
+						add 1 to {Regen::%loop-player%}
+						if {Regen::%loop-player%} >= 5:
+							set {Regen::%loop-player%} to 0
+							set {_food} to food level of loop-player
+							if {_food} >= 8:
+								if {Kit-Blood::%loop-player%} is not set:
+									heal loop-player by 0.5 hearts
+					else:
+						delete {Regen::%loop-player%}
+				else:
+					delete {Regen::%loop-player%}
+			else:
+				delete {Regen::%loop-player%}
+		else if health of loop-player is not max health of loop-player:
+			set {Regen::%loop-player%} to 0

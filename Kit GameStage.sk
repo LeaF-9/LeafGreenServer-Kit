@@ -1,0 +1,86 @@
+# invertLocation(value, YML)はGeneral WorldLoad.skに記載
+
+function kitReadYML(map: text):
+	load yml "plugins/skript-yaml/Kit Stages/%{_map}%.yml" as "KitRead.%{_map}%"
+	set {Kit-GameStageAuthors::*} to yml list "author" from "KitRead.%{_map}%"
+	set {Kit-GameStage::rule} to yml value "rule" from "KitRead.%{_map}%"
+	set {Kit-GameStage::team} to yml value "team" from "KitRead.%{_map}%"
+	set {Kit-GameStage::spec} to invertLocation("spec", "KitRead.%{_map}%")
+	loop yaml node keys "respawns.red" from "KitRead.%{_map}%":
+		set {Kit-GameStageRespawns.red::%loop-key%} to invertLocation("respawns.red.%loop-node%", "KitRead.%{_map}%")
+	loop yaml node keys "respawns.blue" from "KitRead.%{_map}%":
+		set {Kit-GameStageRespawns.blue::%loop-key%} to invertLocation("respawns.blue.%loop-node%", "KitRead.%{_map}%")
+	if {Kit-GameStage::team} is 4:
+		loop yaml node keys "respawns.yellow" from "KitRead.%{_map}%":
+			set {Kit-GameStageRespawns.yellow::%loop-key%} to invertLocation("respawns.yellow.%loop-node%", "KitRead.%{_map}%")
+		loop yaml node keys "respawns.green" from "KitRead.%{_map}%":
+			set {Kit-GameStageRespawns.green::%loop-key%} to invertLocation("respawns.green.%loop-node%", "KitRead.%{_map}%")
+	if yml value "rule" from "KitRead.%{_map}%" is "GoK":
+		set {Kit-GameStage::goal} to yml value "gok-rule.goal" from "KitRead.%{_map}%"
+	else if yml value "rule" from "KitRead.%{_map}%" is "BEC":
+		loop yaml node keys "bec-rule.red-cores" from "KitRead.%{_map}%":
+			add 1 to {Kit-GameStage::corenumber-red}
+			add loop-key to {Kit-GameStageCore_red::*}
+			set {Kit-GameStageCoreHP::%loop-key%} to yml value "bec-rule.red-cores.%loop-node%.hp" from "KitRead.%{_map}%"
+			set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "bec-rule.red-cores.%loop-node%.material" from "KitRead.%{_map}%"
+			set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("bec-rule.red-cores.%loop-node%.location", "KitRead.%{_map}%")
+		loop yaml node keys "bec-rule.blue-cores" from "KitRead.%{_map}%":
+			add 1 to {Kit-GameStage::corenumber-blue}
+			add loop-key to {Kit-GameStageCore_blue::*}
+			set {Kit-GameStageCoreHP::%loop-key%} to yml value "bec-rule.blue-cores.%loop-node%.hp" from "KitRead.%{_map}%"
+			set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "bec-rule.blue-cores.%loop-node%.material" from "KitRead.%{_map}%"
+			set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("bec-rule.blue-cores.%loop-node%.location", "KitRead.%{_map}%")
+		if {Kit-GameStage::team} is 4:
+			loop yaml node keys "bec-rule.yellow-cores" from "KitRead.%{_map}%":
+				add 1 to {Kit-GameStage::corenumber-yellow}
+				add loop-key to {Kit-GameStageCore_yellow::*}
+				set {Kit-GameStageCoreHP::%loop-key%} to yml value "bec-rule.yellow-cores.%loop-node%.hp" from "KitRead.%{_map}%"
+				set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "bec-rule.yellow-cores.%loop-node%.material" from "KitRead.%{_map}%"
+				set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("bec-rule.yellow-cores.%loop-node%.location", "KitRead.%{_map}%")
+			loop yaml node keys "bec-rule.green-cores" from "KitRead.%{_map}%":
+				add 1 to {Kit-GameStage::corenumber-green}
+				add loop-key to {Kit-GameStageCore_green::*}
+				set {Kit-GameStageCoreHP::%loop-key%} to yml value "bec-rule.green-cores.%loop-node%.hp" from "KitRead.%{_map}%"
+				set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "bec-rule.green-cores.%loop-node%.material" from "KitRead.%{_map}%"
+				set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("bec-rule.green-cores.%loop-node%.location", "KitRead.%{_map}%")
+		loop yaml node keys "bec-rule.bandit.locations" from "KitRead.%{_map}%":
+			set {Kit-GameStageRespawns.bandit::%loop-key%} to invertLocation("bec-rule.bandit.locations.%loop-node%", "KitRead.%{_map}%")
+	else if yml value "rule" from "KitRead.%{_map}%" is "EmJ":
+		set {Kit-GameStage::goal} to yml value "emj-rule.goal" from "KitRead.%{_map}%"
+		set {Kit-GameStage::voidtp} to invertLocation("emj-rule.voidtp", "KitRead.%{_map}%")
+		set {Kit-GameStage::gembox-red} to invertLocation("emj-rule.gembox.red", "KitRead.%{_map}%")
+		set {Kit-GameStage::gembox-blue} to invertLocation("emj-rule.gembox.blue", "KitRead.%{_map}%")
+		if {Kit-GameStage::team} is 4:
+			set {Kit-GameStage::gembox-yellow} to invertLocation("emj-rule.gembox.yellow", "KitRead.%{_map}%")
+			set {Kit-GameStage::gembox-green} to invertLocation("emj-rule.gembox.green", "KitRead.%{_map}%")
+		set {Kit-GameStage::villager-type} to yml value "emj-rule.villager.type" from "KitRead.%{_map}%"
+		set {Kit-GameStage::villager-profession} to yml value "emj-rule.villager.profession" from "KitRead.%{_map}%"
+		set {Kit-GameStage::villager-level} to yml value "emj-rule.villager.level" from "KitRead.%{_map}%"
+		loop yaml node keys "emj-rule.villager.location" from "KitRead.%{_map}%":
+			set {Kit-GameStageVillager::%loop-key%} to invertLocation("emj-rule.villager.location.%loop-node%", "KitRead.%{_map}%")
+	else if yml value "rule" from "KitRead.%{_map}%" is "StW":
+		set {Kit-GameStage::goal} to yml value "stw-rule.goal" from "KitRead.%{_map}%"
+		set {Kit-GameStage::place-red} to yml value "stw-rule.places.red" from "KitRead.%{_map}%"
+		set {Kit-GameStage::voidtp-red} to invertLocation("stw-rule.voidtp.red", "KitRead.%{_map}%")
+		set {Kit-GameStage::place-blue} to yml value "stw-rule.places.blue" from "KitRead.%{_map}%"
+		set {Kit-GameStage::voidtp-blue} to invertLocation("stw-rule.voidtp.blue", "KitRead.%{_map}%")
+		if {Kit-GameStage::team} is 4:
+			set {Kit-GameStage::place-yellow} to yml value "stw-rule.places.yellow" from "KitRead.%{_map}%"
+			set {Kit-GameStage::voidtp-yellow} to invertLocation("stw-rule.voidtp.yellow", "KitRead.%{_map}%")
+			set {Kit-GameStage::place-green} to yml value "stw-rule.places.green" from "KitRead.%{_map}%"
+			set {Kit-GameStage::voidtp-green} to invertLocation("stw-rule.voidtp.green", "KitRead.%{_map}%")
+		loop yaml node keys "stw-rule.wools" from "KitRead.%{_map}%":
+			set {Kit-GameStageWools::%loop-key%} to invertLocation("stw-rule.wools.%loop-node%", "KitRead.%{_map}%")
+	else if yml value "rule" from "KitRead.%{_map}%" is "CPA":
+		set {Kit-GameStage::goal} to yml value "cpa-rule.goal" from "KitRead.%{_map}%"
+		set {Kit-GameStage::color-white} to yml value "cpa-rule.color.white" from "KitRead.%{_map}%"
+		set {Kit-GameStage::color-red} to yml value "cpa-rule.color.red" from "KitRead.%{_map}%"
+		set {Kit-GameStage::color-blue} to yml value "cpa-rule.color.blue" from "KitRead.%{_map}%"
+		if {Kit-GameStage::team} is 4:
+			set {Kit-GameStage::color-yellow} to yml value "cpa-rule.color.yellow" from "KitRead.%{_map}%"
+			set {Kit-GameStage::color-green} to yml value "cpa-rule.color.green" from "KitRead.%{_map}%"
+		loop yaml node keys "cpa-rule.areas" from "KitRead.%{_map}%":
+			set {Kit-GameStageAreas::%loop-key%} to invertLocation("cpa-rule.areas.%loop-node%.location", "KitRead.%{_map}%")
+			set {Kit-GameStageType::%loop-key%} to yml value "cpa-rule.areas.%loop-node%.type" from "KitRead.%{_map}%"
+			set {Kit-GameStageTime::%loop-key%} to yml value "cpa-rule.areas.%loop-node%.time" from "KitRead.%{_map}%"
+			set {Kit-GameStageRange::%loop-key%} to yml value "cpa-rule.areas.%loop-node%.range" from "KitRead.%{_map}%"

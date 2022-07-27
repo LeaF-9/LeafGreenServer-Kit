@@ -1,0 +1,145 @@
+on rightclick holding a diamond:
+	name of player's tool is "§9Admin Tools"
+	cancel event
+	player has permission "sk.admin"
+	openAdminTool(player)
+
+on inventory click:
+	type of event-inventory is chest inventory
+	name of player's tool is "§9Admin Tools"
+	if inventory name of event-inventory is "§bAdmin Tools":
+		cancel event
+		if clicked slot is 1:
+			set gamemode of player to creative
+		else if clicked slot is 3:
+			make player execute command "/be"
+		else if clicked slot is 5:
+			give a carrot on a stick to player
+		else if clicked slot is 7:
+			give a compass to player
+		else if clicked slot is 18:
+			openGameTool(player, "Kit")
+		close player's inventory
+	else if inventory name of event-inventory is "§aKit PvP's Option":
+		cancel event
+		if clicked slot is 3:
+			make player execute command "/joinset 4 Kit"
+		else if clicked slot is 5:
+			make player execute command "/gamestart Kit"
+		else if clicked slot is 20:
+			execute console command "/randomizecustom rule GoK"
+		else if clicked slot is 21:
+			execute console command "/randomizecustom rule BEC"
+		else if clicked slot is 22:
+			execute console command "/randomizecustom rule EmJ"
+		else if clicked slot is 23:
+			execute console command "/randomizecustom rule StW"
+		else if clicked slot is 24:
+			execute console command "/randomizecustom rule CPA"
+		else if clicked slot is 26:
+			execute console command "/randomizecustom rule"
+		else if clicked slot is 30:
+			execute console command "/randomizecustom team 2"
+		else if clicked slot is 32:
+			execute console command "/randomizecustom team 4"
+		else if clicked slot is 35:
+			execute console command "/randomizecustom team"
+		else if clicked slot is 38:
+			execute console command "/togglestagevote"
+		else if clicked slot is 40:
+			execute console command "/togglestagelisting"
+		else if clicked slot is 42:
+			execute console command "/togglestagetutorial"
+		close player's inventory
+
+function openAdminTool(player: player):
+	wait 5 ticks
+	open chest with 3 row named "§bAdmin Tools" to {_player}
+	wait a tick
+	set slot 1 of {_player}'s current inventory to nether star named "§6/gamemode creative"
+	set slot 3 of {_player}'s current inventory to diamond named "§6/blockedit"
+	set slot 5 of {_player}'s current inventory to carrot on a stick named "§6Gets WE Wand"
+	set slot 7 of {_player}'s current inventory to compass named "§6Gets WE Compass"
+	set {_slot} to 9
+	loop 9 times:
+		set slot {_slot} of {_player}'s current inventory to white glass pane named ""
+		add 1 to {_slot}
+	set slot 18 of {_player}'s current inventory to diamond sword named "§a§lKit §6Options"
+
+function openGameTool(player: player, game: text):
+	if {_game} is "Kit":
+		wait 3 ticks
+		open chest with 5 row named "§aKit PvP's Option" to {_player}
+		wait a tick
+		loop all players:
+			loop-player is {_player}
+			set slot 3 of {_player}'s current inventory to feather named "§b/joinset 4"
+			set slot 5 of {_player}'s current inventory to diamond named "§6/gamestart"
+		set {_slot} to 9
+		loop 9 times:
+			set slot {_slot} of {_player}'s current inventory to white glass pane named ""
+			add 1 to {_slot}
+		set slot 18 of {_player}'s current inventory to bow named "§6§lRules"
+		set slot 20 of {_player}'s current inventory to iron sword named "§aGoal of Killing"
+		set slot 21 of {_player}'s current inventory to diamond pickaxe named "§aBreaking Enemy Core"
+		set slot 22 of {_player}'s current inventory to emerald named "§aEarn many Jewel"
+		set slot 23 of {_player}'s current inventory to sheep egg named "§aSecure the Wool"
+		set slot 24 of {_player}'s current inventory to eye of ender named "§aCapture Point Area"
+		set slot 26 of {_player}'s current inventory to nether star named "§bReset Rule Custom"
+		set slot 27 of {_player}'s current inventory to white dye named "§6§lTeams"
+		set slot 30 of {_player}'s current inventory to blue dye named "§92 §6Team"
+		set slot 32 of {_player}'s current inventory to light green dye named "§a4 §6Team"
+		set slot 35 of {_player}'s current inventory to nether star named "§bReset Team Custom"
+		set slot 36 of {_player}'s current inventory to redstone comparator item named "§6§lOptions"
+		set slot 38 of {_player}'s current inventory to bottle o' enchanting named "§eMap Vote" with lore "§8Current§7: §6%{Kit-StageVote}%"
+		set slot 40 of {_player}'s current inventory to paper named "§eMap Listing" with lore "§8Current§7: §6%{Kit-StageListing}%"
+		set slot 42 of {_player}'s current inventory to emerald named "§eMap Tutorial" with lore "§8Current§7: §6%{Kit-Tutorial}%"
+
+command /randomizecustom <text> <text="none">:
+	permission: sk.admin
+	trigger:
+		if arg 2 is "none":
+			delete {Kit-StageRandomize.%arg 1%}
+			broadcast "§e[§aKit PvP§e] §6%arg 1%§bの指定を取り除きました"
+		else:
+			set {_arg} to arg 2
+			if arg 1 is "team":
+				set {_arg} to {_arg} parsed as number
+			set {Kit-StageRandomize.%arg 1%} to {_arg}
+			broadcast "§e[§aKit PvP§e] §6%arg 1%§bを §c%arg 2% §bに指定しました"
+
+command /togglestagevote:
+	permission: sk.admin
+	trigger:
+		if {Kit-StageVote} is not set:
+			set {Kit-StageVote} to false
+		if {Kit-StageVote} is false:
+			set {Kit-StageVote} to true
+			broadcast "§e[§aKit PvP§e] §6Map Vote§bを§a§lON§bに設定しました"
+		else if {Kit-StageVote} is true:
+			set {Kit-StageVote} to false
+			broadcast "§e[§aKit PvP§e] §6Map Vote§bを§c§lOFF§bに設定しました"
+
+command /togglestagelisting:
+	permission: sk.admin
+	trigger:
+		if {Kit-StageListing} is not set:
+			set {Kit-StageListing} to false
+		if {Kit-StageListing} is false:
+			set {Kit-StageListing} to true
+			broadcast "§e[§aKit PvP§e] §6Map Listing§bを§a§lON§bに設定しました"
+		else if {Kit-StageListing} is true:
+			set {Kit-StageListing} to false
+			broadcast "§e[§aKit PvP§e] §6Map Listing§bを§c§lOFF§bに設定しました"
+
+command /togglestagetutorial:
+	permission: sk.admin
+	trigger:
+		if {Kit-Tutorial} is not set:
+			set {Kit-Tutorial} to false
+		if {Kit-Tutorial} is false:
+			set {Kit-Tutorial} to true
+			broadcast "§e[§aKit PvP§e] §6Map Tutorial§bを§a§lON§bに設定しました"
+		else if {Kit-Tutorial} is true:
+			set {Kit-Tutorial} to false
+			broadcast "§e[§aKit PvP§e] §6Map Tutorial§bを§c§lOFF§bに設定しました"

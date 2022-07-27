@@ -1,0 +1,48 @@
+options:
+	vprefix: §b[§7Vanish§b]
+
+command /vanish:
+	permission: sk.staff
+	trigger:
+		if {Vanish::%player%} is not set:
+			set {Vanish::%player%} to false
+		if {Vanish::%player%} is false:
+			set {Vanish::%player%} to true
+#			set {Spec::%player%} to true
+			message "{@vprefix} §b透明化§7を§a有効化§7しました" to player
+			hide player from all players
+		else:
+			set {Vanish::%player%} to false
+#			set {Spec::%player%} to false
+			message "{@vprefix} §b透明化§7を§c無効化§7しました" to player
+			reveal player from all players
+
+on join:
+	if {Vanish::%player%} is true:
+		message "{@vprefix} §b透明化が有効になっています" to player
+		wait a tick
+		hide player from all players
+	else:
+		if {Spec::%player%} is set:
+			reveal player from all players
+			delete {Spec::%player%}
+
+on join:
+	loop all players:
+		if {Spec::%loop-player%} is set:
+			hide the loop-player from all players
+
+command /vanishlist:
+	aliases: /vl
+	permission: sk.admin
+	trigger:
+		message "{@vprefix} §bVanishplayer list§7:" to player
+		loop all players:
+			{Vanish::%loop-player%} is true
+			message "§7- §a%loop-player%" to player
+
+every a second:
+	loop all players:
+		if {Vanish::%loop-player%} is true:
+			hide loop-player from all players
+			send action bar "§b§l透明化が発動しています..." to loop-player

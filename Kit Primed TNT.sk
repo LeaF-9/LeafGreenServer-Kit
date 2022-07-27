@@ -1,0 +1,79 @@
+on place of a tnt:
+	if {Class::%player%} is "Bomber":
+		cancel event
+		remove a tnt from the player
+		spawn a primed tnt
+		set metadata value "attacker" of spawned primed tnt to "%player%"
+		set metadata value "kit-bomber" of spawned primed tnt to 4
+
+on leftclick holding a tnt:
+	if {Class::%player%} is "Bomber":
+		remove a tnt from player
+		shoot a primed tnt from player at speed 1.1
+		set metadata value "attacker" of shot primed tnt to "%player%"
+		set metadata value "kit-bomber" of shot primed tnt to 4
+
+on explode:
+	metadata value "kit-bomber" of event-entity is set
+	set {_force} to metadata value "kit-bomber" of event-entity
+	set {_damage} to {_force} + 3
+	cancel event
+	set {_attacker} to metadata value "attacker" of event-entity parsed as player
+	set {_now} to now
+	loop all players in radius {_damage} around event-location:
+		if {team::%loop-player%} is {team::%{_attacker}%}:
+			set {Stats.%loop-player%::BombCancel} to {_now}
+			add loop-player to {_bc::*}
+		else:
+			if loop-player's gamemode is survival:
+				LastKiller(loop-player, {_attacker})
+	make a safe explosion of force {_force} at event-location
+	wait a tick
+	loop {_bc::*}:
+		if {Stats.%loop-value%::BombCancel} is {_now}:
+			delete {Stats.%loop-value%::BombCancel}
+
+on damage of player:
+	if damage was caused by block explosion or entity explosion:
+		if {Stats.%victim%::BombCancel} is set:
+			cancel event
+		else:
+			if attacker is tnt:
+				if metadata value "kit-bomber" of attacker is set:
+					cancel event
+#				else if metadata value "small-2" of attacker is "true":
+#					set damage to damage * 0.2
+#				else if metadata value "bomult" of attacker is "true":
+#					set damage to damage * 1
+#				else:
+#					set damage to damage * 0.5
+			else if type of attacker is creeper:
+				if metadata value "kit-bomber" of attacker is set:
+					cancel event
+			else if damage cause is not entity explosion:
+				set damage to damage * 0.5
+			# set {_now} to now
+			# set {Stats.%victim%::BombFall} to {_now}
+			# wait 10 seconds
+			# {Stats.%victim%::BombFall} is {_now}
+			# delete {Stats.%victim%::BombFall}
+	# else if damage was caused by fall:
+	# 	{Stats.%victim%::BombFall} is set
+	# 	cancel event
+	# 	delete {Stats.%victim%::BombFall}
+
+function kitExplosion(attacker: player, power: number, loc: location):
+	set {_now} to now
+	set {_damage} to {_power} + 3
+	loop all players in radius {_damage} around {_loc}:
+		if {team::%loop-player%} is {team::%{_attacker}%}:
+			set {Stats.%loop-player%::BombCancel} to {_now}
+			add loop-player to {_bc::*}
+		else:
+			if loop-player's gamemode is survival:
+				LastKiller(loop-player, {_attacker})
+	make a safe explosion of force {_power} at {_loc}
+	wait a tick
+	loop {_bc::*}:
+		if {Stats.%loop-value%::BombCancel} is {_now}:
+			delete {Stats.%loop-value%::BombCancel}

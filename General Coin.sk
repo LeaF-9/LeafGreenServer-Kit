@@ -1,0 +1,25 @@
+command /givecoin <player> <number=1> [<text>]:
+	permission: sk.admin
+	trigger:
+		set {_uuid} to arg 1's UUID
+		set {_coin} to arg 2
+		if arg 3 is not "景品かぶり":
+			if {CoinBoost::%{_uuid}%} is set:
+				set {_coin} to round({_coin} * {CoinBoost::%{_uuid}%})
+			if {GlobalCoinBoost} is set:
+				set {_coin} to round({_coin} * {GlobalCoinBoost})
+		add {_coin} to {Coin::%arg 1's UUID%}
+		if arg 3 is set:
+			message "§d§l%arg 3%! §a+%{_coin}% Leafs!" to arg 1
+		else:
+			message "§a+%{_coin}% Leafs!" to arg 1
+
+command /setcoin <player> <number>:
+	permission: sk.admin
+	trigger:
+		set {_uuid} to arg 1's UUID
+		set {Coin::%{_uuid}%} to arg 2
+
+on join:
+	if {Coin::%player's UUID%} is not set:
+		set {Coin::%player's UUID%} to 0

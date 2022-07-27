@@ -1,0 +1,24 @@
+every a second:
+	if {Kit-tochu} is true:
+		add 1 to {Kit-GameTime}
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			set {_uuid} to UUID of loop-player
+			add 1 to {Kit-GameplayTime::%{_uuid}%}
+
+# command /playtime <offline player=%player%> <text="Total">:
+# 	trigger:
+# 		set {_uuid} to arg 1's UUID
+# 		message "§6%arg 1%§e's %arg 2% Playtime§7: §a%{%arg 2%-day::%{_uuid}%}%§bd §a%{%arg 2%-hour::%{_uuid}%}%§bh §a%{%arg 2%-minute::%{_uuid}%}%§bm §a%{%arg 2%-second::%{_uuid}%}%§bs " to player
+
+# command /ptdaycheck:
+# 	permission: sk.admin
+# 	trigger:
+# 		loop {Total-PlayTime::*}:
+# 			if loop-value >= 86400:
+# 				set {_list::%loop-index%} to loop-value
+# 		loop {_list::*}:
+# 			{UUID::%loop-index%} is set
+# 			set {_high} to loop-value
+# 			set {_highplayer} to loop-index
+# 			message "§6%{UUID::%{_highplayer}%}%§e's Playtime§7: §a%{Total-day::%{_highplayer}%}%§bd §a%{Total-hour::%{_highplayer}%}%§bh §a%{Total-minute::%{_highplayer}%}%§bm §a%{Total-second::%{_highplayer}%}%§bs " to player

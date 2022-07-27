@@ -1,0 +1,12 @@
+on death of player:
+	clear drops
+	delete {ClassChose::%victim%}
+	wait a tick
+	delete {CLS::%victim%}
+	delete {Class::%victim%}
+	set {team::%victim%} to {TrueTeam::%victim%}
+	execute console command "/kjc %victim%"
+	set walk speed of victim to 0.2
+	loop all dropped items:
+		metadata value "delete" of loop-dropped item is "%victim%"
+		delete loop-dropped item

@@ -1,0 +1,491 @@
+options:
+	prefix: §a[§eSkill§a]
+
+on inventory click:
+	{Game::%player%} is "Kit"
+	if type of event-inventory is chest inventory:
+		if inventory name of event-inventory is "§bKit: §6Genre-Unit":
+			cancel event
+			if type of clicked item is a concrete:
+				set {_genre} to name of clicked item
+				replace "§6§l" with "" in {_genre}
+				close player's inventory
+				openKitUnitGenre(player, {_genre})
+		else if inventory name of event-inventory is "§bKit: §9Unit Customize":
+			cancel event
+			if clicked slot is 0, 1, 2, 3, 4, 5, 6, 7 or 8:
+				set {_kit} to name of clicked item
+				if {_kit} is set:
+					replace "§6§l" with "" in {_kit}
+					close player's inventory
+					openKitUnitList(player, {_kit})
+		else if inventory name of event-inventory contains "§a's New Unit":
+			if clicked slot is 44:
+				cancel event
+				set {_kit} to inventory name of event-inventory
+				replace "§a's New Unit" with "" in {_kit}
+				replace "§6" with "" in {_kit}
+				kitUnitCreate(player, {_kit})
+			else if type of clicked item  is a stained glass pane:
+				cancel event
+		else if inventory name of event-inventory contains "§9's Unit":
+			cancel event
+			set {_kit} to inventory name of event-inventory
+			replace "§9's Unit" with "" in {_kit}
+			replace "§bKit: §6" with "" in {_kit}
+			if type of clicked item is a chest:
+				set {_unit} to 1st line of lore of clicked item
+				replace "§b§lUnit " with "" in {_unit}
+				set {_unit} to {_unit} parsed as number
+				close player's inventory
+				if click type is left mouse button:
+					openKitUnitDetail(player, {_kit}, {_unit})
+				else if click type is right mouse button:
+					openKitUnitCustom(player, {_kit}, {_unit})
+				else if click type is middle mouse button:
+					openKitUnitRemove(player, {_kit}, {_unit})
+			else if type of clicked item is a lime stained glass pane:
+				set {_num} to clicked slot
+				set {_num} to {_num} + 1
+				close player's inventory
+				openKitUnitCreate(player, {_kit})
+		else if inventory name of event-inventory contains "§a's Unit":
+			cancel event
+			set {_kit} to inventory name of event-inventory
+			replace "§a's Unit" with "" in {_kit}
+			replace "§bKit: §6" with "" in {_kit}
+			if type of clicked item is a chest:
+				set {_unit} to 1st line of lore of clicked item
+				replace "§b§lUnit " with "" in {_unit}
+				set {_unit} to {_unit} parsed as number
+				close player's inventory
+				kitUnitSelect(player, {_kit}, {_unit})
+		else if inventory name of event-inventory contains "§e's Unit Detail":
+			cancel event
+			set {_name} to inventory name of event-inventory
+			set {_details::*} to {_name} split at ":"
+			set {_kit} to {_details::1}
+			replace "§6" with "" in {_kit}
+			replace "§e's Unit Detail§7" with "" in {_kit}
+			set {_unit} to {_details::2}
+			replace " §9§l" with "" in {_unit}
+			set {_unit} to {_unit} parsed as number
+			if clicked slot is 19:
+				close player's inventory
+				kitUnitSelect(player, {_kit}, {_unit})
+			else if clicked slot is 22:
+				close player's inventory
+				openKitUnitCustom(player, {_kit}, {_unit})	
+			else if clicked slot is 25:
+				close player's inventory
+				openKitUnitRemove(player, {_kit}, {_unit})
+		else if inventory name of event-inventory contains "§e's Unit Custom":
+			set {_name} to inventory name of event-inventory
+			set {_details::*} to {_name} split at ":"
+			set {_kit} to {_details::1}
+			replace "§6" with "" in {_kit}
+			replace "§e's Unit Custom§7" with "" in {_kit}
+			set {_unit} to {_details::2}
+			replace " §9§l" with "" in {_unit}
+			set {_unit} to {_unit} parsed as number
+			if clicked slot is 36:
+				cancel event
+				close player's inventory
+				openKitUnitWeapon(player, {_kit}, {_unit})
+			else if clicked slot is 37:
+				cancel event
+			else if clicked slot is 39:
+				cancel event
+				close player's inventory
+				openKitUnitName(player, {_kit}, {_unit})
+			else if clicked slot is 44:
+				cancel event
+				kitUnitSave(player, {_kit}, {_unit})
+			else if type of clicked item is stained glass pane:
+				cancel event
+		else if inventory name of event-inventory contains "§eを削除しますか?":
+			cancel event
+			set {_name} to inventory name of event-inventory
+			replace "§6" with "" in {_name}
+			set {_details::*} to {_name} split at "§"
+			set {_kit} to {_details::1}
+			set {_unit} to {_details::2}
+			replace "eのUnit" with "" in {_unit}
+			set {_unit} to {_unit} parsed as number
+			if type of clicked item is a lime concrete:
+				close player's inventory
+				kitUnitRemove(player, {_kit}, {_unit})
+			else if type of clicked item is a red concrete:
+				close player's inventory
+				openKitUnitList(player, {_kit})
+		else if inventory name of event-inventory contains "§c's Unit Weapon":
+			cancel event
+			set {_name} to inventory name of event-inventory
+			set {_details::*} to {_name} split at ":"
+			set {_kit} to {_details::1}
+			replace "§6" with "" in {_kit}
+			replace "§c's Unit Weapon§7" with "" in {_kit}
+			set {_unit} to {_details::2}
+			replace " §9§l" with "" in {_unit}
+			set {_unit} to {_unit} parsed as number
+			if clicked slot is 17:
+				close player's inventory
+				set {_uuid} to UUID of player
+				load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%player%.unit"
+				set {_unitname} to yml value "unit.%{_kit}%.%{_unit}%.name" from "class.%player%.unit"
+				set yml value "unit.%{_kit}%.%{_unit}%.weapon" from "class.%player%.unit" to 0
+				save yml "class.%player%.unit"
+				message formatted "{@prefix} §9ユニット§7: §b§l%{_unitname}% §cの§4Weapon§cを削除しました" to player
+			else:
+				set {_weapon} to clicked item
+				set {_main-weapon::*} to kitWeaponList({_kit}, "main")
+				set {_sub-weapon::*} to kitWeaponList({_kit}, "sub")
+				loop {_main-weapon::*}:
+					if loop-value is {_weapon}:
+						close player's inventory
+						set {_uuid} to UUID of player
+						load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%player%"
+						set {_index} to loop-index
+						set {_index} to {_index} parsed as number
+						set {_unitname} to yml value "unit.%{_kit}%.%{_unit}%.name" from "player.%player%"
+						set yml value "unit.%{_kit}%.%{_unit}%.weapon" from "player.%player%" to {_index}
+						save yml "player.%player%"
+						message "{@prefix} §9ユニット§7: §b§l%{_unitname}% §aの§4Weapon§aをセットしました" to player
+				loop {_sub-weapon::*}:
+					if loop-value-2 is {_weapon}:
+						message "{@prefix} §cそのアイテムは§aSub Weapon§cです" to player
+
+function openKitUnitGenre(player: player, genre: text):
+	wait a tick
+	open chest with 1 row named "§bKit: §9Unit Customize" to {_player}
+	wait a tick
+	set {_slot} to 0
+	load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "class.all"
+	set {_classes::*} to yml list "Classes" from "class.all"
+	unload yml "class.all"
+	loop {_classes::*}:
+		load yml "plugins/skript-yaml/Kit Classes/%loop-value%.yml" as "class.%{_player}%.check"
+		yml value "type" from "class.%{_player}%.check" is {_genre}
+		yml value "enable" from "class.%{_player}%.check" is true
+#		if {_special} is false:
+#		if {_player} has permission "kit.class.%loop-value%":
+		set {_uuid} to UUID of {_player}
+		set {_item.%loop-value%} to yml value "item" from "class.%{_player}%.check"
+		unload yml "class.%{_player}%.check"
+		load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
+		set {_unit} to 0
+		loop yaml node keys "unit.%loop-value%" from "class.%{_player}%.unit":
+			add 1 to {_unit}
+		unload yml "class.%{_player}%.unit"
+		set slot {_slot} of {_player}'s current inventory to {_item.%loop-value%} named "§6§l%loop-value%" with lore " " and "§9Unit数§7: §b§l%{_unit}%"
+		add 1 to {_slot}
+
+function openKitUnitList(player: player, kit: text):
+	wait a tick
+	open chest with 6 row named "§bKit: §6%{_kit}%§9's Unit" to {_player}
+	wait a tick
+	set {_uuid} to UUID of {_player}
+	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
+	set {_slot} to 0
+	delete {_exist}
+	loop yaml node keys "unit.%{_kit}%" from "class.%{_player}%.unit":
+		set {_exist} to true
+		set {_listnum} to "%loop-key%" parsed as number
+		set {_slot} to {_listnum} - 1
+		set {_name} to yml value "unit.%{_kit}%.%loop-node%.name" from "class.%{_player}%.unit"
+		set {_slot-1} to yml value "unit.%{_kit}%.%loop-node%.skill.1" from "class.%{_player}%.unit"
+		set {_slot-2} to yml value "unit.%{_kit}%.%loop-node%.skill.2" from "class.%{_player}%.unit"
+		set {_slot-3} to yml value "unit.%{_kit}%.%loop-node%.skill.3" from "class.%{_player}%.unit"
+		set {_slot-w} to yml value "unit.%{_kit}%.%loop-node%.weapon" from "class.%{_player}%.unit"
+		delete {_unit::*}
+		set {_unit::skill-1} to kitSkillItem({_kit}, {_slot-1})
+		set {_unit::skill-2} to kitSkillItem({_kit}, {_slot-2})
+		set {_unit::skill-3} to kitSkillItem({_kit}, {_slot-3})
+		if {_slot-w} is not 0:
+			set {_unit::weapon} to kitWeaponItem({_kit}, {_slot-w}, "main")
+			set slot {_slot} of {_player}'s current inventory to chest named "§9§l%{_name}%" with lore "§b§lUnit %{_listnum}%", "§4Weapon: §r%display name of {_unit::weapon}%", "§6Skill 1: §r%display name of {_unit::skill-1}%", "§6Skill 2: §r%display name of {_unit::skill-2}%", "§6Skill 3: §r%display name of {_unit::skill-3}%", "§5§m------------------------------", "§e§l左クリック §6でユニット詳細", "§e§l右クリック §6でユニット変更" and "§e§lマウスクリック §6で§cユニット削除"
+		else:
+			set slot {_slot} of {_player}'s current inventory to chest named "§9§l%{_name}%" with lore "§b§lUnit %{_listnum}%", "§6Skill 1: §r%display name of {_unit::skill-1}%", "§6Skill 2: §r%display name of {_unit::skill-2}%", "§6Skill 3: §r%display name of {_unit::skill-3}%", "§5§m------------------------------", "§e§l左クリック §6でユニット詳細", "§e§l右クリック §6でユニット変更" and "§e§lマウスクリック §6で§cユニット削除"
+	if {_exist} is true:
+		add 1 to {_slot}
+	unload yml "class.%{_player}%.unit"
+	set slot {_slot} of {_player}'s current inventory to lime stained glass pane named "§aCreate a unit" with lore "§6新しいUnitを作成します"
+
+function openKitUnitDetail(player: player, kit: text, num: number):
+	set {_uuid} to UUID of {_player}
+	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
+	set {_name} to yml value "unit.%{_kit}%.%{_num}%.name" from "class.%{_player}%.unit"
+	set {_slot-1} to yml value "unit.%{_kit}%.%{_num}%.skill.1" from "class.%{_player}%.unit"
+	set {_slot-2} to yml value "unit.%{_kit}%.%{_num}%.skill.2" from "class.%{_player}%.unit"
+	set {_slot-3} to yml value "unit.%{_kit}%.%{_num}%.skill.3" from "class.%{_player}%.unit"
+	set {_slot-w} to yml value "unit.%{_kit}%.%{_num}%.weapon" from "class.%{_player}%.unit"
+	unload yml "class.%{_player}%.unit"
+	wait a tick
+	open chest with 3 row named "§6%{_kit}%§e's Unit Detail§7: §9§l%{_num}%" to {_player}
+	wait a tick
+	set slot 0 of {_player}'s current inventory to red stained glass pane named "§4§lWeapon:"
+	if {_slot-w} is not 0:
+		set {_weapon} to kitWeaponItem({_kit}, {_slot-w}, "main")
+		set slot 1 of {_player}'s current inventory to {_weapon}
+	else:
+		set slot 1 of {_player}'s current inventory to structure void named "§e§lセットされていません"
+	set slot 3 of {_player}'s current inventory to lime stained glass pane named "§2§lSkills:"
+	set {_skill-1} to kitSkillItem({_kit}, {_slot-1})
+	set {_skill-2} to kitSkillItem({_kit}, {_slot-2})
+	set {_skill-3} to kitSkillItem({_kit}, {_slot-3})
+	set {_slotnum} to 4
+	loop 3 times:
+		set slot {_slotnum} of {_player}'s current inventory to {_skill-%loop-number%}
+		add 1 to {_slotnum}
+	set slot 8 of {_player}'s current inventory to paper named "§bUnit Name§7: §9§l%{_name}%"
+	set slot 19 of {_player}'s current inventory to lime concrete named "§a§l選択" with lore "§bこのUnitをセットします"
+	set slot 22 of {_player}'s current inventory to yellow concrete named "§e§l変更" with lore "§bこのUnitのアイテムを変更します"
+	set slot 25 of {_player}'s current inventory to red concrete named "§c§l削除" with lore "§bこのUnitを削除します"
+
+function openKitUnitCustom(player: player, kit: text, num: number):
+	set {_uuid} to UUID of {_player}
+	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
+	set {_name} to yml value "unit.%{_kit}%.%{_num}%.name" from "class.%{_player}%.unit"
+	set {_slot-1} to yml value "unit.%{_kit}%.%{_num}%.skill.1" from "class.%{_player}%.unit"
+	set {_slot-2} to yml value "unit.%{_kit}%.%{_num}%.skill.2" from "class.%{_player}%.unit"
+	set {_slot-3} to yml value "unit.%{_kit}%.%{_num}%.skill.3" from "class.%{_player}%.unit"
+	set {_slot-w} to yml value "unit.%{_kit}%.%{_num}%.weapon" from "class.%{_player}%.unit"
+	unload yml "class.%{_player}%.unit"
+	wait a tick
+	open chest with 5 row named "§6%{_kit}%§e's Unit Custom§7: §9§l%{_num}%" to {_player}
+	wait a tick
+	set {_num} to 0
+	loop 27 times:
+		if {_num} is 0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25 or 26:
+			set slot {_num} of {_player}'s current inventory to a white glass pane named " "
+		else if {_num} is 1, 4 or 7:
+			set slot {_num} of {_player}'s current inventory to a red glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩"
+		add 1 to {_num}
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
+	loop yaml node keys "skill" from "class.custom.%{_kit}%":
+		set {_skill} to yml value "skill.%loop-node%" from "class.custom.%{_kit}%"
+		add {_skill} to {_skills::*}
+	unload yml "class.custom.%{_kit}%"
+	set {_slot} to 0
+	loop {_skills::*}:
+		add 1 to {_slot}
+		if {_slot} is {_slot-1}:
+			set slot 10 of {_player}'s current inventory to loop-value
+		else if {_slot} is {_slot-2}:
+			set slot 13 of {_player}'s current inventory to loop-value
+		else if {_slot} is {_slot-3}:
+			set slot 16 of {_player}'s current inventory to loop-value
+		else:
+			set slot {_num} of {_player}'s current inventory to loop-value
+		add 1 to {_num}
+	set slot 36 of {_player}'s current inventory to an iron sword named "§4§lWeapon Set" with lore "§eUnitにWeaponを含めることが出来ます", "§eオプション機能なので,セットしないことも可能です" and "§6現在セット中の§4Weapon§6が右のスロットに表示されます"
+	if {_slot-w} is not 0:
+		set {_weapon} to kitWeaponItem({_kit}, {_slot-w}, "main")
+		set slot 37 of {_player}'s current inventory to {_weapon}
+	else:
+		set slot 37 of {_player}'s current inventory to structure void named "§4Weapon§eがセットされていません"
+	set slot 39 of {_player}'s current inventory to nametag named "§9§lName Change" with lore "§eUnitの名前を変更することが出来ます", "" and "§9現在の名前: §b§l%{_name}%"
+	set slot 44 of {_player}'s current inventory to nether star named "§a§lUnit Save" with lore "§eUnitの設定を保存します"
+
+function openKitUnitRemove(player: player, kit: text, num: number):
+	set {_uuid} to UUID of {_player}
+	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
+	set {_name} to yml value "unit.%{_kit}%.%{_num}%.name" from "class.%{_player}%.unit"
+	unload yml "class.%{_player}%.unit"
+	wait a tick
+	open chest with 3 row named "§6%{_kit}%§eのUnit%{_num}%§7: §9§l%{_name}%§eを削除しますか?" to {_player}
+	wait a tick
+	set slot 1,2,3,10,11,12,19,20,21 of {_player}'s current inventory to lime concrete named "§2§lはい"
+	set slot 5,6,7,14,15,16,23,24,25 of {_player}'s current inventory to red concrete named "§4§lいいえ"
+
+function openKitUnitCreate(player: player, kit: text):
+	wait a tick
+	open chest with 5 row named "§6%{_kit}%§a's New Unit" to {_player}
+	wait a tick
+	set {_num} to 0
+	loop 27 times:
+		if {_num} is 0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25 or 26:
+			set slot {_num} of {_player}'s current inventory to a white glass pane named " "
+		else if {_num} is 1, 4 or 7:
+			set slot {_num} of {_player}'s current inventory to a red glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩"
+		add 1 to {_num}
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
+	loop yaml node keys "skill" from "class.custom.%{_kit}%":
+		set {_skill} to yml value "skill.%loop-node%" from "class.custom.%{_kit}%"
+		add {_skill} to {_skills::*}
+	unload yml "class.custom.%{_kit}%"
+	loop {_skills::*}:
+		set slot {_num} of {_player}'s current inventory to loop-value
+		add 1 to {_num}
+	set slot 44 of {_player}'s current inventory to a nether star named "§9§lSave a Unit" with lore "§7選択した§aSkill§7を新しい§9Unit§7として保存します"
+
+function kitUnitCreate(player: player, kit: text):
+	set {_slot-1} to slot 10 of {_player}'s current inventory
+	set {_slot-2} to slot 13 of {_player}'s current inventory
+	set {_slot-3} to slot 16 of {_player}'s current inventory
+	close {_player}'s inventory
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
+	loop yaml node keys "skill" from "class.custom.%{_kit}%":
+		set {_skill} to yml value "skill.%loop-node%" from "class.custom.%{_kit}%"
+		add {_skill} to {_skills::*}
+	unload yml "class.custom.%{_kit}%"
+	delete {_true}
+	loop 3 times:
+		if {_skills::*} does not contain {_slot-%loop-number%}:
+			set {_true} to true
+	if {_true} is not set:
+		set {_slotnum} to 0
+		loop 3 times:
+			add 1 to {_slotnum}
+			set {_skillnum} to 0
+			loop {_skills::*}:
+				add 1 to {_skillnum}
+				if {_skills::%{_skillnum}%} is {_slot-%{_slotnum}%}:
+					set {_unit.skill::%{_slotnum}%} to {_skillnum}
+		set {_unit.weapon} to 0
+		set {_uuid} to uuid of {_player}
+		load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
+		set {_unit.amount} to 1
+		delete {_ok}
+		loop yaml node keys "unit.%{_kit}%" from "class.%{_player}%.unit":
+			if {_ok} is not set:
+				if "%loop-key%" is not "%{_unit.amount}%":
+					set {_ok} to true
+				else:
+					add 1 to {_unit.amount}
+		set {_unit.name} to "Unit %{_unit.amount}%"
+		set yml value "unit.%{_kit}%.%{_unit.amount}%.name" from "class.%{_player}%.unit" to {_unit.name}
+		loop 3 times:
+			set yml value "unit.%{_kit}%.%{_unit.amount}%.skill.%loop-number%" from "class.%{_player}%.unit" to {_unit.skill::%loop-number%}
+		set yml value "unit.%{_kit}%.%{_unit.amount}%.weapon" from "class.%{_player}%.unit" to {_unit.weapon}
+		save yml "class.%{_player}%.unit"
+		message formatted "{@prefix} §9ユニット§7: §b§l%{_unit.name}% §eを作成しました" to {_player}
+	else:
+		message formatted "{@prefix} §4スロットには§6§lスキルアイテム§4をセットしてください!" to {_player}
+
+function kitUnitSelect(player: player, kit: text, num: number):
+	set {_uuid} to UUID of {_player}
+	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
+	set {_name} to yml value "unit.%{_kit}%.%{_num}%.name" from "class.%{_player}%.unit"
+	set {_slot-1} to yml value "unit.%{_kit}%.%{_num}%.skill.1" from "class.%{_player}%.unit"
+	set {_slot-2} to yml value "unit.%{_kit}%.%{_num}%.skill.2" from "class.%{_player}%.unit"
+	set {_slot-3} to yml value "unit.%{_kit}%.%{_num}%.skill.3" from "class.%{_player}%.unit"
+	set {_slot-w} to yml value "unit.%{_kit}%.%{_num}%.weapon" from "class.%{_player}%.unit"
+	set yml value "custom.%{_kit}%.skill.1" from "class.%{_player}%.unit" to {_slot-1}
+	set yml value "custom.%{_kit}%.skill.2" from "class.%{_player}%.unit" to {_slot-2}
+	set yml value "custom.%{_kit}%.skill.3" from "class.%{_player}%.unit" to {_slot-3}
+	if {_slot-w} is not 0:
+		set yml value "custom.%{_kit}%.weapon" from "class.%{_player}%.unit" to {_slot-w}
+	save yml "class.%{_player}%.unit"
+	message formatted "{@prefix} §9ユニット§7: §b§l%{_name}% §eのアイテムをセットしました" to {_player}
+
+function openKitUnitWeapon(player: player, kit: text, num: number):
+	wait a tick
+	open chest with 2 row named "§6%{_kit}%§c's Unit Weapon§7: §9§l%{_num}%" to {_player}
+	wait a tick
+	set slot 0 of {_player}'s current inventory to a red glass pane named "§4§lMain Weapon" with lore "§fKitのメインとなる武器です" and "§aこの列のアイテムを選択して下さい"
+	set slot 9 of {_player}'s current inventory to a yellow glass pane named "§e§lSub Weapon" with lore "§fKitのオフハンドに装備する武器です" and "§cこの列のアイテムは選択できません"
+	set {_slot} to 2
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
+	loop yaml node keys "weapon" from "class.custom.%{_kit}%":
+		set {_main} to yml value "weapon.%loop-node%.main" from "class.custom.%{_kit}%"
+		add {_main} to {_main-weapon::*}
+		set {_sub} to yml value "weapon.%loop-node%.sub" from "class.custom.%{_kit}%"
+		add {_sub} to {_sub-weapon::*}
+	unload yml "class.custom.%{_kit}%"
+	loop {_main-weapon::*}:
+		set slot {_slot} of {_player}'s current inventory to loop-value
+		add 1 to {_slot}
+	set {_slot} to 11
+	loop {_sub-weapon::*}:
+		set slot {_slot} of {_player}'s current inventory to loop-value
+		add 1 to {_slot}
+	set slot 17 of {_player}'s current inventory to barrier named "§4Weapon§cのセットを削除する"
+
+function openKitUnitName(player: player, kit: text, num: number):
+	wait a tick
+	set {_uuid} to UUID of {_player}
+	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "unit.%{_player}%"
+	set {_name} to yml value "unit.%{_kit}%.%{_num}%.name" from "unit.%{_player}%"
+	unload yml "unit.%{_player}%"
+	open an anvil gui named "§6%{_kit}%§3's Unit Name§7: §9§l%{_num}%" to {_player} with a nametag named "%{_name}%" with lore "§7入力欄に変更したい名前を入力してください" and "§7入力後,一番右のスロットを押してください":
+		if clicked raw slot is 2:
+			set {_name} to inventory name of event-inventory
+			set {_details::*} to {_name} split at ":"
+			set {_kit} to {_details::1}
+			replace "§6" with "" in {_kit}
+			replace "§3's Unit Name§7" with "" in {_kit}
+			set {_unit} to {_details::2}
+			replace " §9§l" with "" in {_unit}
+			set {_result} to name of slot clicked raw slot of event-inventory
+			close player's inventory
+			set {_uuid} to UUID of player
+			load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%player%"
+			set yml value "unit.%{_kit}%.%{_unit}%.name" from "player.%player%" to {_result}
+			save yml "player.%player%"
+			message formatted "{@prefix} §9ユニット§eの名前を §b§l%{_result}% §eに変更しました" to player
+
+function kitUnitSave(player: player, kit: text, num: number):
+	set {_slot-1} to slot 10 of {_player}'s current inventory
+	set {_slot-2} to slot 13 of {_player}'s current inventory
+	set {_slot-3} to slot 16 of {_player}'s current inventory
+	close {_player}'s inventory
+	set {_skills::*} to kitSkillList({_kit})
+	delete {_true}
+	loop 3 times:
+		if {_skills::*} does not contain {_slot-%loop-number%}:
+			set {_true} to true
+	if {_true} is not set:
+		set {_slotnum} to 0
+		loop 3 times:
+			add 1 to {_slotnum}
+			set {_skillnum} to 0
+			loop {_skills::*}:
+				add 1 to {_skillnum}
+				if {_skills::%{_skillnum}%} is {_slot-%{_slotnum}%}:
+					set {_unit.skill::%{_slotnum}%} to {_skillnum}
+		set {_uuid} to uuid of {_player}
+		load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
+		set {_unit.name} to yml value "unit.%{_kit}%.%{_num}%.name" from "class.%{_player}%.unit"
+		loop 3 times:
+			set yml value "unit.%{_kit}%.%{_num}%.skill.%loop-number%" from "class.%{_player}%.unit" to {_unit.skill::%loop-number%}
+		save yml "class.%{_player}%.unit"
+		message formatted "{@prefix} §9ユニット§7: §b§l%{_unit.name}% §aのアイテムを保存しました" to {_player}
+	else:
+		message formatted "{@prefix} §4スロットには§6§lスキルアイテム§4をセットしてください!" to {_player}
+
+function kitUnitRemove(player: player, kit: text, num: number):
+	set {_uuid} to uuid of {_player}
+	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
+	delete yml value "unit.%{_kit}%.%{_num}%" from "class.%{_player}%.unit"
+	message formatted "{@prefix} §4対象ユニット§cを削除しました" to {_player}
+
+command /kit-unitlist <text> <player>:
+	usage: /kit-unitlist <kit> <player>
+	permission: sk.admin
+	trigger:
+		wait a tick
+		open chest with 6 row named "§bKit: §6%arg 1%§a's Unit" to arg 2
+		wait a tick
+		set {_uuid} to UUID of arg 2
+		set {_kit} to arg 1
+		set {_player} to arg 2
+		load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
+		set {_slot} to 0
+		loop yaml node keys "unit.%{_kit}%" from "class.%{_player}%.unit":
+			set {_listnum} to "%loop-key%" parsed as number
+			set {_slot} to {_listnum} - 1
+			set {_name} to yml value "unit.%{_kit}%.%loop-node%.name" from "class.%{_player}%.unit"
+			set {_slot-1} to yml value "unit.%{_kit}%.%loop-node%.skill.1" from "class.%{_player}%.unit"
+			set {_slot-2} to yml value "unit.%{_kit}%.%loop-node%.skill.2" from "class.%{_player}%.unit"
+			set {_slot-3} to yml value "unit.%{_kit}%.%loop-node%.skill.3" from "class.%{_player}%.unit"
+			set {_slot-w} to yml value "unit.%{_kit}%.%loop-node%.weapon" from "class.%{_player}%.unit"
+			delete {_unit::*}
+			set {_unit::skill-1} to kitSkillItem({_kit}, {_slot-1})
+			set {_unit::skill-2} to kitSkillItem({_kit}, {_slot-2})
+			set {_unit::skill-3} to kitSkillItem({_kit}, {_slot-3})
+			if {_slot-w} is not 0:
+				set {_unit::weapon} to kitWeaponItem({_kit}, {_slot-w}, "main")
+				set slot {_slot} of {_player}'s current inventory to chest named "§9§l%{_name}%" with lore "§b§lUnit %{_listnum}%", "§4Weapon: §r%display name of {_unit::weapon}%", "§6Skill 1: §r%display name of {_unit::skill-1}%", "§6Skill 2: §r%display name of {_unit::skill-2}%" and "§6Skill 3: §r%display name of {_unit::skill-3}%"
+			else:
+				set slot {_slot} of {_player}'s current inventory to chest named "§9§l%{_name}%" with lore "§b§lUnit %{_listnum}%", "§6Skill 1: §r%display name of {_unit::skill-1}%", "§6Skill 2: §r%display name of {_unit::skill-2}%" and "§6Skill 3: §r%display name of {_unit::skill-3}%"

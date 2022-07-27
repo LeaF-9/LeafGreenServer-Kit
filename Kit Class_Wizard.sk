@@ -1,0 +1,1083 @@
+# Wizardのスキル Ver1.0.0
+
+# Weapons
+on damage of player:
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
+	{Class::%attacker%} is "Wizard"
+	{Stats.%victim%::Invincible} is not set
+	set {_tool} to attacker's tool
+	if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 1) is true:
+		set {_ok} to true
+		set {_mana} to 8
+	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 2) is true:
+		set {_ok} to true
+		set {_mana} to 5
+	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 3) is true:
+		set {_ok} to true
+		set {_mana} to 2
+	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 4) is true:
+		set {_ok} to true
+		set {_mana} to 5
+	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is true:
+		set {_ok} to true
+		set {_mana} to 3
+	if {_ok} is true:
+		add {_mana} to {Kit-Mana::%attacker%}
+		kitMsg(attacker, "§bマナ §9§l%{_mana}% §7ゲット!")
+
+on shoot:
+	if name of shooter's tool is "§bMana Drawing":
+		set metadata value "manablue" of projectile to "true"
+	else if name of shooter's tool is "§aMana Assimilation":
+		set metadata value "managreen" of projectile to "true"
+
+on damage of player:
+	{Class::%attacker%} is "Wizard"
+	victim is not attacker
+	{Stats.%victim%::Invincible} is not set
+	if damage was caused by potion:
+		if metadata value "managreen" of projectile is "true":
+			set damage to 1
+			add 3 to {Kit-Mana::%attacker%}
+			kitMsg(attacker, "§bマナ §9§l3 §7ゲット!")
+		else if metadata value "manablue" of projectile is "true":
+			add 5 to {Kit-Mana::%attacker%}
+			kitMsg(attacker, "§bマナ §9§l5 §7ゲット!")
+
+function kitWeaponWizard(player: player):
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	checkCT({_player}, name of {_player}'s tool) is true
+	if {_item.num} is 2:
+		kitWeapon_Wizard_2({_player})
+	else if {_item.num} is 3:
+		kitWeapon_Wizard_3({_player})
+	else if {_item.num} is 4:
+		kitWeapon_Wizard_4({_player})
+	else if {_item.num} is 5:
+		kitWeapon_Wizard_5({_player})
+
+function kitWeapon_Wizard_2(player: player):
+	toolCT({_player}, "Wizard", 2, "Weapon.main")
+	set {Stats.%{_player}%::FairyWand} to true
+	playSound("entity.player.levelup", 1, 2, {_player})
+	kitMsg({_player}, "<##e95464>妖精が<##0075c2>マナ<##e95464>を分け与えてくれるみたいです!")
+	set {_baseloc} to location of {_player}
+	loop 3 times:
+		set {_loc.%loop-number%} to location of {_player}
+		add a random number between -1 and 1 to x-coordinate of {_loc.%loop-number%}
+		add a random number between 0 and 2 to y-coordinate of {_loc.%loop-number%}
+		add a random number between -1 and 1 to z-coordinate of {_loc.%loop-number%}
+	loop 200 times:
+		set {_beforebase} to {_baseloc}
+		set {_baseloc} to location of {_player}
+		set {_x} to x-coordinate of {_baseloc} - x-coordinate of {_beforebase}
+		set {_y} to y-coordinate of {_baseloc} - y-coordinate of {_beforebase}
+		set {_z} to z-coordinate of {_baseloc} - z-coordinate of {_beforebase}
+		loop 3 times:
+			add a random number between -0.1 and 0.1 to x-coordinate of {_loc.%loop-number-2%}
+			add {_x} to x-coordinate of {_loc.%loop-number-2%}
+			if x-coordinate of {_loc.%loop-number-2%} is not between x-coordinate of {_baseloc} - 1 and x-coordinate of {_baseloc} + 1:
+				if x-coordinate of {_loc.%loop-number-2%} < x-coordinate of {_baseloc} - 1:
+					set x-coordinate of {_loc.%loop-number-2%} to x-coordinate of {_baseloc} - 1
+				else if x-coordinate of {_loc.%loop-number-2%} > x-coordinate of {_baseloc} + 1:
+					set x-coordinate of {_loc.%loop-number-2%} to x-coordinate of {_baseloc} + 1
+			add a random number between -0.1 and 0.1 to y-coordinate of {_loc.%loop-number-2%}
+			add {_y} to y-coordinate of {_loc.%loop-number-2%}
+			if y-coordinate of {_loc.%loop-number-2%} is not between y-coordinate of {_baseloc} and y-coordinate of {_baseloc} + 2:
+				if y-coordinate of {_loc.%loop-number-2%} < y-coordinate of {_baseloc}:
+					set y-coordinate of {_loc.%loop-number-2%} to y-coordinate of {_baseloc}
+				else if y-coordinate of {_loc.%loop-number-2%} > y-coordinate of {_baseloc} + 2:
+					set y-coordinate of {_loc.%loop-number-2%} to y-coordinate of {_baseloc} + 2
+			add a random number between -0.1 and 0.1 to z-coordinate of {_loc.%loop-number-2%}
+			add {_z} to z-coordinate of {_loc.%loop-number-2%}
+			if z-coordinate of {_loc.%loop-number-2%} is not between z-coordinate of {_baseloc} - 1 and z-coordinate of {_baseloc} + 1:
+				if z-coordinate of {_loc.%loop-number-2%} < z-coordinate of {_baseloc} - 1:
+					set z-coordinate of {_loc.%loop-number-2%} to z-coordinate of {_baseloc} - 1
+				else if z-coordinate of {_loc.%loop-number-2%} > z-coordinate of {_baseloc} + 1:
+					set z-coordinate of {_loc.%loop-number-2%} to z-coordinate of {_baseloc} + 1
+			if loop-number-2 is 1:
+				drawDot count 1, particle "redstone", RGB 234, 97, 142, center {_loc.%loop-number-2%}, visibleRange 30
+			else if loop-number-2 is 2:
+				drawDot count 1, particle "redstone", RGB 250, 197, 89, center {_loc.%loop-number-2%}, visibleRange 30
+			else if loop-number-2 is 3:
+				drawDot count 1, particle "redstone", RGB 60, 179, 122, center {_loc.%loop-number-2%}, visibleRange 30
+		wait a tick
+	delete {Stats.%{_player}%::FairyWand}
+	kitMsg({_player}, "<##f19ca7>妖精は去ってしまった...")
+
+function kitWeapon_Wizard_3(player: player):
+	set {_mana} to kitManaCalc({_player}, 5)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 3, "Weapon.main")
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+		playSound("entity.arrow.shoot", 1, 2, {_player})
+		shoot a thrown potion of harming from {_player} at speed 0.8
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+function kitWeapon_Wizard_4(player: player):
+	set {_mana} to kitManaCalc({_player}, 10)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 4, "Weapon.main")
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+		kitMsg({_player}, "<##aaaab0>月の光が眠りを誘う...")
+		playSound("block.beacon.ambient", 1, 2, {_player})
+		loop all players in radius 5 around {_player}:
+			kitCheckTeam(loop-player, {_player}, false) is true
+			kitSleep(loop-player, 3 seconds)
+		set {_count} to 10
+		set {_baseloc} to location of {_player}
+		loop 10 times:
+			set {_effcount} to 6 - round({_count} / 2)
+			set {_effwide} to 5 - ({_count} / 2)
+			set {_effwideminus} to {_effwide} * -1
+			loop {_effcount} times:
+				set {_loc} to location {_count} meters above {_baseloc}
+				add a random number between {_effwideminus} and {_effwide} to x-coordinate of {_loc}
+				add a random number between {_effwideminus} and {_effwide} to z-coordinate of {_loc}
+				drawDot count 1, particle "endrod", center {_loc}, visibleRange 100
+			subtract 1 from {_count}
+			wait a tick
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+function kitWeapon_Wizard_5(player: player):
+	set {_mana} to kitManaCalc({_player}, 10)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 5, "Weapon.main")
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+		playSound("block.respawn_anchor.deplete", 1, 2, {_player})
+		set {_baseloc} to location of {_player}
+		add 1.5 to y-coordinate of {_baseloc}
+		set {_c} to 0
+		loop 10 times:
+			add 1 to {_c}
+			set {_loc} to location {_c} meters in front of {_baseloc}
+			drawDot count 1, particle "critmagic", center {_loc}, visibleRange 100, keepFor 1 seconds
+			loop all entities in radius 2 around {_loc}:
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				{_hit.%id of loop-entity%} is not set
+				set {_hit.%id of loop-entity%} to true
+				kitDamage({_player}, loop-entity, 3, true)
+				apply glowing 1 to loop-entity for 3 seconds
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+# Skills
+function kitSkillWizard(player: player) :: boolean:
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if checkCT({_player}, name of {_player}'s tool) is true:
+		if {_item.num} is 1:
+			kitSkill_Wizard_1({_player})
+		else if {_item.num} is 2:
+			kitSkill_Wizard_2({_player})
+		else if {_item.num} is 3:
+			kitSkill_Wizard_3({_player})
+		else if {_item.num} is 4:
+			kitSkill_Wizard_4({_player})
+		else if {_item.num} is 5:
+			kitSkill_Wizard_5({_player})
+		else if {_item.num} is 6:
+			kitSkill_Wizard_6({_player})
+		else if {_item.num} is 7:
+			kitSkill_Wizard_7({_player})
+		else if {_item.num} is 8:
+			kitSkill_Wizard_8({_player})
+	return true
+
+function kitSkill_Wizard_1(player: player):
+	set {_mana} to kitManaCalc({_player}, 10)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 1)
+		shoot a snowball from {_player} at speed 1
+		set metadata value "magic" of shot snowball to "blood"
+		drawDot count 10, particle "mobspell", RGB 100, 0, 0, center shot entity, visibleRange 32, keepFor 1 second
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+function kitSkill_Wizard_2(player: player):
+	set {_mana} to kitManaCalc({_player}, 10)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 2)
+		shoot a snowball from {_player} at speed 1
+		set metadata value "magic" of shot snowball to "dark"
+		drawDot count 10, particle "mobspell", RGB 0, 0, 0, center shot entity, visibleRange 32, keepFor 1 second
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+function kitSkill_Wizard_3(player: player):
+	set {_mana} to kitManaCalc({_player}, 10)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 3)
+		shoot a snowball from {_player} at speed 1
+		set metadata value "magic" of shot snowball to "freeze"
+		drawDot count 10, particle "mobspell", RGB 0, 0, 100, center shot entity, visibleRange 32, keepFor 1 second
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+function kitSkill_Wizard_4(player: player):
+	set {_mana} to kitManaCalc({_player}, 10)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 4)
+		shoot a snowball from {_player} at speed 1
+		set metadata value "magic" of shot snowball to "electro"
+		drawDot count 10, particle "mobspell", RGB 100, 100, 0, center shot entity, visibleRange 32, keepFor 1 second
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+function kitSkill_Wizard_5(player: player):
+	set {_mana} to kitManaCalc({_player}, 10)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 5)
+		shoot a snowball from {_player} at speed 1
+		set metadata value "magic" of shot snowball to "drain"
+		drawDot count 10, particle "mobspell", RGB 0, 100, 0, center shot entity, visibleRange 32, keepFor 1 second
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+on projectile hit:
+	projectile is a snowball
+	if metadata value "magic" of projectile is set:
+		set {_l} to location of block at projectile
+		if metadata value "magic" of projectile is "blood":
+			playSound("entity.husk.converted_to_zombie", 1, 1, {_l})
+			loop 72 times:
+				add 5 to {_rad}
+				set {_el} to {_l}
+				add 5 * sin({_rad}) to x-coordinate of {_el}
+				add 5 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 255, 0, 0, center {_el}, visibleRange 30, keepFor 1 second
+			loop all entities in radius 5 around projectile:
+				kitCheckTeam(loop-entity, shooter, false) is true
+				delete {_frcan}
+				if {Stats.%{_name}%::FreezeMagic} is true:
+					set {_per} to kitPercent({_name}, 50, false)
+					chance of {_per}%:
+						set {_frcan} to true
+				{_frcan} is not set
+				kitDamage(shooter, loop-entity, 3)
+				if type of loop-entity is player:
+					set {_per} to kitPercent(loop-entity, 30, false)
+					chance of {_per}%:
+						kitBlood(loop-entity)
+				message "§4出血魔法を受けた!" to loop-entity
+				kitMsg(shooter, "§5%loop-entity% §dに§4出血魔法§dを付与した!")
+				add loop-entity to {_sp::*}
+			loop 5 times:
+				add 0.4 to {_h}
+				loop {_sp::*}:
+					set {_rad} to 0
+					loop 10 times:
+						set {_el} to location of loop-value-2
+						add 36 to {_rad}
+						add 0.5 * sin({_rad}) to x-coordinate of {_el}
+						add 0.5 * cos({_rad}) to z-coordinate of {_el}
+						add {_h} to y-coordinate of {_el}
+						drawDot count 1, particle "mobspell", RGB 100, 0, 0, center {_el}, visibleRange 30
+				wait a tick
+		else if metadata value "magic" of projectile is "dark":
+			playSound("entity.phantom.bite", 1, 1, {_l})
+			loop 72 times:
+				add 5 to {_rad}
+				set {_el} to {_l}
+				add 5 * sin({_rad}) to x-coordinate of {_el}
+				add 5 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 0, 0, 0, center {_el}, visibleRange 30, keepFor 1 second
+			loop all entities in radius 5 around projectile:
+				kitCheckTeam(loop-entity, shooter, false) is true
+				delete {_frcan}
+				if {Stats.%{_name}%::FreezeMagic} is true:
+					set {_per} to kitPercent({_name}, 50, false)
+					chance of {_per}%:
+						set {_frcan} to true
+				{_frcan} is not set
+				if type of loop-entity is player:
+					LastKiller(loop-entity, shooter)
+				apply blindness 1 to loop-entity for 5 seconds
+				apply wither 2 to loop-entity for 5 seconds
+				message "§0暗闇魔法を受けた!" to loop-entity
+				kitMsg(shooter, "§5%loop-entity% §dに§0暗闇魔法§dを付与した!")
+				add loop-entity to {_sp::*}
+			loop 5 times:
+				add 0.4 to {_h}
+				loop {_sp::*}:
+					set {_rad} to 0
+					loop 10 times:
+						set {_el} to location of loop-value-2
+						add 36 to {_rad}
+						add 0.5 * sin({_rad}) to x-coordinate of {_el}
+						add 0.5 * cos({_rad}) to z-coordinate of {_el}
+						add {_h} to y-coordinate of {_el}
+						drawDot count 1, particle "mobspell", RGB 0, 0, 0, center {_el}, visibleRange 30
+				wait a tick
+		else if metadata value "magic" of projectile is "freeze":
+			playSound("entity.vex.death", 1, 1, {_l})
+			loop 72 times:
+				add 5 to {_rad}
+				set {_el} to {_l}
+				add 5 * sin({_rad}) to x-coordinate of {_el}
+				add 5 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 0, 0, 255, center {_el}, visibleRange 30, keepFor 1 second
+			loop all players in radius 5 around projectile:
+				{team::%loop-player%} is not {team::%shooter%}
+				LastKiller(loop-player, shooter)
+				set {_pl} to location of block at loop-player
+				# 0
+				if block below {_pl} is air:
+					set {_loc} to location of block below {_pl}
+					add {_loc} to {_lb::*}
+					make all players see block at {_loc} as ice
+				# 1
+				if block 1 meters north of {_pl} is air:
+					set {_loc} to location of block 1 meters north of {_pl}
+					add {_loc} to {_lb::*}
+					make all players see block at {_loc} as ice
+				if block 1 meters east of {_pl} is air:
+					set {_loc} to location of block 1 meters east of {_pl}
+					add {_loc} to {_lb::*}
+					make all players see block at {_loc} as ice
+				if block 1 meters south of {_pl} is air:
+					set {_loc} to location of block 1 meters south of {_pl}
+					add {_loc} to {_lb::*}
+					make all players see block at {_loc} as ice
+				if block 1 meters west of {_pl} is air:
+					set {_loc} to location of block 1 meters west of {_pl}
+					add {_loc} to {_lb::*}
+					make all players see block at {_loc} as ice
+				# 2
+				set {_plu} to location of block above {_pl}
+				if block 1 meters north of {_plu} is air:
+					set {_loc} to location of block 1 meters north of {_plu}
+					add {_loc} to {_lb::*}
+					make all players see block at {_loc} as ice
+				if block 1 meters east of {_plu} is air:
+					set {_loc} to location of block 1 meters east of {_plu}
+					add {_loc} to {_lb::*}
+					make all players see block at {_loc} as ice
+				if block 1 meters south of {_plu} is air:
+					set {_loc} to location of block 1 meters south of {_plu}
+					add {_loc} to {_lb::*}
+					make all players see block at {_loc} as ice
+				if block 1 meters west of {_plu} is air:
+					set {_loc} to location of block 1 meters west of {_plu}
+					add {_loc} to {_lb::*}
+					make all players see block at {_loc} as ice
+				# 3
+				if block above {_plu} is air:
+					set {_loc} to location of block above {_plu}
+					add {_loc} to {_lb::*}
+					make all players see block at {_loc} as ice
+				teleport loop-player to {_pl}
+				set {Stats.%loop-player%::FreezeMagic} to true
+				message "§1凍結魔法を受けた!" to loop-player
+				kitMsg(shooter, "§5%loop-player% §dに§1凍結魔法§dを付与した!")
+				add loop-player to {_sp::*}
+			loop 5 times:
+				loop {_lb::*}:
+					make all players see block at loop-value-2 as ice
+				add 0.4 to {_h}
+				loop {_sp::*}:
+					set {_rad} to 0
+					loop 10 times:
+						set {_el} to location of loop-value-2
+						add 36 to {_rad}
+						add 0.5 * sin({_rad}) to x-coordinate of {_el}
+						add 0.5 * cos({_rad}) to z-coordinate of {_el}
+						add {_h} to y-coordinate of {_el}
+						drawDot count 1, particle "mobspell", RGB 0, 0, 100, center {_el}, visibleRange 30
+				wait a tick
+			loop 35 times:
+				loop {_lb::*}:
+					make all players see block at loop-value-2 as ice
+				wait a tick
+			loop {_lb::*}:
+				make all players see block at loop-value as air
+				drawDot count 1, particle "blockcrack", material packed ice, center location of loop-value, visibleRange 30
+			loop {_sp::*}:
+				delete {Stats.%loop-value%::FreezeMagic}
+				playSound("block.glass.break", 1, 1, loop-value)
+		else if metadata value "magic" of projectile is "electro":
+			loop 3 times:
+				strike lightning effect at {_l}
+			loop 72 times:
+				add 5 to {_rad}
+				set {_el} to {_l}
+				add 5 * sin({_rad}) to x-coordinate of {_el}
+				add 5 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_el}, visibleRange 30, keepFor 1 second
+			loop all entities in radius 5 around projectile:
+				kitCheckTeam(loop-entity, shooter, false) is true
+				delete {_frcan}
+				if {Stats.%{_name}%::FreezeMagic} is true:
+					set {_per} to kitPercent({_name}, 50, false)
+					chance of {_per}%:
+						set {_frcan} to true
+				{_frcan} is not set
+				kitDamage(shooter, loop-entity, 2, true)
+				strike lightning effect at loop-entity
+				message "§e電撃魔法を受けた!" to loop-entity
+				kitMsg(shooter, "§5%loop-entity% §dに§e電撃魔法§dを付与した!")
+				if type of loop-entity is player:
+					kitPalsy(loop-entity, 10 seconds)
+				add loop-entity to {_sp::*}
+			loop 5 times:
+				add 0.4 to {_h}
+				loop {_sp::*}:
+					set {_rad} to 0
+					loop 10 times:
+						set {_el} to location of loop-value-2
+						add 36 to {_rad}
+						add 0.5 * sin({_rad}) to x-coordinate of {_el}
+						add 0.5 * cos({_rad}) to z-coordinate of {_el}
+						add {_h} to y-coordinate of {_el}
+						drawDot count 1, particle "mobspell", RGB 100, 100, 0, center {_el}, visibleRange 30
+				wait a tick
+		else if metadata value "magic" of projectile is "drain":
+			playSound("block.bubble_column.upwards_inside", 1, 1, {_l})
+			loop 72 times:
+				add 5 to {_rad}
+				set {_el} to {_l}
+				add 5 * sin({_rad}) to x-coordinate of {_el}
+				add 5 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 0, 255, 0, center {_el}, visibleRange 30, keepFor 1 second
+			loop all players in radius 5 around projectile:
+				{team::%loop-player%} is not {team::%shooter%}
+				delete {_frcan}
+				if {Stats.%loop-player%::FreezeMagic} is true:
+					set {_per} to kitPercent(loop-player, 50, false)
+					chance of {_per}%:
+						set {_frcan} to true
+				{_frcan} is not set
+				LastKiller(loop-player, shooter)
+				kitDrain(loop-player, shooter, 1, 5 seconds)
+				message "§2吸収魔法を受けた!" to loop-player
+				kitMsg(shooter, "§5%loop-player% §dに§2吸収魔法§dを付与した!")
+				add loop-player to {_sp::*}
+			loop 5 times:
+				add 0.4 to {_h}
+				loop {_sp::*}:
+					set {_rad} to 0
+					loop 10 times:
+						set {_el} to location of loop-value-2
+						add 36 to {_rad}
+						add 0.5 * sin({_rad}) to x-coordinate of {_el}
+						add 0.5 * cos({_rad}) to z-coordinate of {_el}
+						add {_h} to y-coordinate of {_el}
+						drawDot count 1, particle "mobspell", RGB 0, 100, 0, center {_el}, visibleRange 30
+				wait a tick
+
+on damage of player:
+	damage was caused by potion
+	{Stats.%victim%::FreezeMagic} is true
+	cancel event
+
+function kitSkill_Wizard_6(player: player):
+	set {_mana} to kitManaCalc({_player}, 30)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 6)
+		set {_baseloc} to location of head of {_player}
+		set {_front} to 0
+		loop 20 times:
+			if {_ok} is not set:
+				loop 5 times:
+					{_ok} is not set
+					add 1 to {_front}
+					set {_loc} to location {_front} meters in front of {_baseloc}
+					drawDot count 1, particle "witchspell", center {_loc}, visibleRange 100
+					if block at {_loc} is not passable:
+						set {_ok} to true
+				wait a tick
+		{_ok} is true
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+		kitMsg({_player}, "<##dc143c>メテオ<##8b008b>を召喚します...")
+		kitFreeze({_player}, 1 seconds, false)
+		set {_bn} to 0
+		while {_blockok} is not set:
+			add 0.1 to {_bn}
+			set {_bl} to location {_bn} meters above {_loc}
+			if block at {_bl} is passable:
+				set {_blockok} to true
+				set {_point} to {_bl}
+		playSound("entity.evoker.prepare_summon", 1.5, 2, {_point})
+#	弧を描く
+		set {_n.k} to 0
+		loop 60 times:
+			set {_effbaseloc} to {_point}
+			add 10 * sin({_n.k}) to x-coordinate of {_effbaseloc}
+			add 10 * cos({_n.k}) to z-coordinate of {_effbaseloc}
+			drawDot count 1, particle "redstone", RGB 220, 20, 60, center {_effbaseloc}, visibleRange 100, keepFor 1 second
+			add 6 to {_n.k}
+#	弦を描く
+		if {_l.A} is not set:
+			set {_l.A} to {_point}
+			set yaw of {_l.A} to 120
+			set pitch of {_l.A} to 0
+			add 10 * sin(90) to x-coordinate of {_l.A}
+			add 10 * cos(90) to z-coordinate of {_l.A}
+		if {_l.B} is not set:
+			set {_l.B} to {_point}
+			set yaw of {_l.B} to 0
+			set pitch of {_l.B} to 0
+			add 10 * sin(210) to x-coordinate of {_l.B}
+			add 10 * cos(210) to z-coordinate of {_l.B}
+		if {_l.C} is not set:
+			set {_l.C} to {_point}
+			set yaw of {_l.C} to 240
+			set pitch of {_l.C} to 0
+			add 10 * sin(330) to x-coordinate of {_l.C}
+			add 10 * cos(330) to z-coordinate of {_l.C}
+		if {_l.D} is not set:
+			set {_l.D} to {_point}
+			set yaw of {_l.D} to 180
+			set pitch of {_l.D} to 0
+			add 10 * sin(30) to x-coordinate of {_l.D}
+			add 10 * cos(30) to z-coordinate of {_l.D}
+		if {_l.E} is not set:
+			set {_l.E} to {_point}
+			set yaw of {_l.E} to 60
+			set pitch of {_l.E} to 0
+			add 10 * sin(150) to x-coordinate of {_l.E}
+			add 10 * cos(150) to z-coordinate of {_l.E}
+		if {_l.F} is not set:
+			set {_l.F} to {_point}
+			set yaw of {_l.F} to 300
+			set pitch of {_l.F} to 0
+			add 10 * sin(270) to x-coordinate of {_l.F}
+			add 10 * cos(270) to z-coordinate of {_l.F}
+		loop 19 times:
+			add sqrt(3) / 2 to {_n.g}
+#		A-B
+			set {_loc.g} to location {_n.g} meters in front of {_l.A}
+			drawDot count 1, particle "redstone", RGB 220, 20, 60, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		D-E
+			set {_loc.g} to location {_n.g} meters in front of {_l.D}
+			drawDot count 1, particle "redstone", RGB 220, 20, 60, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		B-C
+			set {_loc.g} to location {_n.g} meters in front of {_l.B}
+			drawDot count 1, particle "redstone", RGB 220, 20, 60, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		E-F
+			set {_loc.g} to location {_n.g} meters in front of {_l.E}
+			drawDot count 1, particle "redstone", RGB 220, 20, 60, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		C-A
+			set {_loc.g} to location {_n.g} meters in front of {_l.C}
+			drawDot count 1, particle "redstone", RGB 220, 20, 60, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		F-D
+			set {_loc.g} to location {_n.g} meters in front of {_l.F}
+			drawDot count 1, particle "redstone", RGB 220, 20, 60, center {_loc.g}, visibleRange 100, keepFor 1 second
+		set {_el} to location of {_player}
+		loop 30 times:
+			draw 1 witchspell particle at {_el} with direction randomVector({_el}) and speed 0.3, keepFor 1 tick
+		wait a second
+		playSound("entity.illusioner.prepare_blindness", 1.5, 0.8, {_point})
+		set {_up} to 0
+		loop 30 times:
+			{_ch} is not set
+			add 1 to {_up}
+			set {_bc} to block {_up} meters above {_point}
+			if {_bc} is not air:
+				set {_ch} to true
+		shoot a falling magma block from {_bc} at speed 1 downward
+		drawDot count 5, particle "lava", center shot entity, visibleRange 30, keepFor 1 second
+		set {_ran} to 0
+		loop 3 times:
+			add 3 to {_ran}
+			loop all blocks in radius {_ran} around {_point}:
+				block below loop-block is not air
+				loop-block is air
+				distance between {_point} and loop-block is between {_ran} - 1 and {_ran}
+				drawDot count 1, particle "mobspell", RGB 220, 20, 60, center location of loop-block, visibleRange 32, keepFor 2 ticks
+			wait 3 ticks
+		wait 11 ticks
+		playSound("entity.generic.explode", 1.5, 0.5, {_point})
+		loop 5 times:
+			shoot an egg from {_point} at speed 0.5 upwards
+			drawDot count 1, particle "lava", center shot entity, visibleRange 30, keepFor 2 seconds
+			push shot egg north at speed random number from -0.5 to 0.5
+			push shot egg east at speed random number from -0.5 to 0.5
+		loop all entities in radius 10 around {_point}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_dis} to distance between loop-entity and {_point}
+			set {_dm} to (10 - {_dis})
+			message "<##dc143c>メテオ<##c71585>がヒットした!" to loop-entity
+			kitDamage({_player}, loop-entity, {_dm})
+			apply blindness 1 to loop-entity for 3 seconds
+			apply glowing 1 to loop-entity for 3 seconds
+		loop all blocks in radius 5 around {_point}:
+			loop-block is air
+			add loop-block to {_blocks::*}
+		loop 5 times:
+			set {_rl} to a random location out of {_blocks::*}
+			remove {_rl} from {_blocks::*}
+			drawDot count 1, particle "explosionlarge", center {_rl}, visibleRange 30
+			wait a tick
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+function kitSkill_Wizard_7(player: player):
+	set {_mana} to kitManaCalc({_player}, 20)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 7)
+		set {_baseloc} to location of head of {_player}
+		set {_front} to 0
+		loop 20 times:
+			if {_ok} is not set:
+				loop 5 times:
+					{_ok} is not set
+					add 1 to {_front}
+					set {_loc} to location {_front} meters in front of {_baseloc}
+					drawDot count 1, particle "witchspell", center {_loc}, visibleRange 100
+					if block at {_loc} is not passable:
+						set {_ok} to true
+				wait a tick
+		{_ok} is true
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+		kitMsg({_player}, "<##00ced1>ブリザード<##5f9ea0>を召喚します...")
+		kitFreeze({_player}, 1 seconds, false)
+		set {_bn} to 0
+		while {_blockok} is not set:
+			add 0.1 to {_bn}
+			set {_bl} to location {_bn} meters above {_loc}
+			if block at {_bl} is passable:
+				set {_blockok} to true
+				set {_point} to {_bl}
+		playSound("entity.evoker.prepare_summon", 1.5, 2, {_point})
+#	弧を描く
+		set {_n.k} to 0
+		loop 60 times:
+			set {_effbaseloc} to {_point}
+			add 8 * sin({_n.k}) to x-coordinate of {_effbaseloc}
+			add 8 * cos({_n.k}) to z-coordinate of {_effbaseloc}
+			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_effbaseloc}, visibleRange 100, keepFor 1 second
+			add 6 to {_n.k}
+#	弦を描く
+		if {_l.A} is not set:
+			set {_l.A} to {_point}
+			set yaw of {_l.A} to 120
+			set pitch of {_l.A} to 0
+			add 8 * sin(90) to x-coordinate of {_l.A}
+			add 8 * cos(90) to z-coordinate of {_l.A}
+		if {_l.B} is not set:
+			set {_l.B} to {_point}
+			set yaw of {_l.B} to 0
+			set pitch of {_l.B} to 0
+			add 8 * sin(210) to x-coordinate of {_l.B}
+			add 8 * cos(210) to z-coordinate of {_l.B}
+		if {_l.C} is not set:
+			set {_l.C} to {_point}
+			set yaw of {_l.C} to 240
+			set pitch of {_l.C} to 0
+			add 8 * sin(330) to x-coordinate of {_l.C}
+			add 8 * cos(330) to z-coordinate of {_l.C}
+		if {_l.D} is not set:
+			set {_l.D} to {_point}
+			set yaw of {_l.D} to 180
+			set pitch of {_l.D} to 0
+			add 8 * sin(30) to x-coordinate of {_l.D}
+			add 8 * cos(30) to z-coordinate of {_l.D}
+		if {_l.E} is not set:
+			set {_l.E} to {_point}
+			set yaw of {_l.E} to 60
+			set pitch of {_l.E} to 0
+			add 8 * sin(150) to x-coordinate of {_l.E}
+			add 8 * cos(150) to z-coordinate of {_l.E}
+		if {_l.F} is not set:
+			set {_l.F} to {_point}
+			set yaw of {_l.F} to 300
+			set pitch of {_l.F} to 0
+			add 8 * sin(270) to x-coordinate of {_l.F}
+			add 8 * cos(270) to z-coordinate of {_l.F}
+		loop 16 times:
+			add sqrt(3) / 2 to {_n.g}
+#		A-B
+			set {_loc.g} to location {_n.g} meters in front of {_l.A}
+			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		D-E
+			set {_loc.g} to location {_n.g} meters in front of {_l.D}
+			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		B-C
+			set {_loc.g} to location {_n.g} meters in front of {_l.B}
+			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		E-F
+			set {_loc.g} to location {_n.g} meters in front of {_l.E}
+			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		C-A
+			set {_loc.g} to location {_n.g} meters in front of {_l.C}
+			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		F-D
+			set {_loc.g} to location {_n.g} meters in front of {_l.F}
+			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
+		set {_el} to location of {_player}
+		loop 30 times:
+			draw 1 witchspell particle at {_el} with direction randomVector({_el}) and speed 0.3, keepFor 1 tick
+		wait a second
+		playSound("entity.illusioner.prepare_mirror", 1.5, 0.8, {_point})
+		shoot a falling blue ice block from {_point} at speed 0.5 upward
+		set metadata value "blizzard" of shot entity to "%{_player}%"
+		drawDot count 5, particle "snowball", center shot entity, visibleRange 30, keepFor 0.5 seconds
+		set {_ran} to 0
+		loop 4 times:
+			add 2 to {_ran}
+			loop all blocks in radius {_ran} around {_point}:
+				block below loop-block is not air
+				loop-block is air
+				distance between {_point} and loop-block is between {_ran} - 1 and {_ran}
+				drawDot count 1, particle "mobspell", RGB 0, 206, 209, center location of loop-block, visibleRange 32, keepFor 2 ticks
+			wait a tick
+		wait 6 ticks
+		loop all blocks in radius 8 around {_point}:
+			loop-block is air
+			block below loop-block is not air
+			add location of loop-block to {_rb::*}
+		loop all falling blue ice blocks:
+			metadata value "blizzard" of loop-falling blue ice is "%{_player}%"
+			set {_fl} to location of loop-falling blue ice
+			delete loop-falling blue ice
+		loop 12 times:
+			set {_pitch} to a random number between 0.5 and 2
+			playSound("block.glass.break", 1, {_pitch}, {_point})
+			loop 3 times:
+				shoot a snowball from {_fl} at speed 0.1 upwards
+				drawDot count 1, particle "redstone", RGB 100, 255, 255, center shot entity, visibleRange 30, keepFor 1 second
+				push shot snowball north at speed random number from -0.5 to 0.5
+				push shot snowball east at speed random number from -0.5 to 0.5
+			loop 10 times:
+				set {_rp} to a random location out of {_rb::*}
+				set {_rp} to location of block above {_rp}
+				set {_rn} to a random integer between 1 and 5
+				if {_rn} is 1:
+					drawDot count 1, particle "blockcrack", material ice block, center {_rp}, visibleRange 32
+				else if {_rn} is 2:
+					drawDot count 1, particle "blockcrack", material packed ice block, center {_rp}, visibleRange 32
+				else if {_rn} is 3:
+					drawDot count 1, particle "blockcrack", material blue ice block, center {_rp}, visibleRange 32
+				else if {_rn} is 4:
+					drawDot count 1, particle "blockcrack", material snow block, center {_rp}, visibleRange 32
+			loop all entities in radius 8 around {_point}:
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				kitDamage({_player}, loop-entity, 1)
+				if type of loop-entity is player:
+					if {Kit-Freeze::%loop-entity%} is not set:
+						add loop-entity to {_fp::*}
+						set {_wk} to walk speed of loop-entity
+						subtract 0.025 from {_wk}
+						if {_wk} <= 0:
+							set walk speed of loop-entity to 0.2
+							kitFreeze(loop-entity, 2 seconds)
+							playSound("entity.player.levelup", 1, 2, loop-entity)
+						else:
+							set walk speed of loop-entity to {_wk}
+			wait 5 ticks
+		wait a second
+		loop {_fp::*}:
+			set walk speed of loop-value to 0.2
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+function kitSkill_Wizard_8(player: player):
+	set {_mana} to kitManaCalc({_player}, 20)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 8)
+		set {_baseloc} to location of head of {_player}
+		set {_front} to 0
+		loop 20 times:
+			if {_ok} is not set:
+				loop 5 times:
+					{_ok} is not set
+					add 1 to {_front}
+					set {_loc} to location {_front} meters in front of {_baseloc}
+					drawDot count 1, particle "witchspell", center {_loc}, visibleRange 100
+					if block at {_loc} is not passable:
+						set {_ok} to true
+				wait a tick
+		{_ok} is true
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+		kitMsg({_player}, "<##8b4513>地響き<##f0e68c>を召喚します...")
+		kitFreeze({_player}, 1 seconds, false)
+		set {_bn} to 0
+		while {_blockok} is not set:
+			add 0.1 to {_bn}
+			set {_bl} to location {_bn} meters above {_loc}
+			if block at {_bl} is passable:
+				set {_blockok} to true
+				set {_point} to {_bl}
+		playSound("entity.evoker.prepare_summon", 1.5, 2, {_point})
+#	弧を描く
+		set {_n.k} to 0
+		loop 60 times:
+			set {_effbaseloc} to {_point}
+			add 8 * sin({_n.k}) to x-coordinate of {_effbaseloc}
+			add 8 * cos({_n.k}) to z-coordinate of {_effbaseloc}
+			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_effbaseloc}, visibleRange 100, keepFor 1 second
+			add 6 to {_n.k}
+#	弦を描く
+		if {_l.A} is not set:
+			set {_l.A} to {_point}
+			set yaw of {_l.A} to 120
+			set pitch of {_l.A} to 0
+			add 8 * sin(90) to x-coordinate of {_l.A}
+			add 8 * cos(90) to z-coordinate of {_l.A}
+		if {_l.B} is not set:
+			set {_l.B} to {_point}
+			set yaw of {_l.B} to 0
+			set pitch of {_l.B} to 0
+			add 8 * sin(210) to x-coordinate of {_l.B}
+			add 8 * cos(210) to z-coordinate of {_l.B}
+		if {_l.C} is not set:
+			set {_l.C} to {_point}
+			set yaw of {_l.C} to 240
+			set pitch of {_l.C} to 0
+			add 8 * sin(330) to x-coordinate of {_l.C}
+			add 8 * cos(330) to z-coordinate of {_l.C}
+		if {_l.D} is not set:
+			set {_l.D} to {_point}
+			set yaw of {_l.D} to 180
+			set pitch of {_l.D} to 0
+			add 8 * sin(30) to x-coordinate of {_l.D}
+			add 8 * cos(30) to z-coordinate of {_l.D}
+		if {_l.E} is not set:
+			set {_l.E} to {_point}
+			set yaw of {_l.E} to 60
+			set pitch of {_l.E} to 0
+			add 8 * sin(150) to x-coordinate of {_l.E}
+			add 8 * cos(150) to z-coordinate of {_l.E}
+		if {_l.F} is not set:
+			set {_l.F} to {_point}
+			set yaw of {_l.F} to 300
+			set pitch of {_l.F} to 0
+			add 8 * sin(270) to x-coordinate of {_l.F}
+			add 8 * cos(270) to z-coordinate of {_l.F}
+		loop 16 times:
+			add sqrt(3) / 2 to {_n.g}
+#		A-B
+			set {_loc.g} to location {_n.g} meters in front of {_l.A}
+			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		D-E
+			set {_loc.g} to location {_n.g} meters in front of {_l.D}
+			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		B-C
+			set {_loc.g} to location {_n.g} meters in front of {_l.B}
+			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		E-F
+			set {_loc.g} to location {_n.g} meters in front of {_l.E}
+			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		C-A
+			set {_loc.g} to location {_n.g} meters in front of {_l.C}
+			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
+#		F-D
+			set {_loc.g} to location {_n.g} meters in front of {_l.F}
+			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
+		set {_el} to location of {_player}
+		loop 30 times:
+			draw 1 witchspell particle at {_el} with direction randomVector({_el}) and speed 0.3, keepFor 1 tick
+		wait a second
+		playSound("entity.evoker.prepare_attack", 1.5, 1.5, {_point})
+		set {_ran} to 0
+		loop 8 times:
+			add 1 to {_ran}
+			loop all blocks in radius {_ran} around location of {_point}:
+				block below loop-block is not air
+				loop-block is air
+				distance between {_point} and loop-block is between {_ran} - 1 and {_ran}
+				set {_material} to type of block below loop-block
+				drawDot count 5, particle "blockcrack", material {_material}, center location of loop-block, visibleRange 30
+			loop all players in radius {_ran} around location of {_point}:
+				kitCheckTeam({_player}, loop-player, false) is true
+				{_hit::%loop-player%} is not set
+				set {_hit::%loop-player%} to true
+				kitStun(loop-player, 8 seconds)
+			playSound("block.grass.break", 0.5, 1, location of {_point})
+			wait a tick
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}
+
+
+on death of player:
+	{Class::%{LastKiller::%victim%}%} is "Wizard"
+	add 10 to {Kit-Mana::%attacker%}
+	kitMsg({LastKiller::%victim%}, "§bマナ §9§l10 §7ゲット!")
+	if type of slot 4 of {LastKiller::%victim%} is air:
+		load yml "plugins/skript-yaml/Kit Classes/Wizard.yml" as "manadrawing.%{_player}%"
+		set {_ManaDrawing} to yml value "kititems.Mana Drawing" from "manadrawing.%{_player}%"
+		set slot 4 of {LastKiller::%victim%} to {_ManaDrawing}
+		unload yml "manadrawing.%{_player}%"
+
+function kitManaCalc(player: player, mana: number) :: number:
+	set {_mc} to {_mana}
+	if {Stats.%{_player}%::FairyWand} is true:
+		set {_mc} to round({_mc} * 0.75)
+	if {Stats.%{_player}%::UltWizard} is true:
+		set {_mc} to 0
+	return {_mc}
+
+function kitTimerWizard(player: player):
+	while {Class::%{_player}%} is "Wizard":
+		delete {_true}
+		if {_player}'s tool is air:
+			set {_true} to true
+		else:
+			set {_name} to name of {_player}'s tool
+			if checkCT({_player}, name of {_player}'s tool, true) is true:
+				set {_true} to true
+		if {_true} is true:
+			send action bar "§b§lMana§5: §9%{Kit-Mana::%{_player}%}%" to {_player}
+		wait a second
+
+command /manaset <number>:
+	permission: sk.admin
+	trigger:
+		set {Kit-Mana::%player%} to arg 1
+
+# Ultimate
+function kitUltWizard(player: player):
+	message "§c特大魔法の杖を手に入れました!" to {_player}
+	message "§cこの杖でクリックした位置に魔法陣を展開します!" to {_player}
+	message "§c魔法陣内の敵にダメージを与えた後にマナを回復します!" to {_player}
+	message "§c9秒間,魔法陣内でSkillを発動するとマナ消費が0になります!" to {_player}
+	wait a tick
+	give a netherite hoe named "§5§lMagical Confusion" to {_player}
+
+on rightclick holding a netherite hoe:
+	name of player's tool is "§5§lMagical Confusion"
+	cancel event
+	set {_tp} to target block
+	if {_tp} is set:
+		remove a netherite hoe named "§5§lMagical Confusion" from player
+		set {_tpl} to location of {_tp}
+		set {_base} to location 0.6 meters above {_tpl}
+#	光線発射で魔法陣展開
+		set {_pb} to location of player
+		add 1.5 to y-coordinate of {_pb}
+		set {_dis} to round(distance between {_pb} and {_base})
+		set {_n} to 0
+		loop {_dis} times:
+			add 1 to {_n}
+			set {_el} to location {_n} meters in front of {_pb}
+			drawDot count 1, particle "endrod", center {_el}, visibleRange 30
+#	魔法陣の展開
+		set {_tick} to 20
+		set {_n.k} to 0
+		set {_n.g} to 0
+		set {_n.e} to 0
+		set pitch of {_effbaseloc} to 0
+		playSound("block.respawn_anchor.set_spawn", 1.9, 1, {_base})
+		loop 20 times:
+			set {_time} to "%{_tick}% ticks" parsed as time span
+#		弧を描く
+			loop 3 times:
+				set {_effbaseloc} to {_base}
+				add 10 * sin({_n.k}) to x-coordinate of {_effbaseloc}
+				add 10 * cos({_n.k}) to z-coordinate of {_effbaseloc}
+				add {_effbaseloc} to {_effloc::*}
+				drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_effbaseloc}, visibleRange 100, keepFor {_time}
+				add 6 to {_n.k}
+#		弦を描く
+			if loop-number is between 1 and 6:
+				if {_l.A} is not set:
+					set {_l.A} to {_base}
+					set yaw of {_l.A} to 120
+					add 10 * sin(90) to x-coordinate of {_l.A}
+					add 10 * cos(90) to z-coordinate of {_l.A}
+				if {_l.B} is not set:
+					set {_l.B} to {_base}
+					set yaw of {_l.B} to 0
+					add 10 * sin(210) to x-coordinate of {_l.B}
+					add 10 * cos(210) to z-coordinate of {_l.B}
+				if {_l.C} is not set:
+					set {_l.C} to {_base}
+					set yaw of {_l.C} to 240
+					add 10 * sin(330) to x-coordinate of {_l.C}
+					add 10 * cos(330) to z-coordinate of {_l.C}
+				if {_l.D} is not set:
+					set {_l.D} to {_base}
+					set yaw of {_l.D} to 180
+					add 10 * sin(30) to x-coordinate of {_l.D}
+					add 10 * cos(30) to z-coordinate of {_l.D}
+				if {_l.E} is not set:
+					set {_l.E} to {_base}
+					set yaw of {_l.E} to 60
+					add 10 * sin(150) to x-coordinate of {_l.E}
+					add 10 * cos(150) to z-coordinate of {_l.E}
+				if {_l.F} is not set:
+					set {_l.F} to {_base}
+					set yaw of {_l.F} to 300
+					add 10 * sin(270) to x-coordinate of {_l.F}
+					add 10 * cos(270) to z-coordinate of {_l.F}
+				loop 3 times:
+					add sqrt(3) / 2 to {_n.g}
+#				A-B
+					set {_loc.g} to location {_n.g} meters in front of {_l.A}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+#				D-E
+					set {_loc.g} to location {_n.g} meters in front of {_l.D}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+			else if loop-number is between 7 and 12:
+				if {_n.g} > 15:
+					set {_n.g} to 0
+				loop 3 times:
+					add sqrt(3) / 2 to {_n.g}
+#				B-C
+					set {_loc.g} to location {_n.g} meters in front of {_l.B}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+#				E-F
+					set {_loc.g} to location {_n.g} meters in front of {_l.E}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+			else if loop-number is between 13 and 18:
+				if {_n.g} > 15:
+					set {_n.g} to 0
+				loop 3 times:
+					add sqrt(3) / 2 to {_n.g}
+#				C-A
+					set {_loc.g} to location {_n.g} meters in front of {_l.C}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+#				F-D
+					set {_loc.g} to location {_n.g} meters in front of {_l.F}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+			subtract 1 from {_tick}
+			add 1 to {_n.e}
+			loop all blocks in radius 10 around {_base}:
+				loop-block is air
+				chance of ({_n.e} / 10)%:
+					drawDot count 1, particle "mobspell", RGB 0, 123, 187, center location of loop-block, visibleRange 100
+			wait a tick
+		playSound("block.respawn_anchor.deplete", 1.9, 0.5, {_base})
+		loop all players in radius 10 around {_base}:
+			{TrueTeam::%loop-player%} is not {TrueTeam::%player%}
+			kitDamage(player, loop-player, 5, true)
+			apply wither 3 to loop-player for 5 seconds
+			message "<##e2041b>§l魔力爆発に巻き込まれてしまった!" to loop-player
+			add 10 to {Kit-Mana::%player%}
+			loop 5 times:
+				set {_el} to aroundEffect(loop-player)
+				drawDot count 1, particle "mobspell", RGB 226, 4, 27, center {_el}, visibleRange 30
+		loop all blocks in radius 10 around {_base}:
+			loop-block is air
+			chance of 10%:
+				drawDot count 1, particle "blockcrack", material blue ice block, center location of loop-block, visibleRange 100
+		loop {_effloc::*}:
+			drawDot count 1, particle "redstone", RGB 226, 4, 27, center loop-value, visibleRange 100, keepFor 9 seconds
+		loop 180 times:
+			if distance between player and {_base} <= 10:
+				set {Stats.%player%::UltWizard} to true
+				loop 3 times:
+					set {_el} to aroundEffect(player)
+					drawDot count 1, particle "redstone", RGB 226, 4, 27, center {_el}, visibleRange 30
+			else:
+				delete {Stats.%player%::UltWizard}
+			wait a tick
+		delete {Stats.%player%::UltWizard}
+	else:
+		send action bar "§c§l目先にブロックがありません" to player

@@ -1,0 +1,89 @@
+command /skilltest <player=%player%>:
+	trigger:
+		if {Join::%arg 1%} is "Kit":
+			message "§cJoin中はテストワールドに向かうことはできません!" to arg 1
+		else:
+			execute console command "/testworld teleport %arg 1%"
+
+command /testworld <text> <player=%player%>:
+	permission: sk.admin
+	trigger:
+		if arg 1 is "teleport":
+			teleport arg 2 to {Kit-TestWorld}
+			set {Kit-Testing::%arg 2%} to true
+		else if arg 1 is "back":
+			delete {team::%arg 2%}
+			delete {TrueTeam::%arg 2%}
+			delete {ClassChose::%arg 2%}
+			delete {Class::%arg 2%}
+			delete {CLS::%arg 2%}
+			delete {Kit-Testing::%arg 2%}
+			delete {Kit-Lich::%arg 2%}
+			delete {Kit-Necromance::%arg 2%}
+			make arg 2 execute command "/lobby"
+		else if arg 1 is "set":
+			set {_loc} to location of player
+			set {Kit-TestWorld} to {_loc}
+
+command /kit-standspawn:
+	permission: sk.admin
+	trigger:
+		loop all skeletons:
+			display name of loop-entity is "Test-Stand"
+			set metadata value "gametype" of loop-skeleton to "Kit"
+			execute console command "/st green Test-Stand"
+			set {_exist} to true
+		{_exist} is not set
+		spawn a skeleton at location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0) with nbt "{NoAI:1b,Silent:1b,ArmorItems:[{},{},{},{id:""player_head"",tag:{SkullOwner:B_Makkuro},Count:1b}],HandItems:[{id:""diamond_sword"",Count:1b},{id:""diamond_sword"",Count:1b}],CustomName:'{""text"":""Test-Stand""}'}"
+		set metadata value "gametype" of spawned skeleton to "Kit"
+		execute console command "/st green Test-Stand"
+
+on damage of skeleton:
+	metadata value "gametype" of victim is "Kit"
+	display name of victim is "Test-Stand"
+	cancel event
+	wait a tick
+	set {_damage} to damage
+	set {_l} to location of victim
+	add a random number between -1 and 1 to x-coordinate of {_l}
+	add a random number between -1 and 1 to z-coordinate of {_l}
+	add a random number between 0.5 and 3 to y-coordinate of {_l}
+	spawn an armor stand at {_l} with nbt "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,Marker:1b}"
+	set display name of spawned armor stand to "§4❤%{_damage}%"
+	loop 8 times:
+		set {_num} to a random integer between 0 and 9
+		set {_n.%loop-number%} to {_num}
+	set {_uuid} to "%{_n.1}%%{_n.2}%%{_n.3}%%{_n.4}%%{_n.5}%%{_n.6}%%{_n.7}%%{_n.8}%"
+	set metadata value "damage-check-uuid" of spawned armor stand to {_uuid}
+	loop all projectiles in radius 3 around victim:
+		delete loop-projectile
+	wait a second
+	loop all entities:
+		type of loop-entity is armor stand
+		metadata value "damage-check-uuid" of loop-entity is {_uuid}
+		delete loop-entity
+
+on rightclick on a sign:
+	if line 1 of target block is "§a[§e§lKit§a]":
+		if line 2 of target block is "§2Join Ally":
+			execute console command "/st green %player%"
+		else if line 2 of target block is "§4Join Enemy":
+			execute console command "/st red %player%"
+		else if line 2 of target block is "§bReset CoolTime":
+			execute console command "/ctreset %player%"
+
+on death of player:
+	if victim is in "Kit-SkillCheck":
+		wait a tick
+		force victim to respawn
+		wait a tick
+		teleport victim to {Kit-TestWorld}
+
+on quit:
+	if {Kit-Testing::%player%} is true:
+		delete {Kit-Testing::%player%}
+		delete {team::%player%}
+		delete {TrueTeam::%player%}
+		delete {ClassChose::%player%}
+		delete {Class::%player%}
+		delete {CLS::%player%}

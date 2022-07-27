@@ -1,0 +1,706 @@
+# Warriorのスキル Ver1.0.0
+
+# Weapons
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
+	{Class::%attacker%} is "Warrior"
+	set {_tool} to attacker's tool
+#	Titan
+	if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 1) is true:
+		set {_c} to kitPercentDuel(attacker, victim, 10, true)
+		chance of {_c}%:
+			apply slowness 3 to victim for 3 seconds
+			playSound("entity.phantom.hurt", 1, 0.75, victim)
+			loop 5 times:
+				set {_baseloc} to location of victim
+				add 0.4 to {_y}
+				add {_y} to y-coordinate of {_baseloc}
+				set {_rad} to 0
+				loop 10 times:
+					set {_effloc} to {_baseloc}
+					add 0.5 * sin({_rad}) to x-coordinate of {_effloc}
+					add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
+					drawDot count 1, particle "mobspell", RGB 71, 38, 110, center {_effloc}, visibleRange 30
+					add 36 to {_rad}
+				wait a tick
+	else if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 2) is true:
+		if {Stats.%attacker%::Saturn} is true:
+			loop all entities in radius 5 around projectile:
+				metadata value "gametype" of loop-entity is "Kit"
+				set {_name} to name of loop-entity
+				kitCheckTeam({_name}, attacker, false) is true
+				kitDamage(attacker, loop-entity, 5, false)
+				message formatted "<##5992de>風が痛い!" to loop-entity
+			playSound("entity.wither.shoot", 0.8, 2, victim)
+			set {_baseloc} to location of victim
+			loop 10 times:
+				loop 5 times:
+					add 0.04 to {_y}
+					add 0.1 to {_metre}
+					add 20 to {_rad}
+					set {_effloc} to {_baseloc}
+					add {_y} to y-coordinate of {_effloc}
+					add {_metre} * sin({_rad}) to x-coordinate of {_effloc}
+					add {_metre} * cos({_rad}) to z-coordinate of {_effloc}
+					drawDot count 1, particle "redstone", RGB 176, 196, 222, center {_effloc}, visibleRange 30
+				wait a tick
+	else if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 3) is true:
+		set {_c} to kitPercentDuel(attacker, victim, 10, true)
+		chance of {_c}%:
+			subtract 1 from attacker's health
+			kitStun(victim, 5 seconds)
+			playSound("entity.evoker.cast_spell", 1, 0.9, victim)
+			loop all blocks in radius 3 around victim:
+				loop-block is air
+				block below loop-block is not air
+				set {_loc} to location of loop-block
+				subtract 0.4 from y-coordinate of {_loc}
+				drawDot count 1, particle "blockcrack", material dirt, center {_loc}, visibleRange 30
+
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
+	{Class::%attacker%} is "Warrior"
+	set {_tool} to attacker's tool
+	if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 4) is true:
+		attacker is ignited
+		set damage to damage * 1.5
+		playSound("entity.blaze.shoot", 1, 1.5, victim)
+		loop 5 times:
+			add 0.4 to {_y}
+			set {_v} to location of victim
+			loop 5 times:
+				set {_loc} to aroundEffect(victim)
+				set y-coordinate of {_loc} to y-coordinate of {_v} + {_y}
+				drawDot count 1, particle "flame", center {_loc}, visibleRange 30
+			wait a tick
+
+on death of player:
+	{Class::%attacker%} is "Warrior"
+	set {_tool} to attacker's tool
+	if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 5) is true:
+		set {_now} to now
+		set {Stats.%attacker%::Ancience} to {_now}
+		apply regeneration 1 to attacker for 10 seconds replacing existing effect
+		playSound("block.enchantment_table.use", 1.1, 0.9, attacker)
+		set {_y} to y-coordinate of attacker + 2
+		loop 10 times:
+			set {_loc} to aroundEffect(attacker)
+			set y-coordinate of {_loc} to {_y}
+			drawDot count 1, particle "totem", center {_loc}, visibleRange 30
+		loop 200 times:
+			{Stats.%attacker%::Ancience} is {_now}
+			loop all items in attacker's inventory:
+				name of loop-item contains "Ancience"
+				loop-item is not enchanted
+				enchant loop-item with sharpness 5
+			wait a tick
+		if {Stats.%attacker%::Ancience} is {_now}:
+			loop all items in attacker's inventory:
+				name of loop-item is "<##866629>Ancience"
+				disenchant loop-item
+
+function kitWeaponWarrior(player: player):
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	checkCT({_player}, name of {_player}'s tool) is true
+	if {_item.num} is 2:
+		kitWeapon_Warrior_2({_player})
+	else if {_item.num} is 4:
+		kitWeapon_Warrior_4({_player})
+
+function kitWeapon_Warrior_2(player: player):
+	toolCT({_player}, "Warrior", 2, "Weapon.main")
+	set {Stats.%{_player}%::Saturn} to true
+	playSound("entity.phantom.flap", 1.5, 1.3, {_player})
+	kitMsg({_player}, "<##b0c4de>範囲攻撃の風を纏った!")
+	loop 100 times:
+		set {_effloc} to location of {_player}
+		add 18 to {_rad}
+		add 0.02 to {_y}
+		add {_y} to y-coordinate of {_effloc}
+		add 0.5 * sin({_rad}) to x-coordinate of {_effloc}
+		add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
+		drawDot count 1, particle "redstone", RGB 176, 196, 222, center {_effloc}, visibleRange 30
+		wait a tick
+	delete {Stats.%{_player}%::Saturn}
+	kitMsg({_player}, "<##5992de>風は止んでしまった...")
+
+function kitWeapon_Warrior_4(player: player):
+	toolCT({_player}, "Warrior", 4, "Weapon.main")
+	playSound("entity.ghast.warn", 1, 1, {_player})
+	ignite {_player} for 5 seconds
+	kitMsg({_player}, "<##dc143c>紅蓮の炎を身に纏った!")
+	set {_loc} to location of {_player}
+	loop 30 times:
+		draw 1 lava particle at {_loc} with direction randomVector({_loc}) and speed 3, keepFor 1 tick
+
+# Skills
+function kitSkillWarrior(player: player) :: boolean:
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if checkCT({_player}, name of {_player}'s tool) is true:
+		if {_item.num} is 1:
+			kitSkill_Warrior_1({_player})
+		else if {_item.num} is 2:
+			kitSkill_Warrior_2({_player})
+		else if {_item.num} is 3:
+			kitSkill_Warrior_3({_player})
+		else if {_item.num} is 4:
+			kitSkill_Warrior_4({_player})
+		else if {_item.num} is 5:
+			kitSkill_Warrior_5({_player})
+		else if {_item.num} is 6:
+			kitSkill_Warrior_6({_player})
+		else if {_item.num} is 7:
+			kitSkill_Warrior_7({_player})
+		else if {_item.num} is 8:
+			kitSkill_Warrior_8({_player})
+	return true
+
+function kitSkill_Warrior_1(player: player):
+	if {Stats.%{_player}%::FocusEnergy} is true:
+		send action bar "§e§lまだ気合は入っています" to {_player}
+		stop
+	else:
+		kitMsg({_player}, "§5§l気合を込めた....")
+		set {Stats.%{_player}%::FocusEnergy} to true
+		toolCT({_player}, "Warrior", 1)
+		playSound("entity.wolf.growl", 1, 0.5, {_player})
+		while {Stats.%{_player}%::FocusEnergy} is true:
+			set {_loc} to location of {_player}
+			add 0.02 to {_dy}
+			if {_dy} >= 4:
+				set {_dy} to 0
+			if {_dy} > 2:
+				set {_y} to 2 - ({_dy} - 2)
+			else:
+				set {_y} to {_dy}
+			add {_y} to y-coordinate of {_loc}
+			add 9 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_loc}
+			add 0.5 * cos({_rad}) to z-coordinate of {_loc}
+			drawDot count 1, particle "flame", center {_loc}, visibleRange 30
+			wait a tick
+
+on damage:
+	if {Stats.%attacker%::UltWarrior-OK} is true:
+		set damage to 100
+		delete {Stats.%attacker%::UltWarrior-OK}
+		strike lightning effect at victim
+		loop 10 times:
+			set {_loc} to aroundEffect(victim)
+			drawDot count 1, particle "soul", center {_loc}, visibleRange 30
+		stop
+	if {Stats.%victim%::BruteCharging} is true:
+		delete {Stats.%victim%::BruteCharging}
+		kitMsg(victim, "§cチャージがキャンセルされた!")
+		stop
+	if {Stats.%attacker%::BruteCharge} is true:
+		set damage to 100
+		playSound("entity.wither.break_block", 1, 0.5, victim)
+		kitEffect_BruteCharge_3(victim)
+		stop
+	if {Stats.%attacker%::FocusEnergy} is true:
+		set {_FEattack} to true
+		set damage to damage * 2
+		kitMsg(attacker, "§d力を思い切り振り絞った!")
+		delete {Stats.%attacker%::FocusEnergy}
+		playSound("entity.iron_golem.repair", 1, 0.75, attacker)
+	if {Stats.%victim%::FocusEnergy} is true:
+		set {_FEvictim} to true
+		set damage to damage * 2
+		kitMsg(victim, "§4おっと! 集中が切れてしまった!")
+		delete {Stats.%victim%::FocusEnergy}
+		playSound("entity.iron_golem.damage", 1, 0.75, victim)
+	if {Stats.%attacker%::LimiterRemoval} is true:
+		{_FEattack} is not set
+		set damage to damage * 1.5
+		create a fake explosion at victim
+	else if {Stats.%attacker%::LimiterRemoval} is false:
+		{_FEattack} is not set
+		set damage to damage * 0.75
+	if {Stats.%victim%::LimiterRemoval} is true:
+		{_FEvictim} is not set
+		set damage to damage * 0.75
+	else if {Stats.%victim%::LimiterRemoval} is false:
+		{_FEvictim} is not set
+		set damage to damage * 1.5
+
+function kitSkill_Warrior_2(player: player):
+	toolCT({_player}, "Warrior", 2)
+	set {_now} to now
+	set {Stats.%{_player}%::LimiterRemoval} to true
+	set {Stats.%{_player}%::LimiterRemovalTime} to {_now}
+	kitMsg({_player}, "§5リミッターを外しました...")
+	playSound("entity.blaze.ambient", 1, 0.5, {_player})
+	drawDot count 5, particle "mobspell", RGB 255, 0, 0, center {_player}, visibleRange 30, keepFor 5 seconds
+	apply speed 2 to {_player} for 5 seconds
+	wait 5 seconds
+	if {Stats.%{_player}%::LimiterRemovalTime} is {_now}:
+		set {Stats.%{_player}%::LimiterRemoval} to false
+		drawDot count 5, particle "mobspell", RGB 0, 0, 255, center {_player}, visibleRange 30, keepFor 5 seconds
+		kitMsg({_player}, "§1リミッターが戻り,疲れてしまった...")
+		remove slowness from {_player}
+		apply slowness 3 to {_player} for 5 seconds
+		wait 5 seconds
+		delete {Stats.%{_player}%::LimiterRemoval}
+		if {Stats.%{_player}%::LimiterRemovalTime} is {_now}:
+			kitMsg({_player}, "§2疲れがとれた!")
+			remove slowness from {_player}
+			apply slowness 2 to {_player} for 1000000000 seconds
+	else:
+		delete {Stats.%{_player}%::LimiterRemoval}
+
+function kitSkill_Warrior_3(player: player):
+	toolCT({_player}, "Warrior", 3)
+	kitMsg({_player}, "§4渾身の突進!")
+	playSound("entity.blaze.hurt", 1, 0.75, {_player})
+	push {_player} forward at speed 1.5
+	loop 20 times:
+		loop all entities in radius 2 around {_player}:
+			{_hitplayer} is not set
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_hitplayer} to loop-entity
+			set {_stoploc} to location of {_player}
+		if {_hitplayer} is not set:
+			drawDot count 1, particle "lava", center {_player}, visibleRange 30
+			wait a tick
+	if {_hitplayer} is set:
+		teleport {_player} to {_stoploc}
+		make {_player} damage {_hitplayer} by 4
+		make a fake explosion at {_hitplayer}
+		kitMsg({_player}, "§5%{_hitplayer}%に激突!")
+		message "§4突進攻撃を受けた!" to {_hitplayer}
+	else:
+		playSound("entity.blaze.death", 1, 0.75, {_player})
+		kitMsg({_player}, "§1激突失敗...")
+		kitFreeze({_player}, 3 seconds, false)
+		damage {_player} by 2 hearts
+
+function kitSkill_Warrior_4(player: player):
+	set {_tool} to slot 0 of {_player}
+	if kitItemTypeChecker({_tool}) is "Weapon.main":
+		toolCT({_player}, "Warrior", 4)
+		set {Stats.%{_player}%::SonicRevolution} to true
+		kitMsg({_player}, "§b回転斬りをします...")
+		apply speed 2 to {_player} for 3 seconds
+		apply jump boost -2 to {_player} for 3 seconds
+		set {_weapon} to slot 0 of {_player}
+		set slot 0 of {_player} to a stick
+		set {_baseloc} to location of {_player}
+		subtract 0.25 from y-coordinate of {_baseloc}
+		set pitch of {_baseloc} to 0
+		spawn an armor stand at {_baseloc} with nbt "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Pose:{RightArm:[350f,0f,270f]}}"
+		set metadata value "sonic-revolution" of spawned entity to "%{_player}%"
+		set spawned entity's tool to {_weapon}
+		set {_yaw} to yaw of {_baseloc}
+		loop 60 times:
+			set {_loc} to location of {_player}
+			subtract 0.25 from y-coordinate of {_loc}
+			playSound("entity.arrow.shoot", 0.75, 0.75, {_player})
+			set pitch of {_loc} to 0
+			add 54 to {_yaw}
+			if {_yaw} > 360:
+				set {_yaw} to {_yaw} - 360
+			set yaw of {_loc} to {_yaw}
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "sonic-revolution" of loop-entity is "%{_player}%"
+				teleport loop-entity to {_loc}
+			delete {_forn}
+			loop 5 times:
+				add 1 to {_forn}
+				set {_forb} to location {_forn} meters in front of {_loc}
+				add 1 to y-coordinate of {_forb}
+				drawDot count 1, particle "redstone", RGB 0, 191, 255, center {_forb}, visibleRange 30
+			loop all entities in radius 5 around {_player}:
+				{Class::%{_player}%} is "Warrior"
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				make {_player} damage loop-entity by 2
+			wait a tick
+		loop all entities:
+			type of loop-entity is an armor stand
+			metadata value "sonic-revolution" of loop-entity is "%{_player}%"
+			delete loop-entity
+		if {Stats.%{_player}%::SonicRevolution} is true:
+			set slot 0 of {_player} to {_weapon}
+			apply nausea 1 to {_player} for 10 seconds
+		delete {Stats.%{_player}%::SonicRevolution}
+	else:
+		send action bar "§c§lWeaponがありません" to {_player}
+
+function kitSkill_Warrior_5(player: player):
+	if health of {_player} <= 3:
+		toolCT({_player}, "Warrior", 5)
+		set {Stats.%{_player}%::Last Crash} to true
+		kitMsg({_player}, "§6命を糧に§lエネルギー爆発§6を起こします!")
+		kitFreeze({_player}, 1 seconds, false)
+		playSound("entity.wither.shoot", 1, 1, {_player})
+		set {_baseloc} to location of {_player}
+		add 1 to y-coordinate of {_baseloc}
+		loop 30 times:
+			set {_toloc} to location of {_player}
+			add 1 to y-coordinate of {_toloc}
+			add a random number between -5 and 5 to x-coordinate of {_toloc}
+			add a random number between -5 and 5 to y-coordinate of {_toloc}
+			add a random number between -5 and 5 to z-coordinate of {_toloc}
+			set {_v} to setVector({_toloc}, {_baseloc})
+			set yaw of {_toloc} to yaw of {_v}
+			set pitch of {_toloc} to pitch of {_v}
+			add {_toloc} to {_locs::*}
+		set {_ln} to 0
+		loop 20 times:
+			add 1 to {_ln}
+			loop {_locs::*}:
+				set {_dis} to distance between {_baseloc} and loop-value-2
+				set {_em} to {_dis} / 20 * {_ln}
+				set {_eloc} to location {_em} meters in front of loop-value-2
+				drawDot count 1, particle "endrod", center {_eloc}, visibleRange 30
+			wait a tick
+		playSound("entity.wither.spawn", 1, 0.5, {_player})
+		kill {_player}
+		subtract 1 from y-coordinate of {_baseloc}
+		loop all entities in radius 10 around {_baseloc}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			playSound("entity.wither.break_block", 1, 0.5, loop-entity)
+			make {_player} damage loop-entity by 18
+			set {_el} to location of loop-entity
+			add 1 to y-coordinate of {_el}
+			loop 30 times:
+				draw 1 critmagic particle at {_el} with direction randomVector({_el}) and speed 2, keepFor 1 tick
+		add 1 to y-coordinate of {_baseloc}
+		loop 200 times:
+			draw 1 campfirecozy particle at {_baseloc} with direction randomVector({_baseloc}) and speed 5, keepFor 5 tick
+	else:
+		send action bar "§c§l体力が多すぎます!" to {_player}
+
+function kitSkill_Warrior_6(player: player):
+	set {_tool} to slot 0 of {_player}
+	if kitItemTypeChecker({_tool}) is "Weapon.main":
+		if block 0.1 meters below {_player} is not passable:
+			toolCT({_player}, "Warrior", 6)
+			set {Stats.%{_player}%::LegendaryAura} to true
+			kitMsg({_player}, "<##d9e367>剣のエネルギーを地に放出します!")
+			set {_weapon} to slot 0 of {_player}
+			set slot 0 of {_player} to a stick
+			set {_asloc} to location of {_player}
+			set {_loc} to location of {_player}
+			subtract 0.5 from y-coordinate of {_asloc}
+			spawn an armor stand at {_asloc} with nbt "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Pose:{RightArm:[0f,90f,300f]}}"
+			set metadata value "legendary-aura" of spawned entity to "%{_player}%"
+			set spawned entity's tool to {_weapon}
+			loop 5 times:
+				playSound("entity.ender_dragon.hurt", 1, 0.75, {_loc})
+				loop all blocks in radius 10 around {_loc}:
+					loop-block is air
+					block below loop-block is not air
+					set {_lloc} to location of loop-block
+					subtract 0.4 from y-coordinate of {_lloc}
+					drawDot count 1, particle "mobspell", RGB 73, 55, 89, center {_lloc}, visibleRange 30
+				loop all entities in radius 10 around {_loc}:
+					kitCheckTeam(loop-entity, {_player}, false) is true
+					make {_player} damage loop-entity by 2
+					loop 30 times:
+						draw 1 critmagic particle at location of loop-entity with direction randomVector(location of loop-entity) and speed 3, keepFor 1 tick
+				wait a second
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "legendary-aura" of loop-entity is "%{_player}%"
+				delete loop-entity
+			if {Stats.%{_player}%::LegendaryAura} is true:
+				set slot 0 of {_player} to {_weapon}
+			delete {Stats.%{_player}%::LegendaryAura}
+		else:
+			send action bar "§c§l地に足をつけて発動してください" to {_player}
+	else:
+		send action bar "§c§lWeaponがありません" to {_player}
+
+function kitSkill_Warrior_7(player: player):
+	if health of {_player} >= 5:
+		toolCT({_player}, "Warrior", 7)
+		kitMsg({_player}, "§5力をチャージします...")
+		kitFreeze({_player}, 3 seconds, false)
+		apply glowing 1 to {_player} for 3 seconds
+		set {Stats.%{_player}%::BruteCharging} to true
+		kitEffect_BruteCharge_1({_player})
+		loop 3 times:
+			if {Stats.%{_player}%::BruteCharging} is true:
+				wait a second
+		if {Stats.%{_player}%::BruteCharging} is true:
+			delete {Stats.%{_player}%::BruteCharging}
+			set {Stats.%{_player}%::BruteCharge} to true
+			kitMsg({_player}, "§6§l暴走状態§c§に入った! §4§l敵を薙ぎ払え!")
+			kitPalsy({_player}, 5 seconds, false)
+			set {_hp} to health of {_player}
+			subtract 5 from {_hp}
+			set health of {_player} to {_hp}
+			set {_el} to location of {_player}
+			add 1 to y-coordinate of {_el}
+			kitEffect_BruteCharge_2({_player})
+			loop 5 times:
+				if {Stats.%{_player}%::BruteCharge} is true:
+					wait a second
+			if {Stats.%{_player}%::BruteCharge} is true:
+				delete {Stats.%{_player}%::BruteCharge}
+				kitMsg({_player}, "§3暴走状態は終了しました")
+		else:
+			kitMsg({_player}, "§8チャージに失敗してしまった...")
+	else:
+		send action bar "§c§l体力が不足しています!" to {_player}
+
+function kitEffect_BruteCharge_1(player: player):
+	set {_loc} to location of {_player}
+#	座標の設定　主軸{_loc}{_w}
+	set {_x} to x-coordinate of {_loc}
+	set {_y} to y-coordinate of {_loc}
+	set {_z} to z-coordinate of {_loc}
+#	軸の設定　座標{_A}{_vwA}
+	set {_A} to {_loc}
+	set pitch of {_A} to 0
+	set {_vxA1} to location 1 meters to the right of {_A}
+	set {_vzA1} to location 1 meters in front of {_A}
+#	方向ベクトル{_vwnw}
+	set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+	set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+	set {_vznx} to x-coordinate of {_vzA1} - {_x}
+	set {_vznz} to z-coordinate of {_vzA1} - {_z}
+#	チャージ中の演出
+	set {_vector} to {_loc}
+	set {_s} to 0
+	set {_u} to 3
+	loop 3 times:
+		if {Stats.%{_player}%::BruteCharging} is true:
+			set {_soundpitch} to 2.5 - 0.5 * loop-number
+			playSound("entity.wither.ambient", 1, {_soundpitch}, {_player})
+			add 40 to {_s}
+			set {_t} to 0
+			loop 3 times:
+				loop 11 times:
+					set {_c} to 1 - abs(cos({_t}))
+					set {_ax} to cos({_s}) * {_vxnx} + sin({_s}) * {_vznx}
+					set {_az} to cos({_s}) * {_vxnz} + sin({_s}) * {_vznz}
+					if {_c} < 0.5:
+						set x-coordinate of {_vector} to {_x} + {_c} * {_ax} * 3 ^ 0.5
+						set y-coordinate of {_vector} to {_y} + cos({_t}) + 1
+						set z-coordinate of {_vector} to {_z} + {_c} * {_az} * 3 ^ 0.5
+						set {_second} to "%{_u}% seconds" parsed as time span
+						drawDot count 1, particle "redstone", RGB 128, 255, 255, center {_vector}, visibleRange 100, keepFor {_second}
+					else:
+						set x-coordinate of {_vector} to {_x} + 0.5 * {_ax} * 3 ^ 0.5
+						set y-coordinate of {_vector} to {_y} + cos({_t}) + 1
+						set z-coordinate of {_vector} to {_z} + 0.5 * {_az} * 3 ^ 0.5
+						set {_second} to "%{_u}% seconds" parsed as time span
+						drawDot count 1, particle "redstone", RGB 128, 255, 255, center {_vector}, visibleRange 100, keepFor {_second}
+					add 18 to {_t}
+				add 120 to {_s}
+			add -1 to {_u}
+			wait 20 ticks
+
+function kitEffect_BruteCharge_2(player: player):
+	set {_loc} to location of {_player}
+	set {_vector} to {_loc}
+	loop 6 times:
+		if {Stats.%{_player}%::BruteCharge} is true:
+			playSound("entity.wither.shoot", 1, 0.6, {_player})
+			set {_loc} to location of {_player}
+	#		座標の設定　主軸{_loc}{_w}
+			set {_x} to x-coordinate of {_loc}
+			set {_y} to y-coordinate of {_loc}
+			set {_z} to z-coordinate of {_loc}
+	#		軸の設定　座標{_A}{_vwA}
+			set {_A} to {_loc}
+			set pitch of {_A} to 0
+			set {_vxA1} to location 1 meters to the right of {_A}
+			set {_vzA1} to location 1 meters in front of {_A}
+	#		方向ベクトル{_vwnw}
+			set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+			set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+			set {_vznx} to x-coordinate of {_vzA1} - {_x}
+			set {_vznz} to z-coordinate of {_vzA1} - {_z}
+			set {_s} to -1
+			loop 2 times:
+				set {_u} to a random number between 0 and 360
+				set {_t} to -0.3
+				loop 16 times:
+					set x-coordinate of {_vector} to {_x} + (1 + {_t}) * cos({_s} * {_u}) * {_vxnx} + (1 + {_t}) * sin({_s} * {_u}) * {_vznx}
+					set y-coordinate of {_vector} to {_y} + {_t} * 0.5 + 0.3
+					set z-coordinate of {_vector} to {_z} + (1 + {_t}) * cos({_s} * {_u}) * {_vxnz} + (1 + {_t}) * sin({_s} * {_u}) * {_vznz}
+					drawDot count 1, particle "redstone", RGB 80 * (1 + {_t}), 160 * (1 + {_t}), 160 * (1 + {_t}), center {_vector}, visibleRange 100, keepFor 0.5 seconds
+					add 0.07 to {_t}
+					add 11 to {_u}
+				set {_s} to -1 * {_s}
+				wait 2 ticks
+			wait 16 ticks
+
+function kitEffect_BruteCharge_3(player: player):
+	set {_loc} to location of {_player}
+	set {_vector} to {_loc}
+#	座標の設定　主軸{_loc}{_w}
+	set {_x} to x-coordinate of {_loc}
+	set {_y} to y-coordinate of {_loc}
+	set {_z} to z-coordinate of {_loc}
+#	軸の設定　座標{_A}{_vwA}
+	set {_A} to {_loc}
+	set pitch of {_A} to 0
+	set {_vxA1} to location 1 meters to the right of {_A}
+	set {_vzA1} to location 1 meters in front of {_A}
+#	方向ベクトル{_vwnw}
+	set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+	set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+	set {_vznx} to x-coordinate of {_vzA1} - {_x}
+	set {_vznz} to z-coordinate of {_vzA1} - {_z}
+	set {_s} to 0
+	set {_t} to 30
+	loop 3 times:
+		loop 40 times:
+			set {_ax} to cos({_s}) * {_vxnx} + sin({_s}) * {_vznx}
+			set {_az} to cos({_s}) * {_vxnz} + sin({_s}) * {_vznz}
+			set x-coordinate of {_vector} to {_x} + {_ax} * (30 ^ 0.5 - (30 - {_t}) ^ 0.5) ^ 1.5
+			set y-coordinate of {_vector} to {_y} + {_t}
+			set z-coordinate of {_vector} to {_z} + {_az} * (30 ^ 0.5 - (30 - {_t}) ^ 0.5) ^ 1.5
+			drawDot count 1, particle "redstone", RGB 0, 16, 32, center {_vector}, visibleRange 100, keepFor 0.5 seconds
+			add 57 to {_s}
+			if {_s} > 360:
+				add -360 to {_s}
+			add -0.25 to {_t}
+		wait a tick
+
+function kitSkill_Warrior_8(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::SonicBoomNow} to {_now}
+	if {Stats.%{_player}%::SonicBoom} is not set:
+		set {Stats.%{_player}%::SonicBoom} to 0
+	if {Stats.%{_player}%::SonicBoom} < 20:
+		add 1 to {Stats.%{_player}%::SonicBoom}
+# Action bar表記
+	loop {Stats.%{_player}%::SonicBoom} times:
+		if loop-number is 1:
+			set {_ok.line} to "|"
+		else:
+			set {_ok.line} to "%{_ok.line}%|"
+	set {_ngtime} to 20 - {Stats.%{_player}%::SonicBoom}
+	set {_ng.line} to ""
+	if {_ngtime} is not 0:
+		loop {_ngtime} times:
+			if loop-number is 1:
+				set {_ng.line} to "|"
+			else:
+				set {_ng.line} to "%{_ng.line}%|"
+	send action bar "§e[ §a%{_ok.line}%§8%{_ng.line}% §e]" to {_player}
+	set {_sound} to {Stats.%{_player}%::SonicBoom} / 10
+	playSound("block.wooden_button.click_on", 0.5, {_sound}, {_player}, true)
+	drawDot count 1, particle "explosion", center {_player}, visibleRange 30, keepFor 5 ticks
+	wait 6 ticks
+	if {Stats.%{_player}%::SonicBoomNow} is {_now}:
+		toolCT({_player}, "Warrior", 8)
+		kitMsg({_player}, "<##f0ffff>ソニックブーム!")
+		set {_baseloc} to location of head of {_player}
+		loop {Stats.%{_player}%::SonicBoom} times:
+			add 1 to {_metre}
+			set {_loc} to location {_metre} meters in front of {_baseloc}
+			add 1 to y-coordinate of {_loc}
+			drawDot count 1, particle "explosionlarge", center {_loc}, visibleRange 50
+			playSound("entity.player.attack.sweep", 1, 1, {_loc})
+			loop all entities in radius 3 around {_loc}:
+				{_hit::%id of loop-entity%} is not set
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				set {_hit::%id of loop-entity%} to true
+				make {_player} damage loop-entity by 6
+			wait a tick
+		delete {Stats.%{_player}%::SonicBoom}
+		delete {Stats.%{_player}%::SonicBoomNow}
+
+function kitTimerWarrior(player: player):
+	set {_tool} to kitPlayerWeaponItem({_player}, "Warrior", "main")
+	if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 3) is true:
+		subtract 3 from max health of {_player}
+	while {Class::%{_player}%} is "Warrior":
+		set {_tool} to {_player}'s tool
+		if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 4) is true:
+			if {_player} is ignited:
+				apply speed 3 to {_player} for a second
+		wait a second
+
+function kitUltWarrior(player: player):
+	message "§c10秒間,§4§lSpecial Sword§cが付与されます!" to {_player}
+	message "§cこの剣は右クリック長押しでチャージが出来ます!" to {_player}
+	message "§c2秒間チャージでパワーが貯まり,次に攻撃した敵を一撃で倒します!" to {_player}
+	delete {Stats.%{_player}%::SonicRevolution}
+	delete {Stats.%{_player}%::LegendaryAura}
+	set {_weapon} to kitPlayerWeaponItem({_player}, "Warrior", "main")
+	load yml "plugins/skript-yaml/Kit Classes/Warrior.yml" as "ultwarrior.%{_player}%"
+	set {_SpecialSword} to yml value "kititems.Special Sword" from "ultwarrior.%{_player}%"
+	set slot 0 of {_player} to {_SpecialSword}
+	set {Stats.%{_player}%::UltWarrior} to true
+	wait 10 seconds
+	unload yml "ultwarrior.%{_player}%"
+	if {Stats.%{_player}%::UltWarrior} is true:
+		set slot 0 of {_player} to {_weapon}
+	delete {Stats.%{_player}%::UltWarrior}
+	delete {Stats.%{_player}%::UltWarrior-OK}
+
+on rightclick holding a diamond sword:
+	{Stats.%player%::UltWarrior} is true
+	set {_SpecialSword} to yml value "kititems.Special Sword" from "ultwarrior.%player%"
+	player's tool is {_SpecialSword}
+	cancel event
+	if {Stats.%player%::UltWarrior-OK} is not set:
+		set {_now} to now
+		set {Stats.%player%::UltWarrior-Now} to {_now}
+		set player's walk speed to 0.01
+		if {Stats.%player%::UltWarrior-Charge} is not set:
+			set {Stats.%player%::UltWarrior-Charge} to 0
+		if {Stats.%player%::UltWarrior-Charge} < 8:
+			add 1 to {Stats.%player%::UltWarrior-Charge}
+			if {Stats.%player%::UltWarrior-Charge} is 8:
+				set {Stats.%player%::UltWarrior-OK} to true
+		set {_ok.num} to ({Stats.%player%::UltWarrior-Charge} - 1) * 5
+		loop 5 times:
+			wait a tick
+			drawDot count 1, particle "explosionlarge", center player, visibleRange 30
+#	Action bar表記
+			add 1 to {_ok.num}
+			loop {_ok.num} times:
+				if loop-number-2 is 1:
+					set {_ok.line} to "|"
+				else:
+					set {_ok.line} to "%{_ok.line}%|"
+			set {_ngtime} to 40 - {_ok.num}
+			set {_ng.line} to ""
+			if {_ngtime} is not 0:
+				loop {_ngtime} times:
+					if loop-number-2 is 1:
+						set {_ng.line} to "|"
+					else:
+						set {_ng.line} to "%{_ng.line}%|"
+			send action bar "§e[ §a%{_ok.line}%§8%{_ng.line}% §e]" to player
+			set {_sound} to {_ok.num} / 20
+			playSound("entity.experience_orb.pickup", 0.75, {_sound}, player)
+			if {_ok.num} is 40:
+				playSound("entity.player.levelup", 1.2, 0.5, player)
+		wait a tick
+		if {Stats.%player%::UltWarrior-Now} is {_now}:
+			set player's walk speed to 0.2
+			delete {Stats.%player%::UltWarrior-Now}
+			delete {Stats.%player%::UltWarrior-Charge}
+			if {Stats.%player%::UltWarrior-OK} is true:
+				kitMsg(player, "§4§lパワーが貯まりました!")
+				while {Stats.%player%::UltWarrior-OK} is true:
+					if {Stats.%player%::UltWarrior} is not set:
+						delete {Stats.%player%::UltWarrior-OK}
+					set {_loc} to location of player
+					add 0.02 to {_dy}
+					if {_dy} >= 4:
+						set {_dy} to 0
+					if {_dy} > 2:
+						set {_y} to 2 - ({_dy} - 2)
+					else:
+						set {_y} to {_dy}
+					add {_y} to y-coordinate of {_loc}
+					add 9 to {_rad}
+					add 0.5 * sin({_rad}) to x-coordinate of {_loc}
+					add 0.5 * cos({_rad}) to z-coordinate of {_loc}
+					drawDot count 1, particle "angryvillager", center {_loc}, visibleRange 30
+					wait a tick

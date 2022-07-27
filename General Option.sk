@@ -1,0 +1,57 @@
+# Lobby DamageCancel
+on damage of player:
+	"%world of victim%" contains "Lobby"
+	if damage was caused by void:
+		set damage to 0
+		make victim execute command "/lobby"
+	else:
+		cancel event
+
+command /head <offline player>:
+	permission: sk.admin
+	trigger:
+		execute console command "/give %player% player_head{SkullOwner:%arg 1%}"
+
+on command:
+	player is set
+	command is not "class"
+	command is not "buffmusic"
+	command is not "trap"
+	command is not "fixitytrap"
+	command is not "vote"
+	command is not "kit-rate"
+	command is not "kit-evaluate"
+	command is not "tell"
+	command is not "athletics"
+	if arguments is set:
+		loop all players:
+			loop-player has permission "sk.admin"
+			message "§9[CMD]§a%player%§7: §b/%command% §b%arguments%" to loop-player
+	else:
+		loop all players:
+			loop-player has permission "sk.admin"
+			message "§9[CMD]§a%player%§7: §b/%command%" to loop-player
+
+# maxhp
+command /maxhp <number> <player>:
+	permission: sk.admin
+	trigger:
+		message "§6%arg 2%§7の体力を§a%arg 1%§7に設定しました"
+		set max health of arg 2 to arg 1
+
+# armor dying
+command /dying <number> <number> <number>:
+	permission: sk.admin
+	trigger:
+		dye player's tool (arg 1, arg 2, arg 3)
+
+on pressure plate:
+	loop all blocks in radius 1.5 around player:
+		loop-block is iron pressure plate
+		block below loop-block is emerald block
+		block 2 below loop-block is redstone block
+		set {_true} to true
+	{_true} is true
+	play sound "entity.wither.shoot" with volume 0.1 with pitch 2 to player
+	push player upwards at speed 1
+	push player forward at speed 3

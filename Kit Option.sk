@@ -1,0 +1,104 @@
+# falldamage cancel
+on damage of player:
+	if victim has jump boost:
+		damage was caused by fall
+		cancel event
+	if {Join::%victim%} is "Kit":
+		{Kit-tochu} is not true
+		damage was caused by attack
+		cancel event
+
+# food cancel
+on food level change:
+	{Stats.%player%::Hunger} is not set
+	set player's food level to 10
+
+on death of player:
+	set max health of victim to 10
+
+on death:
+	metadata value "gametype" of victim is "Kit"
+	clear drops
+
+aliases:
+	pickable = minecraft:gold_block, minecraft:apple, minecraft:diamond, minecraft:gold_ingot, minecraft:wheat_seeds, minecraft:wheat, minecraft:golden_apple, minecraft:gold_nugget, minecraft:sheep_spawn_egg, minecraft:emerald, minecraft:carrot, minecraft:potato, minecraft:baked_potato, minecraft:poisonous_potato, minecraft:golden_carrot, minecraft:llama_spawn_egg, minecraft:rotten_flesh, minecraft:redstone, minecraft:emerald_block
+
+on pick up:
+	if metadata value "unpickable" of event-dropped item is "true":
+		cancel event
+	else if type of item is not pickable:
+		cancel event
+		delete event-dropped item
+
+on damage of player:
+	attacker is not player
+	set {_en} to attacker's display name
+	if {team::%{_en}%} is {team::%victim%}:
+		cancel event
+
+on entity target:
+	set {_etz} to entity's target player
+	set {_en} to entity's display name
+	if the entity's display name is "%{team::%{_etz}%}%":
+		cancel event
+	else if {team::%{_en}%} is {team::%{_etz}%}:
+		cancel event
+	else if entity is endermite:
+		metadata value "deletemob" of entity is "true"
+		drawDot count 1, particle "portal", center entity, visibleRange 30, keepFor 20 ticks
+		teleport entity to location of entity's target
+		play sound "entity.enderman.teleport" with volume 1 with pitch 2 at entity
+
+on death:
+	clear drops
+
+on xp spawn:
+	cancel event
+
+on damage of dropped item:
+	metadata value "undelete" of victim is "true"
+	cancel event
+
+command /at:
+	permission: sk.admin
+	trigger:
+		give a diamond named "§9Admin Tools" to player
+
+#command /itemadd:
+#	trigger:
+#		set {_t} to type of player's tool
+#		set {_n} to name of player's tool
+#		set {_l} to lore of player's tool
+#		give {_t} named "%{_n}%" with lore "%{_l}%" to player
+
+#command /testgive:
+#	trigger:
+#		give {Skill.Archer::1} to player
+
+on spawn of baby chicken:
+	cancel event
+
+on rightclick on wolf holding a raw beef:
+	cancel event
+
+on rightclick on wolf holding a dye:
+	cancel event
+
+on rightclick on sheep holding a dye:
+	cancel event
+
+on inventory click:
+	{Join::%player%} is "Kit"
+	if type of event-inventory is player inventory:
+		if type of player's current inventory is not merchant inventory:
+			cancel event
+	else if type of event-inventory is not merchant inventory:
+		if type of event-inventory is not chest inventory:
+			cancel event
+
+on swap hand items:
+	{Join::%player%} is "Kit"
+	cancel event
+
+on projectile collide:
+	delete projectile

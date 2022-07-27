@@ -1,0 +1,44 @@
+command /gigives:
+	permission: sk.admin
+	trigger:
+		wait a second
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			openKitInv(loop-player)
+			execute console command "/cclass %loop-player% Kit-GameInv"
+			apply blindness 1 to loop-player for 10000000000 seconds
+			apply slowness 10 to loop-player for 10000000000 seconds
+			apply jump boost -10 to loop-player for 10000000000 seconds
+
+on rightclick holding a feather:
+	name of player's tool is "§bClass"
+	openKitInv(player)
+
+on rightclick holding a workbench:
+	name of player's tool is "§6Customize"
+	openKitGameCustom(player)
+
+function openKitGameCustom(player: player):
+	wait a tick
+	open chest with 1 row named "§a§lKit Customize" to {_player}
+	wait a tick
+	set slot 2 of {_player}'s current inventory to iron sword named "§4§lWeapons"
+	set slot 6 of {_player}'s current inventory to feather named "§2§lSkills"
+
+on inventory click:
+	type of event-inventory is chest inventory
+	if inventory name of event-inventory is "§a§lKit Customize":
+		cancel event
+		if clicked slot is 2:
+			make player execute command "/kitcustom Weapon"
+		else if clicked slot is 6:
+			make player execute command "/kitcustom Skill"
+		close player's inventory
+
+on rightclick holding a barrier:
+	name of player's tool is "§cClass Reset"
+	execute console command "/classreset %player%"
+
+on rightclick holding a book:
+	name of player's tool is "§6GameInfo"
+	message "未実装の機能です"

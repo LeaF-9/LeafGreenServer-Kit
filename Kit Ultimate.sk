@@ -1,0 +1,1065 @@
+﻿options:
+	prefix: §2[%{CLS::%player%}%]
+
+every a second:
+	loop all players:
+		loop-player is alive
+		{Class::%loop-player%} is set
+		{Ulting::%loop-player%} is not set
+		set {_l} to {Ultimate::%loop-player%}
+		if {Ultimate::%loop-player%} >= 100:
+			set {_l} to 100
+			loop-player do not have nether star named "§4§lUltimate Skill"
+			give a nether star named "§4§lUltimate Skill" to loop-player
+			message "§c§l必殺技のポイントが貯まりました!" to loop-player
+		else if {Ultimate::%loop-player%} is not set:
+			set {_l} to 0
+		loop-player's level is not {_l}
+		set loop-player's level to {_l}
+		set {_lp} to {_l} * 0.01
+		if {_lp} >= 1:
+			set {_lp} to {_lp} - 0.01
+		set loop-player's level progress to {_lp}
+
+#on rightclick holding a nether star:
+#	name of player's tool is "§a§lUltimate Skill"
+#	delete {Ultimate::%player%}
+#	message "§bまだ必殺技が実装されていません"
+#	remove a nether star named "§a§lUltimate Skill" from player
+
+on rightclick holding a nether star:
+	name of player's tool contains "§lUltimate Skill"
+	{Class::%player%} is set
+	{Ulting::%player%} is not set
+	delete {Ultimate::%player%}
+	set {Ulting::%player%} to true
+	kitUltExp(player)
+	playSound("entity.wither.spawn", 2, 0.5, player)
+	set {_tooling} to player's tool
+	remove {_tooling} from player
+	if {Class::%player%} is "Knight":
+		kitUltMessage(player, "Brave Fighters", "勇敢な戦士達よ 立ち上がれ")
+		kitUltKnight(player)
+	else if {Class::%player%} is "Warrior":
+		kitUltMessage(player, "Overpowered Attack", "圧倒的な力を習得した者")
+		kitUltWarrior(player)
+	else if {Class::%player%} is "Mercenary":
+		kitUltMessage(player, "Sanguinary Murder", "血に飢えた殺人鬼")
+		kitUltMercenary(player)
+#	else if {Class::%player%} is "Berserker":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oUncontrol Berserk" with subtitle "§bー 誰にも止められない暴走 ー" for 3 seconds
+#		drawWarpRings style 0, particle "lava", center player, id "%player%", scan true, height 2, radius 10, ringCount 5, ringDensity 5, visibleRange 32
+#		remove speed from player
+#		set {Ult.%player%::Berserker} to 0
+#		apply speed 3 to player for 10 seconds
+#		apply regeneration 3 to player for 10 seconds
+#		message "§c周辺10m内に入ったプレイヤーの無敵時間を無効化します!"
+#		message "§c連続攻撃をすることでダメージがより増大します!"
+#		loop 200 times:
+#			delete {_eg::*}
+#			loop all players in radius 10 around player:
+#				loop-player is not player
+#				drawDot count 1, particle "critmagic", center loop-player, visibleRange 30, keepFor 1 ticks
+#				set {_eg::%loop-player%} to true
+#				if {_jb::%loop-player%} is not set:
+#					set {_jb::%loop-player%} to true
+#					set maximum damage delay of loop-player to 1 tick
+#					play raw sound "mob.blaze.death" at loop-player with pitch 0.5 volume 0.5
+#			loop all players:
+#				{_eg::%loop-player%} is not set
+#				{_jb::%loop-player%} is true
+#				set maximum damage delay of loop-player to 20 ticks
+#				delete {_jb::%loop-player%}
+#			wait a tick
+#		stopEffect "%player%"
+#		delete {Ult.%player%::Berserker}
+#		delete {Ult.%player%::BerserkTime}
+#		loop all players:
+#			set maximum damage delay of loop-player to 20 ticks
+#	else if {Class::%player%} is "Werewolf":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oFull Instinct" with subtitle "§bー 人狼の本能が最大限引き出される ー" for 3 seconds
+#		message "§c強制的に野性解放し,時間を夜に設定します!"
+#		message "§c暗い場所に居る際,透明化が付与されます!"
+#		message "§c全てのスキルのCTが1/10になります!"
+#		set {Ult.%player%::Werewolf} to true
+#		if {Stats.%player%::Instinct} is not set:
+#			set {Stats.%player%::Instinct} to true
+#			message "{@prefix} §4野生解放を行った..."
+#			set {_hp} to health of player
+#			if {Stagerule::%{KitPvP_Stage}%} is "EmJ":
+#				set {_amount} to amount of emerald named "§aJewel" in player's inventory
+#			if {Stagerule::%{KitPvP_Stage}%} is "StW":
+#				player's inventory contains sheep spawn egg named "§7Wool"
+#				set {_wool} to true
+#			if {CLS::%player%} is "WLF":
+#				execute console command "/class Werewolf_Instinct %player% false"
+#			set player's health to {_hp}
+#			loop {_amount} times:
+#				give a emerald named "§aJewel" to player
+#			if {_wool} is true:
+#				give a sheep spawn egg named "§7Wool" to player
+#			drawDot count 3, particle "mobspell", RGB 100, 0, 0, center player, visibleRange 30, keepFor 60 ticks
+#			play raw sound "mob.wolf.growl" at player with pitch 0.5 volume 1
+#			set {Stats.%player%::InstinctPower} to 1
+#			loop all wolves:
+#				loop-wolf's display name is "%player%"
+#				add 0.1 to {Stats.%player%::InstinctPower}
+#				delete loop-wolf
+#		set time to 00:00
+#		execute console command "/od %player% wolf"
+#		loop 200 times:
+#			if light level at player <= 5:
+#				delete {_un}
+#				loop all players in radius 5 around player:
+#					{TrueTeam::%loop-player%} is not {TrueTeam::%player%}
+#					set {_un} to true
+#				if {_un} is not set:
+#					if {Invisible::%player%} is not set:
+#						if {CT.%player%::WolfInvisible} is not set:
+#							set {Invisible::%player%} to true
+#							set action bar of player to "§e§l透明化した!"
+#							loop all players:
+#								{CLS::%loop-player%} is not "THI"
+#								hide player from loop-player
+#				else:
+#					if {Invisible::%player%} is true:
+#						reveal player from all players
+#						delete {Invisible::%player%}
+#						set action bar of player to "§b§l透明化が解除された!"
+#			else:
+#				if {Invisible::%player%} is true:
+#					reveal player from all players
+#					delete {Invisible::%player%}
+#					set action bar of player to "§b§l透明化が解除された!"
+#				drawDot count 1, particle "cloud", center player, visibleRange 30
+#			wait a tick
+#		execute console command "/ud %player%"
+#		delete {Ult.%player%::Werewolf}
+#	else if {Class::%player%} is "Lumberjack":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oDestroyer Axe" with subtitle "§bー 全てを壊す大きな斧 ー" for 3 seconds
+#		message "§c大きな斧を振り回します!"
+#		message "§c当たった敵に3ダメージ,防具耐久値を100減らします!"
+#		apply slowness 2 to player for 10 seconds
+#		loop 10 times:
+#			play raw sound "mob.wither.shoot" at player with pitch 0.5 volume 1
+#			set {_face} to location of player
+#			set {_base} to location of block at player
+#			set {_y} to y-coordinate of {_base}
+#			set {_yb} to -1
+#			set {_up} to -0.1
+#			loop 3 times:
+#				add 1 to {_yb}
+#				add 0.1 to {_up}
+#				set {_fb} to location of block {_yb} blocks in front of {_face}
+#				set {_yf} to {_y} + {_yb}
+#				set y-coordinate of {_fb} to {_yf}
+#				spawn a falling oak plank at location of {_fb}
+#				push spawned entity downwards at speed {_up}
+#			loop 7 times:
+#				add 1 to {_yb}
+#				add 0.1 to {_up}
+#				set {_fb} to location of block {_yb} blocks in front of {_face}
+#				set {_yf} to {_y} + {_yb}
+#				set y-coordinate of {_fb} to {_yf}
+#				spawn a falling iron block at location of {_fb}
+#				push spawned entity downwards at speed {_up}
+#				set metadata value "destroyaxe" of spawned entity to "%player%"
+#				drawDot count 1, particle "blockcrack", material iron block, center spawned entity, visibleRange 30, keepFor a second
+#			loop 20 times:
+#				loop all falling iron blocks:
+#					metadata value "destroyaxe" of loop-falling iron block is "%player%"
+#					loop all players in radius 3 around loop-falling iron block:
+#						{team::%loop-player%} is not {team::%player%}
+#						{_hit::%loop-player%} is not set
+#						set {_hit::%loop-player%} to true
+#						make player damage loop-player by 10
+#						add 100 to data value of helmet of loop-player
+#						add 100 to data value of chestplate of loop-player
+#						add 100 to data value of leggings of loop-player
+#						add 100 to data value of boots of loop-player
+#						play raw sound "mob.zombie.wood" at loop-player with pitch 0.5 volume 1
+#				wait a tick
+#			delete {_hit::*}
+	else if {Class::%player%} is "Wizard":
+		kitUltMessage(player, "Magical Confusion", "魔力混乱を引き起こす魔法陣")
+		kitUltWizard(player)
+	else if {Class::%player%} is "Necromancer":
+		kitUltMessage(player, "Immortal Soul", "永遠に朽ちぬ魂")
+		kitUltNecromancer(player)
+	else if {Class::%player%} is "Ghost":
+		kitUltMessage(player, "Hellish Occultism", "呪術より生まれた破壊生物 ")
+		kitUltGhost(player)
+#	else if {Class::%player%} is "Iceman":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oGlacier Field" with subtitle "§bー 凍りついた大地 ー" for 3 seconds
+#		message "§c周辺の敵の機動力を奪っていきます!"
+#		message "§c2秒間奪った敵を5秒間凍結させます!"
+#		apply slowness 2 to player for 10 seconds
+#		drawWarpRings style 0, particle "redstone", RGB 0, 255, 255, center player, id "%player%", scan true, height 2, radius 10, ringCount 5, ringDensity 30, visibleRange 32
+#		loop 20 times:
+#			wait 10 ticks
+#			loop all players in radius 10 around player:
+#				{TrueTeam::%loop-player%} is not {TrueTeam::%player%}
+#				{Freeze::%loop-player%} is not set
+#				set {_walk} to walk speed of loop-player
+#				subtract 0.05 from {_walk}
+#				if {_walk} > 0:
+#					set walk speed of loop-player to {_walk}
+#					play raw sound "random.orb" at loop-player with pitch 0.5 volume 0.5
+#					drawDot count 1, particle "redstone", RGB 150, 255, 255, center location of block 2 above loop-player, visibleRange 30
+#				else:
+#					set walk speed of loop-player to 0.2
+#					play raw sound "random.levelup" at loop-player with pitch 0.5 volume 0.5
+#					execute console command "/freeze %loop-player% 3 seconds"
+#		stopEffect "%player%"
+#		loop all players:
+#			walk speed of loop-player is not 0.2
+#			set walk speed of loop-player to 0.2
+#	else if {Class::%player%} is "Pyro":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oBlast Burning" with subtitle "§bー 命尽きるまで消えない炎 ー" for 3 seconds
+#		drawComplexSpiral particle "lava", center player, id "%player%", clockwise true, scan true, radius 1, density 30, height 6, effectMod .05, start 0, visibleRange 30
+#		message "§c自身の場所から1秒おきに炎を放出します!"
+#		message "§cこの炎に当たった敵に3ダメージ+10秒炎上を付与します!"
+#		loop 200 times:
+#			add 1 to {_num}
+#			if {_num} is 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190 or 200:
+#				play raw sound "mob.ghast.fireball" at player with pitch 0.1 volume 1
+#				loop 10 times:
+#					shoot a falling fire from player at speed 2 upwards
+#					set metadata value "pyroult" of shot entity to "%player%"
+#					set metadata value "nochange" of shot entity to "true"
+#					drawDot count 1, particle "flame", center shot entity, visibleRange 32, keepFor 1 seconds
+#					push shot entity north at speed random number from -0.5 to 0.5
+#					push shot entity east at speed random number from -0.5 to 0.5
+#			loop all falling fires:
+#				metadata value "pyroult" of loop-falling fire is "%player%"
+#				loop all players in radius 1.5 around loop-falling fire:
+#					{team::%loop-player%} is not {team::%player%}
+#					make player damage loop-player by 6
+#					ignite loop-player for 10 seconds
+#					delete loop-falling fire
+#			wait a tick
+#		stopEffect "%player%"
+#	else if {Class::%player%} is "Summoner":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oInferno Monsters" with subtitle "§bー 地獄から呼び起こされたモンスター ー" for 3 seconds
+#		message "§c全ての敵のMobを自分のMobにします!"
+#		message "§cヒットした敵に8ダメージ,周辺の敵に5秒の炎上を付与します!"
+#		set {_p} to player
+#		loop all entities:
+#			loop-entity is not player, villager or ghast
+#			set {_d} to loop-entity's display name
+#			if {TrueTeam::%{_d}%} is not {TrueTeam::%{_p}%}:
+#				make a fake explosion at loop-entity
+#				set loop-entity's display name to "%{_p}%"
+#			delete {_d}
+#		loop 3 times:
+#			spawn a ghast at player
+#			set the spawned ghast's display name to "%player%"
+#			drawDot count 1, particle "lava", center spawned ghast, visibleRange 32, keepFor 10 seconds
+#		wait 10 seconds
+#		loop all ghasts:
+#			loop-ghast's display name is "%player%"
+#			delete loop-ghast
+	else if {Class::%player%} is "Archer":
+		kitUltMessage(player, "Impact Shot", "全てを貫く衝撃波の矢")
+		kitUltArcher(player)
+	else if {Class::%player%} is "Bomber":
+		kitUltMessage(player, "Nucleus Explosion", "絶大な威力を誇る破壊兵器")
+		kitUltBomber(player)
+	else if {Class::%player%} is "Knocker":
+		kitUltMessage(player, "Absolute Territory", "干渉を許さない絶対領域")
+		kitUltKnocker(player)
+#	else if {Class::%player%} is "Hunter":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oInsanity Turret" with subtitle "§bー 逃げ場を与えない狂気のタレット ー" for 3 seconds
+#		message "§c強力なタレットを設置します!"
+#		set {_loc} to location of block above player
+#		set {_sloc} to location of block 2 above player
+#		set {_playerloc} to type of block at player
+#		set {_playerabove} to type of block above player
+#		set block below {_loc} to nether bricks fence
+#		set block at {_loc} to floor head:1
+#		loop 40 times:
+#			wait 5 ticks
+#			loop all players:
+#				{TrueTeam::%loop-player%} is not {TrueTeam::%player%}
+#				set {_nam::%loop-player%} to loop-player
+#				set {_dis::%loop-player%} to distance between player and loop-player
+#			set {_high} to 10000
+#			loop {_dis::*}:
+#				loop-value-2 < {_high}
+#				set {_high} to loop-value-2
+#				set {_highplayer} to {_nam::%loop-index%}
+#			set {_to} to location of {_highplayer} to vector
+#			shoot an arrow from block at {_sloc} at speed 0.5 upwards
+#			play raw sound "mob.ghast.fireball" at location of {_sloc} with pitch 1.5 volume 1
+#			set shooter of shot arrow to player
+#			set metadata value "ult-turret" of shot arrow to "true"
+#			drawDot count 1, particle "flame", center shot arrow, visibleRange 100, keepFor 10 ticks
+#			set {_from} to location of shot arrow to vector
+#			set {_vector} to vector {_to} - {_from}
+#			set {_vector} to vector {_vector} normalized * 10
+#			set velocity of shot arrow to {_vector}
+#			delete {_highplayer}
+#			delete {_dis::*}
+#		set block below {_loc} to {_playerloc}
+#		set block at {_loc} to {_playerabove}
+#	else if {Class::%player%} is "Sniper":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oImpact Shot" with subtitle "§bー 全てを貫く衝撃矢 ー" for 3 seconds
+#		message "§c10秒以内に次に矢を放った際に全てを貫く衝撃波を発射します!"
+#		message "§cその衝撃波は100m先まで飛び,当たった敵に8ダメージを与えます!"
+#		set {Ult.%player%::Sniper} to true
+#		drawComplexSpiral particle "mobspell", RGB 148, 0, 211, center player, id "%player%-Ult", clockwise true, scan true, radius 1, density 30, height 6, effectMod .05, start 0, visibleRange 30
+#		wait 10 seconds
+#		if {Ult.%player%::Sniper} is set:
+#			delete {Ult.%player%::Sniper}
+#			stopEffect "%player%-Ult"
+#	else if {Class::%player%} is "Gunner":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oJet Bazooka" with subtitle "§bー 空から全てを吹き飛ばす兵器 ー" for 3 seconds
+#		message "§c若干空を浮遊することができます!"
+#		message "§c1秒おきに火弾を発射します!"
+#		message "§c直撃で10ダメージ,爆風で5ダメージを与えます!"
+#		apply jump boost 1 to player for 15 seconds
+#		loop 100 times:
+#			push player forward at speed 0.5
+#			if loop-number is 10, 20, 30, 40, 50, 60, 70, 80, 90 or 100:
+#				shoot a fireball from player at speed 2
+#				set metadata value "jetbazooka" of shot entity to "true"
+#				drawDot count 1, particle "flame", center shot entity, visibleRange 30, keepFor 20 ticks
+#			wait a tick
+#			set {_ol} to location of player
+#			while {_ok} is not set:
+#				set {_yl} to y-coordinate of {_ol}
+#				subtract 1 from {_yl}
+#				set y-coordinate of {_ol} to {_yl}
+#				if block at {_ol} is not air:
+#					set {_ok} to true
+#				else if y-coordinate of {_ol} <= 0:
+#					set {_ok} to true
+#			if player is sneaking:
+#				set {_hei} to 2
+#			else:
+#				set {_hei} to 5
+#			loop {_hei} times:
+#				add 1 to {_unum}
+#				set {_ulb} to location of block {_unum} above location of {_ol}
+#				drawDot count 1, particle "flame", center location of {_ulb}, visibleRange 30, keepFor 2 ticks
+#			set {_hi} to {_hei} + 1
+#			add {_hi} to y-coordinate of {_ol}
+#			set {_to} to location of player to vector
+#			set {_from} to location of {_ol} to vector
+#			set {_vector} to vector {_from} - {_to}
+#			if loop-number is 1:
+#				set {_vector} to vector {_vector} normalized * 1
+#			else:
+#				set {_vector} to vector {_vector} normalized * 0.5
+#			set velocity of player to {_vector}
+#			wait a tick
+#			delete {_ok}
+#			delete {_unum}
+#			delete {_dnum}
+	else if {Class::%player%} is "Assassin":
+		kitUltMessage(player, "Death Blow", "背後から訪れる死の一撃")
+		kitUltAssassin(player)
+	else if {Class::%player%} is "Ninja":
+		kitUltMessage(player, "Acrobatic Aggression", "超機動を極めた忍者")
+		kitUltNinja(player)
+	else if {Class::%player%} is "Thief":
+		kitUltMessage(player, "Heinous Larceny", "何もかも奪い去る極悪盗賊")
+		kitUltThief(player)
+#	else if {Class::%player%} is "Ambush":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oHidden Humanity" with subtitle "§bー 身を隠しすぎた伏兵 ー" for 3 seconds
+#		message "§c自身と周辺の味方に10秒の透明化を付与します!"
+#		message "§c透明化した味方が敵を殴ると,10秒の盲目を付与して透明化を解除します!"
+#		message "§c自身は,透明化が敵に解除されるまではこの効果が継続されます!!"
+#		set {Ult.%player%::Ambush} to true
+#		set {Stats.%player%::AmbushUlt} to true
+#		play raw sound "mob.wither.shoot" at the player with pitch 2 volume 0.5
+#		drawWarpRings style 0, particle "redstone", RGB 255, 255, 255, center player, id "%player%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
+#		set {Invisible::%player%} to true
+#		add player to {_list::*}
+#		hide player from all players
+#		loop all players in radius 10 around player:
+#			loop-player is not player
+#			if {TrueTeam::%loop-player%} is {TrueTeam::%player%}:
+#				message "§b§l§n透明化が付与されました!" to loop-player
+#				message "§9この透明化は敵を殴ると盲目を付与して消滅します!" to loop-player
+#				play raw sound "mob.wither.shoot" at the player with pitch 2 volume 0.5
+#				drawWarpRings style 0, particle "redstone", RGB 255, 255, 255, center loop-player, id "%loop-player%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
+#				set {Invisible::%loop-player%} to true
+#				set {Stats.%loop-player%::AmbushUlt} to true
+#				add loop-player to {_list::*}
+#				hide loop-player from all players
+#		wait 5 ticks
+#		loop {_list::*}:
+#			stopEffect "%loop-value%"
+#		wait 195 ticks
+#		delete {Ult.%player%::Ambush}
+#		loop {_list::*}:
+#			delete {Stats.%loop-value%::AmbushUlt}
+#			if {Invisible::%loop-value%} is true:
+#				reveal loop-value from all players
+#				delete {Invisible::%loop-value%}
+#				set action bar of loop-value to "§b§l透明化が解除されました!"
+#	else if {Class::%player%} is "Vampire":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oRed Moon" with subtitle "§bー 吸血鬼の支配する夜の時間 ー" for 3 seconds
+#		message "§c自身の体力を3,全員の体力を5に強制し,味方に耐性を付与します!"
+#		message "§c全員の体力回復を無効化し,自身より体力の高い敵からのダメージを無効化します!"
+#		message "§cBat ModeのSkillを強化します!"
+#		set {Ult.%player%::Vampire} to true
+#		set time to 00:00
+#		set player's health to 3
+#		loop all players:
+#			loop-player is not player
+#			{Class::%loop-player%} is set
+#			set loop-player's health to 5
+#			set {Ult.%loop-player%::HealCancel} to true
+#			if {TrueTeam::%loop-player%} is {TrueTeam::%player%}:
+#				apply resistance 1 to loop-player for 10 seconds
+#		wait 10 seconds
+#		delete {Ult.%player%::Vampire}
+#		loop all players:
+#			delete {Ult.%loop-player%::HealCancel}
+#	else if {Class::%player%} is "Teleporter":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oTransport Gate" with subtitle "§bー プレイヤーを運ぶゲート ー" for 3 seconds
+#		message "§c10回のみ使えるゲートを生成するアイテムを手に入れます!"
+#		message "§c右クリックでポイント1,2を決めて設置します!"
+#		set {Ult.%player%::Transport} to 0
+#		wait a tick
+#		give a nether quartz item named "§b§lTransport Gate" to player
+	else if {Class::%player%} is "Defender":
+		kitUltMessage(player, "Perfect Barrier", "一切の貫通を許さないバリア")
+		kitUltDefender(player)
+	else if {Class::%player%} is "Paladin":
+		kitUltMessage(player, "Mischievous Fairies", "イタズラ好きな妖精の加護")
+		kitUltPaladin(player)
+#	else if {Class::%player%} is "Reflector":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oMirror World" with subtitle "§bー 全てが反転してしまう世界 ー" for 3 seconds
+#		message "§c全てのプレイヤーのダメージを [10 - ダメージ量] に設定します!"
+#		message "§c周辺10mの味方のダメージが2以上なら2に,それ以外の味方は4以上なら4に設定します!"
+#		set {MirrorWorld} to player
+#		drawSphere style 1, particle "redstone", RGB 255, 255, 255, center player, id "%player%-Ult", radius 10, density 50, visibleRange 30
+#		wait 10 seconds
+#		stopEffect "%player%-Ult"
+#		if {MirrorWorld} is player:
+#			delete {MirrorWorld}
+#	else if {Class::%player%} is "Rich":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oNouveau Riche" with subtitle "§bー 金を持て余しすぎた大富豪 ー" for 3 seconds
+#		message "§c全てのドロップアイテムを金インゴットに変更します!"
+#		message "§c1秒おきに1~5個の金ブロックを周辺に投下します!"
+#		message "§cこの金ブロックを拾った味方及び自分を2回復+衝撃吸収 1を5秒付与します!"
+#		loop all dropped items:
+#			drawDot count 1, particle "happyvillager", center loop-dropped item, visibleRange 30, pulseDelay 0, keepFor 10 ticks
+#			set {_loc} to location of loop-dropped item
+#			delete loop-dropped item
+#			drop a golden ingot named "%player%" at {_loc}
+#			loop all dropped items in radius 1.5 around location of {_loc}:
+#				metadata value "delete" of loop-dropped item-2 is not set
+#				set metadata value "delete" of loop-dropped item-2 to "%player%"
+#			play raw sound "random.orb" at {_loc} with pitch 5 volume 0.1
+#		loop 10 times:
+#			set {_sb} to location of block 5 above player
+#			set {_y} to y-coordinate of {_sb}
+#			loop all blocks in radius 5 around {_sb}:
+#				y-coordinate of loop-block is {_y}
+#				add location of loop-block to {_gs::*}
+#			set {_ln} to a random integer between 1 and 3
+#			loop {_ln} times:
+#				set {_p} to a random location out of {_gs::*}
+#				remove {_p} from {_gs::*}
+#				drop a gold block named "%player%" at {_p}
+#				loop all dropped items in radius 1.5 around location of {_p}:
+#					metadata value "delete" of loop-dropped item is not set
+#					set metadata value "delete" of loop-dropped item to "%player%"
+#			play raw sound "random.orb" at {_p} with pitch 0.5 volume 1
+#			delete {_gs::*}
+#			wait a second
+#	else if {Class::%player%} is "Astronaut":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oDarkness Blackhole" with subtitle "§bー 全てを吸い込み消し飛ばす天体 ー" for 3 seconds
+#		message "§c強力なブラックホールを設置しました..."
+#		message "§c吸い込んだプレイヤーを消し飛ばします!"
+#		set {_bh} to location of block at player
+#		set {_to} to location of block at player to vector
+#		drawSphere style 1, particle "redstone", RGB 50, 0, 50, center {_bh}, id "%player%-Ult", radius 1, density 50, visibleRange 30
+#		loop 200 times:
+#			loop all players:
+#				{TrueTeam::%loop-player%} is not {TrueTeam::%player%}
+#				{ClassChose::%loop-player%} is true
+#				distance between loop-player and location of {_bh} <= 10
+#				set {_from} to location of loop-player to vector
+#				set {_vector} to vector {_to} - {_from}
+#				set {_vector} to vector {_vector} normalized * 0.1
+#				set velocity of loop-player to {_vector}
+#				set {_dis} to the distance between loop-player and {_bh}
+#				if {_dis} <= 0.5:
+#					set {_tp} to location of block 300 below {_bh}
+#					teleport loop-player to {_tp}
+#					set {LastKiller::%loop-player%} to player
+#			wait a tick
+#		stopEffect "%player%-Ult"
+#	else if {Class::%player%} is "Quaker":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oGlobal Diastrophism" with subtitle "§bー 天変地異が起こる大地震 ー" for 3 seconds
+#		message "§c1秒おきに周辺に大地震を起こし、地面に足がついている敵を吹き飛ばします!"
+#		message "§c吹き飛ばした敵に2ダメージを与えます!"
+#		loop 10 times:
+#			wait a second
+#			play raw sound "dig.stone" at player with pitch 1 volume 1
+#			loop all blocks in radius 10 around player:
+#				loop-block is air
+#				block below loop-block is not air
+#				set {_mat} to type of block below loop-block
+#				drawDot count 1, particle "blockcrack", material {_mat}, center location of loop-block, visibleRange 30
+#			loop all players in radius 10 around player:
+#				{TrueTeam::%loop-player%} is not {TrueTeam::%player%}
+#				{ClassChose::%loop-player%} is true
+#				set {_ma} to block 0.1 below loop-player
+#				if {_ma} is not air:
+#					push loop-player upwards at speed 1
+#					make player damage loop-player by 4
+#					drawDot count 3, particle "blockcrack", material {_ma}, center loop-player, visibleRange 30, keepFor 1 second
+	else if {Class::%player%} is "Healer":
+		kitUltMessage(player, "Angel Healing", "傷つく者を癒やす超回復")
+		kitUltHealer(player)
+	else if {Class::%player%} is "Engineer":
+		kitUltMessage(player, "Transport Lift", "二点を繋げる時空間装置")
+		kitUltEngineer(player)
+#	else if {Class::%player%} is "Bard":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oCheerful Music" with subtitle "§bー 皆を勇気付ける快い音楽 ー" for 3 seconds
+#		message "§c自身と周辺の味方に攻撃力増加,耐性 IIIを付与します!"
+#		message "§c付与した味方の最大体力を一時的にブーストさせます!"
+#		set {Ult.%player%::Bard} to true
+#		drawWarpRings style 0, particle "redstone", RGB 255, 255, 150, center player, id "%player%", scan true, height 50, radius 10, ringCount 80, ringDensity 150, visibleRange 32
+#		loop all players in radius 10 around player:
+#			{TrueTeam::%loop-player%} is {TrueTeam::%player%}
+#			{CLS::%loop-player%} is not "BSK"
+#			add player to {supporter.%loop-player%::*}
+#			apply resistance 1 to loop-player for 10 seconds
+#			add 10 to max health of loop-player
+#			heal loop-player by 10 hearts
+#			add loop-player to {_hb::*}
+#			set {Stats.%loop-player%::Bard's Ult} to true
+#		loop 10 times:
+#			wait a second
+#			loop {_hb::*}:
+#				{Stats.%loop-value-2%::Bard's Ult} is true
+#				subtract 1 from max health of loop-value-2
+#			if loop-number is 1:
+#				stopEffect "%player%"
+#		delete {Ult.%player%::Bard}
+#	else if {Class::%player%} is "Farmer":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oBounty Rain" with subtitle "§bー 作物を実らせる恵みの雨 ー" for 3 seconds
+#		message "§c自分周辺に雨を降らせ,作物を植えます!"
+#		message "§c雨に触れた敵に毒 IIIと吸収効果を10秒付与します!"
+#		message "§c作物の育つスピードが一瞬になります!"
+#		set {Ult.%player%::Farmer} to true
+#		set slot 8 of player to 10 melon seeds named "§8Seeds"
+#		set weather to rainy
+#		loop 200 times:
+#			set {_sky} to location of block 10 above player
+#			loop all blocks in radius 5 around {_sky}:
+#				y-coordinate of loop-block is y-coordinate of {_sky}
+#				loop-block is air
+#				add location of loop-block to {_rain::*}
+#			loop {_rain::*}:
+#				chance of 1%:
+#					drawDot count 1, particle "cloud", center loop-value-2, visibleRange 32
+#					shoot a snowball from block at loop-value-2 at speed 3 downward
+#					set shooter of shot snowball to player
+#					set metadata value "farmerult" of shot snowball to "true"
+#					drawDot count 1, particle "redstone", XYZ 0, 0, 255, center shot entity, visibleRange 20, keepFor 0.5 seconds
+#			delete {_rain::*}
+#			wait 1 ticks
+#		delete {Ult.%player%::Farmer}
+#		set weather to clear
+#	else if {Class::%player%} is "Bishop":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oHoly Wrath" with subtitle "§bー 神の御加護があらんことを ー" for 3 seconds
+#		message "§c空が飛べるようになり,味方が常時復活能力を持ちます!"
+#		message "§c1秒おきに周辺の味方に1回復+攻撃力上昇 IIを付与します!"
+#		message "§c周辺の敵に1ダメージ+弱体化 IIを付与します!"
+#		set {Ult.%player%::Bishop} to true
+#		allow fly for player
+#		drawWings style 6, particle1 "redstone", RGB 255, 255, 255, particle2 "redstone", RGB2 179, 255, 255, particle3 "mobspell", RGB3 255, 0, 0, center player, id "%player%", angle 110, height 0, space 0.2, visibleRange 30, tps 0, second 3
+#		loop all players:
+#			{TrueTeam::%loop-player%} is {TrueTeam::%player%}
+#			loop-player is not player
+#			add player to {supporter.%loop-player%::*}
+#			{CLS::%loop-player%} is not "BSK"
+#			set {Ult.%loop-player%::Bishop} to true
+#			message "§d復活能力を付与してもらった!" to loop-player
+#			add loop-player to {_bu::*}
+#			drawComplexSpiral particle "mobspell", RGB 255, 105, 180, center loop-player, id "%loop-player%", clockwise true, scan true, radius 1, density 50, height 6, effectMod .05, start 0, visibleRange 30
+#		loop 10 times:
+#			loop all players in radius 10 around player:
+#				loop-player is not player
+#				if {TrueTeam::%loop-player%} is {TrueTeam::%player%}:
+#					if {CLS::%loop-player%} is not "BSK":
+#						heal loop-player by 1 heart
+#						apply strength 2 to loop-player for 1 second
+#						drawDot count 1, particle "mobspell", RGB 255, 255, 0, center loop-player, visibleRange 30, keepFor 1 second
+#						play raw sound "portal.travel" at loop-player with pitch 2 volume 0.5
+#				else:
+#					set {LastKiller::%loop-player%} to player
+#					add player to {damager.%loop-player%::*}
+#					subtract 1 from loop-player's health
+#					strike fake fake lightning at loop-player
+#					play raw sound "ambient.weather.thunder" at loop-player with pitch 0.5 volume 1
+#			wait a second
+#		stopEffect "%player%"
+#		disallow fly for player
+#		delete {Ult.%player%::Bishop}
+#		loop {_bu::*}:
+#			stopEffect "%loop-value%"
+#			delete {Ult.%loop-value%::Bishop}
+#	else if {Class::%player%} is "Shaman":
+#		loop all players:
+#			set {_ok} to true
+#			if {_silent} is true:
+#				if loop-player is not player:
+#					delete {_ok}
+#			{_ok} is true
+#			send loop-player title "<%{TrueTeam::%player%}%>§l§oEyesight Beam" with subtitle "§bー 夢にまで見た目からビーム ー" for 3 seconds
+#		message "§c射程100mの目からビームを発射します!"
+#		message "§c当たったプレイヤーに2ダメージ、wither Iを1秒付与します!"
+#		loop 200 times:
+#			set {_m} to location of player
+#			add 1 to y-coordinate of {_m}
+#			loop 100 times:
+#				add 1 to {_ln}
+#				set {_tb} to location of block {_ln} blocks in front of {_m}
+#				if {_ln} is 1:
+#					loop all blocks in radius 1 around location of {_tb}:
+#						drawDot count 1, particle "redstone", XYZ 150, 0, 0, center location of loop-block, visibleRange 10
+#				else:
+#					drawDot count 1, particle "redstone", XYZ 0, 0, 0, center location of {_tb}, visibleRange 10
+#				loop all players in radius 1 around location of {_tb}:
+#					{TrueTeam::%loop-player%} is not {TrueTeam::%player%}
+#					set {LastKiller::%loop-player%} to player
+#					add player to {damager.%loop-player%::*}
+#					damage loop-player by 2 hearts
+#					apply wither 1 to loop-player for 1 seconds
+#					play raw sound "mob.bat.hurt" at player with pitch 1 volume 0.1
+#			delete {_ln}
+#			wait a tick
+	wait 10 seconds
+	delete {Ulting::%player%}
+
+#on damage of player:
+# # Lumberjack's Ult
+#	if {Ult.%victim%::Lumberjack} is true:
+#		cancel event
+# # Iceman's Ult
+#	if {Ult.%attacker%::Iceman} is true:
+#		cancel event
+# # Pyro's Ult
+#	if {Ult.%attacker%::Pyro} is false:
+#		ignite victim for 5 seconds
+#	if {Ult.%victim%::Fire} is true:
+#		damage was caused by fire, burning or lava
+#		set damage to 1.1
+#	if {Ult.%attacker%::Fire} is true:
+#		{Ult.%victim%::Pyro} is true
+#		cancel event
+# # Gunner's Ult
+#	if damage was caused by projectile:
+#		projectile is a fireball
+#		metadata value "jetbazooka" of projectile is "true"
+#		set damage to 5
+# # Thief's Ult
+#	if {Ult.%victim%::Thief} is set:
+#		{team::%victim%} is {team::%attacker%}
+#		cancel event
+# # Vampire's Ult
+#	if {Ult.%victim%::Vampire} is true:
+#		set {_a} to attacker's health
+#		set {_v} to victim's health
+#		if {_a} > {_v}:
+#			cancel event
+#
+# # Reflector's Ult
+#on damage of player:
+#	{MirrorWorld} is set
+#	attacker exists
+#	set {_damage} to damage
+#	set {_mirror} to 10 - {_damage}
+#	if {_mirror} < 0:
+#		set {_mirror} to 0
+#	if {TrueTeam::%victim%} is {TrueTeam::%{MirrorWorld}%}:
+#		loop all players in radius 10 around victim:
+#			loop-player is {MirrorWorld}
+#			set {_true} to true
+#		if {_true} is true:
+#			if {_mirror} > 2:
+#				set {_mirror} to 2
+#		else:
+#			if {_mirror} > 4:
+#				set {_mirror} to 4
+#	set damage to {_mirror}
+#
+# # Hunter's Ult
+#on damage of player:
+#	damage was caused by projectile
+#	projectile is an arrow
+#	metadata value "ult-turret" of projectile is "true"
+#	set damage to 2
+#
+#on damage of player:
+# # Berserker's Ult
+#	if {Ult.%attacker%::Berserker} is set:
+#		set {_n} to now
+#		set {Ult.%attacker%::BerserkTime} to {_n}
+#		set {_d} to 0
+#		loop all players in radius 10 around attacker:
+#			loop-player is not attacker
+#			add 1 to {_d}
+#			if loop-player is not victim:
+#				damage loop-player by 3 hearts
+#		set damage to {_d} + {Ult.%attacker%::Berserker}
+#		add 1 to {Ult.%attacker%::Berserker}
+#		play raw sound "mob.blaze.hit" at victim with pitch 0.5 volume 1
+#		set action bar of attacker to "§cコンボ!§6: §4§l%{Ult.%attacker%::Berserker}%"
+#		wait a second
+#		if {Ult.%attacker%::BerserkTime} is {_n}:
+#			set {Ult.%attacker%::Berserker} to 0
+#
+#on death:
+#	loop all players:
+#		{Ult.%loop-player%::Necromancer} is true
+#		{CLS::%loop-player%} is "NCR"
+#		add 3 to {Necromance::%loop-player%}
+#
+# # Werewolf's Ult
+#on damage of wolf:
+#	set {_d} to victim's display name
+#	{Ult.%{_d}%::Werewolf} is true
+#	cancel event
+#
+# # Ambush's Ult
+#on damage of player:
+#	if {Stats.%attacker%::AmbushUlt} is true:
+#		if {Invisible::%attacker%} is true:
+#			if victim does not have blindness:
+#				drawWarpRings style 0, particle "redstone", RGB 0, 0, 0, center victim, id "%victim%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
+#				apply blindness 1 to victim for 10 seconds
+#				play raw sound "mob.endermen.death" at victim with pitch 0.5 volume 1
+#				message "§8§l盲目を付与しました!" to attacker
+#				message "§0§l光が失われてしまった!" to victim
+#				if {Ult.%attacker%::Ambush} is not set:
+#					delete {Stats.%attacker%::AmbushUlt}
+#					if {Invisible::%attacker%} is true:
+#						reveal attacker from all players
+#						delete {Invisible::%attacker%}
+#						set action bar of attacker to "§b§l透明化が解除されました!"
+#				wait 5 ticks
+#				stopEffect "%victim%"
+#
+# # Werewolf's Ult
+#on rightclick holding a blaze powder:
+#	name of player's tool is "§5§lSavage Bite"
+#	if {CT.%player%::%name of player's tool%} is not set:
+#		set {CT.%player%::%name of player's tool%} to 1
+#		play raw sound "mob.wolf.bark" at player with pitch 0.2 volume 1
+#		drawDot count 1, particle "cloud", center player, visibleRange 30, keepFor 0.5 second
+#		loop 10 times:
+#			push player forward at speed 0.15
+#			loop all players in radius 3 around player:
+#				{TrueTeam::%loop-player%} is not {TrueTeam::%player%}
+#				{_ed.%loop-player%} is not set
+#				set {_ed.%loop-player%} to true
+#				make player damage loop-player by 6
+#				chance of 50%:
+#					execute console command "/blood %loop-player%"
+#			wait a tick
+#	else:
+#		set action bar of player to "§c§lクールタイムが終わっていません!"
+#
+# # Summoner's Ult
+#on damage:
+#	attacker is a ghast
+#	attacker's display name is set
+#	set damage to 8
+#
+#on damage of ghasts:
+#	victim's display name is set
+#	cancel event
+#
+#on projectile hit:
+# # Summoner's Ult
+#	if shooter is ghast:
+#		set {_d} to shooter's display name
+#		loop all players in radius 10 around projectile:
+#			{TrueTeam::%loop-player%} is not {TrueTeam::%shooter%}
+#			set {LastKiller::%loop-player%} to shooter
+#			add shooter to {damager.%loop-player%::*}
+#			ignite loop-player for 5 seconds
+# # Gunner's Ult
+#	if projectile is a fireball:
+#		metadata value "jetbazooka" of projectile is "true"
+#		loop all players in radius 10 around projectile:
+#			{TrueTeam::%loop-player%} is not {TrueTeam::%shooter%}
+#			{Class::%loop-player%} is set
+#			make shooter damage loop-player by 6
+# # Farmer's Ult
+#	if {Ult.%shooter%::Farmer} is true:
+#		projectile is a snowball
+#		metadata value "farmerult" of projectile is "true"
+#		set {_p} to a random number between 0 and 2
+#		play raw sound "random.splash" at projectile with pitch {_p} volume 0.1
+#		loop all blocks in radius 1 around projectile:
+#			loop-block is air
+#			block below loop-block is not air, crops, carrot plant or potato plant
+#			add location of loop-block to {Block.%shooter%::*}
+#			set {_ct} to a random integer between 1 and 3
+#			if {_ct} is 1:
+#				set loop-block to crops:7
+#			else if {_ct} is 2:
+#				set loop-block to potato plant:7
+#			else if {_ct} is 3:
+#				set loop-block to carrot plant:7
+#			drawDot count 1, particle "happyvillager", center location of loop-block, visibleRange 30
+#
+#on damage of player:
+#	projectile is a snowball
+#	metadata value "farmerult" of projectile is "true"
+#	set damage to 1
+#	apply poison 3 to victim for 5 seconds
+#	execute console command "/drain %victim% %attacker% 5 seconds"
+#
+# # Gunner's Ult
+#on rightclick holding a diamond hoe:
+#	name of player's tool is "§4§lRocket Launcher"
+#	if {CT.%player%::%name of player's tool%} is not set:
+#		set {CT.%player%::%name of player's tool%} to 1
+#		shoot a fireball from player at speed 1.5
+#		drawDot count 1, particle "lava", center shot projectile, visibleRange 30, keepFor 20 ticks
+#	else:
+#		set action bar of player to "§c§lクールタイムが終わっていません!"
+#
+# # Quaker's Ult:
+# #	if {Ult.%player%::Quaker} is true:
+# #		player's tool is not nether star named "§4§lUltimate Skill"
+# #		set {_tb} to target block
+# #		{_tb} is not air, lava or water
+# #		set {_ttb} to type of target block
+# #		set {_tl} to location of block above {_tb}
+# #		set {_rn} to a random integer between 0 and 2
+# #		# ここから地形操作
+# #		set {_ln} to 3 + {_rn}
+# #		set {_bn} to 0
+# #		loop {_ln} times:
+# #			set {_loc} to location of block {_bn} above {_tl}
+# #			set {_y} to y-coordinate of {_loc}
+# #			loop all blocks in radius 3 around location of {_loc}:
+# #				y-coordinate of loop-block is {_y}
+# #				loop-block is air
+# #				delete {_dm}
+# #				loop all players:
+# #					loop {Dig.%loop-value-3%::*}:
+# #						loop-value-4 is location of loop-block
+# #						set {_dm} to true
+# #				{_dm} is not set
+# #				set {_lb::%loop-block's location%} to location of loop-block
+# #				set loop-block to {_ttb}
+# #				add location of loop-block to {Block.%player%::*}
+# #			add 1 to {_bn}
+# #			play raw sound "dig.grass" at location of {_tl} with pitch 1 volume 0.3
+# #			wait a tick
+# #		set {_rn} to a random integer between 0 and 2
+# #		set {_ln} to 3 + {_rn}
+# #		loop {_ln} times:
+# #			set {_loc} to location of block {_bn} above {_tl}
+# #			set {_y} to y-coordinate of {_loc}
+# #			loop all blocks in radius 2 around location of {_loc}:
+# #				y-coordinate of loop-block is {_y}
+# #				loop-block is air
+# #				delete {_dm}
+# #				loop all players:
+# #					loop {Dig.%loop-value-3%::*}:
+# #						loop-value-4 is location of loop-block
+# #						set {_dm} to true
+# #				{_dm} is not set
+# #				set {_lb::%loop-block's location%} to location of loop-block
+# #				set loop-block to {_ttb}
+# #				add location of loop-block to {Block.%player%::*}
+# #			add 1 to {_bn}
+# #			play raw sound "dig.grass" at location of {_tl} with pitch 1 volume 0.3
+# #			wait a tick
+# #		set {_rn} to a random integer between 0 and 2
+# #		set {_ln} to 3 + {_rn}
+# #		loop {_ln} times:
+# #			set {_loc} to location of block {_bn} above {_tl}
+# #			set {_y} to y-coordinate of {_loc}
+# #			loop all blocks in radius 1 around location of {_loc}:
+# #				y-coordinate of loop-block is {_y}
+# #				loop-block is air
+# #				delete {_dm}
+# #				loop all players:
+# #					loop {Dig.%loop-value-3%::*}:
+# #						loop-value-4 is location of loop-block
+# #						set {_dm} to true
+# #				{_dm} is not set
+# #				set {_lb::%loop-block's location%} to location of loop-block
+# #				set loop-block to {_ttb}
+# #				add location of loop-block to {Block.%player%::*}
+# #			add 1 to {_bn}
+# #			play raw sound "dig.grass" at location of {_tl} with pitch 1 volume 0.3
+# #			wait a tick
+# #		wait 5 seconds
+# #		loop {Block.%player%::*}:
+# #			{_lb::%loop-value%} is set
+# #			set block at loop-value to air
+# #			remove loop-value from {Block.%player%::*}
+#
+# # Vampire's Ult
+#on heal:
+#	{Ult.%player%::HealCancel} is true
+#	cancel event
+#
+#on pick up gold block:
+#	set {_n} to name of item
+#	if {TrueTeam::%{_n}%} is {TrueTeam::%player%}:
+#		heal player by 2 hearts
+#		apply absorption 1 to player for 5 seconds
+#		wait a tick
+#		remove all gold block named "%name of item%" from the player
+#	else:
+#		cancel event
+
+command /giveult <player=%player%>:
+	trigger:
+		give a nether star named "§a§lUltimate Skill" to arg 1
+
+function kitUltExp(player: player):
+	wait 2 ticks
+	set {_l} to 0.99
+	loop 99 times:
+		{Ulting::%{_player}%} is true
+		set {_player}'s level progress to {_l}
+		set {_ll} to {_l} * 100
+		set {_player}'s level to {_ll}
+		subtract 0.01 from {_l}
+		wait 2 ticks
+
+function kitUltMessage(player: player, title: text, sub: text):
+	loop all players:
+		delete {_ok}
+		if {_player} is in "Kit-SkillCheck":
+			if loop-player is {_player}:
+				set {_ok} to true
+		else if {Join::%loop-player%} is "Kit":
+			set {_ok} to true
+		if {_ok} is true:
+			set {_color} to kitTeamColor({TrueTeam::%{_player}%})
+			message formatted "%{_color}%§l%{_player}% §cが §4§lUltimate Skill §cを発動しました!" to loop-player
+			send title "%{_color}%§l§o%{_title}%" with subtitle "§b─ %{_sub}% §b─" to loop-player for 3 seconds

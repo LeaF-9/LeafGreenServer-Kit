@@ -1,0 +1,471 @@
+options:
+	prefix: §a[§bRanking§a]
+
+#command /setranking <text> <text> <text> <number>:
+#	permission: sk.admin
+#	usage: /setranking <sign or head> <Kill..etc> <Class...etc> <number>
+#	trigger:
+#		if arg 1 is "sign":
+#			if target block is sign:
+#				set {Ranking-%arg 1%.%arg 2%_%arg 3%::%arg 4%} to location of target block
+#				message "{@prefix} §e目先のブロックを§b%arg 2%:§c%arg 3% §a%arg 4%位§eに設定しました"
+#			else:
+#				message "{@prefix} §c目先のブロックが看板ではありません"
+
+#command /deleteranking:
+#	permission: sk.admin
+#	trigger:
+#		loop 6 times:
+#			if loop-number-1 is 1:
+#				set {_type} to "Kill"
+#			else if loop-number-1 is 2:
+#				set {_type} to "KD"
+#			else if loop-number-1 is 3:
+#				set {_type} to "Win"
+#			else if loop-number-1 is 4:
+#				set {_type} to "Death"
+#			else if loop-number-1 is 5:
+#				set {_type} to "Assist"
+#			else if loop-number-1 is 6:
+#				set {_type} to "Count"
+#			delete {Ranking-sign.%{_type}%_week::*}
+#			delete {Ranking-sign.%{_type}%_all::*}
+#		loop {Classes::*}:
+#			loop 6 times:
+#				if loop-number-1 is 1:
+#					set {_type} to "Kill"
+#				else if loop-number-1 is 2:
+#					set {_type} to "KD"
+#				else if loop-number-1 is 3:
+#					set {_type} to "Win"
+#				else if loop-number-1 is 4:
+#					set {_type} to "Death"
+#				else if loop-number-1 is 5:
+#					set {_type} to "Assist"
+#				else if loop-number-1 is 6:
+#					set {_type} to "Count"
+#				delete {Ranking-sign.%{_type}%_%loop-value-1%::*}
+
+command /changekitranking <text>:
+	permission: sk.admin
+	trigger:
+		if {Classes::%arg 1%} is set:
+			if {TypeKitRanking::%arg 1%} is not set:
+				set {TypeKitRanking::%arg 1%} to "Assist"
+			if {TypeKitRanking::%arg 1%} is "Assist":
+				set {TypeKitRanking::%arg 1%} to "Kill"
+				execute console command "/hd setline r_%arg 1% 7 &4&lKill &7Ranking"
+				execute console command "/updatekitrank %arg 1% Kill"
+			else if {TypeKitRanking::%arg 1%} is "Kill":
+				set {TypeKitRanking::%arg 1%} to "KD"
+				execute console command "/hd setline r_%arg 1% 7 &6&lK/D &7Ranking"
+				execute console command "/updatekitrank %arg 1% KD"
+			else if {TypeKitRanking::%arg 1%} is "KD":
+				set {TypeKitRanking::%arg 1%} to "Count"
+				execute console command "/hd setline r_%arg 1% 7 &2&lCount &7Ranking"
+				execute console command "/updatekitrank %arg 1% Count"
+			else if {TypeKitRanking::%arg 1%} is "Count":
+				set {TypeKitRanking::%arg 1%} to "Death"
+				execute console command "/hd setline r_%arg 1% 7 &1&lDeath &7Ranking"
+				execute console command "/updatekitrank %arg 1% Death"
+			else if {TypeKitRanking::%arg 1%} is "Death":
+				set {TypeKitRanking::%arg 1%} to "Assist"
+				execute console command "/hd setline r_%arg 1% 7 &5&lAssist &7Ranking"
+				execute console command "/updatekitrank %arg 1% Assist"
+
+command /updatekitrank <text> <text>:
+	permission: sk.admin
+	trigger:
+		set {_type} to arg 2
+		set {_conf} to arg 1
+		loop {Kit-%{_type}%.%{_conf}%::*}:
+			{BAN::%loop-index%} is not set
+			if {_type} is "KD":
+				if {Kit-Death.%{_conf}%::%loop-index%} >= 10:
+					set {_list::%loop-index%} to loop-value
+			else:
+				set {_list::%loop-index%} to loop-value
+		set {_high} to 0
+		loop 5 times:
+			set {_num} to loop-number
+			set {_hdnum} to {_num} + 1
+			loop {_list::*}:
+				loop-value-2 > {_high}
+				{UUID::%loop-index%} is set
+				set {_high} to loop-value-2
+				set {_highplayer} to loop-index
+			if {_high} is 0:
+				delete {_high}
+			execute console command "/hd setline r_%{_conf}% %{_hdnum}% &a%{_num}%&e. &f&l%{UUID::%{_highplayer}%}% &7 - &b%{_high}%"
+			set {_high} to 0
+			delete {_list::%{_highplayer}%}
+			delete {_highplayer}
+			wait 5 ticks
+
+function rankingChange(game: text, stats: text):
+	if {_game} is "Kit":
+		if {_stats} is "kill":
+			set {_dis} to "&4&lKill"
+		else if {_stats} is "death":
+			set {_dis} to "&1&lDeath"
+		else if {_stats} is "kd":
+			set {_dis} to "&6&lK/D"
+		else if {_stats} is "win":
+			set {_dis} to "&2&lWin"
+		else if {_stats} is "assist":
+			set {_dis} to "&5&lAssist"
+		if {Kit-TypeRanking::%{_stats}%} is not set:
+			set {Kit-TypeRanking::%{_stats}%} to "lifetime"
+		if {Kit-TypeRanking::%{_stats}%} is "lifetime":
+			set {Kit-TypeRanking::%{_stats}%} to "weekly"
+			execute console command "/hd setline kit-ranking-%{_stats}% 1 &bWeekly %{_dis}% &eTop 10"
+			execute console command "/hd setline kit-ranking-%{_stats}% 12 &6&lWeekly &b- &8Monthly &b- &8Lifetime"
+			rankingUpdate("Kit", {_stats}, "weekly")
+		else if {Kit-TypeRanking::%{_stats}%} is "weekly":
+			set {Kit-TypeRanking::%{_stats}%} to "monthly"
+			execute console command "/hd setline kit-ranking-%{_stats}% 1 &aMonthly %{_dis}% &eTop 10"
+			execute console command "/hd setline kit-ranking-%{_stats}% 12 &8Weekly &b- &6&lMonthly &b- &8Lifetime"
+			rankingUpdate("Kit", {_stats}, "monthly")
+		else if {Kit-TypeRanking::%{_stats}%} is "monthly":
+			set {Kit-TypeRanking::%{_stats}%} to "lifetime"
+			execute console command "/hd setline kit-ranking-%{_stats}% 1 &dLifetime %{_dis}% &eTop 10"
+			execute console command "/hd setline kit-ranking-%{_stats}% 12 &8Weekly &b- &8Monthly &b- &6&lLifeTime"
+			rankingUpdate("Kit", {_stats}, "lifetime")
+
+function rankingUpdate(game: text, stats: text, conf: text):
+	if {_conf} is "weekly":
+		set {_time} to "week"
+	if {_conf} is "monthly":
+		set {_time} to "month"
+	if {_conf} is "lifetime":
+		set {_time} to "all"
+	loop {%{_game}%-%{_stats}%.%{_time}%::*}:
+		{BAN::%loop-index%} is not set
+		if {_stats} is "KD":
+			if {_time} is "all":
+				if {%{_game}%-Death.%{_time}%::%loop-index%} >= 100:
+					set {_list::%loop-index%} to loop-value
+			else if {_time} is "month":
+				if {%{_game}%-Death.%{_time}%::%loop-index%} >= 50:
+					set {_list::%loop-index%} to loop-value
+			else:
+				if {%{_game}%-Death.%{_time}%::%loop-index%} >= 10:
+					set {_list::%loop-index%} to loop-value
+		else:
+			set {_list::%loop-index%} to loop-value
+	set {_high} to 0
+	loop 10 times:
+		set {_num} to loop-number
+		set {_hdnum} to {_num} + 1
+		loop {_list::*}:
+			loop-value-2 > {_high}
+			{UUID::%loop-index%} is set
+			set {_high} to loop-value-2
+			set {_highplayer} to loop-index
+		if {_high} is 0:
+			delete {_high}
+		execute console command "/hd setline kit-ranking-%{_stats}% %{_hdnum}% &a%{_num}%&e. &f&l%{UUID::%{_highplayer}%}% &7 - &b%{_high}%"
+		set {_high} to 0
+		delete {_list::%{_highplayer}%}
+		delete {_highplayer}
+		wait 5 ticks
+
+command /ranking <text> <text> <text>:
+	usage: /ranking <arg> <game> <stats>
+	permission: sk.admin
+	trigger:
+		if arg 1 is "change":
+			rankingChange(arg 2, arg 3)
+
+#command /updaterankop <text> <text> <text>:
+#	usage: /updateranktop <kill/death> <time/type> <game>
+#	permission: sk.admin
+#	trigger:
+#		set {_type} to arg 1
+#		set {_conf} to arg 2
+#		loop {%arg 3%-%{_type}%.%{_conf}%::*}:
+#			set {_list::%loop-index%} to loop-value
+#		set {_high} to 0
+#		loop 10 times:
+#			set {_num} to loop-number
+#			set {_hdnum} to {_num} + 1
+#			loop {_list::*}:
+#				loop-value-2 > {_high}
+#				{UUID::%loop-index%} is set
+#				set {_high} to loop-value-2
+#				set {_highplayer} to loop-index
+#			if {_high} is 0:
+#				delete {_high}
+#			execute console command "/hd setline ranking-%{_conf}% %{_hdnum}% &a%{_num}%&e. &f&l%{UUID::%{_highplayer}%}% &7 - &b%{_high}%"
+#			set {_high} to 0
+#			delete {_list::%{_highplayer}%}
+#			delete {_highplayer}
+
+command /setBaseDate <text> <number> <number> <number>:
+	usage: /setBaseDate <week/month> <year-num> <month-num> <day-num>
+	permission: sk.admin
+	trigger:
+		set {BaseDate.%arg 1%::base} to date(arg 2, arg 3, arg 4)
+
+function checkDate():
+	set {_now} to now
+	set {_base.week} to {BaseDate.week::base}
+	set {_base.month} to {BaseDate.month::base}
+	set {_unix.now} to unix timestamp of {_now}
+	set {_unix.week} to unix timestamp of {_base.week}
+	set {_dates.now::*} to "%{_now}%" split at "/"
+	set {_year.now} to {_dates.now::1}
+	set {_month.now} to {_dates.now::2}
+	set {_dates.month::*} to "%{_base.month}%" split at "/"
+	set {_year.month} to {_dates.month::1}
+	set {_month.month} to {_dates.month::2}
+# Week 更新
+	set {_dif.week} to difference between {_unix.week} and {_unix.now}
+	if {_dif.week} > 604800:
+		add 1 week to {BaseDate.week::base}
+# Month 更新
+	if {_month.now} is not {_month.month}:
+		set {_yearnum} to {_year.month} parsed as number
+		if {_month.month} is "12":
+			set {_monthnum} to 1
+			add 1 to {_yearnum}
+		else:
+			set {_monthnum} to {_month.month} parsed as number
+			set {_monthnum} to {_monthnum} + 1
+		set {BaseDate.month::base} to date({_yearnum}, {_monthnum}, 1)
+
+function checkWeeking(time: date) :: boolean:
+	set {_base} to {BaseDate.week::base}
+	set {_unix.time} to unix timestamp of {_time}
+	set {_unix.base} to unix timestamp of {_base}
+	set {_dif} to {_unix.time} - {_unix.base}
+	if {_dif} >= 0:
+		return true
+	else:
+		return false
+
+function checkMonthing(time: date) :: boolean:
+	set {_base} to {BaseDate.month::base}
+	set {_dates.time::*} to "%{_time}%" split at "/"
+	set {_year.time} to {_dates.now::1}
+	set {_month.time} to {_dates.now::2}
+	set {_dates.month::*} to "%{_base}%" split at "/"
+	set {_year.month} to {_dates.month::1}
+	set {_month.month} to {_dates.month::2}
+	if {_month.time} is {_month.month}:
+		if {_year.time} is {_year.month}:
+			return true
+		else:
+			return false
+	else:
+		return false
+
+
+function rankingEnding():
+	checkDate()
+	kitClearStats()
+# Kills / Deaths
+	set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Kills"
+	set {_ln.kill} to size of {_files::*}
+	loop {_ln.kill} times:
+		set {_id} to loop-number
+		load yml "plugins/skript-yaml/Kit Kills/%{_id}%.yml" as "kill.read.%{_id}%"
+		set {_uuid.killer} to yml value "killer-player" from "kill.read.%{_id}%"
+		set {_kit.killer} to yml value "killer-kit" from "kill.read.%{_id}%"
+		set {_uuid.victim} to yml value "victim-player" from "kill.read.%{_id}%"
+		set {_kit.victim} to yml value "victim-kit" from "kill.read.%{_id}%"
+		set {_time} to yml value "time" from "kill.read.%{_id}%"
+		unload yml "kill.read.%{_id}%"
+#	All / Kit
+		add 1 to {Kit-Kill.all::%{_uuid.killer}%}
+		add 1 to {Kit-Kill.%{_kit.killer}%::%{_uuid.killer}%}
+		add 1 to {Kit-Death.all::%{_uuid.victim}%}
+		add 1 to {Kit-Death.%{_kit.victim}%::%{_uuid.victim}%}
+#	Month
+		if checkMonthing({_time}) is true:
+			add 1 to {Kit-Kill.month::%{_uuid.killer}%}
+			add 1 to {Kit-Death.month::%{_uuid.victim}%}
+#	Week
+		if checkWeeking({_time}) is true:
+			add 1 to {Kit-Kill.week::%{_uuid.killer}%}
+			add 1 to {Kit-Death.week::%{_uuid.victim}%}
+# KDs
+	load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "classes"
+	set {_kits::*} to yml list "Classes" from "classes"
+	unload yml "classes"
+	loop all offline players:
+		set {_uuid} to UUID of loop-offline player
+#	All
+		set {_kd.all} to {Kit-Kill.all::%{_uuid}%} / {Kit-Death.all::%{_uuid}%}
+		set {Kit-KD.all::%{_uuid}%} to {_kd.all} if {_kd.all} is set
+#	Month
+		set {_kd.month} to {Kit-Kill.month::%{_uuid}%} / {Kit-Death.month::%{_uuid}%}
+		set {Kit-KD.month::%{_uuid}%} to {_kd.month} if {_kd.month} is set
+#	Week
+		set {_kd.week} to {Kit-Kill.week::%{_uuid}%} / {Kit-Death.week::%{_uuid}%}
+		set {Kit-KD.week::%{_uuid}%} to {_kd.week} if {_kd.week} is set
+#	Kit
+		loop {_kits::*}:
+			set {_kit} to loop-value-2
+			set {_kd.%{_kit}%} to {Kit-Kill.%{_kit}%::%{_uuid}%} / {Kit-Death.%{_kit}%::%{_uuid}%}
+			set {Kit-KD.%{_kit}%::%{_uuid}%} to {_kd.%{_kit}%} if {_kd.%{_kit}%} is set
+# Assists
+	set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Assists"
+	set {_ln.assist} to size of {_files::*}
+	loop {_ln.assist} times:
+		set {_id} to loop-number
+		load yml "plugins/skript-yaml/Kit Assists/%{_id}%.yml" as "assist.read.%{_id}%"
+		set {_killid.assist} to yml value "kill-id" from "assist.read.%{_id}%"
+		set {_uuid.assist} to yml value "assist-player" from "assist.read.%{_id}%"
+		set {_kit.assist} to yml value "assist-kit" from "assist.read.%{_id}%"
+		unload yml "assist.read.%{_id}%"
+#	All / Kit
+		add 1 to {Kit-Assist.all::%{_uuid.assist}%}
+		add 1 to {Kit-Assist.%{_kit.assist}%::%{_uuid.assist}%}
+#	Month
+		load yml "plugins/skript-yaml/Kit Kills/%{_killid.assist}%.yml" as "assist.kill.%{_id}%"
+		set {_time} to yml value "time" from "assist.kill.%{_id}%"
+		unload yml "assist.kill.%{_id}%"
+		if checkMonthing({_time}) is true:
+			add 1 to {Kit-Assist.month::%{_uuid.assist}%}
+#	Week
+		if checkWeeking({_time}) is true:
+			add 1 to {Kit-Assist.week::%{_uuid.assist}%}
+# Wins
+	set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Games"
+	set {_ln.game} to size of {_files::*}
+	loop {_ln.game} times:
+		set {_id} to loop-number
+		load yml "plugins/skript-yaml/Kit Games/%{_id}%.yml" as "game.read.%{_id}%"
+		set {_map} to yml value "map" from "game.read.%{_id}%"
+		load yml "plugins/skript-yaml/Kit Stages/%{_map}%.yml" as "stage.read.%{_map}%"
+		set {_rule} to yml value "rule" from "stage.read.%{_map}%"
+		unload yml "stage.read.%{_map}%"
+		set {_winteam::*} to yml list "win-team" from "game.read.%{_id}%"
+		set {_time} to yml value "time" from "game.read.%{_id}%"
+		set {_duration} to yml value "duration" from "game.read.%{_id}%"
+		set {_minPlay} to {_duration} / 2
+		unload yml "game.read.%{_id}%"
+		load yml "plugins/skript-yaml/Kit Player_Match/%{_id}%.yml" as "match.read.%{_id}%"
+		set {_uuids::*} to yml list "players" from "match.read.%{_id}%"
+		loop {_uuids::*}:
+			set {_uuid} to loop-value-2
+			set {_team.%{_uuid}%} to yml value "%{_uuid}%.team" from "match.read.%{_id}%"
+			set {_playtime.%{_uuid}%} to yml value "%{_uuid}%.playtime" from "match.read.%{_id}%"
+		unload yml "match.read.%{_id}%"
+		loop {_uuids::*}:
+			set {_uuid} to loop-value-2
+			if {_winteam::*} contains {_team.%{_uuid}%}:  # 勝利チーム確認
+				if {_playtime.%{_uuid}%} >= {_minPlay}:  #プレイ時間確認
+#	All / Rule
+					add 1 to {Kit-Win.all::%{_uuid}%}
+					add 1 to {Kit-Win.%{_rule}%::%{_uuid}%}
+#	Month
+					if checkMonthing({_time}) is true:
+						add 1 to {Kit-Win.month::%{_uuid}%}
+#	Week
+					if checkWeeking({_time}) is true:
+						add 1 to {Kit-Win.week::%{_uuid}%}
+# ###############################
+	loop 5 times:
+		if loop-number-1 is 1:
+			set {_type} to "Kill"
+		else if loop-number-1 is 2:
+			set {_type} to "KD"
+		else if loop-number-1 is 3:
+			set {_type} to "Win"
+		else if loop-number-1 is 4:
+			set {_type} to "Death"
+		else if loop-number-1 is 5:
+			set {_type} to "Assist"
+		rankingUpdate("Kit", {_type}, {Kit-TypeRanking::%{_type}%})
+
+command /gameendupdate <text>:
+	permission: sk.admin
+	trigger:
+		loop 5 times:
+			if loop-number-1 is 1:
+				set {_type} to "Kill"
+			else if loop-number-1 is 2:
+				set {_type} to "KD"
+			else if loop-number-1 is 3:
+				set {_type} to "Win"
+			else if loop-number-1 is 4:
+				set {_type} to "Death"
+			else if loop-number-1 is 5:
+				set {_type} to "Assist"
+			execute console command "/updaterank %{_type}% %{%arg 1%-TypeRanking::%{_type}%}% %arg 1%"
+
+#command /updateranking <text>:
+#	usage: /updateranking <Class...etc(kit)>
+#	trigger:
+#		if arg 1 is "kit":
+#			loop {Classes::*}:
+#				loop 6 times:
+#					if loop-number-1 is 1:
+#						set {_type} to "Kill"
+#					else if loop-number-1 is 2:
+#						set {_type} to "KD"
+#					else if loop-number-1 is 3:
+#						set {_type} to "Win"
+#					else if loop-number-1 is 4:
+#						set {_type} to "Death"
+#					else if loop-number-1 is 5:
+#						set {_type} to "Assist"
+#					else if loop-number-1 is 6:
+#						set {_type} to "Count"
+#					loop {%{_type}%.%loop-index-1%::*}:
+#						set {_list::%loop-index-2%} to loop-value-3
+#					set {_high} to 0
+#					loop 5 times:
+#						set {_num} to loop-number-2
+#						loop {_list::*}:
+#							loop-value-4 > {_high}
+#							{UUID::%loop-index-2%} is set
+#							set {_high} to loop-value-4
+#							set {_highplayer} to loop-index-2
+#						if {_high} is 0:
+#							delete {_high}
+#						set line 2 of block at {Ranking-sign.%{_type}%_%loop-index-1%::%{_num}%} to "%{UUID::%{_highplayer}%}%"
+#						if {_type} is "KD":
+#							set line 4 of block at {Ranking-sign.%{_type}%_%loop-index-1%::%{_num}%} to "%{_high}% k/d"
+#						else:
+#							set line 4 of block at {Ranking-sign.%{_type}%_%loop-index-1%::%{_num}%} to "%{_high}% %{_type}%s"
+#						set {_high} to 0
+#						delete {_list::%{_highplayer}%}
+#						delete {_highplayer}
+#		else:
+#			if arg 1 is "week":
+#				set {_time} to "Weekly"
+#				set {_looptime} to 5
+#			if arg 1 is "all":
+#				set {_time} to "All"
+#				set {_looptime} to 10
+#			loop 5 times:
+#				if loop-number-1 is 1:
+#					set {_type} to "Kill"
+#				else if loop-number-1 is 2:
+#					set {_type} to "KD"
+#				else if loop-number-1 is 3:
+#					set {_type} to "Win"
+#				else if loop-number-1 is 4:
+#					set {_type} to "Death"
+#				else if loop-number-1 is 5:
+#					set {_type} to "Assist"
+#				loop {%{_type}%.%arg 1%::*}:
+#					set {_list::%loop-index%} to loop-value-2
+#				set {_high} to 0
+#				loop {_looptime} times:
+#					set {_num} to loop-number-2
+#					set {_hdnum} to {_num} + 1
+#					loop {_list::*}:
+#						loop-value-3 > {_high}
+#						{UUID::%loop-index%} is set
+#						set {_high} to loop-value-3
+#						set {_highplayer} to loop-index
+#					if {_high} is 0:
+#						delete {_high}
+#					execute console command "/hd setline %{_time}%-%{_type}% %{_hdnum}% &a%{_num}%&e. &f&l%{UUID::%{_highplayer}%}% &7 - &b%{_high}%"
+#					set {_high} to 0
+#					delete {_list::%{_highplayer}%}
+#					delete {_highplayer}

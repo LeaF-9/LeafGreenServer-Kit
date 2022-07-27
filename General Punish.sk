@@ -1,0 +1,270 @@
+﻿options:
+	prefix: §b[§4Punish§b]
+
+command /punish <offline player> <text>:
+	usage: /punish <player> <reason>
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		add 1 to {punish::%arg 1's UUID%}
+		broadcast "{@prefix} §6%arg 1% §8が §b%arg 2% §8で処罰されました §7(%{punish::%arg 1's UUID%}%/4)"
+		message "{@prefix} §9%arg 1% §7の処罰を行いました"
+		message "{@prefix} §6Reason§8: §7%arg 2%"
+		message "{@prefix} §b##evidence §7にて証拠のアップロードをお願いします"
+		execute console command "/pex user %arg 1% suffix &0[&4%{punish::%arg 1's UUID%}%&0]"
+		if {punish::%arg 1's UUID%} is 1:
+			make player execute command "/pwarn %arg 1% %arg 2%"
+			set {PenaltyDate.1::%arg 1's UUID%} to now
+			set {PenaltyReason.1::%arg 1's UUID%} to arg 2
+			set {Punisher.1::%arg 1's UUID%} to player
+			set {Evidence.1::%arg 1's UUID%} to false
+		else if {punish::%arg 1's UUID%} is 2:
+			make player execute command "/pkick %arg 1% %arg 2%"
+			set {PenaltyDate.2::%arg 1's UUID%} to now
+			set {PenaltyReason.2::%arg 1's UUID%} to arg 2
+			set {Punisher.2::%arg 1's UUID%} to player
+			set {Evidence.2::%arg 1's UUID%} to false
+		else if {punish::%arg 1's UUID%} is 3:
+			make player execute command "/ptempban %arg 1% %arg 2% 7 days"
+			set {PenaltyDate.3::%arg 1's UUID%} to now
+			set {PenaltyReason.3::%arg 1's UUID%} to arg 2
+			set {Punisher.3::%arg 1's UUID%} to player
+			set {Evidence.3::%arg 1's UUID%} to false
+		else if {punish::%arg 1's UUID%} is 4:
+			make player execute command "/pban %arg 1% %arg 2%"
+			set {PenaltyDate.4::%arg 1's UUID%} to now
+			set {PenaltyReason.4::%arg 1's UUID%} to arg 2
+			set {Punisher.4::%arg 1's UUID%} to player
+			set {Evidence.4::%arg 1's UUID%} to false
+
+command /ppunish <offline player> <text>:
+	usage: /ppunish <player> <reason>
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		set {punish::%arg 1's UUID%} to 5
+		broadcast "{@prefix} §6%arg 1% §8が §b%arg 2% §8で処罰されました §7(§4Permanently§7)"
+		message "{@prefix} §9%arg 1% §7の処罰を行いました"
+		message "{@prefix} §6Reason§8: §7%arg 2%"
+		message "{@prefix} §b##evidence §7にて証拠のアップロードをお願いします"
+		make player execute command "/pban %arg 1% %arg 2%"
+		set {PenaltyDate.5::%arg 1's UUID%} to now
+		set {PenaltyReason.5::%arg 1's UUID%} to arg 2
+		set {Punisher.5::%arg 1's UUID%} to player
+		set {Evidence.5::%arg 1's UUID%} to false
+
+command /pwarn <offline player> <text>:
+	usage: /pwarn <player> <reason>
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		play sound "block.anvil.land" to arg 1
+		send title "§4§l!!!WARNING!!!" with subtitle "§8あなたは §b%arg 2% §8で処罰を受けました" to arg 1 for 10 seconds
+
+command /pkick <offline player> <text>:
+	usage: /pkick <player> <reason>
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		kick arg 1 due to "§4§l!!!WARNING!!!%nl%§8あなたは §b%arg 2% §8で処罰を受けました%nl% %nl%§6処罰に異議があれば以下のURLより申請してください%nl% %nl%§bhttp://leafgreenserver.forums-free.com/topic-f21.html?sid=4ec265d813db2261e9ea4ea8f3aeb1e9"
+
+command /ptempban <offline player> <text> <timespan>:
+	usage: /ptempban <player> <reason> <time>
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		kick arg 1 due to "§4§l!!!WARNING!!!%nl%§8あなたは §b%arg 2% §8で処罰を受けました%nl% %nl%§6処罰に異議があれば以下のURLより申請してください%nl% %nl%§bhttp://leafgreenserver.forums-free.com/topic-f21.html?sid=4ec265d813db2261e9ea4ea8f3aeb1e9"
+		set {BanDate::%arg 1's UUID%} to now
+		set {BanTime::%arg 1's UUID%} to arg 3
+		set {BanReason::%arg 1's UUID%} to arg 2
+		set {BAN::%arg 1's UUID%} to true
+
+command /pban <offline player> <text>:
+	usage: /pban <player> <reason>
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		kick arg 1 due to "§4§l!!!WARNING!!!%nl%§8あなたは §b%arg 2% §8で処罰を受けました%nl% %nl%§6処罰に異議があれば以下のURLより申請してください%nl% %nl%§bhttp://leafgreenserver.forums-free.com/topic-f21.html?sid=4ec265d813db2261e9ea4ea8f3aeb1e9"
+		delete {BanDate::%arg 1's UUID%}
+		delete {BanTime::%arg 1's UUID%}
+		set {BanReason::%arg 1's UUID%} to arg 2
+		set {BAN::%arg 1's UUID%} to true
+
+command /punban <Offline player>:
+	usage: /punban <player>
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		delete {BanDate::%arg 1's UUID%}
+		delete {BanTime::%arg 1's UUID%}
+		delete {BanReason::%arg 1's UUID%}
+		delete {BAN::%arg 1's UUID%}
+
+on connect:
+	{BAN::%player's UUID%} is true
+	if {BanTime::%player's UUID%} is set:
+		set {_time} to difference between {BanDate::%player's UUID%} and now
+		if {_time} is more than {BanTime::%player's UUID%}:
+			delete {BanDate::%player's UUID%}
+			delete {BanTime::%player's UUID%}
+			delete {BanReason::%player's UUID%}
+			delete {BAN::%player's UUID%}
+			stop
+	else:
+		set {_time} to "§4Permanently"
+	kick player due to "%nl%§4§l!!!WARNING!!!%nl%§8あなたは §b%{BanReason::%player's UUID%}% §8で§cBAN§8されています!%nl%§e期限§8: §a%{_time}%%nl% %nl%§6処罰に異議があれば以下のURLより申請してください%nl% %nl%§bhttp://leafgreenserver.forums-free.com/topic-f21.html?sid=4ec265d813db2261e9ea4ea8f3aeb1e9"
+
+command /mute <offline player> [<timespan>]:
+	usage: /mute <player> [<timespan>]
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		broadcast "{@prefix} §6%arg 1% §8が§6ミュート§8されました"
+		message "{@prefix} §8あなたは§6ミュート§8されました!" to arg 1
+		message "{@prefix} §9%arg 1% §7のミュートを行いました"
+		if arg 2 is set:
+			set {MuteDate::%arg 1's UUID%} to now
+			set {MuteTime::%arg 1's UUID%} to arg 2
+		set {Mute::%arg 1's UUID%} to true
+
+command /unmute <offline player>:
+	usage: /mute <player>
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		delete {MuteDate::%arg 1's UUID%}
+		delete {MuteTime::%arg 1's UUID%}
+		delete {Mute::%arg 1's UUID%}
+
+on chat:
+	if {Mute::%player's UUID%} is set:
+		if {MuteTime::%player's UUID%} is set:
+			set {_time} to difference between {MuteDate::%player's UUID%} and now
+			if {_time} is more than {MuteTime::%player's UUID%}:
+				delete {MuteDate::%player's UUID%}
+				delete {MuteTime::%player's UUID%}
+				delete {Mute::%player's UUID%}
+				stop
+		else:
+			set {_time} to "§4Permanently"
+		cancel event
+		message "{@prefix} §8あなたは§6ミュート§8されています! §e期限§8: §a%{_time}%" to player
+	else:
+		if {team::%player%} is set:
+			if first characters of message is "!":
+				replace first characters of message with "" in message
+				stop
+			cancel event
+			set {_p} to player's prefix
+			set {_s} to player's suffix
+			replace every "&" with "§" in {_p}
+			replace every "&" with "§" in {_s}
+			loop all players:
+				delete {_ok}
+				if {team::%loop-player%} is {team::%player%}:
+					set {_ok} to true
+				if loop-player has permission "sk.teamchat":
+					{join::%loop-player%} is not set
+					set {_ok} to true
+				{_ok} is true
+				message "§6[Team]§r%{_p}%§r%player's display name%§r%{_s}%§r§a:§r §6%message%" to loop-player
+
+command /lookup <offline player>:
+	trigger:
+		message "§9%arg 1%§7's §4Penalty"
+		if {punish::%arg 1's UUID%} is 5:
+			message "§c[Ban]"
+			message "§6Reason§8: §7%{PenaltyReason.5::%arg 1's UUID%}%"
+			message "§aDate§8: §7%{PenaltyDate.5::%arg 1's UUID%}%"
+			message "§5Punisher§8: §7%{Punisher.5::%arg 1's UUID%}%"
+			if player has permission "sk.punish":
+				message "§bEvidence§8: §7%{Evidence.5::%arg 1's UUID%}%"
+			stop
+		if {punish::%arg 1's UUID%} is more than 0:
+			message "§c[Warn]"
+			message "§6Reason§8: §7%{PenaltyReason.1::%arg 1's UUID%}%"
+			message "§aDate§8: §7%{PenaltyDate.1::%arg 1's UUID%}%"
+			message "§5Punisher§8: §7%{Punisher.1::%arg 1's UUID%}%"
+			if player has permission "sk.punish":
+				message "§bEvidence§8: §7%{Evidence.1::%arg 1's UUID%}%"
+		if {punish::%arg 1's UUID%} is more than 1:
+			message "§c[Kick]"
+			message "§6Reason§8: §7%{PenaltyReason.2::%arg 1's UUID%}%"
+			message "§aDate§8: §7%{PenaltyDate.2::%arg 1's UUID%}%"
+			message "§5Punisher§8: §7%{Punisher.2::%arg 1's UUID%}%"
+			if player has permission "sk.punish":
+				message "§bEvidence§8: §7%{Evidence.2::%arg 1's UUID%}%"
+		if {punish::%arg 1's UUID%} is more than 2:
+			message "§c[TempBan]"
+			message "§6Reason§8: §7%{PenaltyReason.3::%arg 1's UUID%}%"
+			message "§aDate§8: §7%{PenaltyDate.3::%arg 1's UUID%}%"
+			message "§5Punisher§8: §7%{Punisher.3::%arg 1's UUID%}%"
+			if player has permission "sk.punish":
+				message "§bEvidence§8: §7%{Evidence.3::%arg 1's UUID%}%"
+		if {punish::%arg 1's UUID%} is more than 3:
+			message "§c[Ban]"
+			message "§6Reason§8: §7%{PenaltyReason.4::%arg 1's UUID%}%"
+			message "§aDate§8: §7%{PenaltyDate.4::%arg 1's UUID%}%"
+			message "§5Punisher§8: §7%{Punisher.4::%arg 1's UUID%}%"
+			if player has permission "sk.punish":
+				message "§bEvidence§8: §7%{Evidence.4::%arg 1's UUID%}%"
+
+command /forgive <offline player>:
+	usage: /forgive <player>
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		message "{@prefix} §9%arg 1% §7の処罰を1段階抹消しました"
+		if {punish::%arg 1's UUID%} is 1:
+			delete {punish::%arg 1's UUID%}
+			delete {PenaltyReason.1::%arg 1's UUID%}
+			delete {PenaltyDate.1::%arg 1's UUID%}
+			delete {Punisher.1::%arg 1's UUID%}
+			delete {Evidence.1::%arg 1's UUID%}
+		else if {punish::%arg 1's UUID%} is 2:
+			subtract 1 from {punish::%arg 1's UUID%}
+			delete {PenaltyReason.2::%arg 1's UUID%}
+			delete {PenaltyDate.2::%arg 1's UUID%}
+			delete {Punisher.2::%arg 1's UUID%}
+			delete {Evidence.2::%arg 1's UUID%}
+		else if {punish::%arg 1's UUID%} is 3:
+			subtract 1 from {punish::%arg 1's UUID%}
+			delete {PenaltyReason.3::%arg 1's UUID%}
+			delete {PenaltyDate.3::%arg 1's UUID%}
+			delete {Punisher.3::%arg 1's UUID%}
+			delete {Evidence.3::%arg 1's UUID%}
+			make player execute command "/punban %arg 1%"
+		else if {punish::%arg 1's UUID%} is 4:
+			subtract 1 from {punish::%arg 1's UUID%}
+			delete {PenaltyReason.4::%arg 1's UUID%}
+			delete {PenaltyDate.4::%arg 1's UUID%}
+			delete {Punisher.4::%arg 1's UUID%}
+			delete {Evidence.4::%arg 1's UUID%}
+			make player execute command "/punban %arg 1%"
+		else if {punish::%arg 1's UUID%} is 5:
+			delete {punish::%arg 1's UUID%}
+			delete {PenaltyReason.5::%arg 1's UUID%}
+			delete {PenaltyDate.5::%arg 1's UUID%}
+			delete {Punisher.5::%arg 1's UUID%}
+			delete {Evidence.5::%arg 1's UUID%}
+			make player execute command "/punban %arg 1%"
+
+command /evidence <offline player> <number> <text>:
+	usage: /evidence <player> <処罰段階> <証拠URL>
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		message "§4{@prefix} §9%arg 1% §7の §c処罰段階§8: §c%arg 2%§7 の証拠を確認しました"
+		message ""
+		set {Evidence.%arg 2%::%arg 1's UUID%} to arg 3
+
+command /evicheck:
+	permission: sk.staff
+	permission message: §cあなたには権限がありません
+	trigger:
+		loop {punish::*}:
+			if {Evidence.%loop-value%::%loop-index%} is false:
+				set {_none} to true
+				message "{@prefix} §8 - §9%{UUID::%loop-index%}% §0[§4%loop-value%§0] §8by §6%{Punisher.%loop-value%::%loop-index%}%"
+		if {_none} is not set:
+			message "{@prefix} §a証拠が提出されていない処罰はありません"

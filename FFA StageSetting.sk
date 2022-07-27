@@ -1,0 +1,32 @@
+options:
+	prefix: §9[§bFFA§9]§r
+
+command /ffa-stage <text> <text> <text="none">:
+	description: FFAのステージ設定コマンド
+	usage: /ffa-stage <argument> <stage name> <options>
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/FFA Stages/All Stages.yml" as "ffa.allstage"
+		set {_stages::*} to yml list "Stages" from "ffa.allstage"
+		unload yml "ffa.allstage"
+		if arg 1 is "create":
+			if {_stages::*} does not contain "%arg 2%":
+				add arg 2 to {_stages::*}
+				load yml "plugins/skript-yaml/FFA Stages/All Stages.yml" as "ffa.allstage"
+				set yml list "Stages" from "ffa.allstage" to {_stages::*}
+				save yml "ffa.allstage"
+				load yml "plugins/skript-yaml/FFA Stages/%arg 2%.yml" as "ffa.stage"
+                set yml value "name" from "ffa.stage" to arg 2
+                set yml value "enable" from "ffa.stage" to false
+                save yml "ffa.stage"
+                message formatted "{@prefix} §3FFA Map§7: §6§l%arg 2% §bを追加しました" to player
+			else:
+				message formatted "{@prefix} §c既にそのマップは存在しています" to player
+		else if arg 1 is "enable":
+		else if arg 1 is "disable":
+		else if arg 1 is "author":
+		else if arg 1 is "respawn":
+		else if arg 1 is "set":
+		else:
+			message formatted "{@prefix} §cargument 1が不適切です" to player
+			message formatted "{@prefix} §earg 1§7: §acreate§2/§aenable§2/§adisable§2/§aauthor§2/§arespawn§2/§aset" to player

@@ -1,0 +1,43 @@
+on inventory click:
+	player's gamemode is spectator
+	set {_stage} to {Kit-GameStage::name}
+	replace every " " with "" in {_stage}
+	set {_world} to "Kit-%{_stage}%"
+	"%world of player%" is {_world}
+	cancel event
+
+on packet event play_client_window_click:
+	player's gamemode is spectator
+	set {_stage} to {Kit-GameStage::name}
+	replace every " " with "" in {_stage}
+	set {_world} to "Kit-%{_stage}%"
+	"%world of player%" is {_world}
+# Join
+	if field 2 of event-packet is 22:
+		make player execute command "/join"
+# Customize
+	else if field 2 of event-packet is 20:
+		close player's inventory
+		openKitGameCustom(player)
+# Tutorial
+	else if field 2 of event-packet is 24:
+		if {Kit-Tutorial::%player%} is false:
+			set {Kit-Tutorial::%player%} to true
+			set {_slotname} to "§aTutorial§7: §2§lON"
+		else:
+			set {Kit-Tutorial::%player%} to false
+			set {_slotname} to "§aTutorial§7: §4§lOFF"
+		set slot 24 of player's inventory to emerald named "%{_slotname}%" with lore "§fチュートリアルの有無を選択します"
+	else if field 2 of event-packet is 34:
+		teleport player to {LobbyLocation::Kit}
+		wait a tick
+		set gamemode of player to survival
+		message "§b試合参加§eを保持したままロビーに戻りました" to player
+	else if field 2 of event-packet is 35:
+		if {Join::%player%} is "Kit":
+			make player execute command "/leave"
+		else:
+			teleport player to {LobbyLocation::Kit}
+			wait a tick
+			set gamemode of player to survival
+			message "§dロビーに戻りました" to player

@@ -1,0 +1,93 @@
+function kitFakeBlock(player: player, location: location, block: text, metadata: text):
+	set {_x} to x-coordinate of {_location}
+	set {_y} to y-coordinate of {_location}
+	set {_z} to z-coordinate of {_location}
+	execute console command "/execute at %{_player}% run summon minecraft:armor_stand %{_x}% %{_y}% %{_z}% {NoGravity:1b,Marker:1b,Invisible:1,Invulnerable:1,NoBasePlate:1,Passengers:[{id:""falling_block"",BlockState:{Name:""%{_block}%""},NoGravity:1,Time:1,DropItem:0}]}"
+	set {_dis} to 100
+	loop all entities in radius 1 around {_location}:
+		type of loop-entity is armor stand
+		metadata value "kit-armor" of loop-entity is not set
+		set {_d} to distance between {_location} and loop-entity
+		if {_d} < {_dis}:
+			set {_dis} to {_d}
+			set {_entity} to loop-entity
+	set metadata value "gametype" of {_entity} to "Kit"
+	set metadata value "kit-armor" of {_entity} to {_metadata}
+	set metadata value {_metadata} of {_entity} to "%{_player}%"
+	set metadata value "gametype" of passenger of {_entity} to "Kit"
+	set metadata value "kit-block" of passenger of {_entity} to "%{_player}%"
+
+function kitFakeReload(player: offline player, metadata: text):
+	loop all falling blocks:
+		metadata value "kit-block" of loop-falling block is "%{_player}%"
+		loop-falling block is riding
+		metadata value "kit-armor" of vehicle of loop-falling block is {_metadata}
+		metadata value {_metadata} of vehicle of loop-falling block is "%{_player}%"
+		add "{Time:1}" to nbt of loop-falling block
+
+function kitFakeDelete(player: offline player):
+	loop all falling blocks:
+		metadata value "kit-block" of loop-falling block is "%{_player}%"
+		loop-falling block is riding
+		metadata value "kit-armor" of vehicle of loop-falling block is set
+		set {_metadata} to metadata value "kit-armor" of vehicle of loop-falling block
+		metadata value {_metadata} of vehicle of loop-falling block is "%{_player}%"
+		delete vehicle of loop-falling block
+		delete loop-falling block
+
+function kitFakeDeleteData(player: offline player, metadata: text):
+	loop all falling blocks:
+		metadata value "kit-block" of loop-falling block is "%{_player}%"
+		loop-falling block is riding
+		metadata value "kit-armor" of vehicle of loop-falling block is {_metadata}
+		metadata value {_metadata} of vehicle of loop-falling block is "%{_player}%"
+		delete vehicle of loop-falling block
+		delete loop-falling block
+
+function kitFakeDeleteAll():
+	loop all falling blocks:
+		metadata value "kit-block" of loop-falling block is "%{_player}%"
+		loop-falling block is riding
+		metadata value "kit-armor" of vehicle of loop-falling block is set
+		delete vehicle of loop-falling block
+		delete loop-falling block
+
+on arm swing:
+	set {_tg} to target entity of player
+	type of {_tg} is armor stand
+	distance between player and {_tg} <= 3
+	set {_passengers::*} to passenger of {_tg}
+	metadata value "kit-block" of {_passengers::1} is set
+	set {_target} to metadata value "kit-block" of {_passengers::1}
+	set {_target} to {_target} parsed as offline player
+	set {_skill} to metadata value "kit-armor" of {_tg}
+	if {team::%player%} is not {team::%{_target}%}:
+		make a fake explosion at location of {_tg}
+		kitMsg({_target}, "§9§l%{_skill}% §cが破壊された!")
+		message "§e%{_target}%§aの§9§l%{_skill}%§aを破壊しました!" to player
+		kitFakeDeleteData({_target}, {_skill})
+	else:
+		message "§c§l味方の設置物は破壊できません!" to player
+
+on projectile hit:
+	loop all entities in radius 3 around projectile:
+		delete {_target}
+		delete {_skill}
+		type of loop-entity is armor stand
+		set {_passengers::*} to passenger of loop-entity
+		metadata value "kit-block" of {_passengers::1} is set
+		set {_target} to metadata value "kit-block" of {_passengers::1}
+		set {_target} to {_target} parsed as offline player
+		set {_skill} to metadata value "kit-armor" of loop-entity
+		if {team::%shooter%} is not {team::%{_target}%}:
+			make a fake explosion at location of loop-entity
+			kitMsg({_target}, "§9§l%{_skill}% §cが破壊された!")
+			message "§e%{_target}%§aの§9§l%{_skill}%§aを破壊しました!" to shooter
+			kitFakeDeleteData({_target}, {_skill})
+		else:
+			message "§c§l味方の設置物は破壊できません!" to shooter
+
+#every 10 seconds:
+#	loop all falling blocks:
+#		loop-falling block is riding
+#		add "{Time:1}" to nbt of loop-falling block

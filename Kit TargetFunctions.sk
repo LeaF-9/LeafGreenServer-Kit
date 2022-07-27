@@ -1,0 +1,177 @@
+function kitTargetPlayer(player: player, distance: number, ally: boolean = false):
+	set {_dis} to round({_distance})
+	set {_baseloc} to location of head of {_player}
+	loop {_dis} times:
+		{_ng} is not set
+		{_target} is not set
+		set {_loc} to location loop-number meters in front of {_baseloc}
+		if block at {_loc} is not passable:
+			set {_ng} to true
+		else:
+			loop all players in radius 3 around {_loc}:
+				{_target} is not set
+				kitCheckTeam(loop-player, {_player}, {_ally}) is true
+				loop-player is not {_player}
+				set {_target} to loop-player
+	if {_target} is set:
+		if {Stats.%{_player}%::SkillTarget} is set:
+			set {_former} to {Stats.%{_player}%::SkillTarget}
+			set {_pkt} to new play_server_entity_metadata packet
+			set field 0 of {_pkt} to id of {_former}
+			set {_dw} to new data watcher for {_former}
+			set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
+			set field 1 of {_pkt} to {_dw}
+			send {_player} packet {_pkt}
+		set {Stats.%{_player}%::SkillTarget} to {_target}
+		set {_pkt} to new play_server_entity_metadata packet
+		set field 0 of {_pkt} to id of {_target}
+		set {_dw} to new data watcher for {_target}
+		set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
+		set field 1 of {_pkt} to {_dw}
+		send {_player} packet {_pkt}
+	else:
+		if {Stats.%{_player}%::SkillTarget} is set:
+			set {_former} to {Stats.%{_player}%::SkillTarget}
+			delete {Stats.%{_player}%::SkillTarget}
+			set {_pkt} to new play_server_entity_metadata packet
+			set field 0 of {_pkt} to id of {_former}
+			set {_dw} to new data watcher for {_former}
+			set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
+			set field 1 of {_pkt} to {_dw}
+			send {_player} packet {_pkt}
+
+function kitTargetLocation(player: player, distance: number):
+	set {_baseloc} to location of head of {_player}
+	delete {_ok}
+	set {_dis} to round({_distance}) * 10 
+	loop {_dis} times:
+		{_ok} is not set
+		set {_met} to loop-number / 10
+		set {_loc} to location {_met} meters in front of {_baseloc}
+		if block at {_loc} is not passable:  # 固形ブロックであれば
+			set {_ok} to true  # 固形ブロックが見つかったことを感知 / このloopを止める変数
+			delete {_blockok}
+			delete {_bn}
+			loop 5 times:  # 0.5m上まで感知可能
+				add 0.1 to {_bn}
+				set {_bl} to location {_bn} meters above {_loc}
+				if block at {_bl} is passable:
+					set {_blockok} to true  #有効ブロック感知時有効
+					set {_loc} to {_bl}
+					set y-coordinate of {_loc} to y-coordinate of location of block at {_bl} - 0.5  # y座標を地面にあわせる
+	if {_ok} is not set:  # 前方に固形ブロックが見つからなかった場合
+		delete {_blockok}
+		delete {_bn}
+		loop 50 times:  # 5m下まで感知可能
+			{_blockok} is not set
+			add 0.1 to {_bn}
+			set {_bl} to location {_bn} meters below {_loc}
+			if block at {_bl} is not passable:
+				set {_blockok} to true
+				set {_loc} to location 0.1 meters above {_bl}
+				set y-coordinate of {_loc} to y-coordinate of location of block 0.1 meters above {_bl} - 0.5
+	if {_blockok} is true:
+		set {_rad} to 0
+		set {Stats.%{_player}%::SkillLocation} to {_loc}
+		loop 10 times:
+			set {_el} to {_loc}
+			add sin({_rad}) to x-coordinate of {_el}
+			add cos({_rad}) to z-coordinate of {_el}
+			if {_distance} <= 5:
+				drawDot count 1, particle redstone, RGB 0, 255, 255, center {_el}, isClientside {_player}, visibleRange 100
+			else:
+				drawDot count 1, particle redstone, RGB 255, 165, 0, center {_el}, isClientside {_player}, visibleRange 100
+			add 36 to {_rad}
+	else:
+		delete {Stats.%{_player}%::SkillLocation}
+
+function kitTargetReset(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		set {_former} to {Stats.%{_player}%::SkillTarget}
+		delete {Stats.%{_player}%::SkillTarget}
+		set {_pkt} to new play_server_entity_metadata packet
+		set field 0 of {_pkt} to id of {_former}
+		set {_dw} to new data watcher for {_former}
+		set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
+		set field 1 of {_pkt} to {_dw}
+		send {_player} packet {_pkt}
+		delete {Stats.%{_player}%::SkillTarget}
+	if {Stats.%{_player}%::SkillLocation} is set:
+		delete {Stats.%{_player}%::SkillLocation}
+
+function kitTargetTimer(player: player):
+	set {_class} to {Class::%{_player}%}
+	set {_ok} to false
+	loop all items in {_player}'s inventory:
+		if kitTargetChecker(loop-item) is not "none":
+			set {_ok} to true
+			set {_name} to display name of loop-item
+			set {_items::%{_name}%} to loop-item
+			set {_type} to kitTargetChecker(loop-item)
+			set {_meter} to kitMeterChecker(loop-item)
+			set {_type::%{_name}%} to {_type}
+			set {_meter::%{_name}%} to {_meter}
+	if {_ok} is true:
+		while {Class::%{_player}%} is {_class}:
+			set {_tool} to {_player}'s tool
+			set {_toolname} to display name of {_tool}
+			if {_items::*} contains {_tool}:
+				if {_type::%{_toolname}%} contains "human":
+					if {_type::%{_toolname}%} is "human-ally":
+						kitTargetPlayer({_player}, {_meter::%{_toolname}%}, true)
+					else:
+						kitTargetPlayer({_player}, {_meter::%{_toolname}%})
+				else if {_type::%{_toolname}%} contains "location":
+					kitTargetReset({_player})
+					kitTargetLocation({_player}, {_meter::%{_toolname}%})
+			else:
+				kitTargetReset({_player})
+			wait a tick
+
+function kitItemTargetTimer(player: player, item: item):
+	set {_ok} to false
+	if kitTargetChecker({_item}) is not "none":
+		set {_ok} to true
+		set {_type} to kitTargetChecker({_item})
+		set {_meter} to kitMeterChecker({_item})
+	if {_ok} is true:
+		wait a tick
+		while {_player} has {_item}:
+			if {_player}'s tool is {_item}:
+				if {_type} contains "human":
+					if {_type} is "human-ally":
+						kitTargetPlayer({_player}, {_meter}, true)
+					else:
+						kitTargetPlayer({_player}, {_meter})
+				else if {_type} contains "location":
+					kitTargetReset({_player})
+					kitTargetLocation({_player}, {_meter})
+			else:
+				kitTargetReset({_player})
+			wait a tick
+
+function kitTargetChecker(item: item) :: text:
+	set {_line} to line 3 of lore of {_item}
+	if {_line} contains "§a<":
+		return "human-ally"
+	else if {_line} contains "§c<":
+		return "human-enemy"
+	else if {_line} contains "§b<":
+		return "location-machine"
+	else if {_line} contains "§e<":
+		return "location-place"
+	else:
+		return "none"
+
+function kitMeterChecker(item: item) :: number:
+	set {_line} to line 3 of lore of {_item}
+	set {_a::*} to {_line} split at "("
+	if {_a::1} contains "§b<":
+		set {_meter} to 5
+	else:
+		set {_b::*} to {_a::2} split at ")"
+		set {_meter} to {_b::1}
+		replace "§f" with "" in {_meter}
+		replace "m§7" with "" in {_meter}
+		set {_meter} to {_meter} parsed as number
+	return {_meter}

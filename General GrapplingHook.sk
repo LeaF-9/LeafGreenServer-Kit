@@ -1,0 +1,35 @@
+on fishing:
+	if name of player's tool contains "Grappling Hook":
+		if {CT.%player%::Grappling Hook} is not set:
+			if "%event.getState()%" is "reel in" or "in ground":
+				set damage value of player's tool to 0
+				if block below fish hook is not air:
+					if block below fish hook is not water or lava:
+						push player (direction from player to fish hook) at speed (distance between fish hook and player/4)
+						if (y coordinate of fish hook-1) > (y coordinate of player):
+#							push player upward at speed ((0.00000000000000001)*(difference between y coordinate of fish hook and y coordinate of player))
+						play sound "entity.zombie.infect" with volume 0.5 with pitch 2 at location of player
+						set {CT.%player%::Grappling Hook} to 7
+				else if block at fish hook is not air:
+					push player (direction from player to fish hook) at speed (distance between fish hook and player/4)
+					if (y coordinate of fish hook-1) > (y coordinate of player):
+#						push player upward at speed ((0.00000000000000001)*(difference between y coordinate of fish hook and y coordinate of player))
+					play sound "entity.zombie.infect" with volume 0.5 with pitch 2 at location of player
+					set {CT.%player%::Grappling Hook} to 7
+				else if block below fish hook is air:
+					if block below block below fish hook is not air or water or lava:
+						push player (direction from player to fish hook) at speed (distance between fish hook and player/4)
+						if (y coordinate of fish hook-1) > (y coordinate of player):
+#							push player upward at speed ((0.00000000000000001)*(difference between y coordinate of fish hook and y coordinate of player))
+						play sound "entity.zombie.infect" with volume 0.5 with pitch 2 at location of player
+						set {CT.%player%::Grappling Hook} to 7
+
+on rightclick holding a fishing rod:
+	if {CT.%player%::Grappling Hook} is set:
+		send action bar "§c§lクールタイムが終わっていません!" to player
+		cancel event
+
+on damage:
+	damage was caused by projectile
+	name of attacker's tool contains "Grappling Hook"
+	cancel event

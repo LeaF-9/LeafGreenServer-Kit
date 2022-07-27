@@ -1,0 +1,19 @@
+command /call <text="none">:
+	trigger:
+		message "§6管理人を呼びました... §eしばらくお待ち下さい"
+		loop all players:
+			loop-player has permission "sk.call"
+			play sound "block.note_block.pling" with volume 2 to loop-player
+			message formatted "§6[Calling] §e%player% §cが管理人を読んでいます! §a(§7%arg 1%§a)" to loop-player
+
+on join:
+	loop all players:
+		loop-player has permission "sk.call"
+		play sound "entity.experience_orb.pickup" with volume 2 to loop-player
+		message formatted "§6[Calling] §e%player% §aが参加しました!" to loop-player
+
+on quit:
+	loop all players:
+		loop-player has permission "sk.call"
+		play sound "block.note_block.bass" with volume 2 to loop-player
+		message formatted "§6[Calling] §e%player% §cが退出しました!" to loop-player

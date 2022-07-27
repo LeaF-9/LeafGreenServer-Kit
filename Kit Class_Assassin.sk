@@ -1,0 +1,445 @@
+# Assassinのスキル Ver1.0.0
+
+# Weapons
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
+	{Class::%attacker%} is "Assassin"
+	set {_tool} to attacker's tool
+	set {_item.kit} to kitItemKitChecker({_tool})
+	{_item.kit} is "Assassin"
+	set {_item.type} to kitItemTypeChecker({_tool})
+	{_item.type} is "Weapon.main"
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if {_item.num} is 1:
+		apply poison 1 to victim for 3 seconds replacing existing effect
+	else if {_item.num} is 3:
+		if {_victim}'s health <= 5:
+			set {_per} to kitPercentDuel(attacker, victim, 5, true)
+			chance of {_per}%:
+				cancel event
+				LastKiller(victim, attacker)
+				kill victim
+				playSound("entity.phantom.bite", 1, 1, victim)
+				drawDot count 10, particle "mobspell", RGB 108, 36, 99, center victim, visibleRange 30
+
+on death of player:
+	{LastKiller::%victim%} is set
+	if {Class::%{LastKiller::%victim%}%} is "Assassin":
+		if name of {LastKiller::%victim%}'s tool is "§4Soul Breaker":
+			{LastKiller::%victim%} is alive
+			set {Kit-NoCorpse::%victim%} to true
+			heal {LastKiller::%victim%} by 1 heart
+
+on damage of player:
+	if name of victim's tool is "§bWind Dagger":
+		set {_per} to kitPercent(victim, 5, true)
+		chance of {_per}%:
+			cancel event
+			playSound("entity.wither.shoot", 0.8, 2, victim)
+			drawDot count 1, particle "mobspell", RGB 135, 206, 250, center victim, visibleRange 30
+
+function kitWeaponAssassin(player: player):
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	checkCT({_player}, name of {_player}'s tool) is true
+	if {_item.num} is 5:
+		kitWeapon_Assassin_5({_player})
+
+function kitWeapon_Assassin_5(player: player):
+	if {Kit-Invisible::%{_player}%} is not set:
+		setCT({_player}, name of {_player}'s tool, 20, false)
+		kitInvisible({_player}, 3 seconds)
+		set {Stats.%{_player}%::PhantomDagger} to true
+		playSound("entity.phantom.ambient", 0.7, 2, {_player})
+		wait 3 seconds
+		delete {Stats.%{_player}%::PhantomDagger}
+	else:
+		send action bar "§c§l既に透明化しています" to {_player}
+
+# Skills
+on damage:
+	{Class::%attacker%} is "Assassin"
+	if {Stats.%attacker%::UltAssassin} is true:
+		if victim's facing is attacker's facing:
+			set damage to 20
+			send action bar "§0§l暗殺に成功した..." to attacker
+			message "<##8b0000>暗殺されてしまった..." to victim
+			playSound("entity.wither.spawn", 1, 1, victim)
+			set {_l} to location of victim
+			loop 10 times:
+				set {_e} to aroundEffect(victim, 5)
+				set {_r} to a random number between 0 and 5
+				set y-coordinate of {_e} to y-coordinate of victim + {_r}
+				drawDot count 1, particle "witchspell", center {_e}, visibleRange 30
+		else:
+			set damage to 1
+		stop
+	set {_dis} to distance between attacker and victim
+	if {_dis} <= 1:
+		kitMsg(attacker, "§4近距離効果でダメージが2増えます!")
+		playSound("entity.arrow.hit_player", 1, 1.5, attacker, true)
+		send action bar "§c接近されてしまった!" to victim
+		drawDot count 1, particle "blockcrack", material redstone block, center victim, visibleRange 30
+		set damage to damage + 2
+		add 1 to {_asn}
+	if victim's facing is attacker's facing:
+		kitMsg(attacker, "§4不意打ち効果でダメージが1.5倍になった!")
+		playSound("entity.arrow.hit_player", 1, 0.75, attacker, true)
+		send action bar "§c不意を突かれた!" to victim
+		drawDot count 1, particle "blockcrack", material redstone block, center victim, visibleRange 30
+		set damage to damage * 1.5
+		add 1 to {_asn}
+	if {_asn} is set:
+		type of victim is player
+		set {_now} to now
+		set {Stats.%victim%::Pursuit} to {_asn}
+		set {Stats.%victim%::PursuitTime} to {_now}
+		wait 3 seconds
+		if {Stats.%victim%::PursuitTime} is {_now}:
+			delete {Stats.%victim%::Pursuit}
+			delete {Stats.%victim%::PursuitTime}
+
+function kitSkillAssassin(player: player) :: boolean:
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if checkCT({_player}, name of {_player}'s tool) is true:
+		if {_item.num} is 1:
+			kitSkill_Assassin_1({_player})
+		else if {_item.num} is 2:
+			kitSkill_Assassin_2({_player})
+		else if {_item.num} is 3:
+			kitSkill_Assassin_3({_player})
+		else if {_item.num} is 4:
+			kitSkill_Assassin_4({_player})
+		else if {_item.num} is 5:
+			kitSkill_Assassin_5({_player})
+		else if {_item.num} is 6:
+			kitSkill_Assassin_6({_player})
+		else if {_item.num} is 7:
+			kitSkill_Assassin_7({_player})
+		else if {_item.num} is 8:
+			kitSkill_Assassin_8({_player})
+	return true
+
+function kitSkill_Assassin_1(player: player):
+	delete {_player}'s tool
+	shoot a arrow from {_player} at speed 3
+	set metadata value "sleep" of shot arrow to "true"
+
+on damage of player:
+	damage was caused by projectile
+	metadata value "sleep" of projectile is "true"
+	set damage to 0
+	kitSleep(victim, 5 seconds)
+
+function kitSkill_Assassin_2(player: player):
+	drop a diamond named "%{_player}%" at {_player}
+	set {_lore::*} to lore of {_player}'s tool
+	remove a diamond named "§5Deceive Diamond" with lore {_lore::*} from {_player}
+	set metadata value "gametype" of last dropped item to "Kit"
+	set metadata value "delete" of last dropped item to "%{_player}%"
+
+on pick up diamond:
+	if name of item is "§bGem":
+		stop
+	if {team::%name of item%} is {team::%player%}:
+		cancel the event
+	else:
+		if {Class::%player%} is "Thief":
+			message "§eおっと! §6お宝§eだ!" to player
+			message "§c攻撃力上昇 1§eと§c再生能力 1§eが付与された!" to player
+			playSound("entity.experience_orb.pickup", 1, 2, player)
+			apply strength 1 to player for 5 seconds
+			apply regeneration 1 to player for 5 seconds
+			wait a tick
+			remove all diamond named "%name of item%" from the player
+		else:
+			loop all players:
+				name of loop-player is name of item
+				LastKiller(player, loop-player)
+			apply blindness 1 to the player for 5 seconds
+			create a safe explosion of force 1 at the player
+			message "§5Noooooooooo!!!!!" to player
+			wait a tick
+			remove all diamond named "%name of item%" from the player
+
+function kitSkill_Assassin_3(player: player):
+	toolCT({_player}, "Assassin", 3)
+	kitInvisible({_player}, 5 seconds)
+	push {_player} upwards at speed 1.2
+	push {_player} forward at speed 1.0
+	playSound("entity.ghast.shoot", 1, 2, {_player})
+
+function kitSkill_Assassin_4(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		set {_tg} to {Stats.%{_player}%::SkillTarget}
+		toolCT({_player}, "Assassin", 4)
+		set {_tploc} to location 1 meter behind {_tg}
+		set {_tploc}'s yaw to {_tg}'s yaw
+		set y-coordinate of {_tploc} to y-coordinate of {_tg}
+		teleport {_player} to {_tploc}
+		kitMsg({_player}, "§5§l%{_tg}% §7の背後にテレポートしました!")
+		playSound("entity.arrow.hit_player", 0.5, 0.5, {_tg})
+		# if kitCheckTeam({_tg}, {_player}, true) is true:
+		# 	set {_name} to display name of {Kit-Skill.Assassin::4}
+		# 	subtract 10 from {CT.%{_player}%::%{_name}%}
+	else:
+		send action bar "§c§l対象のプレイヤーがいません" to {_player}
+
+function kitSkill_Assassin_5(player: player):
+	toolCT({_player}, "Assassin", 5)
+	kitMsg({_player}, "§5追撃を放ちます...")
+	playSound("block.anvil.land", 1, 2, {_player})
+	set {_baseloc} to location 1.5 meters in front of {_player}
+	add 1 to y-coordinate of {_baseloc}
+	loop all entities in radius 3 around {_baseloc}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		set {_damage} to 2
+		if {Stats.%loop-entity%::Pursuit} is set:
+			add 4 * {Stats.%loop-entity%::Pursuit} to {_damage}
+		kitMsg({_player}, "§1%loop-entity% §4にクリーンヒット!")
+		message "§4§l痛い! §5追撃がヒットした..." to loop-entity
+		playSound("entity.zombie.break_wooden_door", 1, 2, loop-entity)
+		drawDot count 1, particle "witchspell", center loop-entity, visibleRange 30
+		make {_player} damage loop-entity by {_damage}
+	set {_front} to 2.5
+	set {_lr} to 0
+	set {_length} to 5
+	set {_c} to 0
+	loop 15 times:
+		add 1 to {_c}
+		if {_c} is 3:
+			set {_c} to 0
+			subtract 1 from {_length}
+		set {_loc.l} to location {_front} meters in front of {_baseloc}
+		set {_loc.l} to location {_lr} meters to the left of {_loc.l}
+		set {_loc.r} to location {_front} meters in front of {_baseloc}
+		set {_loc.r} to location {_lr} meters to the right of {_loc.r}
+		set {_l} to 0
+		loop {_length} times:
+			set {_loc.l} to location {_l} meters in front of {_loc.l}
+			set {_loc.r} to location {_l} meters in front of {_loc.r}
+			drawDot count 1, particle "redstone", RGB 50, 0, 0, center {_loc.l}, visibleRange 30, keepFor 0.5 seconds
+			drawDot count 1, particle "redstone", RGB 50, 0, 0, center {_loc.r}, visibleRange 30, keepFor 0.5 seconds
+			add 0.1 to {_l}
+		add 0.2 to {_lr}
+		subtract 0.1 from {_front}
+
+function kitSkill_Assassin_6(player: player):
+	toolCT({_player}, "Assassin", 6)
+	playSound("entity.arrow.shoot", 1, 0.5, {_player})
+	shoot a thrown potion of mundane from {_player} at speed 1
+	set metadata value "poisonmist" of shot thrown potion to "true"
+	drawDot count 3, particle "mobspell", RGB 0, 150, 0, center shot thrown potion, visibleRange 30, keepFor 1 second
+
+on projectile hit:
+	projectile is thrown potion
+	metadata value "poisonmist" of projectile is "true"
+	set {_l} to location of projectile
+	playSound("block.fungus.break", 1.5, 0.5, {_l})
+	loop 100 times:
+		delete {_jc}
+		delete {_eg::*}
+		set {_s} to 0
+		set {_t} to 0
+		set {_pl} to {_l}
+		loop 19 time:
+			loop 36 time:
+				set {_loc} to {_pl}
+				set {_vector} to {_loc}
+				set {_x} to x-coordinate of {_loc}
+				set {_y} to y-coordinate of {_loc}
+				set {_z} to z-coordinate of {_loc}
+				set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
+				set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
+				set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
+				chance of 10%:
+					drawDot count 1, particle "redstone", RGB 0, 100, 0, center {_vector}, visibleRange 100
+				add 10 to {_t}
+			add 10 to {_s}
+		loop all blocks in radius 5 around {_l}:
+			loop-block is passable
+			chance of 1%:
+				drawDot count 1, particle "mobspell", RGB 0, 100, 0, center location of loop-block, visibleRange 100
+		loop all entities in radius 5 around {_l}:
+			if kitCheckTeam(loop-entity, shooter, false) is true:
+				drawDot count 3, particle "mobspell", RGB 0, 150, 0, center loop-entity, visibleRange 30
+				set {_eg::%id of loop-entity%} to true
+				if {_jb::%id of loop-entity%} is not set:
+					set {_jb::%id of loop-entity%} to true
+					apply poison 3 to loop-entity for 10 seconds replacing existing effect
+			else if loop-entity is shooter:
+				loop-entity does not have glowing
+				set {_jc} to true
+				{Kit-Invisible::%shooter%} is not set
+				set {Kit-Invisible::%shooter%} to true
+				loop all players:
+					{Class::%loop-player%} is not "Engineer"
+					kitCheckTeam(loop-player, shooter, false) is true
+					hide shooter from loop-player
+		if {_jc} is not set:
+			if {Kit-Invisible::%shooter%} is true:
+				reveal shooter from all players
+				delete {Kit-Invisible::%shooter%}
+				send action bar "§b§l透明化が解除されました!" to shooter
+		loop all entities:
+			metadata value "gametype" of loop-entity is "Kit"
+			{_eg::%id of loop-entity%} is not set
+			{_jb::%id of loop-entity%} is true
+			remove poison from loop-entity
+			delete {_jb::%id of loop-entity%}
+		wait a tick
+	if {Kit-Invisible::%shooter%} is true:
+		reveal shooter from all players
+		delete {Kit-Invisible::%shooter%}
+		send action bar "§b§l透明化が解除されました!" to shooter
+	loop all entities:
+		{_eg::%id of loop-entity%} is true
+		{_jb::%id of loop-entity%} is true
+		remove poison from loop-entity
+
+on consume of potion:
+	player's tool is {Kit-Skill.Assassin::6}
+	cancel event
+
+function kitSkill_Assassin_7(player: player):
+	if {Stats.%{_player}%::Psychopath} is not set:
+		toolCT({_player}, "Assassin", 7)
+		playSound("particle.soul_escape", 1, 1, {_player})
+		kitMsg({_player}, "<##990000>敵を欺く準備をします...")
+		set {Stats.%{_player}%::Psychopath} to true
+		loop 5 times:
+			loop 3 times:
+				set {_loc} to aroundEffect({_player})
+				drawDot count 1, particle "cloud", center {_loc}, visibleRange 30
+			wait a second
+		if {Stats.%{_player}%::Psychopath} is true:
+			delete {Stats.%{_player}%::Psychopath}
+			kitMsg({_player}, "<##800000>敵を欺くことは出来なかった...")
+	else:
+		send action bar "§c§l現在Skill発動中です!" to {_player}
+
+on damage of player:
+	if {Stats.%attacker%::Psychopath} is true:
+		cancel event
+	if {Stats.%victim%::Psychopath} is true:
+		type of attacker is player
+		cancel event
+		delete {Stats.%victim%::Psychopath}
+		kitMsg(victim, "<##dc143c>うまく接近しました!")
+		loop 10 times:
+			set {_loc} to aroundEffect(victim)
+			drawDot count 1, particle "cloud", center {_loc}, visibleRange 30
+		message formatted "<##dc143c>敵が消えた!" to attacker
+		playSound("entity.evoker.prepare_wololo", 1, 0.8, attacker)
+		loop all blocks in radius 10 around attacker:
+			distance between loop-block and attacker >= 5
+			loop-block is passable
+			block above loop-block is passable
+			block below loop-block is not passable
+			add location of loop-block to {_rl::*}
+		set {_dl} to a random location out of {_rl::*}
+		delete {_rl::*}
+		kitInvisible(victim, 3 seconds)
+		teleport victim to {_dl}
+
+function kitSkill_Assassin_8(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		toolCT({_player}, "Assassin", 8)
+		set {_tl} to {Stats.%{_player}%::SkillLocation}
+		loop 10 times:
+			if {_ok} is not set:
+				add 1 to {_num}
+				set {_loc} to location {_num} meters above {_tl}
+				if block at {_loc} is not passable:
+					set {_ok} to true
+					set {_loc} to location below {_loc}
+		set {_yaw} to yaw of {_player}
+		add 180 to {_yaw}
+		if {_yaw} > 360:
+			set {_yaw} to {_yaw} - 360
+		set yaw of {_loc} to {_yaw}
+		kitMsg({_player}, "<##8a2be2>背後より暗殺を試みる...")
+		playSound("entity.enderman.teleport", 1, 0.75, {_player})
+		drawDot count 1, particle "mobspell", RGB 138, 43, 226, center {_player}, visibleRange 30, keepFor 5 seconds
+		teleport {_player} to {_loc}
+		loop 100 times:
+			if {_ok2} is not set:
+				if block 0.1 meters below {_player} is not passable:
+					set {_ok2} to true
+				wait a tick
+		if {_ok2} is true:
+			playSound("entity.zombie_villager.converted", 1, 1.5, {_player})
+			loop all players in radius 5 around {_player}:
+				if kitCheckTeam(loop-player, {_player}, false) is true:
+					kitSleep(loop-player, 3 seconds)
+			set {_bnm} to 1
+			set {_pl} to location of block at {_player}
+			loop 5 times:
+				loop all blocks in radius {_bnm} around {_player}:
+					loop-block is air
+					block below loop-block is not air
+					set {_bl} to location of loop-block
+					set {_bn} to {_bnm} - 1
+					if distance between {_bl} and {_pl} >= {_bn}:
+						add -0.3 to y-coordinate of {_bl}
+						drawDot count 3, particle "witchspell", center {_bl}, visibleRange 30
+				add 1 to {_bnm}
+				wait a tick
+	else:
+		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+
+on damage:
+	damage was caused by fall
+	{Class::%victim%} is "Assassin"
+	cancel event
+
+# Ultimate
+function kitUltAssassin(player: player):
+	message "§c10m以内の敵に右クリックで急接近できます!" to {_player}
+	message "§c周囲5mに敵が居なければ透明化が付与されます!" to {_player}
+	message "§c与えるダメージは1になってしまいますが," to {_player}
+	message "§c背後からうまく攻撃できれば一撃キル!" to {_player}
+	set {Stats.%{_player}%::UltAssassin} to true
+	loop 200 times:
+		delete {_enemy}
+		loop all players in radius 5 around {_player}:
+			{Join::%loop-player%} is "Kit"
+			{TrueTeam::%{_player}%} is not {TrueTeam::%loop-player%}
+			set {_enemy} to true
+		if {_enemy} is not set:
+			if {Kit-Invisible::%{_player}%} is not set:
+				set {Kit-Invisible::%{_player}%} to true
+				send action bar "§b§l透明化した!" to {_player}
+				loop all players:
+					{Join::%loop-player%} is "Kit"
+					{team::%loop-player%} is not {team::%{_player}%}
+					{Class::%loop-player%} is not "Engineer"
+					hide {_player} from loop-player
+		else:
+			if {Kit-Invisible::%{_player}%} is true:
+				reveal {_player} from all players
+				delete {Kit-Invisible::%{_player}%}
+				send action bar "§c§l透明化が解除された!" to {_player}
+			set {_eb} to aroundEffect({_player})
+			drawDot count 1, particle "mobspell", RGB 100, 0, 10, center {_eb}, visibleRange 30
+		wait a tick
+	delete {Stats.%{_player}%::UltAssassin}
+	if {Kit-Invisible::%{_player}%} is true:
+		reveal {_player} from all players
+		delete {Kit-Invisible::%{_player}%}
+		send action bar "§c§l透明化が解除された!" to {_player}
+
+on rightclick:
+	if {Stats.%player%::UltAssassin} is true:
+		set {_tp} to target player
+		{_tp} is set
+		set {_dis} to the distance between player and {_tp}
+		{_dis} <= 10
+		set {_yaw} to yaw of player
+		set {_tploc} to location of {_tp}
+		set {_tploc}'s yaw to {_yaw}
+		set {_tploc}'s pitch to 0
+		set {_tploc} to location 1 meter behind {_tploc}
+		teleport player to {_tploc}

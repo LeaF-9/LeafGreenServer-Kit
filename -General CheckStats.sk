@@ -1,0 +1,53 @@
+command /checkstats <offline player> <text> <text>:
+	usage: /checkstats <player> <game> <stats>
+	trigger:
+		message "§6==========§2%arg 1%'s %arg 2%-%arg 3% Stats§6==========" to player
+		message "§cKill: §7%{%arg 2%-Kill.%arg 3%::%arg 1's UUID%}%" to player
+		message "§9Death: §7%{%arg 2%-Death.%arg 3%::%arg 1's UUID%}%" to player
+		message "§eK/D: §7%{%arg 2%-KD.%arg 3%::%arg 1's UUID%}%" to player
+		message "§dAssist: §7%{%arg 2%-Assist.%arg 3%::%arg 1's UUID%}%" to player
+
+command /topstats <text> <text> <text>:
+	usage: /topstats <Kill/Ratio/KD> <stats> <game>
+	trigger:
+		message "§2%arg 3%-%arg 2% §b%arg 1% §6TOP 5"
+		set {_high} to 0
+		loop {%arg 3%-%arg 1%.%arg 2%::*}:
+			{BAN::%loop-index%} is not set
+			if arg 1 is "KD":
+				if {%arg 3%-Death.%arg 2%::%loop-index%} >= 100:
+					set {_list::%loop-index%} to loop-value
+			else:
+				set {_list::%loop-index%} to loop-value
+		loop 5 times:
+			loop {_list::*}:
+				loop-value-2 > {_high}
+				{UUID::%loop-index%} is set
+				set {_high} to loop-value-2
+				set {_highplayer} to loop-index
+			if {_high} is 0:
+				delete {_high}
+			message "§6##%loop-number% §a%{UUID::%{_highplayer}%}% §b[§9%{_high}%§b]"
+			set {_high} to 0
+			delete {_list::%{_highplayer}%}
+			delete {_highplayer}
+
+command /clearmonthstats <text>:
+	permission: sk.admin
+	trigger:
+		delete {%arg 1%-Kill.month::*}
+		delete {%arg 1%-Death.month::*}
+		delete {%arg 1%-KD.month::*}
+		delete {%arg 1%-Win.month::*}
+		delete {%arg 1%-Assist.month::*}
+		delete {%arg 1%-MonthCount::*}
+
+command /clearweekstats <text>:
+	permission: sk.admin
+	trigger:
+		delete {%arg 1%-Kill.week::*}
+		delete {%arg 1%-Death.week::*}
+		delete {%arg 1%-KD.week::*}
+		delete {%arg 1%-Win.week::*}
+		delete {%arg 1%-Assist.week::*}
+		delete {%arg 1%-WeekCount::*}

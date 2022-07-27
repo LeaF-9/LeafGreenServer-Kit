@@ -1,0 +1,45 @@
+on server start:
+	set {BlockPhysics} to true
+	delete {Kit-MapEV}
+	kitStageListing()
+
+function kitStageListing():
+	delete {Kit-StageListUP::*}
+	load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+	set {_stages::*} to yml list "Stages" from "KitStages"
+	unload yml "KitStages"
+	loop {_stages::*}:
+		delete {_enable}
+		load yml "plugins/skript-yaml/Kit Stages/%loop-value%.yml" as "KitStage"
+		set {_enable} to yml value "enable" from "KitStage"
+		unload yml "KitStage"
+		delete {_true}
+		if {_enable} is true:
+			set {_true} to true
+		if {_true} is true:
+			add loop-value to {Kit-StageListUP::*}
+
+command /kit-stagelistup <text> <text="none">:
+	permission: sk.admin
+	trigger:
+		if arg 1 is "check":
+			message formatted "§e§m===============§a[ §6§lKit Stage List §a]§e§m===============" to player
+			loop {Kit-StageListUP::*}:
+				message formatted "§8- §6§l%loop-value%" to player
+
+# command /stagelistwashing:
+# 	permission: sk.admin
+# 	trigger:
+# 		delete {Kit-StageListUP::*}
+# 		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+# 		set {_stages::*} to yml list "Stages" from "KitStages"
+# 		unload yml "KitStages"
+# 		loop {_stages::*}:
+# 			delete {_true}
+# 			load yml "plugins/skript-yaml/Kit Stages/%loop-value%.yml" as "KitStage"
+# 			set {_enable} to yml value "enable" from "KitStage"
+# 			unload yml "KitStage"
+# 			if {_enable} is true:
+# 				set {_true} to true
+# 			if {_true} is true:
+# 				add loop-value to {Kit-StageListUP::*}

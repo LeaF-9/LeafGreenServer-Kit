@@ -1,0 +1,384 @@
+﻿#on join:
+#	wait 10 ticks
+#	execute console command "/cclass %player% JoinInv"
+#	execute console command "/khc %player%"
+#	if player has permission "sk.admin":
+#		give a diamond named "§9Admin Tools" to player
+#	if {Kit-tochu} is false:
+#		set {Join::%player%} to "Kit"
+#		add 1 to {Kit-Join}
+#		broadcast "§a%player% §6がゲームに参加しました。 §7(§d%{KitJoin}%/40§7)"
+#		if {Kit-GameStart} is false:
+#			if {Kit-Join} is less than 3:
+#				broadcast "§b4人集まると§e/gamestart§bでゲームを開始することが出来ます"
+#			else if {Kit-Join} is more than 3:
+#				broadcast "§dゲーム開始に必要な人数が揃いました! §e/gamestart §dでゲームを開始します!"
+#	else if {Kit-tochu} is true:
+#		message "§d既にゲームが開始されています。"
+#		message "§e/join §dで途中参加が出来ます。"
+#		message "§e/spec §dで観戦することが出来ます。"
+
+command /kit-join:
+	description: Mapに移動するだけ joinではない
+	executable by: player
+	trigger:
+		if {Kit-GameStage::name} is set:
+			teleport player to {Kit-GameStage::spec}
+			execute console command "/cclass %player% Kit-MapInv"
+			message "§aステージに移動します..." to player
+			wait a tick
+			set gamemode of player to spectator
+			message "§eゲームに参加する際は §b§l/join §eを入力して下さい" to player
+			message "§eインベントリ内に§6メニュー§eがあります" to player
+			if {Kit-Tutorial::%player%} is not set:
+				set {Kit-Tutorial::%player%} to true
+			if {Kit-Tutorial::%player%} is false:
+				set name of slot 24 of player to "§aTutorial§7: §4§lOFF"
+		else:
+			message "§cステージの準備が完了していません! §eお待ち下さい..." to player
+
+command /kit-stagesetting <text>:
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+		if {_stages::*} contains arg 1:
+			if {Kit-GameStage::name} is not set:
+				set {Kit-GameStage::name} to arg 1
+				kitReadYML(arg 1)
+				loop all players:
+					message "§b次のステージが §6§l%arg 1% §bに設定されました" to loop-player
+			else:
+				message "§c現在ステージが設定されています" to player
+		else:
+			message "§cステージが存在しません" to player
+
+command /kit-stageselect <text>:
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+		if {_stages::*} contains arg 1:
+			set {Kit-StageSelect} to arg 1
+			message "§a次に設定されるステージを §6§l%arg 1% §aに設定しました" to player
+		else:
+			message "§cステージが存在しません" to player
+
+function kitWorldChoose():
+	if {Kit-StageVote} is true:
+		mapVote("Kit")
+		stop
+	if {Kit-StageListing} is true:
+		set {_stages::*} to {Kit-StageListUP::*}
+	else:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+	loop {_stages::*}:
+		load yml "plugins/skript-yaml/Kit Stages/%loop-value%.yml" as "KitStage"
+		delete {_true}
+		if yml value "enable" from "KitStage" is true:
+			set {_true} to true
+		if {_true} is true:
+			if {Kit-StageRandomize.rule} is set:
+				if yml value "rule" from "KitStage" is {Kit-StageRandomize.rule}:
+					set {_true} to true
+				else:
+					delete {_true}
+		if {_true} is true:
+			if {Kit-StageRandomize.team} is set:
+				if yml value "team" from "KitStage" is {Kit-StageRandomize.team}:
+					set {_true} to true
+				else:
+					delete {_true}
+		if {_true} is true:
+			add loop-value to {_stage::*}
+		unload yml "KitStage"
+	set {_random} to a random text out of {_stage::*}
+	worldLoad("Kit", {_random})
+	if {Kit-StageListing} is true:
+		remove {_random} from {Kit-StageListUP::*}
+		set {_mapch} to false
+		loop {Kit-StageListUP::*}:
+			set {_mapch} to true
+		if {_mapch} is false:
+			execute console command "/stagelistwashing"
+
+function kitGameInsert():
+	set {_id.game} to {Kit-GameID}
+	set {_time.game} to {Kit-GameTimestamp}
+	set {_duration.game} to {Kit-GameTime}
+	delete {Kit-GameID}
+	delete {Kit-GameTimestamp}
+	load yml "plugins/skript-yaml/Kit Games/%{_id.game}%.yml" as "game.%{_id.game}%"
+	set yml value "map" from "game.%{_id.game}%" to {Kit-GameStage::name}
+	set yml list "win-team" from "game.%{_id.game}%" to {Kit-WinTeam::*}
+	set yml value "time" from "game.%{_id.game}%" to {_time.game}
+	set yml value "duration" from "game.%{_id.game}%" to {_duration.game}
+	save yml "game.%{_id.game}%"
+	load yml "plugins/skript-yaml/Kit Player_Match/%{_id.game}%.yml" as "play_match.%{_id.game}%"
+	loop {Kit-GameplayTime::*}:
+		set {_uuid} to loop-index
+		add {_uuid} to {_uuids::*}
+		set {_player} to {UUID::%{_uuid}%}
+		set {_team} to {TrueTeam::%{_player}%}
+		if {Kit-GameStage::rule} is "BEC":
+			set {_action-1} to {Kit-CoreBreak::%{_player}%}
+		else if {Kit-GameStage::rule} is "EmJ":
+			set {_action-1} to {Kit-EarnJewel::%{_player}%}
+		else if {Kit-GameStage::rule} is "StW":
+			set {_action-1} to {Kit-WoolPlace::%{_player}%}
+		if {_action-1} is not set:
+			set {_action-1} to 0
+		set {_playtime} to loop-value
+		set yml value "%{_uuid}%.team" from "play_match.%{_id.game}%" to {_team}
+		set yml value "%{_uuid}%.action-1" from "play_match.%{_id.game}%" to {_action-1}
+		set yml value "%{_uuid}%.playtime" from "play_match.%{_id.game}%" to {_playtime}
+	set yml list "players" from "play_match.%{_id.game}%" to {_uuids::*}
+	save yml "play_match.%{_id.game}%"
+
+
+command /kjclear:
+	description: KitJoinの引数を削除します
+	permission: sk.admin
+	trigger:
+		set {Kit-MapEV} to {Kit-GameStage::name}
+		loop all players:
+			if {Join::%loop-player%} is "Kit":
+				set {_joiner::%loop-player%} to true
+				set max health of loop-player to 10
+				set walk speed of loop-player to 0.2
+				heal loop-player by 10 hearts
+				execute console command "/skclass %loop-player% Kit-LobbyInv"
+				reveal loop-player from all players
+				execute console command "/undisplayer %loop-player%"
+				set gamemode of loop-player to survival
+			else if gamemode of loop-player is spectator:
+				teleport loop-player to {LobbyLocation::Kit}
+				execute console command "/skclass %loop-player% Kit-LobbyInv"
+				set gamemode of loop-player to survival
+		loop all offline players:
+			set block at {Kit-Ult.%loop-offline player%::Teleport1} to air
+			set block at {Kit-Ult.%loop-offline player%::Base1} to air
+			set block at {Kit-Ult.%loop-offline player%::Teleport2} to air
+			set block at {Kit-Ult.%loop-offline player%::Base2} to air
+			delete {Ult.%loop-offline player%::*}
+			delete {Stats.%loop-offline player%::*}
+			loop {Block.%loop-offline player%::*}:
+				set block at loop-value-2 to air
+			delete {Block.%loop-offline player%::*}
+			set {_c} to 0
+			loop {EffectCount::%loop-offline player%} times:
+				add 1 to {_c}
+				stopEffect "%loop-offline player%-%{_c}%"
+			delete {EffectCount::%loop-offline player%}
+			delete {Join::%loop-offline player%}
+			delete {Class::%loop-offline player%}
+			delete {CLS::%loop-offline player%}
+			delete {ClassChose::%loop-offline player%}
+			delete {CTStop.%loop-offline player%::*}
+			loop {Kit-OptionStats::*}:
+				delete {Kit-%loop-value-2%::%loop-offline player%}
+			delete {Kit-Necromance::%loop-offline player%}
+			delete {Kit-Lich::%loop-offline player%}
+			delete {Kit-OptionStats::*}
+			delete {Ultimate::%loop-offline player%}
+			delete {Ulting::%loop-offline player%}
+			delete {team::%loop-offline player%}
+			delete {TrueTeam::%loop-offline player%}
+			delete {RespawnKill::%loop-offline player%}
+			delete {KillStreak::%loop-offline player%}
+		execute console command "/team empty kit-red"
+		execute console command "/team empty kit-blue"
+		execute console command "/team empty kit-yellow"
+		execute console command "/team empty kit-green"
+		execute console command "/team empty bandit"
+		execute console command "/killmobs Kit"
+		loop all players:
+			{_joiner::%loop-player%} is true
+			delete {Kit-AllowClass.%loop-player%::*}
+			teleport loop-player to {LobbyLocation::Kit}
+		delete {Kit-GameRule}
+		wait a tick
+		worldUnload("Kit", {Kit-GameStage::name})
+		delete {Kit-GameStage::*}
+		delete {Kit-GameStageAuthors::*}
+		delete {Kit-GameStageRespawns.red::*}
+		delete {Kit-GameStageRespawns.blue::*}
+		delete {Kit-GameStageRespawns.yellow::*}
+		delete {Kit-GameStageRespawns.green::*}
+		delete {Kit-GameStageRespawns.bandit::*}
+		delete {Kit-GameStageCore_red::*}
+		delete {Kit-GameStageCore_blue::*}
+		delete {Kit-GameStageCore_yellow::*}
+		delete {Kit-GameStageCore_green::*}
+		delete {Kit-GameStageCoreHP::*}
+		delete {Kit-GameStageCoreMaterial::*}
+		delete {Kit-GameStageCoreLocation::*}
+		delete {Kit-GameStageVillager::*}
+		delete {Kit-GameStageAreas::*}
+		delete {Kit-GameStageType::*}
+		delete {Kit-GameStageTime::*}
+		delete {Kit-GameStageRange::*}
+		delete {Kit-GameTime}
+		delete {Kit-GameplayTime::*}
+		delete {Kit-Join}
+		delete {Kit-lnum}
+		set {Kit-tochu} to false
+		set {Kit-GameStart} to false
+		delete {Kit-teamred::*}
+		delete {Kit-teamblue::*}
+		delete {Kit-teamyellow::*}
+		delete {Kit-teamgreen::*}
+		delete {Kit-teamwhite::*}
+		kitFakeDeleteAll()
+		wait 5 seconds
+		kitWorldChoose()
+		rankingEnding()
+		loop all players:
+			{_joiner::%loop-player%} is true
+			execute console command "/kit-mapev %loop-player%"
+
+function addKitOS(stats: text):
+	if {Kit-OptionStats::*} does not contain {_stats}:
+		add {_stats} to {Kit-OptionStats::*}
+
+command /kjc <player>:
+	permission: sk.admin
+	trigger:
+		reveal arg 1 from all players
+		disallow fly for arg 1
+		delete {Stats.%arg 1%::*}
+		delete {CTStop.%arg 1%::*}
+		delete {Kit-AllowClass.%arg 1%::*}
+		loop {Block.%arg 1%::*}:
+			set block at loop-value to air
+		delete {Block.%arg 1%::*}
+		loop {Kit-OptionStats::*}:
+			delete {Kit-%loop-value%::%arg 1%}
+		set {_c} to 0
+		loop {EffectCount::%arg 1%} times:
+			add 1 to {_c}
+			stopEffect "%arg 1%-%{_c}%"
+		delete {EffectCount::%arg 1%}
+		kitFakeDelete(arg 1)
+		execute console command "/undisplayer %arg 1%"
+
+command /tochu <text>:
+	permission: sk.admin
+	trigger:
+		if arg 1 is "true":
+			set {tochu} to true
+		else if arg 1 is "false":
+			set {tochu} to false
+			set {GameStart} to false
+
+function rtfcheck():
+	if {Kit-GameStage::team} is "2" or 2:
+		execute console command "/rt"
+	if {Kit-GameStage::team} is "4" or 4:
+		execute console command "/rf"
+
+command /rt:
+	permission: sk.admin
+	trigger:
+		set {_pnum} to 0
+		set {Kit-lnum} to 0
+		delete {Kit-teamred::*}
+		delete {Kit-teamblue::*}
+		delete {Kit-teamwhite::*}
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			add loop-player to {Kit-teamwhite::*}
+			add 1 to {_pnum}
+		loop {_pnum} times:
+			add 1 to {Kit-lnum}
+			set {_random} to a random player out of {Kit-teamwhite::*}
+			remove {_random} from {Kit-teamwhite::*}
+			if {Kit-lnum} is 1:
+				add {_random} to {Kit-teamred::*}
+				set {TrueTeam::%{_random}%} to "red"
+				set {team::%{_random}%} to "red"
+				execute console command "/team join kit-red %{_random}%"
+			else if {Kit-lnum} is 2:
+				add {_random} to {Kit-teamblue::*}
+				set {TrueTeam::%{_random}%} to "blue"
+				set {team::%{_random}%} to "blue"
+				execute console command "/team join kit-blue %{_random}%"
+				remove 2 from {Kit-lnum}
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			message "§cRed§6: %{Kit-teamred::*}%" to loop-player
+			message "§9Blue§6: %{Kit-teamblue::*}%" to loop-player
+
+command /rf:
+	permission: sk.admin
+	trigger:
+		set {Kit-tochu} to true
+		set {_pnum} to 0
+		set {Kit-lnum} to 0
+		delete {Kit-teamred::*}
+		delete {Kit-teamblue::*}
+		delete {Kit-teamyellow::*}
+		delete {Kit-teamgreen::*}
+		delete {Kit-teamwhite::*}
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			add loop-player to {Kit-teamwhite::*}
+			add 1 to {_pnum}
+		loop {_pnum} times:
+			add 1 to {Kit-lnum}
+			set {_random} to a random player out of {Kit-teamwhite::*}
+			remove {_random} from {Kit-teamwhite::*}
+			if {Kit-lnum} is 1:
+				add {_random} to {Kit-teamred::*}
+				set {TrueTeam::%{_random}%} to "red"
+				set {team::%{_random}%} to "red"
+				execute console command "/team join kit-red %{_random}%"
+			else if {Kit-lnum} is 2:
+				add {_random} to {Kit-teamblue::*}
+				set {TrueTeam::%{_random}%} to "blue"
+				set {team::%{_random}%} to "blue"
+				execute console command "/team join kit-blue %{_random}%"
+			else if {Kit-lnum} is 3:
+				add {_random} to {Kit-teamyellow::*}
+				set {TrueTeam::%{_random}%} to "yellow"
+				set {team::%{_random}%} to "yellow"
+				execute console command "/team join kit-yellow %{_random}%"
+			else if {Kit-lnum} is 4:
+				add {_random} to {Kit-teamgreen::*}
+				set {TrueTeam::%{_random}%} to "green"
+				set {team::%{_random}%} to "green"
+				execute console command "/team join kit-green %{_random}%"
+				remove 4 from {Kit-lnum}
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			message "§cRed§6: %{Kit-teamred::*}%" to loop-player
+			message "§9Blue§6: %{Kit-teamblue::*}%" to loop-player
+			message "§eYellow§6: %{Kit-teamyellow::*}%" to loop-player
+			message "§aGreen§6: %{Kit-teamgreen::*}%" to loop-player
+
+command /st <text> <offline player=%player%>:
+	permission: sk.admin
+	trigger:
+		if arg 1 is "red", "blue", "yellow", "green", "orange" or "purple":
+			set {team::%arg 2%} to arg 1
+			set {TrueTeam::%arg 2%} to arg 1
+			message "§a%arg 2%を<%arg 1%>%arg 1%に追加しました"
+			if arg 2 is "Tester-2":
+				set metadata value "gametype" of arg 2 to "Kit"
+		else if arg 1 is "delete":
+			delete {team::%arg 2%}
+			delete {TrueTeam::%arg 2%}
+			message "§c%arg 2%をチームから除外しました"
+		else:
+			message "§cそんなチームありません"
+
+command /tcheck:
+	permission: sk.admin
+	trigger:
+		message "%{Kit-tochu}%"
+		message "%{team::%player%}%"
+		message "%{Kit-lnum}%"

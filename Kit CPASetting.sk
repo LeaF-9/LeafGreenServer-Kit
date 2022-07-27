@@ -1,0 +1,141 @@
+options:
+	prefix: §e[§aKit PvP§e]
+
+command /cpaarea <text> <text> <text>:
+	usage: /cpaarea <arg> <area-name> <map-name>
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+		if {_stages::*} contains arg 3:
+			load yml "plugins/skript-yaml/Kit Stages/%arg 3%.yml" as "MapEdit"
+			if yml value "rule" from "MapEdit" is "CPA":
+				if arg 1 is "set":
+					if target block is iron block:
+						set yml value "cpa-rule.areas.%arg 2%.type" from "MapEdit" to "Iron"
+						message "{@prefix} §aType: §8Iron Core" to player
+					else if target block is gold block:
+						set yml value "cpa-rule.areas.%arg 2%.type" from "MapEdit" to "Gold"
+						message "{@prefix} §aType: §6Gold Core" to player
+					else if target block is diamond block:
+						set yml value "cpa-rule.areas.%arg 2%.type" from "MapEdit" to "Diamond"
+						message "{@prefix} §aType: §bDiamond Core" to player
+					else:
+						message "{@prefix} §c指定されたブロックではありません" to player
+						stop
+					set {_loc} to location of targeted block
+					set yml value "cpa-rule.areas.%arg 2%.location.x" from "MapEdit" to x-coordinate of {_loc}
+					set yml value "cpa-rule.areas.%arg 2%.location.y" from "MapEdit" to y-coordinate of {_loc}
+					set yml value "cpa-rule.areas.%arg 2%.location.z" from "MapEdit" to z-coordinate of {_loc}
+					set yml value "cpa-rule.areas.%arg 2%.location.yaw" from "MapEdit" to yaw of {_loc}
+					set yml value "cpa-rule.areas.%arg 2%.location.pitch" from "MapEdit" to pitch of {_loc}
+					set yml value "cpa-rule.areas.%arg 2%.location.world" from "MapEdit" to kitWorldNC(arg 3)
+					save yml "MapEdit"
+					message "{@prefix} §6%arg 3%§7の§bPA: §l%arg 2%§7を設定しました" to player
+					message "{@prefix} §a座標§7: §e%{_loc}%" to player
+			else:
+				message "{@prefix} §cルールが異なっています" to player
+		else:
+			message "{@prefix} §cそのステージは存在しません" to player
+
+command /cpagoal <number> <text>:
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+		if {_stages::*} contains arg 2:
+			load yml "plugins/skript-yaml/Kit Stages/%arg 2%.yml" as "MapEdit"
+			if yml value "rule" from "MapEdit" is "CPA":
+				set yml value "cpa-rule.goal" from "MapEdit" to arg 1
+				save yml "MapEdit"
+				message "{@prefix} §6%arg 2%§eのゴールポイントを§b%arg 1%§eに設定しました" to player
+			else:
+				message "{@prefix} §cルールが異なっています" to player
+		else:
+			message "{@prefix} §cそのステージは存在しません" to player
+
+command /cpatime <number> <text> <text>:
+	usage: /cptime <time> <PA> <stage>
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+		if {_stages::*} contains arg 3:
+			load yml "plugins/skript-yaml/Kit Stages/%arg 3%.yml" as "MapEdit"
+			if yml value "rule" from "MapEdit" is "CPA":
+				set yml value "cpa-rule.areas.%arg 2%.time" from "MapEdit" to arg 1
+				save yml "MapEdit"
+				message "{@prefix} §e%arg 2%§dの占拠時間を§b%arg 1% ticks§dに設定しました" to player
+			else:
+				message "{@prefix} §cルールが異なっています" to player
+		else:
+			message "{@prefix} §cそのステージは存在しません" to player
+
+command /cparange <number> <text> <text>:
+	usage: /cprange <range> <PA> <stage>
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+		if {_stages::*} contains arg 3:
+			load yml "plugins/skript-yaml/Kit Stages/%arg 3%.yml" as "MapEdit"
+			if yml value "rule" from "MapEdit" is "CPA":
+				set yml value "cpa-rule.areas.%arg 2%.range" from "MapEdit" to arg 1 + 1
+				save yml "MapEdit"
+				message "{@prefix} §e%arg 2%§dのPA範囲を§b%arg 1%§dに設定しました" to player
+			else:
+				message "{@prefix} §cルールが異なっています" to player
+		else:
+			message "{@prefix} §cそのステージは存在しません" to player
+
+command /cpacolor <text> <text> <text>:
+	usage: /cpacolor <team> <set/remove> <stage>
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+		if {_stages::*} contains arg 3:
+			load yml "plugins/skript-yaml/Kit Stages/%arg 3%.yml" as "MapEdit"
+			if yml value "rule" from "MapEdit" is "CPA":
+				if arg 2 is "set":
+					set yml value "cpa-rule.color.%arg 1%" from "MapEdit" to player's tool
+					save yml "MapEdit"
+					message "{@prefix} §6%arg 3%§7の§6ColorBlock: %arg 1%§7を§e%player's tool%§7に設定しました" to player
+			else:
+				message "{@prefix} §cルールが異なっています" to player
+		else:
+			message "{@prefix} §cこのステージは存在しません" to player
+
+command /cpalist <text>:
+	permission: sk.admin
+	trigger:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+		if {_stages::*} contains arg 1:
+			loop {Kit-PAList.%arg 1%::*}:
+				if {Kit-PAType.%arg 1%::%loop-index%} is "Diamond":
+					message "{@prefix} §b%loop-index% §a- §9%loop-value%" to player
+				else if {Kit-PAType.%arg 1%::%loop-index%} is "Gold":
+					message "{@prefix} §6%loop-index% §a- §9%loop-value%" to player
+				else if {Kit-PAType.%arg 1%::%loop-index%} is "Iron":
+					message "{@prefix} §8%loop-index% §a- §9%loop-value%" to player
+		else:
+			message "{@prefix} §cこのステージは存在しません" to player
+
+function setCasePA(text: text) :: text:
+	if {_text} contains "-":
+		replace every "-" with " " in {_text}
+		set {_text} to {_text} in proper case
+		set {_text} to {_text} in kebab case
+		return {_text}
+	else if {_text} contains "_":
+		replace every "_" with " " in {_text}
+		set {_text} to {_text} in proper case
+		set {_text} to {_text} in snake case
+		return {_text}

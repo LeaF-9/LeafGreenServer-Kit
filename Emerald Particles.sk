@@ -1,0 +1,657 @@
+# command /emerald-thunder:
+# 	descriptions: Wizardの雷撃
+# 	permission: sk.admin
+# 	trigger:
+# 		set {_loc} to location of block at player
+# 		set {_vector} to {_loc}
+# 		set {_x} to x-coordinate of {_loc}
+# 		set {_y} to y-coordinate of {_loc}
+# 		set {_z} to z-coordinate of {_loc}
+# 		set {_vx1} to {_loc}
+# 		set pitch of {_vx1} to 0
+# 		set {_vx} to location 1 meters to the right of {_vx1}
+# 		set {_vy} to {_loc}
+# 		set {_y1p} to pitch of {_vy}
+# 		set {_y2p} to abs({_y1p}) - 90
+# 		if {_y1p} < 0:
+# 			set {_y3p} to yaw of {_loc}
+# 			if {_y3p} < 180:
+# 				add 180 to {_y3p}
+# 			else:
+# 				add -180 to {_y3p}
+# 			set yaw of {_vy} to {_y3p}
+# 		set pitch of {_vy} to {_y2p}
+# 		set {_vy} to location 1 meters in front of {_vy}
+# 		set {_vz} to location 1 meters in front of {_loc}
+# 		set {_s} to 0
+# 		set {_t} to 0
+# 		set {_x1} to {_x}
+# 		set {_y1} to {_y}
+# 		set {_z1} to {_z}
+# 		set {_x2} to {_x}
+# 		set {_y2} to {_y}
+# 		set {_z2} to {_z}
+# 		set {_x3} to {_x}
+# 		set {_y3} to {_y}
+# 		set {_z3} to {_z}
+# 		set {_x4} to {_x}
+# 		set {_y4} to {_y}
+# 		set {_z4} to {_z}
+# 		set {_x5} to {_x}
+# 		set {_y5} to {_y}
+# 		set {_z5} to {_z}
+# 		set {_x6} to {_x}
+# 		set {_y6} to {_y}
+# 		set {_z6} to {_z}
+# 		loop 10 times:
+# 			loop 7 times:
+# 				add 1 to {_t}
+# 				if {_t} < 2:
+# 					set {_u} to a random number between -0.7 and 0.7
+# 					set {_x6} to {_u} * (x-coordinate of {_vy} - {_x}) + 7 * (x-coordinate of {_vz} - {_x}) + {_x}
+# 					set {_y6} to {_u} * (y-coordinate of {_vy} - {_y}) + 7 * (y-coordinate of {_vz} - {_y}) + {_y}
+# 					set {_z6} to {_u} * (z-coordinate of {_vy} - {_z}) + 7 * (z-coordinate of {_vz} - {_z}) + {_z}
+# 					set {_px6} to {_x6}
+# 					set {_py6} to {_y6}
+# 					set {_pz6} to {_z6}
+# 				else:
+# 					set {_x6} to {_x5}
+# 					set {_y6} to {_y5}
+# 					set {_z6} to {_z5}
+# 				if {_t} > 6:
+# 					set {_x6} to {_px6}
+# 					set {_y6} to {_py6}
+# 					set {_z6} to {_pz6}
+# 				set {_u} to a random number between -0.7 and 0.7
+# 				set {_x5} to 7 * cos(90 + 360 * {_t} / 7) * (x-coordinate of {_vx} - {_x}) + {_u} * (x-coordinate of {_vy} - {_x}) + 7 * sin(90 + 360 * {_t} / 7) * (x-coordinate of {_vz} - {_x}) + {_x}
+# 				set {_y5} to 7 * cos(90 + 360 * {_t} / 7) * (y-coordinate of {_vx} - {_y}) + {_u} * (y-coordinate of {_vy} - {_y}) + 7 * sin(90 + 360 * {_t} / 7) * (y-coordinate of {_vz} - {_y}) + {_y}
+# 				set {_z5} to 7 * cos(90 + 360 * {_t} / 7) * (z-coordinate of {_vx} - {_z}) + {_u} * (z-coordinate of {_vy} - {_z}) + 7 * sin(90 + 360 * {_t} / 7) * (z-coordinate of {_vz} - {_z}) + {_z}
+# 				set {_u} to a random number between -0.7 and 0.7
+# 				set {_x4} to 5.2 * cos(90 + 360 * {_t} / 7) * (x-coordinate of {_vx} - {_x}) + {_u} * (x-coordinate of {_vy} - {_x}) + 5.2 * sin(90 + 360 * {_t} / 7) * (x-coordinate of {_vz} - {_x}) + {_x}
+# 				set {_y4} to 5.2 * cos(90 + 360 * {_t} / 7) * (y-coordinate of {_vx} - {_y}) + {_u} * (y-coordinate of {_vy} - {_y}) + 5.2 * sin(90 + 360 * {_t} / 7) * (y-coordinate of {_vz} - {_y}) + {_y}
+# 				set {_z4} to 5.2 * cos(90 + 360 * {_t} / 7) * (z-coordinate of {_vx} - {_z}) + {_u} * (z-coordinate of {_vy} - {_z}) + 5.2 * sin(90 + 360 * {_t} / 7) * (z-coordinate of {_vz} - {_z}) + {_z}
+# 				set {_u} to a random number between -0.7 and 0.7
+# 				set {_x3} to 3.7 * cos(90 + 360 * {_t} / 7) * (x-coordinate of {_vx} - {_x}) + {_u} * (x-coordinate of {_vy} - {_x}) + 3.7 * sin(90 + 360 * {_t} / 7) * (x-coordinate of {_vz} - {_x}) + {_x}
+# 				set {_y3} to 3.7 * cos(90 + 360 * {_t} / 7) * (y-coordinate of {_vx} - {_y}) + {_u} * (y-coordinate of {_vy} - {_y}) + 3.7 * sin(90 + 360 * {_t} / 7) * (y-coordinate of {_vz} - {_y}) + {_y}
+# 				set {_z3} to 3.7 * cos(90 + 360 * {_t} / 7) * (z-coordinate of {_vx} - {_z}) + {_u} * (z-coordinate of {_vy} - {_z}) + 3.7 * sin(90 + 360 * {_t} / 7) * (z-coordinate of {_vz} - {_z}) + {_z}
+# 				set {_u} to a random number between -0.7 and 0.7
+# 				set {_x2} to 2 * cos(90 + 360 * {_t} / 7) * (x-coordinate of {_vx} - {_x}) + {_u} * (x-coordinate of {_vy} - {_x}) + 2 * sin(90 + 360 * {_t} / 7) * (x-coordinate of {_vz} - {_x}) + {_x}
+# 				set {_y2} to 2 * cos(90 + 360 * {_t} / 7) * (y-coordinate of {_vx} - {_y}) + {_u} * (y-coordinate of {_vy} - {_y}) + 2 * sin(90 + 360 * {_t} / 7) * (y-coordinate of {_vz} - {_y}) + {_y}
+# 				set {_z2} to 2 * cos(90 + 360 * {_t} / 7) * (z-coordinate of {_vx} - {_z}) + {_u} * (z-coordinate of {_vy} - {_z}) + 2 * sin(90 + 360 * {_t} / 7) * (z-coordinate of {_vz} - {_z}) + {_z}
+# 				set {_w} to 0
+# 				loop 4 times:
+# 					add 0.25 to {_w}
+# 					set x-coordinate of {_vector} to (1 - {_w}) * {_x6} + {_w} * {_x5}
+# 					set y-coordinate of {_vector} to (1 - {_w}) * {_y6} + {_w} * {_y5}
+# 					set z-coordinate of {_vector} to (1 - {_w}) * {_z6} + {_w} * {_z5}
+# 					drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 					set x-coordinate of {_vector} to (1 - {_w}) * {_x5} + {_w} * {_x4}
+# 					set y-coordinate of {_vector} to (1 - {_w}) * {_y5} + {_w} * {_y4}
+# 					set z-coordinate of {_vector} to (1 - {_w}) * {_z5} + {_w} * {_z4}
+# 					drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 					set x-coordinate of {_vector} to (1 - {_w}) * {_x4} + {_w} * {_x3}
+# 					set y-coordinate of {_vector} to (1 - {_w}) * {_y4} + {_w} * {_y3}
+# 					set z-coordinate of {_vector} to (1 - {_w}) * {_z4} + {_w} * {_z3}
+# 					drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 					set x-coordinate of {_vector} to (1 - {_w}) * {_x3} + {_w} * {_x2}
+# 					set y-coordinate of {_vector} to (1 - {_w}) * {_y3} + {_w} * {_y2}
+# 					set z-coordinate of {_vector} to (1 - {_w}) * {_z3} + {_w} * {_z2}
+# 					drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 					set x-coordinate of {_vector} to (1 - {_w}) * {_x2} + {_w} * {_x1}
+# 					set y-coordinate of {_vector} to (1 - {_w}) * {_y2} + {_w} * {_y1}
+# 					set z-coordinate of {_vector} to (1 - {_w}) * {_z2} + {_w} * {_z1}
+# 					drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 			wait a tick
+
+# command /emerald-dark:
+# 	permission: sk.admin
+# 	trigger:
+# 		set {_loc} to location of block at player
+# 		set {_vector} to {_loc}
+# 		set {_x} to x-coordinate of {_loc}
+# 		set {_y} to y-coordinate of {_loc}
+# 		set {_z} to z-coordinate of {_loc}
+# 		set {_vx1} to {_loc}
+# 		set pitch of {_vx1} to 0
+# 		set {_vx} to location 1 meters to the right of {_vx1}
+# 		set {_vy} to {_loc}
+# 		set {_y1p} to pitch of {_vy}
+# 		set {_y2p} to abs({_y1p}) - 90
+# 		if {_y1p} < 0:
+# 			set {_y3p} to yaw of {_loc}
+# 			if {_y3p} < 180:
+# 				add 180 to {_y3p}
+# 			else:
+# 				add -180 to {_y3p}
+# 			set yaw of {_vy} to {_y3p}
+# 		set pitch of {_vy} to {_y2p}
+# 		set {_vy} to location 1 meters in front of {_vy}
+# 		set {_vz} to location 1 meters in front of {_loc}
+# 		set {_s} to 0
+# 		set {_t} to 0
+# 		loop 20 time:
+# 			add 1 to {_t}
+# 			set {_u} to 1
+# 			loop 10 time:
+# 				set x-coordinate of {_vector} to (0.7 * {_u} * cos(270 - 10 * {_t}) * cos(18)) * (x-coordinate of {_vx} - {_x}) + (0.7 * {_u} * cos(270 - 10 * {_t}) * sin(18)) * (x-coordinate of {_vy} - {_x}) + ({_u} * sin(270 - 10 * {_t})) * (x-coordinate of {_vz} - {_x}) + {_x}
+# 				set y-coordinate of {_vector} to (0.7 * {_u} * cos(270 - 10 * {_t}) * cos(18)) * (y-coordinate of {_vx} - {_y}) + (0.7 * {_u} * cos(270 - 10 * {_t}) * sin(18)) * (y-coordinate of {_vy} - {_y}) + ({_u} * sin(270 - 10 * {_t})) * (y-coordinate of {_vz} - {_y}) + {_y}
+# 				set z-coordinate of {_vector} to (0.7 * {_u} * cos(270 - 10 * {_t}) * cos(18)) * (z-coordinate of {_vx} - {_z}) + (0.7 * {_u} * cos(270 - 10 * {_t}) * sin(18)) * (z-coordinate of {_vy} - {_z}) + ({_u} * sin(270 - 10 * {_t})) * (z-coordinate of {_vz} - {_z}) + {_z}
+# 				if {_u} < 10:
+# 					drawDot count 1, particle "redstone", RGB 255, (255 - floor(2 ^ ({_u} - 2))), (256 - 2 ^ ({_u} - 1)), center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 				else:
+# 					drawDot count 1, particle "redstone", RGB 255, 32, 0, center {_vector}, visibleRange 100, keepFor 1 seconds
+# 				add 1 to {_u}
+# 			wait a tick
+
+# command /emerald-kc:
+# 	description: Knight Changer のビーム
+# 	permission: sk.admin
+# 	trigger:
+# 		set {_loc} to location of block at player
+# 		set {_vector} to {_loc}
+# 		set {_x} to x-coordinate of {_loc}
+# 		set {_y} to y-coordinate of {_loc}
+# 		set {_z} to z-coordinate of {_loc}
+# 		set {_vx1} to {_loc}
+# 		set pitch of {_vx1} to 0
+# 		set {_vx} to location 1 meters to the right of {_vx1}
+# 		set {_vy} to {_loc}
+# 		set {_y1p} to pitch of {_vy}
+# 		set {_y2p} to abs({_y1p}) - 90
+# 		if {_y1p} < 0:
+# 			set {_y3p} to yaw of {_loc}
+# 			if {_y3p} < 180:
+# 				add 180 to {_y3p}
+# 			else:
+# 				add -180 to {_y3p}
+# 			set yaw of {_vy} to {_y3p}
+# 		set pitch of {_vy} to {_y2p}
+# 		set {_vy} to location 1 meters in front of {_vy}
+# 		set {_vz} to location 1 meters in front of {_loc}
+# 		set {_s} to 0
+# 		set {_t} to 0
+# 		loop 30 time:
+# 			add 1 to {_s}
+# 			loop 3 time:
+# 				set x-coordinate of {_vector} to (cos(120 * {_t} + 12 * {_s})) * (x-coordinate of {_vx} - {_x}) + (sin(120 * {_t} + 12 * {_s})) * (x-coordinate of {_vy} - {_x}) + ({_s}) * (x-coordinate of {_vz} - {_x}) + {_x}
+# 				set y-coordinate of {_vector} to (cos(120 * {_t} + 12 * {_s})) * (y-coordinate of {_vx} - {_y}) + (sin(120 * {_t} + 12 * {_s})) * (y-coordinate of {_vy} - {_y}) + ({_s}) * (y-coordinate of {_vz} - {_y}) + {_y}
+# 				set z-coordinate of {_vector} to (cos(120 * {_t} + 12 * {_s})) * (z-coordinate of {_vx} - {_z}) + (sin(120 * {_t} + 12 * {_s})) * (z-coordinate of {_vy} - {_z}) + ({_s}) * (z-coordinate of {_vz} - {_z}) + {_z}
+# 				drawDot count 1, particle "redstone", RGB 255, 255, 224, center {_vector}, visibleRange 100, keepFor 0.3 seconds
+# 				add 1 to {_t}
+# 			set x-coordinate of {_vector} to ({_s}) * (x-coordinate of {_vz} - {_x}) + {_x}
+# 			set y-coordinate of {_vector} to ({_s}) * (y-coordinate of {_vz} - {_y}) + {_y}
+# 			set z-coordinate of {_vector} to ({_s}) * (z-coordinate of {_vz} - {_z}) + {_z}
+# 			drawDot count 1, particle "redstone", RGB 255, 255, 192, center {_vector}, visibleRange 100, keepFor 0.3 seconds
+# 			wait a tick
+
+# command /emerald-horse:
+# 	description: 馬召喚するときの演出
+# 	permission: sk.admin
+# 	trigger:
+# 		set {_loc} to location of block at player
+# 		set {_vector} to {_loc}
+# 		set {_x} to x-coordinate of {_loc}
+# 		set {_y} to y-coordinate of {_loc}
+# 		set {_z} to z-coordinate of {_loc}
+# 		set {_vx1} to {_loc}
+# 		set pitch of {_vx1} to 0
+# 		set {_vx} to location 1 meters to the right of {_vx1}
+# 		set {_vy} to {_loc}
+# 		set {_y1p} to pitch of {_vy}
+# 		set {_y2p} to abs({_y1p}) - 90
+# 		if {_y1p} < 0:
+# 			set {_y3p} to yaw of {_loc}
+# 			if {_y3p} < 180:
+# 				add 180 to {_y3p}
+# 			else:
+# 				add -180 to {_y3p}
+# 			set yaw of {_vy} to {_y3p}
+# 		set pitch of {_vy} to {_y2p}
+# 		set {_vy} to location 1 meters in front of {_vy}
+# 		set {_vz} to location 1 meters in front of {_loc}
+# 		set {_s} to 0
+# 		set {_t} to 0
+# 		loop 5 time:
+# 			add 1 to {_s}
+# 			loop 6 time:
+# 				set x-coordinate of {_vector} to (0.3 * {_s} * cos(10 * {_s} - 60 * {_t})) * (x-coordinate of {_vx} - {_x}) + (0.01 * {_s} ^ 2) * (x-coordinate of {_vy} - {_x}) + (0.3 * {_s} * sin(10 * {_s} - 60 * {_t})) * (x-coordinate of {_vz} - {_x}) + {_x}
+# 				set y-coordinate of {_vector} to (0.3 * {_s} * cos(10 * {_s} - 60 * {_t})) * (y-coordinate of {_vx} - {_y}) + (0.01 * {_s} ^ 2) * (y-coordinate of {_vy} - {_y}) + (0.3 * {_s} * sin(10 * {_s} - 60 * {_t})) * (y-coordinate of {_vz} - {_y}) + {_y}
+# 				set z-coordinate of {_vector} to (0.3 * {_s} * cos(10 * {_s} - 60 * {_t})) * (z-coordinate of {_vx} - {_z}) + (0.01 * {_s} ^ 2) * (z-coordinate of {_vy} - {_z}) + (0.3 * {_s} * sin(10 * {_s} - 60 * {_t})) * (z-coordinate of {_vz} - {_z}) + {_z}
+# 				set {_effnum} to 0.1 * {_s}
+# 				set {_efftime} to "%{_effnum}% seconds" parsed as time span
+# 				drawDot count 1, particle "redstone", RGB 255, 255, 225, center {_vector}, visibleRange 100, keepFor {_efftime}
+# 				add 1 to {_t}
+# 			wait a tick
+# 		loop 5 time:
+# 			add 1 to {_s}
+# 			loop 6 time:
+# 				set x-coordinate of {_vector} to (0.4 * {_s} * cos(10 * {_s} - 60 * {_t})) * (x-coordinate of {_vx} - {_x}) + (0.01 * {_s} ^ 2) * (x-coordinate of {_vy} - {_x}) - (0.4 * {_s} * sin(10 * {_s} - 60 * {_t})) * (x-coordinate of {_vz} - {_x}) + {_x}
+# 				set y-coordinate of {_vector} to (0.4 * {_s} * cos(10 * {_s} - 60 * {_t})) * (y-coordinate of {_vx} - {_y}) + (0.01 * {_s} ^ 2) * (y-coordinate of {_vy} - {_y}) - (0.4 * {_s} * sin(10 * {_s} - 60 * {_t})) * (y-coordinate of {_vz} - {_y}) + {_y}
+# 				set z-coordinate of {_vector} to (0.4 * {_s} * cos(10 * {_s} - 60 * {_t})) * (z-coordinate of {_vx} - {_z}) + (0.01 * {_s} ^ 2) * (z-coordinate of {_vy} - {_z}) - (0.4 * {_s} * sin(10 * {_s} - 60 * {_t})) * (z-coordinate of {_vz} - {_z}) + {_z}
+# 				drawDot count 1, particle "redstone", RGB 255, 255, 225, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 				add 1 to {_t}
+# 			wait a tick
+
+command /emerald-knightult:
+	permission: sk.admin
+	trigger:
+		set {_loc} to location of player
+		set {_vector} to {_loc}
+#		座標の設定　主軸{_loc}{_w}{_vw}
+		set {_x} to x-coordinate of {_loc}
+		set {_y} to y-coordinate of {_loc}
+		set {_z} to z-coordinate of {_loc}
+		set {_x1p} to {_loc}
+		set pitch of {_x1p} to 0
+		set {_vx} to location 1 meters to the right of {_x1p}
+		set {_vy} to {_loc}
+		set {_y1p} to pitch of {_vy}
+		set {_y2p} to abs({_y1p}) - 90
+		if {_y1p} < 0:
+			set {_y3p} to yaw of {_loc}
+			if {_y3p} < 180:
+				add 180 to {_y3p}
+			else:
+				add -180 to {_y3p}
+			set yaw of {_vy} to {_y3p}
+		set pitch of {_vy} to {_y2p}
+		set {_vy} to location 1 meters in front of {_vy}
+		set {_vz} to location 1 meters in front of {_loc}
+#		軸の設定　座標{_A}{_vwA}
+		set {_A} to {_loc}
+		set {_vyA} to 0
+		set pitch of {_A} to 0
+		set {_vxA1} to location 1 meters to the right of {_A}
+		set {_vyA1} to {_vyA} + 1
+		set {_vzA1} to location 1 meters in front of {_A}
+		set {_vxA2x} to x-coordinate of {vxA1} - {_x}
+		set {_vxA2y} to y-coordinate of {vxA1} - {_y}
+		set {_vxA2z} to z-coordinate of {vxA1} - {_z}
+		set {_vyA2x} to x-coordinate of {vyA1} - {_x}
+		set {_vyA2y} to y-coordinate of {vyA1} - {_y}
+		set {_vyA2z} to z-coordinate of {vyA1} - {_z}
+		set {_vzA2x} to x-coordinate of {vzA1} - {_x}
+		set {_vzA2y} to y-coordinate of {vzA1} - {_y}
+		set {_vzA2z} to z-coordinate of {vzA1} - {_z}
+#		1撃目
+		set {_x1} to ({_vxA2x} * cos(345) + {_vzA2x} * sin(345)) * 312 / 313 - {_vyA2x} * 25 / 313
+		set {_y1} to ({_vxA2y} * cos(345) + {_vzA2y} * sin(345)) * 25 / 313 + {_vyA2y} * 312 / 313
+		set {_z1} to {_vxA2z} * cos(75) + {_vzA2z} * sin(75)
+		set {_s} to 125
+		set {_r} to 0
+		set {_fc1} to 0
+		set {_fc2} to 0
+		loop 16 times:
+			if {_s} = 116:
+				wait a tick
+			if {_s} = 89:
+				wait a tick
+			if {_s} = 8:
+				wait a tick
+			if {_s} = -10:
+				wait a tick
+			loop 30 times:
+				add 1 to {_r}
+				set x-coordinate of {_vector} to {_x} + {_x1} * {_r} / 2 * cos({_s})
+				set y-coordinate of {_vector} to {_y}
+				set z-coordinate of {_vector} to {_z} + {_z1} * {_r} / 3 * sin({_s})
+				set {_fc1} to ({_r} - 31) ^ 2
+				set {_fc2} to 1 / {_fc1}
+				if {_s} = 125:
+					drawDot count 1, particle "redstone", RGB 255, (383 - 128 * {_fc2}), (255 - 255 * {_fc2}), center {_vector}, visibleRange 100, keepFor 1 seconds
+				if {_s} = -10:
+					drawDot count 1, particle "redstone", RGB 255, (383 - 128 * {_fc2}), (255 - 255 * {_fc2}), center {_vector}, visibleRange 100, keepFor 1 seconds
+				else:
+					drawDot count 1, particle "redstone", RGB 255, (383 - 128 * {_fc2}), (255 - 255 * {_fc2}), center {_vector}, visibleRange 100, keepFor 0.1 seconds
+			add -9 to {_s}
+#		2撃目
+		set {_x2} to ({_vxA2x} * cos(15) + {_vzA2x} * sin(15)) * 1200 / 1201 - {_vyA2x} * 49 / 1201
+		set {_y2} to ({_vxA2y} * cos(15) + {_vzA2y} * sin(15)) * 49 / 1201 + {_vyA2y} * 1200 / 1201
+		set {_z2} to {_vxA2z} * cos(105) + {_vzA2z} * sin(105)
+		set {_s} to 190
+		set {_r} to 0
+		set {_fc1} to 0
+		set {_fc2} to 0
+		loop 21 times:
+			if {_s} = 181:
+				wait a tick
+			if {_s} = 154:
+				wait a tick
+			if {_s} = 64:
+				wait a tick
+			if {_s} = 10:
+				wait a tick
+			loop 30 times:
+				add 1 to {_r}
+				set x-coordinate of {_vector} to {_x} + {_x2} * {_r} / 2 * cos({_s})
+				set y-coordinate of {_vector} to {_y}
+				set z-coordinate of {_vector} to {_z} + {_z2} * {_r} / 3 * sin({_s})
+				set {_fc1} to ({_r} - 31) ^ 2
+				set {_fc2} to floor(127 / {_fc1})
+				if {_s} = 190:
+					drawDot count 1, particle "redstone", RGB 255, (255 - {_fc2}), (255 - 2 * {_fc2}), center {_vector}, visibleRange 100, keepFor 1 seconds
+				if {_s} = 10:
+					drawDot count 1, particle "redstone", RGB 255, (255 - {_fc2}), (255 - 2 * {_fc2}), center {_vector}, visibleRange 100, keepFor 1 seconds
+				else:
+					drawDot count 1, particle "redstone", RGB 255, (255 - {_fc2}), (255 - 2 * {_fc2}), center {_vector}, visibleRange 100, keepFor 0.1 seconds
+			add -9 to {_s}
+		wait 10 tick
+#		召喚エフェクト
+		set {_t} to 0
+		loop 5 time:
+			add 1 to {_s}
+			loop 6 time:
+				set x-coordinate of {_vector} to (0.3 * {_s} * cos(10 * {_s} - 60 * {_t})) * (x-coordinate of {_vx} - {_x}) + (0.01 * {_s} ^ 2) * (x-coordinate of {_vy} - {_x}) + (0.3 * {_s} * sin(10 * {_s} - 60 * {_t})) * (x-coordinate of {_vz} - {_x}) + {_x}
+				set y-coordinate of {_vector} to (0.3 * {_s} * cos(10 * {_s} - 60 * {_t})) * (y-coordinate of {_vx} - {_y}) + (0.01 * {_s} ^ 2) * (y-coordinate of {_vy} - {_y}) + (0.3 * {_s} * sin(10 * {_s} - 60 * {_t})) * (y-coordinate of {_vz} - {_y}) + {_y}
+				set z-coordinate of {_vector} to (0.3 * {_s} * cos(10 * {_s} - 60 * {_t})) * (z-coordinate of {_vx} - {_z}) + (0.01 * {_s} ^ 2) * (z-coordinate of {_vy} - {_z}) + (0.3 * {_s} * sin(10 * {_s} - 60 * {_t})) * (z-coordinate of {_vz} - {_z}) + {_z}
+				set {_effnum} to 0.1 * {_s}
+				set {_efftime} to "%{_effnum}% seconds" parsed as time span
+				drawDot count 1, particle "redstone", RGB 255, 255, 225, center {_vector}, visibleRange 100, keepFor {_efftime}
+				add 1 to {_t}
+			wait a tick
+		loop 5 time:
+			add 1 to {_s}
+			loop 6 time:
+				set x-coordinate of {_vector} to (0.4 * {_s} * cos(10 * {_s} - 60 * {_t})) * (x-coordinate of {_vx} - {_x}) + (0.01 * {_s} ^ 2) * (x-coordinate of {_vy} - {_x}) - (0.4 * {_s} * sin(10 * {_s} - 60 * {_t})) * (x-coordinate of {_vz} - {_x}) + {_x}
+				set y-coordinate of {_vector} to (0.4 * {_s} * cos(10 * {_s} - 60 * {_t})) * (y-coordinate of {_vx} - {_y}) + (0.01 * {_s} ^ 2) * (y-coordinate of {_vy} - {_y}) - (0.4 * {_s} * sin(10 * {_s} - 60 * {_t})) * (y-coordinate of {_vz} - {_y}) + {_y}
+				set z-coordinate of {_vector} to (0.4 * {_s} * cos(10 * {_s} - 60 * {_t})) * (z-coordinate of {_vx} - {_z}) + (0.01 * {_s} ^ 2) * (z-coordinate of {_vy} - {_z}) - (0.4 * {_s} * sin(10 * {_s} - 60 * {_t})) * (z-coordinate of {_vz} - {_z}) + {_z}
+				drawDot count 1, particle "redstone", RGB 255, 255, 225, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+				add 1 to {_t}
+			wait a tick
+		wait 5 tick
+#		3撃目の柱
+		set {_s} to 0.05
+		loop 2 times:
+			set {_t} to 0
+			loop 140 times:
+				set {_x3} to {_vxA2} * cos(360 / 7 * {_t}) + {_vzA2} * sin(360 / 7 * {_t})
+				set {_z3} to {_vxA2} * cos(90 + 360 / 7 * {_t}) + {_vzA2} * sin(90 + 360 / 7 * {_t})
+				set x-coordinate of {_vector} to {_x} + {_x3} * (17 - {_t}) / 17
+				set y-coordinate of {_vector} to {_y} + {_t}
+				set z-coordinate of {_vector} to {_z} + {_z3} * (17 - {_t}) / 17
+				drawDot count 1, particle "redstone", RGB 128, 255, 128, center {_vector}, visibleRange 100, keepFor 3 seconds
+				add {_s} to {_t}
+			add 0.12 to {_s}
+			add 0.2 to {_t}
+			wait a tick
+#		3撃目の球
+		set {_r} to 0
+		set yaw of {_A} to 5 * 8
+		set {_vxA1} to location 1 meters to the right of {_A}
+		set {_vyA1} to {_vyA} + 1
+		set {_vzA1} to location 1 meters in front of {_A}
+		set {_vxA2x} to x-coordinate of {vxA1} - {_x}
+		set {_vxA2y} to y-coordinate of {vxA1} - {_y}
+		set {_vxA2z} to z-coordinate of {vxA1} - {_z}
+		set {_vyA2x} to x-coordinate of {vyA1} - {_x}
+		set {_vyA2y} to y-coordinate of {vyA1} - {_y}
+		set {_vyA2z} to z-coordinate of {vyA1} - {_z}
+		set {_vzA2x} to x-coordinate of {vzA1} - {_x}
+		set {_vzA2y} to y-coordinate of {vzA1} - {_y}
+		set {_vzA2z} to z-coordinate of {vzA1} - {_z}
+		set {_s} to 0
+		loop 804 times:
+			add 1 to {_s}
+			set {_x4} to {_vxA2x} * cos(30 * {_s} / 67) + {_vzA2x} * sin(30 * {_s} / 67)
+			set {_z4} to {_vxA2z} * cos(90 + 30 * {_s} / 67) + {_vzA2z} * sin(90 + 30 * {_s} / 67)
+			set x-coordinate of {_vector} to {_x} + 9.6 * {_x4} * sin(45 * {_s} / 67)
+			set y-coordinate of {_vector} to {_y} + 9.6 * cos(45 * {_s} / 67)
+			set z-coordinate of {_vector} to {_z} + 9.6 * {_z4} * sin(45 * {_s} / 67)
+			drawDot count 1, particle "redstone", RGB 0, 255, 0, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+
+
+# command /emerald-archerult:
+# 	description: Archer Ult
+# 	permission: sk.admin
+# 	trigger:
+# 		set {_loc} to location of player
+# 		set {_vector} to {_loc}
+# #		座標の設定　主軸{_loc}{_w}{_vw}
+# 		set {_x} to x-coordinate of {_loc}
+# 		set {_y} to y-coordinate of {_loc}
+# 		set {_z} to z-coordinate of {_loc}
+# 		set {_x1p} to {_loc}
+# 		set pitch of {_x1p} to 0
+# 		set {_vx} to location 1 meters to the right of {_x1p}
+# 		set {_vy} to {_loc}
+# 		set {_y1p} to pitch of {_vy}
+# 		set {_y2p} to abs({_y1p}) - 90
+# 		if {_y1p} < 0:
+# 			set {_y3p} to yaw of {_loc}
+# 			if {_y3p} < 180:
+# 				add 180 to {_y3p}
+# 			else:
+# 				add -180 to {_y3p}
+# 			set yaw of {_vy} to {_y3p}
+# 		set pitch of {_vy} to {_y2p}
+# 		set {_vy} to location 1 meters in front of {_vy}
+# 		set {_vz} to location 1 meters in front of {_loc}
+# #		方向ベクトルの設定
+# 		set {_nvx} to {_loc}
+# 		set x-coordinate of {_nvx} to x-coordinate of {_vx} - {_x}
+# 		set y-coordinate of {_nvx} to y-coordinate of {_vx} - {_y}
+# 		set z-coordinate of {_nvx} to z-coordinate of {_vx} - {_z}
+# 		set {_nvy} to {_loc}
+# 		set x-coordinate of {_nvy} to x-coordinate of {_vy} - {_x}
+# 		set y-coordinate of {_nvy} to y-coordinate of {_vy} - {_y}
+# 		set z-coordinate of {_nvy} to z-coordinate of {_vy} - {_z}
+# 		set {_nvz} to {_loc}
+# 		set x-coordinate of {_nvz} to x-coordinate of {_vz} - {_x}
+# 		set y-coordinate of {_nvz} to y-coordinate of {_vz} - {_y}
+# 		set z-coordinate of {_nvz} to z-coordinate of {_vz} - {_z}
+# #		ダメージ源(9.5→7)
+# 		set {_nvr} to {_loc}
+# 		set {_u} to 0
+# 		loop 35 times:
+# 			add 3 to {_u}
+# 			set {_t} to 0
+# 			loop 20 times:
+# 				add 0.25 to {_t}
+# 				set {_s} to 0
+# 				loop 5 times:
+# 					set x-coordinate of {_nvr} to x-coordinate of {_nvx} * cos(72 * {_s} + 3 * {_t} + 0.7 * {_u}) + x-coordinate of {_nvy} * sin(72 * {_s} + 3 * {_t} + 0.7 * {_u})
+# 					set y-coordinate of {_nvr} to y-coordinate of {_nvx} * cos(72 * {_s} + 3 * {_t} + 0.7 * {_u}) + y-coordinate of {_nvy} * sin(72 * {_s} + 3 * {_t} + 0.7 * {_u})
+# 					set z-coordinate of {_nvr} to z-coordinate of {_nvx} * cos(72 * {_s} + 3 * {_t} + 0.7 * {_u}) + z-coordinate of {_nvy} * sin(72 * {_s} + 3 * {_t} + 0.7 * {_u})
+# 					add 72 to {_s}
+# 					if {_u} - {_t} > 0:
+# 						if {_u} - {_t} < 100.25:
+# 							set x-coordinate of {_vector} to {_x} + ({_u} - {_t}) * x-coordinate of {_nvz} + (({_t} / 10 + 1) ^ 2 - 1) * x-coordinate of {_nvr}
+# 							set y-coordinate of {_vector} to {_y} + ({_u} - {_t}) * y-coordinate of {_nvz} + (({_t} / 10 + 1) ^ 2 - 1) * y-coordinate of {_nvr}
+# 							set z-coordinate of {_vector} to {_z} + ({_u} - {_t}) * z-coordinate of {_nvz} + (({_t} / 10 + 1) ^ 2 - 1) * z-coordinate of {_nvr}
+# 							drawDot count 1, particle "redstone", RGB (128 + floor(25.6 * {_t})), (192 + floor(12.8 * {_t})), 255, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 			if {_u} - {_t} > 0:
+# 				if {_u} - {_t} < 100.25:
+# 					set {_s} to 0
+# 					loop 3 times:
+# 						set x-coordinate of {_vector} to {_x} + {_u} * x-coordinate of {_nvz}
+# 						set y-coordinate of {_vector} to {_y} + {_u} * y-coordinate of {_nvz}
+# 						set z-coordinate of {_vector} to {_z} + ({_u} + {_s}) * z-coordinate of {_nvz}
+# 						drawDot count 1, particle "redstone", RGB 128, 192, 255, center {_vector}, visibleRange 100, keepFor 0.7 seconds
+# 						add 1 to {_s}
+# 			wait a tick
+
+# command /emerald-bultcharge:
+# 	description: Warrior BultCharge エフェクト
+# 	permission: sk.admin
+# 	trigger:
+# 		set {_loc} to location of player
+# #		座標の設定　主軸{_loc}{_w}
+# 		set {_x} to x-coordinate of {_loc}
+# 		set {_y} to y-coordinate of {_loc}
+# 		set {_z} to z-coordinate of {_loc}
+# #		軸の設定　座標{_A}{_vwA}
+# 		set {_A} to {_loc}
+# 		set pitch of {_A} to 0
+# 		set {_vxA1} to location 1 meters to the right of {_A}
+# 		set {_vzA1} to location 1 meters in front of {_A}
+# #		方向ベクトル{_vwnw}
+# 		set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+# 		set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+# 		set {_vznx} to x-coordinate of {_vzA1} - {_x}
+# 		set {_vznz} to z-coordinate of {_vzA1} - {_z}
+# #		チャージ中の演出
+# 		set {_vector} to {_loc}
+# 		set {_s} to 0
+# 		set {_u} to 3
+# 		loop 3 times:
+# 			add 40 to {_s}
+# 			set {_t} to 0
+# 			loop 3 times:
+# 				loop 11 times:
+# 					set {_c} to 1 - abs(cos({_t}))
+# 					set {_ax} to cos({_s}) * {_vxnx} + sin({_s}) * {_vznx}
+# 					set {_az} to cos({_s}) * {_vxnz} + sin({_s}) * {_vznz}
+# 					if {_c} < 0.5:
+# 						set x-coordinate of {_vector} to {_x} + {_c} * {_ax} * 3 ^ 0.5
+# 						set y-coordinate of {_vector} to {_y} + cos({_t}) + 1
+# 						set z-coordinate of {_vector} to {_z} + {_c} * {_az} * 3 ^ 0.5
+# 						set {_second} to "%{_u}% seconds" parsed as time span
+# 						drawDot count 1, particle "redstone", RGB 128, 255, 255, center {_vector}, visibleRange 100, keepFor {_second}
+# 					else:
+# 						set x-coordinate of {_vector} to {_x} + 0.5 * {_ax} * 3 ^ 0.5
+# 						set y-coordinate of {_vector} to {_y} + cos({_t}) + 1
+# 						set z-coordinate of {_vector} to {_z} + 0.5 * {_az} * 3 ^ 0.5
+# 						set {_second} to "%{_u}% seconds" parsed as time span
+# 						drawDot count 1, particle "redstone", RGB 128, 255, 255, center {_vector}, visibleRange 100, keepFor {_second}
+# 					add 18 to {_t}
+# 				add 120 to {_s}
+# 			add -1 to {_u}
+# 			wait 20 ticks
+# #		チャージ完了時の演出 + チャージ後5秒間の効果中の自身の演出
+# 		set {_vector} to {_loc}
+# 		loop 6 times:
+# 			set {_loc} to location of player
+# 	#		座標の設定　主軸{_loc}{_w}
+# 			set {_x} to x-coordinate of {_loc}
+# 			set {_y} to y-coordinate of {_loc}
+# 			set {_z} to z-coordinate of {_loc}
+# 	#		軸の設定　座標{_A}{_vwA}
+# 			set {_A} to {_loc}
+# 			set pitch of {_A} to 0
+# 			set {_vxA1} to location 1 meters to the right of {_A}
+# 			set {_vzA1} to location 1 meters in front of {_A}
+# 	#		方向ベクトル{_vwnw}
+# 			set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+# 			set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+# 			set {_vznx} to x-coordinate of {_vzA1} - {_x}
+# 			set {_vznz} to z-coordinate of {_vzA1} - {_z}
+# 			set {_s} to -1
+# 			loop 2 times:
+# 				set {_u} to a random number between 0 and 360
+# 				set {_t} to -0.3
+# 				loop 16 times:
+# 					set x-coordinate of {_vector} to {_x} + (1 + {_t}) * cos({_s} * {_u}) * {_vxnx} + (1 + {_t}) * sin({_s} * {_u}) * {_vznx}
+# 					set y-coordinate of {_vector} to {_y} + {_t} * 0.5 + 0.3
+# 					set z-coordinate of {_vector} to {_z} + (1 + {_t}) * cos({_s} * {_u}) * {_vxnz} + (1 + {_t}) * sin({_s} * {_u}) * {_vznz}
+# 					drawDot count 1, particle "redstone", RGB 80 * (1 + {_t}), 160 * (1 + {_t}), 160 * (1 + {_t}), center {_vector}, visibleRange 100, keepFor 0.5 seconds
+# 					add 0.07 to {_t}
+# 					add 11 to {_u}
+# 				set {_s} to -1 * {_s}
+# 				wait 2 ticks
+# 			wait 16 ticks
+# #		効果中に敵を殴った際の演出(敵を中心に発動)
+# 		set {_s} to 0
+# 		set {_t} to 30
+# 		loop 3 times:
+# 			loop 40 times:
+# 				set {_ax} to cos({_s}) * {_vxnx} + sin({_s}) * {_vznx}
+# 				set {_az} to cos({_s}) * {_vxnz} + sin({_s}) * {_vznz}
+# 				set x-coordinate of {_vector} to {_x} + {_ax} * (30 ^ 0.5 - (30 - {_t}) ^ 0.5) ^ 1.5
+# 				set y-coordinate of {_vector} to {_y} + {_t}
+# 				set z-coordinate of {_vector} to {_z} + {_az} * (30 ^ 0.5 - (30 - {_t}) ^ 0.5) ^ 1.5
+# 				drawDot count 1, particle "redstone", RGB 0, 16, 32, center {_vector}, visibleRange 100, keepFor 0.5 seconds
+# 				add 57 to {_s}
+# 				if {_s} > 360:
+# 					add -360 to {_s}
+# 				add -0.25 to {_t}
+# 			wait a tick
+
+# command /emerald-spritetalisman:
+# 	description: Sprite Talismanの演出
+# 	permission: sk.admin
+# 	trigger:
+# 		set {_loc} to location of player
+# 		set {_vector} to {_loc}
+# #		座標の設定　主軸{_loc}{_w}{_vw}
+# 		set {_x} to x-coordinate of {_loc}
+# 		set {_y} to y-coordinate of {_loc} + 0.2
+# 		set {_z} to z-coordinate of {_loc}
+# #		軸の設定　座標{_A}{_vwA}
+# 		set {_A} to {_loc}
+# 		set {_vyA} to 0
+# 		set pitch of {_A} to 0
+# 		set {_vxA1} to location 1 meters to the right of {_A}
+# 		set {_vzA1} to location 1 meters in front of {_A}
+# #		方向ベクトル{_vwnw}
+# 		set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+# 		set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+# 		set {_vznx} to x-coordinate of {_vzA1} - {_x}
+# 		set {_vznz} to z-coordinate of {_vzA1} - {_z}
+# #		発動直後の耐性付与演出ty平面でy=2-0.02t^2
+# 		set {_t} to 0
+# 		loop 10 times:
+# 			set {_ax} to {_vxnx} * cos({_t}) + {_vznx} * sin({_t})
+# 			set {_az} to {_vxnz} * cos({_t}) + {_vznz} * sin({_t})
+# 			set {_s} to 0
+# 			loop 10 times:
+# 				set x-coordinate of {_vector} to {_x} + {_ax} * {_s}
+# 				set y-coordinate of {_vector} to {_y} + 2 - 0.02 * {_s} ^ 2
+# 				set z-coordinate of {_vector} to {_z} + {_az} * {_s}
+# 				drawDot count 1, particle "redstone", RGB 192, 255, 192, center {_vector}, visibleRange 100, keepFor 1 seconds
+# 				add 1 to {_s}
+# 			set {_s} to 0
+# 			loop 5 times:
+# 				set {_ax} to {_vxnx} * cos({_s} + {_t} * 0.5) + {_vznx} * sin({_s} + {_t} * 0.5)
+# 				set {_az} to {_vxnz} * cos({_s} + {_t} * 0.5) + {_vznz} * sin({_s} + {_t} * 0.5)
+# 				set x-coordinate of {_vector} to {_x} + {_ax} * 10
+# 				set y-coordinate of {_vector} to {_y} - {_t} * 0.02
+# 				set z-coordinate of {_vector} to {_z} + {_az} * 10
+# 				drawDot count 1, particle "redstone", RGB 160, 255, 160, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 				add 72 to {_s}
+# 			add 36 to {_t}
+# 			wait a tick
+# #		付与された味方の10秒間の演出
+# 		loop 100 times:
+# 			set {_loc} to location of player
+# 			set {_vector} to {_loc}
+# #			座標の設定　主軸{_loc}{_w}{_vw}
+# 			set {_x} to x-coordinate of {_loc}
+# 			set {_y} to y-coordinate of {_loc} + 0.2
+# 			set {_z} to z-coordinate of {_loc}
+# #			軸の設定　座標{_A}{_vwA}
+# 			set {_A} to {_loc}
+# 			set {_vyA} to 0
+# 			set pitch of {_A} to 0
+# 			set {_vxA1} to location 1 meters to the right of {_A}
+# 			set {_vzA1} to location 1 meters in front of {_A}
+# #			方向ベクトル{_vwnw}
+# 			set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+# 			set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+# 			set {_vznx} to x-coordinate of {_vzA1} - {_x}
+# 			set {_vznz} to z-coordinate of {_vzA1} - {_z}
+# 			set {_s} to a random number between 0 and 360
+# 			set {_t} to a random number between -1 and 1
+# 			set {_ax} to ({_vxnx} * cos({_s}) + {_vznx} * sin({_s})) * 1.2
+# 			set {_az} to ({_vxnz} * cos({_s}) + {_vznz} * sin({_s})) * 1.2
+# 			set x-coordinate of {_vector} to {_x} + {_ax}
+# 			set y-coordinate of {_vector} to {_y} + {_t}
+# 			set z-coordinate of {_vector} to {_z} + {_az}
+# 			drawDot count 1, particle "redstone", RGB 160, 255, 160, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 			wait 2 ticks
+# #		ダメージを無効化した際の演出
+# 		set {_loc} to location of player
+# 		set {_x} to x-coordinate of {_loc}
+# 		set {_y} to y-coordinate of {_loc} + 0.7
+# 		set {_z} to z-coordinate of {_loc}
+# 		loop 3 times:
+# 			set {_s} to a random number between -2 and 2
+# 			set {_t} to a random number between -0.7 and 0.7
+# 			set {_u} to a random number between -2 and 2
+# 			set {_p} to 0
+# 			loop 5 times:
+# 				add 0.2 to {_p}
+# 				set x-coordinate of {_vector} to {_x} + {_s} * {_p}
+# 				set y-coordinate of {_vector} to {_y} + {_t} * {_p}
+# 				set z-coordinate of {_vector} to {_z} + {_u} * {_p}
+# 				drawDot count 1, particle "redstone", RGB 192, 255, 192, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+# 			wait a tick

@@ -1,0 +1,56 @@
+every a second:
+	loop all players:
+		{Stats.%loop-player%::TimeFreeze} is not set
+		loop {CT.%loop-player%::*}:
+			if loop-value-2 is 0:
+				delete {CT.%loop-player%::%loop-index%}
+				send action bar "§a%loop-index% §bのクールタイムが終了しました!" to loop-player
+				playSound("entity.player.levelup", 0.5, 1, loop-player, true)
+			else if loop-value-2 is less than 0:
+				delete {CT.%loop-player%::%loop-index%}
+				send action bar "§a%loop-index% §bのクールタイムが終了しました!" to loop-player
+				playSound("entity.player.levelup", 0.5, 1, loop-player, true)
+			else if loop-value-2 is not 0:
+				if {CTStop.%loop-player%::%loop-index%} is true:
+					subtract 0 from {CT.%loop-player%::%loop-index%}
+				else if {Stats.%loop-player%::FastCT} is true:
+					subtract 3 from {CT.%loop-player%::%loop-index%}
+				else:
+					subtract 1 from {CT.%loop-player%::%loop-index%}
+				if {CT.%loop-player%::%loop-index%} <= 0:
+					send action bar "§a%loop-index% §bのクールタイムが終了しました!" to loop-player
+					playSound("entity.player.levelup", 0.5, 1, loop-player, true)
+					delete {CT.%loop-player%::%loop-index%}
+				else:
+					if name of loop-player's tool contains loop-index:
+						send action bar "§bCool Time§7: §c%{CT.%loop-player%::%loop-index%}% §aseconds" to loop-player
+
+function detectCT(player: player, skill: item, count: boolean = true):
+	set {_name} to display name of {_skill}
+	set {_lore::*} to lore of {_skill}
+	loop {_lore::*}:
+		loop-value contains "§bCoolTime"
+		set {_ct} to loop-value
+	replace every "§bCoolTime§7: §a" with "" in {_ct}
+	set {_ct} to {_ct} parsed as number
+	setCT({_player}, {_name}, {_ct}, {_count})
+
+function setCT(player: player, skill: text, second: number, count: boolean = true):
+	set {CT.%{_player}%::%{_skill}%} to {_second}
+	# if {_count} is true:
+	# 	if {Join::%{_player}%} is "Kit":
+	# 		add 1 to {Kit-SkillCount.%{_player}%::%{_skill}%}
+
+function toolCT(player: player, kit: text, num: number, type: text = "Skill"):
+	set {_tool} to {_player}'s tool
+	if kitItemKitChecker({_tool}) is {_kit}:
+		if kitItemTypeChecker({_tool}) is {_type}:
+			if kitItemNumberChecker({_tool}) is {_num}:
+				set {_cttool} to {_tool}
+	if {_cttool} is not set:
+		loop all items in {_player}'s inventory:
+			kitItemKitChecker(loop-item) is {_kit}
+			kitItemTypeChecker(loop-item) is {_type}
+			kitItemNumberChecker(loop-item) is {_num}
+			set {_cttool} to loop-item
+	detectCT({_player}, {_cttool})
