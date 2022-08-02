@@ -25,6 +25,13 @@ function loadFFAStage(stage: text):
 	else:
 		staffMsg("§4!!!WARNING!!! §cFFAマップの読み込みに失敗しました")
 
+function unloadFFAStage(stage: text):
+	set {_stagename} to ffaStageName({_stage})
+	execute console command "/mv remove FFA-%{_stagename}%"
+	delete {FFA-GameStage.name}
+	delete {FFA-GameStage.authors::*}
+	delete {FFA-GameStage.respawns::*}
+
 function ffaStageName(stage: text):
 	set {_sn} to {_stage}
 	replace " " with "" in {_sn}
