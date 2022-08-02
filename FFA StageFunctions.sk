@@ -32,6 +32,22 @@ function unloadFFAStage(stage: text):
 	delete {FFA-GameStage.authors::*}
 	delete {FFA-GameStage.respawns::*}
 
+function changeFFAStage():
+	set {_stage.now} to {FFA-GameStage.name}
+	unloadFFAStage({FFA-GameStage.name})
+	load yml "plugins/skript-yaml/FFA Stages/All Stages.yml" as "ffa.stages"
+	set {_maps::*} to yml list "Stages" from "ffa.stages"
+	unload yml "ffa.stages"
+	remove {_stage.now} from {_maps::*}
+	loop {_maps::*}:
+		load yml "plugins/skript-yaml/FFA Stages/%loop-value%.yml" as "ffa.stage"
+		set {_enable} to yml value "enable" from "ffa.stage"
+		unload yml "ffa.stage"
+		if {_enable} is true:
+			add loop-value to {_mapsl::*}
+	set {_mapdc} to a random text out of {_mapsl::*}
+	loadFFAStage({_mapdc})
+
 function ffaStageName(stage: text):
 	set {_sn} to {_stage}
 	replace " " with "" in {_sn}
