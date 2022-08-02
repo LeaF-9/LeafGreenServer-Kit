@@ -55,10 +55,30 @@ command /ffa-stage <text> <text> <text="none">:
 				message formatted "{@prefix} §cそのマップは存在しません" to player
 		else if arg 1 is "respawn":
 			if {_stages::*} contains "%arg 2%":
-				
+				set {_loc} to location of player
+				load yml "plugins/skript-yaml/FFA Stages/%arg 2%.yml" as "ffa.stage"
+				set {_num} to 1
+				loop yaml node keys "spawnpoints" from "ffa.stage":
+					add 1 to {_num}
+				set yml value "spawnpoints.%{_num}%.x" from "ffa.stage" to x-coordinate of {_loc}
+				set yml value "spawnpoints.%{_num}%.y" from "ffa.stage" to y-coordinate of {_loc}
+				set yml value "spawnpoints.%{_num}%.z" from "ffa.stage" to z-coordinate of {_loc}
+				set yml value "spawnpoints.%{_num}%.yaw" from "ffa.stage" to yaw of {_loc}
+				set yml value "spawnpoints.%{_num}%.pitch" from "ffa.stage" to pitch of {_loc}
+				set yml value "spawnpoints.%{_num}%.world" from "ffa.stage" to ffaWorldNC(arg 2)
+				message formatted "{@prefix} §6%arg 3%§bの§e§lSpawnpoint§bを追加しました" to player
 			else:
 				message formatted "{@prefix} §cそのマップは存在しません" to player
 		else if arg 1 is "set":
+			if {_stages::*} contains "%arg 2%":
+				loadFFAStage(arg 2)
+			else:
+				message formatted "{@prefix} §cそのマップは存在しません" to player
 		else:
 			message formatted "{@prefix} §cargument 1が不適切です" to player
 			message formatted "{@prefix} §earg 1§7: §acreate§2/§aenable§2/§adisable§2/§aauthor§2/§arespawn§2/§aset" to player
+
+function ffaWorldNC(world: text) :: text:
+	replace every " " with "" in {_world}
+	set {_rw} to "FFA-%{_world}%"
+	return {_rw}
