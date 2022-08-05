@@ -28,6 +28,8 @@
 			wait a second
 
 on death of player:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "BEC"
 	{Join::%victim%} is "Kit"
 	{TrueTeam::%victim%} is not "purple"
 	{TrueTeam::%{LastKiller::%victim%}%} is not "purple"
@@ -51,6 +53,8 @@ on death of player:
 			execute console command "/givecoin %{LastKiller::%victim%}% 10 防衛"
 
 on damage of player:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "BEC"
 	if {Join::%victim%} is "Kit":
 		if {TrueTeam::%victim%} is "purple":
 			set damage to 100
@@ -72,6 +76,8 @@ on damage of player:
 			set damage to damage * {_teambuff}
 
 on break:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "BEC"
 	if {TrueTeam::%player%} is "purple":
 		send action bar "§5§lBandit §c§lはコアの破壊ができません" to player
 		stop
@@ -349,7 +355,6 @@ command /becend:
 		delete {Kit-WinTeam::*}
 		delete {Kit-TeamBuff::*}
 		execute console command "/kjclear"
-		execute console command "/sk disable Kit BEC"
 
 on quit:
 	delete {damager.%player%::*}
