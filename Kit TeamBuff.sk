@@ -1,0 +1,88 @@
+every 5 seconds:
+	{Kit-tochu} is true
+# GoK
+	if {Kit-GameStage::rule} is "GoK":
+	# チーム人数集計
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			set {_tc} to {TrueTeam::%loop-player%}
+			add 1 to {_teampeople::%{_tc}%}
+	# 最大人数の算出
+		set {_high} to 10000
+		loop {_teampeople::*}:
+			loop-value < {_high}
+			set {_high} to loop-value
+	# 全チームのBuff算出
+		loop {_teampeople::*}:
+			set {_teamnum} to loop-value
+		# 最大人数との差の%が算出される
+			set {Kit-TeamBuff::%loop-index%} to round({_high} / {_teamnum} * 100)	
+# BEC
+	else if {Kit-GameStage::rule} is "BEC":
+	# チーム人数集計
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			{TrueTeam::%loop-player%} is not "purple"
+			set {_tc} to {TrueTeam::%loop-player%}
+			add 1 to {_teampeople::%{_tc}%}
+	# 最大人数の算出
+		set {_high} to 10000
+		loop {_teampeople::*}:
+			loop-value < {_high}
+			set {_high} to loop-value
+	# 全チームのBuff算出
+		loop {_teampeople::*}:
+			set {_teamnum} to loop-value
+		# 最大人数との差の%が算出される
+			set {Kit-TeamBuff::%loop-index%} to round({_high} / {_teamnum} * 100)
+# EmJ
+	else if {Kit-GameStage::rule} is "EmJ":
+	# チーム人数集計
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			set {_tc} to {TrueTeam::%loop-player%}
+			add 1 to {_teampeople::%{_tc}%}
+	# 最小人数の算出
+		set {_high} to 10000
+		loop {_teampeople::*}:
+			loop-value < {_high}
+			set {_high} to loop-value
+	# 全チームのBuff算出
+		loop {_teampeople::*}:
+			set {_teamnum} to loop-value
+		# 最小人数/チーム人数が算出される
+			set {Kit-TeamBuff::%loop-index%} to {_high} / {_teamnum}
+# StW
+	else if {Kit-GameStage::rule} is "StW":
+	# チーム人数集計
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			set {_tc} to {TrueTeam::%loop-player%}
+			add 1 to {_teampeople::%{_tc}%}
+	# 最小人数の算出
+		set {_high} to 10000
+		loop {_teampeople::*}:
+			loop-value < {_high}
+			set {_high} to loop-value
+	# 全チームのBuff算出
+		loop {_teampeople::*}:
+			set {_teamnum} to loop-value
+		# 最小人数との差の%が算出される
+			set {Kit-TeamBuff::%loop-index%} to {_high} / {_teamnum}
+# CPA
+	else if {Kit-GameStage::rule} is "CPA":
+	# チーム人数集計
+		loop all players:
+			{Join::%loop-player%} is "Kit"
+			set {_tc} to {TrueTeam::%loop-player%}
+			add 1 to {_teampeople::%{_tc}%}
+	# 最大人数の算出
+		set {_high} to 10000
+		loop {_teampeople::*}:
+			loop-value < {_high}
+			set {_high} to loop-value
+	# 全チームのBuff算出
+		loop {_teampeople::*}:
+			set {_teamnum} to loop-value
+		# 最大人数との差の%が算出される
+			set {Kit-TeamBuff::%loop-index%} to {_high} / {_teamnum}

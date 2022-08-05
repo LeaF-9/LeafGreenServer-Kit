@@ -37,25 +37,6 @@ function kitWoolSpawn():
 	else:
 		gameMsg("Kit", "§b§l---===[Wool spawned!]===---")
 
-# Bufflose
-every 5 seconds:
-	{Kit-tochu} is true
-# チーム人数集計
-	loop all players:
-		{Join::%loop-player%} is "Kit"
-		set {_tc} to {TrueTeam::%loop-player%}
-		add 1 to {_teampeople::%{_tc}%}
-# 最小人数の算出
-	set {_high} to 10000
-	loop {_teampeople::*}:
-		loop-value < {_high}
-		set {_high} to loop-value
-# 全チームのBuff算出
-	loop {_teampeople::*}:
-		set {_teamnum} to loop-value
-#	最小人数との差の%が算出される
-		set {Kit-TeamBuff::%loop-index%} to {_high} / {_teamnum}
-
 on death of player:
 	{Join::%victim%} is "Kit"
 	add 1 to {Kit-StWDeath::%victim%}

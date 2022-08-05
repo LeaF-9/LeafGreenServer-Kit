@@ -50,26 +50,6 @@ on death of player:
 		if {_true} is true:
 			execute console command "/givecoin %{LastKiller::%victim%}% 10 防衛"
 
-# Bufflose
-every 5 seconds:
-	{Kit-tochu} is true
-# チーム人数集計
-	loop all players:
-		{Join::%loop-player%} is "Kit"
-		{TrueTeam::%loop-player%} is not "purple"
-		set {_tc} to {TrueTeam::%loop-player%}
-		add 1 to {_teampeople::%{_tc}%}
-# 最大人数の算出
-	set {_high} to 10000
-	loop {_teampeople::*}:
-		loop-value < {_high}
-		set {_high} to loop-value
-# 全チームのBuff算出
-	loop {_teampeople::*}:
-		set {_teamnum} to loop-value
-#	最大人数との差の%が算出される
-		set {Kit-TeamBuff::%loop-index%} to round({_high} / {_teamnum} * 100)
-
 on damage of player:
 	if {Join::%victim%} is "Kit":
 		if {TrueTeam::%victim%} is "purple":
