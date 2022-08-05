@@ -48,11 +48,15 @@ function kitEmJChangeHolo(team: text, gem: number):
 		set loop-entity's display name to "§b%{_gem}% §7Gems"
 
 on damage of dropped item:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	metadata value "undelete" of victim is "true"
 	damage was caused by lava or void
 	teleport victim to {Kit-GameStage::voidtp}
 
 on damage of player:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	{Join::%victim%} is "Kit"
 	if damage cause is not void:
 		set {_amount} to amount of emerald named "§aJewel" in victim's inventory
@@ -68,6 +72,8 @@ on damage of player:
 		kill victim
 
 on death of player:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	{Join::%victim%} is "Kit"
 	if damage is caused by lava or fire:
 		if {LastKiller::%victim%} is set:
@@ -104,6 +110,8 @@ aliases:
 	shulk = minecraft:red_shulker_box, minecraft:blue_shulker_box, minecraft:yellow_shulker_box, minecraft:lime_shulker_box
 
 on rightclick on shulk:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	if name of player's tool is not "§e§lBox Key":
 		if {Kit-GameStage::gembox-%{TrueTeam::%player%}%} is location of event-block:
 			if player has diamond named "§bGem":
@@ -158,6 +166,8 @@ on rightclick on shulk:
 			message "§4!!!WARNING!!! §cこれは自チームの§bGembox§cではありません §4!!!" to player
 
 on place of ender chest:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	name of player's tool is "§a§lJewelry Case"
 	cancel event
 	wait a tick
@@ -191,6 +201,8 @@ on place of ender chest:
 			message "§4!!!WARNING!!! §cJewelを持っていません §4!!!" to player
 
 on rightclick on a ender chest:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	if location of targeted block is {Kit-JewelryCaseLoc::%player%}:
 		if player has emerald named "§aJewel":
 			play sound "block.ender_chest.close" with volume 1 with pitch 1 to player
