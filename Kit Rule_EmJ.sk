@@ -216,6 +216,8 @@ on rightclick on a ender chest:
 		message "§4!!!WARNING!!! §c自分の§a§lJewelry Case§cではありません!" to player
 
 on leftclick on a ender chest:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	set {_loc} to location of targeted block
 	loop all players:
 		{Game::%loop-player%} is "Kit"
@@ -242,6 +244,8 @@ on leftclick on a ender chest:
 			wait 5 ticks
 
 on rightclick holding an eye of ender:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	name of player's tool is "§c§lDrop Bomb"
 	cancel event
 	set {_lore::*} to lore of player's tool
@@ -252,6 +256,8 @@ on rightclick holding an eye of ender:
 	play sound "entity.ender_eye.launch" with volume 1.5 with pitch 1 at player
 
 on projectile hit:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	projectile is a snowball
 	metadata value "DropBomb" of projectile is "true"
 	play sound "entity.ender_eye.death" with volume 1.5 with pitch 1 at projectile
@@ -294,6 +300,8 @@ on projectile hit:
 		delete {Kit-CannotJewel::%loop-value%}
 
 on pick up emerald:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	name of item is "§aJewel"
 	if {Kit-CannotJewel::%player%} is true:
 		cancel event
@@ -301,6 +309,7 @@ on pick up emerald:
 		execute console command "/givecoin %player% 1 Jewel拾得"
 
 every a second:
+
 # Bufflose
 	{Kit-tochu} is true
 	loop all players:
@@ -366,6 +375,8 @@ every a second:
 			execute console command "/timer end Kit-EmJ"
 
 on damage of player:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	{Join::%victim%} is "Kit"
 	loop all items in victim's inventory:
 		name of loop-item is "§d§lFortune Booster"
@@ -378,6 +389,8 @@ on damage of player:
 		message "{@prefix} §d§lFortune Booster§cが壊れてしまいました!" to victim
 
 on place of floor soul torch:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	name of player's tool is "§b§lRich Searcher"
 	cancel event
 	wait a tick
@@ -417,6 +430,8 @@ every 10 seconds:
 					drawDot count 1, particle "soulfireflame", center {_el}, visibleRange 30, keepFor a second
 
 on leftclick on a floor soul torch:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "EmJ"
 	set {_loc} to location of targeted block
 	loop all players:
 		{Game::%loop-player%} is "Kit"
