@@ -16,7 +16,9 @@ on death of player:
 	if {Ulting::%{LastKiller::%victim%}%} is not set:
 		add 5 to {Ultimate::%{LastKiller::%victim%}%}
 # UUIDやKitなど変数の保存
+	set {_attacker.name} to {LastKiller::%victim%}
 	set {_attacker.UUID} to {LastKiller::%victim%}'s UUID
+	set {_victim.name} to victim
 	set {_victim.UUID} to victim's UUID
 	set {_attacker.kit} to {Class::%{LastKiller::%victim%}%}
 	set {_victim.kit} to {Class::%victim%}
@@ -55,6 +57,7 @@ on death of player:
 		loop-value is not {LastKiller::%victim%}  # アシスト者とキラーが同一人物でないかどうか
 		{TrueTeam::%loop-value%} is {TrueTeam::%{LastKiller::%victim%}%}  # チームが同一であるかどうか
 		{_true.%loop-value%} is not set  # 既にアシストとして換算済でないかどうか
+		add loop-value to {_supporters::*}  # サポート者の保存
 		set {_assist.UUID} to loop-value's UUID  # UUIDの保存
 		set {_assist.kit} to {Class::%loop-value%}  # Kitの保存
 		if {Ulting::%loop-value%} is not set:  # Ultのチャージ
@@ -81,6 +84,7 @@ on death of player:
 		loop-value is not {LastKiller::%victim%}  # アシスト者とキラーが同一人物でないかどうか
 		{TrueTeam::%loop-value%} is {TrueTeam::%{LastKiller::%victim%}%}  # チームが同一であるかどうか
 		{_true.%loop-value%} is not set  # 既にアシストとして換算済でないかどうか
+		add loop-value to {_supporters::*}  # サポート者の保存
 		set {_assist.UUID} to loop-value's UUID  # UUIDの保存
 		set {_assist.kit} to {Class::%loop-value%}  # Kitの保存
 		if {Ulting::%loop-value%} is not set:  # Ultのチャージ
@@ -101,6 +105,9 @@ on death of player:
 		set {_true.%loop-value%} to true  # 換算済として設定
 		message "{@prefix} §e%victim% §aのキルアシストをしました" to loop-value  # メッセージ送信
 		add 1 to {Kit-Soul::%loop-value's UUID%}  # Soulの贈与
+# 進行中のゲームに対して情報を送信する
+	kitRuleDeathEvent({_attacker.name}, {_victim.name}, {_supporters::*})
+#
 	wait 5 ticks
 	delete {damager.%victim%::*}
 	delete {supporter.%victim%::*}
