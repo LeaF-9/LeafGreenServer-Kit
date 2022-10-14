@@ -220,19 +220,25 @@ function checkDate():
 	set {_year.month} to {_dates.month::1}
 	set {_month.month} to {_dates.month::2}
 # Week 更新
-	set {_dif.week} to difference between {_unix.week} and {_unix.now}
-	if {_dif.week} > 604800:
-		add 1 week to {BaseDate.week::base}
-# Month 更新
-	if {_month.now} is not {_month.month}:
-		set {_yearnum} to {_year.month} parsed as number
-		if {_month.month} is "12":
-			set {_monthnum} to 1
-			add 1 to {_yearnum}
+	set {_week.checker} to false
+	while {_week.checker} is false:
+		set {_dif.week} to difference between {_unix.week} and {_unix.now}
+		if {_dif.week} > 604800:
+			add 1 week to {BaseDate.week::base}
+			set set {_unix.week} to unix timestamp of {BaseDate.week::base}
 		else:
-			set {_monthnum} to {_month.month} parsed as number
-			set {_monthnum} to {_monthnum} + 1
-		set {BaseDate.month::base} to date({_yearnum}, {_monthnum}, 1)
+			set {_week.checker} to true
+# Month 更新
+	set {_month.checker} to false
+		if {_month.now} is not {_month.month}:
+			set {_yearnum} to {_year.month} parsed as number
+			if {_month.month} is "12":
+				set {_monthnum} to 1
+				add 1 to {_yearnum}
+			else:
+				set {_monthnum} to {_month.month} parsed as number
+				set {_monthnum} to {_monthnum} + 1
+			set {BaseDate.month::base} to date({_yearnum}, {_monthnum}, 1)
 
 function checkWeeking(time: date) :: boolean:
 	set {_base} to {BaseDate.week::base}
