@@ -123,6 +123,18 @@ on death of player:
 #		make player execute command "/topstats count %arg 1%"
 #		make player execute command "/topstats assist %arg 1%"
 
+function kitRuleDeathEvent(attacker: player, victim: player, supporters: players):
+	if {Kit-GameStage::rule} is "KILL":
+		kitDeathEvent_KILL({_attacker}, {_victim}, {_supporters::*})
+	else if {Kit-GameStage::rule} is "CORE":
+		kitDeathEvent_CORE({_attacker}, {_victim}, {_supporters::*})
+	else if {Kit-GameStage::rule} is "FLAG":
+		kitDeathEvent_FLAG({_attacker}, {_victim}, {_supporters::*})
+	else if {Kit-GameStage::rule} is "WOOL":
+		kitDeathEvent_WOOL({_attacker}, {_victim}, {_supporters::*})
+	else if {Kit-GameStage::rule} is "AREA":
+		kitDeathEvent_AREA({_attacker}, {_victim}, {_supporters::*})
+
 command /kitclearplayerstats <offline player> <text>:
 	permission: sk.admin
 	trigger:
