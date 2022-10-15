@@ -1,52 +1,29 @@
-﻿on death of player:
-	{Kit-tochu} is true
-	{Kit-GameStage::rule} is "GoK"
-	{Join::%victim%} is "Kit"
-	set {_teamVictim} to {TrueTeam::%victim%}
-	add 1 to {Kit-GoKDeath::%victim%}
-	kitScorePersonal(victim, 1, "§4%{Kit-GoKKill::%victim%}% §7/ §1%{Kit-GoKDeath::%victim%}%")
-	add 1 to {Kit-TeamDeaths::%{_teamVictim}%}
-	set {Kit-GoKKD::%victim%} to {Kit-GoKKill::%victim%} / {Kit-GoKDeath::%victim%}
-	if {LastKiller::%victim%} is set:
-		set {_teamAttacker} to {TrueTeam::%{LastKiller::%victim%}%}
-		add 1 to {Kit-GoKKill::%{LastKiller::%victim%}%}
-		kitScorePersonal({LastKiller::%victim%}, 1, "§4%{Kit-GoKKill::%{LastKiller::%victim%}%}% §7/ §1%{Kit-GoKDeath::%{LastKiller::%victim%}%}%")
-		set {Kit-GoKKD::%{LastKiller::%victim%}%} to {Kit-GoKKill::%{LastKiller::%victim%}%} / {Kit-GoKDeath::%{LastKiller::%victim%}%}
-		chance of {Kit-TeamBuff::%{_teamAttacker}%}%:
-			add 1 to {Kit-TeamKills::%{_teamAttacker}%}
-			if {_teamAttacker} is "red":
-				kitScoreGlobal(7, "§c赤§7: §6%{Kit-TeamKills::red}%")
-			else if {_teamAttacker} is "blue":
-				kitScoreGlobal(6, "§9青§7: §6%{Kit-TeamKills::blue}%")
-			else if {_teamAttacker} is "yellow":
-				kitScoreGlobal(5, "§e黄§7: §6%{Kit-TeamKills::yellow}%")
-			else if {_teamAttacker} is "green":
-				kitScoreGlobal(4, "§a緑§7: §6%{Kit-TeamKills::green}%")
-			if {TeamKills::%{_teamAttacker}%} >= {Kit-GameStage::goal}:
-				add {_teamAttacker} to {Kit-WinTeam::*}
-				gameMsg("Kit", "§c§l試合終了!")
-				execute console command "/timer end Kit-GoK"
-
-# Coin処理
-on death of player:
-	{Kit-tochu} is true
-	{Kit-GameStage::rule} is "GoK"
-	{Join::%victim%} is "Kit"
-	{LastKiller::%victim%} is set
-	execute console command "/givecoin %{LastKiller::%victim%}% 5 キル"
-	set {_true.%{LastKiller::%victim%}%} to true
-	loop {damager.%victim%::*}:
-		loop-value is not {LastKiller::%victim%}
-		{team::%loop-value%} is {team::%{LastKiller::%victim%}%}
-		{_true.%loop-value%} is not set
-		set {_true.%loop-value%} to true
-		execute console command "/givecoin %loop-value% 3 アシスト"
-	loop {supporter.%{LastKiller::%victim%}%::*}:
-		loop-value is not {LastKiller::%victim%}
-		{team::%loop-value%} is {team::%{LastKiller::%victim%}%}
-		{_true.%loop-value%} is not set
-		set {_true.%loop-value%} to true
-		execute console command "/givecoin %loop-value% 3 アシスト"
+﻿function kitDeathEvent_KILL(attacker: player, victim: player, supporters: players):
+	# Death情報の更新
+	set {_team.victim} to {TrueTeam::%{_victim}%}  # teamの保存
+	add 1 to {Kit-Death.personal::%victim%}
+	kitScorePersonal({_victim}, 1, "§4%{Kit-Kill.personal::%{_victim}%}% §7/ §1%{Kit-Death.personal::%{_victim}%}%")
+	add 1 to {Kit-Death.team::%{_team.victim}%}
+	set {Kit-KD.personal::%{_victim}%} to {Kit-Kill.personal::%{_victim}%} / {Kit-Death.personal::%{_victim}%}
+	# Kill情報の更新
+	set {_team.attacker} to {TrueTeam::%{_attacker}%}  # teamの保存
+	add 1 to {Kit-Kill.personal::%{_attacker}%}
+	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
+	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
+	chance of {Kit-TeamBuff::%{_team.attacker}%}%:
+		add 1 to {Kit-Kill.team::%{_team.attacker}%}
+		if {_team.attacker} is "red":
+			kitScoreGlobal(7, "§c赤§7: §6%{Kit-Kill.team::red}%")
+		else if {_team.attacker} is "blue":
+			kitScoreGlobal(6, "§9青§7: §6%{Kit-Kill.team::blue}%")
+		else if {_team.attacker} is "yellow":
+			kitScoreGlobal(5, "§e黄§7: §6%{Kit-Kill.team::yellow}%")
+		else if {_team.attacker}} is "green":
+			kitScoreGlobal(4, "§a緑§7: §6%{Kit-Kill.team::green}%")
+		if {Kill.team::%{_team.attacker}%} >= {Kit-GameStage::goal}:
+			add {_team.attacker} to {Kit-WinTeam::*}
+			gameMsg("Kit", "§c§l試合終了!")
+			execute console command "/timer end Kit-GoK"
 
 command /gokend:
 	permission: sk.admin
@@ -57,14 +34,14 @@ command /gokend:
 		wait 5 seconds
 		gameMsg("Kit", "§2----------=====§5Game Result§2=====----------")
 		gameMsg("Kit", " ")
-		gameMsg("Kit", "§cRed§7: §a%{Kit-TeamKills::red}%")
-		gameMsg("Kit", "§9Blue§7: §a%{Kit-TeamKills::blue}%")
-		gameMsg("Kit", "§eYellow§7: §a%{Kit-TeamKills::yellow}%")
-		gameMsg("Kit", "§aGreen§7: §a%{Kit-TeamKills::green}%")
+		gameMsg("Kit", "§cRed§7: §a%{Kit-Kill.team::red}%")
+		gameMsg("Kit", "§9Blue§7: §a%{Kit-Kill.team::blue}%")
+		gameMsg("Kit", "§eYellow§7: §a%{Kit-Kill.team::yellow}%")
+		gameMsg("Kit", "§aGreen§7: §a%{Kit-Kill.team::green}%")
 		gameMsg("Kit", " ")
 		if size of {Kit-WinTeam::*} is 0:
-			set {_maxKills} to max({Kit-TeamKills::*})
-			loop {Kit-TeamKills::*}:
+			set {_maxKills} to max({Kit-Kill.team::*})
+			loop {Kit-Kill.team::*}:
 				loop-value = {_maxKills}
 				add loop-index to {Kit-WinTeam::*}
 		loop {Kit-WinTeam::*}:
@@ -76,30 +53,30 @@ command /gokend:
 			{Kit-WinTeam::*} contains {TrueTeam::%loop-player%}
 			execute console command "/givecoin %loop-player% 100 勝利"
 		gameMsg("Kit", " ")
-		set {_maxKill} to max({Kit-GoKKill::*})
-		loop {Kit-GoKKill::*}:
+		set {_maxKill} to max({Kit-Kill.personal::*})
+		loop {Kit-Kill.personal::*}:
 			loop-value = {_maxKill}
 			add loop-index to {_highplayer::*}
 		gameMsg("Kit", "§4§lTopKiller§7: §6§l%{_highplayer::*}% §c%{_maxKill}% Kills")
 		gameMsg("Kit", " ")
 		gameMsg("Kit", "§bチームの戦績§7:")
 		loop all players:
-			loop {Kit-GoKKill::*}:
+			loop {Kit-Kill.personal::*}:
 				{TrueTeam::%loop-index%} is {TrueTeam::%loop-player-1%}
 				message "§e%loop-index%§7: §9%loop-value-2%" to loop-player-1
 		gameMsg("Kit", " ")
 		loop all players:
-			message "§aあなたの戦績§7: §4Kill: %{Kit-GoKKill::%loop-player%}% §1Death: %{Kit-GoKDeath::%loop-player%}% §6K/D: %{Kit-GoKKD::%loop-player%}%" to loop-player
+			message "§aあなたの戦績§7: §4Kill: %{Kit-Kill.personal::%loop-player%}% §1Death: %{Kit-Death.personal::%loop-player%}% §6K/D: %{Kit-KD.personal::%loop-player%}%" to loop-player
 			send title "§6ゲーム終了!" with subtitle "%{_winteams::*}% §5の勝利です!" to loop-player for 10 seconds
 			delete {damager.%loop-player%::*}
 		kitGameInsert()
 		wait 10 seconds
 		delete {LastKiller::*}
-		delete {Kit-TeamKills::*}
-		delete {Kit-TeamDeaths::*}
-		delete {Kit-GoKKill::*}
-		delete {Kit-GoKDeath::*}
-		delete {Kit-GoKKD::*}
+		delete {Kit-Kill.team::*}
+		delete {Kit-Death.team::*}
+		delete {Kit-Kill.personal::*}
+		delete {Kit-Death.personal::*}
+		delete {Kit-KD.personal::*}
 		delete {Kit-WinTeam::*}
 		delete {Kit-TeamBuff::*}
 		execute console command "/kjclear"
