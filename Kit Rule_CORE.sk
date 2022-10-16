@@ -1,35 +1,37 @@
-﻿on death of player:
-	{Kit-tochu} is true
-	{Kit-GameStage::rule} is "BEC"
-	{Join::%victim%} is "Kit"
-	{TrueTeam::%victim%} is not "purple"
-	{TrueTeam::%{LastKiller::%victim%}%} is not "purple"
-	add 1 to {Kit-BECDeath::%victim%}
-	kitScorePersonal(victim, 1, "§4%{Kit-BECKill::%victim%}% §7/ §1%{Kit-BECDeath::%victim%}%")
-	add 1 to {Kit-TeamDeaths::%{TrueTeam::%victim%}%}
-	set {Kit-BECKD::%victim%} to {Kit-BECKill::%victim%} / {Kit-BECDeath::%victim%}
-	if {LastKiller::%victim%} is set:
-		add 1 to {Kit-BECKill::%{LastKiller::%victim%}%}
-		kitScorePersonal({LastKiller::%victim%}, 1, "§4%{Kit-BECKill::%{LastKiller::%victim%}%}% §7/ §1%{Kit-BECDeath::%{LastKiller::%victim%}%}%")
-		set {Kit-BECKD::%{LastKiller::%victim%}%} to {Kit-BECKill::%{LastKiller::%victim%}%} / {Kit-BECDeath::%{LastKiller::%victim%}%}
-		add 1 to {Kit-TeamKills::%{TrueTeam::%{LastKiller::%victim%}%}%}
-		loop all blocks in radius 5 around location of victim:
-			{Kit-GameStageCoreLocation::*} contains location of loop-block
-			loop {Kit-GameStageCoreLocation::*}:
-				loop-value-2 is location of loop-block
-				set {_corename} to loop-index
-			if {Kit-GameStageCore_%{TrueTeam::%attacker%}%::*} contains {_corename}:
-				set {_true} to true
-		if {_true} is true:
-			execute console command "/givecoin %{LastKiller::%victim%}% 10 防衛"
+﻿function kitDeathEvent_CORE(attacker: player, victim: player, supporters: players):
+	{TrueTeam::%{_victim}%} is not "purple"
+	{TrueTeam::%{_attacker}%} is not "purple"
+	# Death情報の更新
+	add 1 to {Kit-Death.personal::%{_victim}%}
+	kitScorePersonal(victim, 1, "§4%{Kit-Kill.personal::%{_victim}%}% §7/ §1%{Kit-Death.personal::%{_victim}%}%")
+	set {Kit-KD.personal::%{_victim}%} to {Kit-Kill.personal::%{_victim}%} / {Kit-Death.personal::%{_victim}%}
+	# Kill情報の更新
+	add 1 to {Kit-Kill.personal::%{_attacker}%}
+	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
+	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
+	# 防衛時の処理 Leaf獲得のデータ処理の際に利用
+	#
+	# loop all blocks in radius 5 around location of victim:
+	# 	{Kit-GameStageCoreLocation::*} contains location of loop-block
+	# 	loop {Kit-GameStageCoreLocation::*}:
+	# 		loop-value-2 is location of loop-block
+	# 		set {_corename} to loop-index
+	# 	if {Kit-GameStageCore_%{TrueTeam::%attacker%}%::*} contains {_corename}:
+	# 		set {_true} to true
+	# if {_true} is true:
+	# 	execute console command "/givecoin %{LastKiller::%victim%}% 10 防衛"
+	#
+	# ##########################################################################
 
 on damage of player:
 	{Kit-tochu} is true
-	{Kit-GameStage::rule} is "BEC"
+	{Kit-GameStage::rule} is "CORE"
 	if {Join::%victim%} is "Kit":
+		# Banditの即死処理
 		if {TrueTeam::%victim%} is "purple":
 			set damage to 100
 			stop
+		# Core周辺のTeamBuff適用
 		delete {_ok}
 		loop {Kit-GameStageCoreLocation::*}:
 			distance between victim and loop-value <= 10
@@ -38,6 +40,7 @@ on damage of player:
 			set {_teambuff} to {Kit-TeamBuff::%{TrueTeam::%victim%}%} * 0.01
 			set damage to damage / {_teambuff}
 	if {Join::%attacker%} is "Kit":
+		# Core周辺のTeamBuff適用
 		delete {_ok}
 		loop {Kit-GameStageCoreLocation::*}:
 			distance between attacker and loop-value <= 10
@@ -48,14 +51,66 @@ on damage of player:
 
 on break:
 	{Kit-tochu} is true
-	{Kit-GameStage::rule} is "BEC"
+	{Kit-GameStage::rule} is "CORE"
+	# Banditの破壊阻止
 	if {TrueTeam::%player%} is "purple":
 		send action bar "§5§lBandit §c§lはコアの破壊ができません" to player
 		stop
-	if {Kit-GameStageCoreLocation::*} contains location of event-block:
+	# Core破壊処理
+	if {Kit-GameStageCoreLocation::*} contains location of event-block:  # 破壊したブロックがCoreであるかどうかの確認
+		# 破壊したCoreのNameを取得
 		loop {Kit-GameStageCoreLocation::*}:
 			loop-value is location of event-block
 			set {_corename} to loop-index
+		# 破壊処理
+		set {_teamlist::*} to kitTeamList()
+		loop {_teamlist::*}:
+			set {_teamname} to loop-value
+			set {_slotbase} to kitSlotChecker_Core({_teamname})
+			if {Kit-GameStageCore_%{_teamname}%::*} contains {_corename}:
+				if {TrueTeam::%player%} is not {_teamname}:
+					chance of {Kit-TeamBuff::%{TrueTeam::%player%}%}%:
+						subtract 1 from {Kit-GameStageCoreHP::%{_corename}%}
+						set {_stop} to false
+						set {_num} to 0
+						loop {Kit-GameStageCore_%{_teamname}%::*}:
+							if {_stop} is false:
+								add 1 to {_num}
+							if loop-value-2 is {_corename}:
+								set {_stop} to true
+						set {_slot} to 15 - {_num}
+						kitScoreGlobal({_slot}, "§7- §6%{_corename}%§7: §b%{Kit-GameStageCoreHP::%{_corename}%}%")
+						add 1 to {Kit-TeamBreak::%{TrueTeam::%player%}%}
+						add 1 to {Kit-CoreBreak::%player%}
+						set {_ok} to true
+					send action bar "§c§lRed§8の§6コア: §l%{_corename}%§8を破壊中... §cHP§7: §b%{Kit-GameStageCoreHP::%{_corename}%}%" to player
+					loop all players:
+						{Game::%loop-player%} is "Kit"
+						{TrueTeam::%loop-player%} is "red"
+						send title "§c§lコア: %{_corename}%が削られています!" with subtitle "§6コアHP§7: §b%{Kit-GameStageCoreHP::%{_corename}%}%" to loop-player for 1 seconds
+					play sound "block.anvil.land" with volume 1 with pitch 1 at {Kit-GameStageCoreLocation::%{_corename}%}
+					if {Kit-GameStageCoreHP::%{_corename}%} is less than 1:
+						loop all players:
+							{Game::%loop-player%} is "Kit"
+							{TrueTeam::%loop-player%} is "red"
+							send title "§4§lコア: %{_corename}%が破壊された!" to loop-player
+						make a fake explosion at {Kit-GameStageCoreLocation::%{_corename}%}
+						execute console command "/givecoin %player% 10 コア破壊"
+						set block at {Kit-GameStageCoreLocation::%{_corename}%} to bedrock
+						subtract 1 from {Kit-GameStage::corenumber-red}
+						if {Kit-GameStage::corenumber-red} is less than 1:
+							gameMsg("Kit", "§c§lRedTeamのコアが全て破壊された!")
+							loop all players:
+								{Game::%loop-player%} is "Kit"
+								if {TrueTeam::%loop-player%} is "red":
+									set {team::%loop-player%} to "purple"
+									set {TrueTeam::%loop-player%} to "purple"
+									execute console command "/team join bandit %loop-player%"
+									execute console command "/cexplode %loop-player%"
+							subtract 1 from {Kit-TeamLeft.Core}
+				else:
+					send action bar "§c§l自陣地のコアは破壊できません" to player
+
 		if {Kit-GameStageCore_red::*} contains {_corename}:
 			if {TrueTeam::%player%} is not "red":
 				chance of {Kit-TeamBuff::%{TrueTeam::%player%}%}%:
@@ -251,6 +306,20 @@ on break:
 			gameMsg("Kit", "§c§l試合終了!")
 			execute console command "/timer end Kit-BEC"
 
+function kitSlotChecker_Core(team: text) :: number:
+	if {_team} is "red":
+		set {_slot} to 15
+	else if {_team} is "blue":
+		if {Kit-GameStage::team} is 2:
+			set {_slot} to 9
+		else:
+			set {_slot} to 12
+	else if {_team} is "yellow":
+		set {_slot} to 9
+	else if {_team} is "green":
+		set {_slot} to 6
+	return {_slot}
+
 command /becend:
 	permission: sk.admin
 	trigger:
@@ -289,8 +358,8 @@ command /becend:
 			{Kit-WinTeam::*} contains {TrueTeam::%loop-player%}
 			execute console command "/givecoin %loop-player% 100 勝利"
 		gameMsg("Kit", " ")
-		set {_maxKill} to max({Kit-BECKill::*})
-		loop {Kit-BECKill::*}:
+		set {_maxKill} to max({Kit-Kill.personal::*})
+		loop {Kit-Kill.personal::*}:
 			loop-value = {_maxKill}
 			add loop-index to {_maxKiller::*}
 		gameMsg("Kit", "§4§lTopKiller§7: <##ffffff>§l%{_maxKiller::*}% §c%{_maxKill}% Kills")
@@ -306,10 +375,10 @@ command /becend:
 		loop all players:
 			loop all players:
 				{TrueTeam::%loop-player-2%} is {TrueTeam::%loop-player-1%}
-				message "§e%loop-player-2%§7: §6Kill:§9%{Kit-BECKill::%loop-player-2%}% §eBreak:§9%{Kit-CoreBreak::%loop-player-2%}%" to loop-player-1
+				message "§e%loop-player-2%§7: §6Kill:§9%{Kit-Kill.personal::%loop-player-2%}% §eBreak:§9%{Kit-CoreBreak::%loop-player-2%}%" to loop-player-1
 		gameMsg("Kit", " ")
 		loop all players:
-			message "§aあなたの戦績§7: §4Kill: %{Kit-BECKill::%loop-player%}% §1Death: %{Kit-BECDeath::%loop-player%}% §6K/D: %{Kit-BECKD::%loop-player%}% §aBreak: %{Kit-CoreBreak::%loop-player%}%" to loop-player
+			message "§aあなたの戦績§7: §4Kill: %{Kit-Kill.personal::%loop-player%}% §1Death: %{Kit-Death.personal::%loop-player%}% §6K/D: %{Kit-KD.personal::%loop-player%}% §aBreak: %{Kit-CoreBreak::%loop-player%}%" to loop-player
 			send title "§6ゲーム終了!" with subtitle "%{_winteams::*}% §5の勝利です!" to loop-player for 10 seconds
 			delete {damager.%loop-player%::*}
 		kitGameInsert()
@@ -317,9 +386,9 @@ command /becend:
 		delete {LastKiller::*}
 		delete {Kit-TeamKills::*}
 		delete {Kit-TeamDeaths::*}
-		delete {Kit-BECKill::*}
-		delete {Kit-BECDeath::*}
-		delete {Kit-BECKD::*}
+		delete {Kit-Kill.personal::*}
+		delete {Kit-Death.personal::*}
+		delete {Kit-KD.personal::*}
 		delete {Kit-CoreBreak::*}
 		delete {Kit-TeamBreak::*}
 		delete {Kit-TeamLeft.Core}
