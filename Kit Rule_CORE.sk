@@ -1,33 +1,4 @@
-﻿command /kit-BECSetting:
-	permission: sk.admin
-	trigger:
-		set {BECTeamLeft} to {Kit-GameStage::team}
-		loop {Kit-GameStageCoreLocation::*}:
-			set {_loc} to loop-value
-			add -0.25 to y-coordinate of {_loc}
-			if {Kit-GameStageCore_red::*} contains loop-index:
-				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-red""}"
-			else if {Kit-GameStageCore_blue::*} contains loop-index:
-				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-blue""}"
-			else if {Kit-GameStageCore_yellow::*} contains loop-index:
-				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-yellow""}"
-			else if {Kit-GameStageCore_green::*} contains loop-index:
-				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-green""}"
-			set metadata value "gametype" of spawned magma cube to "Kit"
-			set metadata value "kit-corelocation" of spawned magma cube to loop-index
-		set {_num} to 0
-		while {Kit-tochu} is true:
-			add 1 to {_num}
-			if {_num} >= 10:
-				set {_num} to 0
-				loop {Kit-GameStageCoreLocation::*}:
-					set {_corename} to loop-index
-					loop all players in radius 10 around loop-value:
-						{Kit-GameStageCore_%{TrueTeam::%loop-player%}%::*} contains {_corename}
-						apply regeneration 1 to loop-player for 10 seconds
-			wait a second
-
-on death of player:
+﻿on death of player:
 	{Kit-tochu} is true
 	{Kit-GameStage::rule} is "BEC"
 	{Join::%victim%} is "Kit"
@@ -125,7 +96,7 @@ on break:
 								set {TrueTeam::%loop-player%} to "purple"
 								execute console command "/team join bandit %loop-player%"
 								execute console command "/cexplode %loop-player%"
-						subtract 1 from {BECTeamLeft}
+						subtract 1 from {Kit-TeamLeft.Core}
 			else:
 				send action bar "§c§l自陣地のコアは破壊できません" to player
 		else if {Kit-GameStageCore_blue::*} contains {_corename}:
@@ -171,7 +142,7 @@ on break:
 								set {TrueTeam::%loop-player%} to "purple"
 								execute console command "/team join bandit %loop-player%"
 								execute console command "/cexplode %loop-player%"
-						subtract 1 from {BECTeamLeft}
+						subtract 1 from {Kit-TeamLeft.Core}
 			else:
 				send action bar "§c§l自陣地のコアは破壊できません" to player
 		else if {Kit-GameStageCore_yellow::*} contains {_corename}:
@@ -214,7 +185,7 @@ on break:
 								set {TrueTeam::%loop-player%} to "purple"
 								execute console command "/team join bandit %loop-player%"
 								execute console command "/cexplode %loop-player%"
-						subtract 1 from {BECTeamLeft}
+						subtract 1 from {Kit-TeamLeft.Core}
 			else:
 				send action bar "§c§l自陣地のコアは破壊できません" to player
 		else if {Kit-GameStageCore_green::*} contains {_corename}:
@@ -257,13 +228,13 @@ on break:
 								set {TrueTeam::%loop-player%} to "purple"
 								execute console command "/team join bandit %loop-player%"
 								execute console command "/cexplode %loop-player%"
-						subtract 1 from {BECTeamLeft}
+						subtract 1 from {Kit-TeamLeft.Core}
 			else:
 				send action bar "§c§l自陣地のコアは破壊できません" to player
 		if {_ok} is true:
 			if {Kit-CoreBreak::%player%} is 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145 or 150:
 				execute console command "/givecoin %player% 5 コア破壊"
-		if {BECTeamLeft} is 1:
+		if {Kit-TeamLeft.Core} is 1:
 			loop {Kit-GameStageCoreHP::*}:
 				loop-value is more than 0
 				set {_corename} to loop-index
@@ -351,7 +322,7 @@ command /becend:
 		delete {Kit-BECKD::*}
 		delete {Kit-CoreBreak::*}
 		delete {Kit-TeamBreak::*}
-		delete {BECTeamLeft}
+		delete {Kit-TeamLeft.Core}
 		delete {Kit-WinTeam::*}
 		delete {Kit-TeamBuff::*}
 		execute console command "/kjclear"

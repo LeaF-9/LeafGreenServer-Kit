@@ -1,3 +1,31 @@
+function kitGameStart(rule: text):
+	if {_rule} is "CORE":
+		set {Kit-TeamLeft.Core} to {Kit-GameStage::team}
+		loop {Kit-GameStageCoreLocation::*}:
+			set {_loc} to loop-value
+			add -0.25 to y-coordinate of {_loc}
+			if {Kit-GameStageCore_red::*} contains loop-index:
+				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-red""}"
+			else if {Kit-GameStageCore_blue::*} contains loop-index:
+				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-blue""}"
+			else if {Kit-GameStageCore_yellow::*} contains loop-index:
+				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-yellow""}"
+			else if {Kit-GameStageCore_green::*} contains loop-index:
+				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-green""}"
+			set metadata value "gametype" of spawned magma cube to "Kit"
+			set metadata value "kit-corelocation" of spawned magma cube to loop-index
+		set {_num} to 0
+		while {Kit-tochu} is true:
+			add 1 to {_num}
+			if {_num} >= 10:
+				set {_num} to 0
+				loop {Kit-GameStageCoreLocation::*}:
+					set {_corename} to loop-index
+					loop all players in radius 10 around loop-value:
+						{Kit-GameStageCore_%{TrueTeam::%loop-player%}%::*} contains {_corename}
+						apply regeneration 1 to loop-player for 10 seconds
+			wait a second
+
 command /gameend <text>:
 	usage: /gameend <rule>
 	permission: sk.admin
