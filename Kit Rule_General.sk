@@ -1,0 +1,63 @@
+command /gameend <text>:
+	usage: /gameend <rule>
+	permission: sk.admin
+	trigger:
+		kitGameEnd(arg 1)
+
+function kitGameEnd(rule: text):
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		set gamemode of loop-player to spectator
+	wait 5 seconds
+	# 全チームの結果発表
+	set {_var} to kitRuleVariable({_rule})
+	gameMsg("Kit", "§2----------=====§5Game Result§2=====----------")
+	gameMsg("Kit", " ")
+	gameMsg("Kit", "§cRed§7: §a%{%{_var}%::red}%")
+	gameMsg("Kit", "§9Blue§7: §a%{%{_var}%::blue}%")
+	if {Kit-GameStage::team} is 4:
+		gameMsg("Kit", "§eYellow§7: §a%{%{_var}%::yellow}%")
+		gameMsg("Kit", "§aGreen§7: §a%{%{_var}%::green}%")
+	gameMsg("Kit", " ")
+	# 勝利チームの確認
+	if size of {Kit-WinTeam::*} is 0:
+		set {_maxData} to max({%{_var}%::*})
+		loop {%{_var}%::*}:
+			loop-value = {_maxData}
+			add loop-index to {Kit-WinTeam::*}
+	# 勝利チームの表示
+	loop {Kit-WinTeam::*}:
+		set {_color} to kitTeamColor(loop-value)
+		set {_text} to "%{_color}%§l%loop-value%§r"
+		add {_text} to {_winteams::*}
+	gameMsg("Kit", "§6§lWINNER: %{_winteams::*}%")
+	gameMsg("Kit", " ")
+	# 最も貢献したプレイヤーの確認
+	if {_rule} is "KILL":
+		set {_maxData} to max({Kit-Kill.personal::*})
+		loop {Kit-Kill.personal::*}:
+			loop-value = {_maxData}
+			add loop-index to {_highplayer::*}
+		gameMsg("Kit", "§6§lTop Killer§7: §e§l%{_highplayer::*}% §9%{_maxData}% Kills")
+	# 自分の戦績と勝利チームのタイトル表示
+	gameMsg("Kit", " ")
+	loop all players:
+		message "§aあなたの戦績§7: §4Kill: %{Kit-Kill.personal::%loop-player%}% §1Death: %{Kit-Death.personal::%loop-player%}% §6K/D: %{Kit-KD.personal::%loop-player%}%" to loop-player
+		send title "§6ゲーム終了!" with subtitle "%{_winteams::*}% §5の勝利です!" to loop-player for 10 seconds
+		delete {damager.%loop-player%::*}
+	kitGameInsert()
+	wait 10 seconds
+	delete {LastKiller::*}
+	delete {Kit-Kill.team::*}
+	delete {Kit-Death.team::*}
+	delete {Kit-Kill.personal::*}
+	delete {Kit-Death.personal::*}
+	delete {Kit-KD.personal::*}
+	delete {Kit-WinTeam::*}
+	delete {Kit-TeamBuff::*}
+	execute console command "/kjclear"
+
+function kitRuleVariable(rule: text) :: text:  # 結果発表の際に表示するチームデータの変数名を返す関数
+	if {_rule} is "KILL":
+		set {_var} to "Kit-Kill.team"
+	return {_var}
