@@ -39,6 +39,19 @@ function kitGameEnd(rule: text):
 	wait 5 seconds
 	# 全チームの結果発表
 	set {_var} to kitRuleVariable({_rule})
+	# 例外処理: CORE戦においてはCoreの合計体力を計算
+	if {_rule} is "CORE":
+		loop {Kit-GameStageCoreLocation::*}:
+			set {_corename} to loop-index
+			if {Kit-GameStageCore_red::*} contains {_corename}:
+				add {Kit-GameStageCoreHP::%{_corename}%} to {Kit-TotalCore::red}
+			if {Kit-GameStageCore_blue::*} contains {_corename}:
+				add {Kit-GameStageCoreHP::%{_corename}%} to {Kit-TotalCore::blue}
+			if {Kit-GameStageCore_yellow::*} contains {_corename}:
+				add {Kit-GameStageCoreHP::%{_corename}%} to {Kit-TotalCore::yellow}
+			if {Kit-GameStageCore_green::*} contains {_corename}:
+				add {Kit-GameStageCoreHP::%{_corename}%} to {Kit-TotalCore::green}
+	# ###########################################
 	gameMsg("Kit", "§2----------=====§5Game Result§2=====----------")
 	gameMsg("Kit", " ")
 	gameMsg("Kit", "§cRed§7: §a%{%{_var}%::red}%")
@@ -61,26 +74,42 @@ function kitGameEnd(rule: text):
 	gameMsg("Kit", "§6§lWINNER: %{_winteams::*}%")
 	gameMsg("Kit", " ")
 	# 最も貢献したプレイヤーの確認
+	# KILL戦
 	if {_rule} is "KILL":
 		set {_maxData} to max({Kit-Kill.personal::*})
 		loop {Kit-Kill.personal::*}:
 			loop-value = {_maxData}
 			add loop-index to {_highplayer::*}
 		gameMsg("Kit", "§6§lTop Killer§7: §e§l%{_highplayer::*}% §9%{_maxData}% Kills")
+	# CORE戦
+	else if {_rule} is "CORE":
+		set {_maxData} to max({Kit-Break.personal::*})
+		loop {Kit-Break.personal::*}:
+			loop-value = {_maxData}
+			add loop-index to {_highplayer::*}
+		gameMsg("Kit", "§6§lTop Breaker§7: §e§l%{_highplayer::*}% §9%{_maxData}% Breaks")
 	# 自分の戦績と勝利チームのタイトル表示
 	gameMsg("Kit", " ")
 	loop all players:
 		message "§aあなたの戦績§7: §4Kill: %{Kit-Kill.personal::%loop-player%}% §1Death: %{Kit-Death.personal::%loop-player%}% §6K/D: %{Kit-KD.personal::%loop-player%}%" to loop-player
 		send title "§6ゲーム終了!" with subtitle "%{_winteams::*}% §5の勝利です!" to loop-player for 10 seconds
 		delete {damager.%loop-player%::*}
+	# ゲーム終了後のMap修正
+	if {_rule} is "CORE":
+		loop {Kit-GameStageCoreLocation::*}:
+			set block at loop-value to {Kit-GameStageCoreMaterial::%loop-index%}
+	# ゲーム記録をymlに記述
 	kitGameInsert()
 	wait 10 seconds
-	delete {LastKiller::*}
+	# ゲーム記録の削除
 	delete {Kit-Kill.team::*}
 	delete {Kit-Death.team::*}
 	delete {Kit-Kill.personal::*}
 	delete {Kit-Death.personal::*}
 	delete {Kit-KD.personal::*}
+	delete {Kit-Break.team::*}
+	delete {Kit-Break.personal::*}
+	delete {Kit-TeamLeft.Core}
 	delete {Kit-WinTeam::*}
 	delete {Kit-TeamBuff::*}
 	execute console command "/kjclear"
@@ -88,4 +117,6 @@ function kitGameEnd(rule: text):
 function kitRuleVariable(rule: text) :: text:  # 結果発表の際に表示するチームデータの変数名を返す関数
 	if {_rule} is "KILL":
 		set {_var} to "Kit-Kill.team"
+	else if {_rule} is "CORE":
+		set {_var} to "Kit-TotalCore"
 	return {_var}
