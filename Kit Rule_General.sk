@@ -15,6 +15,13 @@ function kitGameStart(rule: text):
 			set metadata value "gametype" of spawned magma cube to "Kit"
 			set metadata value "kit-corelocation" of spawned magma cube to loop-index
 		kitTimer_CORE()
+	else if {_rule} is "FLAG":
+		kitHolograph_FLAG({Kit-GameStage::name})
+		set {Kit-FlagPoint::red} to 0
+		set {Kit-FlagPoint::blue} to 0
+		set {Kit-FlagPoint::yellow} to 0
+		set {Kit-FlagPoint::green} to 0
+		kitTimer_FLAG()
 
 command /gameend <text>:
 	usage: /gameend <rule>
@@ -100,6 +107,7 @@ function kitGameEnd(rule: text):
 	delete {Kit-Break.team::*}
 	delete {Kit-Break.personal::*}
 	delete {Kit-TeamLeft.Core}
+	delete {Kit-FlagPoint::*}
 	delete {Kit-WinTeam::*}
 	delete {Kit-TeamBuff::*}
 	execute console command "/kjclear"
@@ -109,4 +117,6 @@ function kitRuleVariable(rule: text) :: text:  # 結果発表の際に表示す�
 		set {_var} to "Kit-Kill.team"
 	else if {_rule} is "CORE":
 		set {_var} to "Kit-TotalCore"
+	else if {_rule} is "FLAG":
+		set {_var} to "Kit-FlagPoint"
 	return {_var}

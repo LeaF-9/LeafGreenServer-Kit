@@ -1,24 +1,7 @@
 ﻿options:
-	prefix: §e[§aEmJ§e]§r
-#	nbt: {VillagerData:{profession:%{Kit-GameStage::villager-profession}%,level:%{Kit-GameStage::villager-level}%,type:%{Kit-GameStage::villager-type}%},Invulnerable:1,PersistenceRequired:1,Silent:1,CustomName:"\"§aJewel Exchanger\"",ActiveEffects:[{Id:2,Amplifier:10,Duration:999999},{Id:8,Amplifier:-10,Duration:999999}],Offers:{Recipes:[{buy:{id:emerald,Count:3,tag:{display:{Name:"\"§aJewel\""}}},sell:{id:diamond,Count:1,tag:{display:{Name:"\"§bGem\""}}},rewardExp:0b,maxUses:9999999},{buy:{id:diamond,Count:1,tag:{display:{Name:"\"§bGem\""}}},sell:{id:emerald,Count:2,tag:{display:{Name:"\"§aJewel\""}}},rewardExp:0b,maxUses:9999999},{buy:{id:emerald,Count:5,tag:{display:{Name:"\"§aJewel\""}}},sell:{id:blaze_rod,Count:1,tag:{display:{Name:"\"§e§lBox Key\"",Lore:["\"Gem Boxをクリックすることで発動します\"","\"Gem Boxに入っているGemを全て取り出します\""]}}},rewardExp:0b,maxUses:9999999}]}}
+	prefix: §e[§aFLAG§e]§r
 
-command /kit-EmJSetting:
-	permission: sk.admin
-	trigger:
-		kitEmJHolograph({Kit-GameStage::name})
-		set {Kit-TeamJewel::red} to 0
-		set {Kit-TeamJewel::blue} to 0
-		set {Kit-TeamJewel::yellow} to 0
-		set {Kit-TeamJewel::green} to 0
-		set {Kit-Gems::red} to 0
-		set {Kit-Gems::blue} to 0
-		set {Kit-Gems::yellow} to 0
-		set {Kit-Gems::green} to 0
-#		loop {Kit-GameStageVillager::*}:
-#			spawn a villager at loop-value with nbt {@nbt}
-		kitEmJTimer()
-
-function kitEmJHolograph(stage: text):
+function kitHolograph_FLAG(stage: text):
 	loop {Kit-GameStage::*}:
 		loop-index contains "gembox"
 		set {_color} to kitTeamColor(loop-index)
@@ -303,7 +286,7 @@ on pick up emerald:
 	else:
 		execute console command "/givecoin %player% 1 Jewel拾得"
 
-function kitEmJTimer():
+function kitTimer_FLAG():
 	while {Kit-tochu} is true:
 		add 1 to {_timer}
 	# Bufflose
