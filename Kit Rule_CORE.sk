@@ -128,6 +128,19 @@ on break:
 			gameMsg("Kit", "§c§l試合終了!")
 			execute console command "/timer end Kit-CORE"
 
+function kitTimer_CORE():
+	set {_num} to 0
+	while {Kit-tochu} is true:
+		add 1 to {_num}
+		if {_num} >= 10:
+			set {_num} to 0
+			loop {Kit-GameStageCoreLocation::*}:
+				set {_corename} to loop-index
+				loop all players in radius 10 around loop-value:
+					{Kit-GameStageCore_%{TrueTeam::%loop-player%}%::*} contains {_corename}
+					apply regeneration 1 to loop-player for 10 seconds
+		wait a second
+
 function kitSlotChecker_Core(team: text) :: number:
 	if {_team} is "red":
 		set {_slot} to 15
