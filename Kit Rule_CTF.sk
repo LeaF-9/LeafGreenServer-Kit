@@ -1,23 +1,6 @@
 ﻿options:
 	prefix: §e[§aFLAG§e]§r
 
-function kitHolograph_CTF(stage: text):
-	loop {Kit-GameStage::*}:
-		loop-index contains "gembox"
-		set {_color} to kitTeamColor(loop-index)
-		replace "gembox-" with "" in {_color}
-		set {_team} to loop-index in strict proper case
-		set {_gemloc} to loop-value
-		set {_teamholoc} to location 1.5 meters above {_gemloc}
-		set {_contholoc} to location 1.3 meters above {_gemloc}
-		spawn an armor stand at {_teamholoc} with nbt "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
-		set spawned armor stand's display name to "%{_color}%%{_team}% §bGembox"
-		set metadata value "gametype" of spawned armor stand to "Kit"
-		spawn an armor stand at {_contholoc} with nbt "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
-		set spawned armor stand's display name to "§b0 §7Gems"
-		set metadata value "gametype" of spawned armor stand to "Kit"
-		set metadata value "gembox" of spawned armor stand to "%{_team}%"
-
 function kitEmJChangeHolo(team: text, gem: number):
 	set {_teamname} to {_team} in strict proper case
 	loop all entities:
