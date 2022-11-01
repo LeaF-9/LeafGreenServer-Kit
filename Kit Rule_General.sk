@@ -35,7 +35,7 @@ function kitGameEnd(rule: text):
 	wait 5 seconds
 	# 全チームの結果発表
 	set {_var} to kitRuleVariable({_rule})
-	# 例外処理: CORE戦においてはCoreの合計体力を計算
+	# 例外処理: DTC戦においてはCoreの合計体力を計算
 	if {_rule} is "DTC":
 		loop {Kit-GameStageCoreLocation::*}:
 			set {_corename} to loop-index
@@ -70,14 +70,14 @@ function kitGameEnd(rule: text):
 	gameMsg("Kit", "§6§lWINNER: %{_winteams::*}%")
 	gameMsg("Kit", " ")
 	# 最も貢献したプレイヤーの確認
-	# KILL戦
+	# TDM戦
 	if {_rule} is "TDM":
 		set {_maxData} to max({Kit-Kill.personal::*})
 		loop {Kit-Kill.personal::*}:
 			loop-value = {_maxData}
 			add loop-index to {_highplayer::*}
 		gameMsg("Kit", "§6§lTop Killer§7: §e§l%{_highplayer::*}% §9%{_maxData}% Kills")
-	# CORE戦
+	# DTC戦
 	else if {_rule} is "DTC":
 		set {_maxData} to max({Kit-Break.personal::*})
 		loop {Kit-Break.personal::*}:
