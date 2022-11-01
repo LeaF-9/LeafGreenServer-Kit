@@ -1,4 +1,4 @@
-﻿function kitDeathEvent_CORE(attacker: player, victim: player, supporters: players):
+﻿function kitDeathEvent_DTC(attacker: player, victim: player, supporters: players):
 	{TrueTeam::%{_victim}%} is not "purple"
 	{TrueTeam::%{_attacker}%} is not "purple"
 	# Death情報の更新
@@ -67,7 +67,7 @@ on break:
 		loop {_teamlist::*}:
 			set {_teamname} to loop-value
 			set {_teancolor} to kitTeamColor({_teamname})
-			set {_slotbase} to kitSlotChecker_Core({_teamname})
+			set {_slotbase} to kitSlotChecker_DTC({_teamname})
 			if {Kit-GameStageCore_%{_teamname}%::*} contains {_corename}:
 				if {TrueTeam::%player%} is not {_teamname}:
 					chance of {Kit-TeamBuff::%{TrueTeam::%player%}%}%:
@@ -128,7 +128,7 @@ on break:
 			gameMsg("Kit", "§c§l試合終了!")
 			execute console command "/timer end Kit-CORE"
 
-function kitTimer_CORE():
+function kitTimer_DTC():
 	set {_num} to 0
 	while {Kit-tochu} is true:
 		add 1 to {_num}
@@ -141,7 +141,7 @@ function kitTimer_CORE():
 					apply regeneration 1 to loop-player for 10 seconds
 		wait a second
 
-function kitSlotChecker_Core(team: text) :: number:
+function kitSlotChecker_DTC(team: text) :: number:
 	if {_team} is "red":
 		set {_slot} to 15
 	else if {_team} is "blue":

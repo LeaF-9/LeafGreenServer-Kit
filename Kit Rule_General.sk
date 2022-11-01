@@ -1,5 +1,5 @@
 function kitGameStart(rule: text):
-	if {_rule} is "CORE":
+	if {_rule} is "DTC":
 		set {Kit-TeamLeft.Core} to {Kit-GameStage::team}
 		loop {Kit-GameStageCoreLocation::*}:
 			set {_loc} to loop-value
@@ -14,14 +14,14 @@ function kitGameStart(rule: text):
 				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-green""}"
 			set metadata value "gametype" of spawned magma cube to "Kit"
 			set metadata value "kit-corelocation" of spawned magma cube to loop-index
-		kitTimer_CORE()
-	else if {_rule} is "FLAG":
-		kitHolograph_FLAG({Kit-GameStage::name})
+		kitTimer_DTC()
+	else if {_rule} is "CTF":
+		kitHolograph_CTF({Kit-GameStage::name})
 		set {Kit-FlagPoint::red} to 0
 		set {Kit-FlagPoint::blue} to 0
 		set {Kit-FlagPoint::yellow} to 0
 		set {Kit-FlagPoint::green} to 0
-		kitTimer_FLAG()
+		kitTimer_CTF()
 
 command /gameend <text>:
 	usage: /gameend <rule>
@@ -37,7 +37,7 @@ function kitGameEnd(rule: text):
 	# 全チームの結果発表
 	set {_var} to kitRuleVariable({_rule})
 	# 例外処理: CORE戦においてはCoreの合計体力を計算
-	if {_rule} is "CORE":
+	if {_rule} is "DTC":
 		loop {Kit-GameStageCoreLocation::*}:
 			set {_corename} to loop-index
 			if {Kit-GameStageCore_red::*} contains {_corename}:
@@ -72,14 +72,14 @@ function kitGameEnd(rule: text):
 	gameMsg("Kit", " ")
 	# 最も貢献したプレイヤーの確認
 	# KILL戦
-	if {_rule} is "KILL":
+	if {_rule} is "TDM":
 		set {_maxData} to max({Kit-Kill.personal::*})
 		loop {Kit-Kill.personal::*}:
 			loop-value = {_maxData}
 			add loop-index to {_highplayer::*}
 		gameMsg("Kit", "§6§lTop Killer§7: §e§l%{_highplayer::*}% §9%{_maxData}% Kills")
 	# CORE戦
-	else if {_rule} is "CORE":
+	else if {_rule} is "DTC":
 		set {_maxData} to max({Kit-Break.personal::*})
 		loop {Kit-Break.personal::*}:
 			loop-value = {_maxData}
@@ -92,7 +92,7 @@ function kitGameEnd(rule: text):
 		send title "§6ゲーム終了!" with subtitle "%{_winteams::*}% §5の勝利です!" to loop-player for 10 seconds
 		delete {damager.%loop-player%::*}
 	# ゲーム終了後のMap修正
-	if {_rule} is "CORE":
+	if {_rule} is "DTC":
 		loop {Kit-GameStageCoreLocation::*}:
 			set block at loop-value to {Kit-GameStageCoreMaterial::%loop-index%}
 	# ゲーム記録をymlに記述
@@ -113,10 +113,10 @@ function kitGameEnd(rule: text):
 	execute console command "/kjclear"
 
 function kitRuleVariable(rule: text) :: text:  # 結果発表の際に表示するチームデータの変数名を返す関数
-	if {_rule} is "KILL":
+	if {_rule} is "TDM":
 		set {_var} to "Kit-Kill.team"
-	else if {_rule} is "CORE":
+	else if {_rule} is "DTC":
 		set {_var} to "Kit-TotalCore"
-	else if {_rule} is "FLAG":
+	else if {_rule} is "CTF":
 		set {_var} to "Kit-FlagPoint"
 	return {_var}
