@@ -69,9 +69,11 @@ on rightclick holding a zombie spawn egg:
 			else:
 				set {_color} to "16711935"
 			if {_z} is true:
-				spawn a zombie at {_l} with nbt "{IsBaby:0,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+				set {_nbt} to nbt compound from "{IsBaby:0,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+				spawn a zombie at {_l} with nbt {_nbt}
 			else:
-				spawn a skeleton at {_l} with nbt "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+				set {_nbt} to nbt compound from "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+				spawn a skeleton at {_l} with nbt {_nbt}
 			push spawned entity upwards at speed 0.85
 			set the spawned entity's display name to "%player%"
 			if kitPlayerWeaponItem(player, "Necromancer", "main") is kitWeaponItem("Necromancer", 1, "main"):
@@ -177,9 +179,9 @@ function kitSkill_Necromancer_3(player: player):
 		chance of 50%:
 			set {_z} to false
 		if {_z} is true:
-			spawn a undead horse at {_player} with nbt "{Attributes:[{Name:""generic.movement_speed"",Base:0.23f},{Name:""horse.jump_strength"",Base:0.6f}],Age:0}"
+			spawn a undead horse at {_player} with nbt compound from "{Attributes:[{Name:""generic.movement_speed"",Base:0.23f},{Name:""horse.jump_strength"",Base:0.6f}],Age:0}"
 		else:
-			spawn a skeleton horse at {_player} with nbt "{Attributes:[{Name:""generic.movement_speed"",Base:0.23f},{Name:""horse.jump_strength"",Base:0.6f}],Age:0}"
+			spawn a skeleton horse at {_player} with nbt compound from "{Attributes:[{Name:""generic.movement_speed"",Base:0.23f},{Name:""horse.jump_strength"",Base:0.6f}],Age:0}"
 		tame last spawned entity to {_player}
 		equip the spawned entity with saddle
 		set spawned entity's display name to "%{_player}%"
@@ -453,7 +455,8 @@ on death:
 							set {_color} to "65280"
 						else:
 							set {_color} to "16711935"
-						spawn a skeleton at {_sumloc} with nbt "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+						set {_nbt} to nbt compound from "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+						spawn a skeleton at {_sumloc} with nbt {_nbt}
 						set metadata value "gametype" of spawned skeleton to "Kit"
 						set metadata value "kit-dead" of spawned skeleton to "true"
 						set spawned skeleton's display name to "%loop-player%"
@@ -636,7 +639,8 @@ function kitSpawnBabyZombie(player: player, loc: location):
 		set {_color} to "65280"
 	else:
 		set {_color} to "16711935"
-	spawn a zombie at {_loc} with nbt "{IsBaby:1,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+	set {_nbt} to nbt compound from "{IsBaby:1,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+	spawn a zombie at {_loc} with nbt {_nbt}
 	set metadata value "gametype" of spawned zombie to "Kit"
 	set metadata value "baby-zombie" of spawned zombie to "true"
 	set the spawned zombie's display name to "%{_player}%"
@@ -648,7 +652,8 @@ on damage:
 		set damage to 1
 
 function kitSpawnGrudge(player: player, loc: location):
-	spawn a zombie at {_loc} with nbt "{Silent:1,IsBaby:0,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;907160796,1821854615,-1727336627,-176309982],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGFhOGZjOGRlNjQxN2I0OGQ0OGM4MGI0NDNjZjUzMjZlM2Q5ZGE0ZGJlOWIyNWZjZDQ5NTQ5ZDk2MTY4ZmMwIn19fQ==""}]}}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:2,Amplifier:2,Duration:999999},{Id:14,Amplifier:0,Duration:999999}]}"
+	set {_nbt} to nbt compound from "{Silent:1,IsBaby:0,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;907160796,1821854615,-1727336627,-176309982],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGFhOGZjOGRlNjQxN2I0OGQ0OGM4MGI0NDNjZjUzMjZlM2Q5ZGE0ZGJlOWIyNWZjZDQ5NTQ5ZDk2MTY4ZmMwIn19fQ==""}]}}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:2,Amplifier:2,Duration:999999},{Id:14,Amplifier:0,Duration:999999}]}"
+	spawn a zombie at {_loc} with nbt {_nbt}
 	set metadata value "gametype" of spawned zombie to "Kit"
 	set metadata value "grudge-soul" of spawned zombie to "true"
 	set the spawned zombie's display name to "%{_player}%"
@@ -674,7 +679,8 @@ on damage:
 		set damage to 1
 
 function kitSpawnVengeful(player: player, loc: location):
-	spawn a skeleton at {_loc} with nbt "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:16750230}},Count:1b},{id:""minecraft:zombie_head"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:1,Amplifier:0,Duration:999999},{Id:14,Amplifier:0,Duration:999999}]}"
+	set {_nbt} to nbt compound from "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:16750230}},Count:1b},{id:""minecraft:zombie_head"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:1,Amplifier:0,Duration:999999},{Id:14,Amplifier:0,Duration:999999}]}"
+	spawn a skeleton at {_loc} with nbt {_nbt}
 	set max health of spawned skeleton to 5
 	set metadata value "gametype" of spawned skeleton to "Kit"
 	set metadata value "vengeful-spirit" of spawned skeleton to "true"
@@ -689,9 +695,11 @@ on damage:
 
 function kitSpawnGhost(player: player, loc: location, head: boolean):
 	if {_head} is true:
-		spawn a wither skeleton at {_loc} with nbt "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%{_player}%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:1,Amplifier:2,Duration:999999},{Id:5,Amplifier:4,Duration:999999},{Id:14,Amplifier:0,Duration:999999}]}"
+		set {_nbt} to nbt compound from "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%{_player}%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:1,Amplifier:2,Duration:999999},{Id:5,Amplifier:4,Duration:999999},{Id:14,Amplifier:0,Duration:999999}]}"
+		spawn a wither skeleton at {_loc} with nbt {_nbt}
 	else:
-		spawn a wither skeleton at {_loc} with nbt "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:wither_skeleton_skull"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:1,Amplifier:2,Duration:999999},{Id:5,Amplifier:4,Duration:999999},{Id:14,Amplifier:0,Duration:999999}]}"
+		set {_nbt} to nbt compound from "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:wither_skeleton_skull"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:1,Amplifier:2,Duration:999999},{Id:5,Amplifier:4,Duration:999999},{Id:14,Amplifier:0,Duration:999999}]}"
+		spawn a wither skeleton at {_loc} with nbt {_nbt}
 	set metadata value "gametype" of spawned wither skeleton to "Kit"
 	set metadata value "ghost" of spawned wither skeleton to "true"
 	set the spawned wither skeleton's display name to "%{_player}%"
@@ -701,7 +709,8 @@ on damage of wither skeleton:
 	set damage to 100
 
 function kitSpawnWraith(player: player, loc: location):
-	spawn a wither skeleton at {_loc} with nbt "{PersistenceRequired:1b,Health:100,Attributes:[{Name:""generic.max_health"",Base:100},{Name:""generic.follow_range"",Base:50},{Name:""generic.knockback_resistance"",Base:1f}],Silent:1,HandItems:[{id:""minecraft:netherite_sword"",tag:{display:{Name:'{""text"":""Wraith Sword""}'},Enchantments:[{id:knockback,lvl:2}]},Count:1},{}],ArmorItems:[{},{id:""minecraft:leather_leggings"",tag:{display:{color:0}},Count:1},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1},{id:""minecraft:player_head"",Count:1b,tag:{SkullOwner:{Id:[I;-843851991,-552779082,-1798462201,-1255611656],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2EwYzg3ZmVjNzQxM2RjYjdkMWY2MWFmMjRjZjY0OWE1NTZlMDViMDIyNTAyMmMxZjYxZDgwODkzZjMzOTg3ZiJ9fX0=""}]}}},Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:2147483647},{Id:28,Amplifier:0,Duration:2147483647}]}"
+	set {_nbt} to nbt compound from "{PersistenceRequired:1b,Health:100,Attributes:[{Name:""generic.max_health"",Base:100},{Name:""generic.follow_range"",Base:50},{Name:""generic.knockback_resistance"",Base:1f}],Silent:1,HandItems:[{id:""minecraft:netherite_sword"",tag:{display:{Name:'{""text"":""Wraith Sword""}'},Enchantments:[{id:knockback,lvl:2}]},Count:1},{}],ArmorItems:[{},{id:""minecraft:leather_leggings"",tag:{display:{color:0}},Count:1},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1},{id:""minecraft:player_head"",Count:1b,tag:{SkullOwner:{Id:[I;-843851991,-552779082,-1798462201,-1255611656],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2EwYzg3ZmVjNzQxM2RjYjdkMWY2MWFmMjRjZjY0OWE1NTZlMDViMDIyNTAyMmMxZjYxZDgwODkzZjMzOTg3ZiJ9fX0=""}]}}},Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:2147483647},{Id:28,Amplifier:0,Duration:2147483647}]}"
+	spawn a wither skeleton at {_loc} with nbt {_nbt}
 	set metadata value "gametype" of spawned wither skeleton to "Kit"
 	set {_uuid} to randomUUID()
 	set metadata value "wraith" of spawned wither skeleton to {_uuid}
@@ -918,7 +927,8 @@ function kitUltNecromancer(player: player):
 		delete loop-skeleton
 
 function kitSpawnReaper(player: player, loc: location):
-	spawn a skeleton at {_loc} with nbt "{PersistenceRequired:1b,Health:100,Attributes:[{Name:""generic.max_health"",Base:100},{Name:""generic.knockback_resistance"",Base:1f},{Name:""generic.attack_damage"",Base:6}],Silent:1,HandItems:[{id:""minecraft:netherite_hoe"",Count:1},{}],ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;296808892,54742945,-1675401107,1649769798],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWVhMDM0MDc2Y2ExMDk1OWRlOWQ1NDFjODE3Y2QyOGQyYThiMGFhZDdkOGE4YWZjMmI1NDI1M2Y2ZjBmZWQzIn19fQ==""}]}}},Count:1b}],ActiveEffects:[{Id:1,Amplifier:2,Duration:999999},{Id:14,Amplifier:0,Duration:2147483647},{Id:28,Amplifier:0,Duration:2147483647}]}"
+	set {_nbt} to nbt compound from "{PersistenceRequired:1b,Health:100,Attributes:[{Name:""generic.max_health"",Base:100},{Name:""generic.knockback_resistance"",Base:1f},{Name:""generic.attack_damage"",Base:6}],Silent:1,HandItems:[{id:""minecraft:netherite_hoe"",Count:1},{}],ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;296808892,54742945,-1675401107,1649769798],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWVhMDM0MDc2Y2ExMDk1OWRlOWQ1NDFjODE3Y2QyOGQyYThiMGFhZDdkOGE4YWZjMmI1NDI1M2Y2ZjBmZWQzIn19fQ==""}]}}},Count:1b}],ActiveEffects:[{Id:1,Amplifier:2,Duration:999999},{Id:14,Amplifier:0,Duration:2147483647},{Id:28,Amplifier:0,Duration:2147483647}]}"
+	spawn a skeleton at {_loc} with nbt {_nbt}
 	set metadata value "gametype" of spawned skeleton to "Kit"
 	set metadata value "kit-reaper" of spawned skeleton to "%{_player}%"
 	set the spawned skeleton's display name to "%{_player}%"
