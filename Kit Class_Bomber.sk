@@ -30,7 +30,7 @@ on damage of player:
 			spawn a primed tnt at loop-block
 			set metadata value "attacker" of spawned primed tnt to "%attacker%"
 			set metadata value "kit-bomber" of spawned primed tnt to 2.5
-			set fuse time of spawned primed tnt to {_num}
+			setFuseTime(spawned primed tnt, {_num})
 
 on shoot:
 	metadata value "gametype" of shooter is "Kit"
@@ -332,7 +332,7 @@ function kitSkill_Bomber_5(player: player):
 	set metadata value "pop" of shot primed tnt to "%{_player}%"
 	playSound("entity.tnt.primed", 1, 1.5, {_player})
 	drawDot count 1, particle "lava", center shot primed tnt, visibleRange 30, keepFor 40 ticks
-	set fuse time of shot primed tnt to 40
+	setFuseTime(shot primed tnt, 40)
 	loop 40 times:
 		{_alr} is not set
 		loop all primed tnts:
@@ -348,7 +348,7 @@ function kitSkill_Bomber_5(player: player):
 				set {_vector} to {_from} -- {_to}
 				set {_vector} to normalized {_vector}
 				set velocity of loop-primed tnt to {_vector}
-				set fuse time of loop-primed tnt to 5
+				setFuseTime(loop-primed tnt, 5)
 		wait a tick
 
 function kitSkill_Bomber_6(player: player):
@@ -569,7 +569,7 @@ on death of player:
 			push spawned primed tnt north at speed random number from -0.5 to 0.5
 			set metadata value "attacker" of spawned primed tnt to "%victim%"
 			set metadata value "kit-bomber" of spawned primed tnt to 2
-			set fuse time of spawned primed tnt to 20
+			setFuseTime(spawned primed tnt, 20)
 	if {Class::%{LastKiller::%victim%}%} is "Bomber":
 		give 2 tnt to {LastKiller::%victim%}
 		give 4 arrow to {LastKiller::%victim%}
@@ -590,5 +590,5 @@ on rightclick holding a redstone block:
 	set metadata value "attacker" of shot primed tnt to "%player%"
 	set metadata value "kit-bomber" of shot primed tnt to 10
 	set metadata value "ult-bomber" of shot primed tnt to "true"
-	set fuse time of shot primed tnt to 100
+	setFuseTime(shot primed tnt, 100)
 	drawDot count 1, particle "lava", center shot primed tnt, visibleRange 100, keepFor 5 seconds
