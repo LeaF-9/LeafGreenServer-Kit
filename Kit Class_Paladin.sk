@@ -412,14 +412,15 @@ function kitEffect_PlankBarrier_1(player: player, l: location):
 	loop 9 times:
 		set {_loc} to location 2.5 meters above {_l%loop-number%}
 		drawDot count 1, particle "happyvillager", center {_loc}, visibleRange 30
-		spawn an armor stand at {_l%loop-number%} with nbt "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Pose:{Head:[0f,0f,0f]},HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}"
+		set {_nbt} to nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Pose:{Head:[0f,0f,0f]},HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}"
+		spawn an armor stand at {_l%loop-number%} with nbt {_nbt}
 		set metadata value "prank-barrier" of spawned armor stand to "%{_player}%"
 		set metadata value "pb-number" of spawned armor stand to "%loop-number%"
 		set metadata value "gametype" of spawned armor stand to "Kit"
 		set helmet of spawned armor stand to yellow glass pane
 		set {_sl} to {_l%loop-number%}
 		add 2 to y-coordinate of {_sl}
-		spawn a slime at {_sl} with nbt "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
+		spawn a slime at {_sl} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
 		set metadata value "prank-barrier" of spawned slime to "%{_player}%"
 		set metadata value "pb-number" of spawned slime to "%loop-number%"
 		set metadata value "gametype" of spawned slime to "Kit"
