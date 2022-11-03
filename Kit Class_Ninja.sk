@@ -45,7 +45,8 @@ on projectile hit:
 				playSound("entity.zombie.infect", 1, 1.5, projectile)
 				set {_l} to location of projectile
 				loop 3 times:
-					spawn a zombie at {_l} with nbt "{IsBaby:1,Silent:1,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%shooter%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:8,Amplifier:2,Duration:999999}]}"
+					set {_nbt} to nbt compound from "{IsBaby:1,Silent:1,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%shooter%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:8,Amplifier:2,Duration:999999}]}"
+					spawn a zombie at {_l} with nbt {_nbt}
 					set metadata value "gametype" of spawned zombie to "Kit"
 					set metadata value "bunshin-baby" of spawned zombie to "%shooter%"
 					set spawned zombie's display name to "%shooter%"
@@ -258,7 +259,7 @@ function kitWeapon_Ninja_5(player: player):
 	set {_player}'s tool to chain
 	set {_baseloc} to location of {_player}
 	set pitch of {_baseloc} to 0
-	spawn an armor stand at {_baseloc} with nbt "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Pose:{RightArm:[350f,0f,270f]}}"
+	spawn an armor stand at {_baseloc} with nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Pose:{RightArm:[350f,0f,270f]}}"
 	set metadata value "kusarigama" of spawned entity to "%{_player}%"
 	set spawned entity's tool to {_tool}
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
@@ -389,7 +390,8 @@ function kitSkill_Ninja_3(player: player):
 	delete {_player}'s tool
 	set {Stats.%{_player}%::LastNinjutsu} to "Bunshin"
 	loop 3 times:
-		spawn a zombie at {_player} with nbt "{IsBaby:0,Silent:1,Attributes:[{Name:""generic.movement_speed"",Base:0.6f}],ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%{_player}%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:8,Amplifier:2,Duration:999999}]}"
+		set {_nbt} to nbt compound from "{IsBaby:0,Silent:1,Attributes:[{Name:""generic.movement_speed"",Base:0.6f}],ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%{_player}%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:8,Amplifier:2,Duration:999999}]}"
+		spawn a zombie at {_player} with nbt {_nbt}
 		set metadata value "gametype" of spawned zombie to "Kit"
 		set metadata value "bunshin" of spawned zombie to "%{_player}%"
 		set spawned zombie's display name to "%{_player}%"
