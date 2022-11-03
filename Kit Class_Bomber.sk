@@ -124,10 +124,10 @@ function kitSkill_Bomber_3(player: player):
 	subtract 1.5 from y-coordinate of {_loc.b}
 	set {_loc.s} to {_baseloc}
 	subtract 0.5 from y-coordinate of {_loc.s}
-	spawn an armor stand at {_loc.b} with nbt "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""iron_block"",Count:1b}],HandItems:[{},{}]}"
+	spawn an armor stand at {_loc.b} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""iron_block"",Count:1b}],HandItems:[{},{}]}"
 	set metadata value "bombkart-big" of spawned armor stand to "%{_player}%"
 	set metadata value "gametype" of spawned armor stand to "Kit"
-	spawn an armor stand at {_loc.s} with nbt "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Small:1b,Marker:1b,ArmorItems:[{},{},{},{id:""tnt"",Count:1b}],HandItems:[{},{}]}"
+	spawn an armor stand at {_loc.s} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Small:1b,Marker:1b,ArmorItems:[{},{},{},{id:""tnt"",Count:1b}],HandItems:[{},{}]}"
 	set metadata value "bombkart-small" of spawned armor stand to "%{_player}%"
 	set metadata value "gametype" of spawned armor stand to "Kit"
 	playSound("ui.button.click", 1, 0.8, {_player})
@@ -285,7 +285,7 @@ function kitSkill_Bomber_4(player: player):
 	loop all falling blocks:
 		metadata value "sticky-bomb" of loop-falling block is "%{_player}%"
 		delete loop-falling block
-	spawn an armor stand at {_loc} with nbt "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""slime_block"",Count:1b}],HandItems:[{},{}]}"
+	spawn an armor stand at {_loc} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""slime_block"",Count:1b}],HandItems:[{},{}]}"
 	set metadata value "gametype" of spawned armor stand to "Kit"
 	set metadata value "sticky-armor" of spawned armor stand to "%{_player}%"
 	if {_target} is set:
@@ -523,7 +523,7 @@ function kitSkill_Bomber_8(player: player):
 	loop 3 times:
 		set {_rl} to a random location out of {_loc::*}
 		remove {_rl} from {_loc::*}
-		spawn a creeper at {_rl} with nbt "{Attributes:[{Name:""generic.movement_speed"",Base:0.4f}],Silent:1,Fuse:1}"
+		spawn a creeper at {_rl} with nbt compound from "{Attributes:[{Name:""generic.movement_speed"",Base:0.4f}],Silent:1,Fuse:1}"
 		set spawned creeper's display name to "%{_player}%"
 		set metadata value "gametype" of spawned creeper to "Kit"
 		set metadata value "biologic-bomb" of spawned creeper to "%{_player}%"
