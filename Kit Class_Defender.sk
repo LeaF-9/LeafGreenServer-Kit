@@ -288,7 +288,7 @@ function kitSkill_Defender_5(player: player):
 	loop 21 times:
 		if {Stats.%{_player}%::KingShield-%loop-number%} is not set:
 			set {Stats.%{_player}%::KingShield-%loop-number%} to 5
-		spawn an armor stand at {_l%loop-number%} with nbt "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Pose:{Head:[%{_pitch}%f,0f,0f]},ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:blue_stained_glass_pane"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}"
+		spawn an armor stand at {_l%loop-number%} with nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Pose:{Head:[%{_pitch}%f,0f,0f]},ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:blue_stained_glass_pane"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}"
 		set metadata value "%{_player}%-shield" of spawned armor stand to "%loop-number%"
 		set metadata value "gametype" of spawned armor stand to "Kit"
 		if {Stats.%{_player}%::KingShield-%loop-number%} is 0:
@@ -307,7 +307,7 @@ function kitSkill_Defender_5(player: player):
 			set pitch of {_sl} to 0
 			set {_fm} to 0.8 * sin({_pitch})
 			set {_sl} to location {_fm} meters in front of {_sl}
-			spawn a slime at {_sl} with nbt "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
+			spawn a slime at {_sl} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
 			set metadata value "%{_player}%-shield" of spawned slime to "%loop-number%"
 			set metadata value "gametype" of spawned slime to "Kit"
 			set spawned slime's display name to "%{_player}%"
@@ -359,7 +359,7 @@ function kitSkill_Defender_5(player: player):
 				set {_num} to metadata value "%{_player}%-shield" of loop-entity parsed as number
 				if {_check::%{_num}%} is true:
 					teleport loop-entity to {_l%{_num}%}
-					add "{Pose:{Head:[%{_pitch}%f,0f,0f]}}" to nbt of loop-entity
+					add "{Pose:{Head:[%{_pitch}%f,0f,0f]}}" to nbt compound of loop-entity
 				else:
 					delete loop-entity
 			else if type of loop-entity is a slime:
