@@ -469,7 +469,7 @@ function kitPlayerSkillItem(player: player, kit: text, slot: number) :: item:
 	set {_item} to yml value "skill.%{_num}%" from "class.%{_player}%.kit"
 	unload yml "class.%{_player}%.kit"
 	unload yml "player.%{_player}%.kit"
-	add nbt compound of "{kit:""%{_kit}%"",type:""Skill"",number:%{_num}%}" to nbt compound of {_item}
+	set {_item} to kitItemTagChanger({_item}, {_kit}, "Skill", {_num})
 	return {_item}
 
 function kitPlayerWeaponItem(player: player, kit: text, type: text) :: item:
@@ -480,7 +480,7 @@ function kitPlayerWeaponItem(player: player, kit: text, type: text) :: item:
 	set {_item} to yml value "weapon.%{_num}%.%{_type}%" from "class.%{_player}%.kit"
 	unload yml "class.%{_player}%.kit"
 	unload yml "player.%{_player}%.kit"
-	add nbt compound of "{kit:""%{_kit}%"",type:""Weapon.%{_type}%"",number:%{_num}%}" to nbt compound of {_item}
+	set {_item} to kitItemTagChanger({_item}, {_kit}, "Weapon.%{_type}%", {_num})
 	return {_item}
 
 #function kitSkillUpdate(kit: text):
