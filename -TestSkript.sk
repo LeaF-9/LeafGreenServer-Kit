@@ -501,11 +501,13 @@ on rightclick holding a tnt:
 
 # NBTタグをいじるテスト
 on rightclick holding a green wool:
-	set {_nbt} to nbt compound of event-item
-	broadcast "%{_nbt}%"
-	set tag "kit" of {_nbt} to "Knight"
+	set {_nbt.old} to nbt compound of event-item
+	broadcast "%{_nbt.old}%"
+	set tag "kit" of {_nbt.old} to {_nbt.old}
+	set nbt compound of event-item to {_nbt.old}
+	set {_nbt.new} to nbt compound of event-item
 	broadcast "---"
-	broadcast "%{_nbt}%"
+	broadcast "%{_nbt.new}%"
 
 # command /testwizardult:
 # 	trigger:
