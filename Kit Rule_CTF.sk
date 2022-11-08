@@ -14,9 +14,29 @@ function kitDeathEvent_CTF(attacker: player, victim: player, supporters: players
 	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
 
-function kitFlagSpawn_CTF():
-	# 地点の取得
-	set {_flagloc} to a random location out of {Kit-GameStageFlags::*}
+function kitFlagSpawn_CTF(location: location, color: text):  # Flagを対象地点にスポーンさせる関数
+	# atで指定するためのアーマースタンドを召喚
+	spawn an armor stand at {_location} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,Marker:1b}"
+	set metadata value "gametype" of spawned armor stand to "Kit"
+	set metadata value "flagspawn" of spawned armor stand to "true"
+	set {_x} to x-coordinate of {_location}
+	set {_y} to y-coordinate of {_location}
+	set {_z} to z-coordinate of {_location}
+	execute console command "/execute at %{_player}% run summon minecraft:armor_stand %{_x}% %{_y}% %{_z}% {NoGravity:1b,Marker:1b,Invisible:1,Invulnerable:1,NoBasePlate:1,Passengers:[{id:""falling_block"",BlockState:{Name:""minecraft:%{_color}%_banner""},NoGravity:1,Time:1,DropItem:0}]}"
+	set {_dis} to 100
+	loop all entities in radius 1 around {_location}:
+		type of loop-entity is armor stand
+		metadata value "kit-armor" of loop-entity is not set
+		set {_d} to distance between {_location} and loop-entity
+		if {_d} < {_dis}:
+			set {_dis} to {_d}
+			set {_entity} to loop-entity
+	set metadata value "gametype" of {_entity} to "Kit"
+	set metadata value "kit-armor" of {_entity} to {_metadata}
+	set metadata value {_metadata} of {_entity} to "%{_player}%"
+	set metadata value "gametype" of passenger of {_entity} to "Kit"
+	set metadata value "kit-block" of passenger of {_entity} to "%{_player}%"
+
 
 
 function kitTimer_CTF():
