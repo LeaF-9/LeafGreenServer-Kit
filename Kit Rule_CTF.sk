@@ -14,11 +14,7 @@ function kitDeathEvent_CTF(attacker: player, victim: player, supporters: players
 	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
 
-function kitFlagSpawn_CTF(location: location, color: text):  # Flagを対象地点にスポーンさせる関数
-	# atで指定するためのアーマースタンドを召喚
-	spawn an armor stand at {_location} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,Marker:1b}"
-	set metadata value "gametype" of spawned armor stand to "Kit"
-	set metadata value "flagspawn" of spawned armor stand to "true"
+function kitFlagSpawn_CTF(location: location, color: text = "white"):  # Flagを対象地点にスポーンさせる関数
 	set {_x} to x-coordinate of {_location}
 	set {_y} to y-coordinate of {_location}
 	set {_z} to z-coordinate of {_location}
@@ -26,21 +22,28 @@ function kitFlagSpawn_CTF(location: location, color: text):  # Flagを対象地�
 	set {_dis} to 100
 	loop all entities in radius 1 around {_location}:
 		type of loop-entity is armor stand
-		metadata value "kit-armor" of loop-entity is not set
+		metadata value "gametype" of loop-entity is not set
 		set {_d} to distance between {_location} and loop-entity
 		if {_d} < {_dis}:
 			set {_dis} to {_d}
 			set {_entity} to loop-entity
 	set metadata value "gametype" of {_entity} to "Kit"
-	set metadata value "kit-armor" of {_entity} to {_metadata}
-	set metadata value {_metadata} of {_entity} to "%{_player}%"
+	set metadata value "flag-spawn" of {_entity} to "true"
 	set metadata value "gametype" of passenger of {_entity} to "Kit"
-	set metadata value "kit-block" of passenger of {_entity} to "%{_player}%"
-
-
+	set metadata value "flag-block" of passenger of {_entity} to "true"
+	if {_color} is "white":
+		joinPlayerMsg("Kit", "{@prefix} §f§lFlag §bがスポーンしました!")
 
 function kitTimer_CTF():
 	while {Kit-tochu} is true:
+		# Flagが存在するかチェック 存在する場合Timeの更新と
+		delete {_flag.exist}
+		loop all falling blocks:
+			metadata value "flag-block" of loop-falling block is "true"
+			metadata value "kit-armor" of vehicle of loop-falling block is {_metadata}
+			add nbt compound of "{Time:1}" to nbt compound of loop-falling block
+
+
 		add 1 to {_timer}
 	# Bufflose
 		loop all players:
