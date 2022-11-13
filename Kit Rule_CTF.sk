@@ -19,18 +19,36 @@ function kitFlagSpawn_CTF(location: location, color: text = "white"):  # Flagを
 	set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""%{_color}%_banner"",Count:1b}],HandItems:[{},{}]}"
 	spawn an armor stand at {_location} with nbt {_nbt}
 	set metadata value "gametype" of spawned armor stand to "Kit"
-	set metadata value "flag-spawn" of spawned armor stand to "true"
+	set metadata value "flag-color" of spawned armor stand to {_color}
 	if {_color} is "white":
 		joinPlayerMsg("Kit", "{@prefix} §f§lFlag §bがスポーンしました!")
 
 function kitTimer_CTF():
 	while {Kit-tochu} is true:
-		# Flagが存在するかチェック 存在する場合Timeの更新と
-		delete {_flag.exist}
-		loop all falling blocks:
-			metadata value "flag-block" of loop-falling block is "true"
-			metadata value "kit-armor" of vehicle of loop-falling block is {_metadata}
-			add nbt compound of "{Time:1}" to nbt compound of loop-falling block
+		# Flagが存在するかチェック
+		delete {_flag.entity}
+		delete {_flag.color}
+		delete {_flag.players::*}
+		loop all entities:
+			type of loop-entity is armor stand
+			metadata value "flag-color" of loop-entity is set
+			set {_flag.entity} to loop-entity
+			set {_flag.color} to metadata value of loop-entity
+		# Flagが存在する場合 獲得の処理
+		if {_flag.entity} is set:
+			set {_flag.location} to location of {_flag.entity}
+			add 1.8 to y-coordinate of {_flag.location}
+			# 人数の確認
+			loop all players in radius 1 around {_flag.location}:
+				metadata value "gametype" of loop-player is "Kit"
+				set {_team} to {TrueTeam::%loop-player%}
+				add loop-player to {_flag.players::*}
+			if {_flag.color} is "white":
+				set {_max} to max({_teamplayer::*})
+
+			else:
+			
+		# Flagを取得中のポイント処理
 
 
 		add 1 to {_timer}
