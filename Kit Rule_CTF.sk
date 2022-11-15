@@ -23,6 +23,28 @@ function kitFlagSpawn_CTF(location: location, color: text = "white"):  # Flagを
 	if {_color} is "white":
 		joinPlayerMsg("Kit", "{@prefix} §f§lFlag §bがスポーンしました!")
 
+function kitFlagGet_CTF(player: player):  # プレイヤーがFlagを獲得した際の処理を行う関数
+	# Kit変更処理
+	set {Class::%{_player}%} to "Flag"
+	set {CLS::%{_player}%} to "FLA"
+	set {_team} to {TrueTeam::%{_player}%}
+	execute console command "/skclass %{_player}% Kit-Flag-%{_team}%"
+	# メッセージ通知
+	joinPlayerMsg("Kit", "{@prefix} §6§l%{_player}% §bが§f§lFlag§bを獲得しました!")
+	# タイトル通知
+	set {_color} to kitTeamColor({_team})
+	set {_title} to "%{_color}%§l%{_player}% §6が §f§lFlag §6を獲得しました!"
+	loop all players:
+		if {_player} is loop-player:  # Flagを獲得した本人
+			send title {_title} with subtitle "§b敵に奪われないよう逃げ回ろう!" to loop-player for 5 seconds
+		else:
+			if kitCheckTeam({_player}, loop-player, true, true) is true:  # 味方がFlagを獲得した場合
+				send title {_title} with subtitle "§bFlag所有者を敵から守り抜こう!" to loop-player for 5 seconds
+			else:  # 敵がFlagを所有した場合
+				send title {_title} with subtitle "§bFlag所有者を倒して奪い取ろう!" to loop-player for 5 seconds
+	# サウンド通知
+
+
 function kitTimer_CTF():
 	while {Kit-tochu} is true:
 		# Flagが存在するかチェック
@@ -48,7 +70,7 @@ function kitTimer_CTF():
 					set {_flag.player} to loop-player
 			if {_flag.player} is set:
 				if {_flag.color} is "white":
-				
+					kitFlagGet_CTF({_flag.player})
 
 				else:
 			
