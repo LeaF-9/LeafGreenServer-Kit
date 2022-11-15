@@ -25,7 +25,7 @@
 
 on damage of player:
 	{Kit-tochu} is true
-	{Kit-GameStage::rule} is "CORE"
+	{Kit-GameStage::rule} is "DTC"
 	if {Join::%victim%} is "Kit":
 		# Banditの即死処理
 		if {TrueTeam::%victim%} is "purple":
@@ -37,7 +37,7 @@ on damage of player:
 			distance between victim and loop-value <= 10
 			set {_ok} to true
 		if {_ok} is true:
-			set {_teambuff} to {Kit-TeamBuff::%{TrueTeam::%victim%}%} * 0.01
+			set {_teambuff} to {Kit-TeamBuff::%{TrueTeam::%victim%}%}
 			set damage to damage / {_teambuff}
 	if {Join::%attacker%} is "Kit":
 		# Core周辺のTeamBuff適用
@@ -46,12 +46,12 @@ on damage of player:
 			distance between attacker and loop-value <= 10
 			set {_ok} to true
 		if {_ok} is true:
-			set {_teambuff} to {Kit-TeamBuff::%{TrueTeam::%attacker%}%} * 0.01
+			set {_teambuff} to {Kit-TeamBuff::%{TrueTeam::%attacker%}%}
 			set damage to damage * {_teambuff}
 
 on break:
 	{Kit-tochu} is true
-	{Kit-GameStage::rule} is "CORE"
+	{Kit-GameStage::rule} is "DTC"
 	# Banditの破壊阻止
 	if {TrueTeam::%player%} is "purple":
 		send action bar "§5§lBandit §c§lはコアの破壊ができません" to player
@@ -70,7 +70,8 @@ on break:
 			set {_slotbase} to kitSlotChecker_DTC({_teamname})
 			if {Kit-GameStageCore_%{_teamname}%::*} contains {_corename}:
 				if {TrueTeam::%player%} is not {_teamname}:
-					chance of {Kit-TeamBuff::%{TrueTeam::%player%}%}%:
+					set {_percent} to round({Kit-TeamBuff::%{TrueTeam::%player%}%} * 100)
+					chance of {_percent}%:
 						subtract 1 from {Kit-GameStageCoreHP::%{_corename}%}
 						set {_stop} to false
 						set {_num} to 0
