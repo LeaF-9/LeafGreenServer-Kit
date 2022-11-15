@@ -24,6 +24,8 @@ function kitFlagSpawn_CTF(location: location, color: text = "white"):  # Flagを
 		joinPlayerMsg("Kit", "{@prefix} §f§lFlag §bがスポーンしました!")
 
 function kitFlagGet_CTF(player: player):  # プレイヤーがFlagを獲得した際の処理を行う関数
+	# Flag所持者のデータ更新
+	set {Kit-FlagHolder} to {_player}
 	# Kit変更処理
 	set {Class::%{_player}%} to "Flag"
 	set {CLS::%{_player}%} to "FLA"
@@ -71,77 +73,24 @@ function kitTimer_CTF():
 			if {_flag.player} is set:
 				if {_flag.color} is "white":
 					kitFlagGet_CTF({_flag.player})
-
 				else:
-			
+					if {TrueTeam::%{_flag.player}%} is {_flag.color}:
+						kitFlagGet_CTF({_flag.player})
+					else:
+						set {_flag.spawntimer} to 0
+						joinPlayerMsg("Kit", "§f§lFlag §7が奪取されました! §b10秒後に再度スポーンします...")
+						loop all entitites:
+							type of loop-entity is armor stand
+							metadata value "flag-color" of loop-entity is set
+							delete loop-entity
 		# Flagを取得中のポイント処理
+		if {Kit-FlagHolder} is set:
+			set {_holder.teamcolor} to {TrueTeam::%{Kit-FlagHolder}%}
+			add {TeamBuff::%{_holder.teamcolor}%} to {Kit-FlagPoint::%{_holder.teamcolor}%}
+			# スコアボード設定
+			# サウンド設定
+			# 勝利ポイントに達した際の処理
+		# Flag所持者が存在しない際のFlag再スポーン処理
+		else:
 
-
-		add 1 to {_timer}
-	# Bufflose
-		loop all players:
-			{Join::%loop-player%} is "Kit"
-			{TrueTeam::%loop-player%} is set
-		# Teambuffの導入
-			if {Kit-PlayerBuff::%loop-player%} is not set:
-				if {Kit-TeamBuff::%{TrueTeam::%loop-player%}%} is set:
-					set {Kit-PlayerBuff::%loop-player%} to {Kit-TeamBuff::%{TrueTeam::%loop-player%}%}
-			set {_amount} to amount of emerald named "§aJewel" in loop-player's inventory
-			set {_amocase} to {Kit-JewelryCase::%loop-player%}
-			add {_amocase} to {_amount}
-		# Teambuffの換算
-			if {Kit-PlayerBuff::%loop-player%} is set:
-				set {_amount} to round({_amount} * {Kit-PlayerBuff::%loop-player%})
-			loop all items in loop-player's inventory:
-				name of loop-item is "§d§lFortune Booster"
-				set {_fb.%loop-player%} to true
-			if {_fb.%loop-player%} is true:
-				set {_amount} to {_amount} * 2
-				set {_FortuneBooster::%{TrueTeam::%loop-player%}%} to true
-			if {Kit-EarnJewel::%loop-player%} is not set:
-				set {Kit-EarnJewel::%loop-player%} to 0
-			if {Kit-EarnJewel::%loop-player%} is not {_amount}:
-				set {Kit-EarnJewel::%loop-player%} to {_amount}
-			add {_amount} to {_teamamount::%{TrueTeam::%loop-player%}%}
-		add ({Kit-Gems::red} * 1) to {_teamamount::red}
-		add ({Kit-Gems::blue} * 1) to {_teamamount::blue}
-		add ({Kit-Gems::yellow} * 1) to {_teamamount::yellow}
-		add ({Kit-Gems::green} * 1) to {_teamamount::green}
-		size of {Kit-WinTeam::*} is 0
-		if {_teamamount::red} is not {Kit-TeamJewel::red}:
-			set {Kit-TeamJewel::red} to {_teamamount::red}
-			kitScoreGlobal(7, "§c赤§7: §6%{Kit-TeamJewel::red}%")
-			{_FortuneBooster::red} is not set
-			if {Kit-TeamJewel::red} >= {Kit-GameStage::goal}:
-				add "red" to {Kit-WinTeam::*}
-				gameMsg("Kit", "§c§l試合終了!")
-				execute console command "/timer end Kit-EmJ"
-		if {_teamamount::blue} is not {Kit-TeamJewel::blue}:
-			set {Kit-TeamJewel::blue} to {_teamamount::blue}
-			kitScoreGlobal(6, "§9青§7: §6%{Kit-TeamJewel::blue}%")
-			{_FortuneBooster::blue} is not set
-			if {Kit-TeamJewel::blue} >= {Kit-GameStage::goal}:
-				add "blue" to {Kit-WinTeam::*}
-				gameMsg("Kit", "§c§l試合終了!")
-				execute console command "/timer end Kit-EmJ"
-		if {_teamamount::yellow} is not {Kit-TeamJewel::yellow}:
-			set {Kit-TeamJewel::yellow} to {_teamamount::yellow}
-			kitScoreGlobal(5, "§e黄§7: §6%{Kit-TeamJewel::yellow}%")
-			{_FortuneBooster::yellow} is not set
-			if {Kit-TeamJewel::yellow} >= {Kit-GameStage::goal}:
-				add "yellow" to {Kit-WinTeam::*}
-				gameMsg("Kit", "§c§l試合終了!")
-				execute console command "/timer end Kit-EmJ"
-		if {_teamamount::green} is not {Kit-TeamJewel::green}:
-			set {Kit-TeamJewel::green} to {_teamamount::green}
-			kitScoreGlobal(4, "§a緑§7: §6%{Kit-TeamJewel::green}%")
-			{_FortuneBooster::green} is not set
-			if {Kit-TeamJewel::green} >= {Kit-GameStage::goal}:
-				add "green" to {Kit-WinTeam::*}
-				gameMsg("Kit", "§c§l試合終了!")
-				execute console command "/timer end Kit-EmJ"
-	# TopJewelyの実行
-		if {_timer} >= 30:
-			set {_timer} to 0
-			kitTopJewely()
 		wait a second
