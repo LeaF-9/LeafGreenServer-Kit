@@ -18,24 +18,24 @@
 #		message "§e/join §dで途中参加が出来ます。"
 #		message "§e/spec §dで観戦することが出来ます。"
 
-command /kit-join:
-	description: Mapに移動するだけ joinではない
-	executable by: player
-	trigger:
-		if {Kit-GameStage::name} is set:
-			teleport player to {Kit-GameStage::spec}
-			execute console command "/cclass %player% Kit-MapInv"
-			message "§aステージに移動します..." to player
-			wait a tick
-			set gamemode of player to spectator
-			message "§eゲームに参加する際は §b§l/join §eを入力して下さい" to player
-			message "§eインベントリ内に§6メニュー§eがあります" to player
-			if {Kit-Tutorial::%player%} is not set:
-				set {Kit-Tutorial::%player%} to true
-			if {Kit-Tutorial::%player%} is false:
-				set name of slot 24 of player to "§aTutorial§7: §4§lOFF"
-		else:
-			message "§cステージの準備が完了していません! §eお待ち下さい..." to player
+# command /kit-join:
+# 	description: Mapに移動するだけ joinではない
+# 	executable by: player
+# 	trigger:
+# 		if {Kit-GameStage::name} is set:
+# 			teleport player to {Kit-GameStage::spec}
+# 			execute console command "/cclass %player% Kit-MapInv"
+# 			message "§aステージに移動します..." to player
+# 			wait a tick
+# 			set gamemode of player to spectator
+# 			message "§eゲームに参加する際は §b§l/join §eを入力して下さい" to player
+# 			message "§eインベントリ内に§6メニュー§eがあります" to player
+# 			if {Kit-Tutorial::%player%} is not set:
+# 				set {Kit-Tutorial::%player%} to true
+# 			if {Kit-Tutorial::%player%} is false:
+# 				set name of slot 24 of player to "§aTutorial§7: §4§lOFF"
+# 		else:
+# 			message "§cステージの準備が完了していません! §eお待ち下さい..." to player
 
 command /kit-stagesetting <text>:
 	permission: sk.admin
