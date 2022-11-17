@@ -1,10 +1,12 @@
 options:
 	prefix: §e[§aKit PvP§e]
 
-aliases:
-	shulk = minecraft:red_shulker_box, minecraft:blue_shulker_box, minecraft:yellow_shulker_box, minecraft:lime_shulker_box
+# EmJとCTFの項目変更
+# - voidtp (奈落に落ちた際は強制リセットするため)
+# + flags (Flagのスポーン地点が必要になった為)
+# - gembox (不要になった為)
 
-command /emjvoidtp <text>:
+command /ctf-flag <text>:
 	permission: sk.admin
 	trigger:
 		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
@@ -12,23 +14,25 @@ command /emjvoidtp <text>:
 		unload yml "KitStages"
 		if {_stages::*} contains arg 1:
 			load yml "plugins/skript-yaml/Kit Stages/%arg 1%.yml" as "MapEdit"
-			if yml value "rule" from "MapEdit" is "EmJ":
+			if yml value "rule" from "MapEdit" is "CTF":
+				set {_num} to 1
+				loop yaml node keys "ctf-rule.flags" from "MapEdit":
+					add 1 to {_num}
 				set {_loc} to location of block at player
-				set yml value "emj-rule.voidtp.x" from "MapEdit" to x-coordinate of {_loc}
-				set yml value "emj-rule.voidtp.y" from "MapEdit" to y-coordinate of {_loc}
-				set yml value "emj-rule.voidtp.z" from "MapEdit" to z-coordinate of {_loc}
-				set yml value "emj-rule.voidtp.yaw" from "MapEdit" to yaw of {_loc}
-				set yml value "emj-rule.voidtp.pitch" from "MapEdit" to pitch of {_loc}
-				set yml value "emj-rule.voidtp.world" from "MapEdit" to kitWorldNC(arg 1)
+				set yml value "ctf-rule.flags.%{_num}%.x" from "MapEdit" to x-coordinate of {_loc}
+				set yml value "ctf-rule.flags.%{_num}%.y" from "MapEdit" to y-coordinate of {_loc} - 0.5
+				set yml value "ctf-rule.flags.%{_num}%.z" from "MapEdit" to z-coordinate of {_loc}
+				set yml value "ctf-rule.flags.%{_num}%.yaw" from "MapEdit" to yaw of {_loc}
+				set yml value "ctf-rule.flags.%{_num}%.pitch" from "MapEdit" to pitch of {_loc}
+				set yml value "ctf-rule.flags.%{_num}%.world" from "MapEdit" to kitWorldNC(arg 1)
 				save yml "MapEdit"
-				message "{@prefix} §6%arg 1%§7の§bVoid TP地点§7を設定しました" to player
+				message "{@prefix} §6%arg 1%§7の§bFlag Spawn地点§7を設定しました" to player
 			else:
 				message "{@prefix} §cルールが異なっています" to player
 		else:
 			message "{@prefix} §cそのステージは存在しません" to player
 
-command /emjgembox <text> <text>:
-	usage: /emjgembox <team-color> <map-name>
+command /ctf-goal <number> <text>:
 	permission: sk.admin
 	trigger:
 		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
@@ -36,34 +40,8 @@ command /emjgembox <text> <text>:
 		unload yml "KitStages"
 		if {_stages::*} contains arg 2:
 			load yml "plugins/skript-yaml/Kit Stages/%arg 2%.yml" as "MapEdit"
-			if yml value "rule" from "MapEdit" is "EmJ":
-				if targeted block is shulk:
-					set {_loc} to location of targeted block
-					set yml value "emj-rule.gembox.%arg 1%.x" from "MapEdit" to x-coordinate of {_loc}
-					set yml value "emj-rule.gembox.%arg 1%.y" from "MapEdit" to y-coordinate of {_loc}
-					set yml value "emj-rule.gembox.%arg 1%.z" from "MapEdit" to z-coordinate of {_loc}
-					set yml value "emj-rule.gembox.%arg 1%.yaw" from "MapEdit" to yaw of {_loc}
-					set yml value "emj-rule.gembox.%arg 1%.pitch" from "MapEdit" to pitch of {_loc}
-					set yml value "emj-rule.gembox.%arg 1%.world" from "MapEdit" to kitWorldNC(arg 2)
-					save yml "MapEdit"
-					message formatted "{@prefix} §6%arg 2%§7の <%arg 1%>%arg 1% §bGembox §7を設定しました" to player
-				else:
-					message "{@prefix} §cシュルカーボックスを指定して下さい" to player
-			else:
-				message "{@prefix} §cルールが異なっています" to player
-		else:
-			message "{@prefix} §cそのステージは存在しません" to player
-
-command /emjgoal <number> <text>:
-	permission: sk.admin
-	trigger:
-		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
-		set {_stages::*} to yml list "Stages" from "KitStages"
-		unload yml "KitStages"
-		if {_stages::*} contains arg 2:
-			load yml "plugins/skript-yaml/Kit Stages/%arg 2%.yml" as "MapEdit"
-			if yml value "rule" from "MapEdit" is "EmJ":
-				set yml value "emj-rule.goal" from "MapEdit" to arg 1
+			if yml value "rule" from "MapEdit" is "CTF":
+				set yml value "ctf-rule.goal" from "MapEdit" to arg 1
 				save yml "MapEdit"
 				message "{@prefix} §6%arg 2%§eのゴールJewel数を§b%arg 1%§eに設定しました" to player
 			else:
