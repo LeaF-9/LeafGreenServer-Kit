@@ -12,13 +12,12 @@ on damage of player:
 	{_item.type} is "Weapon.main"
 	set {_item.num} to kitItemNumberChecker({_tool})
 	{_item.num} is 3
-	set {_c} to kitPercentDuel(attacker, victim, 10, true)
-	chance of {_c}%:
-		playSound("entity.iron_golem.damage", 1, 1, victim)
-		kitStun(victim, 5 seconds)
-		loop 10 times:
-			set {_el} to aroundEffect(victim)
-			drawDot count 1, particle "blockcrack", material dirt, center {_el}, visibleRange 30
+	attacker is sneaking
+	playSound("entity.iron_golem.damage", 1, 1, victim)
+	kitStun(victim, 0.5 seconds)
+	loop 10 times:
+		set {_el} to aroundEffect(victim)
+		drawDot count 1, particle "blockcrack", material dirt, center {_el}, visibleRange 30
 
 function kitWeaponKnight(player: player):
 	if name of {_player}'s tool is "§3Cutlass":
