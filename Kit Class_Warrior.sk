@@ -112,7 +112,7 @@ on sneak toggle:
 		if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 2) is false:
 			delete {_true}
 		add 1 to {_num}
-		if {_num} > 8:
+		if {_num} > 16:
 			set {_num} to 1
 		kitEffect_Saturn_1(player, {_num})
 		wait a tick
@@ -127,7 +127,7 @@ function kitEffect_Saturn_1(player: player, pos: number):
 		playSound("entity.phantom.flap", 1, 2, {_player})
 	# 見た目
 	set {_baseloc} to location of {_player}
-	set {_baserad} to 120 + 15 * {_pos}
+	set {_baserad} to 120 + 7.5 * {_pos}
 	loop 3 times:
 		set {_rad} to 0
 		set {_y} to 0
@@ -136,9 +136,9 @@ function kitEffect_Saturn_1(player: player, pos: number):
 			set {_effloc} to {_baseloc}
 			add 10 to {_rad}
 			set {_rad} to {_rad} + {_baserad}
-			add 0.3 to {_y}
+			add 0.25 to {_y}
 			add {_y} to y-coordinate of {_effloc}
-			add 0.2 to {_d}
+			add 0.1 + (0.025 * loop-number-2) to {_d}
 			add {_d} * sin({_rad}) to x-coordinate of {_effloc}
 			add {_d} * cos({_rad}) to z-coordinate of {_effloc}
 			drawDot count 1, particle "redstone", RGB 176, 196, 222, center {_effloc}, visibleRange 30
