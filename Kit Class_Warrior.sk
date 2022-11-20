@@ -527,7 +527,16 @@ function kitEffect_BruteCharge_2(player: player):
 					set x-coordinate of {_vector} to {_x} + (1 + {_t}) * cos({_s} * {_u}) * {_vxnx} + (1 + {_t}) * sin({_s} * {_u}) * {_vznx}
 					set y-coordinate of {_vector} to {_y} + {_t} * 0.5 + 0.3
 					set z-coordinate of {_vector} to {_z} + (1 + {_t}) * cos({_s} * {_u}) * {_vxnz} + (1 + {_t}) * sin({_s} * {_u}) * {_vznz}
-					drawDot count 1, particle "redstone", RGB 80 * (1 + {_t}), 160 * (1 + {_t}), 160 * (1 + {_t}), center {_vector}, visibleRange 100, keepFor 0.5 seconds
+					set {_color.R} to 80 * (1 + {_t})
+					if {_color.R} < 256:
+						set {_color.R} to 255
+					set {_color.G} to 160 * (1 + {_t})
+					if {_color.G} < 256:
+						set {_color.G} to 255
+					set {_color.B} to 160 * (1 + {_t})
+					if {_color.B} < 256:
+						set {_color.B} to 255
+					drawDot count 1, particle "redstone", RGB {_color.R}, {_color.G}, {_color.B}, center {_vector}, visibleRange 100, keepFor 0.5 seconds
 					add 0.07 to {_t}
 					add 11 to {_u}
 				set {_s} to -1 * {_s}
