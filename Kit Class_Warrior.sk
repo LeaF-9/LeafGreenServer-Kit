@@ -24,27 +24,6 @@ on damage:
 					drawDot count 1, particle "mobspell", RGB 71, 38, 110, center {_effloc}, visibleRange 30
 					add 36 to {_rad}
 				wait a tick
-	else if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 2) is true:
-		if {Stats.%attacker%::Saturn} is true:
-			loop all entities in radius 5 around projectile:
-				metadata value "gametype" of loop-entity is "Kit"
-				set {_name} to name of loop-entity
-				kitCheckTeam({_name}, attacker, false) is true
-				kitDamage(attacker, loop-entity, 5, false)
-				message formatted "<##5992de>風が痛い!" to loop-entity
-			playSound("entity.wither.shoot", 0.8, 2, victim)
-			set {_baseloc} to location of victim
-			loop 10 times:
-				loop 5 times:
-					add 0.04 to {_y}
-					add 0.1 to {_metre}
-					add 20 to {_rad}
-					set {_effloc} to {_baseloc}
-					add {_y} to y-coordinate of {_effloc}
-					add {_metre} * sin({_rad}) to x-coordinate of {_effloc}
-					add {_metre} * cos({_rad}) to z-coordinate of {_effloc}
-					drawDot count 1, particle "redstone", RGB 176, 196, 222, center {_effloc}, visibleRange 30
-				wait a tick
 	else if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 3) is true:
 		set {_c} to kitPercentDuel(attacker, victim, 10, true)
 		chance of {_c}%:
@@ -105,27 +84,8 @@ function kitWeaponWarrior(player: player):
 	set {_tool} to {_player}'s tool
 	set {_item.num} to kitItemNumberChecker({_tool})
 	checkCT({_player}, name of {_player}'s tool) is true
-	if {_item.num} is 2:
-		kitWeapon_Warrior_2({_player})
-	else if {_item.num} is 4:
+	if {_item.num} is 4:
 		kitWeapon_Warrior_4({_player})
-
-function kitWeapon_Warrior_2(player: player):
-	toolCT({_player}, "Warrior", 2, "Weapon.main")
-	set {Stats.%{_player}%::Saturn} to true
-	playSound("entity.phantom.flap", 1.5, 1.3, {_player})
-	kitMsg({_player}, "<##b0c4de>範囲攻撃の風を纏った!")
-	loop 100 times:
-		set {_effloc} to location of {_player}
-		add 18 to {_rad}
-		add 0.02 to {_y}
-		add {_y} to y-coordinate of {_effloc}
-		add 0.5 * sin({_rad}) to x-coordinate of {_effloc}
-		add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
-		drawDot count 1, particle "redstone", RGB 176, 196, 222, center {_effloc}, visibleRange 30
-		wait a tick
-	delete {Stats.%{_player}%::Saturn}
-	kitMsg({_player}, "<##5992de>風は止んでしまった...")
 
 function kitWeapon_Warrior_4(player: player):
 	toolCT({_player}, "Warrior", 4, "Weapon.main")
@@ -135,6 +95,53 @@ function kitWeapon_Warrior_4(player: player):
 	set {_loc} to location of {_player}
 	loop 30 times:
 		draw 1 lava particle at {_loc} with direction randomVector({_loc}) and speed 3, keepFor 1 tick
+
+on sneak toggle:
+	{Class::%player%} is "Warrior"
+	player is not sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 2) is true
+	enchant player's tool with knockback 3
+	set {_true} to true
+	set {_num} to 0
+	while {_true} is true:
+		if player is not sneaking:
+			delete {_true}
+		if kitItemAllChecker(player's tool, "Warrior", "Weapon.main", 2) is false:
+			delete {_true}
+		else:
+			add 1 to {_num}
+			if {_num} > 8:
+				set {_num} to 1
+			kitEffect_Saturn_1(player, {_num})
+		wait a tick
+	loop all items in player's inventory:
+		kitItemAllChecker(loop-item, "Warrior", "Weapon.main", 2) is true
+		disenchant loop-item
+		enchant loop-item with knockback 1
+
+function kitEffect_Saturn_1(player: player, pos: number):
+	# 音
+		chance of 50%:
+			playSound("entity.phantom.flap", 1, 2, {_player})
+	# 見た目
+		set {_baseloc} to location of {_player}
+		set {_baserad} to 120 + 15 * {_pos}
+		loop 3 times:
+			set {_rad} to 0
+			set {_y} to 0
+			set {_d} to 0
+			loop 10 times:
+				set {_effloc} to {_baseloc}
+				add 10 to {_rad}
+				set {_rad} to {_rad} + {_baserad}
+				add 0.3 to {_y}
+				add {_y} to y-coordinate of {_effloc}
+				add 0.2 to {_d}
+				add {_d} * sin({_rad}) to x-coordinate of {_effloc}
+				add {_d} * cos({_rad}) to z-coordinate of {_effloc}
+				drawDot count 1, particle "redstone", RGB 176, 196, 222, center {_effloc}, visibleRange 30
+			add 120 to {_baserad}
 
 # Skills
 function kitSkillWarrior(player: player) :: boolean:
