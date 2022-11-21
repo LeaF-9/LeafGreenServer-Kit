@@ -24,18 +24,16 @@ on damage:
 					drawDot count 1, particle "mobspell", RGB 71, 38, 110, center {_effloc}, visibleRange 30
 					add 36 to {_rad}
 				wait a tick
-	else if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 3) is true:
-		set {_c} to kitPercentDuel(attacker, victim, 10, true)
-		chance of {_c}%:
-			subtract 1 from attacker's health
-			kitStun(victim, 5 seconds)
-			playSound("entity.evoker.cast_spell", 1, 0.9, victim)
-			loop all blocks in radius 3 around victim:
-				loop-block is air
-				block below loop-block is not air
-				set {_loc} to location of loop-block
-				subtract 0.4 from y-coordinate of {_loc}
-				drawDot count 1, particle "blockcrack", material dirt, center {_loc}, visibleRange 30
+	else if {Stats.%attacker%::PlutoCharge} is true:
+		subtract 1 from attacker's health
+		kitStun(victim, 5 seconds)
+		playSound("entity.evoker.cast_spell", 1, 0.9, victim)
+		loop all blocks in radius 3 around victim:
+			loop-block is air
+			block below loop-block is not air
+			set {_loc} to location of loop-block
+			subtract 0.4 from y-coordinate of {_loc}
+			drawDot count 1, particle "blockcrack", material dirt, center {_loc}, visibleRange 30
 
 on damage:
 	metadata value "gametype" of attacker is "Kit"
@@ -121,6 +119,39 @@ on sneak toggle:
 			disenchant loop-item
 			enchant loop-item with knockback 1
 	else if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 3) is true:
+		set {_num} to 0
+		wait a tick
+		set {_true} to false
+		while {_true} is false:
+			if player is not sneaking:
+				delete {_true}
+			else if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 3) is false:
+				delete {_true}
+			else if {_num} is 100:
+				set {_true} to true
+			else:
+				add 1 to {_num}
+				set {_linenum} to round({_num} / 2)
+				chargeActionBar(player, {_linenum}, 50)
+				# 音の演出
+				# パーティクルの演出
+				wait a tick
+		if {_true} is true:
+			set {Stats.%player%::PlutoCharge} to true
+			# 音の演出
+			while {_true} is true:
+				if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 3) is false:
+					delete {_true}
+				else if {Stats.%player%::PlutoCharge} is not set:
+					set {_true} to false
+				else:
+					send action bar "§6§lチャージが完了しました!" to player
+					# パーティクルの演出
+					wait a tick
+			if {_true} is not set:
+				send action bar "§cチャージが中断されました!" to player
+		else:
+			send action bar "§8チャージに失敗しました" to player
 
 function kitEffect_Saturn_1(player: player, pos: number):
 	# 音
