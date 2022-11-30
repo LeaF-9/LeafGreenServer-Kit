@@ -1,0 +1,82 @@
+options:
+	prefix: §9[§b§lSKBook§9]§r
+	itemname: §6§lSkript Book
+	rownum: 6
+
+command /skbook:
+	permission: sk.admin
+	executable by: player
+	trigger:
+		give a book named {@itemname} to player
+		message formatted "{@prefix} {@itemname} §eを渡しました!" to player
+
+on rightclick holding a book:
+	player has permission "sk.admin"
+	name of player's tool is {@itemname}
+	openSkriptBook(player)
+
+# 選択システム
+on inventory click:
+	type of event-inventory is chest inventory
+	inventory name of event-inventory is {@itemname}
+	if type of clicked item is book:
+		set {_dir} to name of clicked item
+		replace "§6" with "" in {_dir}
+		set {_lore} to line 3 of lore of clicked item
+		replace "§8" with "" in {_lore}
+		set {_dir} to "%{_lore}%/%{_dir}%"
+		setSkriptList(player, {_dir})
+	else if type of clicked item is light green dye:
+		set {_file} to name of clicked item
+		replace "§a" with "" in {_file}
+		set {_lore} to line 4 of lore of clicked item
+		replace "§8" with "" in {_lore}
+		if click type is left mouse button:
+			set {_arg} to "reload"
+		else if click type is right mouse click:
+			set {_arg} to "disable"
+		if {_lore} is "":
+			make player execute command "/sk %{_arg}% %{_file}%"
+		else:
+			make player execute command "/sk %{_arg}% %{_lore}%/%{_file}%"
+	else if type of clicked item is gray dye:
+		set {_file} to name of clicked item
+		replace "§8" with "" in {_file}
+		set {_lore} to line 4 of lore of clicked item
+		replace "§8" with "" in {_lore}
+		if {_lore} is "":
+			make player execute command "/sk enable %{_file}%"
+		else:
+			make player execute command "/sk enable %{_lore}%/%{_file}%"
+
+# GUI表示用関数
+function openSkriptBook(player: player):
+	wait a tick
+	open chest with {_rownum} row named {@itemname} to {_player}
+	wait a tick
+	setSkriptList({_player})
+
+# Skript List表示用関数
+function setSkriptList(player: player, path: text = "plugins/Skript/scripts", page: number = 1):
+	set {_slot} to 0
+	loop 9 * {_rownum} times:
+		set slot {_slot} of {_player}'s current inventory to air
+		add 1 to {_slot}
+	set {_directories::*} to all directories of dir path {_path}
+	set {_files::*} to all files of dir path {_path}
+	set {_slot} to 0
+	loop {_directories::*}:
+		set {_dirname} to directory name of directory path "%loop-value%"
+		set slot {_slot} of {_player}'s current inventory to book named "§6%{_dirname}%" with lore "§a左クリック §eでディレクトリを開く", " " and "§8%loop-value%"
+		add 1 to {_slot}
+	set {_clickpath} to {_path}
+	replace "plugins/Skript/scripts" with "" in {_clickpath}
+	loop {_files::*}:
+		set {_filename} to file name of file path "%loop-value%"
+		replace ".sk" with "" in {_filename}
+		if first character of {_filename} is "-":
+			set
+			set slot {_slot} of {_player}'s current inventory to gray dye named "§8%{_filename}%" with lore "§a右クリック §eで有効化する", " " and "§8%{_clickpath}%"
+		else:
+			set slot {_slot} of {_player}'s current inventory to light green dye named "§a%{_filename}%" with lore "§a左クリック §eで再読み込みする", "§a右クリック §eで無効化する", " " and "§8%{_clickpath}%"
+		add 1 to {_slot}
