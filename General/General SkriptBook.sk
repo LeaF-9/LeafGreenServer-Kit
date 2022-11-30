@@ -85,3 +85,10 @@ function setSkriptList(player: player, path: text = "plugins/Skript/scripts", pa
 		else:
 			set slot {_slot} of {_player}'s current inventory to light green dye named "§a%{_filename}%" with lore "§a左クリック §eで再読み込みする", "§a右クリック §eで無効化する", " " and "§8%{_clickpath}%"
 		add 1 to {_slot}
+	if {_path} is not "plugins/Skript/scripts":
+		set {_pathnames::*} to {_path} split at "/"
+		set {_clickpath} to ""
+		loop size of {_pathnames::*} - 1 times:
+			set {_clickpath} to "%{_clickpath}%%{_pathnames::%loop-number%}%/"
+		replace last character of {_clickpath} with "" in {_clickpath}
+		set slot 9 * {@rownum} - 1 of {_player}'s current inventory to book named "§6戻る" with lore "§a左クリック §eでディレクトリを開く", " " and "§8%loop-value%"
