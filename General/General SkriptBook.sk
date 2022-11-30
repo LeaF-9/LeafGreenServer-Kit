@@ -33,7 +33,7 @@ on inventory click:
 		replace "§8" with "" in {_lore}
 		if click type is left mouse button:
 			set {_arg} to "reload"
-		else if click type is right mouse click:
+		else if click type is right mouse button:
 			set {_arg} to "disable"
 		if {_lore} is "":
 			make player execute command "/sk %{_arg}% %{_file}%"
@@ -75,7 +75,7 @@ function setSkriptList(player: player, path: text = "plugins/Skript/scripts", pa
 		set {_filename} to file name of file path "%loop-value%"
 		replace ".sk" with "" in {_filename}
 		if first character of {_filename} is "-":
-			set
+			replace first characters of {_filename} with "" in {_filename}
 			set slot {_slot} of {_player}'s current inventory to gray dye named "§8%{_filename}%" with lore "§a右クリック §eで有効化する", " " and "§8%{_clickpath}%"
 		else:
 			set slot {_slot} of {_player}'s current inventory to light green dye named "§a%{_filename}%" with lore "§a左クリック §eで再読み込みする", "§a右クリック §eで無効化する", " " and "§8%{_clickpath}%"
