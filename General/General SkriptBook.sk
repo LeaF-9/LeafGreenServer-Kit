@@ -67,12 +67,14 @@ function setSkriptList(player: player, path: text = "plugins/Skript/scripts", pa
 	set {_slot} to 0
 	loop {_directories::*}:
 		set {_dirname} to directory name of directory path "%loop-value%"
+		{_dirname} does not contain ".git"
 		set slot {_slot} of {_player}'s current inventory to book named "§6%{_dirname}%" with lore "§a左クリック §eでディレクトリを開く", " " and "§8%loop-value%"
 		add 1 to {_slot}
 	set {_clickpath} to {_path}
 	replace "plugins/Skript/scripts" with "" in {_clickpath}
 	loop {_files::*}:
 		set {_filename} to file name of file path "%loop-value%"
+		{_filename} does not contain ".git"
 		replace ".sk" with "" in {_filename}
 		if first character of {_filename} is "-":
 			replace first characters of {_filename} with "" in {_filename}
