@@ -123,6 +123,7 @@ on sneak toggle:
 		wait a tick
 		set {_true} to false
 		while {_true} is false:
+			set {_tool} to player's tool
 			if player is not sneaking:
 				delete {_true}
 			else if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 3) is false:
@@ -134,7 +135,7 @@ on sneak toggle:
 				set {_linenum} to round({_num} / 2)
 				chargeActionBar(player, {_linenum}, 50)
 				# 音の演出
-				set {_sp} to 2 / {_num}
+				set {_sp} to {_num} / 50
 				playSound("block.wooden_button.click_on", 0.5, {_sp}, player)
 				# パーティクルの演出
 				set {_ln} to floor({_sp} / 10) + 1
@@ -158,6 +159,38 @@ on sneak toggle:
 				send action bar "§cチャージが中断されました!" to player
 		else:
 			send action bar "§8チャージに失敗しました" to player
+	else if kitItemAllChecker({_tool}, "Warrior", "Skill", 8) is true:
+		set {_num} to 0
+		wait a tick
+		set {_true} to false
+		while {_true} is false:
+			set {_tool} to player's tool
+			if player is not sneaking:
+				set {_true} to true
+			else if kitItemAllChecker({_tool}, "Warrior", "Skill", 8) is false:
+				delete {_true}
+			else if {_num} is 100:
+				set {_true} to true
+			else:
+				add 1 to {_num}
+				set {_linenum} to round({_num} / 2)
+				chargeActionBar(player, {_linenum}, 50)
+				# 音の演出
+				if mod({_num}, 5) is 0:
+					set {_sp} to {_num} / 50
+					playSound("block.wooden_button.click_on", 0.5, {_sp}, player, true)
+				# パーティクルの演出
+				drawDot count 1, particle "explosion", center {_player}, visibleRange 30
+				wait a tick
+		if {_true} is true:
+			set {_charge} to floor({_num} / 5)
+			set {Stats.%player%::SonicBoom} to {_charge}
+			playSound("")  # ボワーンみたいな音
+			# --- ボワーンみたいな演出 ---
+			# -------------------------
+			kitEffect_SonicBoom(player)  # Skill Itemの確認,action barとparticleの処理両方
+		else:
+			send action bar "§cチャージを中断しました" to player
 	else if {Stats.%player%::UltWarrior} is true:
 		set {_SpecialSword} to yml value "kititems.Special Sword" from "ultwarrior.%player%"
 		player's tool is {_SpecialSword}
@@ -651,49 +684,44 @@ function kitEffect_BruteCharge_3(player: player):
 		wait a tick
 
 function kitSkill_Warrior_8(player: player):
-	set {_now} to now
-	set {Stats.%{_player}%::SonicBoomNow} to {_now}
+	toolCT({_player}, "Warrior", 8)
 	if {Stats.%{_player}%::SonicBoom} is not set:
-		set {Stats.%{_player}%::SonicBoom} to 0
-	if {Stats.%{_player}%::SonicBoom} < 20:
-		add 1 to {Stats.%{_player}%::SonicBoom}
-# Action bar表記
+		set {Stats.%{_player}%::SonicBoom} to 1
+	kitMsg({_player}, "<##f0ffff>ソニックブーム!")
+	set {_baseloc} to location of head of {_player}
 	loop {Stats.%{_player}%::SonicBoom} times:
-		if loop-number is 1:
-			set {_ok.line} to "|"
-		else:
-			set {_ok.line} to "%{_ok.line}%|"
-	set {_ngtime} to 20 - {Stats.%{_player}%::SonicBoom}
-	set {_ng.line} to ""
-	if {_ngtime} is not 0:
-		loop {_ngtime} times:
-			if loop-number is 1:
-				set {_ng.line} to "|"
-			else:
-				set {_ng.line} to "%{_ng.line}%|"
-	send action bar "§e[ §a%{_ok.line}%§8%{_ng.line}% §e]" to {_player}
-	set {_sound} to {Stats.%{_player}%::SonicBoom} / 10
-	playSound("block.wooden_button.click_on", 0.5, {_sound}, {_player}, true)
-	drawDot count 1, particle "explosion", center {_player}, visibleRange 30, keepFor 5 ticks
-	wait 6 ticks
-	if {Stats.%{_player}%::SonicBoomNow} is {_now}:
-		toolCT({_player}, "Warrior", 8)
-		kitMsg({_player}, "<##f0ffff>ソニックブーム!")
-		set {_baseloc} to location of head of {_player}
-		loop {Stats.%{_player}%::SonicBoom} times:
-			add 1 to {_metre}
-			set {_loc} to location {_metre} meters in front of {_baseloc}
-			add 1 to y-coordinate of {_loc}
-			drawDot count 1, particle "explosionlarge", center {_loc}, visibleRange 50
-			playSound("entity.player.attack.sweep", 1, 1, {_loc})
-			loop all entities in radius 3 around {_loc}:
-				{_hit::%id of loop-entity%} is not set
-				kitCheckTeam(loop-entity, {_player}, false) is true
-				set {_hit::%id of loop-entity%} to true
-				make {_player} damage loop-entity by 6
-			wait a tick
+		add 1 to {_metre}
+		set {_loc} to location {_metre} meters in front of {_baseloc}
+		add 1 to y-coordinate of {_loc}
+		drawDot count 1, particle "explosionlarge", center {_loc}, visibleRange 50
+		playSound("entity.player.attack.sweep", 1, 1, {_loc})
+		loop all entities in radius 3 around {_loc}:
+			{_hit::%id of loop-entity%} is not set
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_hit::%id of loop-entity%} to true
+			kitDamage({_player}, loop-entity, 3)
+		wait a tick
+	delete {Stats.%{_player}%::SonicBoom}
+
+function kitEffect_SonicBoom(player: player):
+	# アイテムを所持しているかどうかの確認
+	set {_true} to true
+	while {_true} is true:
+		set {_tool} to {_player}'s tool
+		if kitItemAllChecker({_tool}, "Warrior", "Skill", 8) is false:
+			set {_true} to false
+		else if {Stats.%{_player}%::SonicBoom} is true:
+			delete {_true}
+		# 持っている際のパーティクル演出とAction Bar表記
+		if {_true} is true:
+			# --- 溜めてるよー的なパーティクル演出 ---
+			# -----------------------------------
+			send action bar "§f§lSonic Boom§eエネルギー保持中 §3§l右クリック§eで§6§l放出" to {_player}
+		wait a tick
+	# 持っていなかった際の処理とAction Bar表記
+	if {_true} is false:
 		delete {Stats.%{_player}%::SonicBoom}
-		delete {Stats.%{_player}%::SonicBoomNow}
+		send action bar "§c§lチャージが消滅しました" to {_player}
 
 function kitTimerWarrior(player: player):
 	set {_tool} to kitPlayerWeaponItem({_player}, "Warrior", "main")
