@@ -55,7 +55,7 @@ on sneak toggle:
 		set {_true} to true
 		while {_true} is true:
 			set {_tool} to player's tool
-			set {_mana} to kitManaCalc(player, 10)
+			set {_mana} to kitManaCalc(player, 3)
 			if player is not sneaking:
 				set {_true} to false
 			else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 4) is false:
@@ -89,6 +89,32 @@ on sneak toggle:
 						# --- 寝てしまった際のパーティクル演出 ---
 						# -----------------------------------
 				wait a tick		
+	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is true:
+		set {_mana} to kitManaCalc(player, 10)
+		if {Kit-Mana::%player%} >= {_mana}:
+			set {_num} to 0
+			wait a tick
+			set {_true} to false
+			while {_true} is false:
+				set {_tool} to player's tool
+				if player is not sneaking:
+					delete {_true}
+				else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is false:
+					delete {_true}
+				else if {_num} is 60:
+					set {_true} to true
+				if {_true} is false:
+					# --- チャージ中の音の演出 ---
+					# -------------------------
+					# --- チャージ中のパーティクル演出 ---
+					# -------------------------------
+					wait a tick
+			if {_true} is true:
+
+			else:
+				send action bar "§cチャージが中断されました!" to player
+		else:
+			send action bar "§4§lマナが足りません!" to player
 
 function kitEffect_MoonRod(player: player, period: number):
 	set {_count} to 10
