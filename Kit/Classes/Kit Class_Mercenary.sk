@@ -45,135 +45,125 @@ on damage:
 				chance of {_c}%:
 					heal attacker by 1 heart
 
-function kitWeaponMercenary(player: player):
-	set {_tool} to {_player}'s tool
-	set {_item.num} to kitItemNumberChecker({_tool})
-	checkCT({_player}, name of {_player}'s tool) is true
-	if {_item.num} is 4:
-		kitWeapon_Mercenary_4({_player})
-	else if {_item.num} is 5:
-		kitWeapon_Mercenary_5({_player})
+on sneak toggle:
+	{Class::%player%} is "Mercenary"
+	player is not sneaking
+	set {_tool} to player's tool
+	if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 4) is true:
+		checkCT(player, name of player's tool) is true
+		set {_num} to 0
+		set {_true} to false
+		wait a tick
+		while {_true} is false:
+			set {_tool} to player's tool
+			if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 4) is false:
+				delete {_true}
+			else if player is not sneaking:
+				set {_true} to true
+			else if {_num} >= 60:
+				set {_true} to true
+			if {_true} is false;
+				add 1 to {_num}
+				chargeActionBar(player, {_num}, 60)
+				set {_pitch} to 0.5 + 0.025 * {_num}
+				playSound("item.armor.equip_chain", 1, {_pitch}, player)
+				drawDot count 1, particle "explosion", center player, visibleRange 30
+				wait a tick
+		if {_true} is true:
+			kitWeapon_Mercenary_4(player, {_num})
+		else:
+			send action bar "§c§lチャージが中断されました" to player
+	else if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 5) is true:
+		if {Stats.%player%::Javelinter} is not set:
+			set {Stats.%player%::Javelinter} to 100
+		{Stats.%player%::Javelinter} > 0
+		set {_true} to true
+		wait a tick
+		while {_true} is true:
+			set {_tool} to player's tool
+			if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 5) is false:
+				set {_true} to false
+			else if player is not sneaking:
+				set {_true} to false
+			else if {Stats.%player%::Javelinter} <= 0:
+				set {_true} to false
+			if {_true} is true:
+				subtract 1 from {Stats.%player%::Javelinter}
+				kitWeapon_Mercenary_5(player)
+				wait a tick
 
-function kitWeapon_Mercenary_4(player: player):
-	set {_now} to now
-	set {Stats.%{_player}%::ChainsawNow} to {_now}
-	if {Stats.%{_player}%::Chainsaw} is not set:
-		set {Stats.%{_player}%::Chainsaw} to 0
-		set walk speed of {_player} to 0
-	loop 5 times:
-		if {Stats.%{_player}%::Chainsaw} < 60:
-			add 1 to {Stats.%{_player}%::Chainsaw}
-#	Action bar表記
-			set {_line} to ""
-			loop {Stats.%{_player}%::Chainsaw} times:
-				set {_line} to "%{_line}%§a|"
-			set {_ngtime} to 60 - {Stats.%{_player}%::Chainsaw}
-			loop {_ngtime} times:
-				set {_line} to "%{_line}%§c|"
-			send action bar "§e[ %{_line}% §e]" to {_player}
-			set {_pitch} to 0.5 + 0.025 * {Stats.%{_player}%::Chainsaw}
-			playSound("item.armor.equip_chain", 1, {_pitch}, {_player})
-			drawDot count 1, particle "explosion", center {_player}, visibleRange 30
-			wait a tick
-	wait a tick
-	if {Stats.%{_player}%::ChainsawNow} is {_now}:
-		set walk speed of {_player} to 0.2
-		toolCT({_player}, "Mercenary", 4, "Weapon.main")
-		set {_ln} to {Stats.%{_player}%::Chainsaw}
-		delete {Stats.%{_player}%::Chainsaw}
-		delete {Stats.%{_player}%::ChainsawNow}
-		loop {_ln} times:
-			set {_pl} to location of {_player}
-			set pitch of {_pl} to 0
-			set {_ol} to location 10 meters in front of {_pl}
-			set {_vector} to setVector({_pl}, {_ol}, 0.7)
-			if block 0.1 meters below {_player} is passable:
-				set y of {_vector} to y of {_vector} - 0.1
-			set velocity of {_player} to {_vector}
-			playSound("block.chain.place", 1, 0.5, {_player})
-			drawDot count 1, particle "explosionlarge", center {_player}, visibleRange 30
-			loop all entities in radius 1 around {_player}:
-				kitCheckTeam({_player}, loop-entity, false) is true
-				add loop-entity to {_list::*}
-				set maximum damage delay of loop-entity to 1 tick
-				kitDamage({_player}, loop-entity, 0.3)
-				playSound("entity.blaze.hurt", 0.8, 2, loop-entity)
-				set {_el} to aroundEffect(loop-entity)
-				drawDot count 1, particle "blockcrack", material redstone block, center {_el}, visibleRange 30
-				if type of loop-entity is a player:
-					set {_c} to kitPercentDuel({_player}, loop-entity, 10, true)
-					chance of {_c}%:
-						kitBlood(loop-entity)
-			wait a tick
-		loop {_list::*}:
-			set maximum damage delay of loop-value to 20 ticks
+function kitWeapon_Mercenary_4(player: player, distance: num):
+	toolCT({_player}, "Mercenary", 4, "Weapon.main")
+	loop {_distance} times:
+		set {_pl} to location of {_player}
+		set pitch of {_pl} to 0
+		set {_ol} to location 10 meters in front of {_pl}
+		set {_vector} to setVector({_pl}, {_ol}, 0.7)
+		if block 0.1 meters below {_player} is passable:
+			set y of {_vector} to y of {_vector} - 0.1
+		set velocity of {_player} to {_vector}
+		playSound("block.chain.place", 1, 0.5, {_player})
+		drawDot count 1, particle "explosionlarge", center {_player}, visibleRange 30
+		loop all entities in radius 1 around {_player}:
+			kitCheckTeam({_player}, loop-entity, false) is true
+			add loop-entity to {_list::*}
+			set maximum damage delay of loop-entity to 1 tick
+			kitDamage({_player}, loop-entity, 0.3)
+			playSound("entity.blaze.hurt", 0.8, 2, loop-entity)
+			set {_el} to aroundEffect(loop-entity)
+			drawDot count 1, particle "blockcrack", material redstone block, center {_el}, visibleRange 30
+			if type of loop-entity is a player:
+				set {_c} to kitPercentDuel({_player}, loop-entity, 10, true)
+				chance of {_c}%:
+					kitBlood(loop-entity)
+		wait a tick
+	loop {_list::*}:
+		set maximum damage delay of loop-value to 20 ticks
 
 function kitWeapon_Mercenary_5(player: player):
-	toolCT({_player}, "Mercenary", 5, "Weapon.main")
 	set {_baseloc} to location of {_player}
-	playSound("block.gravel.break", 0.8, 1.5, {_player})
-	loop 100 times:
-		if {_ok} is not set:
-			add 1 to {_met}
-			set {_checkloc} to location {_met} meters below {_baseloc}
-			drawDot count 1, particle "blockcrack", material dirt, center {_checkloc}, visibleRange 30
-			if block at {_checkloc} is not passable:
-				set {_ok} to true
-				set {_loc} to {_checkloc}
-			wait a tick
-	if {_ok} is true:
-		kitMsg({_player}, "§c周辺に棘の壁を展開した!")
-		playSound("entity.blaze.hurt", 1, 2, {_loc})
-		loop all blocks in radius 10 around {_loc}:
-			loop-block is passable
-			block below loop-block is not passable
-			distance between location of block at {_loc} and location of loop-block >= 8.5
-			add location of loop-block to {_locs::*}
-		loop 100 times:
-			delete {_hit::*}
-			loop {_locs::*}:
-				set {_l} to loop-value-2
-				loop all entities in radius 1 around {_l}:
-					{_hit::%id of loop-entity%} is not set
-					kitCheckTeam({_player}, loop-entity, false) is true
-					set {_hit::%id of loop-entity%} to true
-					kitDamage({_player}, loop-entity, 3)
-					if type of loop-entity is player:
-						if {_blood::%id of loop-entity%} is not set:
-							set {_c} to kitPercentDuel({_player}, loop-entity, 50, true)
-							chance of {_c}%:
-								kitBlood(loop-entity)
-								set {_blood::%id of loop-entity%} to 21
-				set {_el} to loop-value-2
-				add 1 to y-coordinate of {_el}
-				set {_ln} to 0
-				loop 4 times:
-					set {_bl} to {_el}
-					subtract 1.5 from y-coordinate of {_bl}
-					add 1 to {_ln}
-					if mod({_ln}, 2) = 0:
-						subtract 0.5 from x-coordinate of {_bl}
-					else:
-						add 0.5 to x-coordinate of {_bl}
-					if {_ln} <= 2:
-						subtract 0.5 from z-coordinate of {_bl}
-					else:
-						add 0.5 to z-coordinate of {_bl}
-					set {_v} to setVector({_bl}, {_el})
-					set yaw of {_bl} to yaw of {_v}
-					set pitch of {_bl} to pitch of {_v}
-					set {_lm} to 0
-					loop 3 times:
-						add 0.6 to {_lm}
-						set {_ee} to location {_lm} meters in front of {_bl}
-						chance of 10%:
-							drawDot count 1, particle "endrod", center {_ee}, visibleRange 30
-			loop {_blood::*}:
-				subtract 1 from {_blood::%loop-index%}
-				if {_blood::%loop-index%} <= 0:
-					delete {_blood::%loop-index%}
-			wait a tick
-		kitMsg({_player}, "§8棘の壁は消滅した...")
+	block 0.1 meters below {_baseloc} is not passable
+	playSound("block.gravel.break", 0.6, 2, {_player})
+	loop all blocks in radius 10 around {_baseloc}:
+		loop-block is passable
+		block below loop-block is not passable
+		distance between location of block at {_baseloc} and location of loop-block >= 8.5
+		add location of loop-block to {_locs::*}
+	loop {_locs::*}:
+		set {_l} to loop-value-2
+		loop all entities in radius 1 around {_l}:
+			{_hit::%id of loop-entity%} is not set
+			kitCheckTeam({_player}, loop-entity, false) is true
+			set {_hit::%id of loop-entity%} to true
+			kitDamage({_player}, loop-entity, 2)
+			if type of loop-entity is player:
+				set {_c} to kitPercentDuel({_player}, loop-entity, 2, true)
+				chance of {_c}%:
+					kitBlood(loop-entity)
+		set {_el} to loop-value-2
+		add 1 to y-coordinate of {_el}
+		set {_ln} to 0
+		loop 4 times:
+			set {_bl} to {_el}
+			subtract 1.5 from y-coordinate of {_bl}
+			add 1 to {_ln}
+			if mod({_ln}, 2) = 0:
+				subtract 0.5 from x-coordinate of {_bl}
+			else:
+				add 0.5 to x-coordinate of {_bl}
+			if {_ln} <= 2:
+				subtract 0.5 from z-coordinate of {_bl}
+			else:
+				add 0.5 to z-coordinate of {_bl}
+			set {_v} to setVector({_bl}, {_el})
+			set yaw of {_bl} to yaw of {_v}
+			set pitch of {_bl} to pitch of {_v}
+			set {_lm} to 0
+			loop 3 times:
+				add 0.6 to {_lm}
+				set {_ee} to location {_lm} meters in front of {_bl}
+				chance of 10%:
+					drawDot count 1, particle "endrod", center {_ee}, visibleRange 30
 
 # Skills
 function kitSkillMercenary(player: player) :: boolean:
