@@ -144,15 +144,20 @@ on sneak toggle:
 				wait a tick
 		if {_true} is true:
 			set {Stats.%player%::PlutoCharge} to true
-			# 音の演出
+			# --- チャージ完了時の音の演出 ---
+			playSound("entity.warden.roar", 1, 2, player)
+			# ------------------------------
 			while {_true} is true:
 				if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 3) is false:
 					delete {_true}
 				else if {Stats.%player%::PlutoCharge} is not set:
 					set {_true} to false
 				else:
-					send action bar "§6§lチャージが完了しました!" to player
-					# パーティクルの演出
+					send action bar "§7§lPluto §bのチャージが完了しました!" to player
+					# --- チャージ完了中のパーティクルの演出 ---
+					chance of 10%:
+						kitEffect_Pluto_2(player)
+					# ---------------------------------------
 					wait a tick
 			if {_true} is not set:
 				send action bar "§cチャージが中断されました!" to player
@@ -174,18 +179,21 @@ on sneak toggle:
 				add 1 to {_num}
 				set {_linenum} to round({_num} / 2)
 				chargeActionBar(player, {_linenum}, 50)
-				# 音の演出
+				# --- チャージ中の音の演出 ---
 				if mod({_num}, 5) is 0:
 					set {_sp} to {_num} / 50
 					playSound("block.wooden_button.click_on", 0.5, {_sp}, player, true)
-				# パーティクルの演出
+				# --------------------------
+				# --- チャージ中のパーティクルの演出 ---
 				drawDot count 1, particle "explosion", center {_player}, visibleRange 30
+				# -----------------------------------
 				wait a tick
 		if {_true} is true:
 			set {_charge} to floor({_num} / 5)
 			set {Stats.%player%::SonicBoom} to {_charge}
-			playSound("")  # ボワーンみたいな音
+			playSound("block.beacon.ambient", 1, 2, player)  # ボワーンみたいな音
 			# --- ボワーンみたいな演出 ---
+			
 			# -------------------------
 			kitEffect_SonicBoom(player)  # Skill Itemの確認,action barとparticleの処理両方
 		else:
@@ -256,6 +264,23 @@ function kitEffect_Pluto_1(player: player):
 			add a random number between -0.5 and 0.5 to z-coordinate of {_effloc}
 			add a random number between -0.3 and 0.3 to y-coordinate of {_effloc}
 			drawDot count 1, particle "redstone", RGB {_color}, {_color}, {_color}, center {_effloc}, visibleRange 30
+
+function kitEffect_Pluto_2(player: player):
+	set {_baseloc} to location of {_player}
+	add 1 to y-coordinate of {_baseloc}
+	set {_effloc} to {_baseloc}
+	add a random number between -3 and 3 to x-coordinate of {_effloc}
+	add a random number between -3 and 3 to z-coordinate of {_effloc}
+	add a random number between -1 and 1 to y-coordinate of {_effloc}
+	set {_vector} to setVector({_effloc}, {_baseloc})
+	set {_distance} to distance between {_baseloc} and {_effloc}
+	set yaw of {_effloc} to yaw of {_vector}
+	set pitch of {_effloc} to pitch of {_vector}
+	set {_meter} to {_distance} / 20
+	loop 20 times:
+		set {_eff} to location {_meter} * loop-number meters in front of {_effloc}
+		drawDot count 1, particle "cloud", center {_eff}, visibleRange 30
+		wait a tick
 
 # Skills
 function kitSkillWarrior(player: player) :: boolean:
