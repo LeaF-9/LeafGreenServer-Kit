@@ -158,6 +158,34 @@ on sneak toggle:
 				send action bar "§cチャージが中断されました!" to player
 		else:
 			send action bar "§8チャージに失敗しました" to player
+	else if {Stats.%player%::UltWarrior} is true:
+		set {_SpecialSword} to yml value "kititems.Special Sword" from "ultwarrior.%player%"
+		player's tool is {_SpecialSword}
+		if {Stats.%player%::UltWarrior-OK} is not set:
+			set {_num} to 0
+			wait a tick
+			set {_true} to false
+			while {_true} is false:
+				if player is not sneaking:
+					delete {_true}
+				else if player's tool is not {_SpecialSword}:
+					delete {_true}
+				else if {_num} >= 40:
+					set {_true} to true
+				else:
+					add 1 to {_num}
+					chargeActionBar(player, {_num}, 40)
+					# 音の演出
+					set {_sound} to {_num} / 20
+					playSound("entity.experience_orb.pickup", 0.75, {_sound}, player)
+					# パーティクルの演出
+					drawDot count 1, particle "explosionlarge", center player, visibleRange 30
+					wait a tick
+			if {_true} is true:
+				playSound("entity.player.levelup", 1.2, 0.5, player)
+				kitMsg(player, "§4§lパワーが貯まりました!")
+				set {Stats.%player%::UltWarrior-OK} to true
+				kitEffect_UltWarrior(player)
 
 function kitEffect_Saturn_1(player: player, pos: number):
 	# 音
@@ -680,7 +708,7 @@ function kitTimerWarrior(player: player):
 
 function kitUltWarrior(player: player):
 	message "§c10秒間,§4§lSpecial Sword§cが付与されます!" to {_player}
-	message "§cこの剣は右クリック長押しでチャージが出来ます!" to {_player}
+	message "§cこの剣はスニーク長押しでチャージが出来ます!" to {_player}
 	message "§c2秒間チャージでパワーが貯まり,次に攻撃した敵を一撃で倒します!" to {_player}
 	delete {Stats.%{_player}%::SonicRevolution}
 	delete {Stats.%{_player}%::LegendaryAura}
@@ -696,66 +724,21 @@ function kitUltWarrior(player: player):
 	delete {Stats.%{_player}%::UltWarrior}
 	delete {Stats.%{_player}%::UltWarrior-OK}
 
-on rightclick holding a diamond sword:
-	{Stats.%player%::UltWarrior} is true
-	set {_SpecialSword} to yml value "kititems.Special Sword" from "ultwarrior.%player%"
-	player's tool is {_SpecialSword}
-	cancel event
-	if {Stats.%player%::UltWarrior-OK} is not set:
-		set {_now} to now
-		set {Stats.%player%::UltWarrior-Now} to {_now}
-		set player's walk speed to 0.01
-		if {Stats.%player%::UltWarrior-Charge} is not set:
-			set {Stats.%player%::UltWarrior-Charge} to 0
-		if {Stats.%player%::UltWarrior-Charge} < 8:
-			add 1 to {Stats.%player%::UltWarrior-Charge}
-			if {Stats.%player%::UltWarrior-Charge} is 8:
-				set {Stats.%player%::UltWarrior-OK} to true
-		set {_ok.num} to ({Stats.%player%::UltWarrior-Charge} - 1) * 5
-		loop 5 times:
-			wait a tick
-			drawDot count 1, particle "explosionlarge", center player, visibleRange 30
-#	Action bar表記
-			add 1 to {_ok.num}
-			loop {_ok.num} times:
-				if loop-number-2 is 1:
-					set {_ok.line} to "|"
-				else:
-					set {_ok.line} to "%{_ok.line}%|"
-			set {_ngtime} to 40 - {_ok.num}
-			set {_ng.line} to ""
-			if {_ngtime} is not 0:
-				loop {_ngtime} times:
-					if loop-number-2 is 1:
-						set {_ng.line} to "|"
-					else:
-						set {_ng.line} to "%{_ng.line}%|"
-			send action bar "§e[ §a%{_ok.line}%§8%{_ng.line}% §e]" to player
-			set {_sound} to {_ok.num} / 20
-			playSound("entity.experience_orb.pickup", 0.75, {_sound}, player)
-			if {_ok.num} is 40:
-				playSound("entity.player.levelup", 1.2, 0.5, player)
+function kitEffect_UltWarrior(player: player):
+	while {Stats.%{_player}%::UltWarrior-OK} is true:
+		if {Stats.%{_player}%::UltWarrior} is not set:
+			delete {Stats.%{_player}%::UltWarrior-OK}
+		set {_loc} to location of {_player}
+		add 0.02 to {_dy}
+		if {_dy} >= 4:
+			set {_dy} to 0
+		if {_dy} > 2:
+			set {_y} to 2 - ({_dy} - 2)
+		else:
+			set {_y} to {_dy}
+		add {_y} to y-coordinate of {_loc}
+		add 9 to {_rad}
+		add 0.5 * sin({_rad}) to x-coordinate of {_loc}
+		add 0.5 * cos({_rad}) to z-coordinate of {_loc}
+		drawDot count 1, particle "angryvillager", center {_loc}, visibleRange 30
 		wait a tick
-		if {Stats.%player%::UltWarrior-Now} is {_now}:
-			set player's walk speed to 0.2
-			delete {Stats.%player%::UltWarrior-Now}
-			delete {Stats.%player%::UltWarrior-Charge}
-			if {Stats.%player%::UltWarrior-OK} is true:
-				kitMsg(player, "§4§lパワーが貯まりました!")
-				while {Stats.%player%::UltWarrior-OK} is true:
-					if {Stats.%player%::UltWarrior} is not set:
-						delete {Stats.%player%::UltWarrior-OK}
-					set {_loc} to location of player
-					add 0.02 to {_dy}
-					if {_dy} >= 4:
-						set {_dy} to 0
-					if {_dy} > 2:
-						set {_y} to 2 - ({_dy} - 2)
-					else:
-						set {_y} to {_dy}
-					add {_y} to y-coordinate of {_loc}
-					add 9 to {_rad}
-					add 0.5 * sin({_rad}) to x-coordinate of {_loc}
-					add 0.5 * cos({_rad}) to z-coordinate of {_loc}
-					drawDot count 1, particle "angryvillager", center {_loc}, visibleRange 30
-					wait a tick
