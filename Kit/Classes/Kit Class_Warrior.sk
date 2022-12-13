@@ -134,14 +134,13 @@ on sneak toggle:
 				add 1 to {_num}
 				set {_linenum} to round({_num} / 2)
 				chargeActionBar(player, {_linenum}, 50)
-				# 音の演出
-				set {_sp} to {_num} / 50
-				playSound("block.wooden_button.click_on", 0.5, {_sp}, player)
-				# パーティクルの演出
-				set {_ln} to floor({_sp} / 10) + 1
-				loop {_ln} times:
-					set {_mod} to mod({_sp}, 5)
-					set {_baserad} to 
+				# --- チャージ中の音の演出 ---
+				set {_sp} to {_num} / 200 + 0.5
+				playSound("block.lava.pop", 0.5, {_sp}, player)
+				# --------------------------
+				# --- チャージ中のパーティクルの演出 ---
+				kitEffect_Pluto_1(player)
+				# ------------------------------------
 				wait a tick
 		if {_true} is true:
 			set {Stats.%player%::PlutoCharge} to true
@@ -242,6 +241,21 @@ function kitEffect_Saturn_1(player: player, pos: number):
 			add {_d} * cos({_rad}) to z-coordinate of {_effloc}
 			drawDot count 1, particle "redstone", RGB 176, 196, 222, center {_effloc}, visibleRange 30
 		add 120 to {_baserad}
+
+function kitEffect_Pluto_1(player: player):
+	set {_baseloc} to location of {_player}
+	loop 3 times:
+		set {_effloc} to {_baseloc}
+		add a random number between -5 and 5 to x-coordinate of {_effloc}
+		add a random number between -5 and 5 to z-coordinate of {_effloc}
+		add a random number between -3 and 3 to y-coordinate of {_effloc}
+		drawDot count 1, particle "cloud", center {_effloc}, visibleRange 30
+		set {_color} to a random number between 0 and 255
+		loop 3 times:
+			add a random number between -0.5 and 0.5 to x-coordinate of {_effloc}
+			add a random number between -0.5 and 0.5 to z-coordinate of {_effloc}
+			add a random number between -0.3 and 0.3 to y-coordinate of {_effloc}
+			drawDot count 1, particle "redstone", RGB {_color}, {_color}, {_color}, center {_effloc}, visibleRange 30
 
 # Skills
 function kitSkillWarrior(player: player) :: boolean:
