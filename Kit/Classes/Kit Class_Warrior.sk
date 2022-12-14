@@ -173,11 +173,11 @@ on sneak toggle:
 		while {_true} is false:
 			set {_tool} to player's tool
 			if player is not sneaking:
-				set {_true} to true
+				set {_true} to false
 			else if kitItemAllChecker({_tool}, "Warrior", "Skill", 8) is false:
 				delete {_true}
 			else if {_num} is 100:
-				set {_true} to true
+				set {_true} to false
 			else:
 				add 1 to {_num}
 				set {_linenum} to round({_num} / 2)
@@ -773,7 +773,7 @@ function kitEffect_SonicBoom_2(player: player):
 		set {_tool} to {_player}'s tool
 		if kitItemAllChecker({_tool}, "Warrior", "Skill", 8) is false:
 			set {_true} to false
-		else if {Stats.%{_player}%::SonicBoom} is true:
+		else if {Stats.%{_player}%::SonicBoom} is not set:
 			delete {_true}
 		# 持っている際のパーティクル演出とAction Bar表記
 		if {_true} is true:
@@ -787,7 +787,7 @@ function kitEffect_SonicBoom_2(player: player):
 			drawDot count 1, particle "redstone", RGB {_r}, {_g}, 255, center {_eff}, visibleRange 30
 			# -------------------------------------
 			send action bar "§f§lSonic Boom§eエネルギー保持中 §3§l右クリック§eで§6§l放出" to {_player}
-		wait a tick
+			wait a tick
 	# 持っていなかった際の処理とAction Bar表記
 	if {_true} is false:
 		delete {Stats.%{_player}%::SonicBoom}
