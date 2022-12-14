@@ -155,9 +155,6 @@ function kitSkill_Knight_1(player: player):
 	toolCT({_player}, "Knight", 1)
 	playSound("entity.player.attack.sweep", 1, 1, {_player})
 	kitMsg({_player}, "§310秒間§c汎ゆる遠距離攻撃を跳ね返します!")
-	spawn an armor stand at location of {_player} with nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Pose:{RightArm:[250f,0f,90f]}}"
-	set metadata value "reject-projectile" of spawned entity to "%{_player}%"
-	set spawned entity's tool to diamond sword
 	set {_ln} to 0
 	loop 200 times:
 		add 1 to {_ln}
@@ -184,13 +181,10 @@ function kitSkill_Knight_1(player: player):
 #				push loop-projectile forward at speed 5
 		wait a tick
 	kitMsg({_player}, "§5Reject Projectile§1の§9構え状態§1が終了しました")
-	loop all entities:
-		type of loop-entity is armor stand
-		metadata value "reject-projectile" of loop-entity is "%{_player}%"
-		delete loop-entity
 
 function kitEffect_RejectProjectile(player: player, num: number):
 	set {_baseloc} to location of head of {_player}
+	set pitch of {_baseloc} to 0
 	set {_twen} to floor({_num} / 20) + 1
 	if mod({_twen}, 2) is 0:  # 偶数(右)
 		set {_tweplus} to {_num} + 20
