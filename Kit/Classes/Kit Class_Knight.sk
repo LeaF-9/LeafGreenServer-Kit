@@ -231,20 +231,21 @@ function kitSkill_Knight_2(player: player):
 	toolCT({_player}, "Knight", 2)
 	playSound("block.beacon.activate", 1, 1, {_player})
 	set {_baseloc} to location of head of {_player}
-	loop 30 times:
-		{_tg} is not set
-		add 1 to {_front}
-		set {_loc} to location {_front} meters in front of {_baseloc}
-		loop all players in radius 2 around {_loc}:
-			kitCheckTeam(loop-player, {_player}, false) is true
+	loop 15 times:
+		loop 2 times:
 			{_tg} is not set
-			set {_tg} to loop-player
-		loop 3 times:
-			set {_el} to {_loc}
-			add a random number between -0.5 and 0.5 to x-coordinate of {_el}
-			add a random number between -0.5 and 0.5 to y-coordinate of {_el}
-			add a random number between -0.5 and 0.5 to z-coordinate of {_el}
-			drawDot count 1, particle "endrod", center {_el}, visibleRange 30
+			add 1 to {_front}
+			set {_loc} to location {_front} meters in front of {_baseloc}
+			loop all players in radius 2 around {_loc}:
+				kitCheckTeam(loop-player, {_player}, false) is true
+				{_tg} is not set
+				set {_tg} to loop-player
+			loop 3 times:
+				set {_el} to {_loc}
+				add a random number between -0.5 and 0.5 to x-coordinate of {_el}
+				add a random number between -0.5 and 0.5 to y-coordinate of {_el}
+				add a random number between -0.5 and 0.5 to z-coordinate of {_el}
+				drawDot count 1, particle "endrod", center {_el}, visibleRange 30
 		wait a tick
 	if {_tg} is set:
 		set {_jewel} to saveJewels({_tg})
