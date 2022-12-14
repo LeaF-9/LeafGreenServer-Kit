@@ -158,24 +158,12 @@ function kitSkill_Knight_1(player: player):
 	spawn an armor stand at location of {_player} with nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Pose:{RightArm:[250f,0f,90f]}}"
 	set metadata value "reject-projectile" of spawned entity to "%{_player}%"
 	set spawned entity's tool to diamond sword
+	set {_ln} to 0
 	loop 200 times:
+		add 1 to {_ln}
 		set {_tool} to {_player}'s tool
-		set {_item.kit} to kitItemKitChecker({_tool})
-		{_item.kit} is "Knight"
-		set {_item.type} to kitItemTypeChecker({_tool})
-		{_item.type} is "Skill"
-		set {_item.num} to kitItemNumberChecker({_tool})
-		if {_item.num} is 1:
-			delete {_ok}
-			loop all entities:
-				type of loop-entity is armor stand
-				metadata value "reject-projectile" of loop-entity is "%{_player}%"
-				set {_ok} to true
-				teleport loop-entity to location of {_player}
-			if {_ok} is not set:
-				spawn an armor stand at location of {_player} with nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Pose:{RightArm:[250f,0f,90f]}}"
-				set metadata value "reject-projectile" of spawned entity to "%{_player}%"
-				set spawned entity's tool to diamond sword
+		if kitItemAllChecker({_tool}, "Knight", "Skill", 1):
+			kitEffect_RejectProjectile({_player}, {_ln})
 			set {_floc} to location 1 meter in front of head of {_player}
 			delete {_pok}
 			loop all projectiles in radius 5 around {_player}:
@@ -194,17 +182,44 @@ function kitSkill_Knight_1(player: player):
 				set {_v} to setVector(location of head of {_player}, location 10 meters in front of head of {_player})
 				set velocity of loop-projectile to {_v}
 #				push loop-projectile forward at speed 5
-		else:
-			loop all entities:
-				type of loop-entity is armor stand
-				metadata value "reject-projectile" of loop-entity is "%{_player}%"
-				delete loop-entity
 		wait a tick
 	kitMsg({_player}, "§5Reject Projectile§1の§9構え状態§1が終了しました")
 	loop all entities:
 		type of loop-entity is armor stand
 		metadata value "reject-projectile" of loop-entity is "%{_player}%"
 		delete loop-entity
+
+function kitEffect_RejectProjectile(player: player, num: number):
+	set {_baseloc} to location of head of {_player}
+	set {_twen} to floor({_num} / 20) + 1
+	if mod({_twen}, 2) is 0:  # 偶数(右)
+		set {_tweplus} to {_num} + 20
+		if mod({_num}, 20) is 19:
+			add -27 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 18:
+			add -9 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 17:
+			add 9 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 16:
+			add 27 to yaw of {_baseloc}
+		else:
+			add 45 to yaw of {_baseloc}
+	else:  # 奇数(左)
+		set {_tweplus} to {_num} + 20
+		if mod({_num}, 20) is 19:
+			add 27 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 18:
+			add 9 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 17:
+			add -9 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 16:
+			add -27 to yaw of {_baseloc}
+		else:
+			add -45 to yaw of {_baseloc}
+	loop 5 times:
+		set {_effloc} to location loop-number meters in front of {_baseloc}
+		set {_g} to a random number between 0 and 255
+		drawDot count 1, particle "redstone", RGB 0, {_g}, 255, center {_effloc}, visibleRange 30
 
 on damage:
 	damage was caused by projectile
