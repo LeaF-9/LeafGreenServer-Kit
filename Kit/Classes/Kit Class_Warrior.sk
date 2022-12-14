@@ -196,9 +196,15 @@ on sneak toggle:
 			set {Stats.%player%::SonicBoom} to {_charge}
 			playSound("block.beacon.ambient", 1, 2, player)  # ボワーンみたいな音
 			# --- ボワーンみたいな演出 ---
-			
+			set {_baseloc} to location of player
+			loop 10 times:
+				set {_effloc} to {_baseloc}
+				add a random number between -5 and 5 to x-coordinate of {_effloc}
+				add a random number between -5 and 5 to z-coordinate of {_effloc}
+				add a random number between 0 and 3 to y-coordinate of {_effloc}
+				kitEffect_SonicBoom_1({_baseloc}, {_effloc})
 			# -------------------------
-			kitEffect_SonicBoom(player)  # Skill Itemの確認,action barとparticleの処理両方
+			kitEffect_SonicBoom_2(player)  # Skill Itemの確認,action barとparticleの処理両方
 		else:
 			send action bar "§cチャージを中断しました" to player
 	else if {Stats.%player%::UltWarrior} is true:
@@ -747,7 +753,20 @@ function kitSkill_Warrior_8(player: player):
 		wait a tick
 	delete {Stats.%{_player}%::SonicBoom}
 
-function kitEffect_SonicBoom(player: player):
+function kitEffect_SonicBoom_1(from: location, to: location):
+	set {_vector} to setVector({_from}, {_to})
+	set {_distance} to distance between {_from} and {_to}
+	set yaw of {_from} to yaw of {_vector}
+	set pitch of {_from} to pitch of {_vector}
+	set {_meter} to {_distance} / 10
+	loop 10 times:
+		set {_eff} to location {_meter} * loop-number meters in front of {_from}
+		set {_g} to a random number between 200 and 255
+		set {_r} to a random number between 0 and {_g}
+		drawDot count 1, particle "redstone", RGB {_r}, {_g}, 255, center {_eff}, visibleRange 30
+		wait a tick
+
+function kitEffect_SonicBoom_2(player: player):
 	# アイテムを所持しているかどうかの確認
 	set {_true} to true
 	while {_true} is true:
@@ -759,7 +778,14 @@ function kitEffect_SonicBoom(player: player):
 		# 持っている際のパーティクル演出とAction Bar表記
 		if {_true} is true:
 			# --- 溜めてるよー的なパーティクル演出 ---
-			# -----------------------------------
+			set {_effloc} to location of {_player}
+			add a random number between -1 and 1 to x-coordinate of {_effloc}
+			add a random number between -1 and 1 to z-coordinate of {_effloc}
+			add a random number between -0.5 and 2.5 to y-coordinate of {_effloc}
+			set {_g} to a random number between 200 and 255
+			set {_r} to a random number between 0 and {_g}
+			drawDot count 1, particle "redstone", RGB {_r}, {_g}, 255, center {_eff}, visibleRange 30
+			# -------------------------------------
 			send action bar "§f§lSonic Boom§eエネルギー保持中 §3§l右クリック§eで§6§l放出" to {_player}
 		wait a tick
 	# 持っていなかった際の処理とAction Bar表記
