@@ -234,6 +234,16 @@ function chargeActionBar(player: player, active: number, max: number, active.col
 	set {_line} to "%{_bracket.color}%[§r %{_line}% %{_bracket.color}%]§r"
 	send action bar {_line} to {_player}
 
+# rollを司る関数
+# 左回りで+
+function setRollLocation(loc: location, roll: num) :: location:
+	set {_reloc} to {_loc}
+	set {_sin} to sin({_roll})
+	if {_sin} >= 0:  # 左にある時 roll = 0 ~ 180
+		add 90 yaw of {_reloc}
+	else:  # 右にある時 roll = 180 ~ 360
+		add -90 yaw of {_reloc}
+
 # ########### Kit PvP's Functions ###########
 
 function checkCT(player: player, skill: text, only: boolean = false) :: boolean:
