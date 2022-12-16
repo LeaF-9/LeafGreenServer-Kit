@@ -353,60 +353,110 @@ on damage:
 function kitSkill_Mercenary_5(player: player):
 	toolCT({_player}, "Mercenary", 5)
 	kitMsg({_player}, "<##483d8b>3方向に鮮血の斬撃を放ちます...")
+	# --- 溜め時の音の演出 ---
+	playSound("item.trident.riptide_1", 1, 0.75, {_player})
+	# ---------------------
+	set {_baseloc} to location of head of {_player}
+	set {_directloc} to {_baseloc}
+	set pitch of {_directloc} to 0
+	# --- mid ---
+	set {_locs::mid} to {_baseloc}
+	# -----------
+	# --- left ---
+	set {_temloc} to {_directloc}
+	set {_sightloc} to location 10 meters to the left of {_temloc}
+	set y-coordinate of {_sightloc} to y-coordinate of {_baseloc}
+	set {_sightloc} to location 15 * cos(pitch of {_baseloc}) meters in front of {_sightloc}
+	set {_vector} to setVector({_baseloc}, {_sightloc})
+	set {_leftloc} to {_baseloc}
+	set yaw of {_leftloc} to yaw of {_vector}
+	set pitch of {_leftloc} to pitch of {_vector}
+	set {_locs::left} to {_leftloc}
+	# ------------
+	# --- right ---
+	set {_temloc} to {_directloc}
+	set {_sightloc} to location 10 meters to the right of {_temloc}
+	set y-coordinate of {_sightloc} to y-coordinate of {_baseloc}
+	set {_sightloc} to location 15 * cos(pitch of {_baseloc}) meters in front of {_sightloc}
+	set {_vector} to setVector({_baseloc}, {_sightloc})
+	set {_rightloc} to {_baseloc}
+	set yaw of {_rightloc} to yaw of {_vector}
+	set pitch of {_rightloc} to pitch of {_vector}
+	add {_locs::right} to {_rightloc}
+	# -------------
+	loop 20 times:  # 溜め時間
+		set {_basenum} to loop-number
+		loop {_locs::*}:
+			set {_index} to loop-index
+			set {_valoc} to loop-value-2
+			{_hitting::%{_index}%} is not set
+			kitEffect_StaxisScythe_1({_locs::%{_index}%}, mod({_basenum}, 5))
+			# --- マーク判定 ---
+			set {_m} to 0
+			loop 15 times:
+				add 1 to {_m}
+				set {_checkloc} to location {_m} meters in front of {_valoc}
+				loop all players in radius 5 around {_checkloc}:
+					kitCheckTeam({_player}, loop-player, false) is true
+					{Kit-Blood::%loop-player%} is set
+					{_hit::%loop-player%} is not set
+					{_trail::*} does not contain loop-player
+					set {_trail::%{_index}%} to loop-player
+			# ----------------
+			# --- ヒット判定 ---
+			loop all entities in radius 2 around {_valoc}:
+				kitCheckTeam({_player}, loop-entity, false) is true
+				{_hit::%loop-entity%} is not set
+				set {_hit::%loop-entity%} to true
+				set {_hitting::%{_index}%} to true
+				delete {_trail::%{_index}%}
+				kitDamage({_player}, loop-entity, 3)
+				# --- ヒット時の音の演出 ---
+				playSound("item.trident.hit", 1, 0.5, loop-entity)
+				# -----------------------
+				# --- ヒット時のパーティクル演出 ---
+				kitEffect_StaxisScythe_2(loop-entity, {_valoc})  # 当たった方向から赤いパーティクルが色々吹き出す感じ
+				# ------------------------------
+			# ----------------
+		wait a tick
 	# --- 発射時の音の演出 ---
 	playSound("item.trident.throw", 1, 0.5, {_player})
 	# ---------------------
-	set {_baseloc} to location of head of {_player}
-	set pitch of {_baseloc} to 0
-	subtract 30 from yaw of {_baseloc}
-	loop 3 times:
-		set {_m} to 1
-		loop 10 times:
-			set {_atkloc} to location {_m} meters in front of {_baseloc}
-			loop all entities in radius 2 around {_atkloc}:
+	loop 15 times:  # 発射時間
+		set {_basenum} to loop-number
+		loop {_locs::*}:
+			set {_index} to loop-index
+			set {_valoc} to loop-value-2
+			{_hitting::%{_index}%} is not set  # 鎌がHIT済でないかどうか
+			if {_trail::%{_index}%} is set:  # マークした敵がいるかどうか
+				set {_vector} to setVector({_valoc}, location of {_trail::%{_index}%})
+				set yaw of {_valoc} to yaw of {_vector}
+				set pitch of {_valoc} to pitch of {_vector}
+				set {_valoc} to location 1.5 meters in front of {_valoc}
+			else:
+				set {_valoc} to location 1 meters in front of {_valoc}
+			kitEffect_StaxisScythe_1({_valoc}, mod({_basenum}, 5))
+			set {_locs::%{_index}%} to {_valoc}
+			# --- ヒット判定 ---
+			loop all entities in radius 2 around {_valoc}:
 				kitCheckTeam({_player}, loop-entity, false) is true
-				{_hit.%id of loop-entity%} is not set
-				set {_hit.%id of loop-entity%} to true
-				loop 5 times:
-					set {_pl} to aroundEffect(loop-entity)
-					drawDot count 1, particle "blockcrack", material redstone block, center {_pl}, visibleRange 30
-				if type of loop-entity is a player:
-					if {Kit-Blood::%loop-entity%} is set:
-						kitDamage({_player}, loop-entity, 5)
-					else:
-						kitDamage({_player}, loop-entity, 3)
-						set {_c} to kitPercentDuel({_player}, loop-entity, 30, true)
-						chance of {_c}%:
-							kitBlood(loop-entity)
-				else:
-					kitDamage({_player}, loop-entity, 3)
-			drawDot count 1, particle "redstone", RGB 255, 0, 0, center {_atkloc}, visibleRange 30
-			set {_lm} to 0
-			set {_bm} to 0
-			loop 2 times:
-				add 0.3 to {_lm}
-				add 0.5 to {_bm}
-				set {_effbaseloc} to location {_lm} meters to the left of {_atkloc}
-				set {_effbaseloc} to location {_bm} meters behind {_effbaseloc}
-				set {_fm} to 0
-				loop 10 times:
-					set {_effloc} to location {_fm} meters in front of {_effbaseloc}
-					drawDot count 1, particle "redstone", RGB 200, 0, 0, center {_effloc}, visibleRange 30
-					add 0.5 to {_fm}
-			set {_rm} to 0
-			set {_bm} to 0
-			loop 2 times:
-				add 0.3 to {_rm}
-				add 0.5 to {_bm}
-				set {_effbaseloc} to location {_rm} meters to the right of {_atkloc}
-				set {_effbaseloc} to location {_bm} meters behind {_effbaseloc}
-				set {_fm} to 0
-				loop 10 times:
-					set {_effloc} to location {_fm} meters in front of {_effbaseloc}
-					drawDot count 1, particle "redstone", RGB 200, 0, 0, center {_effloc}, visibleRange 30
-					add 0.5 to {_fm}
-			add 0.5 to {_m}
-		add 30 to yaw of {_baseloc}
+				{_hit::%loop-entity%} is not set
+				set {_hit::%loop-entity%} to true
+				set {_hitting::%{_index}%} to true
+				delete {_trail::%{_index}%}
+				kitDamage({_player}, loop-entity, 3)
+				# --- ヒット時の音の演出 ---
+				playSound("item.trident.hit", 1, 0.5, loop-entity)
+				# -----------------------
+				# --- ヒット時のパーティクル演出 ---
+				kitEffect_StaxisScythe_2(loop-entity, {_valoc})  # 当たった方向から赤いパーティクルが色々吹き出す感じ
+				# ------------------------------
+			# ----------------
+		wait a tick
+
+function kitEffect_StaxisScythe_1(loc: location, num: number):  # 鎌の回転演出の関数
+
+function kitEffect_StaxisScythe_2(target: entity, loc: location):  # 鎌のヒット演出の関数
 
 function kitSkill_Mercenary_6(player: player):
 	toolCT({_player}, "Mercenary", 6)
