@@ -468,6 +468,10 @@ function kitEffect_StaxisScythe_1(baseloc: location, num: number):  # 鎌の回�
 		add 180 to yaw of {_baseloc}
 		set pitch of {_baseloc} to -18
 	set {_ln.1} to 0
+	set {_R} to a random number out of 106 and 108
+	set {_G} to a random number out of 25 and 39
+	set {_B} to a radnom number out of 23 and 45
+	drawDot count 1, particle "mobspell", RGB {_R}, {_G}, {_B}, center {_el}, visibleRange 30
 	loop 3 times:
 		add 1 to {_ln.1}
 		set {_setmeter.above} to 1.5 + (0.25 * ({_ln.1} - 1))
@@ -492,7 +496,45 @@ function kitEffect_StaxisScythe_1(baseloc: location, num: number):  # 鎌の回�
 				drawDot count 1, particle "redstone", RGB {_R}, 0, 0, center {_el}, visibleRange 30
 			add 15 to {_rad}
 
-function kitEffect_StaxisScythe_2(target: entity, loc: location):  # 鎌のヒット演出の関数
+function kitEffect_StaxisScythe_2(target: entity, directloc: location):  # 鎌のヒット演出の関数
+	# --- プレイヤー側の演出 ---
+	set {_playerloc} to location of {_target}
+	add 1 to y-coordinate of {_playerloc}
+	set yaw of {_playerloc} to yaw of {_directloc}
+	set pitch of {_playerloc} to 0
+	set {_rn} to a random integer between 5 and 10
+	set {_addyaw} to a random number between -30 and 30
+	set {_addpitch} to a random number between -30 and 30
+	loop {_rn} times:
+		set {_R} to a random number between 50 and 150
+		set {_ln} to 0
+		loop 5 times:
+			add 1 to {_ln}
+			set {_bl} to {_playerloc}
+			set {_setyaw} to yaw of {_bl} + {_addyaw} / (6 - {_ln})
+			set {_setpitch} to {_addpitch} / (6 - {_ln})
+			set yaw of {_bl} to {_setyaw}
+			set pitch of {_bl} to {_setpitch}
+			set {_el} to location {_ln} meters in front of {_bl}
+			drawDot count 1, particle "redstone", RGB {_R}, 0, 0, center {_el}, visibleRange 30
+	# -----------------------
+	# --- 鎌側の演出 ---
+	set {_rad} to 0
+	loop 10 times:
+		add 36 to {_rad}
+		set {_R} to a random number between 50 and 150
+		set {_el} to {_directloc}
+		set {_m1} to {_directloc}
+		set pitch of {_m1} to -90
+		set {_t1} to location 1.5 * cos({_rad}) meters in front of {_m1}
+		set {_m2} to {_directloc}
+		set pitch of {_m2} to 0
+		set {_t2} to location 1.5 * sin({_rad}) meters in front of {_m2}
+		set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+		set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+		set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+		drawDot count 1, particle "mobspell", RGB {_R}, 0, 0, center {_el}, visibleRange 30
+	# -----------------
 
 function kitSkill_Mercenary_6(player: player):
 	toolCT({_player}, "Mercenary", 6)
