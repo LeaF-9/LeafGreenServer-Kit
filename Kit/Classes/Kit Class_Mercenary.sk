@@ -24,7 +24,7 @@ on damage:
 						delete {Kit-Shield::%victim%}
 						delete {Kit-ShieldTime::%victim%}
 					kitDamage(attacker, victim, 10000, true)
-					playSound("entity.cod.death", 1, 0.5, victim)
+					playSound("entity.warden.death", 1, 0.5, victim)
 					set {_el} to location of victim
 					add 1 to y-coordinate of {_el}
 					loop 50 times:
@@ -32,10 +32,13 @@ on damage:
 						set pitch of {_el} to a random number between -90 and 90
 						shoot a snowball from {_el} at speed 1
 						set item of shot snowball to a redstone
+					kitMsg(attacker, "§5§l%victim% §4の息の根を止めました...")
+					message formatted "§c§lなまくらの剣が急所に当たってしまった..." to victim
 			else:
 				set {_c} to kitPercentDuel(attacker, victim, 10, true)
 				chance of {_c}%:
 					kitBlood(victim)
+					playSound("entity.cod.death", 1, 0.5, victim)
 		else if {_item.num} is 2:
 			if {Kit-Blood::%victim%} is set:
 				apply poison 3 to victim for 3 seconds
