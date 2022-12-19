@@ -477,35 +477,34 @@ function kitEffect_StaxisScythe_1(baseloc: location, num: number):  # 鎌の回�
 		set {_setmeter.above} to 1.5 + (0.25 * ({_ln.1} - 1))
 		set {_rad} to 45
 		loop 6 times:
-			chance of 50%:
-				set {_el} to {_baseloc}
-				set {_m1} to {_baseloc}
-				set {_t1} to location {_setmeter.above} * cos({_rad}) meters in front of {_m1}
-				set {_m2} to {_baseloc}
-				if pitch of {_m2} <= 0:  # 0,1
-					add -90 to pitch of {_m2}
-				else:
-					add 180 to yaw of {_m2}
-					set {_setpitch} to (90 - abs(pitch of {_m})) * -1
-					set pitch of {_m2} to {_setpitch}
-				set {_t2} to location 1.5 * sin({_rad}) meters in front of {_m2}
-				set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
-				set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
-				set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
-				set {_R} to a random integer between 20 and 100
-				drawDot count 1, particle "redstone", RGB {_R}, 0, 0, center {_el}, visibleRange 30
+			set {_el} to {_baseloc}
+			set {_m1} to {_baseloc}
+			set {_t1} to location {_setmeter.above} * cos({_rad}) meters in front of {_m1}
+			set {_m2} to {_baseloc}
+			if pitch of {_m2} <= 0:  # 0,1
+				add -90 to pitch of {_m2}
+			else:
+				add 180 to yaw of {_m2}
+				set {_setpitch} to (90 - abs(pitch of {_m})) * -1
+				set pitch of {_m2} to {_setpitch}
+			set {_t2} to location 1.5 * sin({_rad}) meters in front of {_m2}
+			set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+			set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+			set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+			set {_R} to a random integer between 20 and 100
+			drawDot count 1, particle "redstone", RGB {_R}, 0, 0, center {_el}, visibleRange 30
 			add 15 to {_rad}
 
 function kitEffect_StaxisScythe_2(target: entity, directloc: location):  # 鎌のヒット演出の関数
 	# --- プレイヤー側の演出 ---
-	set {_playerloc} to location of {_target}
-	add 1 to y-coordinate of {_playerloc}
-	set yaw of {_playerloc} to yaw of {_directloc}
-	set pitch of {_playerloc} to 0
 	set {_rn} to a random integer between 5 and 10
-	set {_addyaw} to a random number between -30 and 30
-	set {_addpitch} to a random number between -30 and 30
 	loop {_rn} times:
+		set {_playerloc} to location of {_target}
+		add 1 to y-coordinate of {_playerloc}
+		set yaw of {_playerloc} to yaw of {_directloc}
+		set pitch of {_playerloc} to 0
+		set {_addyaw} to a random number between -30 and 30
+		set {_addpitch} to a random number between -30 and 30
 		set {_R} to a random number between 50 and 150
 		set {_ln} to 0
 		loop 5 times:
