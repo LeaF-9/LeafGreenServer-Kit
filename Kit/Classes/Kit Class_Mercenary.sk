@@ -454,7 +454,43 @@ function kitSkill_Mercenary_5(player: player):
 			# ----------------
 		wait a tick
 
-function kitEffect_StaxisScythe_1(loc: location, num: number):  # 鎌の回転演出の関数
+function kitEffect_StaxisScythe_1(baseloc: location, num: number):  # 鎌の回転演出の関数
+	if {_num} is 0:
+		set pitch of {_baseloc} to -90
+	else if {_num} is 1:
+		set pitch of {_baseloc} to -18
+	else if {_num} is 2:
+		set pitch of {_baseloc} to 54
+	else if {_num} is 3:
+		add 180 to yaw of {_baseloc}
+		set pitch of {_baseloc} to 54
+	else if {_num} is 4:
+		add 180 to yaw of {_baseloc}
+		set pitch of {_baseloc} to -18
+	set {_ln.1} to 0
+	loop 3 times:
+		add 1 to {_ln.1}
+		set {_setmeter.above} to 1.5 + (0.25 * ({_ln.1} - 1))
+		set {_rad} to 45
+		loop 6 times:
+			chance of 50%:
+				set {_el} to {_baseloc}
+				set {_m1} to {_baseloc}
+				set {_t1} to location {_setmeter.above} * cos({_rad}) meters in front of {_m1}
+				set {_m2} to {_baseloc}
+				if pitch of {_m2} <= 0:  # 0,1
+					add -90 to pitch of {_m2}
+				else:
+					add 180 to yaw of {_m2}
+					set {_setpitch} to (90 - abs(pitch of {_m})) * -1
+					set pitch of {_m2} to {_setpitch}
+				set {_t2} to location 1.5 * sin({_rad}) meters in front of {_m2}
+				set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+				set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+				set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+				set {_R} to a random integer between 20 and 100
+				drawDot count 1, particle "redstone", RGB {_R}, 0, 0, center {_el}, visibleRange 30
+			add 15 to {_rad}
 
 function kitEffect_StaxisScythe_2(target: entity, loc: location):  # 鎌のヒット演出の関数
 
