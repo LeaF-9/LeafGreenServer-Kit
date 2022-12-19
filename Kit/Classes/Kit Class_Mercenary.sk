@@ -88,8 +88,10 @@ on sneak toggle:
 			else if {Stats.%player%::Javelinter} <= 0:
 				set {_true} to false
 			if {_true} is true:
-				subtract 1 from {Stats.%player%::Javelinter}
-				kitWeapon_Mercenary_5(player)
+				if block 0.1 meters below player is not passable:
+					subtract 1 from {Stats.%player%::Javelinter}
+					kitWeapon_Mercenary_5(player)
+					chargeActionBar(player, round({Stats.%player%::Javelinter} / 2), 50)
 				wait a tick
 
 function kitWeapon_Mercenary_4(player: player, distance: num):
@@ -122,7 +124,6 @@ function kitWeapon_Mercenary_4(player: player, distance: num):
 
 function kitWeapon_Mercenary_5(player: player):
 	set {_baseloc} to location of {_player}
-	block 0.1 meters below {_baseloc} is not passable
 	playSound("block.gravel.break", 0.6, 2, {_player})
 	loop all blocks in radius 10 around {_baseloc}:
 		loop-block is passable
@@ -798,6 +799,10 @@ function kitTimerMercenary(player: player):
 			else:
 				if {_player}'s tool is enchanted:
 					disenchant {_player}'s tool
+		else if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 5) is true:
+			if {Stats.%{_player}%::Javelinter} is not set:
+				set {Stats.%{_player}%::Javelinter} to 100
+			chargeActionBar(player, round({Stats.%player%::Javelinter} / 2), 50)
 		loop all players:
 			kitCheckTeam({_player}, loop-player, false) is true
 			{Kit-Blood::%loop-player%} is set
