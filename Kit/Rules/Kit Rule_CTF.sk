@@ -15,11 +15,15 @@ function kitDeathEvent_CTF(attacker: player, victim: player, supporters: players
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
 
 function kitFlagSpawn_CTF(location: location, color: text = "white"):  # Flagを対象地点にスポーンさせる関数
+	set {_mgloc} to {_location}
 	set y-coordinate of {_location} to y-coordinate of {_location} - 1.8
 	set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""%{_color}%_banner"",Count:1b}],HandItems:[{},{}]}"
 	spawn an armor stand at {_location} with nbt {_nbt}
 	set metadata value "gametype" of spawned armor stand to "Kit"
 	set metadata value "flag-color" of spawned armor stand to {_color}
+	spawn a magma cube at {_mgloc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-%{_color}%""}"
+	set metadata value "gametype" of spawned magma cube to "Kit"
+	set metadata value "flag-marker" of spawned magma cube to "true"
 	if {_color} is "white":
 		joinPlayerMsg("Kit", "{@prefix} §f§lFlag §bがスポーンしました!")
 
