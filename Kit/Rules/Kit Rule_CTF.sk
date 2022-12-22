@@ -13,6 +13,11 @@ function kitDeathEvent_CTF(attacker: player, victim: player, supporters: players
 	add 1 to {Kit-Kill.personal::%{_attacker}%}
 	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
+	# ---victimがFlagHolderであった場合の処理---
+	kitFlagDrop_CTF({_victim})
+	# ---------------------------------------
+	# ---Respawn Timeを延長する処理---
+	# ------------------------------
 
 function kitFlagSpawn_CTF(location: location, color: text = "white"):  # Flagを対象地点にスポーンさせる関数
 	set {_mgloc} to {_location}
@@ -41,6 +46,7 @@ function kitFlagGet_CTF(player: player):  # プレイヤーがFlagを獲得し�
 	set {_color} to kitTeamColor({_team})
 	set {_title} to "%{_color}%§l%{_player}% §6が §f§lFlag §6を獲得しました!"
 	loop all players:
+		metadata value "gametype" of loop-player is "Kit"
 		if {_player} is loop-player:  # Flagを獲得した本人
 			send title {_title} with subtitle "§b敵に奪われないよう逃げ回ろう!" to loop-player for 5 seconds
 		else:
@@ -48,12 +54,63 @@ function kitFlagGet_CTF(player: player):  # プレイヤーがFlagを獲得し�
 				send title {_title} with subtitle "§bFlag所有者を敵から守り抜こう!" to loop-player for 5 seconds
 			else:  # 敵がFlagを所有した場合
 				send title {_title} with subtitle "§bFlag所有者を倒して奪い取ろう!" to loop-player for 5 seconds
-	# サウンド通知
+		# ---音の演出---
+		playSound("block.note_block.chime", 1, 1, loop-player, true)
+		# -------------
+	
 
+function kitFlagDrop_CTF(holder: player):  # holderがflagを持っていた際にFlagを落とす処理を行なう関数
+	if {Kit-FlagHolder} is {_holder}:
+		delete {Kit-FlagHolder}
+		set {_team} to {TrueTeam::%{_holder}%}
+		set {_baseloc} to location of {_holder}
+		loop all players:
+			metadata value "gametype" of loop-player is "Kit"
+			# ---Flagが落ちたことを知らせる全体メッセージ---
+			set {_title} to "§f§lFlag §cが§4§lドロップ§cした!"
+			send title {_title} to loop-player for 1 second
+			# ----------------------------------------
+			# ---Flagが落ちたことを知らせる全体サウンド---
+			playSound(entity.blaze.hurt, 1, 0.5, loop-player, true)
+			# --------------------------------------
+		# ---Holderが死んだ位置の確認---
+		if block at {_baseloc} is lava:  # 死んだ位置が溶岩の中
+			# ---溶岩外までドロップ位置を変更---
+			set {_true} to false
+			set {_loc} to {_baseloc}
+			while {_true} is false:
+				set {_loc} to location 1 meters above {_loc}
+				if block at {_loc} is not lava:
+					set {_true} to true
+				else if y-coordinate of {_loc} > 320:
+					set {_true} to true
+			if {_true} is true:
+				set {_baseloc} to {_loc}
+			# -----------------------------
+		if block at {_baseloc} is not passable:  # 死んだ位置がブロックで埋まっている
+			# ---ブロック外までドロップ位置を変更---
+			set {_true} to false
+			set {_loc} to {_baseloc}
+			while {_true} is false:
+				set {_loc} to location 1 meters above {_loc}
+				if block at {_loc} is passable:
+					set {_true} to true
+				else if y-coordinate of {_loc} > 320:
+					set {_true} to true
+			if {_true} is true:
+				set {_baseloc} to {_loc}
+			# --------------------------------
+		if y-coordinate of {_baseloc} > 320:  # 死んだ位置が天空
+			joinPlayerMsg("Kit", "§6§lFlag所持者§cの死亡地点が不正であった為,§f§lFlag§cの所有権は消滅しました")
+		else if y-coordinate of {_baseloc} < -64:  # 死んだ位置が奈落
+			joinPlayerMsg("Kit", "§6§lFlag所持者§cの死亡地点が不正であった為,§f§lFlag§cの所有権は消滅しました")
+		else:
+			kitFlagSpawn_CTF({_baseloc}, {_team})
+		# ---------------------------
 
 function kitTimer_CTF():
 	while {Kit-tochu} is true:
-		# Flagが存在するかチェック
+		# ---Flagが存在するかチェック---
 		delete {_flag.entity}
 		delete {_flag.color}
 		delete {_flag.player}
@@ -61,40 +118,89 @@ function kitTimer_CTF():
 			type of loop-entity is armor stand
 			metadata value "flag-color" of loop-entity is set
 			set {_flag.entity} to loop-entity
-			set {_flag.color} to metadata value of loop-entity
-		# Flagが存在する場合 獲得の処理
+			set {_flag.color} to metadata value "flag-color" of loop-entity
+		# --------------------------
+		# ---Flagが存在する場合 獲得の処理---
 		if {_flag.entity} is set:
 			set {_flag.location} to location of {_flag.entity}
 			add 1.8 to y-coordinate of {_flag.location}
 			set {_dis} to 100
-			# Flag取得者の確認
+			# ---Flag取得者の確認---
 			loop all players in radius 1 around {_flag.location}:
 				metadata value "gametype" of loop-player is "Kit"
 				set {_d} to distance between {_flag.location} and location of loop-player
 				if {_dis} > {_d}:
 					set {_dis} to {_d}
 					set {_flag.player} to loop-player
+			# --------------------
+			# ---Flag取得者が存在した場合---
 			if {_flag.player} is set:
+				# ---中央地点のFlagの場合---
 				if {_flag.color} is "white":
 					kitFlagGet_CTF({_flag.player})
+				# -----------------------
+				# ---色の付いたFlagの場合---
 				else:
+					# ---同じチーム色のFlagだった場合---
 					if {TrueTeam::%{_flag.player}%} is {_flag.color}:
-						kitFlagGet_CTF({_flag.player})
+						kitFlagGet_CTF({_flag.player})  # 再取得の処理
+					# ------------------------------
+					# ---異なるチーム色のFlagだった場合---
 					else:
-						set {_flag.spawntimer} to 0
+						set {_flag.spawntimer} to 0  # 次に中央スポーンする時間を測るタイマーの設定
 						joinPlayerMsg("Kit", "§f§lFlag §7が奪取されました! §b10秒後に再度スポーンします...")
-						loop all entitites:
-							type of loop-entity is armor stand
-							metadata value "flag-color" of loop-entity is set
-							delete loop-entity
-		# Flagを取得中のポイント処理
+						# ---音の演出---
+						loop all players:
+							metadata value "gametype" of loop-player is "Kit"
+							playSound("entity.blaze.death", 1, 0.5, loop-player, true)
+						# -------------
+						# ---リスポーン時間の再調整---
+						# ------------------------
+					# --------------------------------
+				# -------------------------
+				loop all entitites:
+					if type of loop-entity is armor stand:
+						metadata value "flag-color" of loop-entity is set
+						delete loop-entity
+					else if type of loop-entity is magma cube:
+						metadata value "flag-marker" of loop-entity is set
+						delete loop-entity
+			# ---------------------------
+		# ---------------------------------
+		# ---Flagとその所有者どちらも存在しない場合の処理---
+		else if {Kit-FlagHolder} is not set:
+			if {_flag.spawntimer} is not set:
+				set {_flag.spawntimer} to 0
+			add 1 to {_flag.spawntimer}
+			if {_flag.spawntimer} >= 10:
+				delete {_flag.spawntimer}
+				set {_flag.spawnloc} to a random location out of {Kit-GameStageFlags::*}
+				kitFlagSpawn_CTF({_flag.spawnloc})
+		# -------------------------------------------
+		# ---Flagを取得中のポイント処理---
 		if {Kit-FlagHolder} is set:
 			set {_holder.teamcolor} to {TrueTeam::%{Kit-FlagHolder}%}
 			add {TeamBuff::%{_holder.teamcolor}%} to {Kit-FlagPoint::%{_holder.teamcolor}%}
-			# スコアボード設定
-			# サウンド設定
-			# 勝利ポイントに達した際の処理
-		# Flag所持者が存在しない際のFlag再スポーン処理
-		else:
-
+			add 1 to {Kit-Hold.personal::%{Kit-FlagHolder}%}
+			# ---スコアボード設定---
+			set {_point.rounded} to floor({Kit-FlagPoint::%{_holder.teamcolor}%})
+			if {_holder.teamcolor} is "red":
+				kitScoreGlobal(7, "§c赤§7: §6%{_point.rounded}%")
+			else if {_holder.teamcolor} is "blue":
+				kitScoreGlobal(6, "§9青§7: §6%{_point.rounded}%")
+			else if {_holder.teamcolor} is "yellow":
+				kitScoreGlobal(5, "§e黄§7: §6%{_point.rounded}%")
+			else if {_holder.teamcolor} is "green":
+				kitScoreGlobal(4, "§a緑§7: §6%{_point.rounded}%")
+			# -------------------
+			# ---サウンド設定---
+			# 処理保留
+			# ----------------
+			# ---勝利ポイントに達した際の処理---
+			if {Kit-FlagPoint::%{_holder.teamcolor}%} >= {Kit-GameStage::goal}:
+				add {_holder.teamcolor} to {Kit-WinTeam::*}
+				gameMsg("Kit", "§c§l試合終了!")
+				execute console command "/timer end Kit-CTF"
+			# -----------------------------
+		# ----------------------------
 		wait a second

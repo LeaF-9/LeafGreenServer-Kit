@@ -86,6 +86,13 @@ function kitGameEnd(rule: text):
 			loop-value = {_maxData}
 			add loop-index to {_highplayer::*}
 		gameMsg("Kit", "§6§lTop Breaker§7: §e§l%{_highplayer::*}% §9%{_maxData}% Breaks")
+	# CTF戦
+	else if {_rule} is "CTF":
+		set {_maxData} to max({Kit-Hold.personal::*})
+		loop {Kit-Hold.personal::*}:
+			loop-value = {_maxData}
+			add loop-index to {_highplayer::*}
+		gameMsg("Kit", "§6§lTop Holder§7: §e§l%{_highplayer::*}% §9%{_maxData}% Seconds")
 	# 自分の戦績と勝利チームのタイトル表示
 	gameMsg("Kit", " ")
 	loop all players:
@@ -107,6 +114,7 @@ function kitGameEnd(rule: text):
 	delete {Kit-KD.personal::*}
 	delete {Kit-Break.team::*}
 	delete {Kit-Break.personal::*}
+	delete {Kit-Hold.personal::*}
 	delete {Kit-TeamLeft.Core}
 	delete {Kit-FlagPoint::*}
 	delete {Kit-WinTeam::*}
