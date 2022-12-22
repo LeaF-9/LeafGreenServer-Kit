@@ -521,10 +521,16 @@ command /testhd:
 # 	broadcast "lambdaのテスト成功 実行者は%{_player}%"
 # ----------------------
 
-command /testlead <text>:
+command /testlead:
 	trigger:
 		spawn a magma cube at location 3 meters above player with nbt compound from "{NoAI:1b}"
-		leash spawned magma cube to target entity of player
+		leash spawned magma cube to player
+		loop 200 times:
+			if distance between player and spawned magma cube > 3:
+				set {_vector} to setVector(location of spawned magma cube, location of player)
+				set velocity of spawned magma cube to {_vector}
+			wait a tick
+		delete spawned magma cube
 
 # command /testwizardult:
 # 	trigger:
