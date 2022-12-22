@@ -51,49 +51,56 @@ on respawn:
 				send action bar "§d§l復活しました!" to player
 				stop
 		delete {Kit-Respawn::%player%}
-		set {Kit-DeadPlayer::%player%} to true
+		set {Kit-DeadPlayer::%player%} to true  # 多分bishop等が途中で復活させた時に使う変数
 		set player's gamemode to spectator
 		if {Kit-SpawnTime::%player%} is set:
-			set {_time} to {Kit-SpawnTime::%player%}
+			set {Kit-Spawning::%player%} to {Kit-SpawnTime::%player%}
 			delete {Kit-SpawnTime::%player%}
-		else:
-			set {_time} to 5
-		set {_timer} to {_time} * 20
-		set {_aptime} to "%{_time}% seconds" parsed as time span
-		apply blindness 1 to player for {_aptime}
-		loop {_timer} times:
-			if {Kit-DeadPlayer::%player%} is true:
-				send title "§c§l死んでしまった!" with subtitle "§3§l%{_time}% §b秒後に復活します..." to player for 1 ticks with fadein 0 second
-				if player does not have blindness:
-					apply blindness 1 to player for {_aptime}
+		if {Kit-Spawning::%player%} is not set:
+			set {Kit-Spawning::%player%} to 5
+		set {Kit-Spawning::%player%} to {Kit-Spawning::%player%} * 20
+		while {Kit-Spawning::%player%} is set:
+			if {Kit-Spawning::%player%} <= 0:
+				delete {Kit-Spawning::%player%}
+			else if {Kit-DeadPlayer::%player%} is true:
+				set {_time} to {_Kit-Spawning} / 20
+				send title "§c§l死んでしまった!" with subtitle "§3§l%{_time}% §b秒後に復活します..." to player for 1 ticks with fadein 0 second and fadeout 0 second
+				apply blindness 1 to player for 1.5 seconds replacing existing effect
+				subtract 1 from {Kit-Spawning::%player%}
 				wait a tick
+			else:
+				delete {Kit-Spawning::%player%}
 		loop all entities:
 			type of loop-entity is armor stand
 			metadata value "deadplayer" of loop-entity is "%player%"
 			delete loop-entity
-		set {_tp} to a random location out of {Kit-GameStageRespawns.%{TrueTeam::%player%}%::*}
-		teleport player to {_tp}
-		set player's gamemode to survival
-		{Kit-tochu} is true
-		openKitInv(player)
-		execute console command "/cclass %player% Kit-GameInv"
-		apply blindness 1 to player for 10000000000 seconds
-		apply slowness 10 to player for 10000000000 seconds
-		apply jump boost -10 to player for 10000000000 seconds
-		apply resistance 10 to player for 10000000000 seconds
-		set {Kit-RespawnKill::%player%} to true
-		set {Kit-RespawnPoint::%player%} to {_tp}
-		loop 10 times:
-			wait a second
-			if {Kit-RespawnKill::%player%} is true:
-				set {_dis} to distance between player and {_tp}
-				if {_dis} >= 10:
-					delete {Kit-RespawnKill::%player%}
-				else:
-					heal player by 10 hearts
-		delete {Kit-RespawnKill::%player%}
-		delete {Kit-RespawnPoint::%player%}
-		send action bar "§dリスポーンキル防止の無敵化が解除されました!" to player
+		if {Kit-DeadPlayer::%player%} is true:
+			delete {Kit-DeadPlayer::%player%}
+			set {_tp} to a random location out of {Kit-GameStageRespawns.%{TrueTeam::%player%}%::*}
+			teleport player to {_tp}
+			set player's gamemode to survival
+			{Kit-tochu} is true
+			openKitInv(player)
+			execute console command "/cclass %player% Kit-GameInv"
+			apply blindness 1 to player for 10000000000 seconds
+			apply slowness 10 to player for 10000000000 seconds
+			apply jump boost -10 to player for 10000000000 seconds
+			apply resistance 10 to player for 10000000000 seconds
+			set {Kit-RespawnKill::%player%} to true
+			set {Kit-RespawnPoint::%player%} to {_tp}
+			loop 10 times:
+				wait a second
+				if {Kit-RespawnKill::%player%} is true:
+					set {_dis} to distance between player and {_tp}
+					if {_dis} >= 10:
+						delete {Kit-RespawnKill::%player%}
+					else:
+						heal player by 10 hearts
+			delete {Kit-RespawnKill::%player%}
+			delete {Kit-RespawnPoint::%player%}
+			send action bar "§dリスポーンキル防止の無敵化が解除されました!" to player
+		else:  # 途中で復活させた際の処理
+			log "まだ処理を作ってないよ"
 
 on damage of player:
 	{Kit-tochu} is true

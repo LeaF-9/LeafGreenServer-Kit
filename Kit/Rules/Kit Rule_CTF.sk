@@ -16,8 +16,28 @@ function kitDeathEvent_CTF(attacker: player, victim: player, supporters: players
 	# ---victimがFlagHolderであった場合の処理---
 	kitFlagDrop_CTF({_victim})
 	# ---------------------------------------
-	# ---Respawn Timeを延長する処理---
-	# ------------------------------
+
+# ---Respawn Timeを延長する処理---
+on death of player:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "CTF"
+	if {Kit-FlagHolder} is set:
+		{Kit-FlagHolder} is not victim
+		if kitCheckTeam(victim, {Kit-FlagHolder}, true, true) is true:
+			set {_dis} to 10000
+			loop {Kit-GameStageRespawns.%{TrueTeam::%{Kit-FlagHolder}%}%::*}:
+				set {_d} to distance between victim and loop-value
+				if {_d} < {_dis}:
+					set {_dis} to {_d}
+			if {_dis} <= 30:
+				set {_addTime} to round(30 - {_dis})
+				set {_respawnTime} to 10 + {_addTime}
+			else:
+				set {_respawnTime} to 10
+			# --- !!! 注意 !!! この値更新がリスポーン時間変更に間に合うかどうか不明! 確認が必要 ---
+			set {Stats.%victim%::SpawnTime} to {_respawnTime}
+			# --------------------------------------------------------------------------
+# ------------------------------
 
 function kitFlagSpawn_CTF(location: location, color: text = "white"):  # Flagを対象地点にスポーンさせる関数
 	set {_mgloc} to {_location}
@@ -155,6 +175,10 @@ function kitTimer_CTF():
 							playSound("entity.blaze.death", 1, 0.5, loop-player, true)
 						# -------------
 						# ---リスポーン時間の再調整---
+						loop all players:
+							{TrueTeam::%loop-player%} is {_flag.color}
+							{Kit-Spawning::%loop-player%} > 100
+							set {Kit-Spawning::%loop-player%} to 100
 						# ------------------------
 					# --------------------------------
 				# -------------------------
