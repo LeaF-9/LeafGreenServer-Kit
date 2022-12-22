@@ -311,73 +311,11 @@ every a second:
 		if distance between loop-sheep and {Kit-GameStage::voidtp-%{_name}%} is more than 10:
 			teleport loop-sheep to {Kit-GameStage::voidtp-%{_name}%}
 
-command /stwend:
-	permission: sk.admin
-	trigger:
-		loop all players:
-			{Join::%loop-player%} is "Kit"
-			set gamemode of loop-player to spectator
-		wait 5 seconds
-		gameMsg("Kit", "§2----------=====§5Game Result§2=====----------")
-		gameMsg("Kit", " ")
-		gameMsg("Kit", "§cRed§7: §6Wool: §a%{Kit-TeamWool::red}% §6Kill: §a%{Kit-TeamKills::red}%")
-		gameMsg("Kit", "§9Blue§7: §6Wool: §a%{Kit-TeamWool::blue}% §6Kill: §a%{Kit-TeamKills::blue}%")
-		gameMsg("Kit", "§eYellow§7: §6Wool: §a%{Kit-TeamWool::yellow}% §6Kill: §a%{Kit-TeamKills::yellow}%")
-		gameMsg("Kit", "§aGreen§7: §6Wool: §a%{Kit-TeamWool::green}% §6Kill: §a%{Kit-TeamKills::green}%")
-		gameMsg("Kit", " ")
-		if size of {Kit-WinTeam::*} is 0:
-			set {_maxWool} to max({Kit-TeamWool::*})
-			loop {Kit-TeamWool::*}:
-				loop-value = {_maxWool}
-				add loop-index to {Kit-WinTeam::*}
-		loop {Kit-WinTeam::*}:
-			set {_color} to kitTeamColor(loop-value)
-			set {_text} to "%{_color}%§l%loop-value%§r"
-			add {_text} to {_winteams::*}
-		gameMsg("Kit", "§6§lWINNER: %{_winteams::*}%")
-		loop all players:
-			{Kit-WinTeam::*} contains {TrueTeam::%loop-player%} 
-			execute console command "/givecoin %loop-player% 100 勝利"
-		gameMsg("Kit", " ")
-		set {_maxKill} to max({Kit-StWKill::*})
-		loop {Kit-StWKill::*}:
-			loop-value = {_maxKill}
-			add loop-index to {_maxKiller::*}
-		gameMsg("Kit", "§4§lTopKiller§7: <##ffffff>§l%{_maxKiller::*}% §c%{_maxKill}% Kills")
-		set {_maxWool} to max({Kit-WoolPlace::*})
-		loop {Kit-WoolPlace::*}:
-			loop-value = {_maxWool}
-			add loop-index to {_maxWooler::*}
-		gameMsg("Kit", "§6§lTopPlacer §7: <##ffffff>§l%{_maxWooler::*}% §e%{_maxWool}% Wools")
-		gameMsg("Kit", " ")
-		gameMsg("Kit", "§bチームの戦績§7:")
-		loop all players:
-			loop all players:
-				{TrueTeam::%loop-player-2%} is {TrueTeam::%loop-player-1%}
-				message "§e%loop-player-2%§7: §6Kill:§9%{Kit-StWKill::%loop-player-2%}% §ePlace:§9%{Kit-WoolPlace::%loop-player-2%}%" to loop-player-1
-		gameMsg("Kit", " ")
-		loop all players:
-			message "§aあなたの戦績§7: §4Kill: %{Kit-StWKill::%loop-player%}% §1Death: %{Kit-StWDeath::%loop-player%}% §6K/D: %{Kit-StWKD::%loop-player%}% §aWool: %{Kit-WoolPlace::%loop-player%}%" to loop-player
-		loop {Kit-GameStageWools::*}:
-			set block at loop-value to white wool
-		loop all players:
-			send title "§6ゲーム終了!" with subtitle "%{_winteams::*}% §5の勝利です!" to loop-player for 10 seconds
-			delete {damager.%loop-player%::*}
-		kitGameInsert()
-		wait 10 seconds
-		delete {LastKiller::*}
-		delete {Kit-TeamKills::*}
-		delete {Kit-TeamDeaths::*}
-		delete {Kit-StWKill::*}
-		delete {Kit-StWDeath::*}
-		delete {Kit-StWKD::*}
-		delete {Kit-WoolPlace::*}
-		delete {Kit-TeamWool::*}
-		delete {Kit-WinTeam}
-		delete {Kit-AttackPoint::*}
-		delete {Kit-TeamBuff::*}
-		execute console command "/kjclear"
-		execute console command "/sk disable Kit StW"
-
-on quit:
-	delete {damager.%player%::*}
+function kitTimer_BH():
+	set {_timer.balloon} to 0
+	while {Kit-tochu} is true:
+		add 1 to {_timer.balloon}
+		if {_timer.balloon} >= 30:
+			set {_timer.balloon} to 0
+			gameMsg("Kit", "§b§l---===[Balloon spawned!]===---")
+		wait a second

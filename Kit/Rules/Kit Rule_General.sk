@@ -23,6 +23,14 @@ function kitGameStart(rule: text):
 		set {_flagloc} to {Kit-GameStageFlags::1}
 		kitFlagSpawn_CTF({_flagloc})
 		kitTimer_CTF()
+	else if {_rule} is "BH":
+		set {Kit-Balloons::red} to 0
+		set {Kit-Balloons::blue} to 0
+		set {Kit-Balloons::yellow} to 0
+		set {Kit-Balloons::green} to 0
+		loop {Kit-GameStageBalloons::*}:
+			kitBalloonSpawn_BH(loop-value)
+		kitTimer_BH()
 	else if {_rule}
 
 command /gameend <text>:
@@ -94,6 +102,13 @@ function kitGameEnd(rule: text):
 			loop-value = {_maxData}
 			add loop-index to {_highplayer::*}
 		gameMsg("Kit", "§6§lTop Holder§7: §e§l%{_highplayer::*}% §9%{_maxData}% Seconds")
+	# BH戦
+	else if {_rule} is "BH":
+		set {_maxData} to max({Kit-Carry.personal::*})
+		loop {Kit-Carry.personal::*}:
+			loop-value = {_maxData}
+			add loop-index to {_highplayer::*}
+		gameMsg("Kit", "§6§lTop Carrier§7: §e§l%{_highplayer::*}% §9%{_maxData}% Balloons")
 	# 自分の戦績と勝利チームのタイトル表示
 	gameMsg("Kit", " ")
 	loop all players:
@@ -118,9 +133,11 @@ function kitGameEnd(rule: text):
 	delete {Kit-Hold.personal::*}
 	delete {Kit-TeamLeft.Core}
 	delete {Kit-FlagPoint::*}
+	delete {Kit-FlagHolder}
+	delete {Kit-Balloons::*}
+	delete {Kit-Carry.personal::*}
 	delete {Kit-WinTeam::*}
 	delete {Kit-TeamBuff::*}
-	delete {Kit-FlagHolder}
 	execute console command "/kjclear"
 
 function kitRuleVariable(rule: text) :: text:  # 結果発表の際に表示するチームデータの変数名を返す関数
@@ -130,4 +147,6 @@ function kitRuleVariable(rule: text) :: text:  # 結果発表の際に表示す�
 		set {_var} to "Kit-TotalCore"
 	else if {_rule} is "CTF":
 		set {_var} to "Kit-FlagPoint"
+	else if {_rule} is "BH":
+		set {_var} to "Kit-Balloons"
 	return {_var}
