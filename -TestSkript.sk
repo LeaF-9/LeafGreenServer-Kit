@@ -146,31 +146,32 @@
 # 		send arg 2 packet {_pkt}
 
 # skript-packet's glowing packet
-command /sendpkt1 <player> <player>: # makes arg-1 glow for the sender
-	executable by: players
-	trigger:
-		set {_pkt} to new play_server_entity_metadata packet
-		set field 0 of {_pkt} to (arg-1).getEntityId()
-		set {_dw} to new data watcher for arg 1
-		set datawatcher index 0 of {_dw} to (64 as byte)  # (64 as byte)
-		set field 1 of {_pkt} to {_dw}
-		loop 100 times:
-			send arg 2 packet {_pkt}
-			wait a tick
-		set {_pkt} to new play_server_entity_metadata packet
-		set field 0 of {_pkt} to (arg-1).getEntityId() # set the entity using EID
-		set {_dw} to new data watcher for arg 1
-		set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
-		set field 1 of {_pkt} to {_dw}
-		send arg 2 packet {_pkt}
+# command /sendpkt1 <player> <player>: # makes arg-1 glow for the sender
+# 	executable by: players
+# 	trigger:
+# 		set {_pkt} to new play_server_entity_metadata packet
+# 		set field 0 of {_pkt} to (arg-1).getEntityId()
+# 		set {_dw} to new data watcher for arg 1
+# 		set datawatcher index 0 of {_dw} to (64 as byte)  # (64 as byte)
+# 		set field 1 of {_pkt} to {_dw}
+# 		loop 100 times:
+# 			send arg 2 packet {_pkt}
+# 			wait a tick
+# 		set {_pkt} to new play_server_entity_metadata packet
+# 		set field 0 of {_pkt} to (arg-1).getEntityId() # set the entity using EID
+# 		set {_dw} to new data watcher for arg 1
+# 		set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
+# 		set field 1 of {_pkt} to {_dw}
+# 		send arg 2 packet {_pkt}
 
-command /sendpkt2:
-	executable by: players
-	trigger:
-		set {_pkt} to new play_server_camera packet
-		loop all creepers in radius 5 around player:
-			set int field 0 of {_pkt} to id of loop-creeper
-		send player packet {_pkt}
+# Spectatorの観戦の疑似再現
+# command /sendpkt2:
+# 	executable by: players
+# 	trigger:
+# 		set {_pkt} to new play_server_camera packet
+# 		loop all creepers in radius 5 around player:
+# 			set int field 0 of {_pkt} to id of loop-creeper
+# 		send player packet {_pkt}
 
 command /ptst:
 	trigger:
@@ -329,8 +330,9 @@ command /testsize:
 #	victim's display name is "%attacker%"
 #	delete victim
 
-function test() :: boolean:
-	return true
+# なにこれ
+# function test() :: boolean:
+# 	return true
 
 #command /testdamage:
 #	trigger:
@@ -359,51 +361,53 @@ function test() :: boolean:
 #	broadcast "%victim%"
 #	broadcast "%type of victim%"
 
-on shoot:
-	message "%projectile%" to shooter
+# projectileの名称
+# on shoot:
+# 	message "%projectile%" to shooter
 
-command /testkart:
-	trigger:
-		spawn an armor stand at location of player
-		make player ride spawned armor stand
-		wait 10 seconds
-		loop all entities in radius 3 around player:
-			type of loop-entity is an armor stand
-			delete loop-entity
+# KARTのテスト
+# command /testkart:
+# 	trigger:
+# 		spawn an armor stand at location of player
+# 		make player ride spawned armor stand
+# 		wait 10 seconds
+# 		loop all entities in radius 3 around player:
+# 			type of loop-entity is an armor stand
+# 			delete loop-entity
 
-on packet event play_client_steer_vehicle:
-	set {_s} to float pnum 0 of event-packet
-	set {_f} to float pnum 1 of event-packet
-	set {_j} to boolean pinfo 0 of event-packet
-	if {_s} is higher than 0:
-		set {_button2} to "A"
-	else if {_s} is not 0:
-		set {_button2} to "D"
-	if {_f} is higher than 0:
-		set {_button} to "W"
-	else if {_f} is not 0:
-		set {_button} to "S"
-	else if {_j} is not set:
-		stop
-	set {_loc} to location of vehicle of player
-	set pitch of {_loc} to 0
-	if {_button2} is "A":
-		add -10 to yaw of {_loc}
-		set (vehicle of player).getHandle().yaw to yaw of {_loc}
-		set {_v} to setVector({_loc}, location 1 meter in front of {_loc})
-		set velocity of vehicle of player to {_v}
-	else if {_button2} is "D":
-		set {_v} to velocity of vehicle of player
-		add 10 to yaw of {_loc}
-		set (vehicle of player).getHandle().yaw to yaw of {_loc}
-		set {_v} to setVector({_loc}, location 1 meter in front of {_loc})
-		set velocity of vehicle of player to {_v}
-	if {_button} is "W":
-		set {_v} to setVector({_loc}, location 10 meters in front of {_loc})
-		set velocity of vehicle of player to {_v}
-	else if {_button} is "S":
-		set {_v} to setVector({_loc}, location 10 meters behind {_loc})
-		set velocity of vehicle of player to {_v}
+# on packet event play_client_steer_vehicle:
+# 	set {_s} to float pnum 0 of event-packet
+# 	set {_f} to float pnum 1 of event-packet
+# 	set {_j} to boolean pinfo 0 of event-packet
+# 	if {_s} is higher than 0:
+# 		set {_button2} to "A"
+# 	else if {_s} is not 0:
+# 		set {_button2} to "D"
+# 	if {_f} is higher than 0:
+# 		set {_button} to "W"
+# 	else if {_f} is not 0:
+# 		set {_button} to "S"
+# 	else if {_j} is not set:
+# 		stop
+# 	set {_loc} to location of vehicle of player
+# 	set pitch of {_loc} to 0
+# 	if {_button2} is "A":
+# 		add -10 to yaw of {_loc}
+# 		set (vehicle of player).getHandle().yaw to yaw of {_loc}
+# 		set {_v} to setVector({_loc}, location 1 meter in front of {_loc})
+# 		set velocity of vehicle of player to {_v}
+# 	else if {_button2} is "D":
+# 		set {_v} to velocity of vehicle of player
+# 		add 10 to yaw of {_loc}
+# 		set (vehicle of player).getHandle().yaw to yaw of {_loc}
+# 		set {_v} to setVector({_loc}, location 1 meter in front of {_loc})
+# 		set velocity of vehicle of player to {_v}
+# 	if {_button} is "W":
+# 		set {_v} to setVector({_loc}, location 10 meters in front of {_loc})
+# 		set velocity of vehicle of player to {_v}
+# 	else if {_button} is "S":
+# 		set {_v} to setVector({_loc}, location 10 meters behind {_loc})
+# 		set velocity of vehicle of player to {_v}
 
 command /testsight:
 	trigger:
@@ -427,12 +431,12 @@ command /testdamageanimation:
 # gamemode関係なしにon inventory clickを発生させるSkript
 # slotはskriptのnumberとは異なる 
 # 参照.player inventory: https://c4k3.github.io/wiki.vg/images/archive/1/13/20151231205457!Inventory-slots.png
-on packet event play_client_window_click:
-	int field 1 of event-packet is 36
-	message "Test Succeed!" to player
+# on packet event play_client_window_click:
+# 	int field 1 of event-packet is 36
+# 	message "Test Succeed!" to player
 
-on inventory click:
-	broadcast "%type of clicked item%"
+# on inventory click:
+# 	broadcast "%type of clicked item%"
 
 command /testyawcheck:
 	trigger:
@@ -442,16 +446,16 @@ command /testyawcheck:
 		if yaw of player is 450:
 			broadcast "check成功"
 
-on projectile collide:
-	broadcast "shine"
+# on projectile collide:
+# 	broadcast "shine"
 
-on heal:
-	broadcast "%heal reason%"
+# on heal:
+# 	broadcast "%heal reason%"
 
-command /testsk:
-	trigger:
-		set {_v} to setVector(location of player, location 1 meters in front of player)
-		draw 2 style 2 redstone particles at location of player with direction {_v}, speed 1 and RGB 20, 50, 80, keepFor 1 second
+# command /testsk:
+# 	trigger:
+# 		set {_v} to setVector(location of player, location 1 meters in front of player)
+# 		draw 2 style 2 redstone particles at location of player with direction {_v}, speed 1 and RGB 20, 50, 80, keepFor 1 second
 
 command /testyamlload:
 	trigger:
@@ -487,35 +491,40 @@ command /testhd:
 		wait 10 seconds
 		set display name of player to "%name of player%"
 
-on rightclick holding a bone:
-	remove player's tool from player
-	give a bonemeal to player
+# on rightclick holding a bone:
+# 	remove player's tool from player
+# 	give a bonemeal to player
 
-on rightclick holding a bonemeal:
-	broadcast "hey dame"
+# on rightclick holding a bonemeal:
+# 	broadcast "hey dame"
 
 # TNTの爆発時間テスト
-on rightclick holding a tnt:
-	spawn a primed tnt at player
-	setFuseTime(spawned primed tnt, 20)
+# on rightclick holding a tnt:
+# 	spawn a primed tnt at player
+# 	setFuseTime(spawned primed tnt, 20)
 
 # NBTタグをいじるテスト
-on rightclick holding a green wool:
-	set {_item} to player's tool
-	set {_nbt} to nbt item compound of player's tool
-	broadcast "%{_nbt}%"
-	set tag "kit" of {_nbt} to "Knight"
-	set player's tool to {_item} with nbt {_nbt}
+# on rightclick holding a green wool:
+# 	set {_item} to player's tool
+# 	set {_nbt} to nbt item compound of player's tool
+# 	broadcast "%{_nbt}%"
+# 	set tag "kit" of {_nbt} to "Knight"
+# 	set player's tool to {_item} with nbt {_nbt}
 
 # --- lambdaのテスト(失敗) ---
-command /testlambda:
-	trigger:
-		set {_a} to "testlambda"
-		set {_lambda} to [%{_a}%(%player%)]
+# command /testlambda:
+# 	trigger:
+# 		set {_a} to "testlambda"
+# 		set {_lambda} to [%{_a}%(%player%)]
 
-function testlambda(player: player):
-	broadcast "lambdaのテスト成功 実行者は%{_player}%"
+# function testlambda(player: player):
+# 	broadcast "lambdaのテスト成功 実行者は%{_player}%"
 # ----------------------
+
+command /testlead <text>:
+	trigger:
+		spawn a magma cube at player with nbt compound from "{NoGravity:1b}"
+		leash spawned magma cube to player
 
 # command /testwizardult:
 # 	trigger:
