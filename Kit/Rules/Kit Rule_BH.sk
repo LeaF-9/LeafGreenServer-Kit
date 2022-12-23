@@ -1,19 +1,27 @@
 ﻿# 用意すべきyaml項目:
 # - Kit-GameStageBalloons::*
 
-command /kit-StWSetting:
-	permission: sk.admin
-	trigger:
-		set {Kit-TeamWool::red} to 0
-		set {Kit-TeamWool::blue} to 0
-		set {Kit-TeamWool::yellow} to 0
-		set {Kit-TeamWool::green} to 0
-		loop 20 times:
-			loop 30 times:
-				if {Kit-tochu} is true:
-					wait a second
-			if {Kit-tochu} is true:
-				kitWoolSpawn()
+function kitDeathEvent_BH(attacker: player, victim: player, supporters: players):
+	# Death情報の更新
+	add 1 to {Kit-Death.personal::%{_victim}%}
+	kitScorePersonal({_victim}, 1, "§4%{Kit-Kill.personal::%{_victim}%}% §7/ §1%{Kit-Death.personal::%{_victim}%}%")
+	set {Kit-KD.personal::%{_victim}%} to {Kit-Kill.personal::%{_victim}%} / {Kit-Death.personal::%{_victim}%}
+	# Kill情報の更新
+	add 1 to {Kit-Kill.personal::%{_attacker}%}
+	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
+	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
+	# ---victimがBalloon Carrierであった場合の処理---
+	kitDropBalloons_BH({_victim})
+	# ---------------------------------------------
+
+function kitSpawnBalloon_BH(loc: location, color: text = "white"):  # 指定位置に設置状態のBalloonを召喚する関数
+	# ---地面に留めるためのエンティティ召喚---
+	set {_groundloc} to {_loc}
+	set y-coordinate of {_groundloc} to floor(y-coordinate of {_groundloc})
+	set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b}"
+	spawn an armor stand at {_location} with nbt {_nbt}
+	# -------------------------------------
+
 
 function kitWoolSpawn():
 	loop {Kit-GameStageWools::*}:
@@ -39,18 +47,6 @@ function kitWoolSpawn():
 		gameMsg("Kit", "§c§l---===[Special Wool spawned!]===---")
 	else:
 		gameMsg("Kit", "§b§l---===[Wool spawned!]===---")
-
-on death of player:
-	{Join::%victim%} is "Kit"
-	add 1 to {Kit-StWDeath::%victim%}
-	kitScorePersonal(victim, 1, "§4%{Kit-StWKill::%victim%}% §7/ §1%{Kit-StWDeath::%victim%}%")
-	add 1 to {Kit-TeamDeaths::%{TrueTeam::%victim%}%}
-	set {Kit-StWKD::%victim%} to {Kit-StWKill::%victim%} / {Kit-StWDeath::%victim%}
-	if {LastKiller::%victim%} is set:
-		add 1 to {Kit-StWKill::%{LastKiller::%victim%}%}
-		kitScorePersonal({LastKiller::%victim%}, 1, "§4%{Kit-StWKill::%{LastKiller::%victim%}%}% §7/ §1%{Kit-StWDeath::%{LastKiller::%victim%}%}%")
-		set {Kit-StWKD::%{LastKiller::%victim%}%} to {Kit-StWKill::%{LastKiller::%victim%}%} / {Kit-StWDeath::%{LastKiller::%victim%}%}
-		add 1 to {Kit-TeamKills::%{TrueTeam::%{LastKiller::%victim%}%}%}
 
 on break of white wool:
 	cancel event
@@ -317,5 +313,7 @@ function kitTimer_BH():
 		add 1 to {_timer.balloon}
 		if {_timer.balloon} >= 30:
 			set {_timer.balloon} to 0
-			gameMsg("Kit", "§b§l---===[Balloon spawned!]===---")
+			gameMsg("Kit", "§b§l---===[Balloons spawned!]===---")
+			loop {Kit-GameStageBalloons::*}:
+				kitSpawnBalloon_BH(loop-value)
 		wait a second
