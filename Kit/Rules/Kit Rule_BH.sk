@@ -15,12 +15,62 @@ function kitDeathEvent_BH(attacker: player, victim: player, supporters: players)
 	# ---------------------------------------------
 
 function kitSpawnBalloon_BH(loc: location, color: text = "white"):  # 指定位置に設置状態のBalloonを召喚する関数
+	set {_uuid} to a random uuid
 	# ---地面に留めるためのエンティティ召喚---
 	set {_groundloc} to {_loc}
 	set y-coordinate of {_groundloc} to floor(y-coordinate of {_groundloc})
 	set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b}"
-	spawn an armor stand at {_location} with nbt {_nbt}
+	spawn an armor stand at {_groundloc} with nbt {_nbt}
+	set metadata value "gametype" of spawned armor stand to "Kit"
+	set metadata value "balloon-type" of spawned armor stand to "base"
+	set metadata value "balloon-uuid" of spawned armor stand to {_uuid}
+	set {_entity.base} to spawned armor stand
 	# -------------------------------------
+	# ---マーカーエンティティ召喚---
+	set {_markerloc} to {_loc}
+	subtract 0.25 from y-coordinate of {_markerloc}
+	loop 3 times:
+		{_true} is not set
+		if block at location 1 meters above {_markerloc} is not passable:
+			set {_true} to true
+		else:
+			set {_markerloc} to location 1 meters above {_markerloc}
+	set {_nbt} to nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}],Team:""kit-%{_color}%""}"
+	spawn a magma cube at {_markerloc} with nbt {_nbt}
+	set metadata value "gametype" of spawned magma cube to "Kit"
+	set metadata value "balloon-type" of spawned magma cube to "marker"
+	set metadata value "balloon-uuid" of spawned magma cube to {_uuid}
+	set {_entity.marker} to spawned magma cube
+	# ----------------------------
+	# ---ベースとマーカーをつなぐ処理---
+	leash {_entity.marker} to {_entity.base}
+	# -------------------------------
+	# ---風船エンティティ召喚---
+	set {_balloonloc} to {_markerloc}
+	subtract 0.25 from y-coordinate of {_balloonloc}
+	set {_x} to x-coordinate of {_balloonloc}
+	set {_y} to y-coordinate of {_balloonloc}
+	set {_z} to z-coordinate of {_balloonloc}
+	set {_world} to kitWorldNC({Kit-GameStage::name})
+	set {_block} to "%{_color}%_wool"
+	execute console command "/execute in %{_world}% run summon minecraft:armor_stand %{_x}% %{_y}% %{_z}% {NoGravity:1b,Marker:1b,Invisible:1,Invulnerable:1,NoBasePlate:1,Passengers:[{id:""falling_block"",BlockState:{Name:""%{_block}%""},NoGravity:1,Time:1,DropItem:0}]}"
+	set {_dis} to 100
+	loop all entities in radius 1 around {_balloonloc}:
+		type of loop-entity is armor stand
+		metadata value "gametype" of loop-entity is not set
+		set {_d} to distance between {_balloonloc} and loop-entity
+		if {_d} < {_dis}:
+			set {_dis} to {_d}
+			set {_entity} to loop-entity
+	set metadata value "gametype" of {_entity} to "Kit"
+	set metadata value "balloon-type" of {_entity} to "balloon-base"
+	set metadata value "balloon-uuid" of {_entity} to {_uuid}
+	set metadata value "balloon-color" of {_entity} to {_color}
+	set metadata value "gametype" of passenger of {_entity} to "Kit"
+	set metadata value "balloon-type" of passenger of {_entity} to "balloon"
+	set metadata value "balloon-uuid" of passenger of {_entity} to {_uuid}
+	set metadata value "balloon-color" of passenger of {_entity} to {_color}
+	# ------------------------
 
 
 function kitWoolSpawn():
