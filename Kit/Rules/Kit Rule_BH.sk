@@ -66,37 +66,32 @@ function kitSpawnBalloon_BH(loc: location, color: text = "white"):  # 指定位�
 	set metadata value "balloon-type" of {_entity} to "balloon-base"
 	set metadata value "balloon-uuid" of {_entity} to {_uuid}
 	set metadata value "balloon-color" of {_entity} to {_color}
+	set metadata value "balloon-health" of {_entity} to 10
+	set metadata value "balloon-nodamage" of {_entity} to 0
 	set metadata value "gametype" of passenger of {_entity} to "Kit"
 	set metadata value "balloon-type" of passenger of {_entity} to "balloon"
 	set metadata value "balloon-uuid" of passenger of {_entity} to {_uuid}
-	set metadata value "balloon-color" of passenger of {_entity} to {_color}
 	# ------------------------
 
+options:
+	enable-attack-time: 20
 
-function kitWoolSpawn():
-	loop {Kit-GameStageWools::*}:
-		if block at loop-value is air:
-			set block at loop-value to white wool
-			set {_loc} to loop-value
-			add -0.25 to y-coordinate of {_loc}
-			set {_spwool} to false
-			chance of 10%:
-				set block at loop-value to black wool
-				set {_spwool} to true
-				strike lightning effect at loop-value
-				set {_ul} to true
-			if {_spwool} is true:
-				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""Kit-SPWool""}"
-				set metadata value "gametype" of spawned magma cube to "Kit"
-				set metadata value "kit-wool" of spawned magma cube to true
-			else:
-				spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""Kit-Wool""}"
-				set metadata value "gametype" of spawned magma cube to "Kit"
-				set metadata value "kit-wool" of spawned magma cube to true
-	if {_ul} is true:
-		gameMsg("Kit", "§c§l---===[Special Wool spawned!]===---")
-	else:
-		gameMsg("Kit", "§b§l---===[Wool spawned!]===---")
+on arm swing:
+	set {_tg} to target entity of player
+	type of {_tg} is armor stand
+	distance between player and {_tg} <= 5
+	metadata value "balloon-type" of {_tg} is "balloon-base"
+	set {_uuid} to metadata value "balloon-uuid" of {_tg}
+	set {_team} to metadata value "balloon-color" of {_tg}
+	set {_health} to metadata value "balloon-health" of {_tg}
+	set {_nodamage} to metadata value "balloon-nodamage" of {_tg}
+	# ---無効化処理---
+	if {_nodamage} > 0:  # ダメージを与えるクールタイムが終わっていない
+		stop
+	if {TrueTeam::%player%} is {_team}:  # 同じチームのバルーン
+		stop
+	# ---------------
+	
 
 on break of white wool:
 	cancel event
