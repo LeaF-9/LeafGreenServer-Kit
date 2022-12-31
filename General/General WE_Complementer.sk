@@ -19,6 +19,7 @@ on inventory click:
 		reloadBSEditor(player)
 	else if type of event-inventory is player inventory:
 		set {_item} to clicked item
+		{WEComplementer.%player%::*} does not contain {_item}
 		add {_item} to {WEComplementer.%player%::*}
 		reloadBSEditor(player)
 
@@ -36,7 +37,7 @@ on inventory close:
 			set {_blocklisting} to "%{_blocklisting}%,"
 		set {_blocklisting} to "%{_blocklisting}%%{_blockname}%"
 	set {_now} to now
-	message formatted "{@prefix} <insert:%{_blocklisting}%><tooltip:%{_blocklisting}%>§9[ §b§lブロックの取り出し §9]<reset> §7(%{_now}%)" to player
+	message formatted "{@prefix} <insert:%{_blocklisting}%><tooltip:§6§lSHIFT + 右クリック§bでチャットに挿入>§9[ §b§lブロックの取り出し §9]<reset> <tooltip:%{_blocklisting}%>§9[ §a§l中身の確認 §9]<reset> §7(%{_now}%)" to player
 
 function openBSEditor(player: player):
 	wait a tick
