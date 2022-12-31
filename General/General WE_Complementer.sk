@@ -6,12 +6,11 @@ command /blockset:
 	permission: sk.admin
 	executable by: player
 	trigger:
+		set {WEComplementer::%player%} to true
 		openBSEditor(player)
 
 on inventory click:
-	set {_currentinventory} to player's current inventory
-	type of {_currentinventory} is chest inventory
-	inventory name of {_currentinventory} is "§6§lWorldEdit §e§lComplementer"
+	{WEComplementer::%player%} is true
 	cancel event
 	type of clicked item is not paper
 	if type of event-inventory is chest inventory:
@@ -24,9 +23,9 @@ on inventory click:
 		reloadBSEditor(player)
 
 on inventory close:
-	broadcast "%inventory name of event-inventory%"
-	type of event-inventory is chest inventory
-	inventory name of event-inventory is "§6§lWorldEdit §e§lComplementer"
+	{WEComplementer::%player%} is true
+	delete {WEComplementer::%player%}
+	{WEComplementer.%player%::*} is set
 	set {_blocks::*} to {WEComplementer.%player%::*}
 	delete {WEComplementer.%player%::*}
 	set {_blocklisting} to ""
