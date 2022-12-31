@@ -1,0 +1,67 @@
+options:
+	prefix: §8[§6§lWEC§8]§r
+
+command /blockset:
+	aliases: /bs
+	permission: sk.admin
+	executable by: player
+	trigger:
+		openBSEditer(player)
+
+on inventory click:
+	type of player's current inventory is chest inventory
+	inventory name of player's current inventory is "§6§lWorldEdit §e§lComplementer"
+	cancel event
+	type of clicked item is not paper
+	if type of event-inventory is chest inventory:
+		set {_item} to clicked item
+		remove {_item} from {WEComplementer.%player%::*}
+		reloadBSEditor(player)
+	else if type of event-inventory is player inventory:
+		set {_item} to clicked item
+		add {_item} to {WEComplementer.%player%::*}
+		reloadBSEditor(player)
+
+on inventory close:
+	type of event-inventory is chest inventory
+	inventory name of player's current inventory is "§6§lWorldEdit §e§lComplementer"
+	set {_blocks::*} to {WEComplementer.%player%::*}
+	delete {WEComplementer.%player%::*}
+	set {_blocklisting} to ""
+	loop {_blocks::*}:
+		set {_blockname} to raw name of loop-value
+		replace "minecraft:" with "" in {_blockname}
+		if {_blocklisting} is not "":
+			set {_blocklisting} to "%{_blocklisting}%,"
+		set {_blocklisting} to "%{_blocklisting}%%{_blockname}%"
+	set {_now} to now
+	message formatted "{@prefix} <insert:%{_blocklisting}%><tooltip:%{_blocklisting}%>§9[ §b§lブロックの取り出し §9]<reset> §7(%{_now}%)" to player
+
+function openBSEditor(player: player):
+	wait a tick
+	open chest with 6 row named "§6§lWorldEdit §e§lComplementer" to {_player}
+	wait a tick
+	set {_slotnum} to 0
+	set {_title} to "§b§l操作方法"
+	set {_lores::1} to "§6§l自分のインベントリをクリック§e:"
+	set {_lores::2} to "§b- §9ブロック§7を§a§l追加§7します"
+	set {_lores::3} to ""
+	set {_lores::4} to "§6§lチェストのインベントリをクリック§e:"
+	set {_lores::5} to "§b- §9ブロック§7を§c§l削除§7します"
+	set {_lores::6} to ""
+	set {_lores::7} to "§6§lインベントリを閉じる§e:"
+	set {_lores::8} to "§b- §9ブロック§7を§e§l保存§7します"
+	set {_lores::9} to "§b- §9[ §b§lブロックの取り出し §9] §7をクリックすることで§9§l取り出し§7が出来ます"
+	loop 54 times:
+		set slot {_slotnum} of {_player}'s current inventory to a paper named {_title} with lore {_lores::*}
+		add 1 to {_slotnum}
+
+function reloadBSEditor(player: player):
+	set {_slotnum} to 0
+	loop {WEComplementer.%{_player}%::*}:
+		set slot {_slotnum} of {_player}'s current inventory to loop-value
+		add 1 to {_slotnum}
+	set {_loopnum} to 54 - {_slotnum}
+	loop {_loopnum} times:
+		set slot {_slotnum} of {_player}'s current inventory to an air
+		add 1 to {_slotnum}
