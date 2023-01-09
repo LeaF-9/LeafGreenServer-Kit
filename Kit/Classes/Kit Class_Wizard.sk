@@ -105,20 +105,43 @@ on sneak toggle:
 					set {_true} to true
 				if {_true} is false:
 					# --- チャージ中の音の演出 ---
-					# -------------------------
+					# --------------------------
 					# --- チャージ中のパーティクル演出 ---
-					# -------------------------------
+					# ---------------------------------
 					wait a tick
 			if {_true} is true:
-
+				set {Stats.%player%::LightWand} to true
+				# --- チャージ完了時の音の演出 ---
+				# ------------------------------
+				while {_true} is true:
+					set {_tool} to player's tool
+					if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is false:
+						delete {_true}
+					else if {Stats.%player%::LightWand} is not set:
+						set {_true} to false
+					else:
+						send action bar "§e§lLight Wand §bのチャージが完了しました!" to player
+						# --- チャージ完了中のパーティクルの演出 ---
+						# ---------------------------------------
+					wait a tick
+				if {_true} is not set:
+					send action bar "§cチャージが中断されました!" to player
+					delete {Stats.%player%::LightWand}
 			else:
 				send action bar "§cチャージが中断されました!" to player
 		else:
 			send action bar "§4§lマナが足りません!" to player
 
 function kitEffect_MoonRod(player: player, period: number):
-	set {_count} to 10
+	{_period} <= 15
+	set {_startrad} to 0 + (315 * ({_period} - 1))
+	set {_startheight} to 16 - {_period}
+	set {_startmeter} to 0.53 * ({_period} - 1)
 	set {_baseloc} to location of {_player}
+	loop 15 times:
+		add 21 to {_rad}
+
+
 	loop 10 times:
 		set {_effcount} to 6 - round({_count} / 2)
 		set {_effwide} to 5 - ({_count} / 2)
@@ -201,26 +224,29 @@ function kitWeapon_Wizard_3(player: player):
 		send action bar "§4§lマナが足りません!" to {_player}
 
 function kitWeapon_Wizard_5(player: player):
-	set {_mana} to kitManaCalc({_player}, 10)
-	if {Kit-Mana::%{_player}%} >= {_mana}:
-		toolCT({_player}, "Wizard", 5, "Weapon.main")
-		subtract {_mana} from {Kit-Mana::%{_player}%}
-		playSound("block.respawn_anchor.deplete", 1, 2, {_player})
-		set {_baseloc} to location of {_player}
-		add 1.5 to y-coordinate of {_baseloc}
-		set {_c} to 0
-		loop 10 times:
-			add 1 to {_c}
-			set {_loc} to location {_c} meters in front of {_baseloc}
-			drawDot count 1, particle "critmagic", center {_loc}, visibleRange 100, keepFor 1 seconds
-			loop all entities in radius 2 around {_loc}:
-				kitCheckTeam(loop-entity, {_player}, false) is true
-				{_hit.%id of loop-entity%} is not set
-				set {_hit.%id of loop-entity%} to true
-				kitDamage({_player}, loop-entity, 3, true)
-				apply glowing 1 to loop-entity for 3 seconds
+	if {Stats.%player%::LightWand} is true:
+		set {_mana} to kitManaCalc({_player}, 10)
+		if {Kit-Mana::%{_player}%} >= {_mana}:
+			toolCT({_player}, "Wizard", 5, "Weapon.main")
+			subtract {_mana} from {Kit-Mana::%{_player}%}
+			playSound("block.respawn_anchor.deplete", 1, 2, {_player})
+			set {_baseloc} to location of {_player}
+			add 1.5 to y-coordinate of {_baseloc}
+			set {_c} to 0
+			loop 15 times:
+				add 1 to {_c}
+				set {_loc} to location {_c} meters in front of {_baseloc}
+				drawDot count 1, particle "critmagic", center {_loc}, visibleRange 100, keepFor 1 seconds
+				loop all entities in radius 2 around {_loc}:
+					kitCheckTeam(loop-entity, {_player}, false) is true
+					{_hit.%id of loop-entity%} is not set
+					set {_hit.%id of loop-entity%} to true
+					kitDamage({_player}, loop-entity, 2, true)
+					apply glowing 1 to loop-entity for 5 seconds
+		else:
+			send action bar "§4§lマナが足りません!" to {_player}
 	else:
-		send action bar "§4§lマナが足りません!" to {_player}
+		send action bar "§4§lチャージが完了していません!" to {_player}
 
 # Skills
 function kitSkillWizard(player: player) :: boolean:
