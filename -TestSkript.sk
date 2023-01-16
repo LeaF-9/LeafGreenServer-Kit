@@ -539,6 +539,28 @@ command /testitemblock:
 		message "%raw name of player's tool%" to player
 # ----------------------------------------------------
 
+# --- particle packetの送信 ---
+# command /testpacketparticle:
+# 	trigger:
+# 		set {_pkt} to new play_server_entity_metadata packet
+# 		set field 0 of {_pkt} to (arg-1).getEntityId()
+# 		set {_dw} to new data watcher for arg 1
+# 		set datawatcher index 0 of {_dw} to (64 as byte)  # (64 as byte)
+# 		set field 1 of {_pkt} to {_dw}
+# 		loop 100 times:
+# 			send arg 2 packet {_pkt}
+# 			wait a tick
+# 		set {_pkt} to new play_server_entity_metadata packet
+# 		set field 0 of {_pkt} to (arg-1).getEntityId() # set the entity using EID
+# 		set {_dw} to new data watcher for arg 1
+# 		set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
+# 		set field 1 of {_pkt} to {_dw}
+# 		send arg 2 packet {_pkt}
+
+on packet event play_server_world_particles:
+    broadcast "%field 10 of event-packet%"
+# ----------------------------
+
 # command /testwizardult:
 # 	trigger:
 # 		set {_effbaseloc} to location of player
