@@ -1,0 +1,50 @@
+# Excalibur
+
+function kitWeapon_Knight_5(player: player):
+	if {_player} has glowing:
+		loop all items in {_player}'s inventory:
+			name of loop-item is "§eExcalibur"
+			if loop-item is not enchanted:
+				excaliburEffect({_player}, true)
+			enchant loop-item with sharpness 1
+	else:
+		loop all items in {_player}'s inventory:
+			name of loop-item is "§eExcalibur"
+			if loop-item is enchanted:
+				excaliburEffect({_player}, false)
+			disenchant loop-item
+
+function excaliburEffect(player: player, bool: boolean):
+	if {_bool} is true:
+		playSound("block.beacon.activate", 1, 2, {_player})
+		set {_baserad} to -72
+		set {_y} to -0.2
+		loop 10 times:
+			add 0.2 to {_y}
+			add 72 to {_baserad}
+			set {_baseloc} to location of {_player}
+			delete {_rad}
+			loop 2 times:
+				add {_baserad} to {_rad}
+				add 180 to {_rad}
+				set {_el} to {_baseloc}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				drawDot count 1, particle "endrod", center {_el}, visibleRange 30
+			wait a tick
+	else:
+		playSound("block.beacon.deactivate", 1, 2, {_player})
+		set {_y} to 2.2
+		loop 10 times:
+			set {_baseloc} to location of {_player}
+			subtract 0.2 from {_y}
+			delete {_rad}
+			loop 8 times:
+				add 45 to {_rad}
+				set {_el} to {_baseloc}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				drawDot count 1, particle "mobspell", RGB 0, 0, 205, center {_el}, visibleRange 30
+			wait a tick

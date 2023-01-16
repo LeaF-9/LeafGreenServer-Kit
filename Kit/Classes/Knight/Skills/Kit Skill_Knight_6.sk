@@ -1,0 +1,44 @@
+# Hero's Courage
+
+function kitSkill_Knight_6(player: player):
+	toolCT({_player}, "Knight", 6)
+	kitMsg({_player}, "<##ff7f50>仲間達に<##dc143c>勇気<##ff7f50>を分け与えよう!")
+	playSound("ui.toast.challenge_complete", 1.2, 1.5, {_player})
+	kitHeal({_player}, 2)
+	loop {CT.%{_player}%::*}:
+		if loop-index is not "§cHero's Courage":
+			subtract 10 from {CT.%{_player}%::%loop-index%}
+	loop all blocks in radius 2 around {_player}:
+		set {_loc} to location of loop-block
+		add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
+		add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
+		add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
+		drawDot count 5, particle "mobspell", RGB 255, 255, 100, center {_loc}, visibleRange 30, keepFor 5 ticks
+	loop all players in radius 5 around {_player}:
+		loop-player is not {_player}
+		{team::%loop-player%} is {team::%{_player}%}
+		{Stats.%loop-player%::NoSupport} is not set
+		message "<##ffd700>CT短縮<##daa520>と<##ffd700>回復<##daa520>という勇気をもらった!" to loop-player
+		kitHeal(loop-player, 2)
+		loop {CT.%loop-player%::*}:
+			if loop-index is not "§cHero's Courage":
+				subtract 10 from {CT.%loop-player%::%loop-index%}
+		loop all blocks in radius 2 around loop-player:
+			set {_loc} to location of loop-block
+			add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
+			add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
+			add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
+			drawDot count 5, particle "mobspell", RGB 255, 255, 100, center {_loc}, visibleRange 30, keepFor 5 ticks
+	set {_ploc} to location of block at {_player}
+	set {_bn} to 1
+	loop 5 times:
+		loop all blocks in radius {_bn} around {_player}:
+			loop-block is air
+			block below loop-block is not air
+			set {_bloc} to location of loop-block
+			set {_bnn} to {_bn} - 1
+			if distance between {_bloc} and {_ploc} >= {_bnn}:
+				add -0.3 to y-coordinate of {_bloc}
+				drawDot count 5, particle "mobspell", RGB 255, 100, 100, center {_bloc}, visibleRange 30
+		add 1 to {_bn}
+		wait a tick

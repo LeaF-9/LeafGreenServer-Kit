@@ -1,0 +1,29 @@
+# Glorious Honor
+
+function kitSkill_Knight_8(player: player):
+	toolCT({_player}, "Knight", 8)
+	kitMsg({_player}, "<##ffff00>名誉<##ff8c00>が光をもたらした!")
+	playSound("item.totem.use", 1, 1.5, {_player})
+	apply glowing 1 to {_player} for 10 seconds
+	loop all players in radius 10 around {_player}:
+		loop-player is not {_player}
+		{Class::%loop-player%} is set
+		apply glowing 1 to loop-player for 10 seconds
+		message "<##ffff00>大きな光<##ffd700>で長い発光が付与された!" to loop-player
+	set {_num} to 0
+	set {_ploc} to location of block at {_player}
+	loop 10 times:
+		add 1 to {_num}
+		loop all blocks in radius {_num} around {_player}:
+			loop-block is air
+			set {_bloc} to location of loop-block
+			set {_bnn} to {_num} - 1
+			if distance between {_bloc} and {_ploc} >= {_bnn}:
+				chance of 20%:
+					add a random number between -0.2 and 0.2 to x-coordinate of {_bloc}
+					add a random number between -0.2 and 0.2 to y-coordinate of {_bloc}
+					add a random number between -0.2 and 0.2 to z-coordinate of {_bloc}
+					drawDot count 5, particle "mobspell", RGB 255, 255, 0, center {_bloc}, visibleRange 30
+			chance of 1%:
+				drawDot count 1, particle "endrod", center {_bloc}, visibleRange 30
+		wait a tick

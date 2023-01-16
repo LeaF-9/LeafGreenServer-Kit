@@ -1,0 +1,70 @@
+# Reject Projectile
+
+function kitSkill_Knight_1(player: player):
+	toolCT({_player}, "Knight", 1)
+	playSound("entity.player.attack.sweep", 1, 1, {_player})
+	kitMsg({_player}, "§310秒間§c汎ゆる遠距離攻撃を跳ね返します!")
+	set {_ln} to 0
+	loop 200 times:
+		add 1 to {_ln}
+		set {_tool} to {_player}'s tool
+		if kitItemAllChecker({_tool}, "Knight", "Skill", 1):
+			kitEffect_RejectProjectile({_player}, {_ln})
+			set {_floc} to location 1 meter in front of head of {_player}
+			delete {_pok}
+			loop all projectiles in radius 5 around {_player}:
+				shooter of loop-projectile is not {_player}
+				if type of shooter of loop-projectile is player:
+					kitCheckTeam(shooter of loop-projectile, {_player}, false) is true
+					set {_pok} to true
+				else:
+					set {_pok} to true
+				set shooter of loop-projectile to {_player}
+				set metadata value "reject-projectile" of loop-projectile to "true"
+				playSound("block.anvil.land", 1, 1.5, {_player})
+				drawDot count 1, particle "explosionlarge", center {_player}, visibleRange 50
+				teleport loop-projectile to {_floc}
+				delete velocity of loop-projectile
+				set {_v} to setVector(location of head of {_player}, location 10 meters in front of head of {_player})
+				set velocity of loop-projectile to {_v}
+#				push loop-projectile forward at speed 5
+		wait a tick
+	kitMsg({_player}, "§5Reject Projectile§1の§9構え状態§1が終了しました")
+
+function kitEffect_RejectProjectile(player: player, num: number):
+	set {_baseloc} to location of head of {_player}
+	set pitch of {_baseloc} to 0
+	set {_twen} to floor({_num} / 20) + 1
+	if mod({_twen}, 2) is 0:  # 偶数(右)
+		set {_tweplus} to {_num} + 20
+		if mod({_num}, 20) is 19:
+			add -27 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 18:
+			add -9 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 17:
+			add 9 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 16:
+			add 27 to yaw of {_baseloc}
+		else:
+			add 45 to yaw of {_baseloc}
+	else:  # 奇数(左)
+		set {_tweplus} to {_num} + 20
+		if mod({_num}, 20) is 19:
+			add 27 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 18:
+			add 9 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 17:
+			add -9 to yaw of {_baseloc}
+		else if mod({_num}, 20) is 16:
+			add -27 to yaw of {_baseloc}
+		else:
+			add -45 to yaw of {_baseloc}
+	loop 5 times:
+		set {_effloc} to location loop-number meters in front of {_baseloc}
+		set {_g} to a random number between 0 and 255
+		drawDot count 1, particle "redstone", RGB 0, {_g}, 255, center {_effloc}, visibleRange 30
+
+on damage:
+	damage was caused by projectile
+	metadata value "reject-projectile" of projectile is "true"
+	set damage to 3

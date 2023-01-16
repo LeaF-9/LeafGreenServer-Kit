@@ -1,0 +1,41 @@
+# Knight Changer
+
+function kitSkill_Knight_2(player: player):
+	set {_tool} to {_player}'s tool
+	toolCT({_player}, "Knight", 2)
+	playSound("block.beacon.activate", 1, 1, {_player})
+	set {_baseloc} to location of head of {_player}
+	loop 15 times:
+		loop 2 times:
+			{_tg} is not set
+			add 1 to {_front}
+			set {_loc} to location {_front} meters in front of {_baseloc}
+			loop all players in radius 2 around {_loc}:
+				kitCheckTeam(loop-player, {_player}, false) is true
+				{_tg} is not set
+				set {_tg} to loop-player
+			loop 3 times:
+				set {_el} to {_loc}
+				add a random number between -0.5 and 0.5 to x-coordinate of {_el}
+				add a random number between -0.5 and 0.5 to y-coordinate of {_el}
+				add a random number between -0.5 and 0.5 to z-coordinate of {_el}
+				drawDot count 1, particle "endrod", center {_el}, visibleRange 30
+		wait a tick
+	if {_tg} is set:
+		set {_jewel} to saveJewels({_tg})
+		set {_gem} to saveGems({_tg})
+		set {_wool} to saveWools({_tg})
+		set {_spwool} to saveSpecialWool({_tg})
+		if {Class::%{_tg}%} is "Thief":
+			set {team::%{_tg}%} to {TrueTeam::%{_tg}%}
+		execute console command "/kjc %{_tg}%"
+		execute console command "/class Knight %{_tg}% false"
+		giveEmJItems({_tg}, {_jewel}, {_gem})
+		giveStWItems({_tg}, {_wool}, {_spwool})
+		message "§6あなたは §b%{_player}% §6によって §cKnight §6に転職しました!" to {_tg}
+		kitMsg({_player}, "§a%{_tg}% §7のクラスを §cKnight §7に変更しました...")
+		playSound("block.chest.open", 1, 1, {_tg})
+		detectCT({_tg}, {_tool})
+		set {_el} to location 1 meter above {_tg}
+		loop 30 times:
+			draw 1 endrod particle at {_el} with direction randomVector({_el}) and speed 0.3, keepFor 1 tick

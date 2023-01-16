@@ -1,0 +1,43 @@
+# Religious Shelter
+
+function kitSkill_Knight_7(player: player):
+	toolCT({_player}, "Knight", 7)
+	set {Stats.%{_player}%::ReligiousShelter} to true
+	kitMsg({_player}, "<##0000cd>3秒間,<##00bfff>体力以上のダメージを0にします!")
+	strike lightning effect at {_player}
+	playSound("entity.vex.ambient", 1, 1, {_player})
+	loop 60 times:
+		set {_baseloc} to location of {_player}
+		add 0.2 to {_dy}
+		if {_dy} >= 4:
+			set {_dy} to 0
+		if {_dy} > 2:
+			set {_y} to 2 - ({_dy} - 2)
+		else:
+			set {_y} to {_dy}
+		add {_y} to y-coordinate of {_baseloc}
+		set {_rad} to 0
+		loop 10 times:
+			set {_el} to {_baseloc}
+			add 36 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			drawDot count 5, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 30
+		wait a tick
+	delete {Stats.%{_player}%::ReligiousShelter}
+	kitMsg({_player}, "§bReligious Shelter§cの効果が切れました")
+
+on damage of player:
+	if {Stats.%victim%::ReligiousShelter} is true:
+		set {_hp} to health of victim
+		set {_dm} to damage
+		if {_dm} > {_hp}:
+			set damage to 0
+			playSound("entity.phantom.bite", 1, 1, victim)
+			loop all blocks in radius 2 around victim:
+				chance of 10%:
+					set {_loc} to location of loop-block
+					add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
+					add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
+					add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
+					drawDot count 1, particle "endrod", center {_loc}, visibleRange 30

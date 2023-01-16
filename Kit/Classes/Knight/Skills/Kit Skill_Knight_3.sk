@@ -1,0 +1,23 @@
+# Calling Soldiers
+
+function kitSkill_Knight_3(player: player):
+	toolCT({_player}, "Knight", 3)
+	kitMsg({_player}, "§73体の剣士を呼び出しました!")
+	playSound("entity.skeleton.hurt", 1, 1, {_player})
+	loop all blocks in radius 3 around {_player}:
+		y-coordinate of loop-block is y-coordinate of block at {_player}
+		add location of loop-block to {_ls::*}
+	loop 3 times:
+		set {_l} to a random location out of {_ls::*}
+		remove {_l} from {_ls::*}
+		set {_nbt} to nbt compound from "{CustomNameVisible:1,LeftHanded:0,CanPickUpLoot:1b,Health:20,Attributes:[{Name:""generic.maxHealth"",Base:20}],HandItems:[{id:""minecraft:stone_sword"",Count:1},{}],ArmorItems:[{},{},{id:""minecraft:iron_chestplate"",Count:1},{id:""minecraft:player_head"",tag:{SkullOwner:%{_player}%},Count:1}],Team:""kit-%{TrueTeam::%{_player}%}%""}"
+		spawn a skeleton at {_l} with nbt {_nbt}
+		set spawned skeleton's display name to "%{_player}%"
+		set metadata value "soldsk" of spawned skeleton to "%{_player}%"
+		set metadata value "gametype" of spawned skeleton to "Kit"
+		drawDot count 10, particle "cloud", center location of block above {_l}, visibleRange 30, keepFor 20 ticks
+	wait 10 seconds
+	loop all skeletons:
+		metadata value "soldsk" of loop-skeleton is "%{_player}%"
+		drawDot count 10, particle "cloud", center location of block above loop-skeleton, visibleRange 30, keepFor 20 ticks
+		delete loop-skeleton

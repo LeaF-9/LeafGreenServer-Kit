@@ -1,0 +1,17 @@
+# Brave Fighters
+
+function kitUltKnight(player: player):
+	message "§c自身と周辺10m以内の味方に戦闘バフを付与します!" to {_player}
+	message "§c体力3以下の味方へのバフは強力になります!" to {_player}
+	loop 200 times:
+		loop all players in radius 10 around {_player}:
+			{TrueTeam::%{_player}%} is {TrueTeam::%loop-player%}
+			{Stats.%loop-player%::NoSupport} is not set
+			drawDot count 3, particle "mobspell", RGB 255, 125, 0, center loop-player, visibleRange 30
+			if loop-player's health > 3:
+				apply strength 1 to loop-player for a tick
+				apply resistance 1 to loop-player for a tick
+			else:
+				apply strength 2 to loop-player for a tick
+				apply resistance 2 to loop-player for a tick
+		wait a tick

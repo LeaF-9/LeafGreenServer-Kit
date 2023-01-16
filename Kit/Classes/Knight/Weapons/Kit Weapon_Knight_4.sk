@@ -1,0 +1,48 @@
+# Cutlass
+
+on leftclick:
+	if name of player's offhand tool is "§3Cutlass":
+		checkCT(player, "§3Cutlass") is true
+		set {Stats.%player%::Cutlass} to true
+		set {_tool} to player's offhand tool
+		detectCT(player, {_tool})
+		set {_loc} to player's location
+		set {_locpitch} to pitch of {_loc}
+		set pitch of {_loc} to 0
+		set {_loc} to location 0.5 meters to the left of {_loc}
+		subtract 0.5 from y-coordinate of {_loc}
+		set pitch of {_loc} to {_locpitch}
+		set player's offhand tool to air
+		if {_locpitch} < 0:
+			set {_p} to 360 + {_locpitch}
+		else:
+			set {_p} to {_locpitch}
+		set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""golden_sword"",Count:1b},{}],Pose:{RightArm:[350f,%{_p}%f,270f]}}"
+		spawn an armor stand at player with nbt {_nbt}
+		set metadata value "cutlass" of spawned entity to "%player%"
+		playSound("entity.arrow.shoot", 1, 1, player)
+		set {_f} to 0
+		loop 20 times:
+			add 0.5 to {_f}
+			set {_l} to location {_f} meters in front of {_loc}
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "cutlass" of loop-entity is "%player%"
+				teleport loop-entity to {_l}
+			loop all entities in radius 2 around {_l}:
+				{_hit.%id of loop-entity%} is not set
+				kitCheckTeam(loop-entity, player, false) is true
+				set {_hit.%id of loop-entity%} to true
+				make player damage loop-entity by 6
+				playSound("entity.player.attack.sweep", 1, 1, loop-entity)
+				loop 5 times:
+					set {_el} to aroundEffect(loop-entity)
+					drawDot count 3, particle "blockcrack", material redstone block, center {_el}, visibleRange 30
+			wait a tick
+		loop all entities:
+			type of loop-entity is an armor stand
+			metadata value "cutlass" of loop-entity is "%player%"
+			delete loop-entity
+		if {Stats.%player%::Cutlass} is true:
+			set player's offhand tool to {_tool}
+		delete {Stats.%player%::Cutlass}
