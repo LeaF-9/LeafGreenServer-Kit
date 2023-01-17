@@ -1,0 +1,42 @@
+# Legendary Aura
+
+function kitSkill_Warrior_6(player: player):
+	set {_tool} to slot 0 of {_player}
+	if kitItemTypeChecker({_tool}) is "Weapon.main":
+		if block 0.1 meters below {_player} is not passable:
+			toolCT({_player}, "Warrior", 6)
+			set {Stats.%{_player}%::LegendaryAura} to true
+			kitMsg({_player}, "<##d9e367>剣のエネルギーを地に放出します!")
+			set {_weapon} to slot 0 of {_player}
+			set slot 0 of {_player} to a stick
+			set {_asloc} to location of {_player}
+			set {_loc} to location of {_player}
+			subtract 0.5 from y-coordinate of {_asloc}
+			spawn an armor stand at {_asloc} with nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Pose:{RightArm:[0f,90f,300f]}}"
+			set metadata value "legendary-aura" of spawned entity to "%{_player}%"
+			set spawned entity's tool to {_weapon}
+			loop 5 times:
+				playSound("entity.ender_dragon.hurt", 1, 0.75, {_loc})
+				loop all blocks in radius 10 around {_loc}:
+					loop-block is air
+					block below loop-block is not air
+					set {_lloc} to location of loop-block
+					subtract 0.4 from y-coordinate of {_lloc}
+					drawDot count 1, particle "mobspell", RGB 73, 55, 89, center {_lloc}, visibleRange 30
+				loop all entities in radius 10 around {_loc}:
+					kitCheckTeam(loop-entity, {_player}, false) is true
+					make {_player} damage loop-entity by 2
+					loop 30 times:
+						draw 1 critmagic particle at location of loop-entity with direction randomVector(location of loop-entity) and speed 3, keepFor 1 tick
+				wait a second
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "legendary-aura" of loop-entity is "%{_player}%"
+				delete loop-entity
+			if {Stats.%{_player}%::LegendaryAura} is true:
+				set slot 0 of {_player} to {_weapon}
+			delete {Stats.%{_player}%::LegendaryAura}
+		else:
+			send action bar "§c§l地に足をつけて発動してください" to {_player}
+	else:
+		send action bar "§c§lWeaponがありません" to {_player}

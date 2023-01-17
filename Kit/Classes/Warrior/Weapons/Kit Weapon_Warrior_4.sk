@@ -1,0 +1,28 @@
+# Crimson
+
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
+	{Class::%attacker%} is "Warrior"
+	set {_tool} to attacker's tool
+	if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 4) is true:
+		attacker is ignited
+		set damage to damage * 1.5
+		playSound("entity.blaze.shoot", 1, 1.5, victim)
+		loop 5 times:
+			add 0.4 to {_y}
+			set {_v} to location of victim
+			loop 5 times:
+				set {_loc} to aroundEffect(victim)
+				set y-coordinate of {_loc} to y-coordinate of {_v} + {_y}
+				drawDot count 1, particle "flame", center {_loc}, visibleRange 30
+			wait a tick
+
+function kitWeapon_Warrior_4(player: player):
+	toolCT({_player}, "Warrior", 4, "Weapon.main")
+	playSound("entity.ghast.warn", 1, 1, {_player})
+	ignite {_player} for 5 seconds
+	kitMsg({_player}, "<##dc143c>紅蓮の炎を身に纏った!")
+	set {_loc} to location of {_player}
+	loop 30 times:
+		draw 1 lava particle at {_loc} with direction randomVector({_loc}) and speed 3, keepFor 1 tick

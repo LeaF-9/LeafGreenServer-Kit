@@ -1,0 +1,27 @@
+# Force Rush
+
+function kitSkill_Warrior_3(player: player):
+	toolCT({_player}, "Warrior", 3)
+	kitMsg({_player}, "§4渾身の突進!")
+	playSound("entity.blaze.hurt", 1, 0.75, {_player})
+	push {_player} forward at speed 1.5
+	loop 20 times:
+		loop all entities in radius 2 around {_player}:
+			{_hitplayer} is not set
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_hitplayer} to loop-entity
+			set {_stoploc} to location of {_player}
+		if {_hitplayer} is not set:
+			drawDot count 1, particle "lava", center {_player}, visibleRange 30
+			wait a tick
+	if {_hitplayer} is set:
+		teleport {_player} to {_stoploc}
+		make {_player} damage {_hitplayer} by 4
+		make a fake explosion at {_hitplayer}
+		kitMsg({_player}, "§5%{_hitplayer}%に激突!")
+		message "§4突進攻撃を受けた!" to {_hitplayer}
+	else:
+		playSound("entity.blaze.death", 1, 0.75, {_player})
+		kitMsg({_player}, "§1激突失敗...")
+		kitFreeze({_player}, 3 seconds, false)
+		damage {_player} by 2 hearts

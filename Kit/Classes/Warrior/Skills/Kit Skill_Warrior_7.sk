@@ -1,0 +1,171 @@
+# Brute Charge
+
+on damage:
+	if {Stats.%victim%::BruteCharging} is true:
+		delete {Stats.%victim%::BruteCharging}
+		kitMsg(victim, "§cチャージがキャンセルされた!")
+		stop
+	if {Stats.%attacker%::BruteCharge} is true:
+		set damage to 100
+		playSound("entity.wither.break_block", 1, 0.5, victim)
+		kitEffect_BruteCharge_3(victim)
+		stop
+
+function kitSkill_Warrior_7(player: player):
+	if health of {_player} >= 5:
+		toolCT({_player}, "Warrior", 7)
+		kitMsg({_player}, "§5力をチャージします...")
+		kitFreeze({_player}, 3 seconds, false)
+		apply glowing 1 to {_player} for 3 seconds
+		set {Stats.%{_player}%::BruteCharging} to true
+		kitEffect_BruteCharge_1({_player})
+		loop 3 times:
+			if {Stats.%{_player}%::BruteCharging} is true:
+				wait a second
+		if {Stats.%{_player}%::BruteCharging} is true:
+			delete {Stats.%{_player}%::BruteCharging}
+			set {Stats.%{_player}%::BruteCharge} to true
+			kitMsg({_player}, "§6§l暴走状態§c§に入った! §4§l敵を薙ぎ払え!")
+			kitPalsy({_player}, 5 seconds, false)
+			set {_hp} to health of {_player}
+			subtract 5 from {_hp}
+			set health of {_player} to {_hp}
+			set {_el} to location of {_player}
+			add 1 to y-coordinate of {_el}
+			kitEffect_BruteCharge_2({_player})
+			loop 5 times:
+				if {Stats.%{_player}%::BruteCharge} is true:
+					wait a second
+			if {Stats.%{_player}%::BruteCharge} is true:
+				delete {Stats.%{_player}%::BruteCharge}
+				kitMsg({_player}, "§3暴走状態は終了しました")
+		else:
+			kitMsg({_player}, "§8チャージに失敗してしまった...")
+	else:
+		send action bar "§c§l体力が不足しています!" to {_player}
+
+function kitEffect_BruteCharge_1(player: player):
+	set {_loc} to location of {_player}
+#	座標の設定　主軸{_loc}{_w}
+	set {_x} to x-coordinate of {_loc}
+	set {_y} to y-coordinate of {_loc}
+	set {_z} to z-coordinate of {_loc}
+#	軸の設定　座標{_A}{_vwA}
+	set {_A} to {_loc}
+	set pitch of {_A} to 0
+	set {_vxA1} to location 1 meters to the right of {_A}
+	set {_vzA1} to location 1 meters in front of {_A}
+#	方向ベクトル{_vwnw}
+	set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+	set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+	set {_vznx} to x-coordinate of {_vzA1} - {_x}
+	set {_vznz} to z-coordinate of {_vzA1} - {_z}
+#	チャージ中の演出
+	set {_vector} to {_loc}
+	set {_s} to 0
+	set {_u} to 3
+	loop 3 times:
+		if {Stats.%{_player}%::BruteCharging} is true:
+			set {_soundpitch} to 2.5 - 0.5 * loop-number
+			playSound("entity.wither.ambient", 1, {_soundpitch}, {_player})
+			add 40 to {_s}
+			set {_t} to 0
+			loop 3 times:
+				loop 11 times:
+					set {_c} to 1 - abs(cos({_t}))
+					set {_ax} to cos({_s}) * {_vxnx} + sin({_s}) * {_vznx}
+					set {_az} to cos({_s}) * {_vxnz} + sin({_s}) * {_vznz}
+					if {_c} < 0.5:
+						set x-coordinate of {_vector} to {_x} + {_c} * {_ax} * 3 ^ 0.5
+						set y-coordinate of {_vector} to {_y} + cos({_t}) + 1
+						set z-coordinate of {_vector} to {_z} + {_c} * {_az} * 3 ^ 0.5
+						set {_second} to "%{_u}% seconds" parsed as time span
+						drawDot count 1, particle "redstone", RGB 128, 255, 255, center {_vector}, visibleRange 100, keepFor {_second}
+					else:
+						set x-coordinate of {_vector} to {_x} + 0.5 * {_ax} * 3 ^ 0.5
+						set y-coordinate of {_vector} to {_y} + cos({_t}) + 1
+						set z-coordinate of {_vector} to {_z} + 0.5 * {_az} * 3 ^ 0.5
+						set {_second} to "%{_u}% seconds" parsed as time span
+						drawDot count 1, particle "redstone", RGB 128, 255, 255, center {_vector}, visibleRange 100, keepFor {_second}
+					add 18 to {_t}
+				add 120 to {_s}
+			add -1 to {_u}
+			wait 20 ticks
+
+function kitEffect_BruteCharge_2(player: player):
+	set {_loc} to location of {_player}
+	set {_vector} to {_loc}
+	loop 6 times:
+		if {Stats.%{_player}%::BruteCharge} is true:
+			playSound("entity.wither.shoot", 1, 0.6, {_player})
+			set {_loc} to location of {_player}
+	#		座標の設定　主軸{_loc}{_w}
+			set {_x} to x-coordinate of {_loc}
+			set {_y} to y-coordinate of {_loc}
+			set {_z} to z-coordinate of {_loc}
+	#		軸の設定　座標{_A}{_vwA}
+			set {_A} to {_loc}
+			set pitch of {_A} to 0
+			set {_vxA1} to location 1 meters to the right of {_A}
+			set {_vzA1} to location 1 meters in front of {_A}
+	#		方向ベクトル{_vwnw}
+			set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+			set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+			set {_vznx} to x-coordinate of {_vzA1} - {_x}
+			set {_vznz} to z-coordinate of {_vzA1} - {_z}
+			set {_s} to -1
+			loop 2 times:
+				set {_u} to a random number between 0 and 360
+				set {_t} to -0.3
+				loop 16 times:
+					set x-coordinate of {_vector} to {_x} + (1 + {_t}) * cos({_s} * {_u}) * {_vxnx} + (1 + {_t}) * sin({_s} * {_u}) * {_vznx}
+					set y-coordinate of {_vector} to {_y} + {_t} * 0.5 + 0.3
+					set z-coordinate of {_vector} to {_z} + (1 + {_t}) * cos({_s} * {_u}) * {_vxnz} + (1 + {_t}) * sin({_s} * {_u}) * {_vznz}
+					set {_color.R} to 80 * (1 + {_t})
+					if {_color.R} > 255:
+						set {_color.R} to 255
+					set {_color.G} to 160 * (1 + {_t})
+					if {_color.G} > 255:
+						set {_color.G} to 255
+					set {_color.B} to 160 * (1 + {_t})
+					if {_color.B} > 255:
+						set {_color.B} to 255
+					drawDot count 1, particle "redstone", RGB {_color.R}, {_color.G}, {_color.B}, center {_vector}, visibleRange 100, keepFor 0.5 seconds
+					add 0.07 to {_t}
+					add 11 to {_u}
+				set {_s} to -1 * {_s}
+				wait 2 ticks
+			wait 16 ticks
+
+function kitEffect_BruteCharge_3(player: player):
+	set {_loc} to location of {_player}
+	set {_vector} to {_loc}
+#	座標の設定　主軸{_loc}{_w}
+	set {_x} to x-coordinate of {_loc}
+	set {_y} to y-coordinate of {_loc}
+	set {_z} to z-coordinate of {_loc}
+#	軸の設定　座標{_A}{_vwA}
+	set {_A} to {_loc}
+	set pitch of {_A} to 0
+	set {_vxA1} to location 1 meters to the right of {_A}
+	set {_vzA1} to location 1 meters in front of {_A}
+#	方向ベクトル{_vwnw}
+	set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+	set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+	set {_vznx} to x-coordinate of {_vzA1} - {_x}
+	set {_vznz} to z-coordinate of {_vzA1} - {_z}
+	set {_s} to 0
+	set {_t} to 30
+	loop 3 times:
+		loop 40 times:
+			set {_ax} to cos({_s}) * {_vxnx} + sin({_s}) * {_vznx}
+			set {_az} to cos({_s}) * {_vxnz} + sin({_s}) * {_vznz}
+			set x-coordinate of {_vector} to {_x} + {_ax} * (30 ^ 0.5 - (30 - {_t}) ^ 0.5) ^ 1.5
+			set y-coordinate of {_vector} to {_y} + {_t}
+			set z-coordinate of {_vector} to {_z} + {_az} * (30 ^ 0.5 - (30 - {_t}) ^ 0.5) ^ 1.5
+			drawDot count 1, particle "redstone", RGB 0, 16, 32, center {_vector}, visibleRange 100, keepFor 0.5 seconds
+			add 57 to {_s}
+			if {_s} > 360:
+				add -360 to {_s}
+			add -0.25 to {_t}
+		wait a tick

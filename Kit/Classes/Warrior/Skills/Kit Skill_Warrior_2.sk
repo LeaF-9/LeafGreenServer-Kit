@@ -1,0 +1,43 @@
+# Limiter Removal
+
+function kitSkill_Warrior_2(player: player):
+	toolCT({_player}, "Warrior", 2)
+	set {_now} to now
+	set {Stats.%{_player}%::LimiterRemoval} to true
+	set {Stats.%{_player}%::LimiterRemovalTime} to {_now}
+	kitMsg({_player}, "§5リミッターを外しました...")
+	playSound("entity.blaze.ambient", 1, 0.5, {_player})
+	drawDot count 5, particle "mobspell", RGB 255, 0, 0, center {_player}, visibleRange 30, keepFor 5 seconds
+	apply speed 2 to {_player} for 5 seconds
+	wait 5 seconds
+	if {Stats.%{_player}%::LimiterRemovalTime} is {_now}:
+		set {Stats.%{_player}%::LimiterRemoval} to false
+		drawDot count 5, particle "mobspell", RGB 0, 0, 255, center {_player}, visibleRange 30, keepFor 5 seconds
+		kitMsg({_player}, "§1リミッターが戻り,疲れてしまった...")
+		remove slowness from {_player}
+		apply slowness 3 to {_player} for 5 seconds
+		wait 5 seconds
+		delete {Stats.%{_player}%::LimiterRemoval}
+		if {Stats.%{_player}%::LimiterRemovalTime} is {_now}:
+			kitMsg({_player}, "§2疲れがとれた!")
+			remove slowness from {_player}
+			apply slowness 2 to {_player} for 1000000000 seconds
+	else:
+		delete {Stats.%{_player}%::LimiterRemoval}
+
+on damage:
+	if {Stats.%attacker%::FocusEnergy} is not set:
+		if {Stats.%attacker%::LimiterRemoval} is true:
+			{_FEattack} is not set
+			set damage to damage * 1.5
+			create a fake explosion at victim
+		else if {Stats.%attacker%::LimiterRemoval} is false:
+			{_FEattack} is not set
+			set damage to damage * 0.75
+	if {Stats.%victim%::FocusEnergy} is not set:
+		if {Stats.%victim%::LimiterRemoval} is true:
+			{_FEvictim} is not set
+			set damage to damage * 0.75
+		else if {Stats.%victim%::LimiterRemoval} is false:
+			{_FEvictim} is not set
+			set damage to damage * 1.5

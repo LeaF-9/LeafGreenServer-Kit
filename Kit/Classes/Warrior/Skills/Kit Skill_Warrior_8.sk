@@ -1,0 +1,108 @@
+# Sonic Boom
+
+on sneak toggle:
+	player is not sneaking
+	set {_tool} to player's tool
+	if kitItemAllChecker({_tool}, "Warrior", "Skill", 8) is true:
+		checkCT(player, name of {_tool}) is true
+		{Stats.%player%::SonicBoom} is not set
+		set {_num} to 0
+		wait a tick
+		set {_true} to false
+		while {_true} is false:
+			set {_tool} to player's tool
+			if player is not sneaking:
+				set {_true} to true
+			else if kitItemAllChecker({_tool}, "Warrior", "Skill", 8) is false:
+				delete {_true}
+			else if {_num} is 100:
+				set {_true} to true
+			else:
+				add 1 to {_num}
+				set {_linenum} to round({_num} / 2)
+				chargeActionBar(player, {_linenum}, 50)
+				# --- チャージ中の音の演出 ---
+				if mod({_num}, 5) is 0:
+					set {_sp} to {_num} / 50
+					playSound("block.wooden_button.click_on", 0.5, {_sp}, player, true)
+				# --------------------------
+				# --- チャージ中のパーティクルの演出 ---
+				drawDot count 1, particle "explosion", center player, visibleRange 30
+				# -----------------------------------
+				wait a tick
+		if {_true} is true:
+			set {_charge} to floor({_num} / 5)
+			set {Stats.%player%::SonicBoom} to {_charge}
+			playSound("block.beacon.ambient", 1, 2, player)  # ボワーンみたいな音
+			# --- ボワーンみたいな演出 ---
+			set {_baseloc} to location of player
+			loop 10 times:
+				set {_effloc} to {_baseloc}
+				add a random number between -5 and 5 to x-coordinate of {_effloc}
+				add a random number between -5 and 5 to z-coordinate of {_effloc}
+				add a random number between 0 and 3 to y-coordinate of {_effloc}
+				kitEffect_SonicBoom_1({_baseloc}, {_effloc})
+			# -------------------------
+			kitEffect_SonicBoom_2(player)  # Skill Itemの確認,action barとparticleの処理両方
+		else:
+			send action bar "§cチャージを中断しました" to player
+
+function kitSkill_Warrior_8(player: player):
+	toolCT({_player}, "Warrior", 8)
+	if {Stats.%{_player}%::SonicBoom} is not set:
+		set {Stats.%{_player}%::SonicBoom} to 1
+	kitMsg({_player}, "<##f0ffff>ソニックブーム!")
+	set {_baseloc} to location of head of {_player}
+	loop {Stats.%{_player}%::SonicBoom} times:
+		add 1 to {_metre}
+		set {_loc} to location {_metre} meters in front of {_baseloc}
+		add 1 to y-coordinate of {_loc}
+		drawDot count 1, particle "explosionlarge", center {_loc}, visibleRange 50
+		playSound("entity.player.attack.sweep", 1, 1, {_loc})
+		loop all entities in radius 3 around {_loc}:
+			{_hit::%id of loop-entity%} is not set
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_hit::%id of loop-entity%} to true
+			kitDamage({_player}, loop-entity, 3)
+		wait a tick
+	delete {Stats.%{_player}%::SonicBoom}
+
+function kitEffect_SonicBoom_1(from: location, to: location):
+	set {_vector} to setVector({_from}, {_to})
+	set {_distance} to distance between {_from} and {_to}
+	set yaw of {_from} to yaw of {_vector}
+	set pitch of {_from} to pitch of {_vector}
+	set {_meter} to {_distance} / 10
+	loop 10 times:
+		set {_eff} to location {_meter} * loop-number meters in front of {_from}
+		set {_g} to a random number between 200 and 255
+		set {_r} to a random number between 0 and {_g}
+		drawDot count 1, particle "redstone", RGB {_r}, {_g}, 255, center {_eff}, visibleRange 30
+		wait a tick
+
+function kitEffect_SonicBoom_2(player: player):
+	# アイテムを所持しているかどうかの確認
+	set {_true} to true
+	while {_true} is true:
+		set {_tool} to {_player}'s tool
+		if kitItemAllChecker({_tool}, "Warrior", "Skill", 8) is false:
+			set {_true} to false
+		else if {Stats.%{_player}%::SonicBoom} is not set:
+			delete {_true}
+		# 持っている際のパーティクル演出とAction Bar表記
+		if {_true} is true:
+			# --- 溜めてるよー的なパーティクル演出 ---
+			set {_effloc} to location of {_player}
+			add a random number between -1 and 1 to x-coordinate of {_effloc}
+			add a random number between -1 and 1 to z-coordinate of {_effloc}
+			add a random number between -0.5 and 2.5 to y-coordinate of {_effloc}
+			set {_g} to a random number between 200 and 255
+			set {_r} to a random number between 0 and {_g}
+			drawDot count 1, particle "redstone", RGB {_r}, {_g}, 255, center {_eff}, visibleRange 30
+			# -------------------------------------
+			send action bar "§f§lSonic Boom§eエネルギー保持中 §3§l右クリック§eで§6§l放出" to {_player}
+			wait a tick
+	# 持っていなかった際の処理とAction Bar表記
+	if {_true} is false:
+		delete {Stats.%{_player}%::SonicBoom}
+		send action bar "§c§lチャージが消滅しました" to {_player}

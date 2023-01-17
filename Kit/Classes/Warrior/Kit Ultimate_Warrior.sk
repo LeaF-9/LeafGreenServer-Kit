@@ -1,0 +1,79 @@
+# Overpowered Attack
+
+function kitUltWarrior(player: player):
+	message "§c10秒間,§4§lSpecial Sword§cが付与されます!" to {_player}
+	message "§cこの剣はスニーク長押しでチャージが出来ます!" to {_player}
+	message "§c2秒間チャージでパワーが貯まり,次に攻撃した敵を一撃で倒します!" to {_player}
+	delete {Stats.%{_player}%::SonicRevolution}
+	delete {Stats.%{_player}%::LegendaryAura}
+	set {_weapon} to kitPlayerWeaponItem({_player}, "Warrior", "main")
+	load yml "plugins/skript-yaml/Kit Classes/Warrior.yml" as "ultwarrior.%{_player}%"
+	set {_SpecialSword} to yml value "kititems.Special Sword" from "ultwarrior.%{_player}%"
+	set slot 0 of {_player} to {_SpecialSword}
+	set {Stats.%{_player}%::UltWarrior} to true
+	wait 10 seconds
+	unload yml "ultwarrior.%{_player}%"
+	if {Stats.%{_player}%::UltWarrior} is true:
+		set slot 0 of {_player} to {_weapon}
+	delete {Stats.%{_player}%::UltWarrior}
+	delete {Stats.%{_player}%::UltWarrior-OK}
+
+function kitEffect_UltWarrior(player: player):
+	while {Stats.%{_player}%::UltWarrior-OK} is true:
+		if {Stats.%{_player}%::UltWarrior} is not set:
+			delete {Stats.%{_player}%::UltWarrior-OK}
+		set {_loc} to location of {_player}
+		add 0.02 to {_dy}
+		if {_dy} >= 4:
+			set {_dy} to 0
+		if {_dy} > 2:
+			set {_y} to 2 - ({_dy} - 2)
+		else:
+			set {_y} to {_dy}
+		add {_y} to y-coordinate of {_loc}
+		add 9 to {_rad}
+		add 0.5 * sin({_rad}) to x-coordinate of {_loc}
+		add 0.5 * cos({_rad}) to z-coordinate of {_loc}
+		drawDot count 1, particle "angryvillager", center {_loc}, visibleRange 30
+		wait a tick
+
+on sneak toggle:
+	{Class::%player%} is "Warrior"
+	player is not sneaking
+	eif {Stats.%player%::UltWarrior} is true:
+		set {_SpecialSword} to yml value "kititems.Special Sword" from "ultwarrior.%player%"
+		player's tool is {_SpecialSword}
+		if {Stats.%player%::UltWarrior-OK} is not set:
+			set {_num} to 0
+			wait a tick
+			set {_true} to false
+			while {_true} is false:
+				if player is not sneaking:
+					delete {_true}
+				else if player's tool is not {_SpecialSword}:
+					delete {_true}
+				else if {_num} >= 40:
+					set {_true} to true
+				else:
+					add 1 to {_num}
+					chargeActionBar(player, {_num}, 40)
+					# 音の演出
+					set {_sound} to {_num} / 20
+					playSound("entity.experience_orb.pickup", 0.75, {_sound}, player)
+					# パーティクルの演出
+					drawDot count 1, particle "explosionlarge", center player, visibleRange 30
+					wait a tick
+			if {_true} is true:
+				playSound("entity.player.levelup", 1.2, 0.5, player)
+				kitMsg(player, "§4§lパワーが貯まりました!")
+				set {Stats.%player%::UltWarrior-OK} to true
+				kitEffect_UltWarrior(player)
+
+on damage:
+	if {Stats.%attacker%::UltWarrior-OK} is true:
+		set damage to 100
+		delete {Stats.%attacker%::UltWarrior-OK}
+		strike lightning effect at victim
+		loop 10 times:
+			set {_loc} to aroundEffect(victim)
+			drawDot count 1, particle "soul", center {_loc}, visibleRange 30

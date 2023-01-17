@@ -1,0 +1,53 @@
+# Sonic Revolution
+
+function kitSkill_Warrior_4(player: player):
+	set {_tool} to slot 0 of {_player}
+	if kitItemTypeChecker({_tool}) is "Weapon.main":
+		toolCT({_player}, "Warrior", 4)
+		set {Stats.%{_player}%::SonicRevolution} to true
+		kitMsg({_player}, "§b回転斬りをします...")
+		apply speed 2 to {_player} for 3 seconds
+		apply jump boost -2 to {_player} for 3 seconds
+		set {_weapon} to slot 0 of {_player}
+		set slot 0 of {_player} to a stick
+		set {_baseloc} to location of {_player}
+		subtract 0.25 from y-coordinate of {_baseloc}
+		set pitch of {_baseloc} to 0
+		spawn an armor stand at {_baseloc} with nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Pose:{RightArm:[350f,0f,270f]}}"
+		set metadata value "sonic-revolution" of spawned entity to "%{_player}%"
+		set spawned entity's tool to {_weapon}
+		set {_yaw} to yaw of {_baseloc}
+		loop 60 times:
+			set {_loc} to location of {_player}
+			subtract 0.25 from y-coordinate of {_loc}
+			playSound("entity.arrow.shoot", 0.75, 0.75, {_player})
+			set pitch of {_loc} to 0
+			add 54 to {_yaw}
+			if {_yaw} > 360:
+				set {_yaw} to {_yaw} - 360
+			set yaw of {_loc} to {_yaw}
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "sonic-revolution" of loop-entity is "%{_player}%"
+				teleport loop-entity to {_loc}
+			delete {_forn}
+			loop 5 times:
+				add 1 to {_forn}
+				set {_forb} to location {_forn} meters in front of {_loc}
+				add 1 to y-coordinate of {_forb}
+				drawDot count 1, particle "redstone", RGB 0, 191, 255, center {_forb}, visibleRange 30
+			loop all entities in radius 5 around {_player}:
+				{Class::%{_player}%} is "Warrior"
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				make {_player} damage loop-entity by 2
+			wait a tick
+		loop all entities:
+			type of loop-entity is an armor stand
+			metadata value "sonic-revolution" of loop-entity is "%{_player}%"
+			delete loop-entity
+		if {Stats.%{_player}%::SonicRevolution} is true:
+			set slot 0 of {_player} to {_weapon}
+			apply nausea 1 to {_player} for 10 seconds
+		delete {Stats.%{_player}%::SonicRevolution}
+	else:
+		send action bar "§c§lWeaponがありません" to {_player}

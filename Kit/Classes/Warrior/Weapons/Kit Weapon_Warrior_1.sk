@@ -1,0 +1,24 @@
+# Titan
+
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
+	{Class::%attacker%} is "Warrior"
+	set {_tool} to attacker's tool
+	if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 1) is true:
+		set {_c} to kitPercentDuel(attacker, victim, 10, true)
+		chance of {_c}%:
+			apply slowness 3 to victim for 3 seconds
+			playSound("entity.phantom.hurt", 1, 0.75, victim)
+			loop 5 times:
+				set {_baseloc} to location of victim
+				add 0.4 to {_y}
+				add {_y} to y-coordinate of {_baseloc}
+				set {_rad} to 0
+				loop 10 times:
+					set {_effloc} to {_baseloc}
+					add 0.5 * sin({_rad}) to x-coordinate of {_effloc}
+					add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
+					drawDot count 1, particle "mobspell", RGB 71, 38, 110, center {_effloc}, visibleRange 30
+					add 36 to {_rad}
+				wait a tick

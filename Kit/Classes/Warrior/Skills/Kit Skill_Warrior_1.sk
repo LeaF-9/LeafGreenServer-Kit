@@ -1,0 +1,40 @@
+# Focus Energy
+
+function kitSkill_Warrior_1(player: player):
+	if {Stats.%{_player}%::FocusEnergy} is true:
+		send action bar "§e§lまだ気合は入っています" to {_player}
+		stop
+	else:
+		kitMsg({_player}, "§5§l気合を込めた....")
+		set {Stats.%{_player}%::FocusEnergy} to true
+		toolCT({_player}, "Warrior", 1)
+		playSound("entity.wolf.growl", 1, 0.5, {_player})
+		while {Stats.%{_player}%::FocusEnergy} is true:
+			set {_loc} to location of {_player}
+			add 0.02 to {_dy}
+			if {_dy} >= 4:
+				set {_dy} to 0
+			if {_dy} > 2:
+				set {_y} to 2 - ({_dy} - 2)
+			else:
+				set {_y} to {_dy}
+			add {_y} to y-coordinate of {_loc}
+			add 9 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_loc}
+			add 0.5 * cos({_rad}) to z-coordinate of {_loc}
+			drawDot count 1, particle "flame", center {_loc}, visibleRange 30
+			wait a tick
+
+on damage:
+	if {Stats.%attacker%::FocusEnergy} is true:
+		set {_FEattack} to true
+		set damage to damage * 2
+		kitMsg(attacker, "§d力を思い切り振り絞った!")
+		delete {Stats.%attacker%::FocusEnergy}
+		playSound("entity.iron_golem.repair", 1, 0.75, attacker)
+	if {Stats.%victim%::FocusEnergy} is true:
+		set {_FEvictim} to true
+		set damage to damage * 2
+		kitMsg(victim, "§4おっと! 集中が切れてしまった!")
+		delete {Stats.%victim%::FocusEnergy}
+		playSound("entity.iron_golem.damage", 1, 0.75, victim)
