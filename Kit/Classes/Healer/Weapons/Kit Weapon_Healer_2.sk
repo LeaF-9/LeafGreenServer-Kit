@@ -1,0 +1,19 @@
+# Grace Rod
+
+function kitWeapon_Healer_2(player: player):
+	toolCT({_player}, "Healer", 2, "Weapon.main")
+	add 5 to {Kit-Odo::%{_player}%}
+	kitMsg({_player}, "§dオドを回復しました!")
+	playSound("block.note_block.chime", 1, 1.1, {_player})
+	loop all players in radius 5 around {_player}:
+		loop-player is not {_player}
+		{Join::%loop-player%} is "Kit"
+		add 1 to {Kit-Odo::%{_player}%}
+	set {_y} to 0
+	loop 5 times:
+		add 0.4 to {_y}
+		loop 3 times:
+			set {_el} to aroundEffect({_player})
+			set y-coordinate of {_el} to y-coordinate of location of {_player} + {_y}
+			drawDot count 1, particle "mobspell", RGB 0, 175, 204, center {_el}, visibleRange 30
+		wait a tick

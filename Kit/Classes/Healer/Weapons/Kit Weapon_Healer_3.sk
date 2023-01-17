@@ -1,0 +1,24 @@
+# Solace Rod
+
+function kitWeapon_Healer_3(player: player):
+	toolCT({_player}, "Healer", 3, "Weapon.main")
+	kitMsg({_player}, "§a周囲の味方に§d§l治癒§aを与えました...")
+	playSound("block.conduit.activate", 1, 1.5, {_player})
+	loop all entities in radius 10 around {_player}:
+		kitCheckTeam({_player}, loop-entity, true) is true
+		apply regeneration 1 to loop-entity for 10 seconds
+		healEffect(loop-entity)
+		if type of loop-entity is player:
+			setSupporter(loop-entity, {_player})
+			message formatted "§d%{_player}% §eから回復を授かった!" to loop-entity
+	set {_baseloc} to location of {_player}
+	loop 10 times:
+		add 1 to {_len}
+		loop 36 times:
+			set {_loc} to {_baseloc}
+			add 10 to {_rad}
+			add {_len} * sin({_rad}) to x-coordinate of {_loc}
+			add {_len} * cos({_rad}) to z-coordinate of {_loc}
+			drawDot count 1, particle "endrod", center {_loc}, visibleRange 30
+		add 1 to {_rad}
+		wait a tick

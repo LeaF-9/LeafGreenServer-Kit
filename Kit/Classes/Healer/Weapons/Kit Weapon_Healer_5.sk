@@ -1,0 +1,30 @@
+# Dealing Staff
+
+function kitWeapon_Healer_5(player: player):
+	if max health of {_player} is health of {_player}:
+		toolCT({_player}, "Healer", 5, "Weapon.main")
+		kitMsg({_player}, "§5命の取引を行います...")
+		set health of {_player} to 1
+		playSound("block.conduit.deactivate", 1, 0.5, {_player})
+		loop all players in radius 10 around {_player}:
+			metadata value "gametype" of loop-player is "Kit"
+			{team::%loop-player%} is {team::%{_player}%}
+			{Stats.%loop-player%::NoSupport} is not set
+			setSupporter(loop-player, {_player})
+			healEffect(loop-player)
+			if max health of loop-player = health of loop-player:
+				add 1 to max health of loop-player
+			kitHeal(loop-player, 100)
+			message formatted "<##ba55d3>取引により<##9932cc>命<##ba55d3>を頂いた..." to loop-player
+		set {_rad} to -45
+		set {_baseloc} to location of {_player}
+		loop 4 times:
+			add 90 to {_rad}
+			set {_el} to {_baseloc}
+			set yaw of {_el} to {_rad}
+			set pitch of {_el} to 0
+			loop 10 times:
+				set {_e} to location loop-number-2 meters in front of {_el}
+				drawDot count 1, particle "witchspell", center {_e}, visibleRange 30, keepFor a second
+	else:
+		kitMsg({_player}, "§c命が足りません...")

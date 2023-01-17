@@ -1,0 +1,33 @@
+# Fight Supporter
+
+function kitSkill_Healer_5(player: player):
+	if {Kit-Odo::%{_player}%} is more than 19:
+		toolCT({_player}, "Healer", 5)
+		subtract 20 from {Kit-Odo::%{_player}%}
+		playSound("block.respawn_anchor.charge", 1, 2, {_player})
+		kitMsg({_player}, "<##ff8c00>周辺の全員に<##d2691e>短時間の戦闘強化<##ff8c00>を付与した!")
+		loop all players in radius 5 around {_player}:
+			metadata value "gametype" of loop-player is "Kit"
+			loop-player is not {_player}
+			{Stats.%loop-player%::NoSupport} is not set
+			if {team::%loop-player%} is {team::%{_player}%}:
+				setSupporter(loop-player, {_player})
+			apply regeneration 3 to loop-player for 3 seconds
+			apply resistance 3 to loop-player for 3 seconds
+			drawDot count 3, particle "mobspell", RGB 255, 140, 0, center loop-player, visibleRange 30, keepFor 3 seconds
+			message formatted "<##ffd700>%{_player}% <##d2691e>に戦闘強化の効果を短時間貰った!" to loop-player
+		set {_y} to 0
+		loop 5 times:
+			set {_baseloc} to location of {_player}
+			set {_rad} to 0
+			loop 10 times:
+				add 36 to {_rad}
+				set {_el} to {_baseloc}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 255, 140, 0, center {_el}, visibleRange 30
+			add 0.5 to {_y}
+			wait a tick
+	else:
+		kitMsg({_player}, "§cオドが足りません! 必要オドは §320 §cです!")

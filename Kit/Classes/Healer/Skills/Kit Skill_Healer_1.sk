@@ -1,0 +1,19 @@
+# Healing Gift
+
+function kitSkill_Healer_1(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		set {_target} to {Stats.%{_player}%::SkillTarget}
+		if {Kit-Odo::%{_player}%} is more than 9:
+			toolCT({_player}, "Healer", 1)
+			subtract 10 from {Kit-Odo::%{_player}%}
+			setSupporter({_target}, {_player})
+			apply regeneration 2 to {_target} for 5 seconds
+			healEffect({_target})
+			kitMsg({_player}, "§a%{_target}% §dを回復しました!")
+			send action bar "§d現在のオド: §c%{Kit-Odo::%{_player}%}%" to {_player}
+			message formatted "§d%{_player}% §cから再生能力を授かった!" to {_target}
+			playSound("block.portal.travel", 0.5, 2, {_target})
+		else:
+			kitMsg({_player}, "§cオドが足りません! 必要オドは §310 §cです!")
+	else:
+		send action bar "§c§l対象を指定してください" to {_player}

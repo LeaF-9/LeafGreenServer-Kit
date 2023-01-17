@@ -1,0 +1,23 @@
+# Recovery Staff
+
+function kitWeapon_Healer_4(player: player):
+	if {Kit-Odo::%{_player}%} >= 1:
+		if {Stats.%{_player}%::SkillTarget} is set:
+			set {_target} to {Stats.%{_player}%::SkillTarget}
+			if max health of {_target} is not health of {_target}:
+				subtract 1 from {Kit-Odo::%{_player}%}
+				setSupporter({_target}, {_player})
+				healEffect({_target})
+				kitHeal({_target}, 0.25)
+				playSound("ambient.underwater.loop.additions", 1, 2, {_target})
+				set {_from} to vector of {_player}
+				set {_to} to vector of {_target}
+				set {_vector} to {_to} -- {_from}
+				set {_vector} to normalized {_vector}
+				set {_baseloc} to location of head of {_player}
+				set yaw of {_baseloc} to yaw of {_vector}
+				set pitch of {_baseloc} to pitch of {_vector}
+				set {_count} to distance between {_baseloc} and {_target} * 0.1
+				loop 10 times:
+					set {_el} to location {_count} * loop-number meters in front of {_baseloc}
+					drawDot count 1, particle "endrod", center {_el}, visibleRange 30

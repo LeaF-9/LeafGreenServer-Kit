@@ -1,0 +1,34 @@
+# Cure Orb
+
+function kitSkill_Healer_2(player: player):
+	if {Kit-Odo::%{_player}%} is more than 19:
+		toolCT({_player}, "Healer", 2)
+		subtract 20 from {Kit-Odo::%{_player}%}
+		shoot a snowball from {_player} at speed 2
+		set item of shot entity to heart of the sea
+		set metadata value "cureorb" of shot entity to "true"
+		drawDot count 1, particle "mobspell", RGB 0, 161, 233, center shot entity, visibleRange 30, keepFor 2 seconds
+		playSound("entity.arrow.shoot", 1, 2, {_player})
+	else:
+		kitMsg({_player}, "§cオドが足りません! 必要オドは §310 §cです!")
+
+on projectile hit:
+	projectile is a snowball
+	metadata value "cureorb" of projectile is "true"
+	playSound("block.end_portal_frame.fill", 1, 1.5, projectile)
+	loop all players in radius 5 around projectile:
+		loop-player is not shooter
+		loop-player is alive
+		{team::%loop-player%} is {team::%shooter%}
+		{Stats.%loop-player%::NoSupport} is not set
+		setSupporter(loop-player, shooter)
+		kitHeal(loop-player, 3)
+		kitMsg(shooter, "<##006eb0>%loop-player% <##00a1e9>を回復しました!")
+		message "<##006eb0>%shooter% <##00a1e9>に回復してもらった!" to loop-player
+		healEffect(loop-player)
+	loop all blocks in radius 5 around projectile:
+		loop-block is air
+		block below loop-block is not air
+		set {_l} to location of loop-block
+		subtract 0.4 from y-coordinate of {_l}
+		drawDot count 1, particle "mobspell", RGB 0, 161, 233, center {_l}, visibleRange 30, keepFor 1 second

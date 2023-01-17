@@ -1,0 +1,35 @@
+# Angel Healing
+
+function kitUltHealer(player: player):
+	message "§c効果中,空を飛ぶことが可能になります!" to {_player}
+	message "§c周辺の味方の体力を回復し,オドを増加させていきます!" to {_player}
+	message "§c既に満タンであれば,徐々に最大体力を増やします!" to {_player}
+	set {_c} to drawCount({_player})
+	drawWings style 6, particle1 "redstone", RGB 255, 255, 255, particle2 "redstone", RGB2 179, 255, 255, particle3 "mobspell", RGB3 229, 151, 178, center {_player}, id "%{_player}%-%{_c}%", angle 110, height 0, space 0.2, visibleRange 30, tps 0, second 3
+	allow fly for {_player}
+	loop 200 times:
+		delete {_og}
+		loop all players in radius 10 around {_player}:
+			loop-player is not {_player}
+			kitCheckTeam({_player}, loop-player, true) is true
+			add {_player} to {supporter.%loop-player%::*}
+			if max health of loop-player = health of loop-player:
+				if max health of loop-player < 13:
+					add 0.1 to {_mh.%loop-player%}
+					if {_mh.%loop-player%} is 4:
+						delete {_mh.%loop-player%}
+						add 1 to max health of loop-player
+						heal loop-player by 1 heart
+			else:
+				delete {_mh.%loop-player%}
+				heal loop-player by 0.1 hearts
+			healEffect(loop-player, 1)
+			set {_og} to true
+		if {_og} is true:
+			add 1 to {_ogn}
+			if {_ogn} is 20:
+				delete {_ogn}
+				add 10 to {Kit-Odo::%{_player}%}
+		wait a tick
+	stopEffect "%{_player}%-%{_c}%"
+	disallow fly for {_player}
