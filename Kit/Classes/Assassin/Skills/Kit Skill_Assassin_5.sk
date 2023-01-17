@@ -1,0 +1,49 @@
+# Pursuit
+
+function kitSkill_Assassin_5(player: player):
+	toolCT({_player}, "Assassin", 5)
+	kitMsg({_player}, "§5追撃を放ちます...")
+	playSound("block.anvil.land", 1, 2, {_player})
+	set {_baseloc} to location 1.5 meters in front of {_player}
+	add 1 to y-coordinate of {_baseloc}
+	loop all entities in radius 3 around {_baseloc}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		set {_damage} to 2
+		if {Stats.%loop-entity%::Pursuit} is set:
+			add 4 * {Stats.%loop-entity%::Pursuit} to {_damage}
+		kitMsg({_player}, "§1%loop-entity% §4にクリーンヒット!")
+		message "§4§l痛い! §5追撃がヒットした..." to loop-entity
+		playSound("entity.zombie.break_wooden_door", 1, 2, loop-entity)
+		drawDot count 1, particle "witchspell", center loop-entity, visibleRange 30
+		make {_player} damage loop-entity by {_damage}
+	set {_front} to 2.5
+	set {_lr} to 0
+	set {_length} to 5
+	set {_c} to 0
+	loop 15 times:
+		add 1 to {_c}
+		if {_c} is 3:
+			set {_c} to 0
+			subtract 1 from {_length}
+		set {_loc.l} to location {_front} meters in front of {_baseloc}
+		set {_loc.l} to location {_lr} meters to the left of {_loc.l}
+		set {_loc.r} to location {_front} meters in front of {_baseloc}
+		set {_loc.r} to location {_lr} meters to the right of {_loc.r}
+		set {_l} to 0
+		loop {_length} times:
+			set {_loc.l} to location {_l} meters in front of {_loc.l}
+			set {_loc.r} to location {_l} meters in front of {_loc.r}
+			drawDot count 1, particle "redstone", RGB 50, 0, 0, center {_loc.l}, visibleRange 30, keepFor 0.5 seconds
+			drawDot count 1, particle "redstone", RGB 50, 0, 0, center {_loc.r}, visibleRange 30, keepFor 0.5 seconds
+			add 0.1 to {_l}
+		add 0.2 to {_lr}
+		subtract 0.1 from {_front}
+
+function kitSkillSub_Assassin_5(victim: player, asn: number):
+	set {_now} to now
+	set {Stats.%{_victim}%::Pursuit} to {_asn}
+	set {Stats.%{_victim}%::PursuitTime} to {_now}
+	wait 3 seconds
+	if {Stats.%{_victim}%::PursuitTime} is {_now}:
+		delete {Stats.%{_victim}%::Pursuit}
+		delete {Stats.%{_victim}%::PursuitTime}

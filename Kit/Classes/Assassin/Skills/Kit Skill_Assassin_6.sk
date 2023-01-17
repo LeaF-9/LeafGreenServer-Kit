@@ -1,0 +1,79 @@
+# Poison Mist
+
+function kitSkill_Assassin_6(player: player):
+	toolCT({_player}, "Assassin", 6)
+	playSound("entity.arrow.shoot", 1, 0.5, {_player})
+	shoot a thrown potion of mundane from {_player} at speed 1
+	set metadata value "poisonmist" of shot thrown potion to "true"
+	drawDot count 3, particle "mobspell", RGB 0, 150, 0, center shot thrown potion, visibleRange 30, keepFor 1 second
+
+on projectile hit:
+	projectile is thrown potion
+	metadata value "poisonmist" of projectile is "true"
+	set {_l} to location of projectile
+	playSound("block.fungus.break", 1.5, 0.5, {_l})
+	loop 100 times:
+		delete {_jc}
+		delete {_eg::*}
+		set {_s} to 0
+		set {_t} to 0
+		set {_pl} to {_l}
+		loop 19 time:
+			loop 36 time:
+				set {_loc} to {_pl}
+				set {_vector} to {_loc}
+				set {_x} to x-coordinate of {_loc}
+				set {_y} to y-coordinate of {_loc}
+				set {_z} to z-coordinate of {_loc}
+				set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
+				set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
+				set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
+				chance of 10%:
+					drawDot count 1, particle "redstone", RGB 0, 100, 0, center {_vector}, visibleRange 100
+				add 10 to {_t}
+			add 10 to {_s}
+		loop all blocks in radius 5 around {_l}:
+			loop-block is passable
+			chance of 1%:
+				drawDot count 1, particle "mobspell", RGB 0, 100, 0, center location of loop-block, visibleRange 100
+		loop all entities in radius 5 around {_l}:
+			if kitCheckTeam(loop-entity, shooter, false) is true:
+				drawDot count 3, particle "mobspell", RGB 0, 150, 0, center loop-entity, visibleRange 30
+				set {_eg::%id of loop-entity%} to true
+				if {_jb::%id of loop-entity%} is not set:
+					set {_jb::%id of loop-entity%} to true
+					apply poison 3 to loop-entity for 10 seconds replacing existing effect
+			else if loop-entity is shooter:
+				loop-entity does not have glowing
+				set {_jc} to true
+				{Kit-Invisible::%shooter%} is not set
+				set {Kit-Invisible::%shooter%} to true
+				loop all players:
+					{Class::%loop-player%} is not "Engineer"
+					kitCheckTeam(loop-player, shooter, false) is true
+					hide shooter from loop-player
+		if {_jc} is not set:
+			if {Kit-Invisible::%shooter%} is true:
+				reveal shooter from all players
+				delete {Kit-Invisible::%shooter%}
+				send action bar "§b§l透明化が解除されました!" to shooter
+		loop all entities:
+			metadata value "gametype" of loop-entity is "Kit"
+			{_eg::%id of loop-entity%} is not set
+			{_jb::%id of loop-entity%} is true
+			remove poison from loop-entity
+			delete {_jb::%id of loop-entity%}
+		wait a tick
+	if {Kit-Invisible::%shooter%} is true:
+		reveal shooter from all players
+		delete {Kit-Invisible::%shooter%}
+		send action bar "§b§l透明化が解除されました!" to shooter
+	loop all entities:
+		{_eg::%id of loop-entity%} is true
+		{_jb::%id of loop-entity%} is true
+		remove poison from loop-entity
+
+on consume of potion:
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Assassin", "Skill", 6) is true
+	cancel event

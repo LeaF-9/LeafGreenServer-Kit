@@ -1,0 +1,42 @@
+# Psychopath
+
+function kitSkill_Assassin_7(player: player):
+	if {Stats.%{_player}%::Psychopath} is not set:
+		toolCT({_player}, "Assassin", 7)
+		playSound("particle.soul_escape", 1, 1, {_player})
+		kitMsg({_player}, "<##990000>敵を欺く準備をします...")
+		set {Stats.%{_player}%::Psychopath} to true
+		loop 5 times:
+			loop 3 times:
+				set {_loc} to aroundEffect({_player})
+				drawDot count 1, particle "cloud", center {_loc}, visibleRange 30
+			wait a second
+		if {Stats.%{_player}%::Psychopath} is true:
+			delete {Stats.%{_player}%::Psychopath}
+			kitMsg({_player}, "<##800000>敵を欺くことは出来なかった...")
+	else:
+		send action bar "§c§l現在Skill発動中です!" to {_player}
+
+on damage of player:
+	if {Stats.%attacker%::Psychopath} is true:
+		cancel event
+	if {Stats.%victim%::Psychopath} is true:
+		type of attacker is player
+		cancel event
+		delete {Stats.%victim%::Psychopath}
+		kitMsg(victim, "<##dc143c>うまく接近しました!")
+		loop 10 times:
+			set {_loc} to aroundEffect(victim)
+			drawDot count 1, particle "cloud", center {_loc}, visibleRange 30
+		message formatted "<##dc143c>敵が消えた!" to attacker
+		playSound("entity.evoker.prepare_wololo", 1, 0.8, attacker)
+		loop all blocks in radius 10 around attacker:
+			distance between loop-block and attacker >= 5
+			loop-block is passable
+			block above loop-block is passable
+			block below loop-block is not passable
+			add location of loop-block to {_rl::*}
+		set {_dl} to a random location out of {_rl::*}
+		delete {_rl::*}
+		kitInvisible(victim, 3 seconds)
+		teleport victim to {_dl}

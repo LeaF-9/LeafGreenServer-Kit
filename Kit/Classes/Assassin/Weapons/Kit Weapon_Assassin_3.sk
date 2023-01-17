@@ -1,0 +1,10 @@
+# Soul Breaker
+
+on death of player:
+	{LastKiller::%victim%} is set
+	{Class::%{LastKiller::%victim%}%} is "Assassin"
+	set {_tool} to {LastKiller::%victim%}'s tool
+	if kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 3) is true:
+		{LastKiller::%victim%} is alive
+		set {Kit-NoCorpse::%victim%} to true
+		kitHeal({LastKiller::%victim%}, 1)

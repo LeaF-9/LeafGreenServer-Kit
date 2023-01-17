@@ -1,0 +1,66 @@
+# Death Blow
+
+function kitUltAssassin(player: player):
+	message "§c10m以内の敵に右クリックで急接近できます!" to {_player}
+	message "§c周囲5mに敵が居なければ透明化が付与されます!" to {_player}
+	message "§c与えるダメージは1になってしまいますが," to {_player}
+	message "§c背後からうまく攻撃できれば一撃キル!" to {_player}
+	set {Stats.%{_player}%::UltAssassin} to true
+	loop 200 times:
+		delete {_enemy}
+		loop all players in radius 5 around {_player}:
+			{Join::%loop-player%} is "Kit"
+			{TrueTeam::%{_player}%} is not {TrueTeam::%loop-player%}
+			set {_enemy} to true
+		if {_enemy} is not set:
+			if {Kit-Invisible::%{_player}%} is not set:
+				set {Kit-Invisible::%{_player}%} to true
+				send action bar "§b§l透明化した!" to {_player}
+				loop all players:
+					{Join::%loop-player%} is "Kit"
+					{team::%loop-player%} is not {team::%{_player}%}
+					{Class::%loop-player%} is not "Engineer"
+					hide {_player} from loop-player
+		else:
+			if {Kit-Invisible::%{_player}%} is true:
+				reveal {_player} from all players
+				delete {Kit-Invisible::%{_player}%}
+				send action bar "§c§l透明化が解除された!" to {_player}
+			set {_eb} to aroundEffect({_player})
+			drawDot count 1, particle "mobspell", RGB 100, 0, 10, center {_eb}, visibleRange 30
+		wait a tick
+	delete {Stats.%{_player}%::UltAssassin}
+	if {Kit-Invisible::%{_player}%} is true:
+		reveal {_player} from all players
+		delete {Kit-Invisible::%{_player}%}
+		send action bar "§c§l透明化が解除された!" to {_player}
+
+on rightclick:
+	if {Stats.%player%::UltAssassin} is true:
+		set {_tp} to target player
+		{_tp} is set
+		set {_dis} to the distance between player and {_tp}
+		{_dis} <= 10
+		set {_yaw} to yaw of player
+		set {_tploc} to location of {_tp}
+		set {_tploc}'s yaw to {_yaw}
+		set {_tploc}'s pitch to 0
+		set {_tploc} to location 1 meter behind {_tploc}
+		teleport player to {_tploc}
+
+on damage:
+	{Class::%attacker%} is "Assassin"
+	if {Stats.%attacker%::UltAssassin} is true:
+		if victim's facing is attacker's facing:
+			set damage to 20
+			send action bar "§0§l暗殺に成功した..." to attacker
+			message "<##8b0000>暗殺されてしまった..." to victim
+			playSound("entity.wither.spawn", 1, 1, victim)
+			set {_l} to location of victim
+			loop 10 times:
+				set {_e} to aroundEffect(victim, 5)
+				set {_r} to a random number between 0 and 5
+				set y-coordinate of {_e} to y-coordinate of victim + {_r}
+				drawDot count 1, particle "witchspell", center {_e}, visibleRange 30
+		else:
+			set damage to 1

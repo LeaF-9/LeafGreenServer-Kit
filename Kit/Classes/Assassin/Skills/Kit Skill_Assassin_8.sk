@@ -1,0 +1,47 @@
+# Shadow Murder
+
+function kitSkill_Assassin_8(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		toolCT({_player}, "Assassin", 8)
+		set {_tl} to {Stats.%{_player}%::SkillLocation}
+		loop 10 times:
+			if {_ok} is not set:
+				add 1 to {_num}
+				set {_loc} to location {_num} meters above {_tl}
+				if block at {_loc} is not passable:
+					set {_ok} to true
+					set {_loc} to location below {_loc}
+		set {_yaw} to yaw of {_player}
+		add 180 to {_yaw}
+		if {_yaw} > 360:
+			set {_yaw} to {_yaw} - 360
+		set yaw of {_loc} to {_yaw}
+		kitMsg({_player}, "<##8a2be2>背後より暗殺を試みる...")
+		playSound("entity.enderman.teleport", 1, 0.75, {_player})
+		drawDot count 1, particle "mobspell", RGB 138, 43, 226, center {_player}, visibleRange 30, keepFor 5 seconds
+		teleport {_player} to {_loc}
+		loop 100 times:
+			if {_ok2} is not set:
+				if block 0.1 meters below {_player} is not passable:
+					set {_ok2} to true
+				wait a tick
+		if {_ok2} is true:
+			playSound("entity.zombie_villager.converted", 1, 1.5, {_player})
+			loop all players in radius 5 around {_player}:
+				if kitCheckTeam(loop-player, {_player}, false) is true:
+					kitSleep(loop-player, 3 seconds)
+			set {_bnm} to 1
+			set {_pl} to location of block at {_player}
+			loop 5 times:
+				loop all blocks in radius {_bnm} around {_player}:
+					loop-block is air
+					block below loop-block is not air
+					set {_bl} to location of loop-block
+					set {_bn} to {_bnm} - 1
+					if distance between {_bl} and {_pl} >= {_bn}:
+						add -0.3 to y-coordinate of {_bl}
+						drawDot count 3, particle "witchspell", center {_bl}, visibleRange 30
+				add 1 to {_bnm}
+				wait a tick
+	else:
+		send action bar "§c§l発動地点が有効ではありません!" to {_player}

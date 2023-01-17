@@ -1,0 +1,32 @@
+# Deceive Diamond
+
+function kitSkill_Assassin_2(player: player):
+	drop a diamond named "%{_player}%" at {_player}
+	set {_lore::*} to lore of {_player}'s tool
+	remove a diamond named "§5Deceive Diamond" with lore {_lore::*} from {_player}
+	set metadata value "gametype" of last dropped item to "Kit"
+	set metadata value "delete" of last dropped item to "%{_player}%"
+
+on pick up diamond:
+	if name of item is "§bGem":
+		stop
+	if {team::%name of item%} is {team::%player%}:
+		cancel the event
+	else:
+		if {Class::%player%} is "Thief":
+			message "§eおっと! §6お宝§eだ!" to player
+			message "§c攻撃力上昇 1§eと§c再生能力 1§eが付与された!" to player
+			playSound("entity.experience_orb.pickup", 1, 2, player)
+			apply strength 1 to player for 5 seconds
+			apply regeneration 1 to player for 5 seconds
+			wait a tick
+			remove all diamond named "%name of item%" from the player
+		else:
+			loop all players:
+				name of loop-player is name of item
+				LastKiller(player, loop-player)
+			apply blindness 1 to the player for 5 seconds
+			create a safe explosion of force 1 at the player
+			message "§5Noooooooooo!!!!!" to player
+			wait a tick
+			remove all diamond named "%name of item%" from the player

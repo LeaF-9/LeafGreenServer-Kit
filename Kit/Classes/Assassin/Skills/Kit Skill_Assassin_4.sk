@@ -1,0 +1,17 @@
+# Blind Spot
+
+function kitSkill_Assassin_4(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		set {_tg} to {Stats.%{_player}%::SkillTarget}
+		toolCT({_player}, "Assassin", 4)
+		set {_tploc} to location 1 meter behind {_tg}
+		set {_tploc}'s yaw to {_tg}'s yaw
+		set y-coordinate of {_tploc} to y-coordinate of {_tg}
+		teleport {_player} to {_tploc}
+		kitMsg({_player}, "§5§l%{_tg}% §7の背後にテレポートしました!")
+		playSound("entity.arrow.hit_player", 0.5, 0.5, {_tg})
+		# if kitCheckTeam({_tg}, {_player}, true) is true:
+		# 	set {_name} to display name of {Kit-Skill.Assassin::4}
+		# 	subtract 10 from {CT.%{_player}%::%{_name}%}
+	else:
+		send action bar "§c§l対象のプレイヤーがいません" to {_player}
