@@ -1,0 +1,100 @@
+# Meteoric Twinkle
+
+function kitSkill_Archer_4(player: player):
+	toolCT({_player}, "Archer", 4)
+	set {Stats.%{_player}%::HomingTwinkle} to true
+	kitMsg({_player}, "§9敵を感知する矢を上空へ放ちます...")
+	shoot an arrow from block 2 above {_player} at speed 1.5 upwards
+	set metadata value "twinkle" of shot arrow to "true"
+	set shooter of shot arrow to {_player}
+	drawDot count 3, particle "fireworkspark", center shot arrow, visibleRange 32, keepFor 0.5 seconds
+	playSound("entity.firework_rocket.launch", 1, 1, {_player})
+	wait 0.5 seconds
+	if {Stats.%{_player}%::HomingTwinkle} is true:
+		loop all projectiles:
+			loop-projectile is an arrow
+			metadata value "twinkle" of loop-projectile is "true"
+			shooter of loop-projectile is {_player}
+			set {_l} to location of loop-projectile
+			set {_from} to vector of loop-projectile
+			delete loop-projectile
+			playSound("entity.firework_rocket.blast", 1, 1, {_l})
+			loop all players in radius 50 around location of {_l}:
+				{team::%loop-player%} is not {team::%{_player}%}
+				set {_to} to vector of loop-player
+				set {_vector} to {_to} -- {_from}
+				set {_vector} to {_vector} ++ {_vector}
+				set {_vector} to normalized {_vector}
+				shoot an arrow from location of {_l} at speed 0.1 downwards
+				set metadata value "homingtwinkle" of shot arrow to "true"
+				set shooter of shot arrow to {_player}
+				set velocity of shot arrow to {_vector}
+				if {team::%loop-player%} is "red":
+					set {_R} to 255
+					set {_G} to 0
+					set {_B} to 0
+				else if {team::%loop-player%} is "blue":
+					set {_R} to 0
+					set {_G} to 0
+					set {_B} to 255
+				else if {team::%loop-player%} is "yellow":
+					set {_R} to 255
+					set {_G} to 255
+					set {_B} to 0
+				else if {team::%loop-player%} is "green":
+					set {_R} to 0
+					set {_G} to 255
+					set {_B} to 0
+				else:
+					set {_R} to 255
+					set {_G} to 0
+					set {_B} to 255
+				drawDot count 30, particle "redstone", XYZ {_R}, {_G}, {_B}, center shot arrow, visibleRange 32, keepFor 1 seconds
+				drawDot count 30, particle "mobspell", XYZ {_R}, {_G}, {_B}, center shot arrow, visibleRange 32, keepFor 1 seconds
+
+on projectile hit:
+	projectile is an arrow
+	metadata value "twinkle" of projectile is "true"
+	{Stats.%shooter%::HomingTwinkle} is true
+	delete {Stats.%shooter%::HomingTwinkle}
+	set {_l} to location of projectile
+	set {_from} to vector of location of projectile
+	playSound("entity.firework_rocket.blast", 1, 1, {_l})
+	loop all players in radius 50 around location of {_l}:
+		{team::%loop-player%} is not {team::%shooter%}
+		set {_to} to vector of location of loop-player
+		set {_vector} to {_to} -- {_from}
+		set {_vector} to {_vector} ++ {_vector}
+		set {_vector} to normalized {_vector}
+		shoot an arrow from location of {_l} at speed 0.1 downwards
+		set metadata value "homingtwinkle" of shot arrow to "true"
+		set shooter of shot arrow to shooter
+		set velocity of shot arrow to {_vector}
+		if {team::%loop-player%} is "red":
+			set {_R} to 255
+			set {_G} to 0
+			set {_B} to 0
+		else if {team::%loop-player%} is "blue":
+			set {_R} to 0
+			set {_G} to 0
+			set {_B} to 255
+		else if {team::%loop-player%} is "yellow":
+			set {_R} to 255
+			set {_G} to 255
+			set {_B} to 0
+		else if {team::%loop-player%} is "green":
+			set {_R} to 0
+			set {_G} to 255
+			set {_B} to 0
+		else:
+			set {_R} to 255
+			set {_G} to 0
+			set {_B} to 255
+		drawDot count 30, particle "redstone", XYZ {_R}, {_G}, {_B}, center shot arrow, visibleRange 32, keepFor 1 seconds
+		drawDot count 30, particle "mobspell", XYZ {_R}, {_G}, {_B}, center shot arrow, visibleRange 32, keepFor 1 seconds
+
+on damage of player:
+	damage was caused by projectile
+	projectile is an arrow
+	metadata value "homingtwinkle" of projectile is "true"
+	apply glowing 1 to victim for 5 seconds

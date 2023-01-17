@@ -1,0 +1,144 @@
+# Hawk Blast
+
+function kitSkill_Archer_7(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::HawkBlastNow} to {_now}
+	if {Stats.%{_player}%::HawkBlast} is not set:
+		set {Stats.%{_player}%::HawkBlast} to 0
+		set {Stats.%{_player}%::HawkBlastLoc} to location of head of {_player}
+		playSound("entity.phantom.bite", 1, 2, {_player})
+		kitMsg({_player}, "§f鷹を§b放出§fします...")
+	loop 5 times:
+		{_ok} is not set
+		if {Stats.%{_player}%::HawkBlast} < 100:
+			add 1 to {Stats.%{_player}%::HawkBlast}
+			set {_locnow} to location of head of {_player}
+			set {_baseloc} to {Stats.%{_player}%::HawkBlastLoc}
+			set yaw of {_baseloc} to yaw of {_locnow}
+			set pitch of {_baseloc} to pitch of {_locnow}
+			set {_block} to location 1 meter in front of {_baseloc}
+			set {Stats.%{_player}%::HawkBlastLoc} to {_block}
+			if block at {_block} is not passable:
+				set {_ok} to true
+			drawDot count 1, particle "endrod", center {_block}, visibleRange 100, keepFor 5 ticks
+			drawHawkBlast({_block})
+		else:
+			set {_ok} to true
+		wait a tick
+	playSound("entity.phantom.flap", 1, 2, {_block})
+	if {Stats.%{_player}%::HawkBlastNow} is {_now}:
+		set {_ok} to true
+	if {_ok} is true:
+		toolCT({_player}, "Archer", 7)
+		kitMsg({_player}, "<##f0f8ff>鷹が<##00bfff>炸裂<##f0f8ff>した!")
+		set {_bloc} to {Stats.%{_player}%::HawkBlastLoc}
+		delete {Stats.%{_player}%::HawkBlast}
+		delete {Stats.%{_player}%::HawkBlastNow}
+		delete {Stats.%{_player}%::HawkBlastLoc}
+		playSound("entity.phantom.hurt", 1, 0.5, {_bloc})
+		set {_y} to 0
+		set {_rad} to 0
+		set {_len} to 8
+		loop 16 times:
+			loop 9 times:
+				add 10 to {_rad}
+				add 0.06 to {_y}
+				subtract 0.06 from {_len}
+				set {_el} to {_bloc}
+				add {_len} * sin({_rad}) to x-coordinate of {_el}
+				add {_len} * cos({_rad}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				drawDot count 3, particle "redstone", RGB 200, 240, 250, center {_el}, visibleRange 100, keepFor 3 ticks
+				set {_el} to {_bloc}
+				set {_truerad} to {_rad} + 180
+				add {_len} * sin({_truerad}) to x-coordinate of {_el}
+				add {_len} * cos({_truerad}) to z-coordinate of {_el}
+				subtract {_y} from y-coordinate of {_el}
+				drawDot count 3, particle "redstone", RGB 200, 240, 250, center {_el}, visibleRange 100, keepFor 3 ticks
+			wait a tick
+		wait 4 ticks
+		set {_hig} to 8
+		loop 4 times:
+			loop 5 times:
+				subtract 0.4 from {_hig}
+				set {_el} to {_bloc}
+				add {_hig} to y-coordinate of {_el}
+				drawDot count 1, particle "endrod", center {_el}, visibleRange 100
+				set {_el} to {_bloc}
+				subtract {_hig} from y-coordinate of {_el}
+				drawDot count 1, particle "endrod", center {_el}, visibleRange 100
+			wait a tick
+		playSound("entity.phantom.death", 1, 0.8, {_bloc})
+		loop 100 times:
+			draw 1 endrod particle at {_bloc} with direction randomVector({_bloc}, 1) and speed 0.8, keepFor 1 tick
+		loop all entities in radius 8 around {_bloc}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			make {_player} damage loop-entity by 6
+			apply glowing 1 to loop-entity for 3 seconds
+			if type of loop-entity is player:
+				message formatted "§e鷹の閃光§6がヒットした!" to loop-entity
+
+function drawHawkBlast(loc: location):
+	set {_froloc} to location 0.6 meters in front of {_loc}
+	set {_yaw} to yaw of {_froloc} + 180
+	if {_yaw} >= 360:
+		subtract 360 from {_yaw}
+	set yaw of {_froloc} to {_yaw}
+# 胴体中心
+	loop 5 times:
+		set {_el} to location loop-number * 0.2 meters in front of {_froloc}
+		drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+# 尾
+	set {_cariloc} to location 1.2 meters in front of {_froloc}
+	set pitch of {_cariloc} to 0
+	set {_el} to location 0.1 meters to the left of {_cariloc}
+	drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+	set {_el} to location 0.1 meters to the right of {_cariloc}
+	drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+# 胴体端
+	set {_yokloc} to location 0.4 meters in front of {_loc}
+	set {_yaw} to yaw of {_yokloc} + 180
+	if {_yaw} >= 360:
+		subtract 360 from {_yaw}
+	set yaw of {_yokloc} to {_yaw}
+	loop 7 times:
+		set {_cariloc} to location loop-number * 0.1 meters in front of {_yokloc}
+		set pitch of {_cariloc} to 0
+		set {_el} to location 0.1 meters to the left of {_cariloc}
+		drawDot count 1, particle "redstone", RGB 50, 255, 255, center {_el}, visibleRange 100
+		set {_el} to location 0.1 meters to the right of {_cariloc}
+		drawDot count 1, particle "redstone", RGB 50, 255, 255, center {_el}, visibleRange 100
+# 背
+	set {_seloc} to location 0.3 meters in front of {_loc}
+	set {_yaw} to yaw of {_seloc} + 180
+	if {_yaw} >= 360:
+		subtract 360 from {_yaw}
+	set yaw of {_seloc} to {_yaw}
+	set pitch of {_seloc} to pitch of {_seloc} - 90
+	loop 3 times:
+		set {_upbaseloc} to location 0.1 * loop-number meters in front of {_seloc}
+		set {_upfroloc} to {_upbaseloc}
+		set pitch of {_upfroloc} to pitch of {_upfroloc} + 90
+		set {_upfroloc} to location 0.1 * loop-number meters in front of {_upfroloc}
+		loop 3 times:
+			set {_el} to location loop-number-2 * 0.1 meters in front of {_upfroloc}
+			drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+# 翼
+	set {_floc} to location 0.3 meters in front of {_loc}
+	set {_yaw} to yaw of {_floc} + 180
+	if {_yaw} >= 360:
+		subtract 360 from {_yaw}
+	set yaw of {_floc} to {_yaw}
+	loop 3 times:
+		set {_bloc} to location 0.1 * loop-number meters in front of {_floc}
+		loop 3 times:
+			set {_ploc} to {_bloc}
+			set pitch of {_ploc} to 0
+			set {_lloc} to location 0.2 * loop-number-1 meters to the left of {_ploc}
+			set {_rloc} to location 0.2 * loop-number-1 meters to the right of {_ploc}
+			set pitch of {_lloc} to pitch of {_bloc}
+			set pitch of {_rloc} to pitch of {_bloc}
+			set {_el} to location loop-number-2 * 0.1 meters in front of {_lloc}
+			drawDot count 1, particle "redstone", RGB 50 * loop-number-1, 255, 255, center {_el}, visibleRange 100
+			set {_el} to location loop-number-2 * 0.1 meters in front of {_rloc}
+			drawDot count 1, particle "redstone", RGB 50 * loop-number-1, 255, 255, center {_el}, visibleRange 100

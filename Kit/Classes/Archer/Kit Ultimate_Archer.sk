@@ -1,0 +1,71 @@
+# Impact Shot
+
+function kitUltArcher(player: player):
+	message "§c次に放つ矢が衝撃波に変わります!" to {_player}
+	message "§cこの衝撃波は100m先まで飛んでいきます!" to {_player}
+	message "§cこの衝撃波に当たると10ダメージと発光を10秒付与します!" to {_player}
+	set {Stats.%{_player}%::UltArcher} to true
+	loop 200 times:
+		if {Stats.%{_player}%::UltArcher} is true:
+			set {_el} to aroundEffect({_player})
+			drawDot count 1, particle "mobspell", RGB 255, 255, 0, center {_el}, visibleRange 30
+		wait a tick
+	if {Stats.%{_player}%::UltArcher} is true:
+		delete {Stats.%{_player}%::UltArcher}
+
+on shoot:
+	projectile is an arrow or a spectral arrow
+	{Stats.%shooter%::UltArcher} is true
+	cancel event
+	delete {Stats.%shooter%::UltArcher}
+	playSound("item.trident.thunder", 1, 1, shooter)
+	set {_loc} to location of shooter
+	add 1.6 to y-coordinate of {_loc}
+	set {_vector0} to {_loc}
+	set {_vector1} to {_loc}
+	set {_x} to x-coordinate of {_loc}
+	set {_y} to y-coordinate of {_loc}
+	set {_z} to z-coordinate of {_loc}
+	set {_alpha} to 0
+	loop 37 time:
+		set {_vx1} to {_loc}
+		set pitch of {_vx1} to 0
+		set {_vx} to location 1 meters to the right of {_vx1}
+		set {_vy} to {_loc}
+		set {_y1p} to pitch of {_vy}
+		set {_y2p} to abs({_y1p}) - 90
+		if {_y1p} < 0:
+			set {_y3p} to yaw of {_loc}
+			if {_y3p} < 180:
+				add 180 to {_y3p}
+			else:
+				add -180 to {_y3p}
+			set yaw of {_vy} to {_y3p}
+		set pitch of {_vy} to {_y2p}
+		set {_vy} to location 1 meters in front of {_vy}
+		set {_vz} to location 1 meters in front of {_loc}
+		set {_vector0} to location (3 * {_alpha}) meters in front of {_loc}
+		set {_v0x} to x-coordinate of {_vector0}
+		set {_v0y} to y-coordinate of {_vector0}
+		set {_v0z} to z-coordinate of {_vector0}
+		if ({_v0x} - {_x}) ^ 2 + ({_v0y} - {_y}) ^ 2 + ({_v0z} - {_z}) ^ 2 < 10201:
+			drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_vector0}, visibleRange 100, keepFor 1 seconds
+			playSound("entity.arrow.shoot", 1, 1, {_vector0})
+		set {_s} to 0
+		set {_t} to 0
+		loop 8 time:
+			add 1 to {_t}
+			loop 5 time:
+				set x-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-coordinate of {_vx} - {_x}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-coordinate of {_vy} - {_x}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (x-coordinate of {_vz} - {_x}) + {_x}
+				set y-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-coordinate of {_vx} - {_y}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-coordinate of {_vy} - {_y}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (y-coordinate of {_vz} - {_y}) + {_y}
+				set z-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-coordinate of {_vx} - {_z}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-coordinate of {_vy} - {_z}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (z-coordinate of {_vz} - {_z}) + {_z}
+				drawDot count 1, particle "redstone", RGB 255, 255, (32 * {_t}), center {_vector1}, visibleRange 100, keepFor 0.05 seconds
+				loop all entities in radius 1 around {_vector1}:
+					{_hit::%id of loop-entity%} is not set
+					kitCheckTeam(loop-entity, shooter, false, true) is true
+					set {_hit::%id of loop-entity%} to true
+					kitDamage(shooter, loop-entity, 7, true)
+					apply glowing 1 to loop-entity for 10 seconds
+				add 1 to {_s}
+		add 3 to {_alpha}
+		wait a tick

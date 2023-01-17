@@ -1,0 +1,34 @@
+# Arrow Guardian
+
+function kitSkill_Archer_8(player: player):
+	toolCT({_player}, "Archer", 8)
+	kitMsg({_player}, "<##f8f8ff>矢の護衛<##f0e68c>を展開します!")
+	playSound("item.trident.throw", 1, 0.5, {_player})
+	loop 200 times:
+		{_ok} is not set
+		set {_baseloc} to location of {_player}
+		set {_rad} to 0
+		loop 10 times:
+			set {_el} to {_baseloc}
+			add 3 * sin({_rad}) to x-coordinate of {_el}
+			add 3 * cos({_rad}) to z-coordinate of {_el}
+			add 1 to y-coordinate of {_el}
+			drawDot count 1, particle "redstone", RGB 100, 150, 255, center {_el}, visibleRange 30
+			add 36 to {_rad}
+		loop all entities in radius 3 around {_baseloc}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_ok} to true
+		wait a tick
+	if {_ok} is true:
+		kitMsg({_player}, "§b矢の護衛§cが発動した!")
+		playSound("item.trident.return", 1, 0.5, {_player})
+		set {_loc} to location of {_player}
+		loop 50 times:
+			set {_pl} to {_loc}
+			add 1 to y-coordinate of {_pl}
+			set yaw of {_pl} to a random number between 0 and 360
+			set pitch of {_pl} to a random number between -20 and 20
+			shoot an arrow from {_pl} at speed 1.5
+			set shooter of shot arrow to {_player}
+			set metadata value "arrowdamage" of shot arrow to 3
+			drawDot count 1, particle "mobspell", RGB 100, 150, 255, center shot arrow, visibleRange 30, keepFor 1 second

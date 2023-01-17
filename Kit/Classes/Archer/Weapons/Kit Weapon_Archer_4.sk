@@ -1,0 +1,18 @@
+# Holy Bow
+
+on shoot:
+	metadata value "gametype" of shooter is "Kit"
+	{Class::%shooter%} is "Archer"
+	set {_tool} to shooter's tool
+	if kitItemAllChecker({_tool}, "Archer", "Weapon.main", 4) is true:
+		set metadata value "holybow" of projectile to "true"
+
+on projectile hit:
+	metadata value "holybow" of projectile is "true"
+	set {_per} to kitPercent(shooter, 5, true)
+	chance of {_per}%:
+		strike lightning effect at projectile
+		loop all players in radius 3 around projectile:
+			{team::%loop-player%} is not {team::%shooter%}
+			kitDamage(shooter, loop-player, 1, true)
+			strike lightning effect at loop-player

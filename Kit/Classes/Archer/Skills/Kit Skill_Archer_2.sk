@@ -1,0 +1,51 @@
+# Force Snipe
+
+function kitSkill_Archer_2(player: player):
+	toolCT({_player}, "Archer", 2)
+	set {Stats.%{_player}%::ForceSnipe} to true
+	kitMsg({_player}, "§b§lForceSnipe§9を起動しました!")
+	kitMsg({_player}, "§35秒間の間矢の近くにいる敵にダメージを与えます!")
+	set {_time} to 100
+	while {_time} > 0:
+		wait a tick
+		subtract 1 from {_time}
+	kitMsg({_player}, "§b§lForceSnipe§3の効果が切れました")
+	delete {Stats.%{_player}%::ForceSnipe}
+
+on shoot:
+	{Stats.%shooter%::ForceSnipe} is true
+	projectile is an arrow or a spectral arrow
+	drawDot count 1, particle "redstone", RGB 0, 255, 255, center projectile, visibleRange 30, keepFor a second
+
+on projectile hit:
+	{Stats.%shooter%::ForceSnipe} is true
+	projectile is an arrow or a spectral arrow
+	playSound("entity.illusioner.cast_spell", 1, 2, location of projectile)
+	loop all entities in radius 3 around projectile:
+		kitCheckTeam(shooter, loop-entity, false) is true
+		set {_dis} to distance between projectile and loop-entity
+		set {_dis} to {_dis} * 2
+		set {_damage} to 6 - {_dis}
+		make shooter damage loop-entity by {_damage}
+		add loop-entity to {_sp::*}
+	set {_loc} to location of projectile
+	loop 10 times:
+		draw 1 critmagic particle at {_loc} with direction randomVector({_loc}, 1) and speed 3, keepFor 1 tick
+	loop 5 times:
+		add 0.4 to {_h}
+		loop {_sp::*}:
+			set {_rad} to 0
+			loop 10 times:
+				set {_el} to location of loop-value-2
+				add 36 to {_rad}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				add {_h} to y-coordinate of {_el}
+				drawDot count 1, particle "mobspell", RGB 0, 255, 255, center {_el}, visibleRange 30
+		wait a tick
+
+on damage:
+	damage was caused by projectile
+	projectile is an arrow
+	if {Stats.%attacker%::ForceSnipe} is true:
+		cancel event

@@ -1,0 +1,52 @@
+# Arrow Diffusion
+
+function kitSkill_Archer_6(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		toolCT({_player}, "Archer", 6)
+		kitMsg({_player}, "<##696969>矢を拡散するオブジェ<##ffa500>を設置します!")
+		set {_baseloc} to {Stats.%{_player}%::SkillLocation}
+		set pitch of {_baseloc} to 0
+		playSound("entity.guardian.attack", 1, 2, {_baseloc})
+		set {_rad} to 0
+		set {_y} to 0
+		loop 20 times:
+			loop 4 times:
+				set {_el} to {_baseloc}
+				set {_tr} to {_rad} + 90 * loop-number-2
+				add 0.5 * sin({_tr}) to x-coordinate of {_el}
+				add 0.5 * cos({_tr}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				drawDot particle "endrod", center {_el}, visibleRange 30
+			add 18 to {_rad}
+			add 0.1 to {_y}
+			wait a tick
+		playSound("entity.elder_guardian.curse", 1, 1, {_baseloc})
+		set yaw of {_baseloc} to 0
+		spawn armor stand at {_baseloc} with nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Marker:1b,ArmorItems:[{},{},{},{id:""skeleton_skull"",Count:1b}],HandItems:[{},{id:""bow"",Count:1b}],Pose:{RightLeg:[10f,30f,0f],LeftArm:[270f,30f,0f],RightArm:[270f,300f,0f]}}"
+		set metadata value "arrowdiffusion" of spawned armor stand to "%{_player}%"
+		loop 30 times:
+			draw 1 endrod particle at {_baseloc} with direction randomVector({_el}) and speed 0.3, keepFor 1 tick
+		wait 1 second
+		set {_yaw} to -45
+		loop 40 times:
+			add 45 to {_yaw}
+			if {_yaw} >= 360:
+				set {_yaw} to 0
+			set yaw of {_baseloc} to {_yaw}
+			loop all entities:
+				type of loop-entity is armor stand
+				metadata value "arrowdiffusion" of loop-entity is "%{_player}%"
+				teleport loop-entity to {_baseloc}
+			shoot an arrow from location 1.5 meters above {_baseloc} at speed 5
+			set metadata value "arrowdamage" of shot arrow to 2
+			set shooter of shot projectile to {_player}
+			set metadata value "arrowdf" of shot projectile to "true"
+			drawDot count 1, particle "cloud", center shot projectile, visibleRange 32, keepFor 0.5 seconds
+			playSound("entity.arrow.shoot", 1, 2, {_baseloc})
+			wait a tick
+		loop all entities:
+			type of loop-entity is armor stand
+			metadata value "arrowdiffusion" of loop-entity is "%{_player}%"
+			delete loop-entity
+	else:
+		send action bar "§c§l発動地点が有効ではありません!" to {_player}
