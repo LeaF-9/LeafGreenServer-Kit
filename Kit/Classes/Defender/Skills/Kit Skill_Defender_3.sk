@@ -1,0 +1,45 @@
+# Defense Matrix
+
+function kitSkill_Defender_3(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		toolCT({_player}, "Defender", 3)
+		set {_now} to now
+		set {Stats.%{_player}%::DefenseMatrix-Time} to {_now}
+		kitFakeDeleteData({_player}, "Defense Matrix")
+		set {_loc} to {Stats.%{_player}%::SkillLocation}
+		kitFakeBlock({_player}, {_loc}, "minecraft:beacon", "Defense Matrix")
+		kitMsg({_player}, "§9Defense Matrix§bを設置しました!")
+		playSound("block.anvil.land", 1, 0.5, {_loc})
+		while {Stats.%{_player}%::DefenseMatrix-Time} is {_now}:
+			wait a second
+			delete {_exist}
+			loop all entities:
+				type of loop-entity is armor stand
+				metadata value "kit-armor" of loop-entity is "Defense Matrix"
+				metadata value "Defense Matrix" of loop-entity is "%{_player}%"
+				set {_exist} to true
+			if {_exist} is true:
+				kitFakeReload({_player}, "Defense Matrix")
+			else:
+				delete {Stats.%{_player}%::DefenseMatrix-Time}
+	else:
+		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+
+on damage:
+	{Stats.%victim%::NoSupport} is not set
+	metadata value "gametype" of victim is "Kit"
+	loop all entities in radius 5 around victim:
+		{_a} is not set
+		type of loop-entity is armor stand
+		metadata value "kit-armor" of loop-entity is "Defense Matrix"
+		set {_player} to metadata value "Defense Matrix" of loop-entity parsed as player
+		kitCheckTeam({_player}, victim, true) is true
+		if {_player} is not victim:
+			if type of victim is player:
+				setSupporter(victim, {_player})
+		set {_a} to true
+		set damage to damage * 0.5
+		playSound("entity.zombie.attack_wooden_door", 1, 2, victim)
+		loop all blocks in radius 1.5 around location of block at loop-entity:
+			loop-block is air
+			drawDot count 3, particle "critmagic", center location of loop-block, visibleRange 30, keepFor 0.5 seconds

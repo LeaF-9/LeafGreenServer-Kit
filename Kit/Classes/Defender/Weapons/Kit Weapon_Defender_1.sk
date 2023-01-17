@@ -1,0 +1,16 @@
+# Club
+
+on damage of player:
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
+	{Class::%attacker%} is "Defender"
+	set {_tool} to attacker's tool
+	if kitItemAllChecker({_tool}, "Defender", "Weapon.main", 1) is true:
+		set {_per} to kitPercentDuel(attacker, victim, 5, true)
+		chance of {_per}%:
+			set damage to damage * 1.5
+			kitStun(victim, 3 seconds)
+			loop 3 times:
+				playSound("block.stone.break", 1, 1, victim)
+				drawDot count 3, particle "blockcrack", material dirt, center location 1 meters above victim, visibleRange 30
+				wait a tick

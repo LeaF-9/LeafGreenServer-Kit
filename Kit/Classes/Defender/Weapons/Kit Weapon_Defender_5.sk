@@ -1,0 +1,14 @@
+# Heat Hammer
+
+function kitWeapon_Defender_5(player: player):
+	toolCT({_player}, "Defender", 5, "Weapon.main")
+	playSound("entity.blaze.shoot", 1, 1.5, {_player})
+	set {_y} to 0
+	loop 20 times:
+		add 0.1 to {_y}
+		drawDot count 1, particle "flame", center {_player}, visibleRange 30, displacementXYZ 0, {_y}, 0, keepFor 1 second
+	set {_from} to vector of location 5 meters in front of {_player}
+	set {_to} to vector of {_player}
+	set {_vector} to {_from} -- {_to}
+	set {_vector} to normalized {_vector}
+	set velocity of {_player} to {_vector}

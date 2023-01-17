@@ -1,0 +1,24 @@
+# Bulldozer
+
+function kitWeapon_Defender_4(player: player):
+	toolCT({_player}, "Defender", 4, "Weapon.main")
+	set {_base} to location of {_player}
+	set pitch of {_base} to 0
+	set {_m} to 0
+	loop 5 times:
+		add 1 to {_m}
+		set {_l} to location {_m} meters in front of {_base}
+		loop all blocks in radius 1.5 around {_l}:
+			loop-block is air
+			block below loop-block is set
+			drawDot count 1, particle "blockcrack", material type of block below loop-block, center location 0.5 meters below loop-block, visibleRange 30
+		playSound("block.grass.break", 1, 0.8, {_l})
+		loop all players in radius 1.5 around {_l}:
+			kitCheckTeam({_player}, loop-player, false) is true
+			{_hit.%loop-player%} is not set
+			set {_hit.%loop-player%} to true
+			add {_player} to {damager.%loop-player%::*}
+			kitStun(loop-player, 5 seconds)
+			loop 5 times:
+				set {_el} to aroundEffect(loop-player)
+				drawDot count 1, particle "blockcrack", material dirt, center {_el}, visibleRange 30

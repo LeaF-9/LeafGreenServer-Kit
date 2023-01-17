@@ -1,0 +1,110 @@
+# Wall Protection
+
+on leftclick holding a heart of the sea:
+	name of player's tool contains "§3Wall Protection"
+	cancel event
+	{Class::%player%} is "Defender"
+	if name of player's tool contains "§9[5*9]":
+		set name of player's tool to "§3Wall Protection §9[9*5]"
+	else:
+		set name of player's tool to "§3Wall Protection §9[5*9]"
+
+function kitSkill_Defender_7(player: player):
+	if checkCT({_player}, "§3Wall Protection") is true:
+		setCT({_player}, "§3Wall Protection", 60)
+		playSound("entity.arrow.shoot", 1, 0.5, {_player})
+		set {Stats.%{_player}%::WPyaw} to yaw of {_player}
+		shoot a snowball from {_player} at speed 1.5
+		if name of {_player}'s tool contains "§9[5*9]":
+			set {_size} to "5*9"
+		else:
+			set {_size} to "9*5"
+		set metadata value "wallprotection" of shot entity to {_size}
+		drawDot count 3, particle "redstone", RGB 64, 224, 208, center shot entity, visibleRange 30, keepFor 1.5 seconds
+
+on projectile hit:
+	projectile is a snowball
+	metadata value "wallprotection" of projectile is set
+	set {_size} to metadata value "wallprotection" of projectile
+	if {_size} is "5*9":
+		set {_h} to 5
+		set {_w} to 5
+	else:
+		set {_h} to 9
+		set {_w} to 3
+	if {Stats.%shooter%::WPyaw} is between 225 and 315:
+		set {_dir} to true
+	if {Stats.%shooter%::WPyaw} is between 45 and 135:
+		set {_dir} to true
+	delete {Stats.%shooter%::WPyaw}
+	set {Stats.%shooter%::WallProtection} to true
+	kitMsg(shooter, "<##40e0d0>大きな壁を生成しました!")
+	playSound("block.glass.place", 1.5, 0.5, projectile)
+	set {_base} to location of block at projectile
+	loop {_w} times:
+		set {_wnum} to loop-number
+		if {_dir} is true:
+			set {_wlloc::%{_wnum}%} to location of block {_wnum} - 1 meters north of {_base}
+			set {_wrloc::%{_wnum}%} to location of block {_wnum} - 1 meters south of {_base}
+		else:
+			set {_wlloc::%{_wnum}%} to location of block {_wnum} - 1 meters east of {_base}
+			set {_wrloc::%{_wnum}%} to location of block {_wnum} - 1 meters west of {_base}
+		loop {_h} times:
+			set {_hnum} to loop-number-2
+			set {_hlloc::%{_hnum}%} to location of block {_hnum} - 1 meters above {_wlloc::%{_wnum}%}
+			set {_hrloc::%{_hnum}%} to location of block {_hnum} - 1 meters above {_wrloc::%{_wnum}%}
+		loop {_hlloc::*}:
+			if block at loop-value-2 is air:
+				set {_lb::%loop-value-2%} to loop-value-2
+				set block at loop-value-2 to blue glass
+		loop {_hrloc::*}:
+			if block at loop-value-2 is air:
+				set {_lb::%loop-value-2%} to loop-value-2
+				set block at loop-value-2 to blue glass
+	loop {_lb::*}:
+		add loop-value to {Block.%shooter%::*}
+	wait 10 seconds
+	delete {Stats.%shooter%::WallProtection}
+	playSound("block.glass.break", 1.5, 0.5, projectile)
+	loop {_lb::*}:
+		if block at loop-value is not air:
+			set block at loop-value to air
+			drawDot count 1, particle "blockcrack", material blue glass, center loop-value, visibleRange 30
+		remove loop-value from {Block.%shooter%::*}
+
+on break of blue glass:
+	metadata value "gametype" of player is "Kit"
+	cancel event
+	wait a tick
+	loop all players:
+		{Stats.%loop-player%::WallProtection} is true
+		{Block.%loop-player%::*} contains event-location
+		set {_ok} to true
+	if {_ok} is true:
+		playSound("block.glass.break", 1, 1, event-location)
+		set block at event-location to light blue glass
+
+on break of light blue glass:
+	metadata value "gametype" of player is "Kit"
+	cancel event
+	wait a tick
+	loop all players:
+		{Stats.%loop-player%::WallProtection} is true
+		{Block.%loop-player%::*} contains event-location
+		set {_ok} to true
+	if {_ok} is true:
+		playSound("block.glass.break", 1, 1, event-location)
+		set block at event-location to white glass
+
+on break of white glass:
+	metadata value "gametype" of player is "Kit"
+	cancel event
+	wait a tick
+	loop all players:
+		{Stats.%loop-player%::WallProtection} is true
+		{Block.%loop-player%::*} contains event-location
+		set {_ok} to loop-player
+	if {_ok} is set:
+		playSound("block.glass.break", 1, 1, event-location)
+		set block at event-location to air
+		remove event-location from {Block.%{_ok}%::*}

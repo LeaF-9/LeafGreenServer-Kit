@@ -1,0 +1,14 @@
+# Basher
+
+on damage of player:
+	victim is blocking
+	name of victim's offhand tool is "§6Wooden Shield"
+	set {_per} to kitPercent(victim, 10, true)
+	chance of {_per}%:
+		cancel event
+		playSound("block.anvil.place", 1, 0.8, victim)
+		add 1 to {Stats.%victim%::WoodenShield}
+		add 34 to damage value of victim's offhand tool
+		if {Stats.%victim%::WoodenShield} >= 10:
+			delete victim's offhand tool
+			playSound("entity.item.break", 1, 0.5, victim)

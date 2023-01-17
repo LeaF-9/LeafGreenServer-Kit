@@ -1,0 +1,40 @@
+# Body Impact
+
+function kitSkill_Defender_4(player: player):
+	toolCT({_player}, "Defender", 4)
+	kitMsg({_player}, "§c正面に突進します!")
+	playSound("entity.wither.shoot", 1, 0.5, {_player})
+	drawDot particle "explosionlarge", center {_player}, visibleRange 30, keepFor 1 second
+	set {_ff} to location 100 meters in front of {_player}
+	set y-coordinate of {_ff} to y-coordinate of {_player}
+	loop 20 times:
+		set {_f} to location 10 meters in front of {_player}
+		set y-coordinate of {_f} to y-coordinate of {_player}
+		set {_dx} to x-coordinate of {_ff} - x-coordinate of {_f}
+		if {_dx} > 0:
+			set x-coordinate of {_ff} to x-coordinate of {_ff} - 0.1
+		else if {_dx} < 0:
+			set x-coordinate of {_ff} to x-coordinate of {_ff} + 0.1
+		set {_dz} to z-coordinate of {_ff} - z-coordinate of {_f}
+		if {_dz} > 0:
+			set z-coordinate of {_ff} to z-coordinate of {_ff} - 0.1
+		else if {_dz} < 0:
+			set z-coordinate of {_ff} to z-coordinate of {_ff} + 0.1
+		set {_from} to vector of {_ff}
+		set {_to} to vector of {_player}
+		set {_vector} to {_from} -- {_to}
+		set {_vector} to normalized {_vector}
+		set x of {_vector} to x of {_vector} * 0.75
+		set y of {_vector} to y of {_vector} * 0.75
+		set z of {_vector} to z of {_vector} * 0.75
+		set velocity of {_player} to {_vector}
+		loop all entities in radius 2 around {_player}:
+			kitCheckTeam({_player}, loop-entity, false) is true
+			make {_player} damage loop-entity by 6
+			make a fake explosion at loop-entity
+			push loop-entity upwards at speed 1
+			set {_from2} to vector of loop-entity
+			set {_vector2} to {_from2} -- {_to}
+			set {_vector2} to normalized {_vector2}
+			set velocity of loop-entity to {_vector2}
+		wait a tick

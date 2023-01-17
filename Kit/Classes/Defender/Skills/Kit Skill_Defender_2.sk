@@ -1,0 +1,22 @@
+# Complete Barrier
+
+function kitSkill_Defender_2(player: player):
+	toolCT({_player}, "Defender", 2)
+	set {Stats.%{_player}%::Invincible} to true
+	kitMsg({_player}, "§b3秒間完全にダメージを無効化します!")
+	playSound("block.piston.extend", 1, 0.5, {_player})
+	loop 60 times:
+		add 36 to {_rad}
+		set {_y} to 0
+		set {_baseloc} to location of {_player}
+		loop 3 times:
+			set {_el} to {_baseloc}
+			add 0.5 to {_y}
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			add {_y} to y-coordinate of {_el}
+			drawDot count 1, particle "redstone", RGB 0, 0, 200, center {_el}, visibleRange 30
+		wait a tick
+	delete {Stats.%{_player}%::Invincible}
+	kitMsg({_player}, "§9ダメージ無効効果が切れました")
+	playSound("block.piston.contract", 1, 0.5, {_player})

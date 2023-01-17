@@ -1,0 +1,79 @@
+# Guard Crash
+
+function kitSkill_Defender_8(player: player):
+	set {_armor::helmet} to helmet of {_player}
+	set {_armor::chestplate} to chestplate of {_player}
+	set {_armor::leggings} to leggings of {_player}
+	set {_armor::boots} to boots of {_player}
+	loop {_armor::*}:
+		if loop-value is not air:
+			set {_ok} to true
+	if {_ok} is true:
+		toolCT({_player}, "Defender", 8)
+		set {Stats.%{_player}%::GuardCrash} to true
+		kitShield({_player}, 10)
+		kitMsg({_player}, "<##b22222>防具を壊して<##20b2aa>シールドを張ります!")
+		set helmet of {_player} to air
+		set chestplate of {_player} to air
+		set leggings of {_player} to air
+		set boots of {_player} to air
+		playSound("block.enchantment_table.use", 1, 1.5, {_player})
+		loop all players in radius 5 around {_player}:
+			loop-player is not {_player}
+			kitCheckTeam(loop-player, {_player}, true) is true
+			{Stats.%loop-player%::NoSupport} is not set
+			apply resistance 2 to loop-player for 5 seconds
+			message "§5%{_player}% §eに耐性を貰った!" to loop-player
+		remove slowness from {_player}
+		apply speed 2 to {_player} for 5 seconds
+		set {_baseloc} to location of {_player}
+		loop 100 times:
+			if loop-number is between 1 and 5:
+				add 0.5 to {_y}
+				set {_rad} to 0
+				loop 72 times:
+					set {_el} to {_baseloc}
+					add 18 to {_rad}
+					add 5 * sin({_rad}) to x-coordinate of {_el}
+					add 5 * cos({_rad}) to z-coordinate of {_el}
+					add {_y} to y-coordinate of {_el}
+					drawDot count 1, particle "redstone", RGB 178, 34, 34, center {_el}, visibleRange 30
+				wait a tick
+			if {Stats.%{_player}%::GuardCrash} is true:
+				if {Kit-Shield::%{_player}%} is set:
+					set {_loc} to location of {_player}
+					add 0.02 to {_dy}
+					if {_dy} >= 4:
+						set {_dy} to 0
+					if {_dy} > 2:
+						set {_y.f} to 2 - ({_dy} - 2)
+					else:
+						set {_y.f} to {_dy}
+					add {_y.f} to y-coordinate of {_loc}
+					add 9 to {_rad}
+					add 0.5 * sin({_rad}) to x-coordinate of {_loc}
+					add 0.5 * cos({_rad}) to z-coordinate of {_loc}
+					drawDot count 1, particle "flame", center {_loc}, visibleRange 30
+				else:
+					set {Stats.%{_player}%::GuardCrash} to false
+					playSound("block.respawn_anchor.deplete", 1.5, 1, {_player})
+					apply strength 2 to {_player} for 5 seconds
+					kitMsg({_player}, "§9シールド§cの崩壊で§4§l暴走した!")
+					set {_gl} to location of {_player}
+					add 1 to y-coordinate of {_gl}
+					loop 50 times:
+						draw 1 flame particle at {_gl} with direction randomVector({_gl}) and speed 0.5, keepFor 1 tick
+			wait a tick
+		{Stats.%{_player}%::GuardCrash} is set
+		kitMsg({_player}, "§4Guard Crash§eの効果が終了しました")
+		remove strength from {_player}
+		delete {Kit-Shield::%{_player}%}
+		delete {Kit-ShieldTime::%{_player}%}
+		apply ambient slowness 3 to {_player} for 10000000000 seconds
+		set helmet of {_player} to {_armor::helmet}
+		set chestplate of {_player} to {_armor::chestplate}
+		set leggings of {_player} to {_armor::leggings}
+		set boots of {_player} to {_armor::boots}
+		delete {Stats.%{_player}%::GuardCrash}
+	else:
+		send action bar "§c防具がないため発動できません" to {_player}
