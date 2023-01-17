@@ -1,0 +1,147 @@
+# Magical Confusion
+
+function kitUltWizard(player: player):
+	message "§c特大魔法の杖を手に入れました!" to {_player}
+	message "§cこの杖でクリックした位置に魔法陣を展開します!" to {_player}
+	message "§c魔法陣内の敵にダメージを与えた後にマナを回復します!" to {_player}
+	message "§c9秒間,魔法陣内でSkillを発動するとマナ消費が0になります!" to {_player}
+	wait a tick
+	give a netherite hoe named "§5§lMagical Confusion" to {_player}
+
+on rightclick holding a netherite hoe:
+	name of player's tool is "§5§lMagical Confusion"
+	cancel event
+	set {_tp} to target block
+	if {_tp} is set:
+		remove a netherite hoe named "§5§lMagical Confusion" from player
+		set {_tpl} to location of {_tp}
+		set {_base} to location 0.6 meters above {_tpl}
+#	光線発射で魔法陣展開
+		set {_pb} to location of player
+		add 1.5 to y-coordinate of {_pb}
+		set {_dis} to round(distance between {_pb} and {_base})
+		set {_n} to 0
+		loop {_dis} times:
+			add 1 to {_n}
+			set {_el} to location {_n} meters in front of {_pb}
+			drawDot count 1, particle "endrod", center {_el}, visibleRange 30
+#	魔法陣の展開
+		set {_tick} to 20
+		set {_n.k} to 0
+		set {_n.g} to 0
+		set {_n.e} to 0
+		set pitch of {_effbaseloc} to 0
+		playSound("block.respawn_anchor.set_spawn", 1.9, 1, {_base})
+		loop 20 times:
+			set {_time} to "%{_tick}% ticks" parsed as time span
+#		弧を描く
+			loop 3 times:
+				set {_effbaseloc} to {_base}
+				add 10 * sin({_n.k}) to x-coordinate of {_effbaseloc}
+				add 10 * cos({_n.k}) to z-coordinate of {_effbaseloc}
+				add {_effbaseloc} to {_effloc::*}
+				drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_effbaseloc}, visibleRange 100, keepFor {_time}
+				add 6 to {_n.k}
+#		弦を描く
+			if loop-number is between 1 and 6:
+				if {_l.A} is not set:
+					set {_l.A} to {_base}
+					set yaw of {_l.A} to 120
+					add 10 * sin(90) to x-coordinate of {_l.A}
+					add 10 * cos(90) to z-coordinate of {_l.A}
+				if {_l.B} is not set:
+					set {_l.B} to {_base}
+					set yaw of {_l.B} to 0
+					add 10 * sin(210) to x-coordinate of {_l.B}
+					add 10 * cos(210) to z-coordinate of {_l.B}
+				if {_l.C} is not set:
+					set {_l.C} to {_base}
+					set yaw of {_l.C} to 240
+					add 10 * sin(330) to x-coordinate of {_l.C}
+					add 10 * cos(330) to z-coordinate of {_l.C}
+				if {_l.D} is not set:
+					set {_l.D} to {_base}
+					set yaw of {_l.D} to 180
+					add 10 * sin(30) to x-coordinate of {_l.D}
+					add 10 * cos(30) to z-coordinate of {_l.D}
+				if {_l.E} is not set:
+					set {_l.E} to {_base}
+					set yaw of {_l.E} to 60
+					add 10 * sin(150) to x-coordinate of {_l.E}
+					add 10 * cos(150) to z-coordinate of {_l.E}
+				if {_l.F} is not set:
+					set {_l.F} to {_base}
+					set yaw of {_l.F} to 300
+					add 10 * sin(270) to x-coordinate of {_l.F}
+					add 10 * cos(270) to z-coordinate of {_l.F}
+				loop 3 times:
+					add sqrt(3) / 2 to {_n.g}
+#				A-B
+					set {_loc.g} to location {_n.g} meters in front of {_l.A}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+#				D-E
+					set {_loc.g} to location {_n.g} meters in front of {_l.D}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+			else if loop-number is between 7 and 12:
+				if {_n.g} > 15:
+					set {_n.g} to 0
+				loop 3 times:
+					add sqrt(3) / 2 to {_n.g}
+#				B-C
+					set {_loc.g} to location {_n.g} meters in front of {_l.B}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+#				E-F
+					set {_loc.g} to location {_n.g} meters in front of {_l.E}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+			else if loop-number is between 13 and 18:
+				if {_n.g} > 15:
+					set {_n.g} to 0
+				loop 3 times:
+					add sqrt(3) / 2 to {_n.g}
+#				C-A
+					set {_loc.g} to location {_n.g} meters in front of {_l.C}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+#				F-D
+					set {_loc.g} to location {_n.g} meters in front of {_l.F}
+					add {_loc.g} to {_effloc::*}
+					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+			subtract 1 from {_tick}
+			add 1 to {_n.e}
+			loop all blocks in radius 10 around {_base}:
+				loop-block is air
+				chance of ({_n.e} / 10)%:
+					drawDot count 1, particle "mobspell", RGB 0, 123, 187, center location of loop-block, visibleRange 100
+			wait a tick
+		playSound("block.respawn_anchor.deplete", 1.9, 0.5, {_base})
+		loop all players in radius 10 around {_base}:
+			{TrueTeam::%loop-player%} is not {TrueTeam::%player%}
+			kitDamage(player, loop-player, 5, true)
+			apply wither 3 to loop-player for 5 seconds
+			message "<##e2041b>§l魔力爆発に巻き込まれてしまった!" to loop-player
+			add 10 to {Kit-Mana::%player%}
+			loop 5 times:
+				set {_el} to aroundEffect(loop-player)
+				drawDot count 1, particle "mobspell", RGB 226, 4, 27, center {_el}, visibleRange 30
+		loop all blocks in radius 10 around {_base}:
+			loop-block is air
+			chance of 10%:
+				drawDot count 1, particle "blockcrack", material blue ice block, center location of loop-block, visibleRange 100
+		loop {_effloc::*}:
+			drawDot count 1, particle "redstone", RGB 226, 4, 27, center loop-value, visibleRange 100, keepFor 9 seconds
+		loop 180 times:
+			if distance between player and {_base} <= 10:
+				set {Stats.%player%::UltWizard} to true
+				loop 3 times:
+					set {_el} to aroundEffect(player)
+					drawDot count 1, particle "redstone", RGB 226, 4, 27, center {_el}, visibleRange 30
+			else:
+				delete {Stats.%player%::UltWizard}
+			wait a tick
+		delete {Stats.%player%::UltWizard}
+	else:
+		send action bar "§c§l目先にブロックがありません" to player

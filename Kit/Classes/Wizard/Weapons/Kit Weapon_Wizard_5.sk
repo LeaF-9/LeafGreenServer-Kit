@@ -1,0 +1,69 @@
+# Light Wand
+
+function kitWeapon_Wizard_5(player: player):
+	if {Stats.%player%::LightWand} is true:
+		set {_mana} to kitManaCalc({_player}, 10)
+		if {Kit-Mana::%{_player}%} >= {_mana}:
+			toolCT({_player}, "Wizard", 5, "Weapon.main")
+			subtract {_mana} from {Kit-Mana::%{_player}%}
+			playSound("block.respawn_anchor.deplete", 1, 2, {_player})
+			set {_baseloc} to location of {_player}
+			add 1.5 to y-coordinate of {_baseloc}
+			set {_c} to 0
+			loop 15 times:
+				add 1 to {_c}
+				set {_loc} to location {_c} meters in front of {_baseloc}
+				drawDot count 1, particle "critmagic", center {_loc}, visibleRange 100, keepFor 1 seconds
+				loop all entities in radius 2 around {_loc}:
+					kitCheckTeam(loop-entity, {_player}, false) is true
+					{_hit.%id of loop-entity%} is not set
+					set {_hit.%id of loop-entity%} to true
+					kitDamage({_player}, loop-entity, 2, true)
+					apply glowing 1 to loop-entity for 5 seconds
+		else:
+			send action bar "§4§lマナが足りません!" to {_player}
+	else:
+		send action bar "§4§lチャージが完了していません!" to {_player}
+
+function kitWeaponSub_Wizard_5(player: player):
+	set {_mana} to kitManaCalc({_player}, 10)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		set {_num} to 0
+		wait a tick
+		set {_true} to false
+		while {_true} is false:
+			set {_tool} to {_player}'s tool
+			if {_player} is not sneaking:
+				delete {_true}
+			else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is false:
+				delete {_true}
+			else if {_num} is 60:
+				set {_true} to true
+			if {_true} is false:
+				# --- チャージ中の音の演出 ---
+				# --------------------------
+				# --- チャージ中のパーティクル演出 ---
+				# ---------------------------------
+				wait a tick
+		if {_true} is true:
+			set {Stats.%{_player}%::LightWand} to true
+			# --- チャージ完了時の音の演出 ---
+			# ------------------------------
+			while {_true} is true:
+				set {_tool} to {_player}'s tool
+				if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is false:
+					delete {_true}
+				else if {Stats.%{_player}%::LightWand} is not set:
+					set {_true} to false
+				else:
+					send action bar "§e§lLight Wand §bのチャージが完了しました!" to {_player}
+					# --- チャージ完了中のパーティクルの演出 ---
+					# ---------------------------------------
+				wait a tick
+			if {_true} is not set:
+				send action bar "§cチャージが中断されました!" to {_player}
+				delete {Stats.%{_player}%::LightWand}
+		else:
+			send action bar "§cチャージが中断されました!" to {_player}
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}

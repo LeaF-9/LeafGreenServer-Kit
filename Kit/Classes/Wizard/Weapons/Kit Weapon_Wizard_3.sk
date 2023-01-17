@@ -1,0 +1,11 @@
+# Magic Wand
+
+function kitWeapon_Wizard_3(player: player):
+	set {_mana} to kitManaCalc({_player}, 5)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 3, "Weapon.main")
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+		playSound("entity.arrow.shoot", 1, 2, {_player})
+		shoot a thrown potion of harming from {_player} at speed 0.8
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}

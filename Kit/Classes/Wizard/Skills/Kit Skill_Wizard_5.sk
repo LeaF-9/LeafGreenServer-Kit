@@ -1,0 +1,12 @@
+# Drain Magic
+
+function kitSkill_Wizard_5(player: player):
+	set {_mana} to kitManaCalc({_player}, 10)
+	if {Kit-Mana::%{_player}%} >= {_mana}:
+		toolCT({_player}, "Wizard", 5)
+		shoot a snowball from {_player} at speed 1
+		set metadata value "magic" of shot snowball to "drain"
+		drawDot count 10, particle "mobspell", RGB 0, 100, 0, center shot entity, visibleRange 32, keepFor 1 second
+		subtract {_mana} from {Kit-Mana::%{_player}%}
+	else:
+		send action bar "§4§lマナが足りません!" to {_player}

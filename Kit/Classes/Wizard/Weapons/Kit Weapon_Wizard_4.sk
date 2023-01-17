@@ -1,0 +1,63 @@
+# Moon Rod
+
+function kitWeapon_Wizard_4(player: player):
+	set {_num} to 0
+	wait a tick
+	set {_true} to true
+	while {_true} is true:
+		set {_tool} to {_player}'s tool
+		set {_mana} to kitManaCalc(player, 3)
+		if {_player} is not sneaking:
+			set {_true} to false
+		else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 4) is false:
+			set {_true} to false
+		else if {Kit-Mana::%{_player}%} < {_mana}:
+			set {_true} to false
+			send action bar "§4§lマナが足りません!" to {_player}
+		if {_true} is true:
+			add 1 to {_num}
+			# --- パーティクル演出 ---
+			kitEffect_MoonRod({_player}, {_num})
+			# ----------------------
+			if {_num} >= 20:
+				set {_num} to 0
+				subtract {_mana} from {Kit-Mana::%{_player}%}
+				# --- 音の演出 ---
+				playSound("block.beacon.ambient", 1, 2, {_player})
+				# ---------------
+			loop all players in radius 8 around {_player}:
+				kitCheckTeam({_player}, loop-player, false) is true
+				{Kit-Sleep::%loop-player%} is not set
+				if {_mooners::%loop-player%} is not set:
+					set {_mooners::%loop-player%} to 0
+					message formatted "§8§lなんだか眠気を誘われる..." to loop-player
+					# --- 眠気が始まる際の音の演出 ---
+					playSound("entity.wolf.growl", 0.5, 0.75, loop-player)
+					# ----------------------------
+				add 1 to {_mooners::%loop-player%}
+				if {_mooners::%loop-player%} >= 60:
+					kitSleep(loop-player, 3 seconds)
+					# --- 寝てしまった際のパーティクル演出 ---
+					# -----------------------------------
+			wait a tick
+
+function kitEffect_MoonRod(player: player, period: number):
+	{_period} <= 15
+	set {_startrad} to 0 + (315 * ({_period} - 1))
+	set {_startheight} to 16 - {_period}
+	set {_startmeter} to 0.53 * ({_period} - 1)
+	set {_baseloc} to location of {_player}
+	loop 15 times:
+		add 21 to {_rad}
+
+
+	loop 10 times:
+		set {_effcount} to 6 - round({_count} / 2)
+		set {_effwide} to 5 - ({_count} / 2)
+		set {_effwideminus} to {_effwide} * -1
+		loop {_effcount} times:
+			set {_loc} to location {_count} meters above {_baseloc}
+			add a random number between {_effwideminus} and {_effwide} to x-coordinate of {_loc}
+			add a random number between {_effwideminus} and {_effwide} to z-coordinate of {_loc}
+			drawDot count 1, particle "endrod", center {_loc}, visibleRange 100
+		subtract 1 from {_count}
