@@ -1,0 +1,36 @@
+# Sensor Mine
+
+function kitSkill_Bomber_7(player: player):
+	toolCT({_player}, "Bomber", 7)
+	kitMsg({_player}, "<##8b0000>地雷を設置します...")
+	playSound("ui.button.click", 1.2, 0.5, {_player})
+	set {_l} to location of {_player}
+	set {_ln} to 9
+	set {Stats.%{_player}%::SensorMine} to {_l}
+	while {Stats.%{_player}%::SensorMine} is {_l}:
+		add 1 to {_ln}
+		if {_ln} >= 10:
+			set {_ln} to 0
+			set {_rad} to 0
+			loop 10 times:
+				add 36 to {_rad}
+				set {_el} to {_l}
+				add 3 * sin({_rad}) to x-coordinate of {_el}
+				add 3 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 240, 230, 140, center {_el}, visibleRange 20
+		loop all entities in radius 5 around {_l}:
+			{_bomb} is not set
+			{Stats.%{_player}%::SensorMine} is {_l}
+			kitCheckTeam({_player}, loop-entity, false) is true
+			delete {Stats.%{_player}%::SensorMine}
+			set {_bomb} to true
+			playSound("ui.button.click", 1.5, 2, {_l})
+			loop 10 times:
+				add 36 to {_rad}
+				set {_el} to {_l}
+				add 3 * sin({_rad}) to x-coordinate of {_el}
+				add 3 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 139, 0, 0, center {_el}, visibleRange 30
+		wait a second
+	{_bomb} is true
+	kitExplosion({_player}, 3, {_l})

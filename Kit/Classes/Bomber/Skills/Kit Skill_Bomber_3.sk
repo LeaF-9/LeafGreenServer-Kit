@@ -1,0 +1,120 @@
+# Bomb Kart
+
+function kitSkill_Bomber_3(player: player):
+	toolCT({_player}, "Bomber", 3)
+	kitMsg({_player}, "§6敵を追尾するカート爆弾を投擲します!")
+	set {_baseloc} to location of {_player}
+	set pitch of {_baseloc} to 0
+	set {_loc.b} to {_baseloc}
+	subtract 1.5 from y-coordinate of {_loc.b}
+	set {_loc.s} to {_baseloc}
+	subtract 0.5 from y-coordinate of {_loc.s}
+	spawn an armor stand at {_loc.b} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""iron_block"",Count:1b}],HandItems:[{},{}]}"
+	set metadata value "bombkart-big" of spawned armor stand to "%{_player}%"
+	set metadata value "gametype" of spawned armor stand to "Kit"
+	spawn an armor stand at {_loc.s} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Small:1b,Marker:1b,ArmorItems:[{},{},{},{id:""tnt"",Count:1b}],HandItems:[{},{}]}"
+	set metadata value "bombkart-small" of spawned armor stand to "%{_player}%"
+	set metadata value "gametype" of spawned armor stand to "Kit"
+	playSound("ui.button.click", 1, 0.8, {_player})
+	loop 100 times:
+		{_bomb} is not set
+		if {_target} is not set:
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "bombkart-big" of loop-entity is "%{_player}%"
+				set {_baseloc} to location of loop-entity
+			add 1.5 to y-coordinate of {_baseloc}
+			set {_loc} to location 0.3 meters in front of {_baseloc}
+			if block below {_loc} is not passable:
+				set {_num.b} to 1.5
+				set {_num.s} to 0.5
+			else:
+				set {_num.b} to 1.8
+				set {_num.s} to 0.8
+			set {_loc.b} to {_loc}
+			subtract {_num.b} from y-coordinate of {_loc.b}
+			set {_loc.s} to {_loc}
+			subtract {_num.s} from y-coordinate of {_loc.s}
+			loop all entities:
+				type of loop-entity is an armor stand
+				if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+					teleport loop-entity to {_loc.b}
+				else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+					teleport loop-entity to {_loc.s}
+#		衝突判定
+			if block at {_loc} is not passable:
+				set {_bomb} to true
+				loop all entities:
+					type of loop-entity is an armor stand
+					if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+						delete loop-entity
+					else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+						delete loop-entity
+				kitExplosion({_player}, 3, {_baseloc})
+#		前方敵サーチ
+			set {_sl} to location 5 meters in front of {_loc}
+			loop all entities in radius 5 around {_loc}:
+				{_target} is not set
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				set {_dis} to distance between loop-entity and {_player}
+				{_dis} > distance between {_loc} and {_player}
+				set {_target} to loop-entity
+				playSound("ui.button.click", 1, 2, {_loc})
+		else:
+			set {_from} to vector of {_target}
+			set {_to} to vector of {_loc}
+			set {_vector} to {_from} -- {_to}
+			set {_vector} to normalized {_vector}
+			set {_yaw} to yaw of {_vector}
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "bombkart-big" of loop-entity is "%{_player}%"
+				set {_baseloc} to location of loop-entity
+			add 1.5 to y-coordinate of {_baseloc}
+			set yaw of {_baseloc} to {_yaw}
+			set {_loc} to location 0.5 meters in front of {_baseloc}
+			if block below {_loc} is not passable:
+				set {_num.b} to 1.5
+				set {_num.s} to 0.5
+			else:
+				set {_num.b} to 1.8
+				set {_num.s} to 0.8
+			set {_loc.b} to {_loc}
+			subtract {_num.b} from y-coordinate of {_loc.b}
+			set {_loc.s} to {_loc}
+			subtract {_num.s} from y-coordinate of {_loc.s}
+			loop all entities:
+				type of loop-entity is an armor stand
+				if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+					teleport loop-entity to {_loc.b}
+				else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+					teleport loop-entity to {_loc.s}
+#		衝突判定
+			if block at {_loc} is not passable:
+				set {_bomb} to true
+				loop all entities:
+					type of loop-entity is an armor stand
+					if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+						delete loop-entity
+					else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+						delete loop-entity
+				kitExplosion({_player}, 3, {_baseloc})
+#		敵衝突判定
+			if distance between {_target} and {_loc} <= 1:
+				set {_bomb} to true
+				loop all entities:
+					type of loop-entity is an armor stand
+					if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+						delete loop-entity
+					else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+						delete loop-entity
+				kitExplosion({_player}, 3, {_baseloc})
+		wait a tick
+	if {_bomb} is not set:
+		loop all entities:
+			type of loop-entity is an armor stand
+			if metadata value "bombkart-big" of loop-entity is "%{_player}%":
+				delete loop-entity
+			else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
+				delete loop-entity
+		kitExplosion({_player}, 3, {_baseloc})

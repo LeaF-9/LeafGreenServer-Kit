@@ -1,0 +1,55 @@
+# Nucleus Explosion
+
+function kitUltBomber(player: player):
+	message "§4§lNuclear Bomb§cを手に入れました!" to {_player}
+	message "§c右クリックで投擲し,5秒後に爆発します!" to {_player}
+	message "§c爆発後は周辺20mを5秒間かけて爆発し続けます!" to {_player}
+	wait a tick
+	give a redstone block named "§4§lNuclear Bomb" to {_player}
+
+on rightclick holding a redstone block:
+	name of player's tool is "§4§lNuclear Bomb"
+	cancel event
+	remove a redstone block named "§4§lNuclear Bomb" from player
+	playSound("entity.tnt.primed", 1.5, 0.5, player)
+	shoot a primed tnt from player at speed 1.5
+	set metadata value "attacker" of shot primed tnt to "%player%"
+	set metadata value "kit-bomber" of shot primed tnt to 10
+	set metadata value "ult-bomber" of shot primed tnt to "true"
+	setFuseTime(shot primed tnt, 100)
+	drawDot count 1, particle "lava", center shot primed tnt, visibleRange 100, keepFor 5 seconds
+
+on explosion:
+	if metadata value "ult-bomber" of event-entity is set:
+		set {_act} to metadata value "attacker" of event-entity
+		set {_act} to {_act} parsed as player
+		set {_loc} to event-location
+		wait a tick
+		set {_ex} to 1
+		set {_rad} to 1
+		set {_chance} to 9
+		loop 4 times:
+			subtract 2 from {_chance}
+			add 1 to {_ex}
+			loop 25 times:
+				add 0.2 to {_rad}
+				delete {_lb::*}
+				set {_rn} to a random integer between 0 and {_ex}
+				loop all blocks in radius {_rad} around {_loc}:
+					loop-block is passable
+					chance of {_chance}%:
+						add location of loop-block to {_lb::*}
+				loop {_rn} times:
+					set {_rl} to a random location out of {_lb::*}
+					remove {_rl} from {_lb::*}
+					loop all entities in radius 5 around {_rl}:
+						kitCheckTeam(loop-entity, {_act}, false, true) is true
+						make {_act} damage loop-entity by 6
+					drawDot count 1, particle "explosionhuge", center {_rl}, visibleRange 100
+					set {_rb} to a random integer between 1 and 2
+					set {_pitch} to a random number between 0.5 and 2
+					if {_rb} is 1:
+						playSound("entity.firework_rocket.large_blast", 1.5, {_pitch}, {_rl})
+					else:
+						playSound("entity.firework_rocket.blast", 1.5, {_pitch}, {_rl})
+				wait a tick

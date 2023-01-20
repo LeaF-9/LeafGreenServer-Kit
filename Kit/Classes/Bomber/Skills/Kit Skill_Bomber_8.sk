@@ -1,0 +1,32 @@
+# Biological Bomb
+
+function kitSkill_Bomber_8(player: player):
+	toolCT({_player}, "Bomber", 8)
+	kitMsg({_player}, "<##adff2f>生物兵器を召喚します...")
+	playSound("entity.creeper.hurt", 1, 0.5, {_player})
+	loop all creepers:
+		metadata value "biologic-bomb" of loop-creeper is "%{_player}%"
+		delete loop-creeper
+	loop all blocks in radius 5 around {_player}:
+		loop-block is passable
+		block below loop-block is not passable
+		add location of loop-block to {_loc::*}
+	loop 3 times:
+		set {_rl} to a random location out of {_loc::*}
+		remove {_rl} from {_loc::*}
+		spawn a creeper at {_rl} with nbt compound from "{Attributes:[{Name:""generic.movement_speed"",Base:0.4f}],Silent:1,Fuse:1}"
+		set spawned creeper's display name to "%{_player}%"
+		set metadata value "gametype" of spawned creeper to "Kit"
+		set metadata value "biologic-bomb" of spawned creeper to "%{_player}%"
+		set metadata value "kit-bomber" of spawned creeper to 2
+		set metadata value "attacker" of spawned creeper to "%{_player}%"
+		drawDot count 1, particle "mobspell", RGB 173, 255, 47, center spawned creeper, visibleRange 30, keepFor 3 seconds
+
+on damage of creeper:
+	metadata value "biologic-bomb" of victim is set
+	cancel event
+	damage cause is not block explosion or entity explosion
+	set {_player} to metadata value "biologic-bomb" of victim parsed as player
+	set {_l} to location of victim
+	delete victim
+	kitExplosion({_player}, 2, {_l})

@@ -1,0 +1,49 @@
+# Gas Spray
+
+function kitSkill_Bomber_6(player: player):
+	detectCT({_player}, kitSkillItem("Bomber", 6))
+	kitMsg({_player}, "<##808080>ガス爆弾を投擲します...")
+	playSound("entity.arrow.shoot", 1, 0.5, {_player})
+	shoot a thrown potion of mundane from {_player} at speed 1.2
+	set metadata value "gas-spray" of shot thrown potion to "true"
+	drawDot count 3, particle "mobspell", RGB 100, 100, 100, center shot thrown potion, visibleRange 30, keepFor 1 second
+
+on projectile hit:
+	projectile is a thrown potion of mundane
+	metadata value "gas-spray" of projectile is "true"
+	playSound("block.fire.extinguish", 1, 1, projectile)
+	set {_l} to location of projectile
+	loop 200 times:
+		{_bomb} is not set
+		delete {_eg::*}
+		loop all blocks in radius 5 around {_l}:
+			loop-block is passable
+			chance of 10%:
+				drawDot count 1, particle "mobspell", RGB 100, 100, 100, center location of loop-block, visibleRange 30
+		loop all entities in radius 5 around {_l}:
+			if kitCheckTeam(loop-entity, shooter, false) is true:
+				drawDot count 3, particle "mobspell", RGB 80, 80, 80, center loop-entity, visibleRange 30
+				set {_eg::%id of loop-entity%} to true
+				if {_jb::%id of loop-entity%} is not set:
+					set {_jb::%id of loop-entity%} to true
+					apply poison 1 to loop-entity for 10 seconds replacing existing effect
+		loop all entities:
+			{_eg::%id of loop-entity%} is not set
+			{_jb::%id of loop-entity%} is true
+			remove poison from loop-entity
+			delete {_jb::%id of loop-entity%}
+		loop all projectiles in radius 5 around {_l}:
+			loop-projectile is an arrow
+			loop-projectile is not projectile
+			{_bomb} is not set
+			set {_bomb} to true
+		wait a tick
+	loop all entities:
+		{_eg::%id of loop-entity%} is true
+		{_jb::%id of loop-entity%} is true
+		remove poison from loop-entity
+	kitExplosion(shooter, 4, {_l})
+	loop all blocks in radius 5 around {_l}:
+		loop-block is passable
+		chance of 5%:
+			kitExplosion(shooter, 2, location of loop-block)

@@ -1,0 +1,71 @@
+# Pop Burst
+
+function kitSkill_Bomber_5(player: player):
+	toolCT({_player}, "Bomber", 5)
+	kitMsg({_player}, "§e弾ける爆弾を投げました!")
+	shoot a primed tnt from {_player} at speed 1
+	set metadata value "attacker" of shot primed tnt to "%{_player}%"
+	set metadata value "kit-bomber" of shot primed tnt to 2
+	set metadata value "pop" of shot primed tnt to "%{_player}%"
+	playSound("entity.tnt.primed", 1, 1.5, {_player})
+	drawDot count 1, particle "lava", center shot primed tnt, visibleRange 30, keepFor 40 ticks
+	setFuseTime(shot primed tnt, 40)
+	loop 40 times:
+		{_alr} is not set
+		loop all primed tnts:
+			metadata value "pop" of loop-primed tnt is "%{_player}%"
+			loop all entities in radius 3 around loop-primed tnt:
+				kitCheckTeam(loop-entity-2, {_player}, false) is true
+				{_alr} is not set
+				set {_alr} to true
+				set {_to} to location of loop-primed tnt
+				set {_to} to vector of {_to}
+				set {_from} to location of loop-entity-2
+				set {_from} to vector of {_from}
+				set {_vector} to {_from} -- {_to}
+				set {_vector} to normalized {_vector}
+				set velocity of loop-primed tnt to {_vector}
+				setFuseTime(loop-primed tnt, 5)
+		wait a tick
+
+on explosion:
+	if metadata value "pop" of event-entity is set:
+		set {_act} to metadata value "pop" of event-entity
+		set {_act} to {_act} parsed as player
+		set {_loc} to event-location
+		wait a tick
+		set {_rum} to a random integer between 5 and 10
+		loop {_rum} times:
+			drop a cocoa bean named "%{_act}%" at event-location
+			set metadata value "gametype" of last dropped item to "Kit"
+			set metadata value "pop-burst" of last dropped item to "%{_act}%"
+			drawDot count 1, particle "lava", center last dropped item, visibleRange 30, keepFor 10 ticks
+			push last dropped item upwards at speed 0.2
+			push last dropped item north at speed random number from -1 to 1
+			push last dropped item east at speed random number from -1 to 1
+		wait 10 ticks
+		loop all dropped items:
+			metadata value "pop-burst" of loop-dropped item is "%{_act}%"
+			add location of loop-dropped item to {_dloc::*}
+			delete loop-dropped item
+		loop {_dloc::*}:
+			kitExplosion({_act}, 1.5, loop-value)
+		wait a tick
+		loop {_dloc::*}:
+			set {_rum} to a random integer between 1 and 2
+			loop {_rum} times:
+				drop a cocoa bean named "%{_act}%" at event-location
+				set metadata value "gametype" of last dropped item to "Kit"
+				set metadata value "pop-burst" of last dropped item to "%{_act}%"
+				drawDot count 1, particle "lava", center last dropped item, visibleRange 30, keepFor 10 ticks
+				push last dropped item upwards at speed 0.1
+				push last dropped item north at speed random number from -1 to 1
+				push last dropped item east at speed random number from -1 to 1
+		wait 10 ticks
+		delete {_dloc::*}
+		loop all dropped items:
+			metadata value "pop-burst" of loop-dropped item is "%{_act}%"
+			add location of loop-dropped item to {_dloc::*}
+			delete loop-dropped item
+		loop {_dloc::*}:
+			kitExplosion({_act}, 1.3, loop-value)

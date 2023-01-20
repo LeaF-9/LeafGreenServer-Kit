@@ -1,0 +1,17 @@
+# Bomb Attack
+
+function kitSkill_Bomber_2(player: player):
+	toolCT({_player}, "Bomber", 2)
+	kitMsg({_player}, "§6Bomb Attack §7の発動準備をします...")
+	apply slowness 3 to {_player} for 3 seconds replacing existing effect
+	loop 3 times:
+		if gamemode of {_player} is survival:
+			playSound("ui.button.click", 1.5, 1, {_player})
+			wait a second
+		else:
+			kitMsg({_player}, "§d発動がキャンセルされました")
+			stop
+	gamemode of {_player} is survival
+	kitExplosion({_player}, 5, location of {_player})
+	if {Class::%{_player}%} is "Bomber":
+		apply slowness 1 to {_player} for 10000000000 seconds replacing existing effect

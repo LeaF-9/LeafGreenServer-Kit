@@ -1,0 +1,12 @@
+# Bombord
+
+on damage of player:
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
+	{Class::%attacker%} is "Bomber"
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is true
+	chance of 10%:
+		cancel event
+		set {_l} to location of victim
+		kitExplosion(attacker, 2, {_l})
