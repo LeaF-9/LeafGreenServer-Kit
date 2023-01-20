@@ -1,0 +1,165 @@
+# Kunai
+
+function kitWeapon_Ninja_2(player: player):
+	name of {_player}'s offhand tool contains "Kunai"
+	shoot an arrow from {_player} at speed 3
+	set metadata value "kunai" of shot projectile to "true"
+	drawDot count 1, particle "redstone", RGB 70, 130, 180, center shot projectile, visibleRange 30, keepFor 0.5 seconds
+	playSound("entity.arrow.shoot", 1, 1.5, {_player})
+	set {_name} to display name of {_player}'s offhand tool
+	set {_lore::*} to lore of {_player}'s offhand tool
+	remove a prismarine shard named {_name} with lore {_lore::*} from {_player}
+
+on damage of player:
+	{Class::%attacker%} is "Ninja"
+	projectile is an arrow
+	metadata value "kunai" of projectile is "true"
+	set damage to 1
+
+on projectile hit:
+	if projectile is an arrow:
+		metadata value "kunai" of projectile is "true"
+		if {Stats.%shooter%::LastNinjutsu} is set:
+			if {Stats.%shooter%::LastNinjutsu} is "Bunshin":
+				playSound("entity.zombie.infect", 1, 1.5, projectile)
+				set {_l} to location of projectile
+				loop 3 times:
+					set {_nbt} to nbt compound from "{IsBaby:1,Silent:1,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%shooter%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:8,Amplifier:2,Duration:999999}]}"
+					spawn a zombie at {_l} with nbt {_nbt}
+					set metadata value "gametype" of spawned zombie to "Kit"
+					set metadata value "bunshin-baby" of spawned zombie to "%shooter%"
+					set spawned zombie's display name to "%shooter%"
+				wait 3 seconds
+				loop all zombies:
+					metadata value "bunshin-baby" of loop-zombie is "%shooter%"
+					delete loop-zombie
+			else if {Stats.%shooter%::LastNinjutsu} is "Kakuremi":
+				loop all players in radius 3 around projectile:
+					kitCheckTeam(loop-player, shooter, true) is true
+					kitInvisible(loop-player, 3 seconds)
+					message "§7透明化した!" to loop-player
+				playSound("entity.wither.shoot", 1, 2, projectile)
+				set {_r} to 211
+				set {_g} to 211
+				set {_b} to 211
+			else if {Stats.%shooter%::LastNinjutsu} is "Zanzo":
+				playSound("entity.zombie_villager.converted", 1, 2, projectile)
+				loop all entities in radius 3 around projectile:
+					kitCheckTeam(loop-entity, shooter, false) is true
+					LastKiller(loop-entity, shooter)
+					apply wither 1 to loop-entity for 5 seconds
+				set {_r} to 0
+				set {_g} to 0
+				set {_b} to 0
+			else if {Stats.%shooter%::LastNinjutsu} is "Kamaitachi":
+				loop 20 times:
+					loop all entities in radius 3 around projectile:
+						kitCheckTeam(loop-entity, shooter, false) is true
+						make shooter damage loop-entity by 2
+					loop all blocks in radius 3 around projectile:
+						loop-block is air
+						chance of 10%:
+							drawDot count 1, particle "explosionlarge", center location of loop-block, visibleRange 30
+					playSound("entity.player.sweep", 1, 2, projectile)
+					wait a tick
+			else if {Stats.%shooter%::LastNinjutsu} is "Ninjutsu-KAZE":
+				playSound("entity.wither.shoot", 1, 1.5, projectile)
+				loop all entities in radius 3 around projectile:
+					kitCheckTeam(shooter, loop-entity, false) is true
+					push loop-entity upwards at speed 1.5
+				set {_r} to 255
+				set {_g} to 255
+				set {_b} to 255
+			else if {Stats.%shooter%::LastNinjutsu} is "Ninjutsu-BAKU":
+				kitExplosion(shooter, 2, location of projectile)
+			else if {Stats.%shooter%::LastNinjutsu} is "Ninjutsu-MOKU":
+				playSound("block.grass.break", 1, 2, projectile)
+				loop all players in radius 3 around projectile:
+					kitCheckTeam(loop-player, shooter, false) is true
+					kitDrain(loop-player, shooter, 2, 3 seconds)
+				set {_r} to 0
+				set {_g} to 255
+				set {_b} to 0
+			else if {Stats.%shooter%::LastNinjutsu} is "Ninjutsu-MIZU":
+				playSound("entity.generic.splash", 1, 2, projectile)
+				loop all entities in radius 3 around projectile:
+					if kitCheckTeam(shooter, loop-entity, true) is true:
+						setSupporter(loop-entity, shooter)
+						apply regeneration 1 to loop-entity for 5 seconds
+						extinguish loop-entity
+					else if kitCheckTeam(shooter, loop-entity, true) is false:
+						apply poison 1 to loop-entity for 5 seconds
+				set {_r} to 0
+				set {_g} to 0
+				set {_b} to 255
+			else if {Stats.%shooter%::LastNinjutsu} is "Ninjutsu-HONO":
+				playSound("entity.blaze.shoot", 1, 2, projectile)
+				loop all entities in radius 3 around projectile:
+					kitCheckTeam(loop-entity, shooter, false) is true
+					make shooter damage loop-entity by 2
+					ignite loop-entity for 3 seconds
+				set {_r} to 255
+				set {_g} to 0
+				set {_b} to 0
+			else if {Stats.%shooter%::LastNinjutsu} is "Ninjutsu-HYOU":
+				playSound("entity.player.levelup", 1, 2, projectile)
+				loop all players in radius 3 around projectile:
+					kitCheckTeam(loop-player, shooter, false) is true
+					kitFreeze(loop-player, 0.5 seconds)
+				set {_r} to 0
+				set {_g} to 255
+				set {_b} to 255
+			else if {Stats.%shooter%::LastNinjutsu} is "Ninjutsu-TSUCHI":
+				delete {Stats.%shooter%::LastNinjutsu}
+				loop all entities in radius 3 around projectile:
+					kitCheckTeam(loop-entity, shooter, true) is true
+					apply resistance 1 to loop-entity for 3 seconds
+				set {_y} to y-coordinate of block at projectile
+				subtract 1 from {_y}
+				loop all blocks in radius 3 around projectile:
+					distance between location of block at projectile and location of loop-block >= 2
+					y-coordinate of loop-block is {_y}
+					add location of loop-block to {_ci::*}
+				set {_nm} to 0
+				loop 10 times:
+					loop {_ci::*}:
+						set {_bl} to loop-value-2
+						if {_nm} is between 0 and 4:
+							set {_ch} to 1
+						else:
+							set {_ch} to a random integer between 1 and 2
+						if {_ch} is 1:
+							set {_ck} to location of block {_nm} meters above {_bl}
+							block at {_ck} is air
+							make all players see block at {_ck} as dirt
+							add {_ck} to {_lb::*}
+							playSound("block.grass.break", 0.5, 1.5, {_ck})
+							drawDot count 1, particle "blockcrack", material dirt, center {_ck}, visibleRange 30
+						else:
+							remove loop-value-2 from {_ci::*}
+					add 1 to {_nm}
+					wait a tick
+				loop 60 times:
+					loop {_lb::*}:
+						make all players see block at loop-value-2 as dirt
+					wait a tick
+				loop {_lb::*}:
+					make all players see block at loop-value as air
+					playSound("block.grass.break", 0.5, 1.2, loop-value)
+			else if {Stats.%shooter%::LastNinjutsu} is "Ninjutsu-RAI":
+				strike lightning effect at projectile
+				loop all entities in radius 3 around projectile:
+					kitCheckTeam(loop-entity, shooter, false) is true
+					kitDamage(shooter, loop-entity, 1, true)
+				set {_r} to 255
+				set {_g} to 255
+				set {_b} to 0
+			delete {Stats.%shooter%::LastNinjutsu}
+			set {_bl} to location of projectile
+			if {_r} is set:
+				loop 10 times:
+					set {_el} to {_bl}
+					add 36 to {_rad}
+					add 3 * sin({_rad}) to x-coordinate of {_el}
+					add 3 * cos({_rad}) to z-coordinate of {_el}
+					drawDot count 1, particle "mobspell", RGB {_r}, {_g}, {_b}, center {_el}, visibleRange 30

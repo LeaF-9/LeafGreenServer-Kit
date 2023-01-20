@@ -1,0 +1,20 @@
+# Katana
+
+function kitWeapon_Ninja_1(player: player):
+	name of {_player}'s offhand tool contains "Shuriken"
+	shoot a snowball from {_player} at speed 5
+	set metadata value "shuriken" of shot projectile to "true"
+	set item of shot projectile to prismarine crystal
+	drawDot count 1, particle "redstone", RGB 176, 196, 222, center shot projectile, visibleRange 30, keepFor 0.5 seconds
+	playSound("entity.arrow.shoot", 1, 2, player)
+	set {_name} to display name of {_player}'s offhand tool
+	set {_lore::*} to lore of {_player}'s offhand tool
+	remove a prismarine crystal named {_name} with lore {_lore::*} from {_player}
+
+on damage of player:
+	{Class::%attacker%} is "Ninja"
+	damage was caused by projectile
+	projectile is a snowball
+	metadata value "shuriken" of projectile is "true"
+	set damage to 0.5
+	apply poison 1 to the victim for 3 second replacing existing effect

@@ -1,0 +1,13 @@
+# Kagizume
+
+function kitWeapon_Ninja_3(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		toolCT({_player}, "Ninja", 3, "Weapon.main")
+		set {_loc} to {Stats.%{_player}%::SkillLocation}
+		set {_dir} to location of {_player}
+		set yaw of {_loc} to yaw of {_dir}
+		set pitch of {_loc} to pitch of {_dir}
+		teleport {_player} to {_loc}
+		playSound("entity.illusioner.mirror_move", 0.8, 2, {_player})
+	else:
+		send action bar "§c§lブロックを指定してください" to {_player}

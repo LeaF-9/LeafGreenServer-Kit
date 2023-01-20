@@ -1,0 +1,22 @@
+# Horoku Dama
+
+function kitSkill_Ninja_1(player: player):
+	shoot a small fireball from {_player} at speed 2
+	set metadata value "horoku" of shot projectile to "true"
+	drawDot count 1, particle "lava", center shot projectile, visibleRange 30, keepFor 0.5 seconds
+	playSound("entity.arrow.shoot", 1, 0.5, {_player})
+	set {_name} to name of {_player}'s tool
+	set {_lore::*} to lore of {_player}'s tool
+	remove a firework charge named {_name} with lore {_lore::*} from {_player}
+
+on damage of player:
+	damage was caused by projectile
+	projectile is a small fireball
+	metadata value "horoku" of projectile is "true"
+	set damage to 1
+	ignite victim for 5 seconds
+
+on projectile hit:
+	if projectile is a small fireball:
+		metadata value "horoku" of projectile is "true"
+		make a fake explosion at projectile

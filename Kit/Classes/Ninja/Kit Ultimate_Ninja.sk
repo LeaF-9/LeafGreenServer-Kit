@@ -1,0 +1,47 @@
+# Acrobatic Aggression
+
+function kitUltNinja(player: player):
+	message "§cDouble Jumpにクールタイムがかからなくなります!" to {_player}
+	message "§cWeaponが§8§lKatana -§4§l竜§8§l-§cに変化します!" to {_player}
+	message "§cこの武器を右クリックで前方へ飛び,軌道上の敵に3ダメージを与えます!" to {_player}
+	set {Ult.%{_player}%::Ninja} to true
+	set {Stats.%{_player}%::UltNinja} to true
+	set {_weapon} to kitPlayerWeaponItem({_player}, "Ninja", "main")
+	load yml "plugins/skript-yaml/Kit Classes/Ninja.yml" as "ultninja.%{_player}%"
+	set {_UltKatana} to yml value "kititems.Katana [竜]" from "ultninja.%{_player}%"
+	set slot 0 of {_player} to {_UltKatana}
+	wait 10 seconds
+	unload yml "ultninja.%{_player}%"
+	delete {Ult.%{_player}%::Ninja}
+	{Stats.%{_player}%::UltNinja} is true
+	delete {Stats.%{_player}%::UltNinja}
+	set slot 0 of {_player} to {_weapon}
+
+on rightclick holding a netherite sword:
+	{Stats.%player%::UltNinja} is true
+	set {_UltKatana} to yml value "kititems.Katana [竜]" from "ultninja.%player%"
+	player's tool is {_UltKatana}
+	cancel event
+	if checkCT(player, "Ninja's Ult") is true:
+		setCT(player, "Ninja's Ult", 1)
+		playSound("entity.arrow.shoot", 1, 2, player)
+		set {_loc} to location of player
+		set pitch of {_loc} to 0
+		set {_fb} to location 100 meters in front of {_loc}
+		drawDot particle "cloud", center player, visibleRange 30, keepFor 10 ticks
+		set {_from} to vector of {_fb}
+		set {_to} to vector of player
+		set {_vector} to {_from} -- {_to}
+		set {_vector} to normalized {_vector}
+		set x of {_vector} to x of {_vector} * 3
+		set y of {_vector} to y of {_vector} * 3
+		set z of {_vector} to z of {_vector} * 3
+		set velocity of player to {_vector}
+		loop 10 times:
+			loop all entities in radius 2 around player:
+				kitCheckTeam(player, loop-entity, false) is true
+				{_hit.%id of loop-entity%} is not set
+				set {_hit.%id of loop-entity%} to true
+				make player damage loop-entity by 6
+				drawDot particle "explosionlarge", center loop-entity, visibleRange 30
+			wait a tick

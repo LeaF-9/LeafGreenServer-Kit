@@ -1,0 +1,373 @@
+# Ninjutsu
+
+on leftclick holding a bonemeal:
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Ninja", "Skill", 5) is true
+	cancel event
+	playSound("ui.button.click", 1, 1, player, true)
+	if {Stats.%player%::Ninjutsu1} is not set:
+		set {Stats.%player%::Ninjutsu1} to "L"
+		send action bar "§a§lL §6- §7§l? §6- §7§l?" to player
+		set {_now} to now
+		set {Stats.%player%::NinTime} to {_now}
+		wait 3 seconds
+		if {Stats.%player%::NinTime} is {_now}:
+			delete {Stats.%player%::Ninjutsu1}
+	else if {Stats.%player%::Ninjutsu1} is set:
+		if {Stats.%player%::Ninjutsu2} is not set:
+			set {Stats.%player%::Ninjutsu2} to "L"
+			send action bar "§a§l%{Stats.%player%::Ninjutsu1}% §6- §a§lL §6- §7§l?" to player
+			set {_now} to now
+			set {Stats.%player%::NinTime} to {_now}
+			wait 3 seconds
+			if {Stats.%player%::NinTime} is {_now}:
+				delete {Stats.%player%::Ninjutsu1}
+				delete {Stats.%player%::Ninjutsu2}
+		else:
+			delete {Stats.%player%::NinTime}
+			set {Stats.%player%::Ninjutsu3} to "L"
+			send action bar "§a§l%{Stats.%player%::Ninjutsu1}% §6- §a§l%{Stats.%player%::Ninjutsu2}% §6- §a§lL" to player
+			kitMsg(player, "§f§l印を結びました!")
+			playSound("entity.item.pickup", 1, 0.5, player, true)
+			set {_nin} to "%{Stats.%player%::Ninjutsu1}% - %{Stats.%player%::Ninjutsu2}% - %{Stats.%player%::Ninjutsu3}%"
+			delete {Stats.%player%::Ninjutsu1}
+			delete {Stats.%player%::Ninjutsu2}
+			delete {Stats.%player%::Ninjutsu3}
+			if {_nin} is "L - L - L":
+				set player's tool to light blue dye named "§5Ninjutsu §9[§b風§9]" with lore "§f敵を吹き飛ばす風遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:" and "§8- §d周辺5m§4の敵§7を§2自身§dの位置§7より§6§l隔離"
+			else if {_nin} is "L - R - L":
+				set player's tool to light green dye named "§5Ninjutsu §9[§2木§9]" with lore "§f生命力を奪う木遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:" and "§8- §d周辺5m§4の敵§7に§e吸収効果 II§7を§6§l付与 §b3秒"
+			else if {_nin} is "R - L - L":
+				set player's tool to red dye named "§5Ninjutsu §9[§4火§9]" with lore "§f周辺を燃やす火遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:" and "§8- §d周辺5m§4の敵§7に§4❤2§c§lダメージと§6§l延焼 §b5秒"
+			else if {_nin} is "R - R - L":
+				set player's tool to orange dye named "§5Ninjutsu §9[§6土§9]" with lore "§f逃げ場を抑える土遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d半径5m§7の§e土壁§7を§6§l設置" and "§8- §2自身§7と§d周辺5m§§2の味方§7に§a耐性 I§7を§6§l付与 §b5秒"
+
+on rightclick holding a bonemeal:
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Ninja", "Skill", 5) is true
+	cancel event
+	playSound("ui.button.click", 1, 1, player, true)
+	if {Stats.%player%::Ninjutsu1} is not set:
+		set {Stats.%player%::Ninjutsu1} to "R"
+		send action bar "§a§lR §6- §7§l? §6- §7§l?" to player
+		set {_now} to now
+		set {Stats.%player%::NinTime} to {_now}
+		wait 3 seconds
+		if {Stats.%player%::NinTime} is {_now}:
+			delete {Stats.%player%::Ninjutsu1}
+	else if {Stats.%player%::Ninjutsu1} is set:
+		if {Stats.%player%::Ninjutsu2} is not set:
+			set {Stats.%player%::Ninjutsu2} to "R"
+			send action bar "§a§l%{Stats.%player%::Ninjutsu1}% §6- §a§lR §6- §7§l?" to player
+			set {_now} to now
+			set {Stats.%player%::NinTime} to {_now}
+			wait 3 seconds
+			if {Stats.%player%::NinTime} is {_now}:
+				delete {Stats.%player%::Ninjutsu1}
+				delete {Stats.%player%::Ninjutsu2}
+		else:
+			delete {Stats.%player%::NinTime}
+			set {Stats.%player%::Ninjutsu3} to "R"
+			send action bar "§a§l%{Stats.%player%::Ninjutsu1}% §6- §a§l%{Stats.%player%::Ninjutsu2}% §6- §a§lR" to player
+			kitMsg(player, "§f§l印を結びました!")
+			playSound("entity.item.pickup", 1, 0.5, player, true)
+			remove a bone meal named "§fNinjutsu" from the player
+			set {_nin} to "%{Stats.%player%::Ninjutsu1}% - %{Stats.%player%::Ninjutsu2}% - %{Stats.%player%::Ninjutsu3}%"
+			delete {Stats.%player%::Ninjutsu1}
+			delete {Stats.%player%::Ninjutsu2}
+			delete {Stats.%player%::Ninjutsu3}
+			wait a tick
+			if {_nin} is "L - L - R":
+				set player's tool to gray dye named "§5Ninjutsu §9[§8爆§9]" with lore "§f木っ端微塵にする爆遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:" and "§8- §b1秒後§7に§6爆発§7する§e爆弾§7を§6§l投擲 §d3個"
+			else if {_nin} is "L - R - R":
+				set player's tool to blue dye named "§5Ninjutsu §9[§1水§9]" with lore "§f心身を癒やす水遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §2自身§7と§d周辺5m§2の味方§7を§6§l消火§7,§a再生能力 I§6§l付与 §b10秒" and "§8- §d周辺5m§4の敵§7に§c毒 I§7を§6§l付与 §b10秒"
+			else if {_nin} is "R - L - R":
+				set player's tool to cyan dye named "§5Ninjutsu §9[§3氷§9]" with lore "§f動きを固める氷遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:" and "§8- §d周辺5m§4の敵§7に§4❤2§c§lダメージ§7と§e凍結効果§6§l付与 §b1秒"
+			else if {_nin} is "R - R - R":
+				set player's tool to yellow dye named "§5Ninjutsu §9[§e雷§9]" with lore "§f空から落ちる雷遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d周辺5m§4の敵§7に§e固定§4❤2§c§lダメージ§7と§e麻痺効果 §b5秒"
+
+on rightclick holding a dye:
+	name of player's tool contains "§5Ninjutsu"
+	cancel event
+	if checkCT(player, "Ninjutsu") is true:
+		setCT(player, "Ninjutsu", 10, false)
+		set {_n} to player's tool
+		set player's tool to air
+		if "%type of {_n}%" is "light blue dye":
+			kitMsg(player, "§b忍法・風遁の術!")
+			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-KAZE"
+			playSound("entity.wither.shoot", 1, 0.5, player)
+			set {_l} to location of player
+			set {_to} to vector of {_l}
+			loop 20 times:
+				loop all players in radius 5 around {_l}:
+					loop-player is not player
+					{team::%loop-player%} is not {team::%player%}
+					LastKiller(loop-player, player)
+					push loop-player upwards at speed 1
+					set {_ll} to location of loop-player
+					set {_from} to vector of {_ll}
+					set {_vector} to {_from} -- {_to}
+					set {_vector} to normalized {_vector}
+					set x of {_vector} to x of {_vector} * 1
+					set y of {_vector} to y of {_vector} * 1
+					set z of {_vector} to z of {_vector} * 1
+					set velocity of loop-player to {_vector}
+				set {_el} to {_l}
+				add 100 to {_rad}
+				add 0.25 to {_high}
+				add {_high} to y-coordinate of {_el}
+				add 5 * sin({_rad}) to x-coordinate of {_el}
+				add 5 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 30
+				wait a tick
+		else if "%type of {_n}%" is "grey dye":
+			kitMsg(player, "§8忍法・爆遁の術!")
+			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-BAKU"
+			loop 3 times:
+				shoot a primed tnt from player at speed 0.5 upwards
+				set metadata value "attacker" of shot primed tnt to "%player%"
+				set metadata value "kit-bomber" of shot primed tnt to 2.3
+				set metadata value "ninjutsu-baku" of shot primed tnt to "%player%"
+				push shot primed tnt north at speed random number from -0.5 to 0.5
+				push shot primed tnt east at speed random number from -0.5 to 0.5
+				drawDot count 1, particle "lava", center shot primed tnt, visibleRange 30, keepFor 1 second
+			loop 10 times:
+				loop all primed tnts:
+					metadata value "ninjutsu-baku" of loop-primed tnt is "%player%"
+					set {_l} to location of loop-primed tnt
+					playSound("ui.button.click", 0.5, 2, {_l})
+				wait 2 ticks
+		else if "%type of {_n}%" is "light green dye":
+			kitMsg(player, "§2忍法・木遁の術!")
+			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-MOKU"
+			set {_bl} to location of player
+			loop all players in radius 5 around player:
+				kitCheckTeam(player, loop-player, false) is true
+				kitDrain(loop-player, player, 2, 3 seconds)
+			set {_y} to -60
+			loop 3 times:
+				add 120 to {_y}
+				set {_l::%loop-number%} to {_bl}
+				add 1 to y-coordinate of {_l::%loop-number%}
+				set yaw of {_l::%loop-number%} to {_y}
+				set pitch of {_l::%loop-number%} to 0
+			set {_f} to 0.5
+			loop 5 times:
+				playSound("block.grass.break", 0.75, 1.5, {_bl})
+				loop 3 times:
+					set {_ry} to a random number between -5 and 5
+					set {_yaw} to yaw of {_l::%loop-number-2%}
+					add {_ry} to {_yaw}
+					if {_yaw} < 0:
+						set {_yaw} to 360 + {_yaw}
+					else if {_yaw} >= 360:
+						set {_yaw} to {_yaw} - 360
+					set yaw of {_l::%loop-number-2%} to {_yaw}
+					set {_l::%loop-number-2%} to location {_f} meters in front of {_l::%loop-number-2%}
+					drawDot count 1, particle "happyvillager", center {_l::%loop-number-2%}, visibleRange 30
+				wait a tick
+			loop 3 times:
+				set {_sy} to -90
+				loop 2 times:
+					add 60 to {_sy}
+					set {_l::%loop-number-1%::%loop-number-2%} to {_l::%loop-number-1%}
+					set {_yaw} to yaw of {_l::%loop-number-1%}
+					add {_sy} to {_yaw}
+					if {_yaw} < 0:
+						set {_yaw} to 360 + {_yaw}
+					else if {_yaw} >= 360:
+						set {_yaw} to {_yaw} - 360
+					set yaw of {_l::%loop-number-1%::%loop-number-2%} to {_yaw}
+			loop 5 times:
+				playSound("block.grass.break", 0.75, 1.5, {_bl})
+				loop 3 times:
+					loop 2 times:
+						set {_ry} to a random number between -5 and 5
+						set {_yaw} to yaw of {_l::%loop-number-2%::%loop-number-3%}
+						add {_ry} to {_yaw}
+						if {_yaw} < 0:
+							set {_yaw} to 360 + {_yaw}
+						else if {_yaw} >= 360:
+							set {_yaw} to {_yaw} - 360
+						set yaw of {_l::%loop-number-2%::%loop-number-3%} to {_yaw}
+						set {_l::%loop-number-2%::%loop-number-3%} to location {_f} meters in front of {_l::%loop-number-2%::%loop-number-3%}
+						drawDot count 1, particle "happyvillager", center {_l::%loop-number-2%::%loop-number-3%}, visibleRange 30
+				wait a tick
+			loop 3 times:
+				loop 2 times:
+					set {_sy} to -90
+					loop 2 times:
+						add 60 to {_sy}
+						set {_l::%loop-number-1%::%loop-number-2%::%loop-number-3%} to {_l::%loop-number-1%::%loop-number-2%}
+						set {_yaw} to yaw of {_l::%loop-number-1%::%loop-number-2%}
+						add {_sy} to {_yaw}
+						if {_yaw} < 0:
+							set {_yaw} to 360 + {_yaw}
+						else if {_yaw} >= 360:
+							set {_yaw} to {_yaw} - 360
+						set yaw of {_l::%loop-number-1%::%loop-number-2%::%loop-number-3%} to {_yaw}
+			loop 5 times:
+				playSound("block.grass.break", 0.75, 1.5, {_bl})
+				loop 3 times:
+					loop 2 times:
+						loop 2 times:
+							set {_ry} to a random number between -5 and 5
+							set {_yaw} to yaw of {_l::%loop-number-2%::%loop-number-3%::%loop-number-4%}
+							add {_ry} to {_yaw}
+							if {_yaw} < 0:
+								set {_yaw} to 360 + {_yaw}
+							else if {_yaw} >= 360:
+								set {_yaw} to {_yaw} - 360
+							set yaw of {_l::%loop-number-2%::%loop-number-3%::%loop-number-4%} to {_yaw}
+							set {_l::%loop-number-2%::%loop-number-3%::%loop-number-4%} to location {_f} meters in front of {_l::%loop-number-2%::%loop-number-3%::%loop-number-4%}
+							drawDot count 1, particle "happyvillager", center {_l::%loop-number-2%::%loop-number-3%::%loop-number-4%}, visibleRange 30
+				wait a tick
+			loop 3 times:
+				loop 2 times:
+					loop 2 times:
+						set {_sy} to -90
+						loop 2 times:
+							add 60 to {_sy}
+							set {_l::%loop-number-1%::%loop-number-2%::%loop-number-3%::%loop-number-4%} to {_l::%loop-number-1%::%loop-number-2%::%loop-number-3%}
+							set {_yaw} to yaw of {_l::%loop-number-1%::%loop-number-2%::%loop-number-3%}
+							add {_sy} to {_yaw}
+							if {_yaw} < 0:
+								set {_yaw} to 360 + {_yaw}
+							else if {_yaw} >= 360:
+								set {_yaw} to {_yaw} - 360
+							set yaw of {_l::%loop-number-1%::%loop-number-2%::%loop-number-3%::%loop-number-4%} to {_yaw}
+			loop 5 times:
+				playSound("block.grass.break", 0.75, 1.5, {_bl})
+				loop 3 times:
+					loop 2 times:
+						loop 2 times:
+							loop 2 times:
+								set {_ry} to a random number between -5 and 5
+								set {_yaw} to yaw of {_l::%loop-number-2%::%loop-number-3%::%loop-number-4%::%loop-number-5%}
+								add {_ry} to {_yaw}
+								if {_yaw} < 0:
+									set {_yaw} to 360 + {_yaw}
+								else if {_yaw} >= 360:
+									set {_yaw} to {_yaw} - 360
+								set yaw of {_l::%loop-number-2%::%loop-number-3%::%loop-number-4%::%loop-number-5%} to {_yaw}
+								set {_l::%loop-number-2%::%loop-number-3%::%loop-number-4%::%loop-number-5%} to location {_f} meters in front of {_l::%loop-number-2%::%loop-number-3%::%loop-number-4%::%loop-number-5%}
+								drawDot count 1, particle "happyvillager", center {_l::%loop-number-2%::%loop-number-3%::%loop-number-4%::%loop-number-5%}, visibleRange 30
+				wait a tick
+		else if "%type of {_n}%" is "blue dye":
+			kitMsg(player, "§1忍法・水遁の術!")
+			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-MIZU"
+			playSound("entity.generic.splash", 1, 1, player)
+			set {_l} to location of player
+			loop all players in radius 5 around {_l}:
+				if kitCheckTeam(loop-player, player, true) is true:
+					{Stats.%loop-player%::NoSupport} is not set
+					if loop-player is not player:
+						setSupporter(loop-player, player)
+					apply regeneration 1 to loop-player for 10 seconds
+					extinguish loop-player
+				else if kitCheckTeam(loop-player, player, false) is true:
+					apply poison 1 to loop-player for 10 seconds
+			set {_y} to y-coordinate of block at player
+			loop all blocks in radius 5 around player:
+				y-coordinate of loop-block is {_y}
+				drawDot count 1, particle "mobspell", RGB 0, 0, 200, center location of loop-block, visibleRange 30
+		else if "%type of {_n}%" is "red dye":
+			kitMsg(player, "§4忍法・火遁の術!")
+			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-HONO"
+			playSound("entity.ghast.shoot", 1, 1, player)
+			loop all entities in radius 5 around player:
+				kitCheckTeam(player, loop-entity, false) is true
+				make player damage loop-entity by 4
+				ignite loop-entity for 5 seconds
+			set {_l} to location of player
+			loop 10 times:
+				add 0.5 to {_m}
+				add 5 to {_ln}
+				set {_radd} to 360 / {_ln}
+				set {_rad} to 0
+				loop {_ln} times:
+					add {_radd} to {_rad}
+					set {_el} to {_l}
+					add 1 to y-coordinate of {_el}
+					add {_m} * sin({_rad}) to x-coordinate of {_el}
+					add {_m} * cos({_rad}) to z-coordinate of {_el}
+					drawDot count 1, particle "flame", center {_el}, visibleRange 30
+				wait a tick
+		else if "%type of {_n}%" is "cyan dye":
+			kitMsg(player, "§3忍法・氷遁の術!")
+			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-HYOU"
+			playSound("entity.player.levelup", 1, 2, player)
+			set {_baseloc} to location of player
+			loop all players in radius 5 around player:
+				kitCheckTeam(loop-player, player, false) is true
+				make player damage loop-player by 4
+				kitFreeze(loop-player, 1 seconds)
+			set {_s} to 0
+			set {_t} to 0
+			set {_pl} to location of player
+			loop 20 times:
+				loop 19 times:
+					loop 36 times:
+						set {_loc} to {_pl}
+						set {_vector} to {_loc}
+						set {_x} to x-coordinate of {_loc}
+						set {_y} to y-coordinate of {_loc}
+						set {_z} to z-coordinate of {_loc}
+						set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
+						set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
+						set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
+						chance of 10%:
+							drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_vector}, visibleRange 30
+						add 10 to {_t}
+					add 10 to {_s}
+				wait a tick
+		else if "%type of {_n}%" is "orange dye":
+			kitMsg(player, "§6忍法・土遁の術!")
+			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-TSUCHI"
+			set {_l} to location of player
+			loop all entities in radius 5 around {_l}:
+				kitCheckTeam(loop-entity, player, true) is true
+				setSupporter(loop-entity, player)
+				apply resistance 1 to loop-entity for 5 seconds
+				apply mining fatigue 1 to loop-entity for 5 seconds
+			set {_y} to y-coordinate of block at player
+			loop all blocks in radius 5 around player:
+				distance between location of block at player and location of loop-block >= 4
+				y-coordinate of loop-block is {_y}
+				add location of loop-block to {_ci::*}
+			set {_nm} to 0
+			loop 10 times:
+				loop {_ci::*}:
+					set {_bl} to loop-value-2
+					if {_nm} is between 0 and 4:
+						set {_ch} to 1
+					else:
+						set {_ch} to a random integer between 1 and 2
+					if {_ch} is 1:
+						set {_ck} to location of block {_nm} meters above {_bl}
+						block at {_ck} is air
+						make all players see block at {_ck} as dirt
+						add {_ck} to {_lb::*}
+						playSound("block.grass.break", 0.5, 1.5, {_ck})
+						drawDot count 1, particle "blockcrack", material dirt, center {_ck}, visibleRange 30
+					else:
+						remove loop-value-2 from {_ci::*}
+				add 1 to {_nm}
+				wait a tick
+			loop 100 times:
+				loop {_lb::*}:
+					make all players see block at loop-value-2 as dirt
+				wait a tick
+			loop {_lb::*}:
+				make all players see block at loop-value as air
+				playSound("block.grass.break", 0.5, 1.2, loop-value)
+		else if "%type of {_n}%" is "yellow dye":
+			kitMsg(player, "§e忍法・雷遁の術!")
+			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-RAI"
+			strike lightning effect at player
+			loop all players in radius 5 around player:
+				kitCheckTeam(loop-player, player, false) is true
+				strike lightning effect at loop-player
+				kitDamage(player, loop-player, 2, true)
+				kitPalsy(loop-player, 5 seconds)
