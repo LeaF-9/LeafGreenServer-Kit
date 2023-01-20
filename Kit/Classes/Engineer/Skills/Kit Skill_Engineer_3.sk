@@ -1,0 +1,101 @@
+# Jump Beacon
+
+function kitSkill_Engineer_3(player: player, loc: location):
+	toolCT({_player}, "Engineer", 3)
+	set {_now} to now
+	set {Stats.%{_player}%::JumpBeacon-Time} to {_now}
+	kitFakeDeleteData({_player}, "Machine-Jump Beacon")
+	set {_loc.jump} to {_loc}
+	set {Stats.%{_player}%::JumpBeacon} to {_loc.jump}
+	kitFakeBlock({_player}, {_loc.jump}, "minecraft:redstone_torch", "Machine-Jump Beacon")
+	kitMsg({_player}, "<##E8383D>Jump Beacon§6を設置しました!")
+	playSound("entity.blaze.hurt", 1, 2, {_loc})
+	while {Stats.%{_player}%::JumpBeacon-Time} is {_now}:
+		wait a tick
+		loop all players:
+			{team::%loop-player%} is {team::%{_player}%}
+			{Stats.%loop-player%::NoSupport} is not set
+			loop-player does not have a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします"
+			give a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします" to loop-player
+		delete {_exist}
+		loop all entities:
+			type of loop-entity is armor stand
+			metadata value "kit-armor" of loop-entity is "Machine-Jump Beacon"
+			metadata value "Machine-Jump Beacon" of loop-entity is "%{_player}%"
+			set {_exist} to true
+		if {_exist} is true:
+			kitFakeReload({_player}, "Machine-Jump Beacon")
+		else:
+			delete {Stats.%{_player}%::JumpBeacon-Time}
+			delete {Stats.%{_player}%::JumpBeacon}
+	if {Stats.%{_player}%::JumpBeacon-Time} is not set:
+		loop all players:
+			{team::%loop-player%} is {team::%{_player}%}
+			{Stats.%loop-player%::NoSupport} is not set
+			loop-player has a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします"
+			remove a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします" from loop-player
+
+on rightclick holding a redstone item:
+	name of player's tool is "§cJump to Beacon"
+	cancel event
+	loop all players:
+		{Stats.%loop-player%::JumpBeacon} is set
+		{team::%loop-player%} is {team::%player%}
+		set {_bl::%loop-player%} to {Stats.%loop-player%::JumpBeacon}
+	open chest with 1 row named "§cBeacon list" to player
+	wait 1 tick
+	set {_ln} to 0
+	loop {_bl::*}:
+		set slot {_ln} of player's current inventory to redstone torch named "§d%loop-index%§c's Beacon" with lore "§6Location: %x-coordinate of loop-value%, %y-coordinate of loop-value%, %z-coordinate of loop-value%"
+		add 1 to {_ln}
+
+on inventory click:
+	type of event-inventory is chest inventory
+	if inventory name of event-inventory is "§cBeacon list":
+		cancel event
+		set {_name} to name of clicked item
+		replace "§d" with "" in {_name}
+		replace "§c's Beacon" with "" in {_name}
+		loop all players:
+			"%loop-player%" is {_name}
+			set {_target} to loop-player
+		kitEffect_JumpBeacon(player, {_target})
+
+function kitEffect_JumpBeacon(jumper: player, goaler: player):
+	if {Stats.%{_goaler}%::JumpBeacon} is set:
+		set {_loc} to location of {_jumper}
+		set {_time} to 3
+		loop 60 times:
+			if {Stats.%{_goaler}%::JumpBeacon} is set:
+				teleport {_jumper} to {_loc}
+				if {_time} is 3, 2 or 1:
+					message formatted "§c%{_time}%..." to {_jumper}
+					playSound("ui.button.click", 1, 2, {_loc})
+				subtract 0.05 from {_time}
+				wait 1 tick
+			else:
+				message "§cビーコン消滅によりジャンプが中断されました" to {_jumper}
+				stop
+		if checkFuel({_goaler}, 3) is true:
+			teleport {_jumper} to {Stats.%{_goaler}%::JumpBeacon}
+			set {_baseloc} to {Stats.%{_goaler}%::JumpBeacon}
+			delete {Stats.%{_goaler}%::JumpBeacon}
+			kitFakeDeleteData({_goaler}, "Machine-Jump Beacon")
+			message "§aジャンプに成功しました!" to {_jumper}
+			playSound("entity.wither.shoot", 1, 2, {_jumper})
+			set {_up} to -0.5
+			loop 5 times:
+				set {_el} to {_baseloc}
+				add 0.5 to {_up}
+				add {_up} to y-coordinate of {_el}
+				set {_rad} to 0
+				loop 10 times:
+					add 36 to {_rad}
+					add 0.5 * sin({_rad}) to x-coordinate of {_el}
+					add 0.5 * cos({_rad}) to z-coordinate of {_el}
+					drawDot count 1, particle "mobspell", RGB 255, 0, 255, center {_el}, visibleRange 30
+				wait a tick
+		else:
+			message formatted "§4燃料不足でジャンプが中断されました..." to {_jumper}
+	else:
+		message "§cそのビーコンはすでに存在しません!" to {_jumper}

@@ -1,0 +1,63 @@
+# Launch Pad
+
+function kitSkill_Engineer_1(player: player, loc: location):
+	toolCT({_player}, "Engineer", 1)
+	set {_now} to now
+	set {Stats.%{_player}%::LaunchPad-Time} to {_now}
+	kitFakeDeleteData({_player}, "Machine-Launch Pad")
+	if {team::%{_player}%} is "red":
+		set {_block} to "minecraft:red_stained_glass"
+	else if {team::%{_player}%} is "blue":
+		set {_block} to "minecraft:blue_stained_glass"
+	else if {team::%{_player}%} is "yellow":
+		set {_block} to "minecraft:yellow_stained_glass"
+	else if {team::%{_player}%} is "green":
+		set {_block} to "minecraft:lime_stained_glass"
+	else:
+		set {_block} to "minecraft:purple_stained_glass"
+	set {_plate} to "minecraft:heavy_weighted_pressure_plate"
+	set {_loc.glass} to {_loc}
+	subtract 0.5 from y-coordinate of {_loc.glass}
+	set {_loc.plate} to {_loc}
+	kitFakeBlock({_player}, {_loc.plate}, {_plate}, "Machine-Launch Pad")
+	kitFakeBlock({_player}, {_loc.glass}, {_block}, "Machine-Launch Pad")
+	kitMsg({_player}, "<##D70035>Launch Pad§6を設置しました!")
+	playSound("entity.blaze.hurt", 1, 2, {_loc})
+	while {Stats.%{_player}%::LaunchPad-Time} is {_now}:
+		wait a tick
+		loop {_time::*}:
+			if {_time::%loop-index%} is set:
+				if {_time::%loop-index%} <= 0:
+					delete {_time::%loop-index%}
+				else:
+					subtract 1 from {_time::%loop-index%}
+		loop all players in radius 1 around {_loc.plate}:
+			{_time::%loop-player%} is not set
+			{team::%loop-player%} is {team::%{_player}%}
+			{Stats.%loop-player%::NoSupport} is not set
+			checkFuel({_player}, 1) is true
+			setSupporter(loop-player, {_player})
+			set {Stats.%loop-player%::LaunchPad} to true
+			push loop-player upwards at speed 1
+			push loop-player forward at speed 2
+			set {_time::%loop-player%} to 20
+			playSound("entity.wither.shoot", 1, 2, loop-player)
+			loop 10 times:
+				set {_el} to aroundEffect(loop-player)
+				drawDot count 1, particle "campfirecozy", center {_el}, visibleRange 30
+		delete {_exist}
+		loop all entities:
+			type of loop-entity is armor stand
+			metadata value "kit-armor" of loop-entity is "Machine-Launch Pad"
+			metadata value "Machine-Launch Pad" of loop-entity is "%{_player}%"
+			set {_exist} to true
+		if {_exist} is true:
+			kitFakeReload({_player}, "Machine-Launch Pad")
+		else:
+			delete {Stats.%{_player}%::LaunchPad-Time}
+
+on damage of player:
+	{Stats.%victim%::LaunchPad} is true
+	damage was caused by fall
+	cancel event
+	delete {Stats.%victim%::LaunchPad}

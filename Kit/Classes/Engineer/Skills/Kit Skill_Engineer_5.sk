@@ -1,0 +1,44 @@
+# Dowsing Machine
+
+function kitSkill_Engineer_5(player: player, loc: location):
+	toolCT({_player}, "Engineer", 5)
+	set {_now} to now
+	set {Stats.%{_player}%::DowsingMachine-Time} to {_now}
+	kitFakeDeleteData({_player}, "Machine-Dowsing Machine")
+	set {_loc.base} to {_loc}
+	set {_loc.core} to {_loc}
+	add 1 to y-coordinate of {_loc.core}
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:cobblestone_wall", "Machine-Dowsing Machine")
+	kitFakeBlock({_player}, {_loc.core}, "minecraft:sea_lantern", "Machine-Dowsing Machine")
+	kitMsg({_player}, "<##00FFFF>Dowsing Machine§9を設置しました!")
+	playSound("block.conduit.activate", 1, 2, {_loc.base})
+	while {Stats.%{_player}%::DowsingMachine-Time} is {_now}:
+		wait a second
+		loop all players in radius 20 around {_loc.core}:
+			kitCheckTeam({_player}, loop-player, false) is true
+			loop-player does not have glowing
+			checkFuel({_player}, 5) is true
+			kitDamage({_player}, loop-player, 2)
+			apply glowing 1 to loop-player for 10 seconds
+			playSound("block.conduit.attack.target", 1, 1, loop-player)
+			set {_elbase} to {_loc.core}
+			add 0.5 to y-coordinate of {_elbase}
+			set {_vector} to setVector({_elbase}, location of head of loop-player)
+			set yaw of {_elbase} to yaw of {_vector}
+			set pitch of {_elbase} to pitch of {_vector}
+			set {_dis} to distance between {_elbase} and loop-player * 0.1
+			set {_ln} to 0
+			loop 10 times:
+				add 1 to {_ln}
+				set {_el} to location {_dis} * {_ln} meters in front of {_elbase}
+				drawDot count 1, particle "critmagic", center {_el}, visibleRange 30, keepFor 1 second
+		delete {_exist}
+		loop all entities:
+			type of loop-entity is armor stand
+			metadata value "kit-armor" of loop-entity is "Machine-Dowsing Machine"
+			metadata value "Machine-Dowsing Machine" of loop-entity is "%{_player}%"
+			set {_exist} to true
+		if {_exist} is true:
+			kitFakeReload({_player}, "Machine-Dowsing Machine")
+		else:
+			delete {Stats.%{_player}%::DowsingMachine-Time}

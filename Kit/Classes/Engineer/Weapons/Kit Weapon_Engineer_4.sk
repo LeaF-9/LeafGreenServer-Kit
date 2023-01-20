@@ -1,0 +1,34 @@
+# Clock Sword
+
+function kitWeapon_Engineer_4(player: player):
+	if checkFuel({_player}, 4, "Weapon.main") is true:
+		toolCT({_player}, "Engineer", 4, "Weapon.main")
+		kitMsg({_player}, "<##a0d8ef>追い風を吹かせます!")
+		set {_now} to now
+		set {Stats.%{_player}%::Wind Stick} to {_now}
+		loop 200 times:
+			if {Stats.%{_player}%::Wind Stick} is {_now}:
+				loop all entities in radius 7 around location of {_player}:
+					if kitCheckTeam({_player}, loop-entity, true) is true:
+						loop-entity does not have speed
+						apply speed 1 to loop-entity for 1 tick
+					else if kitCheckTeam({_player}, loop-entity, false) is true:
+						loop-entity does not have slowness
+						apply slowness 1 to loop-entity for 1 tick
+				loop all blocks in radius 7 around {_player}:
+					loop-block is air
+					chance of 0.1%:
+						set {_lb} to location of loop-block
+						playSound("entity.phantom.flap", 1, 2, {_lb})
+						effectWindStick({_player}, {_lb})
+				wait a tick
+		delete {Stats.%{_player}%::Wind Stick}
+
+function effectWindStick(player: player, loc: location):
+	set {_el} to {_loc}
+	set pitch of {_el} to 20
+	loop 5 times:
+		set yaw of {_el} to yaw of {_player}
+		set {_el} to location 0.6 meters in front of {_el}
+		drawDot particle "mobspell", RGB 160, 216, 239, center {_el}, visibleRange 30
+		wait a tick

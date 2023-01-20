@@ -1,0 +1,97 @@
+# Transport Lift
+
+function kitUltEngineer(player: player):
+	message "§c現在地点にテレポート装置を設置します!" to {_player}
+	message "§c破壊されるまで,復活地点周辺から装置に飛ぶことが出来ます!" to {_player}
+	set {_tploc} to location of {_player}
+	if {Kit-tochu} is true:
+		loop {Kit-GameStageRespawns.%{TrueTeam::%{_player}%}%::*}:
+			add loop-value to {_fromloc::*}
+	else:
+		add {Kit-TestWorld} to {_fromloc::*}
+	set {_now} to now
+	set {Ult.%{_player}%::Engineer} to {_now}
+	set {_mecloc} to {_tploc}
+	add 2 to y-coordinate of {_mecloc}
+	kitFakeBlock({_player}, {_mecloc}, "minecraft:crying_obsidian", "Machine-Transport Lift")
+	loop {_fromloc::*}:
+		set {_armloc} to loop-value
+		add 2 to y-coordinate of {_armloc}
+		set pitch of {_armloc} to 0
+		set {_armloc} to location 3 meters in front of {_armloc}
+		spawn an armor stand at {_armloc} with nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
+		set metadata value "gametype" of spawned armor stand to "Kit"
+		set metadata value "Kit-EngineerUlt" of spawned armor stand to "%{_player}%"
+		set display name of spawned armor stand to "§3§lスニーク§7で§6§lテレポート§7します!"
+	set {_tpy} to 0.5
+	set {_fromy} to 0
+	while {Ult.%{_player}%::Engineer} is {_now}:
+		wait a tick
+#	テレポート動作
+		loop {_fromloc::*}:
+			set {_temploc} to loop-value
+			loop all players in radius 3 around {_temploc}:
+				kitCheckTeam({_player}, loop-player, true) is true
+				loop-player is sneaking
+				teleport loop-player to {_tploc}
+				message formatted "§5§lテレポートしました!" to loop-player
+				playSound("entity.enderman.teleport", 1, 0.5, {_tploc})
+				set {_beloc} to {_tploc}
+				add 1 to y-coordinate of {_beloc}
+				loop 30 times:
+					draw 1 witchspell particle at {_beloc} with direction randomVector({_beloc}) and speed 3, keepFor 1 tick
+#	エフェクト
+		delete {_tpeffs::*}
+		delete {_fromeffs::*}
+		set {_tpeffbase} to {_tploc}
+		subtract 0.01 from {_tpy}
+		if {_tpy} <= 0:
+			set {_tpy} to 0.5
+		loop 4 times:
+			set {_ln} to loop-number - 1
+			set {_temploc} to {_tpeffbase}
+			add 0.5 * {_ln} + {_tpy} to y-coordinate of {_temploc}
+			add {_temploc} to {_tpeffs::*}
+		loop {_tpeffs::*}:
+			set {_tpeff} to loop-value
+			set {_rad} to 0
+			loop 10 times:
+				add 36 to {_rad}
+				set {_eff} to {_tpeff}
+				add sin({_rad}) * 0.5 to x-coordinate of {_eff}
+				add cos({_rad}) * 0.5 to z-coordinate of {_eff}
+				drawDot count 1, particle "redstone", RGB 255, 0, 255, center {_eff}, visibleRange 30
+		loop {_fromloc::*}:
+			set {_fromeffbase} to loop-value
+			add 0.01 to {_fromy}
+			if {_fromy} >= 0.5:
+				set {_fromy} to 0
+			loop 4 times:
+				set {_ln} to loop-number - 1
+				set {_temploc} to {_fromeffbase}
+				add 0.5 * {_ln} + {_fromy} to y-coordinate of {_temploc}
+				add {_temploc} to {_fromeffs::*}
+			loop {_fromeffs::*}:
+				set {_fromeff} to loop-value-2
+				set {_rad} to 0
+				loop 36 times:
+					add 10 to {_rad}
+					set {_eff} to {_fromeff}
+					add sin({_rad}) * 3 to x-coordinate of {_eff}
+					add cos({_rad}) * 3 to z-coordinate of {_eff}
+					drawDot count 1, particle "redstone", RGB 255, 0, 255, center {_eff}, visibleRange 30
+#	存在確認		
+		delete {_exist}
+		loop all entities:
+			type of loop-entity is armor stand
+			metadata value "kit-armor" of loop-entity is "Machine-Transport Lift"
+			metadata value "Machine-Transport Lift" of loop-entity is "%{_player}%"
+			set {_exist} to true
+		if {_exist} is true:
+			kitFakeReload({_player}, "Machine-Transport Lift")
+		else:
+			delete {Ult.%{_player}%::Engineer}
+	loop all entities:
+		type of loop-entity is armor stand
+		metadata value "Kit-EngineerUlt" of loop-entity is "%{_player}%"
+		delete loop-entity

@@ -1,0 +1,111 @@
+# Restore Faster
+
+function kitSkill_Engineer_2(player: player, loc: location):
+	toolCT({_player}, "Engineer", 2)
+	set {_now} to now
+	set {Stats.%{_player}%::RestoreFaster-Time} to {_now}
+	kitFakeDeleteData({_player}, "Machine-Restore Faster")
+	set {_loc.base} to {_loc}
+	set {_loc.core} to {_loc}
+	add 1 to y-coordinate of {_loc.core}
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:oak_fence", "Machine-Restore Faster")
+	kitFakeBlock({_player}, {_loc.core}, "minecraft:glowstone", "Machine-Restore Faster")
+	kitMsg({_player}, "<##FFF352>Restore Faster§6を設置しました!")
+	playSound("entity.blaze.hurt", 1, 2, {_loc})
+	set {_skill} to kitSkillItem("Engineer", 2)
+	set {_lore::*} to lore of {_skill}
+	loop {_lore::*}:
+		loop-value contains "§8Fuel§7"
+		set {_fuel} to loop-value
+	replace every "§8Fuel§7: §4" with "" in {_fuel}
+	set {_fuel} to {_fuel} parsed as number
+	while {Stats.%{_player}%::RestoreFaster-Time} is {_now}:
+		delete {_ok}
+		loop 10 times:
+			if {Stats.%{_player}%::RestoreFaster-Time} is {_now}:
+				if {_ok} is true:
+					delete {_tp::*}
+#				新しい人の追加 + 範囲内チェック
+					loop all players in radius 30 around {_loc.base}:
+						kitCheckTeam(loop-player, {_player}, true) is true
+						{Class::%loop-player%} is not "Engineer"
+						{Stats.%loop-player%::NoSupport} is not set
+						if {_pl::*} contains loop-player:
+							set {_tp::%loop-player%} to true
+						else:
+							if {Kit-Fuel::%{_player}%} >= {_fuel}:
+								set {_ok} to true
+								if {_fu::%loop-player%} is not set:
+									set {_fu::%loop-player%} to true
+									setFuelCT({_player})
+									subtract {_checkfuel} from {Kit-Fuel::%{_player}%}
+								add loop-player to {_pl::*}
+								set {_tp::%loop-player%} to true
+								setSupporter(loop-player, {_player})
+								set {Stats.%loop-player%::FastCT} to true
+								message formatted "§bクールタイム短縮時間§eが短くなります!" to loop-player
+								kitEffect_RestoreFaster(loop-player, true)
+					loop {_pl::*}:
+						{Stats.%loop-value-2%::FastCT} is true
+						{_tp::%loop-value-2%} is not set
+						delete {Stats.%loop-value-2%::FastCT}
+						message formatted "§bクールタイム短縮§c効果が切れました" to loop-value-2
+						kitEffect_RestoreFaster(loop-value-2, false)
+						delete {_pl::%loop-index%}
+				else:
+					delete {_ally}
+					delete {_pl::*}
+					loop all players in radius 30 around {_loc.base}:
+						kitCheckTeam(loop-player, {_player}, true) is true
+						{Class::%loop-player%} is not "Engineer"
+						{Stats.%loop-player%::NoSupport} is not set
+						add 1 to {_ally}
+						add loop-player to {_pl::*}
+					set {_checkfuel} to {_fuel} * {_ally}
+					if {Kit-Fuel::%{_player}%} >= {_checkfuel}:
+						set {_ok} to true
+						setFuelCT({_player})
+						subtract {_checkfuel} from {Kit-Fuel::%{_player}%}
+						loop {_pl::*}:
+							setSupporter(loop-value-2, {_player})
+							set {Stats.%loop-value-2%::FastCT} to true
+							message formatted "§bクールタイム短縮時間§eが短くなります!" to loop-value-2
+							kitEffect_RestoreFaster(loop-value-2, true)
+				wait a second
+				delete {_exist}
+				loop all entities:
+					type of loop-entity is armor stand
+					metadata value "kit-armor" of loop-entity is "Machine-Restore Faster"
+					metadata value "Machine-Restore Faster" of loop-entity is "%{_player}%"
+					set {_exist} to true
+				if {_exist} is true:
+					kitFakeReload({_player}, "Machine-Restore Faster")
+				else:
+					delete {Stats.%{_player}%::RestoreFaster-Time}
+					loop {_pl::*}:
+						{Stats.%loop-value-2%::FastCT} is true
+						delete {Stats.%loop-value-2%::FastCT}
+						message "§bクールタイム短縮§c効果が切れました" to loop-value-2
+						kitEffect_RestoreFaster(loop-value-2, false)
+
+function kitEffect_RestoreFaster(player: player, bool: boolean):
+	set {_up} to -0.5
+	loop 5 times:
+		set {_loc} to location of {_player}
+		add 0.5 to {_up}
+		if {_bool} is true:
+			add {_up} to y-coordinate of {_loc}
+		else:
+			add 2 to y-coordinate of {_loc}
+			subtract {_up} from y-coordinate of {_loc}
+		set {_rad} to 0
+		loop 10 times:
+			set {_el} to {_loc}
+			add 36 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			if {_bool} is true:
+				drawDot count 1, particle "mobspell", RGB 255, 255, 0, center {_el}, visibleRange 30
+			else:
+				drawDot count 1, particle "mobspell", RGB 0, 255, 255, center {_el}, visibleRange 30
+		wait a tick

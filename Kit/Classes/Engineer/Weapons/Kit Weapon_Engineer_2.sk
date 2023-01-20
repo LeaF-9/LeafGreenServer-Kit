@@ -1,0 +1,19 @@
+# Bolt Stick
+
+function kitWeapon_Engineer_2(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if checkFuel({_player}, 2, "Weapon.main") is true:
+			toolCT({_player}, "Engineer", 2, "Weapon.main")
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			loop {CT.%{_tg}%::*}:
+				subtract 60 from {CT.%{_tg}%::%loop-index%}
+			kitMsg({_player}, "§b%{_tg}% §eのクールタイムを短縮しました!")
+			message formatted "§9%{_player}% §eによりクールタイムが§b60秒§e短縮された!" to {_player}
+			playSound("block.grindstone.use", 1, 0.5, {_tg})
+			loop 20 times:
+				set {_loc} to location of {_tg}
+				set {_speed} to a random number between 0.5 and 2
+				draw 1 smoke particle at {_loc} with direction randomVector({_loc}, 1) and speed {_speed}, keepFor 1 tick
+				wait a tick
+	else:
+		message formatted "§c§l対象のプレイヤーがいません" to {_player}

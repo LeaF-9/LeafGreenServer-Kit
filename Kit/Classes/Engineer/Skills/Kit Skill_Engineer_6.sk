@@ -1,0 +1,53 @@
+# Respawn Controller
+
+function kitSkill_Engineer_6(player: player, loc: location):
+	toolCT({_player}, "Engineer", 6)
+	set {_now} to now
+	set {Stats.%{_player}%::RespawnController-Time} to {_now}
+	kitFakeDeleteData({_player}, "Machine-Respawn Controller")
+	set {_loc.base} to {_loc}
+	set {_loc.core} to {_loc}
+	set {_loc.top} to {_loc}
+	add 1 to y-coordinate of {_loc.core}
+	add 2 to y-coordinate of {_loc.top}
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:nether_brick_fence", "Machine-Respawn Controller")
+	kitFakeBlock({_player}, {_loc.core}, "minecraft:nether_quartz_ore", "Machine-Respawn Controller")
+	kitFakeBlock({_player}, {_loc.top}, "minecraft:nether_brick_fence", "Machine-Respawn Controller")
+	kitMsg({_player}, "<##7F1184>Respawn Controller§cを設置しました!")
+	playSound("entity.evoker.prepare_attack", 1, 1.5, {_loc.base})
+	while {Stats.%{_player}%::RespawnController-Time} is {_now}:
+		wait 5 ticks
+		delete {_tp::*}
+		loop all players in radius 10 around {_loc.base}:
+			kitCheckTeam(loop-player, {_player}, false) is true
+			if {Stats.%loop-player%::RespawnController} is not set:
+				set {Stats.%loop-player%::RespawnController} to {_player}
+				set {_el} to location of loop-player
+				add 1 to y-coordinate of {_el}
+				loop 10 times:
+					draw 1 witchspell particle at {_el} with direction randomVector({_el}) and speed 2, keepFor 1 tick
+				add loop-player to {_pl::*}
+			set {_tp::%loop-player%} to true
+		loop {_pl::*}:
+			{Stats.%loop-value%::RespawnController} is {_player}
+			{_tp::%loop-value%} is not set
+			delete {Stats.%loop-value%::RespawnController}
+			delete {_pl::%loop-index%}
+		delete {_exist}
+		loop all entities:
+			type of loop-entity is armor stand
+			metadata value "kit-armor" of loop-entity is "Machine-Respawn Controller"
+			metadata value "Machine-Respawn Controller" of loop-entity is "%{_player}%"
+			set {_exist} to true
+		if {_exist} is true:
+			kitFakeReload({_player}, "Machine-Respawn Controller")
+		else:
+			delete {Stats.%{_player}%::RespawnController-Time}
+			loop {_pl::*}:
+				{Stats.%loop-value%::RespawnController} is {_player}
+				delete {Stats.%loop-value%::RespawnController}
+
+on death of player:
+	{Stats.%victim%::RespawnController} is set
+	checkFuel(victim, 6) is true
+	set {Stats.%victim%::SpawnTime} to 15

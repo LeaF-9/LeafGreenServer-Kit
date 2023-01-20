@@ -1,0 +1,16 @@
+# Mechanic Knife
+
+function kitWeapon_Engineer_1(player: player):
+	if checkFuel({_player}, 1, "Weapon.main") is true:
+		toolCT({_player}, "Engineer", 1, "Weapon.main")
+		playSound("entity.arrow.shoot", 1, 1, {_player})
+		set {_bl} to location of head of {_player}
+		set {_l.1} to {_bl}
+		set {_l.2} to {_bl}
+		add 30 to yaw of {_l.2}
+		set {_l.3} to {_bl}
+		subtract 30 from yaw of {_l.3}
+		loop 3 times:
+			shoot an arrow from {_l.%loop-number%} at speed 1
+			set shooter of shot arrow to {_player}
+			drawDot particle "cloud", center shot arrow, visibleRange 30, keepFor 1 second

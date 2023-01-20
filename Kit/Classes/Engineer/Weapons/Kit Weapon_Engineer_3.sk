@@ -1,0 +1,27 @@
+# Electrod
+
+function kitWeapon_Engineer_3(player: player):
+	if checkFuel({_player}, 3, "Weapon.main") is true:
+		toolCT({_player}, "Engineer", 3, "Weapon.main")
+		set {_baseloc} to location of head of {_player}
+		set {_m} to 0
+		playSound("block.enchantment_table.use", 1, 2, {_player})
+		loop 10 times:
+			{_tg} is not set
+			loop 10 times:
+				{_tg} is not set
+				add 1 to {_m}
+				set {_loc} to location {_m} meters in front of {_baseloc}
+				drawDot particle "endrod", center {_loc}, visibleRange 30
+				loop all players in radius 2 around {_loc}:
+					{_tg} is not set
+					kitCheckTeam(loop-player, {_player}, false) is true
+					set {_tg} to loop-player
+			wait a tick
+		if {_tg} is set:
+			kitPalsy({_tg}, 5 seconds)
+			kitMsg({_player}, "§6%{_tg}% §eのスキルを封じました!")
+			playSound("item.lodestone_compass.lock", 1, 0.5, {_tg})
+			loop 10 times:
+				set {_l} to aroundEffect({_tg})
+				drawDot particle "redstone", RGB 255, 255, 0, center {_l}, visibleRange 30

@@ -1,0 +1,69 @@
+# Shield Crystal
+
+function kitSkill_Engineer_8(player: player, loc: location):
+	toolCT({_player}, "Engineer", 8)
+	set {_now} to now
+	set {Stats.%{_player}%::ShieldCrystal-Time} to {_now}
+	kitFakeDeleteData({_player}, "Machine-Shield Crystal")
+	set {_loc.base} to {_loc}
+	subtract 0.5 from y-coordinate of {_loc.base}
+	set {_loc.core} to {_loc}
+	add 1 to y-coordinate of {_loc.core}
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:diamond_block", "Machine-Shield Crystal")
+	spawn end crystal at {_loc.core} with nbt compound from "{ShowBottom:false}"
+	set metadata value "gametype" of spawned end crystal to "Kit"
+	set metadata value "shield crystal" of spawned end crystal to "%{_player}%"
+	kitMsg({_player}, "<##2CB4AD>Shield Crystal§1を設置しました!")
+	playSound("entity.ender_eye.death", 1, 0.5, {_loc.core})
+	while {Stats.%{_player}%::ShieldCrystal-Time} is {_now}:
+		wait a second
+		delete {_tp::*}
+		loop all players in radius 10 around {_loc.core}:
+			kitCheckTeam(loop-player, {_player}, true) is true
+			if {Kit-Shield::%loop-player%} is not set:
+				if {_shield::%loop-player%} is set:
+					delete {_shield::%loop-player%}
+					setCT(loop-player, "Crystal Shield", 5)
+				else:
+					checkCT(loop-player, "Crystal Shield", true) is true
+					checkFuel({_player}, 8) is true
+					setSupporter(loop-player, {_player})
+					kitShield(loop-player, 3)
+#					set {_nosh::%loop-value%} to 10
+					message formatted "§3§lShield Crystal§9のシールドが付与された!" to loop-player
+					playSound("block.beacon.power_select", 1, 2, {_loc.core})
+#					add loop-player to {_pl::*}
+			else:
+				set {_shield::%loop-player%} to true
+#			set {_tp::%loop-player%} to true
+#		loop {_pl::*}:
+#			{Kit-Shield::%loop-value%} is set
+#			{_tp::%loop-value%} is not set
+#			subtract 1 from {_nosh::%loop-value%}
+#			if {_nosh::%loop-value%} <= 0:
+#				message "§3§lShield Crystal§1の効果が消滅しました" to loop-value
+#				delete {Kit-ShieldTime::%loop-value%}
+#				delete {Kit-Shield::%loop-value%}
+#				delete {_shield::%loop-value%}
+		delete {_exist}
+		loop all entities:
+			type of loop-entity is armor stand
+			metadata value "kit-armor" of loop-entity is "Machine-Shield Crystal"
+			metadata value "Machine-Shield Crystal" of loop-entity is "%{_player}%"
+			set {_exist} to true
+		if {_exist} is true:
+			kitFakeReload({_player}, "Machine-Shield Crystal")
+		else:
+			delete {Stats.%{_player}%::ShieldCrystal-Time}
+#			loop {_pl::*}:
+#				{Kit-Shield::%loop-value%} is set
+#				delete {Kit-ShieldTime::%loop-value%}
+#				delete {Kit-Shield::%loop-value%}
+#				message formatted "§3§lShield Crystal§1の効果が消滅しました" to loop-value
+	loop all entities:
+		metadata value "shield crystal" of loop-entity is "%{_player}%"
+		delete loop-entity
+
+on damage of end crystal:
+	metadata value "shield crystal" of victim is set
+	cancel event
