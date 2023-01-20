@@ -1,0 +1,12 @@
+# Dump Soul
+
+function kitSkill_Necromancer_2(player: player):
+	toolCT({_player}, "Necromancer", 2)
+	kitMsg({_player}, "§8自分の命を捨て§5§lNecromance§0: §45 §8追加しました...")
+	set {Stats.%{_player}%::DumpSoul} to true
+	set {Stats.%{_player}%::NoCorpse} to true
+	set {_loc} to location of {_player}
+	set health of {_player} to 0
+	playSound("entity.zombie.death", 1, 1, {_player})
+	loop 5 times:
+		kitSpawnGhost({_player}, {_loc}, false)

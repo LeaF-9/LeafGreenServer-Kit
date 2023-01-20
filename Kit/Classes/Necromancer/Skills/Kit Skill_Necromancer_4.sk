@@ -1,0 +1,28 @@
+# Soul Reanimation
+
+function kitSkill_Necromancer_4(player: player):
+	toolCT({_player}, "Necromancer", 4)
+	kitMsg({_player}, "<##483d8b>周辺のMobの魂を回収して怨魂を召喚します...")
+	playSound("entity.evoker.cast_spell", 1, 1, {_player})
+	loop all entities in radius 10 around {_player}:
+		type of loop-entity is not player
+		loop-entity's display name is "%{_player}%"
+		metadata value "kit-dead" of loop-entity is "true"
+		drawDot count 1, particle "witchspell", center loop-entity, visibleRange 30, keepFor 1 second
+		set {_l} to location of loop-entity
+		delete loop-entity
+		kitAddNecromance({_player}, 1)
+		kitSpawnGrudge({_player}, {_l})
+	set {_height} to 1
+	set {_baseloc} to location of {_player}
+	loop 5 times:
+		add 0.5 to {_height}
+		set {_angle} to 0
+		loop 36 times:
+			set {_loc} to {_baseloc}
+			add 10 * sin({_angle}) to x-coordinate of {_loc}
+			add 10 * cos({_angle}) to z-coordinate of {_loc}
+			add {_height} to y-coordinate of {_loc}
+			drawDot count 1, particle "mobspell", RGB 72, 61, 139, center {_loc}, visibleRange 30
+			add 10 to {_angle}
+		wait a tick

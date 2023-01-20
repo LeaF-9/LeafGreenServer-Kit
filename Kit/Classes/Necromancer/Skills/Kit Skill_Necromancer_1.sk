@@ -1,0 +1,27 @@
+# Spirit Haunted
+
+function kitSkill_Necromancer_1(player: player):
+	set {_tool} to kitNecromanceItem({_player}, 1)
+	if kitCheckNecromance({_player}, {_tool}) is true:
+		if {Stats.%{_player}%::SkillTarget} is set:
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			toolCT({_player}, "Necromancer", 1)
+			kitRemoveNecromance({_player}, {_tool})
+			kitMsg({_player}, "§1%{_tg}% §8に亡霊を取り憑かせました...")
+			message "§5なんだか憑かれている気がする..." to {_tg}
+			set {Stats.%{_tg}%::SpiritHaunted} to {_player}
+			set {Stats.%{_tg}%::SpawnTime} to 10
+			kitBadLuck({_tg}, 3)
+			playSound("entity.zombie_villager.converted", 1.2, 0.5, {_tg})
+			drawDot count 1, particle "mobappearance", center {_tg}, visibleRange 1
+		else:
+			send action bar "§c§l対象が存在しません!" to {_player}
+
+on death of player:
+	if {Stats.%victim%::SpiritHaunted} is set:
+		set {Kit-NoCorpse::%victim%} to true
+		set {_l} to location 2 meters below victim
+		loop 3 times:
+			kitSpawnVengeful({Stats.%victim%::SpiritHaunted}, {_l})
+			push spawned skeleton upwards at speed 0.85
+		delete {Stats.%victim%::SpiritHaunted}

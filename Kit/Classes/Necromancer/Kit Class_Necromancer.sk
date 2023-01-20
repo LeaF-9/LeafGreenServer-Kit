@@ -1,47 +1,5 @@
 # Necromancerのスキル Ver1.0.0
 
-# Weapons
-on death of player:
-	metadata value "gametype" of attacker is "Kit"
-	{Class::%attacker%} is "Necromancer"
-	set {_tool} to attacker's tool
-	if kitItemAllChecker({_tool}, "Necromancer", "Weapon.main", 3) is true:
-		kitAddNecromance(attacker, 5)
-		set {Kit-NoCorpse::%victim%} to true
-		playSound("entity.zombie.infect", 1, 2, victim)
-		loop 5 times:
-			set {_baseloc} to location of victim
-			add 0.4 to {_y}
-			add {_y} to y-coordinate of {_baseloc}
-			set {_rad} to 0
-			loop 10 times:
-				set {_effloc} to {_baseloc}
-				add 0.5 * sin({_rad}) to x-coordinate of {_effloc}
-				add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
-				drawDot count 1, particle "redstone", RGB 75, 0, 130, center {_effloc}, visibleRange 30
-				add 36 to {_rad}
-			wait a tick
-	else if kitItemAllChecker({_tool}, "Necromancer", "Weapon.main", 5) is true:
-		set {Kit-NoCorpse::%victim%} to true
-		playSound("entity.zombie_villager.converted", 1, 2, player)
-		heal attacker by 5 hearts
-
-function kitWeapon_Necromancer_3(player: player):
-	set {_now} to now
-	set {Stats.%{_player}%::Erasure Rapier} to {_now}
-	playSound("block.enchantment_table.use", 1.1, 0.8, {_player})
-	loop 100 times:
-		{Stats.%{_player}%::Erasure Rapier} is {_now}
-		loop all items in {_player}'s inventory:
-			name of loop-item contains "Erasure Rapier"
-			loop-item is not enchanted
-			enchant loop-item with sharpness 3
-		wait a tick
-	if {Stats.%{_player}%::Erasure Rapier} is {_now}:
-		loop all items in {_player}'s inventory:
-			name of loop-item contains "Erasure Rapier"
-			disenchant loop-item
-
 # Skills
 on rightclick holding a zombie spawn egg:
 	name of player's tool is "§5Summon Dead"
@@ -85,30 +43,6 @@ on rightclick holding a zombie spawn egg:
 			drawDot count 1, particle "mobspell", XYZ 100, 0, 100, center spawned entity, visibleRange 32, keepFor 3 seconds
 		playSound("entity.zombie.ambient", 1, 0.5, player)
 
-function kitTimerNecromancer(player: player):
-	while {Class::%{_player}%} is "Necromancer":
-		add 1 to {_timer}
-		if {_timer} >= 200:
-			set {_timer} to 0
-		if {_timer} = 0:
-			loop all zombies:
-				metadata value "kit-dead" of loop-zombie is "true"
-				subtract 1.2 from loop-zombie's health
-			loop all skeletons:
-				metadata value "kit-dead" of loop-skeleton is "true"
-				subtract 1.2 from loop-skeleton's health
-		delete {_true}
-		set {_tool} to {_player}'s tool
-		if {_tool} is air:
-			set {_true} to true
-		else:
-			set {_name} to display name of {_tool}
-			if checkCT({_player}, {_name}, true) is true:
-				set {_true} to true
-		if {_true} is true:
-			send action bar "§5§lNecromance§0: §4%{Kit-Necromance::%{_player}%}%" to {_player}
-		wait a tick
-
 function kitSkillNecromancer(player: player) :: boolean:
 	set {_tool} to {_player}'s tool
 	set {_item.num} to kitItemNumberChecker({_tool})
@@ -131,280 +65,17 @@ function kitSkillNecromancer(player: player) :: boolean:
 			kitSkill_Necromancer_8({_player})
 	return true
 
-function kitSkill_Necromancer_1(player: player):
-	set {_tool} to kitNecromanceItem({_player}, 1)
-	if kitCheckNecromance({_player}, {_tool}) is true:
-		if {Stats.%{_player}%::SkillTarget} is set:
-			set {_tg} to {Stats.%{_player}%::SkillTarget}
-			toolCT({_player}, "Necromancer", 1)
-			kitRemoveNecromance({_player}, {_tool})
-			kitMsg({_player}, "§1%{_tg}% §8に亡霊を取り憑かせました...")
-			message "§5なんだか憑かれている気がする..." to {_tg}
-			set {Stats.%{_tg}%::SpiritHaunted} to {_player}
-			set {Stats.%{_tg}%::SpawnTime} to 10
-			kitBadLuck({_tg}, 3)
-			playSound("entity.zombie_villager.converted", 1.2, 0.5, {_tg})
-			drawDot count 1, particle "mobappearance", center {_tg}, visibleRange 1
-		else:
-			send action bar "§c§l対象が存在しません!" to {_player}
-
-on death of player:
-	if {Stats.%victim%::SpiritHaunted} is set:
-		set {Kit-NoCorpse::%victim%} to true
-		set {_l} to location 2 meters below victim
-		loop 3 times:
-			kitSpawnVengeful({Stats.%victim%::SpiritHaunted}, {_l})
-			push spawned skeleton upwards at speed 0.85
-		delete {Stats.%victim%::SpiritHaunted}
-
-function kitSkill_Necromancer_2(player: player):
-	toolCT({_player}, "Necromancer", 2)
-	kitMsg({_player}, "§8自分の命を捨て§5§lNecromance§0: §45 §8追加しました...")
-	set {Stats.%{_player}%::DumpSoul} to true
-	set {Stats.%{_player}%::NoCorpse} to true
-	set {_loc} to location of {_player}
-	set health of {_player} to 0
-	playSound("entity.zombie.death", 1, 1, {_player})
-	loop 5 times:
-		kitSpawnGhost({_player}, {_loc}, false)
-
-function kitSkill_Necromancer_3(player: player):
-	set {_tool} to kitNecromanceItem({_player}, 3)
-	if kitCheckNecromance({_player}, {_tool}) is true:
-		toolCT({_player}, "Necromancer", 3)
-		kitRemoveNecromance({_player}, {_tool})
-		kitMsg({_player}, "§4周辺のアンデッドと反撃の狼煙を上げる...")
-		playSound("entity.zombie_villager.cure", 1, 1.5, {_player})
-		set {_z} to true
-		chance of 50%:
-			set {_z} to false
-		if {_z} is true:
-			spawn a undead horse at {_player} with nbt compound from "{Attributes:[{Name:""generic.movement_speed"",Base:0.23f},{Name:""horse.jump_strength"",Base:0.6f}],Age:0}"
-		else:
-			spawn a skeleton horse at {_player} with nbt compound from "{Attributes:[{Name:""generic.movement_speed"",Base:0.23f},{Name:""horse.jump_strength"",Base:0.6f}],Age:0}"
-		tame last spawned entity to {_player}
-		equip the spawned entity with saddle
-		set spawned entity's display name to "%{_player}%"
-		make {_player} ride spawned entity
-		set metadata value "gametype" of spawned entity to "Kit"
-		set metadata value "sally-fatalities" of spawned entity to "%{_player}%"
-		loop 200 times:
-			if vehicle of {_player} is a undead horse or a skeleton horse:
-				delete {_p}
-				delete {_pl::*}
-				set {_d} to 100
-				loop all players in radius 5 around {_player}:
-					kitCheckTeam(loop-player, {_player}, false) is true
-					add 1 to {_p}
-					add loop-player to {_pl::*}
-				if {_p} is set:
-					loop {_pl::*}:
-						set {_dis} to distance between {_player} and loop-value-2
-						if {_d} > {_dis}:
-							set {_d} to {_dis}
-							set {_t} to loop-value-2
-				else:
-					set {_t} to {_player}
-				loop all entities in radius 10 around {_player}:
-					metadata value "kit-dead" of loop-entity is "true"
-					loop-entity's display name is "%{_player}%"
-					apply strength 3 to loop-entity for 3 ticks replacing existing effect
-					apply speed 5 to loop-entity for 3 ticks replacing existing effect
-					apply resistance -5 to loop-entity for 3 ticks replacing existing effect
-					apply fire resistance 1 to loop-entity for 3 ticks replacing existing effect
-					drawDot count 1, particle "mobspell", XYZ 100, 0, 0, center loop-entity, visibleRange 32, keepFor a tick
-					set target of loop-entity to {_t}
-			wait a tick
-		loop all entities:
-			if metadata value "sally-fatalities" of loop-entity is "%{_player}%":
-				delete loop-entity
-			else if metadata value "kit-dead" of loop-entity is "true":
-				loop-entity's display name is "%{_player}%"
-				target of loop-entity is {_player}
-				delete target of loop-entity
-
-on damage:
-	if metadata value "kit-dead" of victim is "true":
-		victim has strength
-		set damage to 100
-	else if metadata value "sally-fatalities" of victim is set:
-		cancel event
-
-function kitSkill_Necromancer_4(player: player):
-	toolCT({_player}, "Necromancer", 4)
-	kitMsg({_player}, "<##483d8b>周辺のMobの魂を回収して怨魂を召喚します...")
-	playSound("entity.evoker.cast_spell", 1, 1, {_player})
-	loop all entities in radius 10 around {_player}:
-		type of loop-entity is not player
-		loop-entity's display name is "%{_player}%"
-		metadata value "kit-dead" of loop-entity is "true"
-		drawDot count 1, particle "witchspell", center loop-entity, visibleRange 30, keepFor 1 second
-		set {_l} to location of loop-entity
-		delete loop-entity
-		kitAddNecromance({_player}, 1)
-		kitSpawnGrudge({_player}, {_l})
-	set {_height} to 1
-	set {_baseloc} to location of {_player}
-	loop 5 times:
-		add 0.5 to {_height}
-		set {_angle} to 0
-		loop 36 times:
-			set {_loc} to {_baseloc}
-			add 10 * sin({_angle}) to x-coordinate of {_loc}
-			add 10 * cos({_angle}) to z-coordinate of {_loc}
-			add {_height} to y-coordinate of {_loc}
-			drawDot count 1, particle "mobspell", RGB 72, 61, 139, center {_loc}, visibleRange 30
-			add 10 to {_angle}
-		wait a tick
-
-function kitSkill_Necromancer_5(player: player):
-	set {_tool} to kitNecromanceItem({_player}, 5)
-	if kitCheckNecromance({_player}, {_tool}) is true:
-		if {Stats.%{_player}%::SkillLocation} is set:
-			toolCT({_player}, "Necromancer", 5)
-			kitRemoveNecromance({_player}, {_tool})
-			kitMsg({_player}, "§5§l収集した魂が死を運ぶ...")
-			set {_point} to {Stats.%{_player}%::SkillLocation}
-#		弧を描く
-			set {_n.k} to 0
-			loop 60 times:
-				set {_effbaseloc} to {_point}
-				add 10 * sin({_n.k}) to x-coordinate of {_effbaseloc}
-				add 10 * cos({_n.k}) to z-coordinate of {_effbaseloc}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_effbaseloc}, visibleRange 100, keepFor 3 seconds
-				add 6 to {_n.k}
-#		弦を描く
-			if {_l.A} is not set:
-				set {_l.A} to {_point}
-				set yaw of {_l.A} to 120
-				set pitch of {_l.A} to 0
-				add 10 * sin(90) to x-coordinate of {_l.A}
-				add 10 * cos(90) to z-coordinate of {_l.A}
-			if {_l.B} is not set:
-				set {_l.B} to {_point}
-				set yaw of {_l.B} to 0
-				set pitch of {_l.B} to 0
-				add 10 * sin(210) to x-coordinate of {_l.B}
-				add 10 * cos(210) to z-coordinate of {_l.B}
-			if {_l.C} is not set:
-				set {_l.C} to {_point}
-				set yaw of {_l.C} to 240
-				set pitch of {_l.C} to 0
-				add 10 * sin(330) to x-coordinate of {_l.C}
-				add 10 * cos(330) to z-coordinate of {_l.C}
-			if {_l.D} is not set:
-				set {_l.D} to {_point}
-				set yaw of {_l.D} to 180
-				set pitch of {_l.D} to 0
-				add 10 * sin(30) to x-coordinate of {_l.D}
-				add 10 * cos(30) to z-coordinate of {_l.D}
-			if {_l.E} is not set:
-				set {_l.E} to {_point}
-				set yaw of {_l.E} to 60
-				set pitch of {_l.E} to 0
-				add 10 * sin(150) to x-coordinate of {_l.E}
-				add 10 * cos(150) to z-coordinate of {_l.E}
-			if {_l.F} is not set:
-				set {_l.F} to {_point}
-				set yaw of {_l.F} to 300
-				set pitch of {_l.F} to 0
-				add 10 * sin(270) to x-coordinate of {_l.F}
-				add 10 * cos(270) to z-coordinate of {_l.F}
-			loop 19 times:
-				add sqrt(3) / 2 to {_n.g}
-#			A-B
-				set {_loc.g} to location {_n.g} meters in front of {_l.A}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-#			D-E
-				set {_loc.g} to location {_n.g} meters in front of {_l.D}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-#			B-C
-				set {_loc.g} to location {_n.g} meters in front of {_l.B}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-#			E-F
-				set {_loc.g} to location {_n.g} meters in front of {_l.E}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-#			C-A
-				set {_loc.g} to location {_n.g} meters in front of {_l.C}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-#			F-D
-				set {_loc.g} to location {_n.g} meters in front of {_l.F}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-			set {_ln} to 60
-			loop 60 times:
-				if mod({_ln}, 20) = 0:
-					playSound("item.lodestone_compass.lock", 1, 0.5, {_point})
-				subtract 1 from {_ln}
-				wait a tick
-			message formatted "<##493759>§l術が発動した..." to {_player}
-			playSound("entity.wither.death", 1, 0.9, {_point})
-			loop all entities in radius 10 around {_point}:
-				kitCheckTeam(loop-entity, {_player}, false) is true
-				if type of loop-entity is a player:
-					LastKiller(loop-entity, {_player})
-					message formatted "<##2e2930>魂の滅殺を受けてしまった..." to loop-entity
-				add location of loop-entity to {_locs::*}
-				apply wither 3 to loop-entity for 15 seconds
-			set {_y} to 0
-			loop 5 times:
-				add 0.25 to {_y}
-				loop {_locs::*}:
-					set {_baseloc} to loop-value-2
-					set {_rad} to 0
-					loop 10 times:
-						add 36 to {_rad}
-						set {_el} to {_baseloc}
-						add 0.5 * sin({_rad}) to x-coordinate of {_el}
-						add 0.5 * cos({_rad}) to z-coordinate of {_el}
-						add {_y} to y-coordinate of {_el}
-						drawDot count 1, particle "mobspell", RGB 50, 0, 70, center {_el}, visibleRange 100
-				wait a tick
-		else:
-			send action bar "§c§l対象位置が存在しません!" to {_player}
-
-function kitSkill_Necromancer_6(player: player):
-	if {Stats.%{_player}%::SkillLocation} is set:
-		toolCT({_player}, "Necromancer", 6)
-		set {_now} to now
-		set {Stats.%{_player}%::DeathDetector} to true
-		set {Stats.%{_player}%::DeathDetector-Time} to {_now}
-		kitFakeDeleteData({_player}, "Death Detector")
-		set {_baseloc} to {Stats.%{_player}%::SkillLocation}
-		set {_loc1} to {_baseloc}
-		kitFakeBlock({_player}, {_loc1}, "minecraft:blackstone_wall", "Death Detector")
-		set {_loc2} to {_baseloc}
-		add 1 to y-coordinate of {_loc2}
-		kitFakeBlock({_player}, {_loc2}, "minecraft:crying_obsidian", "Death Detector")
-		set {_loc3} to {_baseloc}
-		add 2 to y-coordinate of {_loc3}
-		kitFakeBlock({_player}, {_loc3}, "minecraft:soul_lantern", "Death Detector")
-		kitMsg({_player}, "<##8b0000>死を感知して骨を召喚する装置を設置しました...")
-		playSound("block.end_portal_frame.fill", 1, 0.5, {_baseloc})
-		while {Stats.%{_player}%::DeathDetector-Time} is {_now}:
-			wait a second
-			delete {_exist}
-			loop all entities:
-				type of loop-entity is armor stand
-				metadata value "kit-armor" of loop-entity is "Death Detector"
-				metadata value "Death Detector" of loop-entity is "%{_player}%"
-				set {_exist} to true
-			if {_exist} is true:
-				kitFakeReload({_player}, "Death Detector")
-			else:
-				delete {Stats.%{_player}%::DeathDetector-Time}
-		if {Stats.%{_player}%::DeathDetector-Time} is not set:
-			delete {Stats.%{_player}%::DeathDetector}
-	else:
-		send action bar "§c§l地点が設定されていません!" to {_player}
-
+# Abilities
 on death:
-	if type of victim is not player:
+	if type of victim is not player:  # 自分のMobが死亡した際の処理
 		metadata value "gametype" of victim is "Kit"
+		# --- ここ改良余地 (parse使おう) ---
 		loop all players:
 			{Class::%loop-player%} is "Necromancer"
 			if victim's display name is "%loop-player%":
+		# -------------------------------
 				kitAddNecromance(loop-player, 1)
-	else:
+	else:  # プレイヤーが死んだ際の処理
 		metadata value "gametype" of victim is "Kit"
 		if {Class::%victim%} is "Necromancer":
 			if damage was caused by void:
@@ -417,90 +88,7 @@ on death:
 				kitSpawnGhost(victim, location of victim, true)
 		loop all players:
 			{Stats.%loop-player%::DeathDetector} is true
-			delete {_loc}
-			loop all entities:
-				type of loop-entity-2 is armor stand
-				metadata value "kit-armor" of loop-entity-2 is "Death Detector"
-				metadata value "Death Detector" of loop-entity-2 is "%loop-player%"
-				set {_loc} to location of loop-entity-2
-			if {_loc} is set:
-				playSound("entity.wither_skeleton.death", 1, 1, {_loc})
-				loop 5 times:
-					set {_effloc} to {_loc}
-					add a random number between -1.5 and 1.5 to x-coordinate of {_effloc}
-					add a random number between -1.5 and 1.5 to z-coordinate of {_effloc}
-					add a random number between 0.5 and 2.5 to y-coordinate of {_effloc}
-					drawDot count 1, particle "witchspell", center {_effloc}, visibleRange 30
-				loop all blocks in radius 3 around {_loc}:
-					loop-block is air
-					block below loop-block is not passable
-					add location of loop-block to {_locs::*}
-				set {_num} to a random integer between 0 and 2
-				loop {_num} times:
-					delete {_vengeful}
-					set {_c} to kitPercent(loop-player, 10, true)
-					chance of {_c}%:
-						set {_vengeful} to true
-					set {_sumloc} to a random location out of {_locs::*}
-					if {_vengeful} is true:
-						kitSpawnVengeful(loop-player, {_sumloc})
-					else:
-						if {team::%loop-player%} is "red":
-							set {_color} to "16711680"
-						else if {team::%loop-player%} is "blue":
-							set {_color} to "255"
-						else if {team::%loop-player%} is "yellow":
-							set {_color} to "16776960"
-						else if {team::%loop-player%} is "green":
-							set {_color} to "65280"
-						else:
-							set {_color} to "16711935"
-						set {_nbt} to nbt compound from "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
-						spawn a skeleton at {_sumloc} with nbt {_nbt}
-						set metadata value "gametype" of spawned skeleton to "Kit"
-						set metadata value "kit-dead" of spawned skeleton to "true"
-						set spawned skeleton's display name to "%loop-player%"
-						if kitPlayerWeaponItem(loop-player, "Necromancer", "main") is kitWeaponItem("Necromancer", 1, "main"):
-							set max health of spawned entity to 1.5
-						else:
-							set max health of spawned entity to 1
-
-function kitSkill_Necromancer_7(player: player):
-	set {_tool} to kitNecromanceItem({_player}, 7)
-	if kitCheckNecromance({_player}, {_tool}) is true:
-		toolCT({_player}, "Necromancer", 7)
-		kitRemoveNecromance({_player}, {_tool})
-		kitMsg({_player}, "§5§lLich§4に変身した...")
-		playSound("entity.wither.spawn", 1, 0.5, {_player})
-		drawDot count 1, particle "witchspell", center {_player}, visibleRange 30, keepFor 1 seconds
-		set {_jewel} to saveJewels({_player})
-		set {_gem} to saveGems({_player})
-		set {_wool} to saveWools({_player})
-		set {_spwool} to saveSpecialWool({_player})
-		execute console command "/cclass %{_player}% Kit-Lich"
-		set {Stats.%{_player}%::Lich} to true
-		giveEmJItems({_player}, {_jewel}, {_gem})
-		giveStWItems({_player}, {_wool}, {_spwool})
-		wait 10 seconds
-		if {Stats.%{_player}%::Lich} is true:
-			delete {Stats.%{_player}%::Lich}
-			set {_jewel} to saveJewels({_player})
-			set {_gem} to saveGems({_player})
-			set {_wool} to saveWools({_player})
-			set {_spwool} to saveSpecialWool({_player})
-			execute console command "/class Necromancer %{_player}% false"
-			giveEmJItems({_player}, {_jewel}, {_gem})
-			giveStWItems({_player}, {_wool}, {_spwool})
-
-function kitSkill_Necromancer_8(player: player):
-	set {_tool} to kitNecromanceItem({_player}, 8)
-	if kitCheckNecromance({_player}, {_tool}) is true:
-		toolCT({_player}, "Necromancer", 8)
-		kitRemoveNecromance({_player}, {_tool})
-		kitMsg({_player}, "§5§lAbyss§4を召喚します...")
-		playSound("entity.wither.spawn", 1, 0.5, {_player})
-		kitSpawnWraith({_player}, location of {_player})
-		drawDot count 1, particle "mobspell", RGB 0, 0, 0, center spawned entity, visibleRange 30, keepFor 3 seconds
+			kitSkill_DeathDetector(loop-player)
 
 on rightclick:
 	{Class::%player%} is "Necromancer"
@@ -516,11 +104,7 @@ on rightclick:
 	set {_dead} to metadata value "deadplayer" of {_tg}
 	if {_item.num} is 5:
 		kitAddNecromance(player, 1)
-		kitInvisible(player, 5 seconds)
-		playSound("entity.zombie_villager.converted", 1, 1, player)
-		loop 10 times:
-			set {_loc} to aroundEffect(player)
-			drawDot count 1, particle "witchspell", center {_loc}, visibleRange 30
+		kitWeapon_Necromancer_5(player)
 	else if {_item.num} is 4:
 		kitAddNecromance(player, 3)
 	else if {_item.num} is 3:
@@ -528,79 +112,7 @@ on rightclick:
 		kitWeapon_Necromancer_3(player)
 	else if {_item.num} is 2:
 		kitAddNecromance(player, 2)
-		loop all entities in radius 5 around {_tg}:
-			kitCheckTeam(loop-entity, player, false) is true
-			if type of loop-entity is a player:
-				LastKiller(loop-entity, player)
-			apply wither 2 to loop-entity for 5 seconds
-			apply blindness 1 to loop-entity for 5 seconds
-		playSound("entity.illusioner.prepare_mirror", 1, 1.5, {_tg})
-		set {_point} to location of {_tg}
-#	弧を描く
-		set {_n.k} to 0
-		loop 60 times:
-			set {_effbaseloc} to {_point}
-			add 5 * sin({_n.k}) to x-coordinate of {_effbaseloc}
-			add 5 * cos({_n.k}) to z-coordinate of {_effbaseloc}
-			drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_effbaseloc}, visibleRange 100, keepFor 1 second
-			add 6 to {_n.k}
-#	弦を描く
-		if {_l.A} is not set:
-			set {_l.A} to {_point}
-			set yaw of {_l.A} to 120
-			set pitch of {_l.A} to 0
-			add 5 * sin(90) to x-coordinate of {_l.A}
-			add 5 * cos(90) to z-coordinate of {_l.A}
-		if {_l.B} is not set:
-			set {_l.B} to {_point}
-			set yaw of {_l.B} to 0
-			set pitch of {_l.B} to 0
-			add 5 * sin(210) to x-coordinate of {_l.B}
-			add 5 * cos(210) to z-coordinate of {_l.B}
-		if {_l.C} is not set:
-			set {_l.C} to {_point}
-			set yaw of {_l.C} to 240
-			set pitch of {_l.C} to 0
-			add 5 * sin(330) to x-coordinate of {_l.C}
-			add 5 * cos(330) to z-coordinate of {_l.C}
-		if {_l.D} is not set:
-			set {_l.D} to {_point}
-			set yaw of {_l.D} to 180
-			set pitch of {_l.D} to 0
-			add 5 * sin(30) to x-coordinate of {_l.D}
-			add 5 * cos(30) to z-coordinate of {_l.D}
-		if {_l.E} is not set:
-			set {_l.E} to {_point}
-			set yaw of {_l.E} to 60
-			set pitch of {_l.E} to 0
-			add 5 * sin(150) to x-coordinate of {_l.E}
-			add 5 * cos(150) to z-coordinate of {_l.E}
-		if {_l.F} is not set:
-			set {_l.F} to {_point}
-			set yaw of {_l.F} to 300
-			set pitch of {_l.F} to 0
-			add 5 * sin(270) to x-coordinate of {_l.F}
-			add 5 * cos(270) to z-coordinate of {_l.F}
-		loop 10 times:
-			add sqrt(3) / 2 to {_n.g}
-#		A-B
-			set {_loc.g} to location {_n.g} meters in front of {_l.A}
-			drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		D-E
-			set {_loc.g} to location {_n.g} meters in front of {_l.D}
-			drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		B-C
-			set {_loc.g} to location {_n.g} meters in front of {_l.B}
-			drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		E-F
-			set {_loc.g} to location {_n.g} meters in front of {_l.E}
-			drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		C-A
-			set {_loc.g} to location {_n.g} meters in front of {_l.C}
-			drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		F-D
-			set {_loc.g} to location {_n.g} meters in front of {_l.F}
-			drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
+		kitWeapon_Necromancer_2(player, location of {_tg})
 	else if {_item.num} is 1:
 		kitAddNecromance(player, 2)
 	playSound("entity.zombie.infect", 1, 0.5, {_tg})
@@ -616,12 +128,6 @@ on rightclick:
 		add 1 to {_num}
 		set {_loc} to location {_num} meters in front of {_baseloc}
 		drawDot count 1, particle "redstone", RGB 100, 0, 100, center {_loc}, visibleRange 100
-
-on damage of player:
-	{Class::%victim%} is "Necromancer"
-	{Stats.%victim%::Lich} is true
-	if damage was caused by potion or wither:
-		cancel event
 
 command /necroset <number>:
 	permission: sk.admin
@@ -708,156 +214,6 @@ on damage of wither skeleton:
 	metadata value "ghost" of victim is "true"
 	set damage to 100
 
-function kitSpawnWraith(player: player, loc: location):
-	set {_nbt} to nbt compound from "{PersistenceRequired:1b,Health:100,Attributes:[{Name:""generic.max_health"",Base:100},{Name:""generic.follow_range"",Base:50},{Name:""generic.knockback_resistance"",Base:1f}],Silent:1,HandItems:[{id:""minecraft:netherite_sword"",tag:{display:{Name:'{""text"":""Wraith Sword""}'},Enchantments:[{id:knockback,lvl:2}]},Count:1},{}],ArmorItems:[{},{id:""minecraft:leather_leggings"",tag:{display:{color:0}},Count:1},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1},{id:""minecraft:player_head"",Count:1b,tag:{SkullOwner:{Id:[I;-843851991,-552779082,-1798462201,-1255611656],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2EwYzg3ZmVjNzQxM2RjYjdkMWY2MWFmMjRjZjY0OWE1NTZlMDViMDIyNTAyMmMxZjYxZDgwODkzZjMzOTg3ZiJ9fX0=""}]}}},Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:2147483647},{Id:28,Amplifier:0,Duration:2147483647}]}"
-	spawn a wither skeleton at {_loc} with nbt {_nbt}
-	set metadata value "gametype" of spawned wither skeleton to "Kit"
-	set {_uuid} to randomUUID()
-	set metadata value "wraith" of spawned wither skeleton to {_uuid}
-	set the spawned wither skeleton's display name to "%{_player}%"
-	kitWraithTimer({_player}, {_uuid})
-
-function kitWraithTimer(player: player, uuid: text):
-	set {_true} to true
-	set {_num} to 0
-	loop 30 times:
-		add 1 to {_num}
-		delete {_ok}
-		loop all wither skeletons:
-			metadata value "wraith" of loop-wither skeleton is {_uuid}
-			loop-wither skeleton's display name is "%{_player}%"
-			set {_ok} to true
-		if {_ok} is true:
-			delete {_target}
-			loop all wither skeletons:
-				metadata value "wraith" of loop-wither skeleton is {_uuid}
-				loop-wither skeleton's display name is "%{_player}%"
-				set {_target} to target of loop-wither skeleton
-				if {_target} is not set:
-					delete {_target::*}
-					loop all players in radius 50 around loop-wither skeleton:
-						loop-player's gamemode is survival
-						{team::%loop-player%} is not {team::%{_player}%}
-						add loop-player to {_targets::*}
-					set {_t} to a random player out of {_targets::*}
-					set target of loop-wither skeleton to {_t}
-				{_target} is set
-				set {_dis} to distance between {_target} and loop-wither skeleton
-#			1秒効果
-				if {_dis} > 10:
-					apply slowness 10 to loop-wither skeleton for a second
-					if {_dis} <= 30:
-						push loop-wither skeleton backwards at speed 0.01
-						shoot a snowball from loop-wither skeleton at speed 5
-						set shooter of shot snowball to {_player}
-						set item of shot snowball to charcoal
-						set metadata value "wraith-snowball" of shot snowball to "true"
-						playSound("entity.wither.shoot", 1, 1, loop-wither skeleton)
-						drawDot count 1, particle "witchspell", center shot entity, visibleRange 30, keepFor 0.5 second
-#			3秒効果
-				if mod({_num}, 3) = 0:
-					if {_dis} <= 10:
-						shoot a thrown potion of harming from loop-wither skeleton at speed 0.6
-						set shooter of shot thrown potion to {_player}
-						playSound("entity.arrow.shoot", 1, 0.5, loop-wither skeleton)
-						drawDot count 1, particle "witchspell", center shot entity, visibleRange 30, keepFor 1 second
-#			5秒効果
-				if mod({_num}, 5) = 0:
-					if {_dis} <= 10:
-						apply speed 3 to loop-wither skeleton for 1 second
-						playSound("entity.wither.shoot", 1, 2, loop-wither skeleton)
-					else if {_dis} <= 30:
-						delete {_locs::*}
-						loop all blocks in radius 5 around {_target}:
-							loop-block is passable
-							block below loop-block is not passable
-							set {_bloc} to location of loop-block
-							subtract 0.45 from y-coordinate of {_bloc}
-							add {_bloc} to {_locs::*}
-						delete {_effloc::*}
-						loop 5 times:
-							set {_loc} to a random location out of {_locs::*}
-							remove {_loc} from {_locs::*}
-							add {_loc} to {_effloc::*}
-						kitWraithThunder({_player}, {_effloc::*})
-					else if {_dis} <= 50:
-						delete {_hit::*}
-						playSound("entity.zombie.break_wooden_door", 1.5, 0.9, loop-wither skeleton)
-						set {_baseloc} to location of loop-wither skeleton
-						add 1.5 to y-coordinate of {_baseloc}
-						set {_meter} to ceil({_dis})
-						set {_adddis} to -1
-						loop {_meter} times:
-							delete {_dot}
-							add 1 to {_adddis}
-							loop 5 times:
-								add 0.2 to {_dot}
-								set {_decnum} to {_adddis} + {_dot}
-								set {_loc} to location {_decnum} meters in front of {_baseloc}
-								drawDot count 1, particle "witchspell", center {_loc}, visibleRange 30, keepFor 1 second
-								loop all players in radius 2 around {_loc}:
-									{team::%loop-player%} is not {team::%{_player}%}
-									{_hit::%loop-player%} is not set
-									set {_hit::%loop-player%} to true
-									kitDamage({_player}, loop-player, 2, true)
-									playSound("entity.zombie.attack_iron_door", 1, 0.9, loop-player)
-									set {_per} to kitPercentDuel({_player}, loop-player, 10, false)
-									chance of {_per}%:
-										kitBlood(loop-player)
-#			10秒効果
-				if mod({_num}, 10) = 0:
-					loop all players in radius 30 around loop-wither skeleton:
-						{team::%loop-player%} is not {team::%{_player}%}
-						apply blindness 1 to loop-player for 3 seconds
-					if {_dis} <= 10:
-						delete {_locs::*}
-						loop all blocks in radius 5 around {_target}:
-							loop-block is passable
-							block below loop-block is not passable
-							add location of loop-block to {_locs::*}
-						loop 5 times:
-							set {_loc} to a random location out of {_locs::*}
-							drawDot count 5, particle "blockcrack", material ice, center {_loc}, visibleRange 30
-							playSound("block.glass.break", 0.7, 0.5, {_loc})
-							loop all players in radius 2 around {_loc}:
-								{team::%loop-player%} is not {team::%{_player}%}
-								kitFreeze(loop-player, 1 second)
-			wait a second
-	loop all wither skeletons:
-		metadata value "wraith" of loop-wither skeleton is {_uuid}
-		loop-wither skeleton's display name is "%{_player}%"
-		delete loop-wither skeleton
-
-function kitWraithThunder(player: player, locs: locations):
-	loop {_locs::*}:
-		drawDot count 1, particle "witchspell", center loop-value, visibleRange 30, keepFor 1 second
-		playSound("entity.illusioner.cast_spell", 0.8, 1, loop-value)
-	wait a second
-	loop {_locs::*}:
-		playSound("entity.zombie_villager.cure", 0.8, 2, loop-value)
-		loop all players in radius 2 around loop-value:
-			{team::%loop-player%} is not {team::%{_player}%}
-			kitDamage({_player}, loop-player, 2, true)
-			chance of 50%:
-				kitPalsy(loop-player, 3 seconds)
-		set {_baseloc} to loop-value
-		set {_meter} to 0
-		loop 30 times:
-			set {_loc} to location {_meter} meters above {_baseloc}
-			drawDot count 1, particle "endrod", center {_loc}, visibleRange 30
-			add 1 to {_meter}
-		wait 5 ticks
-
-on damage of wither skeleton:
-	metadata value "wraith" of victim is set
-	if damage >= 10:
-		set damage to 10
-
-on damage of player:
-	damage was caused by projectile
-	metadata value "wraith-snowball" of projectile is "true"
-	set damage to 3
-
 function kitAddNecromance(player: player, num: number):
 	if {Ult.%{_player}%::Necromancer} is true:
 		add {_num} to {Ult.%{_player}%::Necromance}
@@ -900,41 +256,27 @@ function kitNecromanceItem(player: player, num: number, type: text = "Skill") ::
 			set {_necitem} to loop-item
 	return {_necitem}
 
-# Ultimate
-function kitUltNecromancer(player: player):
-	message "§c自身のアンデッドを全てNecromanceに変換します!" to {_player}
-	message "§c10体のReaperが召喚され,Reaperの攻撃時にNecromanceが増えます!" to {_player}
-	set {Ult.%{_player}%::Necromancer} to true
-	loop all entities:
-		loop-entity's display name is "%{_player}%"
-		metadata value "kit-dead" of loop-entity is "true"
-		drawDot count 1, particle "witchspell", center loop-entity, visibleRange 30
-		delete loop-entity
-		kitAddNecromance({_player}, 1)
-	loop all blocks in radius 10 around {_player}:
-		loop-block is passable
-		block below loop-block is not passable
-		add location of loop-block to {_locs::*}
-	loop 10 times:
-		set {_loc} to a random location out of {_locs::*}
-		remove {_loc} from {_locs::*}
-		kitSpawnReaper({_player}, {_loc})
-	wait 10 seconds
-	delete {Ult.%{_player}%::Necromancer}
-	loop all skeletons:
-		loop-skeleton's display name is "%{_player}%"
-		metadata value "kit-reaper" of loop-skeleton is set
-		delete loop-skeleton
-
-function kitSpawnReaper(player: player, loc: location):
-	set {_nbt} to nbt compound from "{PersistenceRequired:1b,Health:100,Attributes:[{Name:""generic.max_health"",Base:100},{Name:""generic.knockback_resistance"",Base:1f},{Name:""generic.attack_damage"",Base:6}],Silent:1,HandItems:[{id:""minecraft:netherite_hoe"",Count:1},{}],ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;296808892,54742945,-1675401107,1649769798],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWVhMDM0MDc2Y2ExMDk1OWRlOWQ1NDFjODE3Y2QyOGQyYThiMGFhZDdkOGE4YWZjMmI1NDI1M2Y2ZjBmZWQzIn19fQ==""}]}}},Count:1b}],ActiveEffects:[{Id:1,Amplifier:2,Duration:999999},{Id:14,Amplifier:0,Duration:2147483647},{Id:28,Amplifier:0,Duration:2147483647}]}"
-	spawn a skeleton at {_loc} with nbt {_nbt}
-	set metadata value "gametype" of spawned skeleton to "Kit"
-	set metadata value "kit-reaper" of spawned skeleton to "%{_player}%"
-	set the spawned skeleton's display name to "%{_player}%"
-	drawDot count 1, particle "witchspell", center spawned skeleton, visibleRange 30, keepFor 10 seconds
-
-on damage of player:
-	metadata value "kit-reaper" of attacker is set
-	set {_player} to metadata value "kit-reaper" of attacker parsed as player
-	kitAddNecromance({_player}, 1)
+# Timer
+function kitTimerNecromancer(player: player):
+	while {Class::%{_player}%} is "Necromancer":
+		add 1 to {_timer}
+		if {_timer} >= 200:
+			set {_timer} to 0
+		if {_timer} = 0:
+			loop all zombies:
+				metadata value "kit-dead" of loop-zombie is "true"
+				subtract 1.2 from loop-zombie's health
+			loop all skeletons:
+				metadata value "kit-dead" of loop-skeleton is "true"
+				subtract 1.2 from loop-skeleton's health
+		delete {_true}
+		set {_tool} to {_player}'s tool
+		if {_tool} is air:
+			set {_true} to true
+		else:
+			set {_name} to display name of {_tool}
+			if checkCT({_player}, {_name}, true) is true:
+				set {_true} to true
+		if {_true} is true:
+			send action bar "§5§lNecromance§0: §4%{Kit-Necromance::%{_player}%}%" to {_player}
+		wait a tick

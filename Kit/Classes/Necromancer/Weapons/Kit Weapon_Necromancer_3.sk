@@ -1,0 +1,38 @@
+# Erasure Rapier
+
+on death of player:
+	metadata value "gametype" of attacker is "Kit"
+	{Class::%attacker%} is "Necromancer"
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Necromancer", "Weapon.main", 3) is true
+	kitAddNecromance(attacker, 5)
+	set {Kit-NoCorpse::%victim%} to true
+	playSound("entity.zombie.infect", 1, 2, victim)
+	loop 5 times:
+		set {_baseloc} to location of victim
+		add 0.4 to {_y}
+		add {_y} to y-coordinate of {_baseloc}
+		set {_rad} to 0
+		loop 10 times:
+			set {_effloc} to {_baseloc}
+			add 0.5 * sin({_rad}) to x-coordinate of {_effloc}
+			add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
+			drawDot count 1, particle "redstone", RGB 75, 0, 130, center {_effloc}, visibleRange 30
+			add 36 to {_rad}
+		wait a tick
+
+function kitWeapon_Necromancer_3(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::Erasure Rapier} to {_now}
+	playSound("block.enchantment_table.use", 1.1, 0.8, {_player})
+	loop 100 times:
+		{Stats.%{_player}%::Erasure Rapier} is {_now}
+		loop all items in {_player}'s inventory:
+			name of loop-item contains "Erasure Rapier"
+			loop-item is not enchanted
+			enchant loop-item with sharpness 3
+		wait a tick
+	if {Stats.%{_player}%::Erasure Rapier} is {_now}:
+		loop all items in {_player}'s inventory:
+			name of loop-item contains "Erasure Rapier"
+			disenchant loop-item

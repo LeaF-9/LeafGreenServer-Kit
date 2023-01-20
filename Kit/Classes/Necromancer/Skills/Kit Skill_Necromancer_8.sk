@@ -1,0 +1,161 @@
+# Demise Smell
+
+function kitSkill_Necromancer_8(player: player):
+	set {_tool} to kitNecromanceItem({_player}, 8)
+	if kitCheckNecromance({_player}, {_tool}) is true:
+		toolCT({_player}, "Necromancer", 8)
+		kitRemoveNecromance({_player}, {_tool})
+		kitMsg({_player}, "§5§lAbyss§4を召喚します...")
+		playSound("entity.wither.spawn", 1, 0.5, {_player})
+		kitSpawnWraith({_player}, location of {_player})
+		drawDot count 1, particle "mobspell", RGB 0, 0, 0, center spawned entity, visibleRange 30, keepFor 3 seconds
+
+function kitSpawnWraith(player: player, loc: location):
+	set {_nbt} to nbt compound from "{PersistenceRequired:1b,Health:100,Attributes:[{Name:""generic.max_health"",Base:100},{Name:""generic.follow_range"",Base:50},{Name:""generic.knockback_resistance"",Base:1f}],Silent:1,HandItems:[{id:""minecraft:netherite_sword"",tag:{display:{Name:'{""text"":""Wraith Sword""}'},Enchantments:[{id:knockback,lvl:2}]},Count:1},{}],ArmorItems:[{},{id:""minecraft:leather_leggings"",tag:{display:{color:0}},Count:1},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1},{id:""minecraft:player_head"",Count:1b,tag:{SkullOwner:{Id:[I;-843851991,-552779082,-1798462201,-1255611656],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2EwYzg3ZmVjNzQxM2RjYjdkMWY2MWFmMjRjZjY0OWE1NTZlMDViMDIyNTAyMmMxZjYxZDgwODkzZjMzOTg3ZiJ9fX0=""}]}}},Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:2147483647},{Id:28,Amplifier:0,Duration:2147483647}]}"
+	spawn a wither skeleton at {_loc} with nbt {_nbt}
+	set metadata value "gametype" of spawned wither skeleton to "Kit"
+	set {_uuid} to randomUUID()
+	set metadata value "wraith" of spawned wither skeleton to {_uuid}
+	set the spawned wither skeleton's display name to "%{_player}%"
+	kitWraithTimer({_player}, {_uuid})
+
+function kitWraithTimer(player: player, uuid: text):
+	set {_true} to true
+	set {_num} to 0
+	loop 30 times:
+		add 1 to {_num}
+		delete {_ok}
+		loop all wither skeletons:
+			metadata value "wraith" of loop-wither skeleton is {_uuid}
+			loop-wither skeleton's display name is "%{_player}%"
+			set {_ok} to true
+		if {_ok} is true:
+			delete {_target}
+			loop all wither skeletons:
+				metadata value "wraith" of loop-wither skeleton is {_uuid}
+				loop-wither skeleton's display name is "%{_player}%"
+				set {_target} to target of loop-wither skeleton
+				if {_target} is not set:
+					delete {_target::*}
+					loop all players in radius 50 around loop-wither skeleton:
+						loop-player's gamemode is survival
+						{team::%loop-player%} is not {team::%{_player}%}
+						add loop-player to {_targets::*}
+					set {_t} to a random player out of {_targets::*}
+					set target of loop-wither skeleton to {_t}
+				{_target} is set
+				set {_dis} to distance between {_target} and loop-wither skeleton
+#			1秒効果
+				if {_dis} > 10:
+					apply slowness 10 to loop-wither skeleton for a second
+					if {_dis} <= 30:
+						push loop-wither skeleton backwards at speed 0.01
+						shoot a snowball from loop-wither skeleton at speed 5
+						set shooter of shot snowball to {_player}
+						set item of shot snowball to charcoal
+						set metadata value "wraith-snowball" of shot snowball to "true"
+						playSound("entity.wither.shoot", 1, 1, loop-wither skeleton)
+						drawDot count 1, particle "witchspell", center shot entity, visibleRange 30, keepFor 0.5 second
+#			3秒効果
+				if mod({_num}, 3) = 0:
+					if {_dis} <= 10:
+						shoot a thrown potion of harming from loop-wither skeleton at speed 0.6
+						set shooter of shot thrown potion to {_player}
+						playSound("entity.arrow.shoot", 1, 0.5, loop-wither skeleton)
+						drawDot count 1, particle "witchspell", center shot entity, visibleRange 30, keepFor 1 second
+#			5秒効果
+				if mod({_num}, 5) = 0:
+					if {_dis} <= 10:
+						apply speed 3 to loop-wither skeleton for 1 second
+						playSound("entity.wither.shoot", 1, 2, loop-wither skeleton)
+					else if {_dis} <= 30:
+						delete {_locs::*}
+						loop all blocks in radius 5 around {_target}:
+							loop-block is passable
+							block below loop-block is not passable
+							set {_bloc} to location of loop-block
+							subtract 0.45 from y-coordinate of {_bloc}
+							add {_bloc} to {_locs::*}
+						delete {_effloc::*}
+						loop 5 times:
+							set {_loc} to a random location out of {_locs::*}
+							remove {_loc} from {_locs::*}
+							add {_loc} to {_effloc::*}
+						kitWraithThunder({_player}, {_effloc::*})
+					else if {_dis} <= 50:
+						delete {_hit::*}
+						playSound("entity.zombie.break_wooden_door", 1.5, 0.9, loop-wither skeleton)
+						set {_baseloc} to location of loop-wither skeleton
+						add 1.5 to y-coordinate of {_baseloc}
+						set {_meter} to ceil({_dis})
+						set {_adddis} to -1
+						loop {_meter} times:
+							delete {_dot}
+							add 1 to {_adddis}
+							loop 5 times:
+								add 0.2 to {_dot}
+								set {_decnum} to {_adddis} + {_dot}
+								set {_loc} to location {_decnum} meters in front of {_baseloc}
+								drawDot count 1, particle "witchspell", center {_loc}, visibleRange 30, keepFor 1 second
+								loop all players in radius 2 around {_loc}:
+									{team::%loop-player%} is not {team::%{_player}%}
+									{_hit::%loop-player%} is not set
+									set {_hit::%loop-player%} to true
+									kitDamage({_player}, loop-player, 2, true)
+									playSound("entity.zombie.attack_iron_door", 1, 0.9, loop-player)
+									set {_per} to kitPercentDuel({_player}, loop-player, 10, false)
+									chance of {_per}%:
+										kitBlood(loop-player)
+#			10秒効果
+				if mod({_num}, 10) = 0:
+					loop all players in radius 30 around loop-wither skeleton:
+						{team::%loop-player%} is not {team::%{_player}%}
+						apply blindness 1 to loop-player for 3 seconds
+					if {_dis} <= 10:
+						delete {_locs::*}
+						loop all blocks in radius 5 around {_target}:
+							loop-block is passable
+							block below loop-block is not passable
+							add location of loop-block to {_locs::*}
+						loop 5 times:
+							set {_loc} to a random location out of {_locs::*}
+							drawDot count 5, particle "blockcrack", material ice, center {_loc}, visibleRange 30
+							playSound("block.glass.break", 0.7, 0.5, {_loc})
+							loop all players in radius 2 around {_loc}:
+								{team::%loop-player%} is not {team::%{_player}%}
+								kitFreeze(loop-player, 1 second)
+			wait a second
+	loop all wither skeletons:
+		metadata value "wraith" of loop-wither skeleton is {_uuid}
+		loop-wither skeleton's display name is "%{_player}%"
+		delete loop-wither skeleton
+
+function kitWraithThunder(player: player, locs: locations):
+	loop {_locs::*}:
+		drawDot count 1, particle "witchspell", center loop-value, visibleRange 30, keepFor 1 second
+		playSound("entity.illusioner.cast_spell", 0.8, 1, loop-value)
+	wait a second
+	loop {_locs::*}:
+		playSound("entity.zombie_villager.cure", 0.8, 2, loop-value)
+		loop all players in radius 2 around loop-value:
+			{team::%loop-player%} is not {team::%{_player}%}
+			kitDamage({_player}, loop-player, 2, true)
+			chance of 50%:
+				kitPalsy(loop-player, 3 seconds)
+		set {_baseloc} to loop-value
+		set {_meter} to 0
+		loop 30 times:
+			set {_loc} to location {_meter} meters above {_baseloc}
+			drawDot count 1, particle "endrod", center {_loc}, visibleRange 30
+			add 1 to {_meter}
+		wait 5 ticks
+
+on damage of wither skeleton:
+	metadata value "wraith" of victim is set
+	if damage >= 10:
+		set damage to 10
+
+on damage of player:
+	damage was caused by projectile
+	metadata value "wraith-snowball" of projectile is "true"
+	set damage to 3

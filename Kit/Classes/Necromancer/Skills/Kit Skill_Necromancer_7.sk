@@ -1,0 +1,34 @@
+# Dark Destiny
+
+function kitSkill_Necromancer_7(player: player):
+	set {_tool} to kitNecromanceItem({_player}, 7)
+	if kitCheckNecromance({_player}, {_tool}) is true:
+		toolCT({_player}, "Necromancer", 7)
+		kitRemoveNecromance({_player}, {_tool})
+		kitMsg({_player}, "§5§lLich§4に変身した...")
+		playSound("entity.wither.spawn", 1, 0.5, {_player})
+		drawDot count 1, particle "witchspell", center {_player}, visibleRange 30, keepFor 1 seconds
+		set {_jewel} to saveJewels({_player})
+		set {_gem} to saveGems({_player})
+		set {_wool} to saveWools({_player})
+		set {_spwool} to saveSpecialWool({_player})
+		execute console command "/cclass %{_player}% Kit-Lich"
+		set {Stats.%{_player}%::Lich} to true
+		giveEmJItems({_player}, {_jewel}, {_gem})
+		giveStWItems({_player}, {_wool}, {_spwool})
+		wait 10 seconds
+		if {Stats.%{_player}%::Lich} is true:
+			delete {Stats.%{_player}%::Lich}
+			set {_jewel} to saveJewels({_player})
+			set {_gem} to saveGems({_player})
+			set {_wool} to saveWools({_player})
+			set {_spwool} to saveSpecialWool({_player})
+			execute console command "/class Necromancer %{_player}% false"
+			giveEmJItems({_player}, {_jewel}, {_gem})
+			giveStWItems({_player}, {_wool}, {_spwool})
+
+on damage of player:
+	{Class::%victim%} is "Necromancer"
+	{Stats.%victim%::Lich} is true
+	if damage was caused by potion or wither:
+		cancel event

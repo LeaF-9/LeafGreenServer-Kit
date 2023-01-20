@@ -1,0 +1,17 @@
+# Reaper's Scythe
+
+on death of player:
+	metadata value "gametype" of attacker is "Kit"
+	{Class::%attacker%} is "Necromancer"
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Necromancer", "Weapon.main", 5) is true
+	set {Kit-NoCorpse::%victim%} to true
+	playSound("entity.zombie_villager.converted", 1, 2, player)
+	heal attacker by 5 hearts
+
+function KitWeapon_Necromancer_5(player: player):
+	kitInvisible({_player}, 5 seconds)
+	playSound("entity.zombie_villager.converted", 1, 1, {_player})
+	loop 10 times:
+		set {_loc} to aroundEffect({_player})
+		drawDot count 1, particle "witchspell", center {_loc}, visibleRange 30

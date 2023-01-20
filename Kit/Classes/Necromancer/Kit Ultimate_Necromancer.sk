@@ -1,0 +1,39 @@
+# Immortal Soul
+
+function kitUltNecromancer(player: player):
+	message "§c自身のアンデッドを全てNecromanceに変換します!" to {_player}
+	message "§c10体のReaperが召喚され,Reaperの攻撃時にNecromanceが増えます!" to {_player}
+	set {Ult.%{_player}%::Necromancer} to true
+	loop all entities:
+		loop-entity's display name is "%{_player}%"
+		metadata value "kit-dead" of loop-entity is "true"
+		drawDot count 1, particle "witchspell", center loop-entity, visibleRange 30
+		delete loop-entity
+		kitAddNecromance({_player}, 1)
+	loop all blocks in radius 10 around {_player}:
+		loop-block is passable
+		block below loop-block is not passable
+		add location of loop-block to {_locs::*}
+	loop 10 times:
+		set {_loc} to a random location out of {_locs::*}
+		remove {_loc} from {_locs::*}
+		kitSpawnReaper({_player}, {_loc})
+	wait 10 seconds
+	delete {Ult.%{_player}%::Necromancer}
+	loop all skeletons:
+		loop-skeleton's display name is "%{_player}%"
+		metadata value "kit-reaper" of loop-skeleton is set
+		delete loop-skeleton
+
+function kitSpawnReaper(player: player, loc: location):
+	set {_nbt} to nbt compound from "{PersistenceRequired:1b,Health:100,Attributes:[{Name:""generic.max_health"",Base:100},{Name:""generic.knockback_resistance"",Base:1f},{Name:""generic.attack_damage"",Base:6}],Silent:1,HandItems:[{id:""minecraft:netherite_hoe"",Count:1},{}],ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;296808892,54742945,-1675401107,1649769798],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWVhMDM0MDc2Y2ExMDk1OWRlOWQ1NDFjODE3Y2QyOGQyYThiMGFhZDdkOGE4YWZjMmI1NDI1M2Y2ZjBmZWQzIn19fQ==""}]}}},Count:1b}],ActiveEffects:[{Id:1,Amplifier:2,Duration:999999},{Id:14,Amplifier:0,Duration:2147483647},{Id:28,Amplifier:0,Duration:2147483647}]}"
+	spawn a skeleton at {_loc} with nbt {_nbt}
+	set metadata value "gametype" of spawned skeleton to "Kit"
+	set metadata value "kit-reaper" of spawned skeleton to "%{_player}%"
+	set the spawned skeleton's display name to "%{_player}%"
+	drawDot count 1, particle "witchspell", center spawned skeleton, visibleRange 30, keepFor 10 seconds
+
+on damage of player:
+	metadata value "kit-reaper" of attacker is set
+	set {_player} to metadata value "kit-reaper" of attacker parsed as player
+	kitAddNecromance({_player}, 1)
