@@ -1,0 +1,149 @@
+# Fortunate Pixie
+
+function kitSkill_Paladin_8(player: player):
+	toolCT({_player}, "Paladin", 8)
+	kitMsg({_player}, "§d幸運の妖精が飛び回ります!")
+	playSound("entity.player.levelup", 1, 0.5, {_player})
+	set {_baseloc} to location of head of {_player}
+	set {_baserad} to 0
+	set {_rad} to 0
+	set {_m} to 0
+	set {_pnum} to 0
+	loop 20 times:
+		add 0.5 to {_m}
+		set {_baseel} to location {_m} meters in front of {_baseloc}
+		delete {_pixieloc::*}
+		set {_ln} to 3 - {_pnum}
+		loop {_ln} times:
+			set {_pl} to {_baseel}
+			add 120 to {_baserad}
+			set {_m1} to {_pl}
+			set {_p} to pitch of {_m1}
+			if {_p} < 0:
+				set {_p} to -1 * 90 - {_p}
+				set {_y} to yaw of {_m1}
+				add 180 to {_y}
+				if {_y} >= 360:
+					set {_y} to {_y} - 360
+				set yaw of {_m1} to {_y}
+			else:
+				set {_p} to {_p} - 90
+			set pitch of {_m1} to {_p}
+			set {_test1} to 5 * cos({_baserad})
+			set {_t1} to location {_test1} meters in front of {_m1}
+			set {_m2} to {_pl}
+			set pitch of {_m2} to 0
+			set {_test2} to 5 * sin({_baserad})
+			set {_t2} to location {_test2} meters to the right of {_m2}
+			set x-coordinate of {_pl} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_pl}
+			set y-coordinate of {_pl} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_pl}
+			set z-coordinate of {_pl} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_pl}
+			add {_pl} to {_pixieloc::*}
+			loop 3 times:
+				set {_el} to {_pl}
+				add 120 to {_rad}
+				set {_m1} to {_el}
+				set {_p} to pitch of {_m1}
+				if {_p} < 0:
+					set {_p} to -1 * 90 - {_p}
+					set {_y} to yaw of {_m1}
+					add 180 to {_y}
+					if {_y} >= 360:
+						set {_y} to {_y} - 360
+					set yaw of {_m1} to {_y}
+				else:
+					set {_p} to {_p} - 90
+				set pitch of {_m1} to {_p}
+				set {_test1} to 0.5 * cos({_rad})
+				set {_t1} to location {_test1} meters in front of {_m1}
+				set {_m2} to {_el}
+				set pitch of {_m2} to 0
+				set {_test2} to 0.5 * sin({_rad})
+				set {_t2} to location {_test2} meters to the right of {_m2}
+				set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+				set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+				set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 255, 192, 203, center {_el}, visibleRange 50
+		loop all players in radius 5 around {_baseel}:
+			{_pnum} < 3
+			{_pixie::%loop-player%} is not set
+			loop-player is not {_player}
+			kitCheckTeam(loop-player, {_player}, true) is true
+			set {_pixie::%loop-player%} to true
+			add 1 to {_pnum}
+			set {_indnum} to 4 - {_pnum}
+			set {_fromloc} to {_pixieloc::%{_indnum}%}
+			kitEffect_FortunatePixie_1({_player}, loop-player, {_fromloc})
+		add 30 to {_baserad}
+		add 20 to {_rad}
+		wait a tick
+	loop 200 times:
+		loop all players:
+			{Stats.%loop-player%::FortunatePixie} is {_player}
+			set {_al} to location of loop-player
+			add a random number between -1 and 1 to x-coordinate of {_al}
+			add a random number between -1 and 1 to z-coordinate of {_al}
+			add a random number between -0.5 and 2.5 to y-coordinate of {_al}
+			drawDot count 1, particle "mobspell", RGB 255, 153, 170, center {_al}, visibleRange 50
+		wait a tick
+	loop all players:
+		{Stats.%loop-player%::FortunatePixie} is {_player}
+		delete {Stats.%loop-player%::FortunatePixie}
+		message formatted "§e幸運の妖精は消え去りました..." to loop-player
+
+function kitEffect_FortunatePixie_1(player: player, target: player, from: location):
+	set {_rad} to 0
+	loop 20 times:
+		set {_to} to location of head of {_target}
+		set {_dis} to distance between {_from} and {_to} / 20 * loop-number
+		set {_vector} to setVector({_from}, {_to})
+		set yaw of {_from} to yaw of {_vector}
+		set pitch of {_from} to pitch of {_vector}
+		set {_baseel} to location {_dis} meters in front of {_from}
+		playSound("block.amethyst_cluster.hit", 1, 1, {_baseel})
+		loop 3 times:
+			add 120 to {_rad}
+			set {_el} to {_baseel}
+			set {_m1} to {_el}
+			set {_p} to pitch of {_m1}
+			if {_p} < 0:
+				set {_p} to -1 * 90 - {_p}
+				set {_y} to yaw of {_m1}
+				add 180 to {_y}
+				if {_y} >= 360:
+					set {_y} to {_y} - 360
+				set yaw of {_m1} to {_y}
+			else:
+				set {_p} to {_p} - 90
+			set pitch of {_m1} to {_p}
+			set {_test1} to 0.5 * cos({_rad})
+			set {_t1} to location {_test1} meters in front of {_m1}
+			set {_m2} to {_el}
+			set pitch of {_m2} to 0
+			set {_test2} to 0.5 * sin({_rad})
+			set {_t2} to location {_test2} meters to the right of {_m2}
+			set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+			set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+			set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+			drawDot count 1, particle "redstone", RGB 255, 153, 238, center {_el}, visibleRange 50
+		add 20 to {_rad}
+		wait a tick
+	message formatted "§a幸運の妖精が身を護ってくれます!" to {_target}
+	set {Stats.%{_target}%::FortunatePixie} to {_player}
+	playSound("block.amethyst_cluster.break", 1, 0.5, {_target})
+	if {Kit-Luck::%{_target}%} < 1:
+		kitLuck({_target}, 1)
+
+on damage of player:
+	{Stats.%{_target}%::FortunatePixie} is set
+	set {_dmg} to damage
+	cancel event
+	playSound("block.enchantment_table.use", 1, 0.9, victim)
+	kitHeal(victim, {_dmg})
+	message formatted "§d§l妖精が痛みを癒やしに変換してくれた!" to victim
+	loop 10 times:
+		set {_al} to location of victim
+		add a random number between -1 and 1 to x-coordinate of {_al}
+		add a random number between -1 and 1 to z-coordinate of {_al}
+		add a random number between -0.5 and 2.5 to y-coordinate of {_al}
+		drawDot count 1, particle "mobspell", RGB 255, 0, 213, center {_al}, visibleRange 50

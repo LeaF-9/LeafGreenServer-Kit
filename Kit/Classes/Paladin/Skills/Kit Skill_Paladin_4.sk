@@ -1,0 +1,111 @@
+# Sprite Talisman
+
+function kitSkill_Paladin_4(player: player):
+	toolCT({_player}, "Paladin", 4)
+	kitMsg({_player}, "§e守護の力を分け与えます...")
+	playSound("entity.iron_golem.death", 1, 1, {_player})
+	kitEffect_SpriteTalisman_1({_player})
+	loop all players in radius 10 around {_player}:
+		kitCheckTeam(loop-player, {_player}, true) is true
+		setSupporter(loop-player, {_player})
+		apply resistance 1 to loop-player for 10 seconds
+		set {Stats.%loop-player%::SpriteTalisman} to true
+		add loop-player to {_effects::*}
+	loop 100 times:
+		loop {_effects::*}:
+			set {_loc} to location of loop-value-2
+			set {_vector} to {_loc}
+#			座標の設定　主軸{_loc}{_w}{_vw}
+			set {_x} to x-coordinate of {_loc}
+			set {_y} to y-coordinate of {_loc} + 0.2
+			set {_z} to z-coordinate of {_loc}
+#			軸の設定　座標{_A}{_vwA}
+			set {_A} to {_loc}
+			set {_vyA} to 0
+			set pitch of {_A} to 0
+			set {_vxA1} to location 1 meters to the right of {_A}
+			set {_vzA1} to location 1 meters in front of {_A}
+#			方向ベクトル{_vwnw}
+			set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+			set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+			set {_vznx} to x-coordinate of {_vzA1} - {_x}
+			set {_vznz} to z-coordinate of {_vzA1} - {_z}
+			set {_s} to a random number between 0 and 360
+			set {_t} to a random number between -1 and 1
+			set {_ax} to ({_vxnx} * cos({_s}) + {_vznx} * sin({_s})) * 1.2
+			set {_az} to ({_vxnz} * cos({_s}) + {_vznz} * sin({_s})) * 1.2
+			set x-coordinate of {_vector} to {_x} + {_ax}
+			set y-coordinate of {_vector} to {_y} + {_t}
+			set z-coordinate of {_vector} to {_z} + {_az}
+			drawDot count 1, particle "redstone", RGB 160, 255, 160, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+		wait 2 ticks
+	loop {_effects::*}:
+		delete {Stats.%loop-value%::SpriteTalisman}
+
+function kitEffect_SpriteTalisman_1(player: player):
+	set {_loc} to location of {_player}
+	set {_vector} to {_loc}
+#	座標の設定　主軸{_loc}{_w}{_vw}
+	set {_x} to x-coordinate of {_loc}
+	set {_y} to y-coordinate of {_loc} + 0.2
+	set {_z} to z-coordinate of {_loc}
+#	軸の設定　座標{_A}{_vwA}
+	set {_A} to {_loc}
+	set {_vyA} to 0
+	set pitch of {_A} to 0
+	set {_vxA1} to location 1 meters to the right of {_A}
+	set {_vzA1} to location 1 meters in front of {_A}
+#	方向ベクトル{_vwnw}
+	set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+	set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+	set {_vznx} to x-coordinate of {_vzA1} - {_x}
+	set {_vznz} to z-coordinate of {_vzA1} - {_z}
+#	発動直後の耐性付与演出ty平面でy=2-0.02t^2
+	set {_t} to 0
+	loop 10 times:
+		set {_ax} to {_vxnx} * cos({_t}) + {_vznx} * sin({_t})
+		set {_az} to {_vxnz} * cos({_t}) + {_vznz} * sin({_t})
+		set {_s} to 0
+		loop 10 times:
+			set x-coordinate of {_vector} to {_x} + {_ax} * {_s}
+			set y-coordinate of {_vector} to {_y} + 2 - 0.02 * {_s} ^ 2
+			set z-coordinate of {_vector} to {_z} + {_az} * {_s}
+			drawDot count 1, particle "redstone", RGB 192, 255, 192, center {_vector}, visibleRange 100, keepFor 1 seconds
+			add 1 to {_s}
+		set {_s} to 0
+		loop 5 times:
+			set {_ax} to {_vxnx} * cos({_s} + {_t} * 0.5) + {_vznx} * sin({_s} + {_t} * 0.5)
+			set {_az} to {_vxnz} * cos({_s} + {_t} * 0.5) + {_vznz} * sin({_s} + {_t} * 0.5)
+			set x-coordinate of {_vector} to {_x} + {_ax} * 10
+			set y-coordinate of {_vector} to {_y} - {_t} * 0.02
+			set z-coordinate of {_vector} to {_z} + {_az} * 10
+			drawDot count 1, particle "redstone", RGB 160, 255, 160, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+			add 72 to {_s}
+		add 36 to {_t}
+		wait a tick
+
+function kitEffect_SpriteTalisman_2(player: player):
+	set {_loc} to location of {_player}
+	set {_x} to x-coordinate of {_loc}
+	set {_y} to y-coordinate of {_loc} + 0.7
+	set {_z} to z-coordinate of {_loc}
+	loop 3 times:
+		set {_s} to a random number between -2 and 2
+		set {_t} to a random number between -0.7 and 0.7
+		set {_u} to a random number between -2 and 2
+		set {_p} to 0
+		loop 5 times:
+			add 0.2 to {_p}
+			set x-coordinate of {_vector} to {_x} + {_s} * {_p}
+			set y-coordinate of {_vector} to {_y} + {_t} * {_p}
+			set z-coordinate of {_vector} to {_z} + {_u} * {_p}
+			drawDot count 1, particle "redstone", RGB 192, 255, 192, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+		wait a tick
+
+on damage of player:
+	{Stats.%victim%::SpriteTalisman} is true
+	set {_c} to kitPercentDuel(attacker, victim, 10, false)
+	chance of {_c}%:
+		cancel event
+		playSound("entity.iron_golem.damage", 1, 1.5, victim)
+		kitEffect_SpriteTalisman_2(victim)

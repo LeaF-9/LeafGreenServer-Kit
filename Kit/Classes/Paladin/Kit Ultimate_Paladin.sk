@@ -1,0 +1,62 @@
+# Mischevous Fairies
+
+function kitUltPaladin(player: player):
+	message "§c10ダメージを吸収するバリアを10秒間味方全員に張ります!" to {_player}
+	message "§cバリア崩壊時,保持者に再生能力 Iを10秒,破壊者に毒 Iを10秒付与します!" to {_player}
+	loop all players:
+		{TrueTeam::%loop-player%} is {TrueTeam::%{_player}%}
+		{Stats.%loop-player%::NoSupport} is not set
+		if loop-player is not {_player}:
+			setSupporter(loop-player, {_player})
+			message formatted "<##e95388>§l%{_player}% <##ea618e>§lより妖精の加護を受け取りました!" to loop-player
+		add loop-player to {_palult::*}
+		set {Stats.%loop-player%::Ult_Paladin} to 10
+	loop 200 times:
+		loop {_palult::*}:
+			if {Stats.%loop-value-2%::Ult_Paladin} is set:
+				chance of 20%:
+					playSound("entity.bee.sting", 0.6, 2, loop-value-2)
+				set {_num} to 0
+				loop 3 times:
+					add 1 to {_num}
+					set {_color::%{_num}%} to a random integer between 0 and 255
+				set {_el} to aroundEffect(loop-value-2)
+				drawDot count 1, particle "mobspell", RGB {_color::1}, {_color::2}, {_color::3}, center {_el}, visibleRange 30
+			else:
+				remove loop-value-2 from {_palult::*}
+		wait a tick
+	loop {_palult::*}:
+		delete {Stats.%loop-value%::Ult_Paladin}
+		message formatted "<##915da3>妖精の加護は消滅しました" to loop-value
+
+on damage of player:
+	if {Stats.%victim%::Ult_Paladin} is set:
+		cancel event
+		playSound("entity.iron_golem.repair", 1, 2, victim)
+		if damage cause is not fall:
+			set {_ulthp} to {Stats.%victim%::Ult_Paladin} - damage
+		if {_ulthp} <= 0:
+			delete {Stats.%victim%::Ult_Paladin}
+			message formatted "<##4d4398>加護が崩れた! <##dc6b9a>妖精の回復魔法が付与されます...!" to victim
+			apply regeneration 1 to victim for 10 seconds
+			if attacker exists:
+				apply poison 1 to attacker for 10 seconds
+				message formatted "<##8d93c8>妖精のいたずらが身体を蝕む..." to attacker
+			loop 5 times:
+				set {_baseloc} to location of victim
+				set {_rad} to 0
+				add 0.4 to {_high}
+				loop 10 times:
+					add 36 to {_rad}
+					set {_el} to {_baseloc}
+					add 0.5 * sin({_rad}) to x-coordinate of {_el}
+					add 0.5 * cos({_rad}) to z-coordinate of {_el}
+					add {_high} to y-coordinate of {_el}
+					set {_num} to 0
+					loop 3 times:
+						add 1 to {_num}
+						set {_color::%{_num}%} to a random integer between 0 and 255
+					drawDot count 1, particle "mobspell", RGB {_color::1}, {_color::2}, {_color::3}, center {_el}, visibleRange 30
+				wait a tick
+		else:
+			set {Stats.%victim%::Ult_Paladin} to {_ulthp}

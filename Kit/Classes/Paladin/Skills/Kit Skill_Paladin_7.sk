@@ -1,0 +1,64 @@
+# Recipient Genie
+
+function kitSkill_Paladin_7(player: player):
+	toolCT({_player}, "Paladin", 7)
+	kitMsg({_player}, "§1周りのダメージを全て受け持ちます!")
+	playSound("entity.ravager.roar", 1, 1.5, {_player})
+	loop 100 times:
+		delete {_eg::*}
+		loop 10 times:
+			set {_el} to location of {_player}
+			add a random number between -7 and 7 to x-coordinate of {_el}
+			add a random number between -0.5 and 0.5 to y-coordinate of {_el}
+			add a random number between -7 and 7 to z-coordinate of {_el}
+			drawDot count 1, particle "mobspell", RGB 77, 77, 255, center {_el}, visibleRange 30
+		loop all players in radius 7 around {_player}:
+			loop-player is not {_player}
+			kitCheckTeam(loop-player, {_player}, true) is true
+			set {_eg::%id of loop-player%} to true
+			if {_jb::%id of loop-player%} is not set:
+				set {_jb::%id of loop-player%} to true
+				set {Stats.%loop-player%::RecipientGenie} to {_player}
+		loop all players:
+			metadata value "gametype" of loop-player is "Kit"
+			{_eg::%id of loop-player%} is not set
+			{_jb::%id of loop-player%} is true
+			delete {_jb::%id of loop-player%}
+			delete {Stats.%loop-player%::RecipientGenie}
+		wait a tick
+	loop all players:
+		{_eg::%id of loop-player%} is true
+		{_jb::%id of loop-player%} is true
+		delete {Stats.%loop-player%::RecipientGenie}
+
+on damage of player:
+	{Stats.%victim%::RecipientGenie} is set
+	set {_dmg} to damage * 0.5
+	cancel event
+	playSound("entity.ravager.hurt", 1, 1, victim)
+	kitDamage(attacker, {Stats.%victim%::RecipientGenie}, {_dmg}, true)
+	set {_from} to location of {Stats.%victim%::RecipientGenie}
+	add 1 to y-coordinate of {_from}
+	set {_baseloc} to location of victim
+	set {_to} to location of victim
+	add 1 to y-coordinate of {_to}
+	set {_dis} to round(distance between {_from} and {_to})
+	set {_vector} to setVector({_from}, {_to})
+	set yaw of {_from} to yaw of {_vector}
+	set pitch of {_from} to pitch of {_vector}
+	set {_m} to 0
+	loop {_dis} times:
+		add 1 to {_m}
+		set {_el} to location {_m} meters in front of {_from}
+		drawDot count 1, particle "critmagic", center {_el}, visibleRange 30
+	set {_y} to 0
+	loop 8 times:
+		set {_rad} to 0
+		loop 6 times:
+			set {_el} to {_baseloc}
+			add 60 to {_rad}
+			add sin({_rad}) to x-coordinate of {_el}
+			add cos({_rad}) to z-coordinate of {_el}
+			add {_y} to y-coordinate of {_el}
+			drawDot count 1, particle "redstone", RGB 100, 100, 255, center {_el}, visibleRange 30
+		add 0.25 to {_y}

@@ -1,0 +1,39 @@
+# Guardian Staff
+
+function kitWeapon_Paladin_5(player: player):
+	toolCT({_player}, "Paladin", 5, "Weapon.main")
+	kitMsg({_player}, "<##1e90ff>周辺に妖精の力を分配します!")
+	playSound("entity.illusioner.cast_spell", 1, 0.5, {_player})
+	loop all entities in radius 10 around {_player}:
+		if kitCheckTeam(loop-entity, {_player}, true) is true:
+			setSupporter(loop-entity, {_player})
+			apply regeneration 3 to loop-entity for 5 seconds
+			message formatted "<##1e90ff>%{_player}% <##00ffbf>より妖精の再生力が付与された!" to loop-entity
+			add loop-entity to {_loc.a::*}
+		else if kitCheckTeam(loop-entity, {_player}, false) is true:
+			LastKiller(loop-entity, {_player})
+			apply poison 3 to loop-entity for 5 seconds
+			message formatted "<##1e90ff>%{_player}% <##ff00bf>より妖精のいたずらが付与された!" to loop-entity
+			add loop-entity to {_loc.e::*}
+	set {_loc} to location of {_player}
+	loop 5 times:
+		loop all blocks in radius 10 around {_loc}:
+			loop-block is passable
+			chance of 1%:
+				set {_r} to a random integer between 0 and 255
+				set {_g} to a random integer between 0 and 255
+				set {_b} to a random integer between 0 and 255
+				drawDot count 1, particle "mobspell", RGB {_r}, {_g}, {_b}, center location of loop-block, visibleRange 30
+				set {_p} to a random number between 0.5 and 2
+				playSound("entity.firework_rocket.twinkle", 0.1, {_p}, location of loop-block)
+		loop {_loc.a::*}:
+			loop 3 times:
+				set {_l} to aroundEffect(loop-value-2)
+				set {_rb} to a random integer between 0 and 200
+				drawDot count 1, particle "mobspell", RGB {_rb}, 255, {_rb}, center {_l}, visibleRange 30
+		loop {_loc.e::*}:
+			loop 3 times:
+				set {_l} to aroundEffect(loop-value-2)
+				set {_gb} to a random integer between 0 and 200
+				drawDot count 1, particle "mobspell", RGB 255, {_gb}, {_gb}, center {_l}, visibleRange 30
+		wait a tick

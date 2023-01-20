@@ -1,0 +1,101 @@
+# Plank Barrier
+
+options:
+	height: 0.6
+	distance: 0.6
+
+function kitSkill_Paladin_6(player: player):
+	if {_player} is sneaking:
+		toolCT({_player}, "Paladin", 6)
+		kitMsg({_player}, "<##fcc800>妖精のバリアを張りました!")
+		playSound("entity.illusioner.prepare_mirror", 1, 2, {_player})
+		set {Stats.%{_player}%::PlankBarrier} to true
+		kitEffect_PlankBarrier_1({_player}, location of {_player})
+	else if {Stats.%{_player}%::SkillTarget} is set:
+		set {_target} to {Stats.%{_player}%::SkillTarget}
+		toolCT({_player}, "Paladin", 6)
+		kitMsg({_player}, "§a%{_target}% §eに盾の妖精の加護を与えます...")
+		message formatted "§6妖精が盾を張る準備をしています...!" to {_target}
+		loop 100 times:
+			if {_exist} is not set:
+				loop all projectiles in radius 8 around {_target}:
+					shooter of loop-projectile is not {_player}
+					kitCheckTeam(shooter of loop-projectile, {_target}, false) is true
+					set {_exist} to true
+					set {_to} to location of loop-projectile
+				set {_el} to location of {_target}
+				add a random number between -1 and 1 to x-coordinate of {_el}
+				add a random number between -1 and 1 to z-coordinate of {_el}
+				add a random number between -0.5 and 2.5 to y-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 255, 191, 128, center {_el}, visibleRange 50
+				wait a tick
+		if {_exist} is true:
+			playSound("entity.illusioner.prepare_mirror", 1, 1.5, {_target})
+			set {_from} to location of {_target}
+			set {_vector} to setVector({_from}, {_to})
+			set yaw of {_from} to yaw of {_vector}
+			set pitch of {_from} to pitch of {_vector}
+			kitEffect_PlankBarrier_1({_player}, {_from})
+			set {Stats.%{_player}%::PlankBarrier} to true
+			message formatted "§e妖精が盾を展開した!" to {_target}
+		else:
+			playSound("entity.illusioner.prepare_mirror", 1, 2, {_target})
+			kitEffect_PlankBarrier_1({_player}, location of {_target})
+			set {Stats.%{_player}%::PlankBarrier} to true
+			message formatted "§e妖精が盾を展開した..." to {_target}
+	else:
+		send action bar "§c§l対象のプレイヤーがいません" to {_player}
+
+function kitEffect_PlankBarrier_1(player: player, l: location):
+	set {_l1} to location 1 meters in front of {_l}
+	set {_l2} to location {@height} meters below {_l1}
+	set {_l3} to location {@height} * 2 meters below {_l1}
+	set {_l4} to location {@distance} meters to the left of {_l1}
+	set {_l5} to location {@height} meters below {_l4}
+	set {_l6} to location {@height} * 2 meters below {_l4}
+	set {_l7} to location {@distance} meters to the right of {_l1}
+	set {_l8} to location {@height} meters below {_l7}
+	set {_l9} to location {@height} * 2 meters below {_l7}
+	loop 9 times:
+		set {_loc} to location 2.5 meters above {_l%loop-number%}
+		drawDot count 1, particle "happyvillager", center {_loc}, visibleRange 30
+		set {_nbt} to nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Pose:{Head:[0f,0f,0f]},HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}"
+		spawn an armor stand at {_l%loop-number%} with nbt {_nbt}
+		set metadata value "prank-barrier" of spawned armor stand to "%{_player}%"
+		set metadata value "pb-number" of spawned armor stand to "%loop-number%"
+		set metadata value "gametype" of spawned armor stand to "Kit"
+		set helmet of spawned armor stand to yellow glass pane
+		set {_sl} to {_l%loop-number%}
+		add 2 to y-coordinate of {_sl}
+		spawn a slime at {_sl} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
+		set metadata value "prank-barrier" of spawned slime to "%{_player}%"
+		set metadata value "pb-number" of spawned slime to "%loop-number%"
+		set metadata value "gametype" of spawned slime to "Kit"
+		set spawned slime's display name to "%{_player}%"
+
+on damage of slime:
+	metadata value "prank-barrier" of victim is set
+	set {_name} to display name of victim
+	if {team::%{_name}%} is not {team::%attacker%}:
+		set {_pbnum} to metadata value "pb-number" of victim
+		delete victim
+		playSound("block.glass.break", 1, 1.5, victim)
+		loop all entities:
+			type of loop-entity is an armor stand
+			metadata value "prank-barrier" of loop-entity is "%{_name}%"
+			metadata value "pb-number" of loop-entity is "%{_pbnum}%"
+			delete loop-entity
+		loop 3 times:
+			set {_el} to location of victim
+			add a random number between -0.5 and 0.5 to x-coordinate of {_el}
+			add a random number between -0.5 and 0.5 to y-coordinate of {_el}
+			add a random number between -0.5 and 0.5 to z-coordinate of {_el}
+			drawDot count 1, particle "critmagic", center {_el}, visibleRange 30
+	else if {team::%{_name}%} is {team::%attacker%}:
+		cancel event
+
+on death of player:
+	{Stats.%victim%::PlankBarrier} is true
+	loop all entities:
+		metadata value "prank-barrier" of loop-entity is "%victim%"
+		delete loop-entity

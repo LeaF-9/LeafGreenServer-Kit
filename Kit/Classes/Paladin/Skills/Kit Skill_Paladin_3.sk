@@ -1,0 +1,39 @@
+# Fairy Protection
+
+function kitSkill_Paladin_3(player: player):
+	setCT({_player}, name of {_player}'s tool, 60)
+	set {Stats.%{_player}%::FairyProtection} to true
+	set {Stats.%{_player}%::Resurrection} to true
+	kitMsg({_player}, "§d妖精の加護を受けました!")
+	apply regeneration 2 to {_player} for 5 seconds
+	playSound("entity.firework_rocket.twinkle", 1, 1.5, {_player})
+	loop 100 times:
+		if {Stats.%{_player}%::FairyProtection} is true:
+			set {_effloc} to location of {_player}
+			add 18 to {_rad}
+			add 0.02 to {_y}
+			add {_y} to y-coordinate of {_effloc}
+			add 0.5 * sin({_rad}) to x-coordinate of {_effloc}
+			add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
+			drawDot count 1, particle "mobspell", RGB 255, 20, 147, center {_effloc}, visibleRange 30
+			wait a tick
+	delete {Stats.%{_player}%::Resurrection}
+	if {Stats.%{_player}%::FairyProtection} is true:
+		delete {Stats.%{_player}%::FairyProtection}
+		kitMsg({_player}, "§e妖精は去っていきました")
+
+on damage of player:
+	{Stats.%victim%::FairyProtection} is true
+	attacker is set
+	apply poison 2 to attacker for 2 seconds replacing existing effect
+
+on death of player:
+	{Stats.%victim%::FairyProtection} is true
+	kitMsg(victim, "§a妖精が命を分け与えてくれた!")
+	playSound("entity.player.levelup", 1, 0.5, victim)
+	wait 3 ticks
+	kitBadLuck(victim, 3)
+	set victim's health to 5
+	setCT(victim, "§dFairy Protection", 80)
+	set victim's leggings to air
+	set slot 1 of victim to air

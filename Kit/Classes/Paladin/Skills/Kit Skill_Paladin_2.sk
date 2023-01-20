@@ -1,0 +1,17 @@
+# Sacrifice Heal
+
+function kitSkill_Paladin_2(player: player):
+	if {_player}'s health <= 5:
+		send action bar "§c§l体力が少なすぎます!" to {_player}
+	else:
+		toolCT({_player}, "Paladin", 2)
+		subtract 5 from {_player}'s health
+		loop all players:
+			loop-player is not {_player}
+			kitCheckTeam(loop-player, {_player}, true) is true
+			loop-player is alive
+			kitHeal(loop-player, 3)
+			setSupporter(loop-player, {_player})
+			message "§a%{_player}% §cが体力を回復してくれました!" to loop-player
+		kitMsg({_player}, "§c体力を削って味方全員の体力を回復しました!")
+		playSound("entity.vex.hurt", 1, 0.5, {_player})
