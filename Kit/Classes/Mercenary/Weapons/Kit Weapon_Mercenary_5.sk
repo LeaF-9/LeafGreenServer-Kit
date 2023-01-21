@@ -1,0 +1,75 @@
+# Javelinter
+
+on sneak toggle:
+	{Class::%player%} is "Mercenary"
+	player is not sneaking
+	set {_tool} to player's tool
+	if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 5) is true:
+		if {Stats.%player%::Javelinter} is not set:
+			set {Stats.%player%::Javelinter} to 100
+		{Stats.%player%::Javelinter} > 0
+		set {_true} to true
+		wait a tick
+		while {_true} is true:
+			set {_tool} to player's tool
+			if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 5) is false:
+				set {_true} to false
+			else if player is not sneaking:
+				set {_true} to false
+			else if {Stats.%player%::Javelinter} <= 0:
+				set {_true} to false
+			if {_true} is true:
+				if block 0.1 meters below player is not passable:
+					subtract 1 from {Stats.%player%::Javelinter}
+					kitWeapon_Mercenary_5(player)
+					chargeActionBar(player, round({Stats.%player%::Javelinter} / 2), 50)
+				wait a tick
+
+function kitWeapon_Mercenary_5(player: player):
+	set {_baseloc} to location of {_player}
+	playSound("block.gravel.break", 0.6, 2, {_player})
+	loop all blocks in radius 10 around {_baseloc}:
+		loop-block is passable
+		block below loop-block is not passable
+		distance between location of block at {_baseloc} and location of loop-block >= 8.5
+		add location of loop-block to {_locs::*}
+	loop {_locs::*}:
+		set {_l} to loop-value
+		loop all entities in radius 1 around {_l}:
+			{_hit::%id of loop-entity%} is not set
+			kitCheckTeam({_player}, loop-entity, false) is true
+			set {_hit::%id of loop-entity%} to true
+			kitDamage({_player}, loop-entity, 2)
+			if type of loop-entity is player:
+				set {_c} to kitPercentDuel({_player}, loop-entity, 2, true)
+				chance of {_c}%:
+					kitBlood(loop-entity)
+		set {_el} to loop-value
+		add 1 to y-coordinate of {_el}
+		set {_ln} to 0
+		loop 4 times:
+			set {_bl} to {_el}
+			subtract 1.5 from y-coordinate of {_bl}
+			add 1 to {_ln}
+			if mod({_ln}, 2) = 0:
+				subtract 0.5 from x-coordinate of {_bl}
+			else:
+				add 0.5 to x-coordinate of {_bl}
+			if {_ln} <= 2:
+				subtract 0.5 from z-coordinate of {_bl}
+			else:
+				add 0.5 to z-coordinate of {_bl}
+			set {_v} to setVector({_bl}, {_el})
+			set yaw of {_bl} to yaw of {_v}
+			set pitch of {_bl} to pitch of {_v}
+			set {_lm} to 0
+			loop 3 times:
+				add 0.6 to {_lm}
+				set {_ee} to location {_lm} meters in front of {_bl}
+				chance of 10%:
+					drawDot count 1, particle "endrod", center {_ee}, visibleRange 30
+
+function kitWeapon_Javelinter_ActionBar(player: player):
+	if {Stats.%{_player}%::Javelinter} is not set:
+		set {Stats.%{_player}%::Javelinter} to 100
+	chargeActionBar({_player}, round({Stats.%{_player}%::Javelinter} / 2), 50)

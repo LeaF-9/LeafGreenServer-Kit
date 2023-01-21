@@ -1,0 +1,186 @@
+# Staxis Scythe
+
+function kitSkill_Mercenary_5(player: player):
+	toolCT({_player}, "Mercenary", 5)
+	kitMsg({_player}, "<##483d8b>3方向に鮮血の斬撃を放ちます...")
+	# --- 溜め時の音の演出 ---
+	playSound("item.trident.riptide_1", 1, 0.75, {_player})
+	# ---------------------
+	set {_baseloc} to location of head of {_player}
+	set {_directloc} to {_baseloc}
+	set pitch of {_directloc} to 0
+	# --- mid ---
+	set {_locs::mid} to {_baseloc}
+	# -----------
+	# --- left ---
+	set {_temloc} to {_directloc}
+	set {_sightloc} to location 10 meters to the left of {_temloc}
+	set pitch of {_sightloc} to pitch of {_baseloc}
+	set {_sightloc} to location 15 meters in front of {_sightloc}
+	set {_vector} to setVector({_baseloc}, {_sightloc})
+	set {_leftloc} to {_baseloc}
+	set yaw of {_leftloc} to yaw of {_vector}
+	set pitch of {_leftloc} to pitch of {_vector}
+	set {_locs::left} to {_leftloc}
+	# ------------
+	# --- right ---
+	set {_temloc} to {_directloc}
+	set {_sightloc} to location 10 meters to the right of {_temloc}
+	set pitch of {_sightloc} to pitch of {_baseloc}
+	set {_sightloc} to location 15 meters in front of {_sightloc}
+	set {_vector} to setVector({_baseloc}, {_sightloc})
+	set {_rightloc} to {_baseloc}
+	set yaw of {_rightloc} to yaw of {_vector}
+	set pitch of {_rightloc} to pitch of {_vector}
+	set {_locs::right} to {_rightloc}
+	# -------------
+	loop 20 times:  # 溜め時間
+		set {_basenum} to loop-number
+		loop {_locs::*}:
+			set {_index} to loop-index
+			set {_valoc} to loop-value-2
+			{_hitting::%{_index}%} is not set
+			kitEffect_StaxisScythe_1({_locs::%{_index}%}, mod({_basenum}, 5))
+			# --- マーク判定 ---
+			set {_m} to 0
+			loop 15 times:
+				add 1 to {_m}
+				set {_checkloc} to location {_m} meters in front of {_valoc}
+				loop all players in radius 5 around {_checkloc}:
+					kitCheckTeam({_player}, loop-player, false) is true
+					{Kit-Blood::%loop-player%} is set
+					{_hit::%loop-player%} is not set
+					{_trail::*} does not contain loop-player
+					set {_trail::%{_index}%} to loop-player
+			# ----------------
+			# --- ヒット判定 ---
+			loop all entities in radius 2 around {_valoc}:
+				kitCheckTeam({_player}, loop-entity, false) is true
+				{_hit::%loop-entity%} is not set
+				set {_hit::%loop-entity%} to true
+				set {_hitting::%{_index}%} to true
+				delete {_trail::%{_index}%}
+				kitDamage({_player}, loop-entity, 3)
+				# --- ヒット時の音の演出 ---
+				playSound("item.trident.hit", 1, 0.5, loop-entity)
+				# -----------------------
+				# --- ヒット時のパーティクル演出 ---
+				kitEffect_StaxisScythe_2(loop-entity, {_valoc})  # 当たった方向から赤いパーティクルが色々吹き出す感じ
+				# ------------------------------
+			# ----------------
+		wait a tick
+	# --- 発射時の音の演出 ---
+	playSound("item.trident.throw", 1, 0.5, {_player})
+	# ---------------------
+	loop 15 times:  # 発射時間
+		set {_basenum} to loop-number
+		loop {_locs::*}:
+			set {_index} to loop-index
+			set {_valoc} to loop-value-2
+			{_hitting::%{_index}%} is not set  # 鎌がHIT済でないかどうか
+			if {_trail::%{_index}%} is set:  # マークした敵がいるかどうか
+				set {_vector} to setVector({_valoc}, location of {_trail::%{_index}%})
+				set yaw of {_valoc} to yaw of {_vector}
+				set pitch of {_valoc} to pitch of {_vector}
+				set {_valoc} to location 1.5 meters in front of {_valoc}
+			else:
+				set {_valoc} to location 1 meters in front of {_valoc}
+			kitEffect_StaxisScythe_1({_valoc}, mod({_basenum}, 5))
+			set {_locs::%{_index}%} to {_valoc}
+			# --- ヒット判定 ---
+			loop all entities in radius 2 around {_valoc}:
+				kitCheckTeam({_player}, loop-entity, false) is true
+				{_hit::%loop-entity%} is not set
+				set {_hit::%loop-entity%} to true
+				set {_hitting::%{_index}%} to true
+				delete {_trail::%{_index}%}
+				kitDamage({_player}, loop-entity, 3)
+				# --- ヒット時の音の演出 ---
+				playSound("item.trident.hit", 1, 0.5, loop-entity)
+				# -----------------------
+				# --- ヒット時のパーティクル演出 ---
+				kitEffect_StaxisScythe_2(loop-entity, {_valoc})  # 当たった方向から赤いパーティクルが色々吹き出す感じ
+				# ------------------------------
+			# ----------------
+		wait a tick
+
+function kitEffect_StaxisScythe_1(baseloc: location, num: number):  # 鎌の回転演出の関数
+	if {_num} is 0:
+		set pitch of {_baseloc} to -90
+	else if {_num} is 1:
+		set pitch of {_baseloc} to -18
+	else if {_num} is 2:
+		set pitch of {_baseloc} to 54
+	else if {_num} is 3:
+		add 180 to yaw of {_baseloc}
+		set pitch of {_baseloc} to 54
+	else if {_num} is 4:
+		add 180 to yaw of {_baseloc}
+		set pitch of {_baseloc} to -18
+	set {_ln.1} to 0
+	set {_R} to a random number out of 106 and 108
+	set {_G} to a random number out of 25 and 39
+	set {_B} to a random number out of 23 and 45
+	drawDot count 1, particle "mobspell", RGB {_R}, {_G}, {_B}, center {_el}, visibleRange 30
+	loop 3 times:
+		add 1 to {_ln.1}
+		set {_setmeter.above} to 1.5 + (0.25 * ({_ln.1} - 1))
+		set {_rad} to 45
+		loop 6 times:
+			set {_el} to {_baseloc}
+			set {_m1} to {_baseloc}
+			set {_t1} to location {_setmeter.above} * cos({_rad}) meters in front of {_m1}
+			set {_m2} to {_baseloc}
+			if pitch of {_m2} >= 0:  # 2,3
+				add -90 to pitch of {_m2}
+			else:  # 0,1,4
+				add 180 to yaw of {_m2}
+				set {_setpitch} to (90 - abs(pitch of {_m})) * -1
+				set pitch of {_m2} to {_setpitch}
+			set {_t2} to location 1.5 * sin({_rad}) meters in front of {_m2}
+			set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+			set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+			set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+			set {_R} to a random integer between 20 and 100
+			drawDot count 1, particle "redstone", RGB {_R}, 0, 0, center {_el}, visibleRange 30
+			add 15 to {_rad}
+
+function kitEffect_StaxisScythe_2(target: entity, directloc: location):  # 鎌のヒット演出の関数
+	# --- プレイヤー側の演出 ---
+	set {_rn} to a random integer between 5 and 10
+	loop {_rn} times:
+		set {_playerloc} to location of {_target}
+		add 1 to y-coordinate of {_playerloc}
+		set yaw of {_playerloc} to yaw of {_directloc}
+		set pitch of {_playerloc} to 0
+		set {_addyaw} to a random number between -30 and 30
+		set {_addpitch} to a random number between -30 and 30
+		set {_R} to a random number between 50 and 150
+		set {_ln} to 0
+		loop 5 times:
+			add 1 to {_ln}
+			set {_bl} to {_playerloc}
+			set {_setyaw} to yaw of {_bl} + {_addyaw} / (6 - {_ln})
+			set {_setpitch} to {_addpitch} / (6 - {_ln})
+			set yaw of {_bl} to {_setyaw}
+			set pitch of {_bl} to {_setpitch}
+			set {_el} to location {_ln} meters in front of {_bl}
+			drawDot count 1, particle "redstone", RGB {_R}, 0, 0, center {_el}, visibleRange 30
+	# -----------------------
+	# --- 鎌側の演出 ---
+	set {_rad} to 0
+	loop 10 times:
+		add 36 to {_rad}
+		set {_R} to a random number between 50 and 150
+		set {_el} to {_directloc}
+		set {_m1} to {_directloc}
+		set pitch of {_m1} to -90
+		set {_t1} to location 1.5 * cos({_rad}) meters in front of {_m1}
+		set {_m2} to {_directloc}
+		set pitch of {_m2} to 0
+		set {_t2} to location 1.5 * sin({_rad}) meters in front of {_m2}
+		set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+		set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+		set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+		drawDot count 1, particle "mobspell", RGB {_R}, 0, 0, center {_el}, visibleRange 30
+	# -----------------

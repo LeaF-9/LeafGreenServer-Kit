@@ -1,0 +1,40 @@
+# Harmful Potion
+
+on shoot:
+	metadata value "gametype" of shooter is "Kit"
+	projectile is thrown potion
+	set {_tool} to shooter's tool
+	kitItemAllChecker({_tool}, "Mercenary", "Skill", 1) is true
+	set metadata value "kit-harmful" of projectile to "true"
+
+on damage of player:
+	damage was caused by potion
+	metadata value "kit-harmful" of projectile is "true"
+	cancel event
+	set {_hp} to victim's health
+	set {_addhp} to {_hp} * 0.25 * 0.1
+	if {Kit-Blood::%victim%} is set:
+		set {_firsthp} to {_hp} * 0.25
+	else:
+		set {_firsthp} to {_hp} * 0.5
+	set victim's health to {_firsthp}
+	kitHarmfulEffect(victim)
+	loop 10 times:
+		wait 2 tick
+		if victim is alive:
+			add {_addhp} to victim's health
+
+function kitHarmfulEffect(player: player):
+	set {_bl} to location of {_player}
+	set {_y} to -0.5
+	loop 5 times:
+		add 0.5 to {_y}
+		set {_rad} to 0
+		loop 10 times:
+			set {_el} to {_bl}
+			add 36 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			add {_y} to y-coordinate of {_el}
+			drawDot count 1, particle "redstone", RGB 255, 0, 0, center {_el}, visibleRange 30
+		wait a tick

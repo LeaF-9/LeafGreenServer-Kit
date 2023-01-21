@@ -1,0 +1,45 @@
+# Hemogenic Wave
+
+function kitSkill_Mercenary_8(player: player):
+	toolCT({_player}, "Mercenary", 8)
+	kitMsg({_player}, "§4§l血の刃§5を展開します...")
+	set {_baseloc} to location of {_player}
+	add 1 to y-coordinate of {_baseloc}
+	set pitch of {_baseloc} to 0
+	set {_rad} to 0
+	loop 60 times:
+		set {_loc} to location loop-number / 2 meters in front of {_baseloc}
+		playSound("entity.guardian.attack", 0.75, 2, {_loc})
+		loop all players in radius 5 around {_loc}:
+			kitCheckTeam({_player}, loop-player, false) is true
+			if {Kit-Blood::%loop-player%} is set:
+				kitDamage({_player}, loop-player, 3)
+				apply wither 1 to loop-player for 3 seconds replacing existing effect
+			else:
+				kitDamage({_player}, loop-player, 1)
+				{_ct::%loop-player%} is not set
+				set {_ct::%loop-player%} to 10
+				set {_c} to kitPercentDuel({_player}, loop-player, 10, true)
+				chance of {_c}%:
+					kitBlood(loop-player)
+			loop 3 times:
+				set {_ae} to aroundEffect(loop-player)
+				drawDot count 1, particle "redstone", RGB 255, 0, 120, center {_ae}, visibleRange 30
+		loop {_ct::*}:
+			subtract 1 from {_ct::%loop-index%}
+			if {_ct::%loop-index%} <= 0:
+				delete {_ct::%loop-index%}
+		add 6 to {_rad}
+		set {_bl} to {_loc}
+		loop 4 times:
+			set {_tmprad} to {_rad} + (90 * loop-number-2)
+			set {_el} to {_bl}
+			set {_mt} to 0
+			loop 10 times:
+				add 0.1 to {_mt}
+				add {_mt} * sin({_tmprad}) to x-coordinate of {_el}
+				add {_mt} * cos({_tmprad}) to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 150, 0, 0, center {_el}, visibleRange 30
+				set {_sub} to loop-number-3 * loop-number-3 / 5
+				subtract {_sub} from {_tmprad}
+		wait a tick

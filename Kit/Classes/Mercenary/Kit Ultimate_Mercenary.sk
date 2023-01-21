@@ -1,0 +1,56 @@
+# Sanguinary Murder
+
+function kitUltMercenary(player: player):
+	drawDot count 5, particle "mobspell", RGB 150, 0, 0, center {_player}, visibleRange 30, keepFor 10 seconds
+	message "§c血を噴出させ,それを踏んだ敵を出血させ,❤1ダメージを与えます!" to {_player}
+	message "§c攻撃した敵の体力が3以下かつ出血済であれば一撃で倒します!" to {_player}
+	set {Stats.%{_player}%::UltMercenary} to true
+	loop 30 times:
+		shoot a falling redstone block from block above {_player} at speed 1 upwards
+		set metadata value "kit-merult" of shot falling redstone block to "%{_player}%"
+		push shot falling redstone block north at speed random number from -1 to 1
+		push shot falling redstone block east at speed random number from -1 to 1
+	loop 200 times:
+		loop all falling redstone blocks:
+			metadata value "kit-merult" of loop-falling redstone block is "%{_player}%"
+			set {_l} to location of block at loop-falling redstone block
+			if block at {_l} is air:
+				if block below {_l} is not passable:
+					delete loop-falling redstone block
+					if {_lb::*} does not contain {_l}:
+						add {_l} to {_lb::*}
+						playSound("entity.slime.jump", 0.5, 2, {_l})
+		loop all players:
+			kitCheckTeam({_player}, loop-player, false, true) is true
+			delete {_bl}
+			loop all blocks in radius 1.5 around loop-player:
+				{_bl} is not set
+				{_lb::*} contains location of loop-block
+				set {_bl} to true
+				remove location of loop-block from {_lb::*}
+				make all players see loop-block as air
+			{_bl} is true
+			kitDamage({_player}, loop-player, 1, true)
+			kitBlood(loop-player)
+		loop {_lb::*}:
+			make all players see block at loop-value-2 as redstone wire
+		wait a tick
+	delete {Stats.%{_player}%::UltMercenary}
+	loop {_lb::*}:
+		make all players see block at loop-value as air
+
+on damage of player:
+	metadata value "gametype" of victim is "Kit"
+	{Stats.%attacker%::UltMercenary} is true
+	{Kit-Blood::%victim%} is set
+	health of victim <= 3
+	set damage to 10000
+	set {_baseloc} to location of victim
+	loop 10 times:
+		loop 3 times:
+			set {_el} to {_baseloc}
+			add a random number between -1 and 1 to x-coordinate of {_el}
+			add a random number between -1 and 1 to z-coordinate of {_el}
+			add a random number between 0 and 2 to y-coordinate of {_el}
+			drawDot count 1, particle "explosionhuge", center {_el}, visibleRange 30
+		wait a tick

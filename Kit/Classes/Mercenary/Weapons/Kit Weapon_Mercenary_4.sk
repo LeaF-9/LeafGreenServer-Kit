@@ -1,0 +1,58 @@
+# Chainsaw
+
+on sneak toggle:
+	{Class::%player%} is "Mercenary"
+	player is not sneaking
+	set {_tool} to player's tool
+	if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 4) is true:
+		checkCT(player, name of player's tool) is true
+		set {_num} to 0
+		set {_true} to false
+		wait a tick
+		while {_true} is false:
+			set {_tool} to player's tool
+			if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 4) is false:
+				delete {_true}
+			else if player is not sneaking:
+				set {_true} to true
+			else if {_num} >= 60:
+				set {_true} to true
+			if {_true} is false:
+				add 1 to {_num}
+				chargeActionBar(player, {_num}, 60)
+				set {_pitch} to 0.5 + 0.025 * {_num}
+				playSound("item.armor.equip_chain", 1, {_pitch}, player)
+				drawDot count 1, particle "explosion", center player, visibleRange 30
+				wait a tick
+		if {_true} is true:
+			kitWeapon_Mercenary_4(player, {_num})
+		else:
+			send action bar "§c§lチャージが中断されました" to player
+
+function kitWeapon_Mercenary_4(player: player, distance: num):
+	toolCT({_player}, "Mercenary", 4, "Weapon.main")
+	loop {_distance} times:
+		set {_pl} to location of {_player}
+		set pitch of {_pl} to 0
+		set {_ol} to location 10 meters in front of {_pl}
+		set {_vector} to setVector({_pl}, {_ol}, 0.7)
+		if block 0.1 meters below {_player} is passable:
+			set y of {_vector} to y of {_vector} - 0.1
+		set velocity of {_player} to {_vector}
+		playSound("block.chain.place", 1, 0.5, {_player})
+		drawDot count 1, particle "explosionlarge", center {_player}, visibleRange 30
+		loop all entities in radius 1 around {_player}:
+			kitCheckTeam({_player}, loop-entity, false) is true
+			add loop-entity to {_list::*}
+			set maximum damage delay of loop-entity to 1 tick
+			kitDamage({_player}, loop-entity, 0.3)
+			playSound("entity.blaze.hurt", 0.8, 2, loop-entity)
+			set {_el} to aroundEffect(loop-entity)
+			drawDot count 1, particle "blockcrack", material redstone block, center {_el}, visibleRange 30
+			if type of loop-entity is a player:
+				set {_c} to kitPercentDuel({_player}, loop-entity, 10, true)
+				chance of {_c}%:
+					kitBlood(loop-entity)
+		wait a tick
+	loop {_list::*}:
+		set maximum damage delay of loop-value to 20 ticks

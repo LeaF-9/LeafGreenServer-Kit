@@ -1,0 +1,122 @@
+# Sanguine Bog
+
+function kitSkill_Mercenary_7(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		toolCT({_player}, "Mercenary", 7)
+		set {_loc} to {Stats.%{_player}%::SkillLocation}
+		kitMsg({_player}, "§4血の池を生成します...")
+		playSound("block.portal.trigger", 1, 2, {_loc})
+		loop 30 times:
+			set {_dl} to {_loc}
+			add a random number between -10 and 10 to x-coordinate of {_dl}
+			add a random number between -10 and 10 to z-coordinate of {_dl}
+			drop a redstone block at {_dl}
+			set metadata value "gametype" of last dropped item to "Kit"
+			set metadata value "unpickable" of last dropped item to "true"
+			set metadata value "sanguine-bog" of last dropped item to "%{_player}%"
+			drawDot count 1, particle "redstone", RGB 100, 1, 37, center last dropped item, visibleRange 50, keepFor 2 seconds
+		set {_to} to location 15 meters above {_loc}
+		loop 20 times:
+			loop all entities:
+				metadata value "gametype" of loop-entity is "Kit"
+				metadata value "sanguine-bog" of loop-entity is "%{_player}%"
+				set {_from} to location of loop-entity
+				set {_vector} to setVector({_from}, {_to}, 0.7)
+				set velocity of loop-entity to {_vector}
+			loop 10 times:
+				set {_el} to {_loc}
+				add a random number between -1 and 1 to x-coordinate of {_el}
+				add a random number between -1 and 1 to y-coordinate of {_el}
+				add a random number between -1 and 1 to z-coordinate of {_el}
+				drawDot count 1, particle "mobspell", RGB 200, 1, 37, center {_el}, visibleRange 50
+			wait a tick
+		playSound("block.respawn_anchor.charge", 1, 0.5, {_loc})
+		kitEffect_SanguineBog({_loc})
+		loop all entities:
+			metadata value "gametype" of loop-entity is "Kit"
+			metadata value "sanguine-bog" of loop-entity is "%{_player}%"
+			push loop-entity north at speed random number from -1 to 1
+			push loop-entity east at speed random number from -1 to 1
+			push loop-entity downwards at speed random number from 0 to 2
+		loop all players in radius 10 around {_loc}:
+			kitCheckTeam(loop-player, {_player}, false) is true
+			kitBlood(loop-player)
+			set {_pel} to location of loop-player
+			add 1 to y-coordinate of {_pel}
+			set pitch of {_pel} to 0
+			loop 6 times:
+				add 60 to yaw of {_pel}
+				set {_m} to 0
+				loop 3 times:
+					add 1 to {_m}
+					set {_plel} to location {_m} meters in front of {_pel}
+					drawDot count 1, particle "redstone", RGB 200, 1, 37, center {_plel}, visibleRange 50
+		playSound("block.lava.ambient", 1, 2, {_loc})
+		loop 20 times:
+			loop all players in radius 10 around {_loc}:
+				kitCheckTeam(loop-player, {_player}, false) is true
+				{Kit-Blood::%loop-player%} is set
+				apply slowness 3 to loop-player for a tick
+			loop 3 times:
+				set {_m} to a random number between 0 and 10
+				set {_rad} to a random number between 0 and 360
+				set {_drad} to a random number between 10 and 30
+				loop 5 times:
+					set {_el} to {_loc}
+					add {_m} * sin({_rad}) to x-coordinate of {_el}
+					add {_m} * cos({_rad}) to z-coordinate of {_el}
+					drawDot count 1, particle "redstone", RGB 200, 1, 37, center {_el}, visibleRange 50
+					add {_drad} to {_rad}
+			wait a tick
+		loop all entities:
+			metadata value "gametype" of loop-entity is "Kit"
+			metadata value "sanguine-bog" of loop-entity is "%{_player}%"
+			delete loop-entity
+		set {_pullpow} to 0.1
+		set {_pullm} to 10
+		set {_rad} to 0
+		loop 60 times:
+			set {_ln} to loop-number
+			set {_soundnum} to 61 - {_ln}
+			if mod({_soundnum}, 20) = 0:
+				playSound("block.lava.ambient", 1, 2, {_loc})
+			loop all players in radius 10 around {_loc}:
+				kitCheckTeam(loop-player, {_player}, false) is true
+				{Kit-Blood::%loop-player%} is set
+				apply slowness 3 to loop-player for a tick
+				if mod({_ln}, 10) = 0:
+					set {_from} to location of loop-player
+					set {_to} to {_loc}
+					set {_vector} to setVector({_from}, {_to}, {_pullpow})
+					set velocity of loop-player to {_vector}
+					playSound("item.lodestone_compass.lock", 0.7, 2, loop-player)
+			loop 36 times:
+				set {_el} to {_loc}
+				add 36 to {_rad}
+				add {_pullm} * sin({_rad}) to x-coordinate of {_el}
+				add {_pullm} * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "mobspell", RGB 200, 1, 37, center {_el}, visibleRange 50
+			add 10 to {_rad}
+			add 0.003 to {_pullpow}
+			subtract 1 from {_pullm}
+			if {_pullm} < 1:
+				set {_pullm} to 10
+			wait a tick
+	else:
+		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+
+function kitEffect_SanguineBog(loc: location):
+	set {_y} to 15
+	set {_rad} to 0
+	set {_len} to 0
+	loop 15 times:
+		loop 9 times:
+			add 10 to {_rad}
+			subtract 0.1 from {_y}
+			add 0.07 to {_len}
+			set {_el} to {_loc}
+			add {_len} * sin({_rad}) to x-coordinate of {_el}
+			add {_len} * cos({_rad}) to z-coordinate of {_el}
+			add {_y} to y-coordinate of {_el}
+			drawDot count 1, particle "mobspell", RGB 200, 1, 37, center {_el}, visibleRange 50, keepFor 3 ticks
+		wait a tick

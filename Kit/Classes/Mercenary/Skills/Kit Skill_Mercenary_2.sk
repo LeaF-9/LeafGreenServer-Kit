@@ -1,0 +1,41 @@
+# Wimp Stymie
+
+function kitSkill_Mercenary_2(player: player):
+	toolCT({_player}, "Mercenary", 2)
+	playSound("entity.wither.spawn", 1, 1, {_player})
+	kitMsg({_player}, "§5弱った敵を殲滅します...")
+	set {_bl} to location of {_player}
+	loop all entities in radius 10 around {_player}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		apply blindness 1 to loop-entity for 1.5 seconds
+		set {_true} to false
+		if loop-entity's health <= 3:
+			if type of loop-entity is a player:
+				if {Kit-Blood::%loop-entity%} is set:
+					set {_true} to true
+			else:
+				set {_true} to true
+		if {_true} is true:
+			if {Class::%loop-entity%} is "Ghost":
+				message formatted "§4...?" to loop-entity
+			else:
+				loop 10 times:
+					set {_el} to aroundEffect(loop-entity)
+					drawDot count 1, particle "smoke", center {_el}, visibleRange 30
+				if {Kit-Shield::%loop-entity%} is set:
+					delete {Kit-Shield::%loop-entity%}
+					delete {Kit-ShieldTime::%loop-entity%}
+				kitDamage({_player}, loop-entity, 10000, true)
+				message formatted "§0強制的に殺されてしまった..." to loop-entity
+	set {_y} to 0
+	loop 5 times:
+		set {_rad} to 0
+		loop 36 times:
+			set {_effectloc} to {_bl}
+			add 10 to {_rad}
+			add 10 * sin({_rad}) to x-coordinate of {_effectloc}
+			add 10 * cos({_rad}) to z-coordinate of {_effectloc}
+			add {_y} to y-coordinate of {_effectloc}
+			drawDot count 1, particle "mobspell", RGB 100, 0, 50, center {_effectloc}, visibleRange 30
+		add 0.25 to {_y}
+		wait a tick

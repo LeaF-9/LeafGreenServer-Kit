@@ -1,0 +1,31 @@
+# Leadull
+
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	{Class::%attacker%} is "Mercenary"
+	damage was caused by attack
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 1) is true
+	if {Kit-Blood::%victim%} is set:
+		{Class::%victim%} is not "Ghost"
+		set {_c} to kitPercentDuel(attacker, victim, 3, true)
+		chance of {_c}%:
+			if {Kit-Shield::%victim%} is set:
+				delete {Kit-Shield::%victim%}
+				delete {Kit-ShieldTime::%victim%}
+			kitDamage(attacker, victim, 10000, true)
+			playSound("entity.warden.death", 1, 0.5, victim)
+			set {_el} to location of victim
+			add 1 to y-coordinate of {_el}
+			loop 50 times:
+				set yaw of {_el} to a random number between 0 and 360
+				set pitch of {_el} to a random number between -90 and 90
+				shoot a snowball from {_el} at speed 1
+				set item of shot snowball to a redstone
+			kitMsg(attacker, "§5§l%victim% §4の息の根を止めました...")
+			message formatted "§c§lなまくらの剣が急所に当たってしまった..." to victim
+	else:
+		set {_c} to kitPercentDuel(attacker, victim, 10, true)
+		chance of {_c}%:
+			kitBlood(victim)
+			playSound("entity.cod.death", 1, 0.5, victim)

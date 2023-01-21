@@ -1,0 +1,42 @@
+# Blood Rainy
+
+function kitSkill_Mercenary_4(player: player):
+	toolCT({_player}, "Mercenary", 4)
+	kitMsg({_player}, "§5血の雨を降らせます...")
+	set {_baseloc} to location of {_player}
+	set {_sky} to location 10 meters above {_baseloc}
+	set pitch of {_sky} to 0
+	set {_meter} to 0
+	loop 60 times:
+		add 0.2 to {_meter}
+		set {_skying} to location {_meter} meters in front of {_sky}
+		loop all blocks in radius 5 around {_skying}:
+			y-coordinate of loop-block is y-coordinate of location of block at {_skying}
+			loop-block is passable
+			loop 3 times:
+				chance of 10%:
+					set {_sel} to location of loop-block
+					add a random number between -0.5 and 0.5 to x-coordinate of {_sel}
+					add a random number between -0.5 and 0.5 to y-coordinate of {_sel} 
+					add a random number between -0.5 and 0.5 to z-coordinate of {_sel}
+					drawDot count 1, particle "redstone", RGB 150, 0, 0, center {_sel}, visibleRange 50
+			chance of 5%:
+				shoot a snowball from loop-block at speed 1 downward
+				set item of shot snowball to redstone block
+				set shooter of shot snowball to {_player}
+				set metadata value "kit-bloodrain" of shot snowball to "%{_player}%"
+				drawDot count 1, particle "mobspell", XYZ 255, 0, 0, center shot snowball, visibleRange 32, keepFor 1 seconds
+				playSound("entity.generic.splash", 0.5, 0.5, location of loop-block)
+		wait a tick
+
+on damage:
+	metadata value "gametype" of victim is "Kit"
+	damage was caused by projectile
+	projectile is a snowball
+	metadata value "kit-bloodrain" of projectile is set
+	set damage to 1
+	if type of victim is a player:
+		kitBlood(victim)
+	loop 3 times:
+		set {_el} to aroundEffect(victim)
+		drawDot count 1, particle "mobspell", XYZ 50, 0, 0, center {_el}, visibleRange 32
