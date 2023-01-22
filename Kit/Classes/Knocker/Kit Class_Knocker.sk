@@ -1,81 +1,6 @@
 # Knockerのスキル Ver1.0.0
 
 # Weapons
-on shoot:
-	metadata value "gametype" of shooter is "Kit"
-	{Class::%shooter%} is "Knocker"
-	set {_tool} to shooter's tool
-	set {_item.kit} to kitItemKitChecker({_tool})
-	{_item.kit} is "Knocker"
-	set {_item.type} to kitItemTypeChecker({_tool})
-	{_item.type} is "Weapon.main"
-	set {_item.num} to kitItemNumberChecker({_tool})
-	if {_item.num} is 3:
-		set metadata value "gravitybow" of projectile to "true"
-	else if {_item.num} is 5:
-		set metadata value "bindbow" of projectile to "true"
-
-on projectile hit:
-	projectile is arrow
-	if metadata value "gravitybow" of projectile is "true":
-		set {_from} to location of projectile
-		loop all entities in radius 3 around {_from}:
-			kitCheckTeam(shooter, loop-entity, false) is true
-			LastKiller(loop-entity, shooter)
-			set {_to} to location of loop-entity
-			set {_vector} to setVector({_from}, {_to})
-			set velocity of loop-entity to {_vector}
-		playSound("entity.elder_guardian.hurt", 1, 1, {_from})
-		loop 10 time:
-			loop 18 time:
-				set {_el} to {_from}
-				set {_v} to {_el}
-				set {_x} to x-coordinate of {_el}
-				set {_y} to y-coordinate of {_el}
-				set {_z} to z-coordinate of {_el}
-				set x-coordinate of {_v} to {_x} + ( 3 * sin({_s}) * cos({_t}) )
-				set y-coordinate of {_v} to {_y} + ( 3 * cos({_s}) )
-				set z-coordinate of {_v} to {_z} + ( 3 * sin({_s}) * sin({_t}) )
-				chance of 50%:
-					drawDot count 1, particle "redstone", RGB 112, 128, 144, center {_v}, visibleRange 30
-				add 20 to {_t}
-			add 20 to {_s}
-	else if metadata value "bindbow" of projectile is "true":
-		set {_center} to location of projectile
-		playSound("block.chain.place", 1, 1, {_center})
-		loop 10 times:
-			loop all entities in radius 3 around {_center}:
-				kitCheckTeam(shooter, loop-entity, false) is true
-				{_binding::*} does not contain id of loop-entity
-				add id of loop-entity to {_binding::*}
-			loop all entities:
-				kitCheckTeam(shooter, loop-entity, false) is true
-				{_binding::*} contains id of loop-entity
-				apply slowness 1 to loop-entity for 1 tick
-				set {_et} to location of loop-entity
-				add 1 to y-coordinate of {_et}
-				set {_ve} to setVector({_center}, {_et})
-				set {_elbase} to {_center}
-				set yaw of {_elbase} to yaw of {_ve}
-				set pitch of {_elbase} to pitch of {_ve}
-				set {_dis} to round(distance between {_et} and {_elbase} * 2)
-				set {_ln} to 0
-				loop {_dis} times:
-					add 1 to {_ln}
-					set {_el} to location 0.5 * {_ln} meters in front of {_elbase}
-					drawDot count 1, particle "redstone", RGB 112, 128, 144, center {_el}, visibleRange 30
-				if distance between loop-entity and {_center} > 3:
-					set {_to} to location of loop-entity
-					set {_vector} to setVector({_to}, {_center}, 0.1)
-					set velocity of loop-entity to {_vector}
-					playSound("entity.guardian.attack", 0.7, 2, loop-entity)
-			set {_ln} to 0
-			loop 5 times:
-				add 0.2 to {_ln}
-				set {_ce} to location {_ln} meters above {_center}
-				chance of 10%:
-					drawDot count 1, particle "redstone", RGB 199, 227, 255, center {_ce}, visibleRange 30
-			wait a tick
 
 on damage:
 	metadata value "gametype" of attacker is "Kit"
@@ -89,24 +14,6 @@ function kitWeaponKnocker(player: player):
 	checkCT({_player}, name of {_player}'s tool) is true
 	if {_item.num} is 4:
 		kitWeapon_Knocker_4({_player})
-
-function kitWeapon_Knocker_4(player: player):
-	if {_player} has arrow:
-		load yml "plugins/skript-yaml/Kit Classes/Knocker.yml" as "uparrow.%{_player}%"
-		set {_UPArrow} to yml value "kititems.Updraft Arrow" from "uparrow.%{_player}%"
-		unload yml "uparrow.%{_player}%"
-		set {_amount} to amount of arrow in {_player}'s inventory
-		set {_amoweak} to amount of {_UPArrow} in {_player}'s inventory
-		add {_amoweak} to {_amount}
-		set {_s} to 35
-		set {_a} to 0
-		loop {_amount} times:
-			add 1 to {_a}
-			set slot {_s} of {_player} to {_a} of {_UPArrow}
-			if {_a} is 64:
-				subtract 1 from {_s}
-				set {_a} to 0
-		remove all arrows from {_player}
 
 # Skills
 function kitSkillKnocker(player: player) :: boolean:
@@ -721,55 +628,9 @@ function kitTimerKnocker(player: player):
 					add 1 to {Stats.%{_player}%::SpatialDistorter}
 		if {_item.type} is "Weapon.main":
 			if {_item.num} is 4:
-				if {_player} is sneaking:
-					if block at location 0.1 meters below {_player} is passable:
-						apply slow falling 1 to {_player} for 10 ticks replacing existing effect
-						chance of 50%:
-							playSound("block.wool.break", 0.6, 2, {_player})
-						set {_rad} to 0
-						set {_baseloc} to location of {_player}
-						loop 10 times:
-							add 36 to {_rad}
-							set {_el} to {_baseloc}
-							add 0.5 * sin({_rad}) to x-coordinate of {_el}
-							add 0.5 * cos({_rad}) to z-coordinate of {_el}
-							chance of 10%:
-								drawDot count 1, particle "mobspell", RGB 135, 206, 235, center {_el}, visibleRange 30
-				else:
-					remove slow falling from {_player}
+				kitWeaponSub_Knocker_4({_player})
 			else if {_item.num} is 5:
-				if {Stats.%{_player}%::BindBow} is set:
-					set {_barcount} to {Stats.%{_player}%::BindBow}
-				else:
-					set {Stats.%{_player}%::BindBow} to 60
-					set {_barcount} to 60
-				set {_bar} to 0
-				set {_bartext} to ""
-				loop 60 times:
-					add 1 to {_bar}
-					if {_bar} <= {_barcount}:
-						set {_bartext} to "%{_bartext}%§a|"
-					else:
-						set {_bartext} to "%{_bartext}%§8|"
-				send action bar "§e§l[ %{_bartext}% §e§l]" to {_player}
-				if {_player} is sneaking:
-					if {Stats.%{_player}%::BindBow} > 0:
-						subtract 1 from {Stats.%{_player}%::BindBow}
-						set {_baseloc} to location of {_player}
-						playSound("block.chain.fall", 0.6, 2, {_baseloc})
-						loop all entities in radius 5 around {_baseloc}:
-							kitCheckTeam(loop-entity, {_player}, false) is true
-							LastKiller(loop-entity, {_player})
-							set {_to} to location of loop-entity
-							set {_vector} to setVector({_baseloc}, {_to}, 0.5)
-							set velocity of loop-entity to {_vector}
-						set {_rad} to 0
-						loop 36 times:
-							add 10 to {_rad}
-							set {_el} to {_baseloc}
-							add 5 * sin({_rad}) to x-coordinate of {_el}
-							add 5 * cos({_rad}) to z-coordinate of {_el}
-							drawDot count 1, particle "witchspell", center {_el}, visibleRange 30
+				kitWeapon_Knocker_5({_player})
 		else if {_item.type} is "Skill":
 			if {_item.num} is 4:
 				if {Stats.%{_player}%::SpatialDistorter} is set:

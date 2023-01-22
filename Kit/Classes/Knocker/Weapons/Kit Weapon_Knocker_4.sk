@@ -1,0 +1,37 @@
+# Upwinger
+
+function kitWeapon_Knocker_4(player: player):
+	if {_player} has arrow:
+		load yml "plugins/skript-yaml/Kit Classes/Knocker.yml" as "uparrow.%{_player}%"
+		set {_UPArrow} to yml value "kititems.Updraft Arrow" from "uparrow.%{_player}%"
+		unload yml "uparrow.%{_player}%"
+		set {_amount} to amount of arrow in {_player}'s inventory
+		set {_amoweak} to amount of {_UPArrow} in {_player}'s inventory
+		add {_amoweak} to {_amount}
+		set {_s} to 35
+		set {_a} to 0
+		loop {_amount} times:
+			add 1 to {_a}
+			set slot {_s} of {_player} to {_a} of {_UPArrow}
+			if {_a} is 64:
+				subtract 1 from {_s}
+				set {_a} to 0
+		remove all arrows from {_player}
+
+function kitWeaponSub_Knocker_4(player: player):
+	if {_player} is sneaking:
+		if block at location 0.1 meters below {_player} is passable:
+			apply slow falling 1 to {_player} for 10 ticks replacing existing effect
+			chance of 50%:
+				playSound("block.wool.break", 0.6, 2, {_player})
+			set {_rad} to 0
+			set {_baseloc} to location of {_player}
+			loop 10 times:
+				add 36 to {_rad}
+				set {_el} to {_baseloc}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				chance of 10%:
+					drawDot count 1, particle "mobspell", RGB 135, 206, 235, center {_el}, visibleRange 30
+	else:
+		remove slow falling from {_player}

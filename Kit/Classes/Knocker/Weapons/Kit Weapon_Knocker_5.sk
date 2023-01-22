@@ -1,0 +1,81 @@
+# Cyclone Bow
+
+on shoot:
+	metadata value "gametype" of shooter is "Kit"
+	{Class::%shooter%} is "Knocker"
+	set {_tool} to shooter's tool
+	kitItemAllChecker({_tool}, "Knocker", "Weapon.main", 5) is true
+	set metadata value "bindbow" of projectile to "true"
+
+on projectile hit:
+	projectile is arrow
+	if metadata value "bindbow" of projectile is "true":
+		set {_center} to location of projectile
+		playSound("block.chain.place", 1, 1, {_center})
+		loop 10 times:
+			loop all entities in radius 3 around {_center}:
+				kitCheckTeam(shooter, loop-entity, false) is true
+				{_binding::*} does not contain id of loop-entity
+				add id of loop-entity to {_binding::*}
+			loop all entities:
+				kitCheckTeam(shooter, loop-entity, false) is true
+				{_binding::*} contains id of loop-entity
+				apply slowness 1 to loop-entity for 1 tick
+				set {_et} to location of loop-entity
+				add 1 to y-coordinate of {_et}
+				set {_ve} to setVector({_center}, {_et})
+				set {_elbase} to {_center}
+				set yaw of {_elbase} to yaw of {_ve}
+				set pitch of {_elbase} to pitch of {_ve}
+				set {_dis} to round(distance between {_et} and {_elbase} * 2)
+				set {_ln} to 0
+				loop {_dis} times:
+					add 1 to {_ln}
+					set {_el} to location 0.5 * {_ln} meters in front of {_elbase}
+					drawDot count 1, particle "redstone", RGB 112, 128, 144, center {_el}, visibleRange 30
+				if distance between loop-entity and {_center} > 3:
+					set {_to} to location of loop-entity
+					set {_vector} to setVector({_to}, {_center}, 0.1)
+					set velocity of loop-entity to {_vector}
+					playSound("entity.guardian.attack", 0.7, 2, loop-entity)
+			set {_ln} to 0
+			loop 5 times:
+				add 0.2 to {_ln}
+				set {_ce} to location {_ln} meters above {_center}
+				chance of 10%:
+					drawDot count 1, particle "redstone", RGB 199, 227, 255, center {_ce}, visibleRange 30
+			wait a tick
+
+function kitWeapon_Knocker_5(player: player):
+	if {Stats.%{_player}%::BindBow} is set:
+		set {_barcount} to {Stats.%{_player}%::BindBow}
+	else:
+		set {Stats.%{_player}%::BindBow} to 60
+		set {_barcount} to 60
+	set {_bar} to 0
+	set {_bartext} to ""
+	loop 60 times:
+		add 1 to {_bar}
+		if {_bar} <= {_barcount}:
+			set {_bartext} to "%{_bartext}%§a|"
+		else:
+			set {_bartext} to "%{_bartext}%§8|"
+	send action bar "§e§l[ %{_bartext}% §e§l]" to {_player}
+	if {_player} is sneaking:
+		if {Stats.%{_player}%::BindBow} > 0:
+			subtract 1 from {Stats.%{_player}%::BindBow}
+			set {_baseloc} to location of {_player}
+			playSound("block.chain.fall", 0.6, 2, {_baseloc})
+			loop all entities in radius 5 around {_baseloc}:
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				LastKiller(loop-entity, {_player})
+				set {_to} to location of loop-entity
+				set {_vector} to setVector({_baseloc}, {_to}, 0.5)
+				set velocity of loop-entity to {_vector}
+			set {_rad} to 0
+			loop 36 times:
+				add 10 to {_rad}
+				set {_el} to {_baseloc}
+				add 5 * sin({_rad}) to x-coordinate of {_el}
+				add 5 * cos({_rad}) to z-coordinate of {_el}
+				drawDot count 1, particle "witchspell", center {_el}, visibleRange 30
