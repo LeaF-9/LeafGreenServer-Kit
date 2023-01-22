@@ -1,0 +1,85 @@
+# Hellish Occultism
+
+function kitUltGhost(player: player):
+	drawDot count 5, particle "mobspell", RGB 50, 0, 50, center {_player}, visibleRange 30, keepFor 10 seconds
+	message "§cWitherに変身して空を飛べるようになります!" to {_player}
+	message "§c左クリックで弾を発射し,周辺の敵に衰弱 IIIを3秒付与します!" to {_player}
+	remove invisibility from {_player}
+	allow fly for {_player}
+	set {Stats.%{_player}%::UltGhost} to true
+	execute console command "/displayer %{_player}% Wither"
+	loop 200 times:
+		if {Stats.%{_player}%::UltGhost} is true:
+			wait a tick
+	delete {Stats.%{_player}%::UltGhost}
+	if gamemode of {_player} is survival:
+		disallow fly for {_player}
+		apply invisibility 1 to {_player} for 100000000000 seconds
+	execute console command "/undisplayer %{_player}%"
+	set {Stats.%{_player}%::UltGhostFalling} to true
+	wait 5 seconds
+	delete {Stats.%{_player}%::UltGhostFalling}
+
+on damage of player:
+	metadata value "gametype" of victim is "Kit"
+	{Stats.%victim%::UltGhostFalling} is true
+	delete {Stats.%victim%::UltGhostFalling}
+	cancel event
+
+on leftclick:
+	metadata value "gametype" of player is "Kit"
+	{Stats.%player%::UltGhost} is true
+	checkCT(player, "Ghost Ult") is true
+	setCT(player, "Ghost Ult", 1)
+	set {_p} to location of head of player
+	shoot a falling coal block from {_p} at speed 1
+	set {_now} to now
+	set metadata value "kit-ghostult" of shot falling coal block to "%player%"
+	set metadata value "kit-ghostulttime" of shot falling coal block to "%{_now}%"
+	drawDot count 1, particle "mobspell", RGB 0, 0, 0, center shot falling coal block, visibleRange 30, keepFor 3 seconds
+	playSound("entity.wither.shoot", 1, 0.5, player)
+	loop 60 times:
+		{_true} is not set
+		loop all falling coal blocks:
+			metadata value "kit-ghostult" of loop-falling coal block is "%player%"
+			metadata value "kit-ghostulttime" of loop-falling coal block is "%{_now}%"
+			loop all players in radius 2 around loop-falling coal block:
+				{_true} is not set
+				kitCheckTeam(player, loop-player, false) is true
+				set {_true} to true
+				set {_l} to location of loop-falling coal block
+				make a fake explosion at {_l}
+			loop all blocks in radius 2 around loop-falling coal block:
+				{_true} is not set
+				loop-block is not passable
+				set {_true} to true
+				set {_l} to location of loop-falling coal block
+				make a fake explosion at {_l}
+		wait a tick
+	loop all falling coal blocks:
+		metadata value "kit-ghostult" of loop-falling coal block is "%player%"
+		metadata value "kit-ghostulttime" of loop-falling coal block is "%{_now}%"
+		delete loop-falling coal block
+	{_true} is true
+	loop all entities in radius 5 around {_l}:
+		kitCheckTeam(player, loop-entity, false, true) is true
+		kitDamage(player, loop-entity, 2)
+		apply wither 3 to loop-entity for 3 seconds
+		playSound("entity.wither.spawn", 0.75, 0.5, loop-entity)
+	set {_s} to 0
+	set {_t} to 0
+	set {_pl} to {_l}
+	loop 19 time:
+		loop 36 time:
+			set {_loc} to {_pl}
+			set {_vector} to {_loc}
+			set {_x} to x-coordinate of {_loc}
+			set {_y} to y-coordinate of {_loc}
+			set {_z} to z-coordinate of {_loc}
+			set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
+			set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
+			set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
+			chance of 10%:
+				drawDot count 1, particle "redstone", RGB 0, 0, 0, center {_vector}, visibleRange 100
+			add 10 to {_t}
+		add 10 to {_s}

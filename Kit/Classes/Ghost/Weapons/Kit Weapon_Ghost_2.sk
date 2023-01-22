@@ -1,0 +1,37 @@
+# Corrupt Land
+
+function kitWeapon_Ghost_2(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		set {_loc} to {Stats.%{_player}%::SkillLocation}
+		toolCT({_player}, "Ghost", 2, "Weapon.main")
+		set {_memsg} to kitGhostMessage("§2枯渇地帯を設置した...")
+		kitMsg({_player}, {_memsg})
+		playSound("block.grass.place", 1, 0.5, {_loc})
+		loop all blocks in radius 5 around {_loc}:
+			loop-block is air
+			block below loop-block is not passable
+			add location of loop-block to {_locs::*}
+		loop {_locs::*}:
+			make all players see block at loop-value as dead grass
+		loop 100 times:
+			loop {_locs::*}:
+				chance of 3%:
+					drawDot count 1, particle "mobspell", RGB 87, 138, 61, center loop-value-2, visibleRange 50
+			loop all players in radius 5 around {_loc}:
+				kitCheckTeam({_player}, loop-player, false) is true
+				if {_players::*} does not contain loop-player:
+					add loop-player to {_players::*}
+					set {Stats.%loop-player%::Hunger} to true
+				set {_fl} to food level of loop-player
+				subtract 0.5 from {_fl}
+				set food level of loop-player to {_fl}
+			wait a tick
+		playSound("block.grass.break", 1, 0.5, {_loc})
+		loop {_locs::*}:
+			block at loop-value is air
+			make all players see block at loop-value as air
+		loop {_players::*}:
+			set food level of loop-value to 10
+			delete {Stats.%loop-value%::Hunger}
+	else:
+		send action bar "§c§l対象地点が存在しません!" to {_player}

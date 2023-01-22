@@ -1,0 +1,29 @@
+# Phantasma
+
+function kitWeapon_Ghost_5(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		if kitCheckSpirit({_player}, 5, "Weapon.main") is true:
+			set {_loc} to {Stats.%{_player}%::SkillLocation}
+			toolCT({_player}, "Ghost", 5, "Weapon.main")
+			set {_memsg} to kitGhostMessage("§5自身の幻影を召喚します...")
+			kitMsg({_player}, {_memsg})
+			playSound("entity.zombie.infect", 1, 0.8, {_loc})
+			kitInvisible({_player}, 3 seconds)
+			set {_now} to now
+			loop 5 times:
+				add 72 to {_rad}
+				set {_el} to {_loc}
+				add 5 * sin({_rad}) to x-coordinate of {_el}
+				add 5 * cos({_rad}) to z-coordinate of {_el}
+				spawn a skeleton at {_el} with nbt compound from "{Silent:1b,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:wither_skeleton_skull"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}]}"
+				set metadata value "gametype" of spawned skeleton to "Kit"
+				set metadata value "kit-phantasma" of spawned skeleton to "%{_now}%"
+				set spawned skeleton's display name to "%{_player}%"
+				set spawned skeleton's tool to kitWeaponItem("Ghost", 5, "main")
+			wait 5 seconds
+			loop all skeletons:
+				loop-skeleton's display name is "%{_player}%"
+				metadata value "kit-phantasma" of loop-skeleton is "%{_now}%"
+				delete loop-skeleton
+	else:
+		send action bar "§c§l対象地点が存在しません!" to {_player}

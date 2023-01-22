@@ -1,0 +1,35 @@
+# Mutate Mummy
+
+function kitSkill_Ghost_1(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		toolCT({_player}, "Ghost", 1)
+		set {_tg} to {Stats.%{_player}%::SkillTarget}
+		set {_jewel} to saveJewels({_tg})
+		set {_gem} to saveGems({_tg})
+		set {_wool} to saveWools({_tg})
+		set {_spwool} to saveSpecialWool({_tg})
+		execute console command "/skclass %{_tg}% Kit-Mummy"
+		giveEmJItems({_tg}, {_jewel}, {_gem})
+		giveStWItems({_tg}, {_wool}, {_spwool})
+		set {Stats.%{_tg}%::MutateMummy} to true
+		playSound("entity.wither.spawn", 1, 1, {_tg})
+		set {_memsg} to kitGhostMessage("§5%{_tg}% §8をミイラに変形させた...")
+		set {_youmsg} to kitGhostMessage("§5Noooooooooo!!!!!", true)
+		kitMsg({_player}, {_memsg})
+		message formatted {_youmsg} to {_tg}
+		apply nausea 1 to {_tg} for 5 seconds
+		apply blindness 1 to {_tg} for 5 seconds
+		loop 10 times:
+			set {_el} to aroundEffect({_tg})
+			drawDot count 1, particle "fallingdust", material white concrete powder, center {_el}, visibleRange 30
+		wait 10 seconds
+		if {Stats.%{_tg}%::MutateMummy} is true:
+			set {_jewel} to saveJewels({_tg})
+			set {_gem} to saveGems({_tg})
+			set {_wool} to saveWools({_tg})
+			set {_spwool} to saveSpecialWool({_tg})
+			execute console command "/class %{Class::%{_tg}%}% %{_tg}% false"
+			giveEmJItems({_tg}, {_jewel}, {_gem})
+			giveStWItems({_tg}, {_wool}, {_spwool})
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}

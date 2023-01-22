@@ -1,0 +1,76 @@
+# Poltergeist
+
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	{Class::%attacker%} is "Ghost"
+	damage was caused by attack
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 4) is true
+	loop all blocks in radius 3 around victim:
+		loop-block is passable
+		add location of loop-block to {_sounds::*}
+	loop 3 times:
+		if loop-number is 1:
+			set {_percent} to 100
+		else:
+			set {_percent} to 30
+		chance of {_percent}%:
+			set {_sound} to a random location out of {_sounds::*}
+			set {_pitch} to a random number between 0.5 and 2
+			playSound("block.glass.break", 0.5, {_pitch}, {_sound})
+
+function kitWeapon_Ghost_4(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if kitCheckSpirit({_player}, 4, "Weapon.main") is true:
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			toolCT({_player}, "Ghost", 4, "Weapon.main")
+			set {_memsg} to kitGhostMessage("§5%{_tg}% §4に音のいたずらを誘発する...")
+			set {_youmsg} to kitGhostMessage("§8不思議な音が鳴り響く...", true)
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_tg}
+			playSound("ambient.cave", 1, 2, {_tg})
+			apply nausea 1 to {_tg} for 8 seconds
+			loop 100 times:
+				if mod(loop-number, 2) is 0:
+					set {_yaw} to 5
+				else:
+					set {_yaw} to -5
+				playerYawRotation({_tg}, {_yaw}, true)
+				chance of 10%:
+					kitGhostFoot({_tg})
+				set {_el} to aroundEffect({_tg})
+				set y-coordinate of {_el} to y-coordinate of {_tg} + 2
+				set {_n} to a random integer between 0 and 25
+				drawDot count 1, particle "note", RGB {_n}, 0, 0, center {_el}, visibleRange 30
+				wait a tick
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+function kitGhostFoot(player: player):
+	set {_loc} to location of {_player}
+	set {_xnum} to a random number between -5 and 5
+	if {_xnum} >= 0:
+		set {_xnum} to {_xnum} + 5
+	else:
+		set {_xnum} to {_xnum} - 5
+	set {_znum} to a random number between -5 and 5
+	if {_znum} >= 0:
+		set {_znum} to {_znum} + 5
+	else:
+		set {_znum} to {_znum} - 5
+	add {_xnum} to x-coordinate of {_loc}
+	add {_znum} to z-coordinate of {_loc}
+	set {_vector} to setVector({_loc}, location of {_player})
+	set yaw of {_loc} to yaw of {_vector}
+	set pitch of {_loc} to pitch of {_vector}
+	set {_sound} to "block.grass.step"
+	chance of 33%:
+		set {_sound} to "block.stone.step"
+	chance of 33%:
+		set {_sound} to "block.wood.step"
+	set {_frontnum} to 0
+	loop 5 times:
+		set {_soundloc} to location {_frontnum} meters in front of {_loc}
+		play sound {_sound} at {_soundloc} for {_player}
+		add 1.25 to {_frontnum}
+		wait 5 ticks

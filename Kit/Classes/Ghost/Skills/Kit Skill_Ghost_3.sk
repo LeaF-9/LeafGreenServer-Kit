@@ -1,0 +1,29 @@
+# Pain Split
+
+function kitSkill_Ghost_3(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if kitCheckSpirit({_player}, 3) is true:
+			toolCT({_player}, "Ghost", 3)
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			set {_th} to {_tg}'s health
+			set {_ph} to {_player}'s health
+			set {_sp} to ({_th} + {_ph}) / 2
+			set {_tg}'s health to {_sp}
+			set {_player}'s health to {_sp}
+			playSound("entity.zombie_villager.converted", 1, 1, {_player}, true)
+			playSound("entity.zombie_villager.converted", 1, 1, {_tg}, true)
+			set {_memsg} to kitGhostMessage("§5%{_tg}% §1と互いの体力を分け合った...")
+			set {_youmsg} to kitGhostMessage("§5%{_player}% §cと体力を分け合った...!")
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_tg}
+			set {_d} to rounded distance between {_player} and {_tg}
+			set {_vector} to setVector(location of {_player}, location of {_tg})
+			set {_baseloc} to location of head of {_player}
+			set yaw of {_baseloc} to yaw of {_vector}
+			set pitch of {_baseloc} to pitch of {_vector}
+			loop {_d} times:
+				add 1 to {_n}
+				set {_el} to location {_n} meters in front of {_baseloc}
+				drawDot count 1, particle "endrod", center {_el}, visibleRange 50
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}

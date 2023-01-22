@@ -1,0 +1,17 @@
+# Ghost Book
+
+function kitWeapon_Ghost_1(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		set {_tg} to {Stats.%{_player}%::SkillTarget}
+		toolCT({_player}, "Ghost", 1, "Weapon.main")
+		apply blindness 1 to {_tg} for 3 seconds
+		set {_memsg} to kitGhostMessage("§5%{_tg}% §0に暗黒効果を付与した...")
+		set {_youmsg} to kitGhostMessage("§0??????????", true)
+		kitMsg({_player}, {_memsg})
+		message formatted {_youmsg} to {_tg}
+		loop 10 times:
+			set {_el} to aroundEffect({_tg})
+			drawDot count 1, particle "smoke", center {_el}, visibleRange 50
+		playSound("entity.wither.spawn", 1, 1, {_tg})
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}

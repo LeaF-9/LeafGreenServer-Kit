@@ -1,0 +1,36 @@
+# Lethan Souvenir
+
+function kitSkill_Ghost_4(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if kitCheckSpirit({_player}, 4) is true:
+			toolCT({_player}, "Ghost", 4)
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			set {Stats.%{_tg}%::LethalSouvenir} to true
+			kitBadLuck({_tg}, 5)
+			playSound("entity.elder_guardian.death", 1, 1, {_tg})
+			set {_memsg} to kitGhostMessage("§5%{_tg}% §0に置き土産を残した...")
+			set {_youmsg} to kitGhostMessage("§5霊の憑拠を受けてしまった...", true)
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_tg}
+			set health of {_player} to 0
+			set {_baseloc} to location of {_tg}
+			loop 10 times:
+				loop 10 times:
+					add 0.05 to {_y}
+					add 0.05 to {_metre}
+					add 10 to {_rad}
+					set {_effloc} to {_baseloc}
+					add {_y} to y-coordinate of {_effloc}
+					add {_metre} * sin({_rad}) to x-coordinate of {_effloc}
+					add {_metre} * cos({_rad}) to z-coordinate of {_effloc}
+					drawDot count 1, particle "mobspell", RGB 0, 0, 0, center {_effloc}, visibleRange 30
+				wait a tick
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+on damage of player:
+	metadata value "gametype" of victim is "Kit"
+	if {Stats.%victim%::LethalSouvenir} is true:
+		set damage to damage * 2
+	if {Stats.%attacker%::LethalSouvenir} is true:
+		set damage to damage * 0.5

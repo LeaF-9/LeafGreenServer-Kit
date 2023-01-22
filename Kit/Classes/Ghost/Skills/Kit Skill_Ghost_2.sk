@@ -1,0 +1,40 @@
+# Mind Dependent
+
+function kitSkill_Ghost_2(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if kitCheckSpirit({_player}, 2) is true:
+			toolCT({_player}, "Ghost", 2)
+			set {_tg} to {Stats.%{_player}%::SkillTarget}
+			if {Stats.%{Stats.%{_player}%::MindDependence}%::MindDependence} is {_player}:
+				delete {Stats.%{Stats.%{_player}%::MindDependence}%::MindDependence}
+				delete {Stats.%{_player}%::MindDependence}
+			set {_memsg} to kitGhostMessage("§5%{_tg}% §4と痛覚の共有を行いました...")
+			set {_youmsg} to kitGhostMessage("§5%{_player}% §cとのダメージが共有される!")
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_tg}
+			set {Stats.%{_tg}%::MindDependence} to {_player}
+			set {Stats.%{_player}%::MindDependence} to {_tg}
+			playSound("entity.iron_golem.death", 1, 0.5, {_player}, true)
+			playSound("entity.iron_golem.death", 1, 0.5, {_tg}, true)
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+on damage of player:
+	metadata value "gametype" of victim is "Kit"
+	if {Stats.%victim%::MindDependence} is set:
+		set {_dmg} to damage * 0.75
+		loop all players:
+			{Stats.%victim%::MindDependence} is loop-player
+			kitDamage(victim, loop-player, {_dmg}, true)
+			loop 10 times:
+				set {_el} to aroundEffect(victim)
+				drawDot count 1, particle "fallingdust", material red concrete powder, center {_el}, visibleRange 100
+				set {_el} to aroundEffect(loop-player)
+				drawDot count 1, particle "fallingdust", material red concrete powder, center {_el}, visibleRange 100
+
+on death:
+	metadata value "gametype" of victim is "Kit"
+	{Stats.%victim%::MindDependence} is set
+	loop all players:
+		{Stats.%loop-player%::MindDependence} is victim
+		delete {Stats.%loop-player%::MindDependence}

@@ -1,0 +1,16 @@
+# Anima Massa
+
+function kitWeapon_Ghost_3(player: player):
+	if {Stats.%{_player}%::SpareSoul} is not set:
+		if kitCheckSpirit({_player}, 3, "Weapon.main") is true:
+			toolCT({_player}, "Ghost", 3, "Weapon.main")
+			set {Stats.%{_player}%::SpareSoul} to true
+			set {Stats.%{_player}%::Resurrection} to true
+			set {_memsg} to kitGhostMessage("§5Spare Soul §8を獲得した...", true)
+			kitMsg({_player}, {_memsg})
+			loop 10 times:
+				set {_el} to aroundEffect({_player})
+				drawDot count 1, particle "soul", center {_el}, visibleRange 30
+			playSound("entity.zombie_villager.converted", 1, 0.5, {_player})
+	else:
+		send action bar "§c§l既にSpare Soulを所持しています!" to {_player}

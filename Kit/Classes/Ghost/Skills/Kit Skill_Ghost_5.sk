@@ -1,0 +1,93 @@
+# Death Curse
+
+function kitSkill_Ghost_5(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		if health of {_player} = max health of {_player}:
+			if block at {_player} is passable:
+				if kitCheckSpirit({_player}, 5) is true:
+					toolCT({_player}, "Ghost", 5)
+					set {_tg} to {Stats.%{_player}%::SkillTarget}
+					set {_memsg1} to kitGhostMessage("§4%{_tg}% §5に死の呪いをかけた...")
+					set {_memsg2} to kitGhostMessage("§5呪術に体力を捧げます...", true)
+					set {_youmsg} to kitGhostMessage("§5%{_player}% §4に死の呪いをかけられてしまった!", true)
+					kitMsg({_player}, {_memsg1})
+					kitMsg({_player}, {_memsg2})
+					message formatted {_youmsg} to {_tg}
+					kitPalsy({_player}, 10 seconds, false)
+					apply glowing 1 to {_player} for 10 seconds
+					apply slowness 3 to {_player} for 10 seconds
+					set {Stats.%{_player}%::DeathCursing} to true
+					set {_health} to 10
+					loop 11 times:
+						if {Stats.%{_player}%::DeathCursing} is set:
+							if {_health} is 0:
+								set {_ok} to true
+							set health of {_player} to {_health}
+							kitMsg({_player}, "§0§l%{_health}%")
+							send title "§4§l§k! §5§l%{_health}% §4§l§k!" with subtitle "§6§l急いで §5§l%{_player}% §6§lを攻撃しよう!" to {_tg}
+							playSound("entity.wither.hurt", 2, 1, {_player})
+							loop loop-number * 2 times:
+								set {_el} to aroundEffect({_player})
+								drawDot count 1, particle "redstone", RGB 100, 0, 0, center {_el}, visibleRange 100
+							subtract 1 from {_health}
+							wait a second
+					if {_ok} is set:
+						set {_memsg} to kitGhostMessage("§4呪術は成功しました", true)
+						message formatted {_memsg} to {_player}
+						playSound("entity.wither.death", 2, 0.5, {_player})
+						set {_baseloc} to location of {_tg}
+						LastKiller({_tg}, {_player})
+						set health of {_tg} to 0
+						if {Class::%{_player}%} is not "Ghost":
+							set {_youmsg} to kitGhostMessage("§5呪い殺されてしまった...", true)
+							message formatted {_youmsg} to {_tg}
+						else:
+							set {_youmsg} to kitGhostMessage("§8即死効果を無効化しました", true)
+							message formatted {_youmsg} to {_tg}
+						loop all entities in radius 10 around {_baseloc}:
+							loop-entity is not {_tg}
+							kitCheckTeam({_player}, loop-entity, false) is true
+							if type of loop-entity is a player:
+								if {Class::%loop-entity%} is not "Ghost":
+									LastKiller(loop-entity, {_player})
+									set {_youmsg} to kitGhostMessage("§5呪い殺されてしまった...", true)
+									message formatted {_youmsg} to loop-entity
+									set health of loop-entity to 0
+								else:
+									set {_youmsg} to kitGhostMessage("§8即死効果を無効化しました", true)
+									message formatted {_youmsg} to {_tg}
+								add location of loop-entity to {_cursed::*}
+							else:
+								set health of loop-entity to 0
+						loop all blocks in radius 10 around {_baseloc}:
+							loop-block is passable
+							chance of 1%:
+								set {_elbase} to location of loop-block
+								set {_vector} to setVector({_baseloc}, {_elbase}, a random number between 1 and 3)
+								set {_sp} to a random number between 0.75 and 1.5
+								draw 1 smoke particle at {_elbase} with direction {_vector} and speed {_sp}, keepFor 1 tick
+						loop 10 times:
+							loop {_cursed::*}:
+								loop 3 times:
+									set {_l} to loop-value-2
+									add a random number between -1 and 1 to x-coordinate of {_l}
+									add a random number between -1 and 1 to z-coordinate of {_l}
+									add a random number between 0 and 3 to y-coordinate of {_l}
+									drawDot count 1, particle "mobspell", RGB 0, 0, 0, center {_l}, visibleRange 100
+							wait a tick
+					else:
+						set {_memsg} to kitGhostMessage("§7呪術は失敗した...")
+						set {_youmsg} to kitGhostMessage("§e呪術の解除に成功した!", true)
+						kitMsg({_player}, {_memsg})
+						message formatted {_youmsg} to {_tg}
+			else:
+				send action bar "§c§l発動地点が無効です!" to {_player}
+		else:
+			send action bar "§c§l体力が不足しています!" to {_player}
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}
+
+on damage of player:
+	metadata value "gametype" of victim is "Kit"
+	if {Stats.%victim%::DeathCursing} is true:
+		delete {Stats.%victim%::DeathCursing}
