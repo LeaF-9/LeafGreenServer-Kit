@@ -37,11 +37,15 @@ on damage of player:
 		cancel event
 
 on entity target:
-	set {_etz} to entity's target player
-	set {_en} to entity's display name
-	if the entity's display name is "%{team::%{_etz}%}%":
+	set {_etz} to entity's target player  # ターゲットしたプレイヤーの名前
+	set {_en} to entity's display name  # ターゲットを行なうMobの名前
+	if the entity's display name is "%{team::%{_etz}%}%":  # Mobの名前がチーム名と一致する場合
 		cancel event
-	else if {team::%{_en}%} is {team::%{_etz}%}:
+	else if {team::%{_en}%} is {team::%{_etz}%}:  # Mobを召喚したプレイヤーと同じチームの場合
+		cancel event
+	else if {Class::%{_etz}%} is not set:  # ターゲットされるプレイヤーがまだClassを選んでいない場合
+		cancel event
+	else if {Kit-RespawnKill::%{_etz}%} is true:  # ターゲットされるプレイヤーにリスポーンキル禁止のステータスがついている場合
 		cancel event
 	else if entity is endermite:
 		metadata value "deletemob" of entity is "true"
