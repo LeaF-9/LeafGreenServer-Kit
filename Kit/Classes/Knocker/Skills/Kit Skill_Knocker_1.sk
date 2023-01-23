@@ -1,0 +1,44 @@
+# Tornado Wind
+
+function kitSkill_Knocker_1(player: player):
+	toolCT({_player}, "Knocker", 1)
+	kitMsg({_player}, "§9周辺のプレイヤー§bを吹き飛ばします!")
+	playSound("entity.wither.shoot", 1, 1, {_player})
+	set {_center} to location of {_player}
+	loop all entities in radius 10 around {_player}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		LastKiller(loop-entity, {_player})
+		add location of loop-entity to {_dm::*}
+		push loop-entity upwards at speed 2
+		set {_now} to now
+		if type of loop-entity is a player:
+			set {Stats.%loop-entity%::TornadoWind} to {_now}
+	set {_y} to 0
+	set {_rad} to 0
+	loop 5 times:
+		loop 40 times:
+			add 10 to {_rad}
+			add 0.1 to {_y}
+			set {_el} to {_center}
+			add 10 * sin({_rad}) to x-coordinate of {_el}
+			add 10 * cos({_rad}) to z-coordinate of {_el}
+			add {_y} to y-coordinate of {_el}
+			drawDot count 1, particle "redstone", RGB 199, 227, 255, center {_el}, visibleRange 30
+			loop {_dm::*}:
+				set {_el} to loop-value-3
+				add 1 * sin({_rad}) to x-coordinate of {_el}
+				add 1 * cos({_rad}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 199, 227, 255, center {_el}, visibleRange 30
+		wait a tick
+	wait 5 seconds
+	loop all players:
+		{Stats.%loop-value%::TornadoWind} is {_now}
+		delete {Stats.%loop-value%::TornadoWind}
+
+on damage of player:
+	metadata value "gametype" of victim is "Kit"
+	damage was caused by fall
+	if {Stats.%victim%::TornadoWind} is set:
+		set damage to 3
+		delete {Stats.%victim%::TornadoWind}

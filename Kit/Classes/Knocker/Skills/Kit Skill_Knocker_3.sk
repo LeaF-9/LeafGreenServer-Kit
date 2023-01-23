@@ -1,0 +1,77 @@
+# Horizontal Blast
+
+function kitSkill_Knocker_3(player: player):
+	toolCT({_player}, "Knocker", 3)
+	kitMsg({_player}, "§b突風が吹き荒れる!")
+	set {_baseloc} to location of head of {_player}
+	set {_now} to now
+	playSound("entity.wither.hurt", 0.5, 0.5, {_baseloc})
+	set {_m} to 0
+	loop 50 times:
+		add 1 to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		drawDot count 1, particle "mobspell", RGB 0, 255, 255, center {_el}, visibleRange 80
+	wait a second
+	set {_time} to 10
+	loop 10 times:
+		if mod({_time}, 2) is 0:
+			playSound("entity.wither.shoot", 0.1, 0.5, {_baseloc})
+			set {_m} to 0
+			loop 50 times:
+				add 1 to {_m}
+				set {_elbase} to location {_m} meters in front of {_baseloc}
+				if mod({_m}, 10) is 0:
+					playSound("entity.wither.shoot", 0.1, 0.5, {_elbase})
+				set {_rad} to 0
+				loop 36 times:
+					set {_eb} to {_elbase}
+					set {_m1} to {_eb}
+					set {_p} to pitch of {_m1}
+					if {_p} < 0:
+						set {_p} to -1 * 90 - {_p}
+						set {_y} to yaw of {_m1}
+						add 180 to {_y}
+						if {_y} >= 360:
+							set {_y} to {_y} - 360
+						set yaw of {_m1} to {_y}
+					else:
+						set {_p} to {_p} - 90
+					set pitch of {_m1} to {_p}
+					set {_test1} to 5 * cos({_rad})
+					set {_t1} to location {_test1} meters in front of {_m1}
+					set {_m2} to {_eb}
+					set pitch of {_m2} to 0
+					set {_test2} to 5 * sin({_rad})
+					set {_t2} to location {_test2} meters to the right of {_m2}
+					set x-coordinate of {_eb} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_eb}
+					set y-coordinate of {_eb} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_eb}
+					set z-coordinate of {_eb} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_eb}
+					chance of 10%:
+						drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_eb}, visibleRange 80
+					add 10 to {_rad}
+		delete {_hit::*}
+		set {_m} to 0
+		loop 50 times:
+			add 1 to {_m}
+			set {_blastloc} to location {_m} meters in front of {_baseloc}
+			loop all entities in radius 5 around {_blastloc}:
+				kitCheckTeam({_player}, loop-entity, false) is true
+				{_hit::*} does not contain id of loop-entity
+				add id of loop-entity to {_hit::*}
+				LastKiller(loop-entity, {_player})
+				set {_to} to location of loop-entity
+				set {_dv} to setVector({_to}, {_baseloc})
+				set {_dl} to {_to}
+				set yaw of {_dl} to yaw of {_dv}
+				set pitch of {_dl} to pitch of {_dv}
+				set {_from} to location 1 meters in front of {_dl}
+				set {_vector} to setVector({_from}, {_to})
+				set velocity of loop-entity to {_vector}
+				if type of loop-entity is a player:
+					set {Stats.%loop-entity%::FallRemove} to {_now}
+		subtract 1 from {_time}
+		wait 2 ticks
+	wait 5 seconds
+	loop all players:
+		{Stats.%loop-player%::FallRemove} is {_now}
+		delete {Stats.%loop-player%::FallRemove}

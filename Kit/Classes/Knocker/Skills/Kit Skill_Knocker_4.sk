@@ -1,0 +1,78 @@
+# Spatial Distorter
+
+function kitSkill_Knocker_4(player: player):
+	if {Stats.%{_player}%::SpatialDistorter} is not set:
+		set {Stats.%{_player}%::SpatialDistorter} to 60
+	set {_now} to now
+	set {Stats.%{_player}%::SpatialDistorterNow} to {_now}
+	set {_baseloc} to location of head of {_player}
+	loop 15 times:
+		{_obloc} is not set
+		add 1 to {_m}
+		set {_bl} to location {_m} meters in front of {_baseloc}
+		if block at {_bl} is not passable:
+			set {_obloc} to {_bl}
+	if {_obloc} is not set:
+		set {_obloc} to location 15 meters in front of {_baseloc}
+	playSound("block.portal.ambient", 0.7, 2, {_obloc})
+	loop 5 times:
+		{Stats.%{_player}%::SpatialDistorter} > 0
+		{Stats.%{_player}%::SpatialDistorterNow} is {_now}
+		subtract 1 from {Stats.%{_player}%::SpatialDistorter}  # Action BarはKit Timerで作成
+		set {_baseloc} to location of head of {_player}
+		set {_m} to 0
+		delete {_obloc}
+		loop 15 times:
+			{_obloc} is not set
+			add 1 to {_m}
+			set {_bl} to location {_m} meters in front of {_baseloc}
+			if block at {_bl} is not passable:
+				set {_obloc} to {_bl}
+		if {_obloc} is not set:
+			set {_obloc} to location 15 meters in front of {_baseloc}
+		loop all entities in radius 3 around {_obloc}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			LastKiller(loop-entity, {_player})
+			set {_to} to location of loop-entity
+			set {_vector} to setVector({_obloc}, {_to}, 0.5)
+			set velocity of loop-entity to {_vector}
+			if type of loop-entity is a player:
+				set {Stats.%loop-entity%::FallRemove} to {_now}
+		set {_s} to 0
+		set {_t} to 0
+		loop 19 time:
+			loop 36 time:
+				set {_el} to {_obloc}
+				set {_v} to {_el}
+				set {_x} to x-coordinate of {_el}
+				set {_y} to y-coordinate of {_el}
+				set {_z} to z-coordinate of {_el}
+				set x-coordinate of {_v} to {_x} + ( 3 * sin({_s}) * cos({_t}) )
+				set y-coordinate of {_v} to {_y} + ( 3 * cos({_s}) )
+				set z-coordinate of {_v} to {_z} + ( 3 * sin({_s}) * sin({_t}) )
+				chance of 3%:
+					drawDot count 1, particle "redstone", RGB 50, 0, 50, center {_v}, visibleRange 30
+				add 10 to {_t}
+			add 10 to {_s}
+		wait a tick
+	if {Stats.%{_player}%::SpatialDistorterNow} is {_now}:
+		delete {Stats.%{_player}%::SpatialDistorterNow}
+	wait 5 seconds
+	loop all players:
+		{Stats.%loop-player%::FallRemove} is {_now}
+		delete {Stats.%loop-player%::FallRemove}
+
+function kitSkill_LinkageChain_ActionBar(player: player):
+	if {Stats.%{_player}%::SpatialDistorter} is set:
+		set {_barcount} to {Stats.%{_player}%::SpatialDistorter}
+	else:
+		set {_barcount} to 60
+	set {_bar} to 0
+	set {_bartext} to ""
+	loop 60 times:
+		add 1 to {_bar}
+		if {_bar} <= {_barcount}:
+			set {_bartext} to "%{_bartext}%§a|"
+		else:
+			set {_bartext} to "%{_bartext}%§8|"
+	send action bar "§e§l[ %{_bartext}% §e§l]" to {_player}

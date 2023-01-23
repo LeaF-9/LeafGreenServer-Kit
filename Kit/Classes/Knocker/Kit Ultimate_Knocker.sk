@@ -1,0 +1,44 @@
+# Enormous Hurricane
+
+function kitUltKnocker(player: player):
+	message "§c自身を中心に半径10mの絶対領域を展開します!" to {_player}
+	message "§c展開時,中に居た敵は脱出が不可能になります!" to {_player}
+	message "§c展開時,外に居た敵は侵入が不可能になります!" to {_player}
+	set {_loc} to location of {_player}
+	loop all entities in radius 10 around {_loc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		add id of loop-entity to {_ats::*}
+	loop 200 times:
+		if mod(loop-number, 20) is 0:
+			playSound("block.portal.ambient", 0.5, 1, {_loc})
+		loop all entities:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_dis} to distance between loop-entity and {_loc}
+			set {_to} to location of loop-entity
+			if {_ats::*} contains id of loop-entity:
+				if {_dis} > 20:
+					teleport loop-entity to {_loc}
+				else if {_dis} > 10:
+					set {_vector} to setVector({_to}, {_loc})
+					set velocity of loop-entity to {_vector}
+			else:
+				if {_dis} <= 10:
+					set {_vector} to setVector({_loc}, {_to})
+					set velocity of loop-entity to {_vector}
+		set {_s} to 0
+		set {_t} to 0
+		loop 37 time:
+			loop 72 time:
+				set {_el} to {_loc}
+				set {_v} to {_el}
+				set {_x} to x-coordinate of {_el}
+				set {_y} to y-coordinate of {_el}
+				set {_z} to z-coordinate of {_el}
+				set x-coordinate of {_v} to {_x} + ( 10 * sin({_s}) * cos({_t}) )
+				set y-coordinate of {_v} to {_y} + ( 10 * cos({_s}) )
+				set z-coordinate of {_v} to {_z} + ( 10 * sin({_s}) * sin({_t}) )
+				chance of 0.5%:
+					drawDot count 1, particle "redstone", RGB 150, 0, 150, center {_v}, visibleRange 100, keepFor 5 ticks
+				add 5 to {_t}
+			add 5 to {_s}
+		wait a tick

@@ -1,0 +1,45 @@
+# Shock Grenade
+
+function kitSkill_Knocker_6(player: player):
+	toolCT({_player}, "Knocker", 6)
+	kitMsg({_player}, "§1§lShock Grenade §9を投擲!")
+	playSound("entity.arrow.shoot", 1, 0.5, {_player})
+	shoot a snowball from {_player} at speed 0.9
+	set metadata value "shockgrenade" of shot projectile to "true"
+	set item of shot projectile to beacon
+	drawDot count 1, particle "endrod", center shot projectile, visibleRange 32, keepFor 1 second
+
+on projectile hit:
+	projectile is a snowball
+	metadata value "shockgrenade" of projectile is "true"
+	set {_now} to now
+	set {_from} to location of projectile 
+	playSound("entity.blaze.ambient", 1, 1.5, shooter)
+	loop all entities in radius 5 around {_from}:
+		kitCheckTeam(loop-entity, shooter, false) is true
+		kitDamage(shooter, loop-entity, 1)
+		set {_to} to location of loop-entity
+		set {_vector} to setVector({_from}, {_to}, 3)
+		set velocity of loop-entity to {_vector}
+		if type of loop-entity is a player:
+			set {Stats.%loop-entity%::FallRemove} to {_now}
+	set {_s} to 0
+	set {_t} to 0
+	loop 19 time:
+		loop 36 time:
+			set {_el} to {_from}
+			set {_v} to {_el}
+			set {_x} to x-coordinate of {_el}
+			set {_y} to y-coordinate of {_el}
+			set {_z} to z-coordinate of {_el}
+			set x-coordinate of {_v} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
+			set y-coordinate of {_v} to {_y} + ( 5 * cos({_s}) )
+			set z-coordinate of {_v} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
+			chance of 30%:
+				drawDot count 1, particle "mobspell", RGB 0, 100, 200, center {_v}, visibleRange 30
+			add 10 to {_t}
+		add 10 to {_s}
+	wait 5 seconds
+	loop all players:
+		{Stats.%loop-player%::FallRemove} is {_now}
+		delete {Stats.%loop-player%::FallRemove}

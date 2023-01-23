@@ -1,0 +1,56 @@
+# Sylphy Mischief
+
+function kitSkill_Knocker_8(player: player):
+	toolCT({_player}, "Knocker", 8)
+	kitMsg({_player}, "§2風の妖精 §aが§e§lイタズラ§aをしにやって来ました!")
+	playSound("item.trident.riptide_3", 1, 2, {_player})
+	set {_baseloc} to location of head of {_player}
+	loop 10 times:
+		add {_baseloc} to {_sylphies::*}
+	loop 200 times:
+		loop {_sylphies::*}:
+			set {_sl} to loop-value-2
+			delete {_ok}
+			loop 10 times:
+				{_ok} is not set
+				set {_dl} to {_sl}
+				set {_dv} to randomVector({_sl})
+				set yaw of {_dl} to yaw of {_dv}
+				set pitch of {_dl} to pitch of {_dv}
+				if block at location 1 meters in front of {_dl} is passable:
+					set {_ok} to true
+			if {_ok} is true:
+				set {_m} to a random number between 0 and 1
+				set {_sl} to location {_m} meters in front of {_dl}
+				set {_sylphies::%loop-index%} to {_sl}
+			loop a random integer between 0 and 2 times:
+				set {_el} to {_sl}
+				add a random number between 0 and 0.5 to x-coordinate of {_el}
+				add a random number between 0 and 0.5 to y-coordinate of {_el}
+				add a random number between 0 and 0.5 to z-coordinate of {_el}
+				drawDot count 1, particle "redstone", RGB 152, 251, 152, center {_el}, visibleRange 30
+			set {_s} to 0
+			set {_t} to 0
+			loop 10 time:
+				loop 9 time:
+					set {_el} to {_sl}
+					set {_v} to {_el}
+					set {_x} to x-coordinate of {_el}
+					set {_y} to y-coordinate of {_el}
+					set {_z} to z-coordinate of {_el}
+					set x-coordinate of {_v} to {_x} + ( 3 * sin({_s}) * cos({_t}) )
+					set y-coordinate of {_v} to {_y} + ( 3 * cos({_s}) )
+					set z-coordinate of {_v} to {_z} + ( 3 * sin({_s}) * sin({_t}) )
+					chance of 1%:
+						drawDot count 1, particle "mobspell", RGB 127, 255, 212, center {_v}, visibleRange 30
+					add 40 to {_t}
+				add 20 to {_s}
+			loop all entities in radius 3 around {_sl}:
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				LastKiller(loop-entity, {_player})
+				set {_to} to location of loop-entity
+				set {_vector} to setVector({_sl}, {_to}, 0.5)
+				set velocity of loop-entity to {_vector}
+				playSound("item.trident.throw", 0.5, 2, loop-entity)
+		wait a tick
+	kitMsg({_player}, "§2風の妖精 §bは去っていきました")

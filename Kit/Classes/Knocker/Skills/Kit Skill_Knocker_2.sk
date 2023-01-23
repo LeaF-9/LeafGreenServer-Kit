@@ -1,0 +1,41 @@
+# Separate Field
+
+function kitSkill_Knocker_2(player: player):
+	toolCT({_player}, "Knocker", 2)
+	kitMsg({_player}, "§b3秒間敵を近くに寄せ付けません!")
+	apply mining fatigue 2 to {_player} for 3 seconds
+	playSound("block.portal.trigger", 0.5, 1, {_player})
+	set {_now} to now
+	loop 60 times:
+		set {_from} to location of {_player}
+		loop all entities in radius 10 around {_player}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			LastKiller(loop-entity, {_player})
+			if type of loop-entity is a player:
+				if {Stats.%loop-entity%::SFFallCancel} is not set:
+					set {Stats.%loop-entity%::FallRemove} to {_now}
+			set {_to} to location of loop-entity
+			set {_vector} to setVector({_from}, {_to}, 0.5)
+			set velocity of loop-entity to {_vector}
+		set {_s} to 0
+		set {_t} to 0
+		loop 19 time:
+			loop 36 time:
+				set {_el} to {_from}
+				set {_v} to {_el}
+				set {_x} to x-coordinate of {_el}
+				set {_y} to y-coordinate of {_el}
+				set {_z} to z-coordinate of {_el}
+				set x-coordinate of {_v} to {_x} + ( 10 * sin({_s}) * cos({_t}) )
+				set y-coordinate of {_v} to {_y} + ( 10 * cos({_s}) )
+				set z-coordinate of {_v} to {_z} + ( 10 * sin({_s}) * sin({_t}) )
+				chance of 10%:
+					drawDot count 1, particle "redstone", RGB 100, 255, 255, center {_v}, visibleRange 30
+				add 10 to {_t}
+			add 10 to {_s}
+		wait a tick
+	kitMsg({_player}, "§7§lSeparate Field §9の効果が切れました")
+	wait 3 seconds
+	loop all players:
+		{Stats.%loop-player%::FallRemove} is {_now}
+		delete {Stats.%loop-player%::FallRemove}

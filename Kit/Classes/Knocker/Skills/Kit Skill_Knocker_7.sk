@@ -1,0 +1,171 @@
+# Linkage Chain
+
+function kitSkill_Knocker_7(player: player):
+	toolCT({_player}, "Knocker", 7)
+	kitMsg({_player}, "§8チェーンを発射します...")
+	set {_baseloc} to location of head of {_player}
+	set {_m} to 0
+	loop 30 times:
+		{_target} is not set
+		add 1 to {_m}
+		set {_frontloc} to location {_m} meters in front of {_baseloc}
+		playSound("block.chain.place", 1, 1, {_frontloc})
+		loop all players in radius 2 around {_frontloc}:
+			{_target} is not set
+			kitCheckTeam({_player}, loop-player, false) is true
+			set {_target} to loop-player
+			set {Stats.%loop-player%::LinkageChain} to true
+			set {Stats.%{_player}%::LinkageChain} to true
+		kitKnockerChainParticles({_baseloc}, {_m})
+		wait a tick
+	if {_target} is set:
+		kitMsg({_player}, "§6%{_target}% §7がチェーンに引っ掛かった!")
+		message formatted "§8チェーンに引っ掛かってしまった..." to {_target}
+		playSound("block.glass.break", 1, 0.5, {_target})
+		set {_max} to {_m} + 5
+		loop 100 times:
+			{Stats.%{_player}%::LinkageChain} is true
+			{Stats.%{_target}%::LinkageChain} is true
+			kitKnockerConnectParticles({_player}, {_target})
+			set {_dis} to distance between {_player} and {_target}
+			if {_dis} < {_m}:
+				LastKiller({_target}, {_player})
+				playSound("block.chain.hit", 0.8, 1, {_player})
+				playSound("block.chain.hit", 0.8, 1, {_target})
+				set {_vector} to setVector(location of {_player}, location of {_target}, 0.5)
+				set velocity of {_target} to {_vector}
+			if {_dis} > {_max}:
+				LastKiller({_target}, {_player})
+				playSound("block.chain.hit", 0.8, 1, {_player})
+				playSound("block.chain.hit", 0.8, 1, {_target})
+				set {_vector} to setVector(location of {_target}, location of {_player}, 0.5)
+				set velocity of {_target} to {_vector}
+			wait a tick
+		kitMsg({_player}, "§eチェーンが外れました")
+		message formatted "§7チェーンが取り外された!" to {_target}
+
+options:
+	radiusm: 0.25
+
+function kitKnockerChainParticles(baseloc: location, meter: number):
+	set {_m} to 0
+	loop {_meter} times:
+		add 1 to {_m}
+		set {_horim} to {_m} - 0.75
+		set {_vertm} to {_m} - 0.25
+		set {_horiloc} to location {_horim} meters in front of {_baseloc}
+		set {_vertloc} to location {_vertm} meters in front of {_baseloc}
+		# horizontal(水平) chain作成
+		set {_rad} to 0
+		loop 10 times:
+			set {_h.eb} to {_horiloc}
+			# 縦方向
+			set {_h.m1} to {_horiloc}
+			set {_h.r1} to {@radiusm} * cos({_rad})
+			set {_h.t1} to location {_h.r1} meters in front of {_h.m1}
+			# 横方向
+			set {_h.m2} to {_horiloc}
+			set pitch of {_h.m2} to 0
+			set {_h.r2} to {@radiusm} * sin({_rad})
+			set {_h.t2} to location {_h.r2} meters to the right of {_h.m2}
+			set x-coordinate of {_h.eb} to x-coordinate of {_h.t1} + x-coordinate of {_h.t2} - x-coordinate of {_h.eb}
+			set y-coordinate of {_h.eb} to y-coordinate of {_h.t1} + y-coordinate of {_h.t2} - y-coordinate of {_h.eb}
+			set z-coordinate of {_h.eb} to z-coordinate of {_h.t1} + z-coordinate of {_h.t2} - z-coordinate of {_h.eb}
+			chance of 10%:
+				drawDot count 1, particle "redstone", RGB 119, 136, 153, center {_h.eb}, visibleRange 50
+			add 36 to {_rad}
+		# vertical(垂直) chain作成
+		set {_rad} to 0
+		loop 10 times:
+			set {_v.eb} to {_vertloc}
+			# 縦方向
+			set {_v.m1} to {_vertloc}
+			set {_p} to pitch of {_v.m1}
+			if {_p} < 0:
+				set {_p} to -1 * 90 - {_p}
+				set {_y} to yaw of {_v.m1}
+				add 180 to {_y}
+				if {_y} >= 360:
+					set {_y} to {_y} - 360
+				set yaw of {_v.m1} to {_y}
+			else:
+				set {_p} to {_p} - 90
+			set pitch of {_v.m1} to {_p}
+			set {_v.r1} to {@radiusm} * cos({_rad})
+			set {_v.t1} to location {_v.r1} meters in front of {_v.m1}
+			# 横方向
+			set {_v.m2} to {_vertloc}
+			set pitch of {_v.m2} to 0
+			set {_v.r2} to {@radiusm} * sin({_rad})
+			set {_v.t2} to location {_v.r2} meters in front of  {_v.m2}
+			set x-coordinate of {_v.eb} to x-coordinate of {_v.t1} + x-coordinate of {_v.t2} - x-coordinate of {_v.eb}
+			set y-coordinate of {_v.eb} to y-coordinate of {_v.t1} + y-coordinate of {_v.t2} - y-coordinate of {_v.eb}
+			set z-coordinate of {_v.eb} to z-coordinate of {_v.t1} + z-coordinate of {_v.t2} - z-coordinate of {_v.eb}
+			chance of 10%:
+				drawDot count 1, particle "redstone", RGB 112, 128, 144, center {_v.eb}, visibleRange 50
+			add 36 to {_rad}
+
+function kitKnockerConnectParticles(player1: player, player2: player):
+	set {_dis} to distance between {_player1} and {_player2}
+	set {_dis} to round({_dis})
+	set {_vector} to setVector({_player1}, {_player2})
+	set {_baseloc} to location of {_player1}
+	add 1 to y-coordinate of {_baseloc}
+	set yaw of {_baseloc} to yaw of {_vector}
+	set pitch of {_baseloc} to pitch of {_vector}
+	set {_m} to 0
+	loop {_dis} times:
+		add 1 to {_m}
+		set {_horim} to {_m} - 0.75
+		set {_vertm} to {_m} - 0.25
+		set {_horiloc} to location {_horim} meters in front of {_baseloc}
+		set {_vertloc} to location {_vertm} meters in front of {_baseloc}
+		# horizontal(水平) chain作成
+		set {_rad} to 0
+		loop 10 times:
+			set {_h.eb} to {_horiloc}
+			# 縦方向
+			set {_h.m1} to {_horiloc}
+			set {_h.r1} to {@radiusm} * cos({_rad})
+			set {_h.t1} to location {_h.r1} meters in front of {_h.m1}
+			# 横方向
+			set {_h.m2} to {_horiloc}
+			set pitch of {_h.m2} to 0
+			set {_h.r2} to {@radiusm} * sin({_rad})
+			set {_h.t2} to location {_h.r2} meters to the right of {_h.m2}
+			set x-coordinate of {_h.eb} to x-coordinate of {_h.t1} + x-coordinate of {_h.t2} - x-coordinate of {_h.eb}
+			set y-coordinate of {_h.eb} to y-coordinate of {_h.t1} + y-coordinate of {_h.t2} - y-coordinate of {_h.eb}
+			set z-coordinate of {_h.eb} to z-coordinate of {_h.t1} + z-coordinate of {_h.t2} - z-coordinate of {_h.eb}
+			chance of 10%:
+				drawDot count 1, particle "redstone", RGB 119, 136, 153, center {_h.eb}, visibleRange 50
+			add 36 to {_rad}
+		# vertical(垂直) chain作成
+		set {_rad} to 0
+		loop 10 times:
+			set {_v.eb} to {_vertloc}
+			# 縦方向
+			set {_v.m1} to {_vertloc}
+			set {_p} to pitch of {_v.m1}
+			if {_p} < 0:
+				set {_p} to -1 * 90 - {_p}
+				set {_y} to yaw of {_v.m1}
+				add 180 to {_y}
+				if {_y} >= 360:
+					set {_y} to {_y} - 360
+				set yaw of {_v.m1} to {_y}
+			else:
+				set {_p} to {_p} - 90
+			set pitch of {_v.m1} to {_p}
+			set {_v.r1} to {@radiusm} * cos({_rad})
+			set {_v.t1} to location {_v.r1} meters in front of {_v.m1}
+			# 横方向
+			set {_v.m2} to {_vertloc}
+			set pitch of {_v.m2} to 0
+			set {_v.r2} to {@radiusm} * sin({_rad})
+			set {_v.t2} to location {_v.r2} meters in front of {_v.m2}
+			set x-coordinate of {_v.eb} to x-coordinate of {_v.t1} + x-coordinate of {_v.t2} - x-coordinate of {_v.eb}
+			set y-coordinate of {_v.eb} to y-coordinate of {_v.t1} + y-coordinate of {_v.t2} - y-coordinate of {_v.eb}
+			set z-coordinate of {_v.eb} to z-coordinate of {_v.t1} + z-coordinate of {_v.t2} - z-coordinate of {_v.eb}
+			chance of 10%:
+				drawDot count 1, particle "redstone", RGB 112, 128, 144, center {_v.eb}, visibleRange 50
+			add 36 to {_rad}
