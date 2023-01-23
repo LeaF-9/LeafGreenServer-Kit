@@ -1,0 +1,35 @@
+# Jewelry Sword
+
+function kitWeapon_Thief_4(player: player):
+	toolCT({_player}, "Thief", 4, "Weapon.main")
+	kitMsg({_player}, "§eポケットから §a§l宝石 §eがこぼれ出た!")
+	loop all players in radius 10 around {_player}:
+		loop-player is not {_player}
+		metadata value "gametype" of loop-player is "Kit"
+		playSound("entity.item.pickup", 1, 0.5, loop-player)
+		drop an emerald block named "%{_player}%" at loop-player
+		set metadata value "gametype" of last dropped item to "Kit"
+		set metadata value "delete" of last dropped item to "%{_player}%"
+		drawDot count 1, particle "happyvillager", center last dropped item, visibleRange 30
+
+on pick up emerald block:
+	if name of item is "%player%":
+		set {_now} to now
+		set {Stats.%player%::JewelrySword} to {_now}
+		loop all items in player's inventory:
+			name of loop-item contains "Jewelry Sword"
+			enchant loop-item with sharpness 1
+		playSound("block.enchantment_table.use", 1, 2, player)
+		loop 5 times:
+			set {_el} to aroundEffect(player)
+			drawDot count 1, particle "mobspell", RGB 0, 255, 127, center {_el}, visibleRange 30
+		wait a tick
+		remove all emerald block named "%name of item%" from player
+		wait 5 seconds
+		{Stats.%player%::JewelrySword} is {_now}
+		delete {Stats.%player%::JewelrySword}
+		loop all items in player's inventory:
+			name of loop-item contains "Jewelry Sword"
+			disenchant loop-item
+	else:
+		cancel event

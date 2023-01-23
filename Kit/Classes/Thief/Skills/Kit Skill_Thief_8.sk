@@ -1,0 +1,72 @@
+# Fence Marker
+
+function kitSkill_Thief_8(player: player):
+	if {Stats.%{_player}%::SkillLocation} is set:
+		toolCT({_player}, "Thief", 8)
+		set {_now} to now
+		set {Stats.%{_player}%::FenceMarker-Time} to {_now}
+		kitFakeDeleteData({_player}, "Fence Marker")
+		set {_loc.base} to {Stats.%{_player}%::SkillLocation}
+		kitFakeBlock({_player}, {_loc.base}, "minecraft:end_rod", "Fence Marker")
+		set {_loc.top} to location 1 meter above {_loc.base}
+		kitFakeBlock({_player}, {_loc.top}, "minecraft:dead_fire_coral_fan", "Fence Marker")
+		set {Stats.%{_player}%::FenceMarker} to {_loc.top}
+		kitMsg({_player}, "§7盗品売買所§5を設置しました...")
+		playSound("entity.witch.celebrate", 1, 0.9, {_loc.base})
+		while {Stats.%{_player}%::FenceMarker-Time} is {_now}:
+			wait a second
+			delete {_exist}
+			loop all entities:
+				type of loop-entity is armor stand
+				metadata value "kit-armor" of loop-entity is "Fence Marker"
+				metadata value "Fence Marker" of loop-entity is "%{_player}%"
+				set {_exist} to true
+			if {_exist} is true:
+				kitFakeReload({_player}, "Fence Marker")
+			else:
+				delete {Stats.%{_player}%::FenceMarker}
+				delete {Stats.%{_player}%::FenceMarker-Time}
+	else:
+		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+
+on leftclick holding an ender rod:
+	metadata value "gametype" of player is "Kit"
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Thief", "Skill", 8) is true
+	if {Stats.%player%::FenceMarker} is set:
+		open chest with 3 row named "§d§lFence Marker" to player
+		wait a tick
+		loop all players in radius 15 around {Stats.%player%::FenceMarker}:
+			kitCheckTeam(loop-player, player, false, true) is true
+			{Class::%loop-player%} is not "Thief"
+			if {Class::%loop-player%} is "Werewolf":
+				if {Stats.%loop-player%::Instinct} is true:
+					set {_type} to "Werewolf_Instinct"
+				else:
+					set {_type} to {Class::%loop-player%}
+			else if {Class::%loop-player%} is "Vampire":
+				if {Stats.%loop-player%::BatMode} is true:
+					set {_type} to "Vampire_Bat"
+				else:
+					set {_type} to {Class::%loop-player%}
+			else:
+				set {_type} to {Class::%loop-player%}
+			set {_num} to 0
+			loop 3 times:
+				add 1 to {_num}
+				set {_skill} to kitPlayerSkillItem(loop-player, {_type}, {_num})
+				if loop-player's inventory contains {_skill}:
+					set {_lore::*} to lore of {_skill}
+					add "§5§m------------------------------" to {_lore::*}
+					add "§f[§b§lスキル情報§f]" to {_lore::*}
+					add "§6所持者§7: §e%loop-player%" to {_lore::*}
+					add "§6キット§7: §e%{_type}%" to {_lore::*}
+					add "§6ナンバー§7: §e%{_num}%" to {_lore::*}
+					set lore of {_skill} to {_lore::*}
+					add {_skill} to {_skills::*}
+		set {_slot} to 0
+		loop {_skills::*}:
+			set slot {_slot} of player's current inventory to loop-value
+			add 1 to {_slot}
+	else:
+		send action bar "§c§lマーカーを設置してください!" to player

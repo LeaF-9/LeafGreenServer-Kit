@@ -1,0 +1,50 @@
+# Lucky Puncher
+
+function kitWeapon_Thief_2(player: player):
+	toolCT({_player}, "Thief", 2, "Weapon.main")
+	if {Stats.%{_player}%::LuckyPunch} is not set:
+		set {Stats.%{_player}%::LuckyPunch} to 0
+	set {_luck} to a random integer between 0 and 1
+	if {_luck} is 0:
+		if {Stats.%{_player}%::LuckyPunch} < 5:
+			add 1 to {Stats.%{_player}%::LuckyPunch}
+			kitMsg({_player}, "§6§l運試し! §aあなたは幸運になった! §elevel: §l%{Stats.%{_player}%::LuckyPunch}%")
+		else:
+			kitMsg({_player}, "§cこれ以上§a§l幸運§cにはなりません!")
+	else:
+		if {Stats.%{_player}%::LuckyPunch} > -5:
+			subtract 1 from {Stats.%{_player}%::LuckyPunch}
+			kitMsg({_player}, "§6§l運試し! §2あなたは不運になった... §elevel: §l%{Stats.%{_player}%::LuckyPunch}%")
+		else:
+			kitMsg({_player}, "§cこれ以上§2§l不運§cにはなりません!")
+	if {Stats.%{_player}%::LuckyPunch} >= 0:
+		set {_lucky} to {Stats.%{_player}%::LuckyPunch}
+		kitLuck({_player}, {_lucky})
+	else:
+		set {_lucky} to {Stats.%{_player}%::LuckyPunch} * -1
+		kitBadLuck({_player}, {_lucky})
+
+on damage of player:
+	attacker is set
+	metadata value "gametype" of victim is "Kit"
+	{Class::%attacker%} is "Thief"
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Thief", "Weapon.main", 2) is true
+	{Stats.%attacker%::LuckyPunch} is set
+	set {_dmg} to {Stats.%attacker%::LuckyPunch} * 0.5
+	set damage to damage + {_dmg}
+
+function kitWeaponSub_Thief_2(player: player):
+	if {Stats.%{_player}%::LuckyPunch} is set:
+		if {Stats.%{_player}%::LuckyPunch} > 0:
+			subtract 1 from {Stats.%{_player}%::LuckyPunch}
+			kitMsg({_player}, "§6運の調整が入った! §elevel: §l%{Stats.%{_player}%::LuckyPunch}%")
+		else if {Stats.%{_player}%::LuckyPunch} < 0:
+			add 1 to {Stats.%{_player}%::LuckyPunch}
+			kitMsg({_player}, "§6運の調整が入った! §elevel: §l%{Stats.%{_player}%::LuckyPunch}%")
+		if {Stats.%{_player}%::LuckyPunch} >= 0:
+			set {_lucky} to {Stats.%{_player}%::LuckyPunch}
+			kitLuck({_player}, {_lucky})
+		else:
+			set {_lucky} to {Stats.%{_player}%::LuckyPunch} * -1
+			kitBadLuck({_player}, {_lucky})

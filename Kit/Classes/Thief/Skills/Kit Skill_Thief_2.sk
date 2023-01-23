@@ -1,0 +1,55 @@
+# Steal Skill
+
+function kitSkill_Thief_2(player: player):
+	if {Stats.%{_player}%::SkillTarget} is set:
+		set {_tool} to {_player}'s tool
+		set {_tg} to {Stats.%{_player}%::SkillTarget}
+		if {Class::%{_tg}%} is "Thief":
+			set action bar of {_player} to "§c§lThiefからはスキルを盗むことが出来ません!"
+			stop
+		if {TrueTeam::%{_tg}%} is {TrueTeam::%{_player}%}:
+			set action bar of {_player} to "§c§l同じチームのプレイヤーからは盗めません!"
+			stop
+		toolCT({_player}, "Thief", 2)
+		if {Class::%{_tg}%} is "Werewolf":
+			if {Stats.%{_tg}%::Instinct} is true:
+				set {_type} to "Werewolf_Instinct"
+			else:
+				set {_type} to {Class::%{_tg}%}
+		else if {Class::%{_tg}%} is "Vampire":
+			if {Stats.%{_tg}%::BatMode} is true:
+				set {_type} to "Vampire_Bat"
+			else:
+				set {_type} to {Class::%{_tg}%}
+		else:
+			set {_type} to {Class::%{_tg}%}
+		loop 3 times:
+			set {_skill} to kitPlayerSkillItem({_tg}, {_type}, loop-number)
+			add {_skill} to {_skills::*}
+		loop {_skills::*}:
+			{_tg}'s inventory contains loop-value
+			add loop-value to {_own::*}
+		if size of {_own::*} is not 0:
+			remove {_tool} from {_player}
+			set {Stats.%{_player}%::Stealing} to true
+			set {Stats.%{_tg}%::Stealed} to true
+			set {_item} to a random item out of {_own::*}
+			kitItemTargetTimer({_player}, {_item})
+			set {_name} to name of {_item}
+			kitMsg({_player}, "§d%{_tg}% §bから §a%{_name}% §bを盗みました!")
+			message formatted "§a%{_name}% §cが盗まれた!" to {_tg}
+			playSound("entity.experience_orb.pickup", 1, 2, {_player})
+			give {_item} to {_player}
+			remove all {_item} from {_tg}
+			wait 10 seconds
+			if {Stats.%{_player}%::Stealing} is true:
+				remove all {_item} from {_player}
+				give {_tool} to {_player}
+				delete {Stats.%{_player}%::Stealed}
+			if {Stats.%{_tg}%::Stealed} is true:
+				give {_item} to {_tg}
+				delete {Stats.%{_tg}%::Stealed}
+		else:
+			kitMsg({_player}, "§8スキルを上手く盗めませんでした...")
+	else:
+		send action bar "§c§l対象が存在しません!" to {_player}

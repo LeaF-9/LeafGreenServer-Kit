@@ -1,0 +1,47 @@
+# Heinous Larceny
+
+function kitUltThief(player: player):
+	message "§c周辺10mの敵のKitをNeedyに変更し,2ダメージを与えます!" to {_player}
+	message "§c効果を付与した敵の人数に応じて自身の体力を回復します!" to {_player}
+	loop all players in radius 10 around {_player}:
+		if kitCheckTeam(loop-player, {_player}, false, true) is true:
+			make a fake explosion at loop-player
+			drawDot count 1, particle "blockcrack", material oak log, center loop-player, visibleRange 30, keepFor 100 ticks
+			add loop-player to {_hit::*}
+			if {Class::%loop-player%} is "Werewolf":
+				if {Stats.%loop-player%::Instinct} is true:
+					set {_class} to "Werewolf_Instinct"
+				else:
+					set {_class} to {Class::%loop-player%}
+			else if {Class::%loop-player%} is "Vampire":
+				if {Stats.%loop-player%::BatMode} is true:
+					set {_class} to "Vampire_Bat"
+				else:
+					set {_class} to {Class::%loop-player%}
+			else:
+				set {_class} to {Class::%loop-player%}
+			set {Stats.%loop-player%::ThiefUlt} to {_class}
+			set {_jewel} to saveJewels(loop-player)
+			set {_gem} to saveGems(loop-player)
+			set {_wool} to saveWools(loop-player)
+			set {_spwool} to saveSpecialWool(loop-player)
+			set {_th} to loop-player's health
+			execute console command "/skclass %loop-player% Kit-Needy"
+			set loop-player's health to {_th}
+			giveEmJItems(loop-player, {_jewel}, {_gem})
+			giveStWItems(loop-player, {_wool}, {_spwool})
+			kitDamage({_player}, loop-player, 2, true)
+			heal {_player} by 1 heart
+	wait 10 seconds
+	loop {_hit::*}:
+		{Stats.%loop-value%::ThiefUlt} is set
+		set {_jewel} to saveJewels(loop-value)
+		set {_gem} to saveGems(loop-value)
+		set {_wool} to saveWools(loop-value)
+		set {_spwool} to saveSpecialWool(loop-value)
+		set {_th} to loop-value's health
+		execute console command "/class %{Stats.%loop-value%::ThiefUlt}% %loop-value% false"
+		set loop-value's health to {_th}
+		giveEmJItems(loop-value, {_jewel}, {_gem})
+		giveStWItems(loop-value, {_wool}, {_spwool})
+		delete {Stats.%loop-value%::ThiefUlt}

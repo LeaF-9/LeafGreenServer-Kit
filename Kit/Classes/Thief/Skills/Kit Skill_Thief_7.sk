@@ -1,0 +1,101 @@
+# Theft Declaration
+
+function kitSkill_Thief_7(player: player):
+	if {Stats.%{_player}%::Stealing.Theft Declaration} is true:
+		kitStealItem({_player}, "Theft Declaration")
+	else:
+		set {_tool} to {_player}'s tool
+		toolCT({_player}, "Thief", 7)
+		kitMsg({_player}, "§9予告状を出した...")
+		playSound("entity.arrow.shoot", 1, 0.5, {_player})
+		set {_from} to location of head of {_player}
+		set {_to} to location 30 meters in front of {_from}
+		set {_vector} to setVector({_from}, {_to})
+		drop a paper named "%{_player}%" at location of head of {_player}
+		set metadata value "gametype" of last dropped item to "Kit"
+		set metadata value "unpickable" of last dropped item to "true"
+		set metadata value "theft-declaration" of last dropped item to "%{_player}%"
+		drawDot count 1, particle "cloud", center last dropped item, visibleRange 30, keepFor 3 seconds
+		set velocity of last dropped item to {_vector}
+		wait 3 seconds
+		loop all entities:
+			metadata value "gametype" of loop-entity is "Kit"
+			metadata value "theft-declaration" of loop-entity is "%{_player}%"
+			set {_baseloc} to location of loop-entity
+			delete loop-entity
+		set yaw of {_baseloc} to yaw of {_player}
+		set pitch of {_baseloc} to pitch of {_player}
+		teleport {_player} to {_baseloc}
+		make a fake explosion at {_baseloc}
+		kitEffect_TheftDeclaration({_baseloc})
+		kitMsg({_player}, "§c予告の通り窃盗を行なう!")
+		playSound("entity.zombie_villager.converted", 1, 2, {_baseloc})
+		set {Stats.%{_player}%::Stealing.Theft Declaration} to true
+		loop all players in radius 10 around {_baseloc}:
+			kitCheckTeam({_player}, loop-player, false, true) is true
+			message formatted "§bスキル§cを盗まれてしまった!" to loop-player
+			set {_skillnum} to a random integer between 1 and 3
+			if {Class::%loop-player%} is "Werewolf":
+				if {Stats.%loop-player%::Instinct} is true:
+					set {_type} to "Werewolf_Instinct"
+				else:
+					set {_type} to {Class::%loop-player%}
+			else if {Class::%loop-player%} is "Vampire":
+				if {Stats.%loop-player%::BatMode} is true:
+					set {_type} to "Vampire_Bat"
+				else:
+					set {_type} to {Class::%loop-player%}
+			else:
+				set {_type} to {Class::%loop-player%}
+			set {_skill} to kitPlayerSkillItem(loop-player, {_type}, {_skillnum})
+			if loop-player's inventory contains {_skill}:
+				add {_skill} to {_skills::*}
+				add {_skill} to {_stealskill.%loop-player%::*}
+				remove {_skill} from loop-player
+			loop 2 times:
+				set {_c} to kitPercentDuel({_player}, loop-player, 30, true)
+				chance of {_c}%:
+					add 1 to {_skillnum}
+					if {_skillnum} > 3:
+						set {_skillnum} to 1
+					set {_skill} to kitPlayerSkillItem(loop-player, {_type}, {_skillnum})
+					if loop-player's inventory contains {_skill}:
+						add {_skill} to {_skills::*}
+						add {_skill} to {_stealskill.%loop-player%::*}
+						remove {_skill} from loop-player
+			set {Stats.%loop-player%::Stealed.Theft Declaration} to true
+			add loop-player to {_stealed::*}
+		set {StealItem-Theft Declaration.%{_player}%::*} to {_skills::*}
+		set {_lootitem} to a bundle named "%display name of {_tool}% §b[§eloot§b]" with lore lore of {_tool}
+		set {_lootitem} to kitItemTagChanger({_lootitem}, "Thief", "Skill", 7)
+		remove {_tool} from {_player}
+		give {_lootitem} to {_player}
+		wait 10 seconds
+		loop all players:
+			{_stealed::*} contains loop-player
+			if {Stats.%loop-player%::Stealed.Theft Declaration} is true:
+				loop {_stealskill.%loop-player%::*}:
+					give loop-value-2 to loop-player
+				delete {Stats.%loop-player%::Stealed.Theft Declaration}
+		if {Stats.%{_player}%::Stealing.Theft Declaration} is true:
+			remove {_lootitem} from {_player}
+			give {_tool} to {_player}
+			delete {StealItem-Theft Declaration.%{_player}%::*}
+			delete {Stats.%{_player}%::Stealing.Theft Declaration}
+
+on damage of dropped item:
+	metadata value "theft-declaration" of victim is set
+	cancel event
+
+function kitEffect_TheftDeclaration(loc: location):
+	set {_rad} to 0
+	loop 10 times:
+		set {_m} to 11 - loop-number
+		loop 10 times:
+			set {_el} to {_loc}
+			add 36 to {_rad}
+			add {_m} * sin({_rad}) to x-coordinate of {_el}
+			add {_m} * cos({_rad}) to z-coordinate of {_el}
+			drawDot count 1, particle "redstone", RGB 255, 255, 255, center {_el}, visibleRange 30
+		add 10 to {_rad}
+		wait a tick
