@@ -46,6 +46,7 @@ on shoot:
 			set {Stats.%shooter%::MechanicalBow-Count} to 0
 		# --------------------
 		set metadata value "mechanicalbow" of projectile to "true"
+		set metadata value "arrowdamage" of projectile to 3
 		# --- 矢の演出処理 ---
 		kitEffect_MechanicalBow_Arrow(projectile)
 		# ------------------
@@ -113,5 +114,5 @@ function kitEffect_MechanicalBow_Cooldown(player: player):
 on damage:
 	type of attacker is player
 	damage was caused by projectile
-	if metadata value "mechanicalbow" of projectile is "true":
-		set damage to 3
+	metadata value "mechanicalbow" of projectile is "true"
+	ignite victim for 3 seconds
