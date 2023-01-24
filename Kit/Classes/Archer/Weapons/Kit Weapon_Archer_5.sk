@@ -4,17 +4,38 @@ on shoot:
 	metadata value "gametype" of shooter is "Kit"
 	{Class::%shooter%} is "Archer"
 	set {_tool} to shooter's tool
-	if kitItemAllChecker({_tool}, "Archer", "Weapon.main", 5) is true:
-		set {_c} to kitPercent(shooter, 10, true)
-		chance of {_c}%:
-			damage shooter by 1 heart
-			set metadata value "cursebow" of projectile to "true"
+	kitItemAllChecker({_tool}, "Archer", "Weapon.main", 5) is true
+	shooter is sneaking
+	damage shooter by 1 heart
+	set metadata value "cursebow" of projectile to "true"
+	# --- 音の演出 ---
+	playSound("entity.warden.tendril_clicks", 1, 1.25, shooter)
+	# ---------------
+	# --- パーティクルの演出 ---
+	kitEffect_CurseBow_Arrow(projectile)
+	# -----------------------
+
+function kitEffect_CurseBow_Arrow(projectile: projectile):
+	loop 20 times:
+		set {_loc} to location of {_projectile}
+		set {_ts} to a random integer between 10 and 50
+		spawnParticle_DustTransition(dust_color_transition, 0, 0, 0, {_ts}, 0, {_ts}, 5, {_loc})
+		wait a tick
 
 on damage:
-	type of attacker is player
 	damage was caused by projectile
-	if metadata value "cursebow" of projectile is "true":
-		apply wither 1 to victim for 10 seconds
+	metadata value "cursebow" of projectile is "true"
+	set damage to damage + 2
+	apply wither 1 to victim for 3 seconds
+	# --- 音の演出 ---
+	playSound("entity.warden.ambient", 1, 1.5, victim)
+	# ---------------
+	# --- パーティクルの演出 ---
+	set {_l} to location of head of victim
+	loop 10 times:
+		set {_v} to randomVector({_l})
+		spawnParticle_Vector(squid_ink, {_v}, {_l})
+	# -----------------------
 
 function kitWeapon_Archer_5(player: player):
 	if {_player} does not have bad luck:
