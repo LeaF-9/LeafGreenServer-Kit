@@ -173,10 +173,6 @@
 # 			set int field 0 of {_pkt} to id of loop-creeper
 # 		send player packet {_pkt}
 
-command /ptst:
-	trigger:
-		stop all particle effects
-
 #command /testsk:
 #	trigger:
 #		set {_loc} to location of player
@@ -222,99 +218,104 @@ command /ptst:
 #			add 3 to {_alpha}
 #			wait a tick
 
-command /testfallblock:
-	trigger:
-		set {_block} to "falling %targeted block%" parsed as entity type
-		shoot {_block} from player at speed 3
+# --- 指定のfalling blockを発射するテスト ---
 
-command /testyaml:
-	trigger:
-		load yml "plugins/skript-yaml/Kit Stages/Rome Sky.yml" as "test"
-		loop yaml node keys "cpa-rule.areas" from "test":
-			broadcast "%loop-node% | %loop-key% | %loop-subnodekeys%"
+# command /testfallblock:
+# 	trigger:
+# 		set {_block} to "falling %targeted block%" parsed as entity type
+# 		shoot {_block} from player at speed 3
+
+# -----------------------------------------
+
+# --- yamlの読み込みテスト ---
+
+# command /testyaml:
+# 	trigger:
+# 		load yml "plugins/skript-yaml/Kit Stages/Rome Sky.yml" as "test"
+# 		loop yaml node keys "cpa-rule.areas" from "test":
+# 			broadcast "%loop-node% | %loop-key% | %loop-subnodekeys%"
 #				" respawns.red.1 | 1 | x, y, z, yaw, pitch and world "
 
-command /testsphere:
-	trigger:
-		set {_s} to 0
-		set {_t} to 0
-		set {_pl} to location of player
-		loop 19 time:
-			loop 36 time:
-				set {_loc} to {_pl}
-				set {_vector} to {_loc}
-				set {_x} to x-coordinate of {_loc}
-				set {_y} to y-coordinate of {_loc}
-				set {_z} to z-coordinate of {_loc}
-				set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
-				set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
-				set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
-				drawDot count 1, particle "redstone", RGB 0, 255, 0, center {_vector}, visibleRange 100, keepFor 5 seconds
-				add 10 to {_t}
-			add 10 to {_s}
-			wait a tick
+# ---------------------------
 
-command /testballdirection:
-	trigger:
-		set {_s} to 0
-		set {_t} to 0
-		set {_pl} to location of player
-		loop 19 time:
-			loop 36 time:
-				set {_loc} to {_pl}
-				set {_vector} to {_loc}
-				set {_x} to x-coordinate of {_loc}
-				set {_y} to y-coordinate of {_loc}
-				set {_z} to z-coordinate of {_loc}
-				set {_vx} to takeVX({_loc})
-				set {_vy} to takeVY({_loc})
-				set {_vz} to takeVZ({_loc})
-				set x-coordinate of {_vector} to ( 5 * sin({_s}) * cos({_t}) ) * (x-coordinate of {_vx} - {_x}) + ( 5 * cos({_s}) ) * (x-coordinate of {_vy} - {_x}) + ( 5 * sin({_s}) * sin({_t}) ) * (x-coordinate of {_vz} - {_x}) + {_x}
-				set y-coordinate of {_vector} to ( 5 * sin({_s}) * cos({_t}) ) * (y-coordinate of {_vx} - {_y}) + ( 5 * cos({_s}) ) * (y-coordinate of {_vy} - {_y}) + ( 5 * sin({_s}) * sin({_t}) ) * (y-coordinate of {_vz} - {_y}) + {_y}
-				set z-coordinate of {_vector} to ( 5 * sin({_s}) * cos({_t}) ) * (z-coordinate of {_vx} - {_z}) + ( 5 * cos({_s}) ) * (z-coordinate of {_vy} - {_z}) + ( 5 * sin({_s}) * sin({_t}) ) * (z-coordinate of {_vz} - {_z}) + {_z}
-				drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_vector}, visibleRange 100, keepFor 5 seconds
-				add 10 to {_t}
-			add 10 to {_s}
-			wait a tick
-		drawDot count 1, particle "redstone", RGB 0, 0, 255, center {_vx}, visibleRange 100, keepFor 5 seconds
-		drawDot count 1, particle "redstone", RGB 0, 255, 0, center {_vy}, visibleRange 100, keepFor 5 seconds
-		drawDot count 1, particle "redstone", RGB 255, 0, 0, center {_vz}, visibleRange 100, keepFor 5 seconds
+# --- 球体を作るテスト ---
 
-function takeVX(loc: location) :: location:
-	set {_vx1} to {_loc}
-	set pitch of {_vx1} to 0
-	set {_vx} to location 1 meters to the right of {_vx1}
-	return {_vx}
+# command /testsphere:
+# 	trigger:
+# 		set {_s} to 0
+# 		set {_t} to 0
+# 		set {_pl} to location of player
+# 		loop 19 time:
+# 			loop 36 time:
+# 				set {_loc} to {_pl}
+# 				set {_vector} to {_loc}
+# 				set {_x} to x-coordinate of {_loc}
+# 				set {_y} to y-coordinate of {_loc}
+# 				set {_z} to z-coordinate of {_loc}
+# 				set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
+# 				set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
+# 				set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
+# 				drawDot count 1, particle "redstone", RGB 0, 255, 0, center {_vector}, visibleRange 100, keepFor 5 seconds
+# 				add 10 to {_t}
+# 			add 10 to {_s}
+# 			wait a tick
 
-function takeVY(loc: location) :: location:
-	set {_vy} to {_loc}
-	set {_y1p} to pitch of {_loc}
-	set {_y2p} to abs({_y1p}) - 90
-	if {_y1p} < 0:
-		set {_y3p} to yaw of {_loc}
-		if {_y3p} < 180:
-			add 180 to {_y3p}
-		else:
-			add -180 to {_y3p}
-		set yaw of {_vy} to {_y3p}
-	set pitch of {_vy} to {_y2p}
-	set {_vy} to location 1 meters in front of {_vy}
-	return {_vy}
+# ---------------------
 
-function takeVZ(loc: location) :: location:
-	set {_vz} to location 1 meters in front of {_loc}
-	return {_vz}
+# --- 方向を所持した球体を作るテスト ---
 
-on rightclick with a clock:
-	broadcast "%name of event-item%"
+# command /testballdirection:
+# 	trigger:
+# 		set {_s} to 0
+# 		set {_t} to 0
+# 		set {_pl} to location of player
+# 		loop 19 time:
+# 			loop 36 time:
+# 				set {_loc} to {_pl}
+# 				set {_vector} to {_loc}
+# 				set {_x} to x-coordinate of {_loc}
+# 				set {_y} to y-coordinate of {_loc}
+# 				set {_z} to z-coordinate of {_loc}
+# 				set {_vx} to takeVX({_loc})
+# 				set {_vy} to takeVY({_loc})
+# 				set {_vz} to takeVZ({_loc})
+# 				set x-coordinate of {_vector} to ( 5 * sin({_s}) * cos({_t}) ) * (x-coordinate of {_vx} - {_x}) + ( 5 * cos({_s}) ) * (x-coordinate of {_vy} - {_x}) + ( 5 * sin({_s}) * sin({_t}) ) * (x-coordinate of {_vz} - {_x}) + {_x}
+# 				set y-coordinate of {_vector} to ( 5 * sin({_s}) * cos({_t}) ) * (y-coordinate of {_vx} - {_y}) + ( 5 * cos({_s}) ) * (y-coordinate of {_vy} - {_y}) + ( 5 * sin({_s}) * sin({_t}) ) * (y-coordinate of {_vz} - {_y}) + {_y}
+# 				set z-coordinate of {_vector} to ( 5 * sin({_s}) * cos({_t}) ) * (z-coordinate of {_vx} - {_z}) + ( 5 * cos({_s}) ) * (z-coordinate of {_vy} - {_z}) + ( 5 * sin({_s}) * sin({_t}) ) * (z-coordinate of {_vz} - {_z}) + {_z}
+# 				drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_vector}, visibleRange 100, keepFor 5 seconds
+# 				add 10 to {_t}
+# 			add 10 to {_s}
+# 			wait a tick
+# 		drawDot count 1, particle "redstone", RGB 0, 0, 255, center {_vx}, visibleRange 100, keepFor 5 seconds
+# 		drawDot count 1, particle "redstone", RGB 0, 255, 0, center {_vy}, visibleRange 100, keepFor 5 seconds
+# 		drawDot count 1, particle "redstone", RGB 255, 0, 0, center {_vz}, visibleRange 100, keepFor 5 seconds
 
-command /testsize:
-	trigger:
-		set {_sizecheck} to size of {_sizes::*}
-		broadcast "%{_sizecheck}%"
-		add "hey" to {_sizes::*}
-		set {_sizecheck} to size of {_sizes::*}
-		broadcast "%{_sizecheck}%"
+# function takeVX(loc: location) :: location:
+# 	set {_vx1} to {_loc}
+# 	set pitch of {_vx1} to 0
+# 	set {_vx} to location 1 meters to the right of {_vx1}
+# 	return {_vx}
+
+# function takeVY(loc: location) :: location:
+# 	set {_vy} to {_loc}
+# 	set {_y1p} to pitch of {_loc}
+# 	set {_y2p} to abs({_y1p}) - 90
+# 	if {_y1p} < 0:
+# 		set {_y3p} to yaw of {_loc}
+# 		if {_y3p} < 180:
+# 			add 180 to {_y3p}
+# 		else:
+# 			add -180 to {_y3p}
+# 		set yaw of {_vy} to {_y3p}
+# 	set pitch of {_vy} to {_y2p}
+# 	set {_vy} to location 1 meters in front of {_vy}
+# 	return {_vy}
+
+# function takeVZ(loc: location) :: location:
+# 	set {_vz} to location 1 meters in front of {_loc}
+# 	return {_vz}
+
+# --------------------------------
 
 #on portal:
 #	cancel event
@@ -409,24 +410,32 @@ command /testsize:
 # 		set {_v} to setVector({_loc}, location 10 meters behind {_loc})
 # 		set velocity of vehicle of player to {_v}
 
-command /testsight:
-	trigger:
-		loop 100 times:
-			set {_yaw} to 10
-			chance of 50%:
-				set {_yaw} to -10
-			set {_locyaw} to yaw of player
-			add {_yaw} to {_locyaw}
-			execute console command "execute as %player% at @s run teleport @s ~ ~ ~ %{_locyaw}% ~"
-			wait a tick
+# --- 動きながら視点を移動させることの出来るテレポートのテスト ---
 
-command /testdamageanimation:
-	executable by: players
-	trigger:
-		set {_pkt} to new play_server_animation packet
-		set int field 0 of {_pkt} to id of player
-		set int field 1 of {_pkt} to 1
-		send player packet {_pkt}
+# command /testsight:
+# 	trigger:
+# 		loop 100 times:
+# 			set {_yaw} to 10
+# 			chance of 50%:
+# 				set {_yaw} to -10
+# 			set {_locyaw} to yaw of player
+# 			add {_yaw} to {_locyaw}
+# 			execute console command "execute as %player% at @s run teleport @s ~ ~ ~ %{_locyaw}% ~"
+# 			wait a tick
+
+# -------------------------------------------------------------
+
+# --- ダメージを受けたときのアニメーションテスト ---
+
+# command /testdamageanimation:
+# 	executable by: players
+# 	trigger:
+# 		set {_pkt} to new play_server_animation packet
+# 		set int field 0 of {_pkt} to id of player
+# 		set int field 1 of {_pkt} to 1
+# 		send player packet {_pkt}
+
+# -----------------------------------------------
 
 # gamemode関係なしにon inventory clickを発生させるSkript
 # slotはskriptのnumberとは異なる 
@@ -438,13 +447,17 @@ command /testdamageanimation:
 # on inventory click:
 # 	broadcast "%type of clicked item%"
 
-command /testyawcheck:
-	trigger:
-		set {_loc} to location of player
-		set yaw of {_loc} to 450
-		teleport player to {_loc}
-		if yaw of player is 450:
-			broadcast "check成功"
+# --- yawをチェックするコマンド ---
+
+# command /testyawcheck:
+# 	trigger:
+# 		set {_loc} to location of player
+# 		set yaw of {_loc} to 450
+# 		teleport player to {_loc}
+# 		if yaw of player is 450:
+# 			broadcast "check成功"
+
+# ------------------------------
 
 # on projectile collide:
 # 	broadcast "shine"
@@ -457,39 +470,55 @@ command /testyawcheck:
 # 		set {_v} to setVector(location of player, location 1 meters in front of player)
 # 		draw 2 style 2 redstone particles at location of player with direction {_v}, speed 1 and RGB 20, 50, 80, keepFor 1 second
 
-command /testyamlload:
-	trigger:
-		load yml "plugins/skript-yaml/Kit Classes/Knight.yml" as "class"
-		loop yaml node keys "weapon" from "class":
-			message "%loop-val%" to player
-			message "%loop-node%" to player
-			message "%loop-key%" to player
-			message "%loop-subnodekey%" to player
-		unload yml "class"
+# --- yamlのテスト ---
 
-command /testmetadata:
-	trigger:
-		set {_item} to player's tool
-		set {_kit} to tag "kit" of nbt of {_item}
-		set {_type} to tag "type" of nbt of {_item}
-		set {_tag} to tag "number" of nbt of {_item}
-		broadcast " %{_kit}% | %{_type}% | %{_tag}%"
+# command /testyamlload:
+# 	trigger:
+# 		load yml "plugins/skript-yaml/Kit Classes/Knight.yml" as "class"
+# 		loop yaml node keys "weapon" from "class":
+# 			message "%loop-val%" to player
+# 			message "%loop-node%" to player
+# 			message "%loop-key%" to player
+# 			message "%loop-subnodekey%" to player
+# 		unload yml "class"
 
-command /testvariables:
-	trigger:
-		set {_test::t1} to "test1"
-		set {_test::t1::t2} to "test2"
-		loop {_test::*}:
-			broadcast "%loop-index% | %loop-value%"
-		broadcast "---"
-		loop {_test::t1::*}:
-			broadcast "%loop-index% | %loop-value%"
+# --------------------
 
-command /testhd:
-	trigger:
-		set display name of player to "§2§l%name of player%"
-		wait 10 seconds
-		set display name of player to "%name of player%"
+# --- metadataを読み込むテスト ---
+
+# command /testmetadata:
+# 	trigger:
+# 		set {_item} to player's tool
+# 		set {_kit} to tag "kit" of nbt of {_item}
+# 		set {_type} to tag "type" of nbt of {_item}
+# 		set {_tag} to tag "number" of nbt of {_item}
+# 		broadcast " %{_kit}% | %{_type}% | %{_tag}%"
+
+# --------------------------------
+
+# --- variableのテスト ---
+
+# command /testvariables:
+# 	trigger:
+# 		set {_test::t1} to "test1"
+# 		set {_test::t1::t2} to "test2"
+# 		loop {_test::*}:
+# 			broadcast "%loop-index% | %loop-value%"
+# 		broadcast "---"
+# 		loop {_test::t1::*}:
+# 			broadcast "%loop-index% | %loop-value%"
+
+# -----------------------
+
+# --- playerのdisplay nameのテスト ---
+
+# command /testhd:
+# 	trigger:
+# 		set display name of player to "§2§l%name of player%"
+# 		wait 10 seconds
+# 		set display name of player to "%name of player%"
+
+# ------------------------------------
 
 # on rightclick holding a bone:
 # 	remove player's tool from player
@@ -533,10 +562,10 @@ command /testhd:
 # 		delete spawned magma cube
 # --------------------------
 
-# ---アイテムからブロックデータが取れるかどうかのテスト---
-command /testitemblock:
-	trigger:
-		message "%raw name of player's tool%" to player
+# ---アイテムからブロックデータが取れるかどうかのテスト(成功)---
+# command /testitemblock:
+# 	trigger:
+# 		message "%raw name of player's tool%" to player
 # ----------------------------------------------------
 
 # --- particle packetの送信 ---
@@ -608,9 +637,6 @@ command /testparticle:
 			spawnParticle_Size(explosion, 10, {_loc})
 			wait a tick
 		wait 10 ticks
-		loop 10 times:
-			spawnParticle_Spread(glow, 1, {_loc})
-			wait a tick
 		loop 10 times:
 			set {_v} to setVector({_loc}, location 10 meters in front of {_loc})
 			spawnParticle_Vector(end_rod, {_v}, {_loc})
