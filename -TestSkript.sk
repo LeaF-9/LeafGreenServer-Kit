@@ -575,8 +575,51 @@ command /testitemblock:
 
 command /testparticle:
 	trigger:
-		spawnParticle()
-		wait a second
+		set {_loc} to location of player
+		loop 10 times:
+			spawnParticle(composter, {_loc})
+			wait a tick
+		wait 10 ticks
+		loop 10 times:
+			spawnParticle_Block(block, dirt, {_loc})
+			wait a tick
+		wait 10 ticks
+		loop 10 times:
+			spawnParticle_Color(entity_effect, 100, 255, 0, {_loc})
+			wait a tick
+		wait 10 ticks
+		loop 10 times:
+			spawnParticle_Dust(dust, 0, 255, 100, 10, {_loc})
+			wait a tick
+		wait 10 ticks
+		loop 10 times:
+			spawnParticle_DustTransition(dust_color_transition, 0, 0, 0, 255, 255, 255, 0.5, {_loc})
+			wait a tick
+		wait 10 ticks
+		loop 10 times:
+			spawnParticle_Item(item, diamond, {_loc})
+			wait a tick
+		wait 10 ticks
+		loop 10 times:
+			spawnParticle_Note(note, 10, {_loc})
+			wait a tick
+		wait 10 ticks
+		loop 10 times:
+			spawnParticle_Size(explosion, 10, {_loc})
+			wait a tick
+		wait 10 ticks
+		loop 10 times:
+			spawnParticle_Spread(glow, 1, {_loc})
+			wait a tick
+		loop 10 times:
+			set {_v} to setVector({_loc}, location 10 meters in front of {_loc})
+			spawnParticle_Vector(end_rod, {_v}, {_loc})
+			wait a tick
+		wait 10 ticks
+		loop 10 times:
+			set {_tl} to location 10 meters in front of {_loc}
+			spawnParticle_Vibration(vibration, {_tl}, 1 second, {_loc})
+
 
 # ---------------------------
 
