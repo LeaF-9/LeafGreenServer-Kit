@@ -24,8 +24,41 @@ function spawnParticle_DustTransition(particle: particle, fR: number, fG: number
 function spawnParticle_Item(item: item type, loc: location, players: players = all players):
 	draw 1 of item particle using {_item} at {_loc} with force for {_players::*}
 
-function spawnParticle_Note(particle: particle, color: number, loc: location, players: players = all players):
-	draw 0 of {_particle} at {_loc} with extra {_color} with force for {_players::*}
+function spawnParticle_Note(color: text, loc: location, players: players = all players):
+	set {_c} to noteColorOffset({_color})
+	draw 0 of {_particle} at {_loc} with offset vector({_c}, 0, 0) with extra 1 with force for {_players::*}
+
+function noteColorOffset(color: text) :: number:
+	if {_color} is "brown":
+		set {_offset} to 0.11
+	else if {_color} is "red":
+		set {_offset} to 0.27
+	else if {_color} is "orange":
+		set {_offset} to 0.15
+	else if {_color} is "yellow":
+		set {_offset} to 0.09
+	else if {_color} is "lime":
+		set {_offset} to 0
+	else if {_color} is "green":
+		set {_offset} to 0.83
+	else if {_color} is "cyan":
+		set {_offset} to 0.75
+	else if {_color} is "lightblue":
+		set {_offset} to 0.7
+	else if {_color} is "blue":
+		set {_offset} to 0.55
+	else if {_color} is "purple":
+		set {_offset} to 0.49
+	else if {_color} is "magenta":
+		set {_offset} to 0.43
+	else if {_color} is "pink":
+		set {_offset} to 0.35
+	else:
+		set {_offset} to 0
+	return {_offset}
+
+function spawnParticle_NoteOption(color: number, loc: location, players: players = all players):
+	draw 0 of {_particle} at {_loc} with offset vector({_color}, 0, 0) with extra 1 with force for {_players::*}
 
 function spawnParticle_Size(particle: particle, size: number, loc: location, players: players = all players):
 	draw 1 of {_particle} at {_loc} with extra {_size} with force for {_players::*}
