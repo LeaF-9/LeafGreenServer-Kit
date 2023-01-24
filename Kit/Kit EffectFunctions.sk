@@ -1,0 +1,33 @@
+function applyEffect(player: player, effect: potion effect type, tier: number, time: time span, type: text = "normal", replace: boolean = true):
+	if {_type} is "normal":
+		if {_replace} is true:
+			apply {_effect} {_tier} to {_player} for {_time} replacing existing effect
+		else:
+			apply {_effect} {_tier} to {_player} for {_time}
+	else if {_type} is "ambient":
+		if {_replace} is true:
+			apply ambient {_effect} {_tier} to {_player} for {_time} replacing existing effect
+		else:
+			apply ambient{_effect} {_tier} to {_player} for {_time}
+	else if {_type} is "none":
+		if {_replace} is true:
+			apply {_effect} {_tier} without particles to {_player} for {_time} replacing existing effect
+		else:
+			apply {_effect} {_tier} without particles to {_player} for {_time}
+
+function resetEffect(player: player):
+	# --- 現在の所持エフェクトをチェック ---
+	set {_eff.player::*} to all potion effects of {_player}
+	# ---------------------------------
+	# --- Kit特有のエフェクトをチェック ---
+	# ---------------------------------
+	# --- 両者の比較 ---
+	# ----------------
+
+
+	set {_class} to {Class::%player%}
+	loop yaml node keys "effects" from "skclass.%arg 2%":
+		set {_effect} to potionChanger("%loop-key%")
+		set {_level} to yml value "effects.%loop-node%" from "skclass.%arg 2%"
+		# set {_level} to {_level} parsed as number
+		apply {_effect} {_level} without particles to {_player} for 10000000000 seconds
