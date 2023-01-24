@@ -6,8 +6,8 @@ on sneak toggle:
 	player is not sneaking
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Archer", "Weapon.main", 3) is true
-	enchant {_tool} with flame
-	enchant {_tool} with quick charge 5
+	enchant player's tool with flame
+	enchant player's tool with quick charge 5
 	# --- 音の演出 ---
 	playSound("entity.iron_golem.hurt", 1, 2, player)
 	# --------------
@@ -65,11 +65,13 @@ on shoot:
 			delete {Stats.%shooter%::MechanicalBow-Count}
 			ignite shooter for 10 seconds
 			kitMsg(shooter, "<##d70035>§lオーバーヒートした!")
+			playSound("entity.blaze.shoot", 1, 0.7, shooter)
 			loop all items in shooter's inventory:
 				kitItemAllChecker(loop-item, "Archer", "Weapon.main", 3) is true
 				disenchant loop-item
 				enchant loop-item with quick charge 2
 			wait 10 seconds
+			playSound("block.fire.extinguish", 1, 0.7, shooter)
 			delete {Stats.%shooter%::MechanicalBow-OverHeat}
 			kitMsg(shooter, "<##008080>武器の冷却が終了しました")
 		else:
