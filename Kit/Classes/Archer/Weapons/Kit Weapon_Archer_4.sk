@@ -4,15 +4,139 @@ on shoot:
 	metadata value "gametype" of shooter is "Kit"
 	{Class::%shooter%} is "Archer"
 	set {_tool} to shooter's tool
-	if kitItemAllChecker({_tool}, "Archer", "Weapon.main", 4) is true:
-		set metadata value "holybow" of projectile to "true"
+	kitItemAllChecker({_tool}, "Archer", "Weapon.main", 4) is true
+	shooter is sneaking
+	set {_arrow} to amount of arrow in shooter's inventory
+	{_arrow} >= 5
+	loop 4 times:
+		remove an arrow from shooter
+	set metadata value "holybow" of projectile to "true"
+	# --- 音の演出 ---
+	playSound("block.amethyst_cluster.break", 1, 0.5, shooter)
+	# --------------
+	# --- パーティクルの演出 ---
+	kitEffect_HolyBow_Arrow(shooter, projectile)
+	# -----------------------
+
+function kitEffect_HolyBow_Arrow(player: player, prj: projectile):
+	set {_baseloc} to location of {_player}
+	set {_basebackloc} to {_baseloc}
+	add 180 to yaw of {_basebackloc}
+	set pitch of {_basebackloc} to pitch of {_basebackloc} * (-1)
+	set {_rad} to 0
+	loop 20 times:
+		set {_prjloc} to location of {_prj}
+		# --- 矢の周辺を回転する演出 ---
+		set {_eb} to {_prjloc}
+		set yaw of {_eb} to yaw of {_baseloc}
+		set pitch of {_eb} to pitch of {_baseloc}
+		set {_m1} to {_eb}
+		set {_p} to pitch of {_m1}
+		if {_p} < 0:
+			set {_p} to -1 * 90 - {_p}
+			set {_y} to yaw of {_m1}
+			add 180 to {_y}
+			if {_y} >= 360:
+				set {_y} to {_y} - 360
+			set yaw of {_m1} to {_y}
+		else:
+			set {_p} to {_p} - 90
+		set pitch of {_m1} to {_p}
+		set {_test1} to 0.5 * cos({_rad})
+		set {_t1} to location {_test1} meters in front of {_m1}
+		set {_m2} to {_eb}
+		set pitch of {_m2} to 0
+		set {_test2} to 0.5 * sin({_rad})
+		set {_t2} to location {_test2} meters to the right of {_m2}
+		set x-coordinate of {_eb} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_eb}
+		set y-coordinate of {_eb} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_eb}
+		set z-coordinate of {_eb} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_eb}
+		spawnParticle(end_rod, {_eb})
+		add 100 to {_rad}
+		# --------------------------
+		# --- 矢の後ろに流れ星的な演出 ---
+		set {_bel} to {_prjloc}
+		set yaw of {_bel} to yaw of {_basebackloc}
+		set pitch of {_bel} to pitch of {_basebackloc}
+		set {_to} to location 5 meters in front of {_bel}
+		add a random number between -0.5 and 0.5 to x-coordinate of {_to}
+		add a random number between -0.5 and 0.5 to y-coordinate of {_to}
+		add a random number between -0.5 and 0.5 to z-coordinate of {_to}
+		set {_v} to setVector({_bel}, {_to})
+		spawnParticle_Vector(electric_spark, {_v}, {_bel})
+		# ----------------------------
+		wait a tick
 
 on projectile hit:
 	metadata value "holybow" of projectile is "true"
-	set {_per} to kitPercent(shooter, 5, true)
-	chance of {_per}%:
-		strike lightning effect at projectile
-		loop all players in radius 3 around projectile:
-			{team::%loop-player%} is not {team::%shooter%}
-			kitDamage(shooter, loop-player, 1, true)
-			strike lightning effect at loop-player
+	set {_baseloc} to location of projectile
+	strike lightning effect at projectile
+	loop all entities in radius 5 around projectile:
+		kitCheckTeam(shooter, loop-entity, false) is true
+		kitDamage(shooter, loop-entity, 2, true)
+		if type of loop-entity is player:
+			kitPalsy(loop-entity, 2 seconds)
+		add loop-entity to {_strikelocs::*}
+	# --- 着弾点がはじけ飛ぶ演出 ---
+	loop 30 times:
+		set {_v} to randomVector({_baseloc}, 5)
+		add 5 to y of {_v}
+		spawnParticle_Vector(wax_on, {_v}, {_baseloc})
+	# --------------------------
+	# --- ターゲットに光が降り、浄化されるような演出 ---
+	loop {_strikelocs::*}:
+		set {_bl} to location of loop-value
+		# --- 光が降る演出 ---
+		set {_rad} to 0
+		set {_ln} to 0
+		loop 50 times:
+			add 1 to {_ln}
+			add 72 to {_rad}
+			set {_el} to {_bl}
+			set y-coordinate of {_el} to y-coordinate of {_el} + (25 - ({_ln} * 0.5))
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			spawnParticle(end_rod, {_el})
+		# ------------------
+		# --- 浄化される演出 ---
+		kitEffect_HolyBow_Hit(loop-value)
+		# --------------------
+	# -------------------------------------------
+
+function kitEffect_HolyBow_Hit(target: entity):
+	set {_pitch} to 1
+	set {_baserad} to 0
+	set {_y} to 0
+	loop 5 times:  # y座標を徐々に上げる処理
+		set {_baseloc} to location of {_target}
+		set {_met} to 0.5 * loop-number
+		set {_rad} to {_baserad}
+		loop 4 times:  # 四角形の4方向を決める処理
+			set {_frontloc} to {_baseloc}
+			add {_y} to y-coordinate of {_frontloc}
+			add {_met} * sin({_rad}) to x-coordinate of {_frontloc}
+			add {_met} * cos({_rad}) to z-coordinate of {_frontloc}
+			set {_targetloc} to {_baseloc}
+			add {_y} to y-coordinate of {_targetloc}
+			add {_met} * sin({_rad} + 90) to x-coordinate of {_targetloc}
+			add {_met} * cos({_rad} + 90) to z-coordinate of {_targetloc}
+			set {_v} to setVector({_frontloc}, {_targetloc})
+			set yaw of {_frontloc} to yaw of {_v}
+			set pitch of {_frontloc} to yaw of {_v}
+			set {_dis} to distance between {_frontloc} and {_targetloc}
+			set {_dis} to {_dis} / 5
+			set {_dnum} to 0
+			loop 5 times:  # 線を引く処理
+				set {_el} to location {_dis} * {_dnum} meters in front of {_frontloc}
+				spawnParticle_DustTransition(dust_color_transition, 255, 255, 0, 255, 255, 255, 0.1)
+				add 1 to {_dnum}
+			add 90 to {_rad}
+		add 0.25 to {_pitch}
+		add 30 to {_baserad}
+		add 0.125 to {_y}
+		wait a tick
+
+on damage:
+	damage was caused by projectile
+	metadata value "holybow" of projectile is "true"
+	applyEffect(victim, glowing, 1, 5 seconds)
