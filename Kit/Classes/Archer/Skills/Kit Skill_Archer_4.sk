@@ -28,7 +28,7 @@ function kitSkill_Archer_4(player: player):
 			wait a tick
 	# --------------------
 	# --- 破裂後の処理 ---
-	playSound("entity.firework_rocket.large_blast", 1.5, 0.7, {_blastloc})
+	playSound("entity.firework_rocket.large_blast", 2, 0.7, {_blastloc})
 	loop all entities in radius 30 around {_baseloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true:
 		kitSkill_MeteoricTwinkle_Arrow({_player}, loop-entity, {_blastloc})
@@ -41,10 +41,11 @@ function kitSkill_MeteoricTwinkle_Arrow(player: player, target: entity, blastloc
 	set {_basecolor.G} to a random integer between 0 and 255
 	set {_basecolor.B} to a random integer between 0 and 255
 	loop {_sn} times:  # 矢の数
-		set {_vp} to a random number between 0.8 and 1.5
+		set {_vp} to a random number between 1.5 and 3
 		set {_vector} to setVector({_blastloc}, {_toloc}, {_vp})
 		shoot an arrow from {_blastloc} at speed 0.1 downwards
 		set metadata value "homingtwinkle" of shot arrow to "true"
+		set metadata value "arrowdamage" of shot arrow to 3
 		set shooter of shot arrow to {_player}
 		set velocity of shot arrow to {_vector}
 		kitEffect_MeteoricTwinkle_Arrow(shot arrow, {_basecolor.R}, {_basecolor.G}, {_basecolor.B})
@@ -93,7 +94,7 @@ on projectile hit:
 	# ----------------
 	# --- 音の演出 ---
 	set {_p} to a random number between 1.5 and 2
-	playSound("entity.firework_rocket.blast", 0.5, {_p}, {_bl})
+	playSound("entity.firework_rocket.blast", 1, {_p}, {_bl})
 	# ---------------
 
 on damage of player:
