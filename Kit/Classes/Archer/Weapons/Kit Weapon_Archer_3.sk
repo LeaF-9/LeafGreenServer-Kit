@@ -6,6 +6,7 @@ on sneak toggle:
 	player is not sneaking
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Archer", "Weapon.main", 3) is true
+	{Stats.%player%::MechanicalBow-OverHeat} is not set
 	enchant player's tool with flame
 	enchant player's tool with quick charge 5
 	# --- 音の演出 ---
@@ -38,8 +39,8 @@ on shoot:
 	{Class::%shooter%} is "Archer"
 	set {_tool} to shooter's tool
 	kitItemAllChecker({_tool}, "Archer", "Weapon.main", 3) is true
-	{_tool} is enchanted with flame
 	if {Stats.%shooter%::MechanicalBow-OverHeat} is not set:  # オーバーヒートしてない場合
+		{_tool} is enchanted with flame
 		# --- カウントの設定 ---
 		if {Stats.%shooter%::MechanicalBow-Count} is not set:
 			set {Stats.%shooter%::MechanicalBow-Count} to 0
@@ -76,6 +77,8 @@ on shoot:
 			kitMsg(shooter, "<##008080>武器の冷却が終了しました")
 		else:
 			wait 3 seconds
+			send action bar "<##008080>武器の冷却が終了しました" to shooter
+			playSound("block.fire.extinguish", 1, 1.8, shooter)
 			{Stats.%shooter%::MechanicalBow-Now} is {_now}
 			delete {Stats.%shooter%::MechanicalBow-Now}
 			delete {Stats.%shooter%::MechanicalBow-Count}
