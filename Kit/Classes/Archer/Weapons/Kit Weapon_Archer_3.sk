@@ -1,62 +1,98 @@
 # Mechanical Bow
 
+on sneak toggle:
+	metadata value "gametype" of player is "Kit"
+	{Class::%player%}is "Archer"
+	player is not sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Archer", "Weapon.main", 3) is true
+	enchant {_tool} with flame
+	enchant {_tool} with quick charge 5
+	# --- 音の演出 ---
+	playSound("entity.iron_golem.hurt", 1, 2, player)
+	# --------------
+	set {_true} to true
+	wait a tick
+	while {_true} is true:
+		if player is not sneaking:
+			delete {_true}
+		set {_tool} to player's tool
+		if kitItemAllChecker({_tool}, "Archer", "Weapon.main", 3) is false:
+			delete {_true}
+		if {_tool} is not enchanted with flame:
+			delete {_true}
+		# --- パーティクルの演出 ---
+		spawnParticle(lava, location of player)
+		# -----------------------
+		wait a tick
+	# --- 音の演出 ---
+	playSound("entity.iron_golem.damage", 1, 2, player)
+	# --------------
+	loop all items in player's inventory:
+		kitItemAllChecker(loop-item, "Archer", "Weapon.main", 3) is true
+		disenchant loop-item
+		enchant loop-item with quick charge 2
+
 on shoot:
 	metadata value "gametype" of shooter is "Kit"
 	{Class::%shooter%} is "Archer"
 	set {_tool} to shooter's tool
-	if kitItemAllChecker({_tool}, "Archer", "Weapon.main", 3) is true:
-		{_tool} is enchanted with flame
-		if {Stats.%shooter%::MechanicalBow} < 10:
-			set metadata value "mechanicalbow" of projectile to "true"
-			drawDot count 1, particle "flame", center projectile, visibleRange 32, keepFor 1 seconds
-			set {_to} to vector of location 100 meters in front of shooter
-			set {_from} to vector of location of shooter
-			set {_vector} to {_to} -- {_from}
-			set {_vector} to normalized {_vector}
-			set x of {_vector} to x of {_vector} * 10
-			set y of {_vector} to y of {_vector} * 10
-			set z of {_vector} to z of {_vector} * 10
-			set velocity of projectile to {_vector}
-			add 1 to {Stats.%shooter%::MechanicalBow}
-			if {Stats.%shooter%::MechanicalBow} >= 10:
-				ignite shooter for 10 seconds
-				kitMsg(shooter, "<##d70035>§lオーバーヒートした!")
-				loop all items in shooter's inventory:
-					name of loop-item is "§8Mechanical Bow"
-					if loop-item is enchanted with flame:
-						disenchant loop-item
-						enchant loop-item with quick charge 2
-		else:
-			cancel event
-
-on leftclick holding a crossbow:
-	{Class::%player%} is "Archer"
-	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Archer", "Weapon.main", 3) is true
-	cancel event
-	if checkCT(player, name of player's tool) is true:
-		setCT(player, name of player's tool, 30, false)
-		playSound("entity.iron_golem.hurt", 1, 2, player)
-		kitMsg(player, "<##8da0b6>ブースターを起動しました!")
-		set {Stats.%player%::MechanicalBow} to 0
-		enchant player's tool with flame
-		enchant player's tool with quick charge 5
-		loop 100 times:
-			delete {_ok}
-			loop all items in player's inventory:
-				name of loop-item is "§8Mechanical Bow"
-				if loop-item is enchanted with flame:
-					set {_ok} to true
-			if {_ok} is true:
-				drawDot count 1, particle "lava", center player, visibleRange 30
-			wait a tick
-		loop all items in player's inventory:
-			name of loop-item is "§8Mechanical Bow"
-			if loop-item is enchanted with flame:
+	{_tool} is enchanted with flame
+	if {Stats.%shooter%::MechanicalBow-OverHeat} is not set:  # オーバーヒートしてない場合
+		# --- カウントの設定 ---
+		if {Stats.%shooter%::MechanicalBow-Count} is not set:
+			set {Stats.%shooter%::MechanicalBow-Count} to 0
+		# --------------------
+		set metadata value "mechanicalbow" of projectile to "true"
+		# --- 矢の演出処理 ---
+		kitEffect_MechanicalBow_Arrow(projectile)
+		# ------------------
+		set {_to} to vector of location 100 meters in front of shooter
+		set {_from} to vector of location of shooter
+		set {_vector} to {_to} -- {_from}
+		set {_vector} to normalized {_vector}
+		set x of {_vector} to x of {_vector} * 10
+		set y of {_vector} to y of {_vector} * 10
+		set z of {_vector} to z of {_vector} * 10
+		set velocity of projectile to {_vector}
+		set {_now} to _now
+		set {Stats.%shooter%::MechanicalBow-Now} to {_now}
+		add 1 to {Stats.%shooter%::MechanicalBow-Count}
+		if {Stats.%shooter%::MechanicalBow-Count} > 5:
+			set {Stats.%shooter%::MechanicalBow-OverHeat} to true
+			delete {Stats.%shooter%::MechanicalBow-Now}
+			delete {Stats.%shooter%::MechanicalBow-Count}
+			ignite shooter for 10 seconds
+			kitMsg(shooter, "<##d70035>§lオーバーヒートした!")
+			loop all items in shooter's inventory:
+				kitItemAllChecker(loop-item, "Archer", "Weapon.main", 3) is true
 				disenchant loop-item
 				enchant loop-item with quick charge 2
-				kitMsg(player, "<##c9caca>ブースターが終了しました")
-		delete {Stats.%player%::MechanicalBow}
+			wait 10 seconds
+			delete {Stats.%shooter%::MechanicalBow-OverHeat}
+			kitMsg(shooter, "<##008080>武器の冷却が終了しました")
+		else:
+			wait 3 seconds
+			{Stats.%shooter%::MechanicalBow-Now} is {_now}
+			delete {Stats.%shooter%::MechanicalBow-Now}
+			delete {Stats.%shooter%::MechanicalBow-Count}
+	else:
+		cancel event
+		send action bar "<##ff6347>武器が熱すぎて扱えない!" to shooter
+		# --- 音の演出 ---
+		playSound("entity.blaze.hurt", 1, 1.25, shooter)
+		# ---------------
+		# --- パーティクルの演出 ---
+		loop 5 times:
+			set {_v} to randomVector(location of shooter)
+			spawnParticle_Vector(flame, {_v}, location 1 meters above shooter)
+		# -----------------------
+
+function kitEffect_MechanicalBow_Arrow(projectile: projectile):
+	loop 10 times:
+		spawnParticle(flame, location of {_projectile})
+		wait a tick
 
 on damage:
 	type of attacker is player
