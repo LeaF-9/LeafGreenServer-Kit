@@ -75,11 +75,13 @@ on shoot:
 			playSound("block.fire.extinguish", 1, 0.7, shooter)
 			delete {Stats.%shooter%::MechanicalBow-OverHeat}
 			kitMsg(shooter, "<##008080>武器の冷却が終了しました")
+			kitEffect_MechanicalBow_Cooldown(shooter)
 		else:
 			wait 3 seconds
 			{Stats.%shooter%::MechanicalBow-Now} is {_now}
 			send action bar "<##008080>武器の冷却が終了しました" to shooter
 			playSound("block.fire.extinguish", 1, 1.8, shooter)
+			kitEffect_MechanicalBow_Cooldown(shooter)
 			{Stats.%shooter%::MechanicalBow-Now} is {_now}
 			delete {Stats.%shooter%::MechanicalBow-Now}
 			delete {Stats.%shooter%::MechanicalBow-Count}
@@ -99,6 +101,14 @@ function kitEffect_MechanicalBow_Arrow(projectile: projectile):
 	loop 10 times:
 		spawnParticle(flame, location of {_projectile})
 		wait a tick
+
+function kitEffect_MechanicalBow_Cooldown(player: player):
+	loop 10 times:
+		set {_el} to aroundEffect({_player})
+		chance of 30%:
+			spawnParticle_BlockData(falling_dust, blue ice block, {_el})
+			stop
+		spawnParticle_BlockData(falling_dust, snow block, {_el})
 
 on damage:
 	type of attacker is player
