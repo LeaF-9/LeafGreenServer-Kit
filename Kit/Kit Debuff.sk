@@ -9,7 +9,7 @@ function kitBlood(player: player):
 	apply blindness 1 to {_player} for 3 seconds
 	loop 10 times:
 		set {_el} to aroundEffect({_player})
-		drawDot count 1, particle "itemcrack", material redstone, center {_el}, visibleRange 30
+		spawnParticle_Block(redstone block, {_el})
 	loop 100 times:
 		wait a tick
 		set {_value} to value of bossbar "%{_player}%-Blood"
@@ -41,13 +41,15 @@ function kitBlood(player: player):
 		apply blindness 1 to {_player} for 3 seconds
 		loop 10 times:
 			set {_el} to aroundEffect({_player})
-			drawDot count 1, particle "itemcrack", material redstone, center {_el}, visibleRange 30
+			spawnParticle_Block(redstone block, {_el})
 		if {_ng} is not set:
 			loop 100 times:
 				wait 2 ticks
 				set {_value} to value of bossbar "%{_player}%-Blood"
 				subtract 1 from {_value}
 				set bossbar "%{_player}%-Blood" value to {_value}
+				set {_el} to location 1 meters above {_player}
+				spawnParticle(lava, {_el})
 	if {Kit-Blood::%{_player}%} is not set:
 		remove bossbar "%{_player}%-Blood"
 
@@ -77,17 +79,24 @@ function kitFreeze(player: player, time: time span, msg: boolean = true):
 		if {Kit-Freeze::%{_player}%} is {_now}:
 			teleport {_player} to {_loc}
 			if {_msg} is true:
-				loop 3 times:
+				loop 5 times:
 					set {_el} to aroundEffect({_player})
-					drawDot count 1, particle "redstone", RGB 0, 200, 255, center {_el}, visibleRange 30
+					spawnParticle_BlockData(falling_dust, snow block, {_el})
+					chance of 50%:
+						set {_el} to aroundEffect({_player})
+						spawnParticle_BlockData(falling_dust, blue ice, {_el})
 				set {_value} to value of bossbar "%{_player}%-Freeze"
 				subtract {_prog} from {_value}
 				set bossbar "%{_player}%-Freeze" value to {_value}
+				set {_nbt} to nbt compound of {_player}
+				set tag "TicksFrozen" of {_nbt} to 130
 			wait a tick
 	{Kit-Freeze::%{_player}%} is {_now}
 	delete {Kit-Freeze::%{_player}%}
 	if {_msg} is true:
 		remove bossbar "%{_player}%-Freeze"
+		set {_nbt} to nbt compound of {_player}
+		set tag "TicksFrozen" of {_nbt} to 0
 
 on damage of player:
 	{Kit-Freeze::%victim%} is set
@@ -113,9 +122,9 @@ function kitPalsy(player: player, time: time span, eff: boolean = true):
 	set {_prog} to 100 / {_tick}
 	loop {_tick} times:
 		if {_eff} is true:
-			loop 3 times:
-				set {_el} to aroundEffect({_player})
-				drawDot count 1, particle "critmagic", center {_el}, visibleRange 30
+			set {_ln} to a random integer between 1 and 3
+			loop {_ln} times:
+				kitEffect_Palsy({_player})
 		set {_value} to value of bossbar "%{_player}%-Palsy"
 		subtract {_prog} from {_value}
 		set bossbar "%{_player}%-Palsy" value to {_value}
@@ -123,14 +132,49 @@ function kitPalsy(player: player, time: time span, eff: boolean = true):
 	delete {Kit-Palsy::%{_player}%}
 	remove bossbar "%{_player}%-Palsy"
 
+function kitEffect_Palsy(player: player):
+	set {_baseloc} to location of player
+	set {_yaw} to a random number between 0 and 360
+	add a random number between 0.6 and 2 to y-coordinate of {_baseloc}
+	set yaw of {_baseloc} to {_yaw}
+	set pitch of {_baseloc} to 0
+	set {_effloc} to location 0.5 meters in front of {_baseloc}
+	set {_ln} to random integer between 3 and 5
+	set {_dy} to 0
+	set {_metercount} to 5
+	set {_fm} to 0.05 * sin(45) / 5
+	loop {_ln} times:
+		loop 2 times:
+			# --- ギザギザ上 ---
+			set {_bl} to {_effloc}
+			subtract {_dy} from y-coordinate of {_bl}
+			set pitch of {_bl} to 45
+			set {_mc} to 0
+			loop {_metercount} times:
+				add 1 to {_mc}
+				set {_el} to location {_fm} * {_mc} meters in front of {_bl}
+				spawnParticle_DustTransition(dust_color_transition, 255, 255, 0, 255, 215, 0, 0.3, {_el})
+			# -----------------
+			# --- ギザギザ下 ---
+			set {_bl} to location 0.05 meters in front of {_effloc}
+			subtract {_dy} + 0.05 from y-coordinate of {_bl}
+			set pitch of {_bl} to -45
+			set {_mc} to 0
+			loop {_metercount} times:
+				add 1 to {_mc}
+				set {_el} to location {_fm} * {_mc} meters in front of {_bl}
+				spawnParticle_DustTransition(dust_color_transition, 255, 255, 0, 255, 215, 0, 0.3, {_el})
+			# -----------------
+			add 0.1 to {_dy}
+		wait a tick
+
 #吸収
-function kitDrain(victim: player, attacker: player, level: number, time: time span):
+function kitDrain(player: player, time: time span):
 	addKitOS("Drain")
-	{Kit-Drain::%{_victim}%} is not set
-	set {Kit-Drain::%{_victim}%} to {_attacker}
-	message "§a%{_attacker}% §2に体力を吸われる!" to {_victim}
+	{Kit-Drain::%{_player}%} is not set
+	set {Kit-Drain::%{_player}%} to {_player}
+	message "§2§l体力が養分として吸われていく!" to {_player}
 	set {_level} to round({_level})
-	apply poison {_level} to {_victim} for {_time}
 	create bossbar titled "&2&l吸収" and id "%{_player}%-Drain" for {_player} with progress 100 with colors green with style solid
 	set {_tick} to "%{_time}%"
 	replace " seconds" with "" in {_tick}
@@ -142,25 +186,35 @@ function kitDrain(victim: player, attacker: player, level: number, time: time sp
 		set {_value} to value of bossbar "%{_player}%-Drain"
 		subtract {_prog} from {_value}
 		set bossbar "%{_player}%-Drain" value to {_value}
+		apply poison 1 without particles to {_player} for a tick
+		if mod(loop-number, 20) is 0:
+			kitDamage({_player}, 1, true)
+			playSound("entity.generic.drink", 1, 0.85, {_player})
+			set {_mindis} to 15
+			loop all players in radius 10 around {_player}:
+				kitCheckTeam(loop-player, {_player}, false) is true
+				set {_dis} to distance between loop-player and {_player}
+				if {_mindis} > {_dis}:
+					set {_target} to loop-player
+					set {_mindis} to {_dis}
+			if {_target} is set:
+				kitHeal({_target}, 0.5)
+				playSound("block.composter.empty", 1, 1.3, {_target})
+				set {_from} to location 1 meters above {_player}
+				set {_to} to location 1 meters above {_player}
+				set {_vector} to setVector({_from}, {_to})
+				set yaw of {_from} to yaw of {_vector}
+				set pitch of {_from} to pitch of {_vector}
+				set {_eln} to round({_mindis}) * 2
+				set {_en} to 0
+				loop {_eln} times:
+					add 1 to {_en}
+					set {_el} to location 0.5 * {_en} meters in front of {_from}
+					spawnParticle(composter, {_el})
 		wait a tick
-	delete {Kit-Drain::%{_victim}%}
-	message "§a吸収効果が切れました" to {_victim}
+	delete {Kit-Drain::%{_player}%}
+	message "§a吸収効果が切れました" to {_player}
 	remove bossbar "%{_player}%-Drain"
-
-on damage of player:
-	damage was caused by poison
-	{Kit-Drain::%victim%} is set
-	{Kit-Drain::%victim%} is alive
-	set {_heal} to a random number between 0 and 1
-	kitHeal({Kit-Drain::%victim%}, {_heal})
-	playSound("block.brewing_stand.brew", 1, 1.5, {Kit-Drain::%victim%})
-	loop all blocks in radius 2 around victim:
-		chance of 20%:
-			set {_loc} to location of loop-block
-			add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
-			add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
-			add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
-			drawDot count 5, particle "happyvillager", center {_loc}, visibleRange 30
 
 #睡眠
 function kitSleep(player: player, time: time span):
@@ -184,8 +238,11 @@ function kitSleep(player: player, time: time span):
 				set {_loc} to location 1 meter below {_loc}
 			set {_tl} to {_loc}
 			teleport {_player} to {_tl}
-			set {_el} to aroundEffect({_player})
-			drawDot count 1, particle "nautilus", center {_el}, visibleRange 30
+			set {_el} to location of head of {_player}
+			add a random number between 0 and 0.5 to x-coordinate of {_el}
+			add a random number between 0 and 0.5 to y-coordinate of {_el}
+			add a random number between 0 and 0.5 to z-coordinate of {_el}
+			spawnParticle_Vector(sculk_charge_pop, vector(0, 0.5, 0), {_el})
 			set {_value} to value of bossbar "%{_player}%-Sleep"
 			subtract {_prog} from {_value}
 			set bossbar "%{_player}%-Sleep" value to {_value}
@@ -230,16 +287,18 @@ function kitStun(player: player, time: time span):
 	set {_prog} to 100 / {_looptick}
 	set walk speed of {_player} to 0.1
 	set attack speed attribute of {_player} to 4
+	set {_rad} to 0
 	loop {_looptick} times:
 		if {Kit-Stun::%{_player}%} is {_now}:
-			loop 5 times:
-				set {_el} to aroundEffect({_player})
-				set y-coordinate of {_el} to y-coordinate of {_player}
-				add a random number between 1.5 and 2 to y-coordinate of {_el}
-				drawDot count 1, particle "blockcrack", material dirt, center {_el}, visibleRange 30
 			set {_value} to value of bossbar "%{_player}%-Stun"
 			subtract {_prog} from {_value}
 			set bossbar "%{_player}%-Stun" value to {_value}
+			set {_el} to location of {_player}
+			add 2 to y-coordinate of {_el}
+			add 36 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			spawnParticle(crit, {_el})
 			wait a tick
 	remove bossbar "%{_player}%-Stun"
 	set walk speed of {_player} to 0.2
