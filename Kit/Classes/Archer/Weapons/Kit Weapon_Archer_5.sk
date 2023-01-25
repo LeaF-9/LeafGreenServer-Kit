@@ -46,16 +46,13 @@ function kitWeapon_Archer_5(player: player):
 		unload yml "cursearrow.%{_player}%"
 		set {_amount} to amount of arrow in {_player}'s inventory
 		set {_amoweak} to amount of {_CurseArrow} in {_player}'s inventory
-		broadcast "%{_amount}% %{_amoweak}%"
 		add {_amoweak} to {_amount}
 		set {_s} to 35
 		set {_a} to 0
 		loop {_amount} times:
+			remove an arrow from {_player}
 			add 1 to {_a}
 			set slot {_s} of {_player} to {_a} of {_CurseArrow}
 			if {_a} is 64:
 				subtract 1 from {_s}
 				set {_a} to 0
-		remove all arrows from {_player}
-		set {_amount} to amount of arrow in {_player}'s inventory
-		broadcast "%{_amount}%"
