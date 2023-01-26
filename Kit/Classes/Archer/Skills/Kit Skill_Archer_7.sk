@@ -1,39 +1,40 @@
 # Hawk Blast
 
 function kitSkill_Archer_7(player: player):
-	set {_now} to now
-	set {Stats.%{_player}%::HawkBlastNow} to {_now}
-	if {Stats.%{_player}%::HawkBlast} is not set:
-		set {Stats.%{_player}%::HawkBlast} to 0
-		set {Stats.%{_player}%::HawkBlastLoc} to location of head of {_player}
-		playSound("entity.phantom.bite", 1, 2, {_player})
-		kitMsg({_player}, "§f鷹を§b放出§fします...")
-	loop 5 times:
-		{_ok} is not set
-		if {Stats.%{_player}%::HawkBlast} < 100:
-			add 1 to {Stats.%{_player}%::HawkBlast}
+	toolCT({_player}, "Archer", 7)
+	set {Stats.%{_player}%::HawkBlast} to true
+	set {Stats.%{_player}%::HawkBlastLoc} to location of head of {_player}
+	playSound("entity.phantom.bite", 1, 2, {_player})
+	kitMsg({_player}, "§f鷹を§b放出§fします...")
+	set {_count} to 0
+	# --- 炸裂までの挙動 ---
+	while {Stats.%{_player}%::HawkBlast} is true:
+		add 1 to {_count}
+		set {_tool} to {_player}'s tool
+		if {_count} >= 100:  # 100mを超えた際の挙動
+			delete {Stats.%{_player}%::HawkBlast}
+		else if kitItemAllChecker({_tool}, "Archer", "Skill", 7) is true:  # 持っているアイテムがスキルのものでは無い場合の挙動
+			delete {Stats.%{_player}%::HawkBlast}
+		else:
 			set {_locnow} to location of head of {_player}
 			set {_baseloc} to {Stats.%{_player}%::HawkBlastLoc}
 			set yaw of {_baseloc} to yaw of {_locnow}
 			set pitch of {_baseloc} to pitch of {_locnow}
 			set {_block} to location 1 meter in front of {_baseloc}
 			set {Stats.%{_player}%::HawkBlastLoc} to {_block}
-			if block at {_block} is not passable:
-				set {_ok} to true
+			if block at {_block} is not passable:  # ブロックと衝突した際の挙動
+				delete {Stats.%{_player}%::HawkBlast}
 			drawDot count 1, particle "endrod", center {_block}, visibleRange 100, keepFor 5 ticks
+			if mod({_count}, 5) is 0:
+				playSound("entity.phantom.flap", 1, 2, {_block})
 			drawHawkBlast({_block})
-		else:
-			set {_ok} to true
-		wait a tick
-	playSound("entity.phantom.flap", 1, 2, {_block})
-	if {Stats.%{_player}%::HawkBlastNow} is {_now}:
-		set {_ok} to true
-	if {_ok} is true:
-		toolCT({_player}, "Archer", 7)
+			wait a tick
+	# --------------------
+	# --- 炸裂時の挙動 ---
+	if {Stats.%{_player}%::HawkBlastLoc} is set:
 		kitMsg({_player}, "<##f0f8ff>鷹が<##00bfff>炸裂<##f0f8ff>した!")
 		set {_bloc} to {Stats.%{_player}%::HawkBlastLoc}
 		delete {Stats.%{_player}%::HawkBlast}
-		delete {Stats.%{_player}%::HawkBlastNow}
 		delete {Stats.%{_player}%::HawkBlastLoc}
 		playSound("entity.phantom.hurt", 1, 0.5, {_bloc})
 		set {_y} to 0
@@ -77,6 +78,7 @@ function kitSkill_Archer_7(player: player):
 			apply glowing 1 to loop-entity for 3 seconds
 			if type of loop-entity is player:
 				message formatted "§e鷹の閃光§6がヒットした!" to loop-entity
+	# ------------------
 
 function drawHawkBlast(loc: location):
 	set {_froloc} to location 0.6 meters in front of {_loc}
@@ -142,3 +144,10 @@ function drawHawkBlast(loc: location):
 			drawDot count 1, particle "redstone", RGB 50 * loop-number-1, 255, 255, center {_el}, visibleRange 100
 			set {_el} to location loop-number-2 * 0.1 meters in front of {_rloc}
 			drawDot count 1, particle "redstone", RGB 50 * loop-number-1, 255, 255, center {_el}, visibleRange 100
+
+on leftclick:
+	metadata value "gametype" of player is "Kit"
+	{Stats.%player%::HawkBlast} is true
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Archer", "Skill", 7) is true
+	delete {Stats.%player%::HawkBlast}
