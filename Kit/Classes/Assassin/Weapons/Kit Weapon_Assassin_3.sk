@@ -4,7 +4,13 @@ on death of player:
 	{LastKiller::%victim%} is set
 	{Class::%{LastKiller::%victim%}%} is "Assassin"
 	set {_tool} to {LastKiller::%victim%}'s tool
-	if kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 3) is true:
-		{LastKiller::%victim%} is alive
-		set {Kit-NoCorpse::%victim%} to true
-		kitHeal({LastKiller::%victim%}, 1)
+	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 3) is true
+	{LastKiller::%victim%} is alive
+	set {Kit-NoCorpse::%victim%} to true
+	set {_heal} to 1
+	set {_dis} to distance between attacker and victim
+	if {_dis} <= 1:
+		add 2 to {_heal}
+	else if victim's facing is attacker's facing:
+		add 2 to {_heal}
+	kitHeal({LastKiller::%victim%}, {_heal})
