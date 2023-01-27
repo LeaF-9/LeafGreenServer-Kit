@@ -1,14 +1,33 @@
 # Basher
 
-on damage of player:
-	victim is blocking
-	name of victim's offhand tool is "§6Wooden Shield"
-	set {_per} to kitPercent(victim, 10, true)
-	chance of {_per}%:
-		cancel event
-		playSound("block.anvil.place", 1, 0.8, victim)
-		add 1 to {Stats.%victim%::WoodenShield}
-		add 34 to damage value of victim's offhand tool
-		if {Stats.%victim%::WoodenShield} >= 10:
-			delete victim's offhand tool
-			playSound("entity.item.break", 1, 0.5, victim)
+on sneak toggle:
+	metadata value "gametype" of player is "Kit"
+	{Class::%player%} is "Defender"
+	player is blocking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Defender", "Weapon.main", 3) is true
+	playSound("item.shield.block", 1, 0.8, player)
+	set {_baseloc} to location of player
+	set pitch of {_baseloc} to 0
+	set {_toloc} to location 5 meters in front of {_baseloc}
+	set {_v} to setVector({_baseloc}, {_toloc})
+	set velocity of player to {_v}
+	set {_baseel} to {_baseloc}
+	add 180 to yaw of {_baseel}
+	loop 20 times:
+		if {_target} is not set:
+			loop all players in radius 1.5 around player:
+				kitCheckTeam(loop-player, player, false) is true
+				set {_target} to true
+			set {_v} to setVector({_baseel}, location 1 meters in front of {_baseel})
+			set {_el} to location of player
+			add a random number between 0 and 2 to y-coordinate of {_el}
+			spawnParticle_Vector(crit, {_v}, {_el})
+			wait a tick
+	if {_target} is set:
+		kitDamage(player, {_target}, 1.5)
+		kitStun({_target}, 1 seconds)
+		playSound("entity.zombie.break_wooden_door", 1, 2, {_target})
+		loop 10 times:
+			set {_el} to aroundEffect({_target})
+			spawnParticle_Block(dirt, {_el})
