@@ -3,7 +3,8 @@ options:
 
 function kitInvisible(player: player, second: time span):
 	addKitOS("Invisible")
-	set {Kit-Invisible::%{_player}%} to true
+	set {_now} to now
+	set {Kit-Invisible::%{_player}%} to {_now}
 	set {_tick} to "%{_second}%"
 	replace " seconds" with "" in {_tick}
 	replace " second" with "" in {_tick}
@@ -23,14 +24,15 @@ function kitInvisible(player: player, second: time span):
 				set {_ng} to true
 			if {_player} has glowing:
 				set {_ng} to true
-	if {_invnot} is true:
-		remove invisibility from {_player}
-	reveal {_player} from all players
-	delete {Kit-Invisible::%{_player}%}
-	send action bar "§b§l透明化が解除されました!" to {_player}
+	if {Kit-Invisible::%{_player}%} is {_now}:
+		if {_invnot} is true:
+			remove invisibility from {_player}
+		reveal {_player} from all players
+		delete {Kit-Invisible::%{_player}%}
+		send action bar "§b§l透明化が解除されました!" to {_player}
 
 on leftclick:
-	if {Kit-Invisible::%targeted player%} is true:
+	if {Kit-Invisible::%targeted player%} is set:
 		distance between the player and the targeted player is smaller than 5
 		remove invisibility from {_player}
 		reveal the targeted player from all players
@@ -38,7 +40,7 @@ on leftclick:
 		delete {Kit-Invisible::%targeted player%}
 
 on damage of player:
-	if {Kit-Invisible::%victim%} is true:
+	if {Kit-Invisible::%victim%} is set:
 		if damage was caused by fall:
 			stop
 		else:
