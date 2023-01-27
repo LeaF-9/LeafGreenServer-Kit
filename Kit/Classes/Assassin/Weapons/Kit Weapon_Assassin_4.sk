@@ -4,13 +4,40 @@ on damage:
 	metadata value "gametype" of attacker is "Kit"
 	damage was caused by attack
 	{Class::%attacker%} is "Assassin"
+	attacker is sneaking
 	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 4) is true
+	if victim's health <= 5:
+		set {_per} to kitPercentDuel(attacker, victim, 5, true)
+		chance of {_per}%:
+			cancel event
+			LastKiller(victim, attacker)
+			kill victim
+			playSound("entity.phantom.bite", 1, 1, victim)
+			drawDot count 10, particle "mobspell", RGB 108, 36, 99, center victim, visibleRange 30
+
+function kitWeapon_Assassin_4(attacker: player, victim: player) :: boolean:
+	set {_tool} to {_attacker}'s tool
 	if kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 4) is true:
-		if {_victim}'s health <= 5:
-			set {_per} to kitPercentDuel(attacker, victim, 5, true)
-			chance of {_per}%:
-				cancel event
-				LastKiller(victim, attacker)
-				kill victim
-				playSound("entity.phantom.bite", 1, 1, victim)
-				drawDot count 10, particle "mobspell", RGB 108, 36, 99, center victim, visibleRange 30
+		if {_attacker} is sneaking:
+			if health of {_victim} <= 5:
+				kitMsg({_attacker}, "§5§l%{_victim}% §4の抹殺に成功しました...!")
+				kitEffect_AssassinDagger_Killed({_victim})
+				return true
+			else:
+				return false
+		else:
+			return false
+	else:
+		return false
+
+function kitEffect_AssassinDagger_Killed(victim: player):
+	message formatted "<##630101>背後から抹殺の一撃を喰らってしまった..." to {_victim}
+	# --- 音の演出 ---
+	playSound("entity.phantom.bite", 1, 0.5, {_victim})
+	# ---------------
+	# --- パーティクルの演出 ---
+	loop 5 times:
+		set {_el} to aroundEffect({_victim})
+		spawnParticle_DustTransition(dust_color_transition, 50, 0, 10, 0, 0, 0, 10, {_el})
+	# -----------------------
