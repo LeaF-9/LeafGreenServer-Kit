@@ -4,11 +4,11 @@ on damage of player:
 	metadata value "gametype" of attacker is "Kit"
 	damage was caused by attack
 	{Class::%attacker%} is "Defender"
+	player is sneaking
 	set {_tool} to attacker's tool
-	if kitItemAllChecker({_tool}, "Defender", "Weapon.main", 2) is true:
-		set {_per} to kitPercentDuel(attacker, victim, 10, true)
-		chance of {_per}%:
-			kitBlood(victim)
-			loop 5 times:
-				set {_loc} to aroundEffect(victim)
-				drawDot count 1, particle "blockcrack", material redstone block, center {_loc}, visibleRange 30
+	kitItemAllChecker({_tool}, "Defender", "Weapon.main", 2) is true
+	kitBlood(victim)
+	playSound("block.chain.break", 1, 0.65, victim)
+	loop 10 times:
+		set {_loc} to aroundEffect(victim)
+		spawnParticle_Block(redstone block, {_loc})
