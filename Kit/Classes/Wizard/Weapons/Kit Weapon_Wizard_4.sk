@@ -43,26 +43,16 @@ function kitWeapon_Wizard_4(player: player):
 
 function kitEffect_MoonRod(player: player, period: number):
 	{_period} <= 15
-	
-
-
-
 	set {_startrad} to 0 + (315 * ({_period} - 1))
 	set {_startheight} to 16 - {_period}
 	set {_startmeter} to 0.53 * ({_period} - 1)
 	set {_baseloc} to location of {_player}
 	loop 15 times:
-		add 21 to {_rad}
-
-
-
-	loop 10 times:
-		set {_effcount} to 6 - round({_count} / 2)
-		set {_effwide} to 5 - ({_count} / 2)
-		set {_effwideminus} to {_effwide} * -1
-		loop {_effcount} times:
-			set {_loc} to location {_count} meters above {_baseloc}
-			add a random number between {_effwideminus} and {_effwide} to x-coordinate of {_loc}
-			add a random number between {_effwideminus} and {_effwide} to z-coordinate of {_loc}
-			drawDot count 1, particle "endrod", center {_loc}, visibleRange 100
-		subtract 1 from {_count}
+		set {_el} to {_baseloc}
+		add {_startheight} to y-coordinate of {_el}
+		add {_startmeter} * sin({_startrad}) to x-coordinate of {_el}
+		add {_startmeter} * cos({_startrad}) to z-coordinate of {_el}
+		spawnParticle(end_rod, {_el})
+		add 21 to {_startrad}
+		subtract 0.066 from {_startheight}
+		add 0.035 to {_startmeter}
