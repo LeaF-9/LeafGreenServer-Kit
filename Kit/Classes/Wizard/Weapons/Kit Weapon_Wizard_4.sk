@@ -36,9 +36,14 @@ function kitWeapon_Wizard_4(player: player):
 					# ----------------------------
 				add 1 to {_mooners::%loop-player%}
 				if {_mooners::%loop-player%} >= 60:
+					delete {_mooners::%loop-player%}
 					kitSleep(loop-player, 3 seconds)
 					# --- 寝てしまった際のパーティクル演出 ---
-					# -----------------------------------
+					set {_pb} to location 1 meters above loop-player
+					loop 15 times:
+						set {_rv} to randomVector({_pb})
+						spawnParticle_Vector(sculk_charge_pop, {_rv}, {_pb})
+					# -------------------------------------
 			wait a tick
 
 function kitEffect_MoonRod(player: player, period: number):
