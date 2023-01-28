@@ -345,14 +345,9 @@ command /manaset <number>:
 
 # Timer
 function kitTimerWizard(player: player):
+	create bossbar titled "&b&lMana&5: &9&l%{Kit-Mana::%{_player}%}%" and id "%{_player}%-Mana" for {_player} with progress {Kit-Mana::%{_player}%} with colors blue with style segmented 10
 	while {Class::%{_player}%} is "Wizard":
-		delete {_true}
-		if {_player}'s tool is air:
-			set {_true} to true
-		else:
-			set {_name} to name of {_player}'s tool
-			if checkCT({_player}, name of {_player}'s tool, true) is true:
-				set {_true} to true
-		if {_true} is true:
-			send action bar "§b§lMana§5: §9%{Kit-Mana::%{_player}%}%" to {_player}
+		set bossbar "%{_player}%-Mana" title to "&b&lMana&5: &9&l%{Kit-Mana::%{_player}%}%"
+		set bossbar "%{_player}%-Mana" value to {Kit-Mana::%{_player}%}
 		wait a second
+	remove bossbar "%{_player}%-Mana"
