@@ -139,38 +139,21 @@ function kitSkill_Wizard_7(player: player):
 					drawDot count 1, particle "blockcrack", material blue ice block, center {_rp}, visibleRange 32
 				else if {_rn} is 4:
 					drawDot count 1, particle "blockcrack", material snow block, center {_rp}, visibleRange 32
-			# --- PlayerのみのFreeze ---
-			loop all players in radius 8 around {_point}:
-				kitCheckTeam(loop-player, {_player}, false) is true
-				kitDamage({_player}, loop-player, 1)
-				if {Kit-Freeze::%loop-player%} is not set:
-					add loop-player to {_fp::*}
-					set {_wk} to walk speed of loop-player
-					subtract 0.025 from {_wk}
-					broadcast "%{_wk}%"
-					if {_wk} <= 0:
-						broadcast "hey"
-						set walk speed of loop-player to 0.2
-						kitFreeze(loop-player, 2 seconds)
-						playSound("entity.player.levelup", 1, 2, loop-player)
-					else:
-						set walk speed of loop-player to {_wk}
-			# -------------------------
 			# --- Entity込のFreeze ---
-			# loop all entities in radius 8 around {_point}:
-			# 	kitCheckTeam(loop-entity, {_player}, false) is true
-			# 	kitDamage({_player}, loop-entity, 1)
-			# 	if type of loop-entity is player:
-			# 		if {Kit-Freeze::%loop-entity%} is not set:
-			# 			add loop-entity to {_fp::*}
-			# 			set {_wk} to walk speed of loop-entity
-			# 			subtract 0.025 from {_wk}
-			# 			if {_wk} <= 0:
-			# 				set walk speed of loop-entity to 0.2
-			# 				kitFreeze(loop-entity, 2 seconds)
-			# 				playSound("entity.player.levelup", 1, 2, loop-entity)
-			# 			else:
-			# 				set walk speed of loop-entity to {_wk}
+			loop all entities in radius 8 around {_point}:
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				kitDamage({_player}, loop-entity, 1)
+				if type of loop-entity is player:
+					if {Kit-Freeze::%loop-entity%} is not set:
+						add loop-entity to {_fp::*}
+						set {_wk} to walk speed of loop-entity
+						subtract 0.025 from {_wk}
+						if {_wk} <= 0:
+							set walk speed of loop-entity to 0.2
+							kitFreeze(loop-entity, 2 seconds)
+							playSound("entity.player.levelup", 1, 2, loop-entity)
+						else:
+							set walk speed of loop-entity to {_wk}
 			# ------------------------
 			wait 5 ticks
 		wait a second
