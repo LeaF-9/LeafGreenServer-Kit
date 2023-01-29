@@ -20,7 +20,7 @@ function kitBlood(player: player):
 		set bossbar "%{_player}%-Blood" value to 100
 		if {Stats.%{_player}%::Gaping} is true:
 			damage {_player} by 1 hearts
-			loop 5 times:
+			loop 10 times:
 				set {_el} to aroundEffect({_player})
 				drawDot count 1, particle "redstone", RGB 100, 0, 10, center {_el}, visibleRange 30
 			chance of 30%:
@@ -42,13 +42,14 @@ function kitBlood(player: player):
 		loop 10 times:
 			set {_el} to aroundEffect({_player})
 			spawnParticle_Block(redstone block, {_el})
+			spawnParticle(dripping_lava, {_el})
 		if {_ng} is not set:
 			loop 100 times:
 				wait 2 ticks
 				set {_value} to value of bossbar "%{_player}%-Blood"
 				subtract 1 from {_value}
 				set bossbar "%{_player}%-Blood" value to {_value}
-				set {_el} to location 1 meters above {_player}
+				set {_el} to aroundEffect({_player})
 				spawnParticle(falling_lava, {_el})
 	if {Kit-Blood::%{_player}%} is not set:
 		remove bossbar "%{_player}%-Blood"
@@ -203,7 +204,7 @@ function kitDrain(player: player, time: time span):
 				kitHeal({_target}, 0.5)
 				playSound("block.composter.empty", 1, 1.3, {_target})
 				set {_from} to location 1 meters above {_player}
-				set {_to} to location 1 meters above {_player}
+				set {_to} to location 1 meters above {_target}
 				set {_vector} to setVector({_from}, {_to})
 				set yaw of {_from} to yaw of {_vector}
 				set pitch of {_from} to pitch of {_vector}
