@@ -329,28 +329,28 @@ on pick up llama egg:
 		stop
 	execute console command "/givecoin %player% 10 Wool拾得"
 
-every a second:
-	loop all players:
-		set {_walkremove} to 0
-		if loop-player has sheep egg named "§7Wool":
-			playSound("block.note_block.pling", 1.8, 1.5, loop-player)
-			drawDot count 1, particle "redstone", RGB 255, 255, 255, center location 2 meters above loop-player, visibleRange 32, keepFor 10 ticks
-			set {_amount} to amount of sheep egg named "§7Wool" in loop-player's inventory
-			set {_walkremove} to 0.05 * {_amount}
-		else if loop-player has llama egg named "§6§lSpecial Wool":
-			playSound("block.note_block.pling", 1.8, 0.75, loop-player)
-			apply glowing 1 to loop-player for 1 second
-			set {_walkremove} to 0.1
-		set {_speed} to 0.2 - {_walkremove}
-		if walk speed of loop-player is not {_speed}:
-			set walk speed of loop-player to {_speed}
-	loop all sheeps:
-		loop-sheep's display name is set
-		loop-sheep's display name is not "§7Wool"
-		world of loop-sheep is worldChecker("Kit", {Kit-GameStage::name})
-		set {_name} to loop-sheep's display name
-		if distance between loop-sheep and {Kit-GameStage::voidtp-%{_name}%} is more than 10:
-			teleport loop-sheep to {Kit-GameStage::voidtp-%{_name}%}
+# every a second:
+# 	loop all players:
+# 		set {_walkremove} to 0
+# 		if loop-player has sheep egg named "§7Wool":
+# 			playSound("block.note_block.pling", 1.8, 1.5, loop-player)
+# 			drawDot count 1, particle "redstone", RGB 255, 255, 255, center location 2 meters above loop-player, visibleRange 32, keepFor 10 ticks
+# 			set {_amount} to amount of sheep egg named "§7Wool" in loop-player's inventory
+# 			set {_walkremove} to 0.05 * {_amount}
+# 		else if loop-player has llama egg named "§6§lSpecial Wool":
+# 			playSound("block.note_block.pling", 1.8, 0.75, loop-player)
+# 			apply glowing 1 to loop-player for 1 second
+# 			set {_walkremove} to 0.1
+# 		set {_speed} to 0.2 - {_walkremove}
+# 		if walk speed of loop-player is not {_speed}:
+# 			set walk speed of loop-player to {_speed}
+# 	loop all sheeps:
+# 		loop-sheep's display name is set
+# 		loop-sheep's display name is not "§7Wool"
+# 		world of loop-sheep is worldChecker("Kit", {Kit-GameStage::name})
+# 		set {_name} to loop-sheep's display name
+# 		if distance between loop-sheep and {Kit-GameStage::voidtp-%{_name}%} is more than 10:
+# 			teleport loop-sheep to {Kit-GameStage::voidtp-%{_name}%}
 
 function kitTimer_BH():
 	set {_timer.balloon} to 0
