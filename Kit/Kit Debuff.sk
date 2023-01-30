@@ -346,6 +346,8 @@ function kitFear(player: player, time: time span):
 					spawnParticle(falling_obsidian_tear, {_el})
 			# -----------------------
 			# --- 効果 ---
+			set {_pkt} to new play_server_stop_sound packet
+			send {_player} packet {_pkt}
 			loop all players:
 				metadata value "gametype" of loop-player is "Kit"
 				if distance between loop-player and {_player} > 10:
@@ -362,15 +364,15 @@ function kitFear(player: player, time: time span):
 		reveal loop-player from {_player}
 	delete {Kit-Fear::%{_player}%}
 
-on packet event play_server_named_sound_effect:
-	set {_sound} to field 0 of event-packet
-	broadcast "%{_sound}%"
-	loop all players:
-		{Kit-Fear::%loop-player%} is set
-		{_sound} is not "ENTITY_WARDEN_HEARTBEAT"
-		if {_pkt} is not set:
-			set {_pkt} to new play_server_stop_sound packet
-		send loop-player packet {_pkt}
+# on packet event play_server_named_sound_effect:
+# 	set {_sound} to field 0 of event-packet
+# 	broadcast "%{_sound}%"
+# 	loop all players:
+# 		{Kit-Fear::%loop-player%} is set
+# 		{_sound} is not "ENTITY_WARDEN_HEARTBEAT"
+# 		if {_pkt} is not set:
+# 			set {_pkt} to new play_server_stop_sound packet
+# 		send loop-player packet {_pkt}
 
 function kitShield(player: player, shield: number):
 	addKitOS("Shield")
