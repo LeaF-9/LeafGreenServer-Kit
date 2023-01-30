@@ -315,6 +315,62 @@ on shoot:
 		push projectile to the left at speed random number from -1 to 1
 		push projectile upwards at speed random number from -1 to 1
 
+# 恐怖
+function kitFear(player: player, time: time span):
+	addKitOS("Fear")
+	{Kit-Fear::%{_player}%} is not set
+	set {_now} to now
+	set {Kit-Fear::%{_player}%} to {_now}
+	create bossbar titled "&0&l恐怖" and id "%{_player}%-Fear" for {_player} with progress 100 with colors yellow with style solid
+	message "§0恐怖で視力と聴力が弱まってしまった..." to {_player}
+	playSound("entity.warden.tendril_clicks", 1, 0.5, {_player})
+	set {_tick} to "%{_time}%"
+	replace " seconds" with "" in {_tick}
+	replace " second" with "" in {_tick}
+	set {_tick} to {_tick} parsed as number
+	set {_looptick} to {_tick} * 20
+	set {_prog} to 100 / {_looptick}
+	applyEffect({_player}, darkness, {_time})
+	loop {_looptick} times:
+		if {Kit-Fear::%{_player}%} is {_now}:
+			set {_value} to value of bossbar "%{_player}%-Fear"
+			subtract {_prog} from {_value}
+			set bossbar "%{_player}%-Fear" value to {_value}
+			# --- 音の演出 ---
+			if mod(loop-number, 10) is 0:
+				playSound("entity.warden.heartbeat", 1, 1, {_player}, true)
+			# --------------
+			# --- パーティクルの演出 ---
+				loop 10 times:
+					set {_el} to aroundEffect({_player})
+					spawnParticle(falling_obsidian_tear, {_el})
+			# -----------------------
+			# --- 効果 ---
+			loop all players:
+				metadata value "gametype" of loop-player is "Kit"
+				if distance between loop-player and {_player} > 10:
+					hide loop-player from {_player}
+				else:
+					if {Kit-Invisible::%loop-player%} is not set:
+						reveal loop-player from {_player}
+			# -----------
+			wait a tick
+	remove bossbar "%{_player}%-Fear"
+	loop all players:
+		metadata value "gametype" of loop-player is "Kit"
+		{Kit-Invisible::%loop-player%} is not set
+		reveal loop-player from {_player}
+	delete {Kit-Fear::%{_player}%}
+
+on packet event play_server_named_sound_effect:
+	set {_sound} to field 0 of event-packet
+	loop all players:
+		{Kit-Fear::%loop-player%} is set
+		{_sound} is not "ENTITY_WARDEN_HEARTBEAT"
+		if {_pkt} is not set:
+			set {_pkt} to new play_server_stop_sound packet
+		send loop-player packet {_pkt}
+
 function kitShield(player: player, shield: number):
 	addKitOS("Shield")
 	addKitOS("ShieldTime")
