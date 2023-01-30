@@ -321,7 +321,7 @@ function kitFear(player: player, time: time span):
 	{Kit-Fear::%{_player}%} is not set
 	set {_now} to now
 	set {Kit-Fear::%{_player}%} to {_now}
-	create bossbar titled "&0&l恐怖" and id "%{_player}%-Fear" for {_player} with progress 100 with colors yellow with style solid
+	create bossbar titled "&0&l恐怖" and id "%{_player}%-Fear" for {_player} with progress 100 with colors purple with style solid
 	message "§0恐怖で視力と聴力が弱まってしまった..." to {_player}
 	playSound("entity.warden.tendril_clicks", 1, 0.5, {_player})
 	set {_tick} to "%{_time}%"
@@ -364,6 +364,7 @@ function kitFear(player: player, time: time span):
 
 on packet event play_server_named_sound_effect:
 	set {_sound} to field 0 of event-packet
+	broadcast "%{_sound}%"
 	loop all players:
 		{Kit-Fear::%loop-player%} is set
 		{_sound} is not "ENTITY_WARDEN_HEARTBEAT"
