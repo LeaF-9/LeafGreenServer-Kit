@@ -10,12 +10,12 @@ function kitSkill_Assassin_5(player: player):
 		kitCheckTeam({_player}, loop-entity, false) is true
 		set {_damage} to 2
 		if {Stats.%loop-entity%::Pursuit} is set:
-			add 4 * {Stats.%loop-entity%::Pursuit} to {_damage}
+			add 2 * {Stats.%loop-entity%::Pursuit} to {_damage}
 		kitMsg({_player}, "§1%loop-entity% §4にクリーンヒット!")
 		message "§4§l痛い! §5追撃がヒットした..." to loop-entity
 		playSound("entity.zombie.break_wooden_door", 1, 2, loop-entity)
 		drawDot count 1, particle "witchspell", center loop-entity, visibleRange 30
-		make {_player} damage loop-entity by {_damage}
+		kitDamage({_player}, loop-entity, {_damage}, true)
 	set {_front} to 2.5
 	set {_lr} to 0
 	set {_length} to 5
