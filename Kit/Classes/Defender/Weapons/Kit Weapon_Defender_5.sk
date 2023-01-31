@@ -1,5 +1,70 @@
 # Heat Hammer
 
+on sneak toggle:
+	metadata value "gametype" of player is "Kit"
+	{Class::%player%} is "Defender"
+	player is not sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Defender", "Weapon.main", 5) is true
+	checkCT({_player}, name of {_tool}) is true
+	wait a tick
+	set {_time} to 0
+	set {_true} to false
+	while {_true} is false:
+		set {_tool} to player's tool
+		if player is not sneaking:
+			set {_true} to true
+		if kitItemAllChecker({_tool}, "Defender", "Weapon.main", 5) is false:
+			delete {_true}
+		if {_true} is false:
+			if {_time} < 20:
+				add 1 to {_time}
+			# --- 音の演出 ---
+			if mod({_time}, 10) is 0:
+				playSound("block.fire.ambient", 1, 2, player)
+			# ---------------
+			# --- パーティクルの演出 ---
+			set {_rn} to a random number between 0 and 2
+			set {_el} to location {_rn} meter above player
+			set {_v} to randomVector({_el}, 0.05)
+			spawnParticle_Vector(flame, {_v}, {_el})
+			# -----------------------
+			# --- Action Bar演出 ---
+			chargeActionBar(player, {_time} * 3, 60)
+			# ---------------------
+			wait a tick
+	if {_true} is true:
+		toolCT(player, "Defender", 5, "Weapon.main")
+		set {_baseloc} to location of player
+		set {_ln} to floor({_time} / 2)
+		playSound("entity.blaze.shoot", 1, 0.7, player)
+		loop {_ln} times:
+			set {_hitloc} to location loop-number meters in front of {_baseloc}
+			# --- 効果 ---
+			loop all entities in radius 2 around {_hitloc}:
+				kitCheckTeam(loop-entity, player, false) is true
+				{_hit::%id of loop-entity%} is not set
+				set {_hit::%id of loop-entity%} to true
+				kitDamage(player, loop-entity, 2)
+				ignite loop-entity for 3 seconds
+			# -----------
+			# --- パーティクル ---
+			set {_rad} to -18
+			loop 10 times:
+				add 18 to {_rad}
+				set {_el} to location 1 meters above {_hitloc}
+				set {_m1} to {_el}
+				subtract 90 from pitch of {_m1}
+				set {_t1} to location 1.5 * cos({_rad}) meters in front of {_m1}
+				set {_m2} to {_el}
+				set {_t2} to location 1.5 * sin({_rad}) meters in front of {_m2}
+				set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+				set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+				set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+				spawnParticle(flame, {_el})
+			# ------------------
+			wait a tick
+
 function kitWeapon_Defender_5(player: player):
 	toolCT({_player}, "Defender", 5, "Weapon.main")
 	playSound("entity.blaze.shoot", 1, 1.5, {_player})
