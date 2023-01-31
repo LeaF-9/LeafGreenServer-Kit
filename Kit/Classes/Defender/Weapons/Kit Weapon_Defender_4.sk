@@ -1,24 +1,76 @@
 # Bulldozer
 
-function kitWeapon_Defender_4(player: player):
-	toolCT({_player}, "Defender", 4, "Weapon.main")
-	set {_base} to location of {_player}
-	set pitch of {_base} to 0
-	set {_m} to 0
-	loop 5 times:
-		add 1 to {_m}
-		set {_l} to location {_m} meters in front of {_base}
-		loop all blocks in radius 1.5 around {_l}:
-			loop-block is air
-			block below loop-block is set
-			drawDot count 1, particle "blockcrack", material type of block below loop-block, center location 0.5 meters below loop-block, visibleRange 30
-		playSound("block.grass.break", 1, 0.8, {_l})
-		loop all players in radius 1.5 around {_l}:
-			kitCheckTeam({_player}, loop-player, false) is true
-			{_hit.%loop-player%} is not set
-			set {_hit.%loop-player%} to true
-			add {_player} to {damager.%loop-player%::*}
-			kitStun(loop-player, 5 seconds)
+on sneak toggle:
+	metadata value "gametype" of player is "Kit"
+	{Class::%player%} is "Defender"
+	player is not sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Defender", "Weapon.main", 4) is true
+	checkCT({_player}, name of {_tool}) is true
+	wait a tick
+	set {_time} to 0
+	set {_true} to false
+	while {_true} is false:
+		set {_tool} to player's tool
+		if player is not sneaking:
+			set {_true} to true
+		if kitItemAllChecker({_tool}, "Defender", "Weapon.main", 4) is false:
+			delete {_true}
+		if {_true} is false:
+			if {_time} < 60:
+				add 1 to {_time}
+			# --- 音の演出 ---
+			if mod({_time}, 5) is 0:
+				playSound("block.gravel.break", 1, 0.5, player)
+			# ---------------
+			# --- パーティクルの演出 ---
+			set {_bl} to location of player
+			set {_rad} to 0
+			loop 10 times:
+				set {_el} to {_bl}
+				add 36 to {_rad}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				spawnParticle_Block(dirt, {_el})
+			# -----------------------
+			# --- Action Bar演出 ---
+			chargeActionBar(player, {_time}, 60)
+			# ---------------------
+			wait a tick
+	if {_true} is true:
+		toolCT(player, "Defender", 4, "Weapon.main")
+		set {_baseloc} to location of player
+		set pitch of {_baseloc} to 0
+		set {_ln} to floor({_time} / 4)
+		loop {_ln} times:
+			set {_effbaseloc} to location loop-number meters in front of {_baseloc}
+			set {_right} to -3
 			loop 5 times:
-				set {_el} to aroundEffect(loop-player)
-				drawDot count 1, particle "blockcrack", material dirt, center {_el}, visibleRange 30
+				add 1 to {_right}
+				set {_effloc} to location {_right} meters to the right of {_effbaseloc}
+				delete {_ok}
+				while {_ok} is not set:
+					if block at {_effloc} is passable:
+						set {_ok} to true
+					else:
+						set {_effloc} to location 1 meter above {_effloc}
+						if y-coordinate of {_effloc} > 255:
+							set {_ok} to true
+				# --- 効果 ---
+				loop all entities in radius 1.5 around {_effloc}:
+					kitCheckTeam(loop-entity, player, false) is true
+					{_hit::%id of loop-entity%} is not set
+					set {_hit::%id of loop-entity%} to true
+					kitDamage(player, loop-entity, 1)
+					if type of loop-entity is player:
+						kitStun(loop-entity, 5 seconds)
+				# -----------
+				# --- パーティクル演出 ---
+				loop all blocks in radius 1.5 around {_effloc}:
+					loop-block is passable
+					block below loop-block is not passable
+					spawnParticle_Block(block below loop-block, location 0.4 meters below loop-block)
+				# ---------------------
+			if mod(loop-number, 3) is 0:
+				playSound("block.sand.break", 1, 0.5, {_effbaseloc})
+				wait a tick
