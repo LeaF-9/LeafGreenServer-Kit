@@ -26,7 +26,8 @@ function kitDamage(attacker: player, victim: entity, damage: number, pierce: boo
 			set field 0 of {_pkt} to id of {_victim}
 			set field 1 of {_pkt} to 1
 			send {_victim} packet {_pkt}
-		set {Stats.%{_victim}%::DamageTicks} to 10
+		set {_atktick} to maximum damage delay of {_victim}
+		set {Stats.%{_victim}%::DamageTicks} to round({_atktick} / 2)
 		while {Stats.%{_victim}%::DamageTicks} is set:
 			wait a tick
 			subtract 1 from {Stats.%{_victim}%::DamageTicks}
