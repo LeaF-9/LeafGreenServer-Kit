@@ -5,6 +5,13 @@ options:
 
 function kitSkill_Defender_5(player: player):
 	wait 6 ticks
+	if {Stats.%{_player}%::King Shield} is not set:
+		set {Stats.%{_player}%::King Shield} to 200
+	else if {Stats.%{_player}%::King Shield} <= 0:
+		loop all items in {_player}'s inventory:
+			name of loop-item is "§1King Shield"
+			delete loop-item
+		stop
 	playSound("item.armor.equip_netherite", 1, 1, {_player})
 	set {_l} to location of {_player}
 	set {_pitch} to pitch of {_l}
@@ -42,31 +49,24 @@ function kitSkill_Defender_5(player: player):
 			set {_l%loop-number%} to location {_width} * {_x} meters in front of {_l%loop-number%}
 		set pitch of {_l%loop-number%} to {_pitch}
 	loop 21 times:
-		if {Stats.%{_player}%::KingShield-%loop-number%} is not set:
-			set {Stats.%{_player}%::KingShield-%loop-number%} to 5
 		spawn an armor stand at {_l%loop-number%} with nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Pose:{Head:[%{_pitch}%f,0f,0f]},ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:blue_stained_glass_pane"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}"
 		set metadata value "%{_player}%-shield" of spawned armor stand to "%loop-number%"
 		set metadata value "gametype" of spawned armor stand to "Kit"
-		if {Stats.%{_player}%::KingShield-%loop-number%} is 0:
-			delete spawned armor stand
-		else if {Stats.%{_player}%::KingShield-%loop-number%} is 1:
-			set helmet of spawned armor stand to glass pane
-		else if {Stats.%{_player}%::KingShield-%loop-number%} is 2:
+		if {Stats.%{_player}%::King Shield} < 50:
 			set helmet of spawned armor stand to white glass pane
-		else if {Stats.%{_player}%::KingShield-%loop-number%} is 3:
+		else if {Stats.%{_player}%::King Shield} < 100:
 			set helmet of spawned armor stand to light blue glass pane
-		else if {Stats.%{_player}%::KingShield-%loop-number%} is 4:
+		else if {Stats.%{_player}%::King Shield} < 150:
 			set helmet of spawned armor stand to cyan glass pane
-		if {Stats.%{_player}%::KingShield-%loop-number%} > 0:
-			set {_sl} to {_l%loop-number%}
-			add 1.2 + 0.8 * cos({_pitch}) to y-coordinate of {_sl}
-			set pitch of {_sl} to 0
-			set {_fm} to 0.8 * sin({_pitch})
-			set {_sl} to location {_fm} meters in front of {_sl}
-			spawn a slime at {_sl} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
-			set metadata value "%{_player}%-shield" of spawned slime to "%loop-number%"
-			set metadata value "gametype" of spawned slime to "Kit"
-			set spawned slime's display name to "%{_player}%"
+		set {_sl} to {_l%loop-number%}
+		add 1.2 + 0.8 * cos({_pitch}) to y-coordinate of {_sl}
+		set pitch of {_sl} to 0
+		set {_fm} to 0.8 * sin({_pitch})
+		set {_sl} to location {_fm} meters in front of {_sl}
+		spawn a slime at {_sl} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
+		set metadata value "%{_player}%-shield" of spawned slime to "%loop-number%"
+		set metadata value "gametype" of spawned slime to "Kit"
+		set spawned slime's display name to "%{_player}%"
 	while {_player} is blocking with shield:
 		set {_l} to location of {_player}
 		set {_pitch} to pitch of {_l}
@@ -103,17 +103,11 @@ function kitSkill_Defender_5(player: player):
 					set {_x} to -2
 				set {_l%loop-number%} to location {_width} * {_x} meters in front of {_l%loop-number%}
 			set pitch of {_l%loop-number%} to {_pitch}
-		loop 21 times:
-			add {Stats.%{_player}%::KingShield-%loop-number%} to {_shieldhp}
-			if {Stats.%{_player}%::KingShield-%loop-number%} is not 0:
-				set {_check::%loop-number%} to true
-			else:
-				set {_check::%loop-number%} to false
 		loop all entities:
 			if type of loop-entity is an armor stand:
 				metadata value "%{_player}%-shield" of loop-entity is set
 				set {_num} to metadata value "%{_player}%-shield" of loop-entity parsed as number
-				if {_check::%{_num}%} is true:
+				if {Stats.%{_player}%::King Shield} > 0:
 					teleport loop-entity to {_l%{_num}%}
 					add nbt compound of "{Pose:{Head:[%{_pitch}%f,0f,0f]}}" to nbt compound of loop-entity
 				else:
@@ -121,7 +115,7 @@ function kitSkill_Defender_5(player: player):
 			else if type of loop-entity is a slime:
 				metadata value "%{_player}%-shield" of loop-entity is set
 				set {_num} to metadata value "%{_player}%-shield" of loop-entity parsed as number
-				if {_check::%{_num}%} is true:
+				if {Stats.%{_player}%::King Shield} > 0:
 					set {_sl} to {_l%{_num}%}
 					add 1.2 + 0.8 * cos({_pitch}) to y-coordinate of {_sl}
 					set pitch of {_sl} to 0
@@ -130,7 +124,7 @@ function kitSkill_Defender_5(player: player):
 					teleport loop-entity to {_sl}
 				else:
 					delete loop-entity
-		if {_shieldhp} <= 0:
+		if {Stats.%{_player}%::King Shield} <= 0:
 			loop all items in {_player}'s inventory:
 				name of loop-item is "§1King Shield"
 				delete loop-item
@@ -150,22 +144,22 @@ function kitSkill_Defender_5(player: player):
 on damage of slime:
 	set {_name} to victim's display name parsed as player
 	metadata value "%{_name}%-shield" of victim is set
-	if {team::%{_name}%} is not {team::%attacker%}:
+	if kitCheckTeam({_name}, attacker, false) is true:
 		if damage was caused by attack, projectile or void:
 			playSound("entity.armor_stand.hit", 1, 1, victim)
+			set {_dmg} to damage
 			set damage to 0
 			set {_num} to metadata value "%{_name}%-shield" of victim parsed as number
-			subtract 1 from {Stats.%{_name}%::KingShield-%{_num}%}
-			if {Stats.%{_name}%::KingShield-%{_num}%} is 0:
-				delete victim
-			else if {Stats.%{_name}%::KingShield-%{_num}%} is 1:
-				set helmet of victim to glass pane
-			else if {Stats.%{_name}%::KingShield-%{_num}%} is 2:
-				set helmet of victim to white glass pane
-			else if {Stats.%{_name}%::KingShield-%{_num}%} is 3:
-				set helmet of victim to light blue glass pane
-			else if {Stats.%{_name}%::KingShield-%{_num}%} is 4:
-				set helmet of victim to cyan glass pane
+			subtract {_dmg} from {Stats.%{_name}%::King Shield}
+			loop all entities:
+				type of loop-entity is armor stand
+				metadata value "%{_name}%-shield" is set
+				if {Stats.%{_name}%::King Shield} < 50:
+					set helmet of loop-entity to white glass pane
+				else if {Stats.%{_name}%::King Shield} < 100:
+					set helmet of loop-entity to light blue glass pane
+				else if {Stats.%{_name}%::King Shield} < 150:
+					set helmet of loop-entity to cyan glass pane
 		else:
 			cancel event
 	else:
