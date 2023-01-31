@@ -5,38 +5,49 @@ function kitSkill_Assassin_7(player: player):
 		toolCT({_player}, "Assassin", 7)
 		playSound("particle.soul_escape", 1, 1, {_player})
 		kitMsg({_player}, "<##990000>敵を欺く準備をします...")
-		set {Stats.%{_player}%::Psychopath} to true
-		loop 5 times:
-			loop 3 times:
-				set {_loc} to aroundEffect({_player})
-				drawDot count 1, particle "cloud", center {_loc}, visibleRange 30
-			wait a second
-		if {Stats.%{_player}%::Psychopath} is true:
-			delete {Stats.%{_player}%::Psychopath}
+		loop 60 times:
+			if {_target} is not set
+				if mod(61 - loop-number, 20) is 0:
+					loop 10 times:
+						set {_loc} to aroundEffect({_player})
+						spawnParticle(enchant, {_loc})
+				loop all players in radius 50 around {_player}:
+					kitCheckTeam({_player}, loop-player, false) is true
+					set {_vector.base} to setVector(location of loop-player, location of {_player})
+					set {_dis} to distance between loop-player and {_player}
+					set {_toloc} to location {_dis} meters in front of loop-player
+					set {_vector.target} to setVector(location of loop-player, {_toloc})
+					set {_vector} to {_vector.target} -- {_vector.base}
+					set {_length} to squared length of {_vector}
+					if {_length} <= 0.5:
+						set {_m} to 0
+						set {_looploc} to location of loop-player
+						set yaw of {_looploc} to yaw of {_vector.base}
+						set pitch of {_looploc} to pitch of {_vector.base}
+						delete {_false}
+						loop round({_dis}) times:
+							add 1 to {_m}
+							set {_bl} to location {_m} meters in front of {_looploc}
+							if block at {_bl} is not passable:
+								set {_false} to true
+						if {_false} is not set:
+							set {_target} to loop-player
+				wait a tick
+		if {_target} is set:
+			kitFear({_target}, 3 seconds)
+			kitInvisible({_player}, 1 seconds)
+			set {_tploc} to location of {_target}
+			set pitch of {_tploc} to 0
+			set {_tploc} to location 1 meters behind {_tploc}
+			teleport {_player} to {_tploc}
+			kitMsg({_player}, "<##a22041>§l%{_target}% <##1f3134>を恐怖に陥れた...")
+			message formatted "§4サイコパスに目をつけられた!" to {_target}
+			playSound("entity.vex.charge", 1, 0.5, {_target})
+			loop 10 times:
+				set {_el} to location 1 meters above {_target}
+				set {_ev} to randomVector({_el}, 0.1)
+				spawnParticle_Vector(witch, {_ev}, {_el})
+		else:
 			kitMsg({_player}, "<##800000>敵を欺くことは出来なかった...")
 	else:
 		send action bar "§c§l現在Skill発動中です!" to {_player}
-
-on damage of player:
-	if {Stats.%attacker%::Psychopath} is true:
-		cancel event
-	if {Stats.%victim%::Psychopath} is true:
-		type of attacker is player
-		cancel event
-		delete {Stats.%victim%::Psychopath}
-		kitMsg(victim, "<##dc143c>うまく接近しました!")
-		loop 10 times:
-			set {_loc} to aroundEffect(victim)
-			drawDot count 1, particle "cloud", center {_loc}, visibleRange 30
-		message formatted "<##dc143c>敵が消えた!" to attacker
-		playSound("entity.evoker.prepare_wololo", 1, 0.8, attacker)
-		loop all blocks in radius 10 around attacker:
-			distance between loop-block and attacker >= 5
-			loop-block is passable
-			block above loop-block is passable
-			block below loop-block is not passable
-			add location of loop-block to {_rl::*}
-		set {_dl} to a random location out of {_rl::*}
-		delete {_rl::*}
-		kitInvisible(victim, 3 seconds)
-		teleport victim to {_dl}
