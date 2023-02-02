@@ -3,16 +3,26 @@
 function kitSkill_Healer_1(player: player):
 	if {Stats.%{_player}%::SkillTarget} is set:
 		set {_target} to {Stats.%{_player}%::SkillTarget}
-		if {Kit-Odo::%{_player}%} is more than 9:
-			toolCT({_player}, "Healer", 1)
-			subtract 10 from {Kit-Odo::%{_player}%}
-			setSupporter({_target}, {_player})
-			apply regeneration 2 to {_target} for 5 seconds
-			healEffect({_target})
-			kitMsg({_player}, "§a%{_target}% §dを回復しました!")
-			send action bar "§d現在のオド: §c%{Kit-Odo::%{_player}%}%" to {_player}
-			message formatted "§d%{_player}% §cから再生能力を授かった!" to {_target}
-			playSound("block.portal.travel", 0.5, 2, {_target})
+		if {Kit-Odo::%{_player}%} >= 3:
+			if max health of {_target} is not health of {_target}:
+				subtract 3 from {Kit-Odo::%{_player}%}
+				setSupporter({_target}, {_player})
+				healEffect({_target})
+				kitHeal({_target}, 1)
+				playSound("ambient.underwater.loop.additions", 1, 2, {_target})
+				set {_from} to vector of {_player}
+				set {_to} to vector of {_target}
+				set {_vector} to {_to} -- {_from}
+				set {_vector} to normalized {_vector}
+				set {_baseloc} to location of head of {_player}
+				set yaw of {_baseloc} to yaw of {_vector}
+				set pitch of {_baseloc} to pitch of {_vector}
+				set {_count} to distance between {_baseloc} and {_target} * 0.1
+				loop 10 times:
+					set {_el} to location {_count} * loop-number meters in front of {_baseloc}
+					drawDot count 1, particle "endrod", center {_el}, visibleRange 30
+			else:
+				send action bar "§c§l対象は既に体力が満タンです" to {_player}
 		else:
 			kitMsg({_player}, "§cオドが足りません! 必要オドは §310 §cです!")
 	else:
