@@ -7,6 +7,7 @@ on sneak toggle:
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Healer", "Weapon.main", 2) is true
 	set {_charge} to 0
+	set {_charged} to 0
 	set {_true} to true
 	playSound("block.beacon.ambient", 1, 2, player)
 	wait a tick
@@ -18,8 +19,13 @@ on sneak toggle:
 			delete {_true}
 		else:
 			add 1 to {_charge}
+			# --- Action Bar ---
+			set {_bar} to ({_charge} - (100 * {_charged})) / 2
+			chargeActionBar(player, {_bar}, 50)
+			# ------------------
 			# --- 効果 ---
 			if mod({_charge}, 100) is 0:
+				add 1 to {_charged}
 				add 5 to {Kit-Odo::%player%}
 				kitMsg(player, "<##ffb6c1>オドを回復しました!")
 				# --- チャージ完了時の音の演出 ---
