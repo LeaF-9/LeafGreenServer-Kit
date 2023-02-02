@@ -69,24 +69,17 @@ command /odoset <number> <player=%player%>:
 # Timer
 function kitTimerHealer(player: player):
 	set {_odotimer} to 0
+	create bossbar titled "&d&lOdo&5: &c&l%{Kit-Odo::%{_player}%}%" and id "%{_player}%-Odo" for {_player} with progress {Kit-Odo::%{_player}%} with colors pink with style segmented 10
 	while {Class::%{_player}%} is "Healer":
-		set {_tool} to {_player}'s tool
-		set {_item.type} to kitItemTypeChecker({_tool})
-		set {_item.num} to kitItemNumberChecker({_tool})
+		# --- オド関連の処理 ---
 		add 1 to {_odotimer}
 		if {_odotimer} >= 200:
 			set {_odotimer} to 0
 			add 10 to {Kit-Odo::%{_player}%}
-		delete {_skillok}
-		delete {_true}
-		if {_tool} is air:
-			set {_true} to true
-		else:
-			if {_item.num} is not 8:
-				if checkCT({_player}, name of {_tool}, true) is true:
-					set {_true} to true
-		if {_true} is true:
-			send action bar "§d§lOdo§e: §c%{Kit-Odo::%{_player}%}%" to {_player}
+		set bossbar "%{_player}%-Odo" title to "&d&lOdo&5: &c&l%{Kit-Odo::%{_player}%}%"
+		set bossbar "%{_player}%-Odo" value to {Kit-Odo::%{_player}%}
+		# --------------------
+		# --- 体力を可視化する処理 ---
 		loop all players:
 			kitCheckTeam({_player}, loop-player, true) is true
 			loop-player is not {_player}
@@ -104,4 +97,6 @@ function kitTimerHealer(player: player):
 				add 0.5 * sin({_rad}) to x-coordinate of {_el}
 				add 0.5 * cos({_rad}) to z-coordinate of {_el}
 				drawDot count 1, particle redstone, RGB {_r}, {_g}, 0, center {_el}, isClientside {_player}, visibleRange 300
+		# --------------------------
 		wait a tick
+	remove bossbar "%{_player}%-Odo"
