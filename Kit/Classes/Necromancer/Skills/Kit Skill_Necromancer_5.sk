@@ -12,8 +12,8 @@ function kitSkill_Necromancer_5(player: player):
 			set {_n.k} to 0
 			loop 60 times:
 				set {_effbaseloc} to {_point}
-				add 10 * sin({_n.k}) to x-coordinate of {_effbaseloc}
-				add 10 * cos({_n.k}) to z-coordinate of {_effbaseloc}
+				add 15 * sin({_n.k}) to x-coordinate of {_effbaseloc}
+				add 15 * cos({_n.k}) to z-coordinate of {_effbaseloc}
 				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_effbaseloc}, visibleRange 100, keepFor 3 seconds
 				add 6 to {_n.k}
 #		弦を描く
@@ -21,39 +21,39 @@ function kitSkill_Necromancer_5(player: player):
 				set {_l.A} to {_point}
 				set yaw of {_l.A} to 120
 				set pitch of {_l.A} to 0
-				add 10 * sin(90) to x-coordinate of {_l.A}
-				add 10 * cos(90) to z-coordinate of {_l.A}
+				add 15 * sin(90) to x-coordinate of {_l.A}
+				add 15 * cos(90) to z-coordinate of {_l.A}
 			if {_l.B} is not set:
 				set {_l.B} to {_point}
 				set yaw of {_l.B} to 0
 				set pitch of {_l.B} to 0
-				add 10 * sin(210) to x-coordinate of {_l.B}
-				add 10 * cos(210) to z-coordinate of {_l.B}
+				add 15 * sin(210) to x-coordinate of {_l.B}
+				add 15 * cos(210) to z-coordinate of {_l.B}
 			if {_l.C} is not set:
 				set {_l.C} to {_point}
 				set yaw of {_l.C} to 240
 				set pitch of {_l.C} to 0
-				add 10 * sin(330) to x-coordinate of {_l.C}
-				add 10 * cos(330) to z-coordinate of {_l.C}
+				add 15 * sin(330) to x-coordinate of {_l.C}
+				add 15 * cos(330) to z-coordinate of {_l.C}
 			if {_l.D} is not set:
 				set {_l.D} to {_point}
 				set yaw of {_l.D} to 180
 				set pitch of {_l.D} to 0
-				add 10 * sin(30) to x-coordinate of {_l.D}
-				add 10 * cos(30) to z-coordinate of {_l.D}
+				add 15 * sin(30) to x-coordinate of {_l.D}
+				add 15 * cos(30) to z-coordinate of {_l.D}
 			if {_l.E} is not set:
 				set {_l.E} to {_point}
 				set yaw of {_l.E} to 60
 				set pitch of {_l.E} to 0
-				add 10 * sin(150) to x-coordinate of {_l.E}
-				add 10 * cos(150) to z-coordinate of {_l.E}
+				add 15 * sin(150) to x-coordinate of {_l.E}
+				add 15 * cos(150) to z-coordinate of {_l.E}
 			if {_l.F} is not set:
 				set {_l.F} to {_point}
 				set yaw of {_l.F} to 300
 				set pitch of {_l.F} to 0
-				add 10 * sin(270) to x-coordinate of {_l.F}
-				add 10 * cos(270) to z-coordinate of {_l.F}
-			loop 19 times:
+				add 15 * sin(270) to x-coordinate of {_l.F}
+				add 15 * cos(270) to z-coordinate of {_l.F}
+			loop 30 times:
 				add sqrt(3) / 2 to {_n.g}
 #			A-B
 				set {_loc.g} to location {_n.g} meters in front of {_l.A}
@@ -78,10 +78,13 @@ function kitSkill_Necromancer_5(player: player):
 				if mod({_ln}, 20) = 0:
 					playSound("item.lodestone_compass.lock", 1, 0.5, {_point})
 				subtract 1 from {_ln}
+				loop all entities in radius 15 around {_point}:
+					kitCheckTeam(loop-entity, {_player}, false) is true
+					applyEffect(loop-entity, slowness, 3, 10 ticks)
 				wait a tick
 			message formatted "<##493759>§l術が発動した..." to {_player}
 			playSound("entity.wither.death", 1, 0.9, {_point})
-			loop all entities in radius 10 around {_point}:
+			loop all entities in radius 15 around {_point}:
 				kitCheckTeam(loop-entity, {_player}, false) is true
 				if type of loop-entity is a player:
 					LastKiller(loop-entity, {_player})
