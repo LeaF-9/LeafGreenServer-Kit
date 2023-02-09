@@ -211,12 +211,14 @@ function kitWraith_Charge(player: player, wraith: entity):
 	playSound("entity.warden.agitated", 1, 1.5, {_wraith})
 	loop 20 times:
 		teleport {_wraith} to {_tploc}
-		kitWraith_Charge_Particle({_wraith})
+		kitWraith_Charge_Particle_1({_wraith})
 		wait a tick
 	set {_frontloc} to location 10 meters in front of {_tploc}
 	set {_vector} to setVector({_tploc}, {_frontloc}, 10)
 	set velocity of {_wraith} to {_vector}
+	playSound("entity.warden.roar", 1, 1.2, {_wraith})
 	loop 10 times:
+		kitWraith_Charge_Particle_2({_wraith}, {_vector})
 		loop all entities in radius 3 around {_wraith}:
 			kitChecmTeam({_player}, loop-entity, false) is _true
 			{_hit.%id of loop-entity%} is not set
@@ -225,7 +227,7 @@ function kitWraith_Charge(player: player, wraith: entity):
 			playSound("entity.warden.heartbeat", 1, 2, loop-entity)
 		wait a tick
 
-function kitWraith_Charge_Particle(wraith: entity):
+function kitWraith_Charge_Particle_1(wraith: entity):
 	set {_baseloc} to location 1 meters above {_wraith}
 	set {_fromloc} to {_baseloc}
 	add a random number between -3 and 3 to x-coordinate of {_fromloc}
@@ -239,6 +241,51 @@ function kitWraith_Charge_Particle(wraith: entity):
 		set {_el} to location {_dis} * loop-number meters in front of {_fromloc}
 		spawnParticle(end_rod, {_el})
 
+function kitWraith_Charge_Particle_2(wraith: entity, vector: vector):
+	set {_newVector} to {_vector} ** (-1, -1, -1)
+	set {_newVector} to {_newVector} ++ (a random number between -1 and 1, a random number between -1 and 1, a random number between -1 and 1)
+	spawnParticle_Vector(smoke {_newVector}, location of {_wraith})
+
+function kitWraith_Dark(player: player, wraith: entity):
+	set {_baseloc} to location of {_wraith}
+	set {_baserad} to 0
+	set {_m} to 0
+	playSound("entity.warden.tendril_clicks", 1, 0.85, {_baseloc})
+	loop 10 times:
+		add 0.5 to {_m}
+		set {_num.rad} to 0
+		loop 4 times:
+			add 1 to {_num.rad}
+			set {_rad} to {_baserad} + (90 * {_num.rad})
+			set {_el} to {_baseloc}
+			add {_m} * sin({_rad}) to x-coordinate of {_el}
+			add {_m} * cos({_rad}) to z-coordinate of {_el}
+			spawnParticle_Dust(rgb(89, 66, 85), 1, {_el})
+		add {_baserad} to 15
+		wait a tick
+	# --- 暗闇効果付与 ---
+	loop all entities in radius 5 around {_baseloc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		applyEffect(loop-entity, blindness, 1, 4 seconds)
+		setSupporter(loop-entity, {_player})
+	# ------------------
+	# --- 音の演出 ---
+	playSound("block.sculk_catalyst.bloom", 1, 0.75, {_baseloc})
+	# --------------
+	# --- パーティクルの演出 ---
+	set {_rad} to 0
+	loop 10 times:
+		set {_el} to {_baseloc}
+		add 36 to {_rad}
+		add 5 * sin({_rad}) to x-coordinate of {_el}
+		add 5 * cos({_rad}) to z-coordinate of {_el}
+		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
+	loop 15 times:
+		set {_el} to {_baseloc}
+		add a random number between -5 adn 5 to x-coordinate of {_el}
+		add a random number between -5 adn 5 to z-coordinate of {_el}
+		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
+	# -----------------------
 
 function kitWraithThunder(player: player, locs: locations):
 	loop {_locs::*}:
