@@ -220,7 +220,7 @@ function kitWraith_Charge(player: player, wraith: entity):
 	loop 10 times:
 		kitWraith_Charge_Particle_2({_wraith}, {_vector})
 		loop all entities in radius 3 around {_wraith}:
-			kitChecmTeam({_player}, loop-entity, false) is _true
+			kitCheckTeam({_player}, loop-entity, false) is _true
 			{_hit.%id of loop-entity%} is not set
 			set {_hit.%id of loop-entity%} to true
 			kitDamage({_player}, loop-entity, 4)
@@ -327,25 +327,62 @@ function kitWraith_Wave(player: player, wraith: entity):
 			add 1 to {_sub}
 		wait a tick
 
-function kitWraithThunder(player: player, locs: locations):
-	loop {_locs::*}:
-		drawDot count 1, particle "witchspell", center loop-value, visibleRange 30, keepFor 1 second
-		playSound("entity.illusioner.cast_spell", 0.8, 1, loop-value)
-	wait a second
-	loop {_locs::*}:
-		playSound("entity.zombie_villager.cure", 0.8, 2, loop-value)
-		loop all players in radius 2 around loop-value:
-			{team::%loop-player%} is not {team::%{_player}%}
-			kitDamage({_player}, loop-player, 2, true)
+function kitWraith_Thunder(player: player, wraith: entity):
+	set {_baseloc} to location of {_wraith}
+	loop all players in radius 30 around {_baseloc}:
+		kitCheckTeam(loop-player, {_player}, false) is true
+		playSound("block.conduit.activate", 1, 1.8, loop-player)
+		loop 5 times:
+			set {_loc} to location of loop-player
+			add a random number between -5 and 5 to x-coordinate of {_loc}
+			add a random number between -5 and 5 to z-coordinate of {_loc}
+			add {_loc} to {_locs::*}
+	set {_rad} to 0
+	loop 10 times:
+		add 36 to {_rad}
+		loop {_locs::*}:
+			set {_el} to {_locs::%loop-index%}
+			add 1.5 * sin({_rad}) to x-coordinate of {_el}
+			add 1.5 * cos({_rad}) to z-coordinate of {_el}
+			add {_el} to {_els::*}
+		loop {_els::*}:
+			set {_el} to {_els::%loop-index%}
+			spawnParticle_Dust(rgb(106, 93, 33), 0.5, {_el})
+		wait a tick
+	loop 10 times:
+		loop {_els::*}:
+			set {_el} to {_els::%loop-index%}
+			spawnParticle_Dust(rgb(255, 223, 79), 0.5, {_el})
+		wait a tick
+	loop 2 times:
+		loop {_locs::*}:
+			set {_loc} to {_locs::%loop-index%}
 			chance of 50%:
-				kitPalsy(loop-player, 3 seconds)
-		set {_baseloc} to loop-value
-		set {_meter} to 0
-		loop 30 times:
-			set {_loc} to location {_meter} meters above {_baseloc}
-			drawDot count 1, particle "endrod", center {_loc}, visibleRange 30
-			add 1 to {_meter}
+				subtract {_loc} from {_locs::*}
+				playSound("entity.zombie_villager.cure", 0.8, 2, {_loc})
+				loop all players in radius 1.6 around {_loc}:
+					kitCheckTeam(loop-player, {_player}, false) is true
+					kitDamage({_player}, loop-player, 3, true)
+					kitPalsy(loop-player, 5 seconds)
+				set {_m} to 0
+				loop 30 times:
+					add 1 to {_m}
+					set {_l} to location {_m} meters above {_loc}
+					spawnParticle(end_rod, {_l})
 		wait 5 ticks
+	loop {_locs::*}:
+		set {_loc} to {_locs::%loop-index%}
+		subtract {_loc} from {_locs::*}
+		playSound("entity.zombie_villager.cure", 0.8, 2, {_loc})
+		loop all players in radius 1.6 around {_loc}:
+			kitCheckTeam(loop-player, {_player}, false) is true
+			kitDamage({_player}, loop-player, 3, true)
+			kitPalsy(loop-player, 5 seconds)
+		set {_m} to 0
+		loop 30 times:
+			add 1 to {_m}
+			set {_l} to location {_m} meters above {_loc}
+			spawnParticle(end_rod, {_l})
 
 on damage of wither skeleton:
 	metadata value "wraith" of victim is set
