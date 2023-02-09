@@ -20,13 +20,8 @@ on sneak toggle:
 		loop all players in radius 10 around player:
 			kitCheckTeam(loop-player, player, false) is true
 			set {_exist} to true
-			set {_m} to 0
-			loop 10 times:
-				add 1 to {_m}
-				set {_bl} to location {_m} meters in front of head of loop-player
-				loop all players in radius 2 around {_bl}:
-					loop-player-2 is player
-					set {_cansee} to true
+			if playerCanSee(loop-player, player) is true:
+				set {_cansee} to true
 		if {_exist} is not set:
 			delete {_true}
 		if {_cansee} is true:
