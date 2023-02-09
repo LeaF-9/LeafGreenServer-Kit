@@ -287,6 +287,46 @@ function kitWraith_Dark(player: player, wraith: entity):
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
 	# -----------------------
 
+function kitWraith_Wave(player: player, wraith: entity):
+	set {_baseloc} to location of {_wraith}
+	set pitch of {_baseloc} to 0
+	set {_leftbase} to location 5 meters to the left of {_baseloc}
+	set {_rightbase} to location 5 meters to the right of {_baseloc}
+	playSound("block.sculk_sensor.clicking_stop", 1, 0.6, {_baseloc})
+	loop 20 times:
+		set {_m} to 0
+		loop 50 times:
+			add 0.2 to {_m}
+			set {_el.left} to location {_m} meters in front of {_leftbase}
+			set {_el.right} to location {_m} meters in front of {_rightbase}
+			spawnParticle_Dust(rgb(13, 0, 21), 0.2, {_el.left})
+			spawnParticle_Dust(rgb(13, 0, 21), 0.2, {_el.right})
+		wait a tick
+	playSound("block.sculk_shrieker.shriek", 1, 1, {_baseloc})
+	set {_m} to 0
+	loop 5 times:
+		add 2 to {_m}
+		set {_el.front} to location {_m} meters in front of {_leftbase}
+		set {_el.back} to location {_m} - 2 meters in front of {_rightbase}
+		loop all entities within {_el.front} and {_el.back}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			{_hit.%id of loop-entity%} is not set
+			set {_hit.%id of loop-entity%} to true
+			kitDamage({_player}, loop-entity, 3)
+			if type of loop-entity is player:
+				kitFear(loop-entity, 5 seconds)
+		set {_sub} to 0
+		loop 2 times:
+			set {_baseel} to location {_m} - {_sub} meters in front of {_leftbase}
+			subtract 90 from yaw of {_baseel}
+			set {_subm} to 0
+			loop 11 times:
+				set {_el} to location {_subm} meters in front of {_baseel}
+				spawnParticle_Vector(sculk_soul, vector(0, 1, 0), {_el})
+				add 1 to {_subm}
+			add 1 to {_sub}
+		wait a tick
+
 function kitWraithThunder(player: player, locs: locations):
 	loop {_locs::*}:
 		drawDot count 1, particle "witchspell", center loop-value, visibleRange 30, keepFor 1 second
