@@ -2,7 +2,10 @@ command /kit-item <text> <text> <text>:
 	usage: /kit-item <arg> <Kit> <item-name>
 	permission: sk.admin
 	trigger:
-		if {Kit-Classes::%arg 2%} is set:
+		load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "classes"
+		set {_classes::*} to yml list "Classes" from "classes"
+		unload yml "classes"
+		if {_classes::*} contains arg 2:
 			load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class"
 			if arg 1 is "add":
 				set yml value "kititems.%arg 3%" from "class" to player's tool
