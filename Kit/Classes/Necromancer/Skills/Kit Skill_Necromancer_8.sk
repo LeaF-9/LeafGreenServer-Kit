@@ -411,6 +411,28 @@ function kitWraith_Summon(player: player, wraith: entity):
 		set metadata value "kit-wraith" of spawned skeleton to "%{_player}%"
 		set the spawned skeleton's display name to "%{_player}%"
 
+function kitWraith_Beam(player: player, wraith: entity):
+	set {_target} to target of {_wraith}
+	set {_fromloc} to location of head of {_wraith}
+	set {_toloc} to location of head of {_target}
+	set {_vector} to setVector({_fromloc}, {_toloc})
+	set yaw of {_fromloc} to yaw of {_vector}
+	set pitch of {_fromloc} to pitch of {_vector}
+	kitWraith_Beam_Particle_1({_fromloc})
+
+function kitWraith_Beam_Particle_1(base: location):
+	set {_distance} to 50
+	loop 10 times:
+		set {_m} to 0
+		loop {_distance} - 1 times:
+			set {_baseel} to location {_m} + 0.5 meters in front of {_baseloc}
+
+			add 1 to {_m}
+		wait a tick
+	loop 10 times:
+		wait a tick
+
+
 on damage of skeleton:
 	metadata value "wraith" of victim is set
 	cancel event
