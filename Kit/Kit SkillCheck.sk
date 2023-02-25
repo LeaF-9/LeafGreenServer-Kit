@@ -28,15 +28,21 @@ command /testworld <text> <player=%player%>:
 command /kit-standspawn:
 	permission: sk.admin
 	trigger:
+		set {team::Test-Stand} to "green"
+		set {TrueTeam::Test-Stand} to "green"
+		set {team::Tester-2} to "green"
+		set {TrueTeam::Tester-2} to "green"
 		loop all skeletons:
 			display name of loop-entity is "Test-Stand"
 			set metadata value "gametype" of loop-skeleton to "Kit"
-			execute console command "/st green Test-Stand"
+			set {team::Test-Stand} to "green"
+			set {TrueTeam::Test-Stand} to "green"
 			set {_exist} to true
 		{_exist} is not set
 		spawn a skeleton at location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0) with nbt compound from "{NoAI:1b,Silent:1b,ArmorItems:[{},{},{},{id:""player_head"",tag:{SkullOwner:B_Makkuro},Count:1b}],HandItems:[{id:""diamond_sword"",Count:1b},{id:""diamond_sword"",Count:1b}],CustomName:'{""text"":""Test-Stand""}'}"
 		set metadata value "gametype" of spawned skeleton to "Kit"
-		execute console command "/st green Test-Stand"
+		set {team::Test-Stand} to "green"
+		set {TrueTeam::Test-Stand} to "green"
 
 on damage of skeleton:
 	metadata value "gametype" of victim is "Kit"
