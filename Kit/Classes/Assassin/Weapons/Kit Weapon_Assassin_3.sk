@@ -1,17 +1,23 @@
 # Soul Breaker
 
 on death of player:
-	{LastKiller::%victim%} is set
 	damage was caused by attack
-	{Class::%{LastKiller::%victim%}%} is "Assassin"
-	set {_tool} to {LastKiller::%victim%}'s tool
+	if {Join::%victim%} is set:
+		{LastKiller::%victim%} is set
+		set {_attacker} to {LastKiller::%victim%}
+	else:
+		attacker exists
+		set {_attacker} to attacker
+	{_attacker} is set
+	{Class::%{_attacker}%} is "Assassin"
+	set {_tool} to {_attacker}'s tool
 	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 3) is true
-	{LastKiller::%victim%} is alive
+	{_attacker} is alive
 	set {Kit-NoCorpse::%victim%} to true
 	set {_heal} to 1
 	set {_dis} to distance between attacker and victim
 	if {_dis} <= 1.5:
 		add 2 to {_heal}
-	else if victim's facing is attacker's facing:
+	else if victim's facing is {_attacker}'s facing:
 		add 2 to {_heal}
-	kitHeal({LastKiller::%victim%}, {_heal})
+	kitHeal({_attacker}, {_heal})
