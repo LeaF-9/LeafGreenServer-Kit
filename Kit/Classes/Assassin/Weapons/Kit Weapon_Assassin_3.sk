@@ -21,3 +21,14 @@ on death of player:
 	else if victim's facing is {_attacker}'s facing:
 		add 2 to {_heal}
 	kitHeal({_attacker}, {_heal})
+	playSound("block.sculk_catalyst.bloom", 1, 1, victim)
+	healEffect({_attacker})
+	loop {_heal} * 3 times:
+		set {_el} to location of victim
+		add 1 to y-coordinate of {_el}
+		set {_baseloc} to {_el}
+		add a random number between -1 and 1 to x-coordinate of {_el}
+		add a random number between -1 and 1 to y-coordinate of {_el}
+		add a random number between -1 and 1 to z-coordinate of {_el}
+		set {_v} to setVector({_baseloc}, {_el})
+		spawnParticle_Vector(sculk_soul, {_v}, {_el})
