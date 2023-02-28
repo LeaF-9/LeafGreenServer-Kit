@@ -35,47 +35,8 @@ function kitSkill_Assassin_5(player: player):
 		message formatted "§4§l痛い! §5斬撃がヒットした..." to {_tgplayer}
 		playSound("entity.zombie.break_wooden_door", 1, 2, {_tgplayer})
 		# --- ヒット時のパーティクル演出 ---
+		kitEffect_Pursuit_2({_player}, {_tgplayer})
 		# --------------------------------
-
-	
-
-
-
-	playSound("block.anvil.land", 1, 2, {_player})
-	set {_baseloc} to location 1.5 meters in front of {_player}
-	add 1 to y-coordinate of {_baseloc}
-	loop all entities in radius 3 around {_baseloc}:
-		kitCheckTeam({_player}, loop-entity, false) is true
-		set {_damage} to 2
-		if {Stats.%loop-entity%::Pursuit} is set:
-			add 2 * {Stats.%loop-entity%::Pursuit} to {_damage}
-		kitMsg({_player}, "§1%loop-entity% §4にクリーンヒット!")
-		message "§4§l痛い! §5追撃がヒットした..." to loop-entity
-		playSound("entity.zombie.break_wooden_door", 1, 2, loop-entity)
-		drawDot count 1, particle "witchspell", center loop-entity, visibleRange 30
-		kitDamage({_player}, loop-entity, {_damage}, true)
-	set {_front} to 2.5
-	set {_lr} to 0
-	set {_length} to 5
-	set {_c} to 0
-	loop 15 times:
-		add 1 to {_c}
-		if {_c} is 3:
-			set {_c} to 0
-			subtract 1 from {_length}
-		set {_loc.l} to location {_front} meters in front of {_baseloc}
-		set {_loc.l} to location {_lr} meters to the left of {_loc.l}
-		set {_loc.r} to location {_front} meters in front of {_baseloc}
-		set {_loc.r} to location {_lr} meters to the right of {_loc.r}
-		set {_l} to 0
-		loop {_length} times:
-			set {_loc.l} to location {_l} meters in front of {_loc.l}
-			set {_loc.r} to location {_l} meters in front of {_loc.r}
-			drawDot count 1, particle "redstone", RGB 50, 0, 0, center {_loc.l}, visibleRange 30, keepFor 0.5 seconds
-			drawDot count 1, particle "redstone", RGB 50, 0, 0, center {_loc.r}, visibleRange 30, keepFor 0.5 seconds
-			add 0.1 to {_l}
-		add 0.2 to {_lr}
-		subtract 0.1 from {_front}
 
 # 斬撃(残像) 演出
 function kitEffect_Pursuit_1(loc: location):
@@ -89,6 +50,34 @@ function kitEffect_Pursuit_1(loc: location):
 		set {_el} to location {_m} meters in front of {_baseel}
 		spawnParticle_DustTransition(rgb(162, 32, 65), rgb(102, 20, 41), 0.5, {_el})
 		add 0.5 to {_m}
+
+# ヒット時演出
+function kitEffect_Pursuit_2(player: player, target: player):
+	set {_baseloc} to location of {_target}
+	add 1 to y-coordinate of {_baseloc}
+	set pitch of {_baseloc} to 0
+	set yaw of {_baseloc} to yaw of {_player}
+	set {_baseyaw} to yaw of {_baseloc} - 90
+	set {_basepitch} to -135
+	loop 2 times:  # yaw基準のloop
+		set {_yaw} to {_baseyaw} + (180 * loop-number)
+		set {_bl} to {_baseloc}
+		set yaw of {_bl} to {_yaw}
+		loop 2 times:  # pitch基準のloop
+			set {_pitch} to {_basepitch} + (90 * loop-number-2)
+			set pitch of {_bl} to {_pitch}
+			set {_m} to 0
+			loop 11 times:
+				set {_baseel} to location {_m} meters in front of {_bl}
+				set pitch of {_baseel} to pitch of {_baseel} - 180
+				loop 2 times:
+					add 90 to pitch of {_baseel}
+					loop 5 times:
+						set {_sidem} to 1.5 - (0.15 * (loop-number-3 - 1))
+						set {_sidem} to {_sidem} / 5
+						set {_el} to location {_sidem} * loop-number-5 meters in front of {_baseel}
+						spawnParticle_DustTransition(rgb(162, 32, 65), rgb(102, 20, 41), 0.95, {_el})
+				add 0.5 to {_m}
 
 function kitSkillSub_Assassin_5(victim: player, asn: number):
 	set {_now} to now
