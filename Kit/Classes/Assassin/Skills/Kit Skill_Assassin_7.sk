@@ -14,8 +14,19 @@ function kitSkill_Assassin_7(player: player):
 				loop all players in radius 50 around {_player}:
 					{_target} is not set
 					kitCheckTeam({_player}, loop-player, false) is true
-					playerCanSee(loop-player, {_player}) is true
-					set {_target} to loop-player
+					set {_tg} to target player of loop-player
+					if {_tg} is {_player}:
+						set {_bl} to location of loop-player
+						set {_dis} to round(distance between loop-player and {_player})
+						set {_m} to 0
+						delete {_blocked}
+						loop {_dis} times:
+							add 1 to {_m}
+							set {_checkblock} to location {_m} meters in front of {_bl}
+							if {_checkblock} is not passable:
+								set {_blocked} to true
+						if {_blocked} is not set:
+							set {_target} to {_tg}
 				wait a tick
 		if {_target} is set:
 			kitFear({_target}, 3 seconds)
