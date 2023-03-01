@@ -419,19 +419,79 @@ function kitWraith_Beam(player: player, wraith: entity):
 	set yaw of {_fromloc} to yaw of {_vector}
 	set pitch of {_fromloc} to pitch of {_vector}
 	kitWraith_Beam_Particle_1({_fromloc})
+	wait a second
+	set {_m} to 0
+	loop {_distance} times:
+		add 1 to {_m}
+		set {_baseel} to location {_m} meters in front of {_baseloc}
+		# --- 効果 ---
+		loop all entities in radius 3 around {_baseel}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			{_hit.%id of loop-entity%} is not set
+			set {_hit.%id of loop-entity%} to true
+			kitDamage({_player}, loop-entity, 4, true)
+		# -----------
+		# --- 音の演出 ---
+		playSound("entity.zombie.break_wooden_door", 0.75, 0.5, {_baseel})
+		# ---------------
+		# --- パーティクル演出 ---
+		kitWraith_Beam_Particle_2({_baseel})
+		# ---------------------
 
-function kitWraith_Beam_Particle_1(base: location):
+function kitWraith_Beam_Particle_1(baseloc: location):
 	set {_distance} to 50
+	set {_rad} to 0
 	loop 10 times:
 		set {_m} to 0
 		loop {_distance} - 1 times:
 			set {_baseel} to location {_m} + 0.5 meters in front of {_baseloc}
-
+			set {_el} to {_baseel}
+			set {_m1} to {_el}
+			set pitch of {_m1} to pitch of {_m1} - 90
+			set {_test1} to 1 * cos({_rad})
+			set {_t1} to location {_test1} meters in front of {_m1}
+			set {_m2} to {_el}
+			set pitch of {_m2} to 0
+			set {_test2} to 1 * sin({_rad})
+			set {_t2} to location {_test2} meters to the right of {_m2}
+			set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+			set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+			set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+			add {_el} to {_efflocs::*}
+			playSound("block.nether_wood_button.click_on", 0.75, 0.5 + (0.15 * (loop-number-1 -1)), {_baseel})
 			add 1 to {_m}
+		loop {_efflocs::*}:
+			set {_el} to loop-value-2
+			spawnParticle_DustTransition(rgb(122, 65, 113), rgb(79, 69, 92), 1, {_el})
+		add 36 to {_rad}
 		wait a tick
 	loop 10 times:
+		set {_m} to 0
+		loop {_distance} - 1 times:
+			set {_baseel} to location {_m} + 0.5 meters in front of {_baseloc}
+			playSound("block.nether_wood_button.click_on", 0.75, 0.5 + (0.15 * (loop-number-1 -1)), {_baseel})
+		loop {_efflocs::*}:
+			set {_el} to loop-value-2
+			spawnParticle_DustTransition(rgb(122, 65, 113), rgb(79, 69, 92), 1, {_el})
 		wait a tick
 
+function kitWraith_Beam_Particle_2(baseloc: location):
+	set {_rad} to 0
+	loop 4 times:
+		add 90 to {_rad}
+		set {_el} to {_baseloc}
+		set {_m1} to {_el}
+		set pitch of {_m1} to pitch of {_m1} - 90
+		set {_test1} to 0.25 * cos({_rad})
+		set {_t1} to location {_test1} meters in front of {_m1}
+		set {_m2} to {_el}
+		set pitch of {_m2} to 0
+		set {_test2} to 0.25 * sin({_rad})
+		set {_t2} to location {_test2} meters to the right of {_m2}
+		set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+		set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+		set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+		spawnParticle(witch, {_el})
 
 on damage of skeleton:
 	metadata value "wraith" of victim is set
