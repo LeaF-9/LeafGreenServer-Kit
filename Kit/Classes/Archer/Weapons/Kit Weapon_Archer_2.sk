@@ -5,19 +5,28 @@ on shoot:
 	{Class::%shooter%} is "Archer"
 	set {_tool} to shooter's tool
 	if kitItemAllChecker({_tool}, "Archer", "Weapon.main", 2) is true:
-		set metadata value "powerbow" of projectile to "true"
+		set metadata value "accelbow" of projectile to "true"
 
 on damage:
 	type of attacker is player
 	damage was caused by projectile
-	metadata value "powerbow" of projectile is "true"
+	metadata value "accelbow" of projectile is set
 	set {_dis} to distance between attacker and victim
-	if {_dis} >= 50:
+	if {_dis} <= 5:
+		set damage to damage * 0.25
+		kitMsg(attacker, "§6ダメージ倍率! §c§l0.25倍")
+	else if {_dis} <= 10:
+		set damage to damage * 0.5
+		kitMsg(attacker, "§6ダメージ倍率! §c§l0.5倍")
+	else if {_dis} <= 20:
+		set damage to damage * 0.75
+		kitMsg(attacker, "§6ダメージ倍率! §c§l0.75倍")
+	else if {_dis} >= 50:
 		set damage to damage * 1.25
-		kitMsg(attacker, "§cダメージ倍率! §a1.25倍")
+		kitMsg(attacker, "§6ダメージ倍率! §a§l1.25倍")
 	else if {_dis} >= 75:
 		set damage to damage * 1.5
-		kitMsg(attacker, "§cダメージ倍率! §a1.5倍")
+		kitMsg(attacker, "§6ダメージ倍率! §a§l1.5倍")
 	else if {_dis} >= 100:
 		set damage to damage * 2
-		kitMsg(attacker, "§cダメージ倍率! §a2倍")
+		kitMsg(attacker, "§6ダメージ倍率! §a§l2倍")
