@@ -21,13 +21,24 @@ function kitWeapon_Healer_5(player: player):
 			# --- ヒット時のパーティクルの演出 ---
 			kitEffect_DealingStaff_Hitting(loop-entity)
 			# -------------------------------
+		set {_health} to health of {_player}
 		while {_true} is true:
-			subtract 1 from health of {_player}
-			loop {_targets::*}:
-				kitHeal(loop-value, 1)
-				healEffect(loop-value, 1)
+			delete {_max}
 			if health of {_player} <= 1:
 				delete {_true}
+			else:
+				loop {_targets::*}:
+					if max health of loop-value is health of loop-value:
+						set {_max} to true
+					else:
+						delete {_max}
+						kitHeal(loop-value, 1)
+						healEffect(loop-value, 1)
+			if {_max} is true:
+				delete {_true}
+			if {_true} is true:
+				subtract 1 from {_health}
+		set health of {_player} to {_health}
 
 function kitEffect_DealingStaff(player: player):
 	set {_baseloc} to location of {_player}
