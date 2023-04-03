@@ -11,12 +11,10 @@ on sneak toggle:
 	set {_true} to true
 	while {_true} is true:
 		set {_tool} to player's tool
-		if kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 5) is true:
+		if kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 5) is false:
 			delete {_true}
-			log "hey-1"
 		if player is not sneaking:
 			delete {_true}
-			log "hey-2"
 		delete {_exist}
 		delete {_cansee}
 		loop all players in radius 10 around player:
@@ -26,10 +24,8 @@ on sneak toggle:
 				set {_cansee} to true
 		if {_exist} is not set:
 			delete {_true}
-			log "hey-3"
 		if {_cansee} is true:
 			delete {_true}
-			log "hey-4"
 		if {_true} is true:
 			kitInvisible(player, 0.1 seconds)
 			wait a tick
