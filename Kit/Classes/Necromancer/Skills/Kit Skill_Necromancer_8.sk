@@ -78,7 +78,7 @@ function kitWraithTimer(player: player, wraith: entity):
 			# --------------
 			# --- 30m効果 ---
 			else if {_dis} <= 30:
-				apply slowness 10 to loop-wither skeleton for a second
+				apply slowness 10 to {_wraith} for a second
 				# --- 落雷攻撃 ---
 				if {_ct::thunder} is not set:
 					if {_mod::thunder} is not set:
@@ -100,7 +100,7 @@ function kitWraithTimer(player: player, wraith: entity):
 			# --------------
 			# --- 50m効果 ---
 			else if {_dis} <= 50:
-				apply slowness 10 to loop-wither skeleton for a second
+				apply slowness 10 to {_wraith} for a second
 				# --- 波動砲攻撃 ---
 				if {_ct::beam} is not set:
 					if {_mod::beam} is not set:
@@ -113,7 +113,7 @@ function kitWraithTimer(player: player, wraith: entity):
 			# --------------
 			# --- 静止効果 ---
 			else:
-				apply slowness 10 to loop-wither skeleton for a second
+				apply slowness 10 to {_wraith} for a second
 			# ---------------
 			wait a second
 	delete {_wraith}
@@ -133,7 +133,7 @@ function kitWraith_Charge(player: player, wraith: entity):
 	loop 10 times:
 		kitWraith_Charge_Particle_2({_wraith}, {_vector})
 		loop all entities in radius 3 around {_wraith}:
-			kitCheckTeam({_player}, loop-entity, false) is _true
+			kitCheckTeam({_player}, loop-entity, false) is true
 			{_hit.%id of loop-entity%} is not set
 			set {_hit.%id of loop-entity%} to true
 			kitDamage({_player}, loop-entity, 4)
@@ -155,9 +155,9 @@ function kitWraith_Charge_Particle_1(wraith: entity):
 		spawnParticle(end_rod, {_el})
 
 function kitWraith_Charge_Particle_2(wraith: entity, vector: vector):
-	set {_newVector} to {_vector} ** (-1, -1, -1)
-	set {_newVector} to {_newVector} ++ (a random number between -1 and 1, a random number between -1 and 1, a random number between -1 and 1)
-	spawnParticle_Vector(smoke {_newVector}, location of {_wraith})
+	set {_newVector} to {_vector} ** vector(-1, -1, -1)
+	set {_newVector} to {_newVector} ++ vector(a random number between -1 and 1, a random number between -1 and 1, a random number between -1 and 1)
+	spawnParticle_Vector(smoke, {_newVector}, location of {_wraith})
 
 function kitWraith_Dark(player: player, wraith: entity):
 	set {_baseloc} to location of {_wraith}
@@ -174,7 +174,7 @@ function kitWraith_Dark(player: player, wraith: entity):
 			add {_m} * sin({_rad}) to x-coordinate of {_el}
 			add {_m} * cos({_rad}) to z-coordinate of {_el}
 			spawnParticle_Dust(rgb(89, 66, 85), 1, {_el})
-		add {_baserad} to 15
+		add 15 to {_baserad}
 		wait a tick
 	# --- 暗闇効果付与 ---
 	loop all entities in radius 5 around {_baseloc}:
@@ -195,8 +195,8 @@ function kitWraith_Dark(player: player, wraith: entity):
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
 	loop 15 times:
 		set {_el} to {_baseloc}
-		add a random number between -5 adn 5 to x-coordinate of {_el}
-		add a random number between -5 adn 5 to z-coordinate of {_el}
+		add a random number between -5 and 5 to x-coordinate of {_el}
+		add a random number between -5 and 5 to z-coordinate of {_el}
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
 	# -----------------------
 
