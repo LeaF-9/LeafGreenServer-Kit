@@ -2,10 +2,11 @@
 
 function kitWeapon_Healer_3(player: player):
 	loop all entities in radius 5 around {_player}:
+		loop-entity is not {_player}
 		kitCheckTeam({_player}, loop-entity, true) is true
 		healEffect(loop-entity, 1)
-		{_player} does not have regeneration
-		applyEffect(loop-entity, regeneration, 1, 3 seconds)
+		loop-entity does not have regeneration
+		applyEffect(loop-entity, regeneration, 1, 3 seconds, true)
 		if type of loop-entity is player:
 			setSupporter(loop-entity, {_player})
 	# --- パーティクル処理 ---
