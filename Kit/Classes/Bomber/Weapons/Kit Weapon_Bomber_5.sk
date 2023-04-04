@@ -1,34 +1,40 @@
 # Rocket Launcher
 
 function kitWeapon_Bomber_5(player: player):
-	toolCT({_player}, "Bomber", 5, "Weapon.main")
-	playSound("entity.firework_rocket.launch", 1, 0.5, {_player})
-	set {_baseloc} to location of head of {_player}
-	set {_m} to 0
-	loop 50 times:
-		if {_exloc} is not set:
+	set {_arrow} to amount of arrow in {_player}'s inventory
+	if {_arrow} >= 2:
+		toolCT({_player}, "Bomber", 5, "Weapon.main")
+		loop 2 times:
+			remove an arrow from {_player}
+		playSound("entity.firework_rocket.launch", 1, 0.5, {_player})
+		set {_baseloc} to location of head of {_player}
+		set {_m} to 0
+		loop 50 times:
+			if {_exloc} is not set:
+				loop 10 times:
+					{_exloc} is not set
+					add 0.1 to {_m}
+					set {_loc} to location {_m} meters in front of {_baseloc}
+					if block at {_loc} is not passable:
+						set {_exloc} to location {_m} - 0.1 meters in front of {_baseloc}
+					else:
+						spawnParticle_DustTransition(rgb(100, 0, 0), rgb(0, 0, 0), 1.5, {_loc})
+				wait a tick
+		if {_exloc} is set:
+			kitExplosion({_player}, 5, {_exloc})
 			loop 10 times:
-				{_exloc} is not set
-				add 0.1 to {_m}
-				set {_loc} to location {_m} meters in front of {_baseloc}
-				if block at {_loc} is not passable:
-					set {_exloc} to location {_m} - 0.1 meters in front of {_baseloc}
-				else:
-					spawnParticle_DustTransition(rgb(100, 0, 0), rgb(0, 0, 0), 1.5, {_loc})
-			wait a tick
-	if {_exloc} is set:
-		kitExplosion({_player}, 5, {_exloc})
-		loop 10 times:
-			set {_el} to {_exloc}
-			set {_v} to randomVector()
-			set yaw of {_el} to yaw of {_v}
-			set pitch of {_el} to pitch of {_v}
-			shoot a snowball from {_v}
-			set item of shot snowball to egg
-			set metadata value "rocket-launcher" of shot snowball to "%{_player}%"
-		loop 40 times:
-			loop all projectiles:
-				loop-projectile is a snowball
-				metadata value "rocket-launcher" of loop-projectile is "%{_player}%"
-				spawnParticle(lava, location of loop-projectile)
-			wait a tick
+				set {_el} to {_exloc}
+				set {_v} to randomVector()
+				set yaw of {_el} to yaw of {_v}
+				set pitch of {_el} to pitch of {_v}
+				shoot a snowball from {_v}
+				set item of shot snowball to egg
+				set metadata value "rocket-launcher" of shot snowball to "%{_player}%"
+			loop 40 times:
+				loop all projectiles:
+					loop-projectile is a snowball
+					metadata value "rocket-launcher" of loop-projectile is "%{_player}%"
+					spawnParticle(lava, location of loop-projectile)
+				wait a tick
+	else:
+		senc action bar "§c§l発射する為に必要な§6§l矢§c§lが不足しています!" to {_player}
