@@ -1,14 +1,26 @@
-# Grenade Blaster
+# Present Shooter
 
 on shoot:
 	metadata value "gametype" of shooter is "Kit"
 	{Class::%shooter%} is "Bomber"
 	if projectile is an arrow:
 		set {_tool} to shooter's tool
-		kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 3) is true
-		wait 1 second
-#		set {_d} to distance between shooter and projectile
-#		{_d} > 5
-		set {_l} to location of projectile
-		delete projectile
-		kitExplosion(shooter, 2, {_l})
+		kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 4) is true
+		set metadata value "present-bow" of projectile to "true"
+
+on damage of player:
+	damage was caused by projectile
+	projectile is an arrow
+	{Class::%attacker%} is "Bomber"
+	metadata value "present-bow" of projectile is "true"
+	cancel event
+	delete projectile
+	set {_l} to location of victim
+	add 1 to y-coordinate of {_l}
+	loop all blocks in radius 1.5 around {_l}:
+		loop-block is passable
+		set {_num} to a random number between 5 and 15
+		spawn a primed tnt at loop-block
+		set metadata value "attacker" of spawned primed tnt to "%attacker%"
+		set metadata value "kit-bomber" of spawned primed tnt to 2.5
+		setFuseTime(spawned primed tnt, {_num})
