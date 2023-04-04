@@ -259,7 +259,8 @@ function kitNecromanceItem(player: player, num: number, type: text = "Skill") ::
 # Timer
 function kitTimerNecromancer(player: player):
 	while {Class::%{_player}%} is "Necromancer":
-		add 1 to {_timer}
+		add 1 to {_timer}  # Timer処理
+		# --- Undead処理 ---
 		if {_timer} >= 200:
 			set {_timer} to 0
 		if {_timer} = 0:
@@ -269,6 +270,8 @@ function kitTimerNecromancer(player: player):
 			loop all skeletons:
 				metadata value "kit-dead" of loop-skeleton is "true"
 				subtract 1.2 from loop-skeleton's health
+		# -----------------
+		# --- Action Bar処理 ---
 		delete {_true}
 		set {_tool} to {_player}'s tool
 		if {_tool} is air:
@@ -279,4 +282,42 @@ function kitTimerNecromancer(player: player):
 				set {_true} to true
 		if {_true} is true:
 			send action bar "§5§lNecromance§0: §4%{Kit-Necromance::%{_player}%}%" to {_player}
+		# ---------------------
+		# --- 死体発光処理 ---
+		delete {_tg}
+		set {_tg} to target entity of {_player}
+		if {_targeted} is set:
+			if {_tg} is set:
+				if type of {_tg} is an armor stand:
+					if distance between {_tg} and player <= 50:
+						if metadata value "deadplayer" of {_tg} is set:
+							packetGlowing({_player}, {_tg})
+							if {_tg} is not {_targeted}:
+								# --- 発光消滅処理 ---
+								packetUnglowing({_player}, {_targeted})
+								# ------------------
+								set {_targeted} to {_tg}
+						else:
+							# --- 発光消滅処理 ---
+							packetUnglowing({_player}, {_targeted})
+							# ------------------
+							delete {_targeted}
+					else:
+						# --- 発光消滅処理 ---
+						packetUnglowing({_player}, {_targeted})
+						# ------------------
+						delete {_targeted}
+				else:
+					# --- 発光消滅処理 ---
+					packetUnglowing({_player}, {_targeted})
+					# ------------------
+					delete {_targeted}
+			else:
+				# --- 発光消滅処理 ---
+				packetUnglowing({_player}, {_targeted})
+				# ------------------
+				delete {_targeted}
+		else:
+			set {_targeted} to {_tg}
+		# ------------------
 		wait a tick
