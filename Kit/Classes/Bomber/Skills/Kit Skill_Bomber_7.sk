@@ -2,35 +2,62 @@
 
 function kitSkill_Bomber_7(player: player):
 	toolCT({_player}, "Bomber", 7)
+	set {_now} to now
+	# --- 過去の地雷の爆破 ---
+	if {Stats.%{_player}%::SensorMine-Amount} is 3:
+		set {_toptime} to 0
+		loop {Stats.%{_player}%::*}:
+			loop-index contains "SensorMine"
+			loop-index contains "Time"
+			set {_value} to loop-value
+			set {_dif} to "%difference between {_value} and {_now}%"
+			set {_diftime} to timeNumber({_dif})
+			if {_diftime} > {_toptime}:
+				set {_toptime} to {_diftime}
+				set {_oldnum} to loop-index
+				replace "SensorMine-" with "" in {_oldnum}
+				replace ".Time" with "" in {_oldnum}
+		set {_oldloc} to {Stats.%{_player}%::SensorMine-%{_oldnum}%.Location}
+		subtract 1 from {Stats.%{_player}%::SensorMine-Amount}
+		delete {Stats.%{_player}%::SensorMine-%{_oldnum}%.Time}
+		delete {Stats.%{_player}%::SensorMine-%{_oldnum}%.Location}
+		kitEffect_SensorMine({_player}, {_oldloc})
+	# ---------------------
 	kitMsg({_player}, "<##8b0000>地雷を設置します...")
 	playSound("ui.button.click", 1.2, 0.5, {_player})
+	add 1 to {Stats.%{_player}%::SensorMine-Number}
+	add 1 to {Stats.%{_player}%::SensorMine-Amount}
+	set {_newnum} to {Stats.%{_player}%::SensorMine-Number}
 	set {_l} to location of {_player}
-	set {_ln} to 9
-	set {Stats.%{_player}%::SensorMine} to {_l}
-	while {Stats.%{_player}%::SensorMine} is {_l}:
-		add 1 to {_ln}
-		if {_ln} >= 10:
-			set {_ln} to 0
-			set {_rad} to 0
-			loop 10 times:
-				add 36 to {_rad}
-				set {_el} to {_l}
-				add 3 * sin({_rad}) to x-coordinate of {_el}
-				add 3 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 240, 230, 140, center {_el}, visibleRange 20
-		loop all entities in radius 5 around {_l}:
-			{_bomb} is not set
-			{Stats.%{_player}%::SensorMine} is {_l}
-			kitCheckTeam({_player}, loop-entity, false) is true
-			delete {Stats.%{_player}%::SensorMine}
-			set {_bomb} to true
-			playSound("ui.button.click", 1.5, 2, {_l})
-			loop 10 times:
-				add 36 to {_rad}
-				set {_el} to {_l}
-				add 3 * sin({_rad}) to x-coordinate of {_el}
-				add 3 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 139, 0, 0, center {_el}, visibleRange 30
-		wait a second
-	{_bomb} is true
-	kitExplosion({_player}, 3, {_l})
+	set {Stats.%{_player}%::SensorMine-%{_newnum}%.Time} to {_now}
+	set {Stats.%{_player}%::SensorMine-%{_newnum}%.Location} to {_l}
+	while {Stats.%{_player}%::SensorMine-%{_newnum}%.Location} is set:
+		set {_rad} to 0
+		loop 10 times:
+			add 36 to {_rad}
+			set {_el} to {_l}
+			add 3 * sin({_rad}) to x-coordinate of {_el}
+			add 3 * cos({_rad}) to z-coordinate of {_el}
+			spawnParticle_Dust(rgb(240, 230, 140), 1, {_player})
+		loop all players in radius 5 around {_l}:
+			kitCheckTeam({_player}, loop-player, false) is true
+			set {_exloc} to {Stats.%{_player}%::SensorMine-%{_newnum}%.Location}
+			subtract 1 from {Stats.%{_player}%::SensorMine-Amount}
+			delete {Stats.%{_player}%::SensorMine-%{_newnum}%.Time}
+			delete {Stats.%{_player}%::SensorMine-%{_newnum}%.Location}
+			kitEffect_SensorMine({_player}, {_exloc})
+		wait a tick
+
+function kitEffect_SensorMine(player: player, loc: location):
+	loop 20 times:
+		set {_soundnum} to 21 - loop-number
+		if mod({_soundnum}, 4) is 0:
+			playSound("block.note_block.pling", 1, 2, {_loc})
+		loop 10 times:
+			add 36 to {_rad}
+			set {_el} to {_loc}
+			add 3 * sin({_rad}) to x-coordinate of {_el}
+			add 3 * cos({_rad}) to z-coordinate of {_el}
+			spawnParticle_Dust(rgb(139, 0, 0), 1.5, {_el})
+		wait a tick
+	kitExplosion({_player}, 2.5, {_loc})
