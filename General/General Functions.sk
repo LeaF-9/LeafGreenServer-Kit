@@ -261,15 +261,21 @@ function playerCanSee(player: player, target: player) :: boolean:
 		# log "playerCanSee(): false"
 		return false
 
-# rollを司る関数
-# 左回りで+
-function setRollLocation(loc: location, roll: num) :: location:
-	set {_reloc} to {_loc}
-	set {_sin} to sin({_roll})
-	if {_sin} >= 0:  # 左にある時 roll = 0 ~ 180
-		add 90 yaw of {_reloc}
-	else:  # 右にある時 roll = 180 ~ 360
-		add -90 yaw of {_reloc}
+function packetGlowing(player: player, target: entity):
+	set {_pkt} to new play_server_entity_metadata packet
+	set field 0 of {_pkt} to id of {_target}
+	set {_dw} to new data watcher for {_target}
+	set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
+	set field 1 of {_pkt} to {_dw}
+	send {_player} packet {_pkt}
+
+function packetUnglowing(player: player, target: entity):
+	set {_pkt} to new play_server_entity_metadata packet
+	set field 0 of {_pkt} to id of {_target}
+	set {_dw} to new data watcher for {_target}
+	set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
+	set field 1 of {_pkt} to {_dw}
+	send {_player} packet {_pkt}
 
 # ########### Kit PvP's Functions ###########
 
