@@ -1,12 +1,58 @@
-# Bombord
+# Nitrod
 
 on damage of player:
 	metadata value "gametype" of attacker is "Kit"
 	damage was caused by attack
+	attacker is sneaking
 	{Class::%attacker%} is "Bomber"
 	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is true
-	chance of 10%:
-		cancel event
-		set {_l} to location of victim
-		kitExplosion(attacker, 2, {_l})
+	set {_now} to now
+	loop 3 times:
+		drop a tnt named "%attacker%" at victim
+		set metadata value "unpickable" of last dropped item to "true"
+		set metadata value "gametype" of last dropped item to "Kit"
+		set metadata value "nitrod-player" of last dropped item to "%attacker%"
+		set metadata value "nitrod-time" of last dropped item to {_now}
+	wait a second
+	loop all dropped items:
+		metadata value "nitrod-player" of loop-dropped item is "%attacker%"
+		metadata value "nitrod-time" of loop-dropped item is {_now}
+		add location of loop-dropped item to {_dloc::*}
+		delete loop-dropped item
+	loop {_dloc::*}:
+		kitExplosion(attacker, 1.3, loop-value)
+
+# Nitrow
+
+on shoot:
+	metadata value "gametype" of shooter is "Kit"
+	{Class::%shooter%} is "Bomber"
+	if projectile is an arrow:
+		set {_tool} to shooter's offhand tool
+		kitItemAllChecker({_tool}, "Bomber", "Weapon.sub", 1) is true
+		set {_o} to location of shooter
+		loop 3 times:
+			wait 5 ticks
+			set {_l} to location of projectile
+			if {_l} is not {_o}:
+				set {_o} to {_l}
+				distance between shooter and {_l} > 5
+				kitEffect_Nitrow(shooter, {_l}, 1 + (loop-number * 0.1))
+
+function kitEffect_Nitrow(player: player, loc: location, num: number):
+	set {_now} to now
+	loop 3 times:
+		drop a tnt named "%{_player}%" at {_loc}
+		set metadata value "unpickable" of last dropped item to "true"
+		set metadata value "gametype" of last dropped item to "Kit"
+		set metadata value "nitrow-player" of last dropped item to "%{_player}%"
+		set metadata value "nitrow-time" of last dropped item to {_now}
+	wait a second
+	loop all dropped items:
+		metadata value "nitrow-player" of loop-dropped item is "%{_player}%"
+		metadata value "nitrow-time" of loop-dropped item is {_now}
+		add location of loop-dropped item to {_dloc::*}
+		delete loop-dropped item
+	loop {_dloc::*}:
+		kitExplosion(attacker, {_num}, loop-value)
