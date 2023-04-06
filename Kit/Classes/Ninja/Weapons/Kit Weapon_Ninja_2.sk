@@ -52,6 +52,15 @@ on projectile hit:
 	if {_baseblock} is set:
 		set {_v} to setVector({_baseloc}, {_baseblock})
 		# --- armor stand 置く処理 ---
+		set {_yaw} to yaw of {_v}
+		set {_pitch} to pitch of {_v}
+		set {_kunailoc} to location of {_baseblock}
+		subtract 0.5 from y-coordinate of {_kunailoc}
+		set yaw of {_kunailoc} to {_yaw}
+		set {_p} to 315 + {_p}
+		set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""arrow"",Count:1b},{}],Pose:{RightArm:[0f,%{_p}%f,270f]}}"
+		spawn an armor stand at shooter with nbt {_nbt}
+		set metadata value "kunai-remaining" of spawned entity to "%shooter%"
 		# ---------------------------
 
 function kunaiNinjutsu():
