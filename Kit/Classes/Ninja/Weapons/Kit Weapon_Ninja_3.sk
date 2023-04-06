@@ -1,5 +1,33 @@
 # Kagizume
 
+on sneak toggle:
+	{Class::%player%} is "Ninja"
+	player is not sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Ninja", "Weapon.main", 3) is true
+	if checkCT(player, name of {_tool}) is true:
+		playSound("entity.blaze.ambient", 1, 1.7, location of player)
+		wait a tick
+		set {_true} to true
+		while {_true} is true:
+			if player is not sneaking:
+				set {_true} to false
+			set {_tool} to player's tool
+			if kitItemAllChecker({_tool}, "Ninja", "Weapon.main", 3) is false:
+				delete {_true}
+			if {_true} is true:
+				loop 3 times:
+					set {_el} to aroundEffect(player)
+					spawnParticle(ash, {_el})
+				wait a tick
+		if {_true} is false:
+			playSound("")
+			set {_v} to setVector(location of player, location 5 meters in front of player, 5)
+			set velocity of player to {_v}
+			loop 10 times:
+
+
+
 function kitWeapon_Ninja_3(player: player):
 	if {Stats.%{_player}%::SkillLocation} is set:
 		toolCT({_player}, "Ninja", 3, "Weapon.main")
