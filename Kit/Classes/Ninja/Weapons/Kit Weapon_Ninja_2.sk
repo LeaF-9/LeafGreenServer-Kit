@@ -9,6 +9,7 @@ function kitWeapon_Ninja_2(player: player):
 		remove {_tool} from {_player}
 		give {_fuda} to {_player}
 		# -----------------
+		set {Stats.%{_player}%::Kunai-Shooting} to true
 		# --- クナイの発射 ---
 		shoot an arrow from {_player} at speed 3
 		set metadata value "kunai" of shot arrow to "%{_player}%"
@@ -27,11 +28,27 @@ function kitWeapon_Ninja_2(player: player):
 				metadata value "kunai-remaining" of loop-entity is "%{_player}%"
 				set {_remaining} to true
 			if {_remaining} is not set:
+				delete {Stats.%{_player}%::Kunai-Shooting}
 				# --- クナイの返還 ---
 				remove {_fuda} from {_player}
 				give {_tool} to {_player}
 				# ------------------
 	else if name of {_tool} contains "Fuda":
+		if {Stats.%{_player}%::Kunai-Remaining} is true:
+			delete {Stats.%{_player}%::Kunai-Remaining}
+			loop all entities:
+				type of loop-entity is armor stand
+				metadata value "kunai-remaining" of loop-entity is "%{_player}%"
+				delete loop-entity
+		else:
+			delete {Stats.%{_player}%::Kunai-Shooting}
+		# --- クナイの返還 --
+		set {_kunai} to a name tag named "<##698AAB>Kunai" with lore lore of {_tool}
+		set {_kunai} to kitItemTagChanger({_kunai}, "Ninja", "Weapon.main", 2)
+		remove {_tool} from {_player}
+		give {_kunai} to {_player}
+		# ------------------
+		
 
 function kitParticle_Kunai(proj: projectile):
 	loop 20 times:
@@ -42,6 +59,8 @@ function kitParticle_Kunai(proj: projectile):
 on projectile hit:
 	projectile is an arrow
 	metadata value "kunai" of projectile is set
+	{Stats.%shooter%::Kunai-Shooting} is true
+	delete {Stats.%shooter%::Kunai-Shooting}
 	set {_baseloc} to location of projectile
 	set {_d} to 100
 	loop all blocks in radius 1.5 around {_baseloc}:
@@ -50,6 +69,7 @@ on projectile hit:
 		set {_d} to distance between {_baseloc} and location of loop-block
 		set {_baseblock} to loop-block
 	if {_baseblock} is set:
+		set {Stats.%shooter%::Kunai-Remaining} to true
 		set {_v} to setVector({_baseloc}, {_baseblock})
 		# --- armor stand 置く処理 ---
 		set {_yaw} to yaw of {_v}
