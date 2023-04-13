@@ -170,3 +170,30 @@ function kunaiNinjutsu(player: player, type: text):
 						spawnParticle(explosion, location of loop-block)
 				wait a tick
 		# -----------
+		# --- 忍術 [風] ---
+		else if {_type} is "Ninjutsu-KAZE":
+			playSound("entity.wither.shoot", 1, 0.5, {_loc})
+			loop 20 times:
+				loop all entities in radius 5 around {_loc}:
+					kitCheckTeam({_player}, loop-player, false) is true
+					kitDamage({_player}, loop-player, 0.5)
+					push loop-player upwards at speed 0.1
+					set {_v} to setVector({_loc}, location of loop-player)
+					set velocity of loop-player to {_v}
+				# --- 音演出 ---
+				playSound("entity.wither.shoot", 0.5, 1.5, {_loc})
+				# -------------
+				# --- パーティクル演出 ---
+				set {_y} to 0
+				loop 50 times:
+					add 40 to {_rad}
+					add 0.1 to {_y}
+					add 0.1 to {_m}
+					set {_el} to {_loc}
+					add {_y} to y-coordinate of {_el}
+					add {_m} * sin({_rad}) to x-coordinate of {_el}
+					add {_m} * cos({_rad}) to z-coordinate of {_el}
+					spawnParticle_DustTransition(rgb(0, 175, 204), rgb(161, 216, 226), 1.5, {_el})
+				# ----------------------
+				wait 5 ticks
+		# ----------------

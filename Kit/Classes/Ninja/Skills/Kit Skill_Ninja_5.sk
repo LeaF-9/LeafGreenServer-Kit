@@ -95,32 +95,35 @@ on rightclick holding a dye:
 		set player's tool to air
 		if "%type of {_n}%" is "light blue dye":
 			kitMsg(player, "§b忍法・風遁の術!")
-			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-KAZE"
+			kunaiNinjutsu(player, "Ninjutsu-KAZE")
 			playSound("entity.wither.shoot", 1, 0.5, player)
 			set {_l} to location of player
-			set {_to} to vector of {_l}
+			if block at location 0.1 meters below {_l} is passable:
+				set {_v} to setVector({_l}, location 5 meters above {_l})
+				set velocity of player to {_v}
 			loop 20 times:
-				loop all players in radius 5 around {_l}:
-					loop-player is not player
-					{team::%loop-player%} is not {team::%player%}
-					LastKiller(loop-player, player)
-					push loop-player upwards at speed 1
-					set {_ll} to location of loop-player
-					set {_from} to vector of {_ll}
-					set {_vector} to {_from} -- {_to}
-					set {_vector} to normalized {_vector}
-					set x of {_vector} to x of {_vector} * 1
-					set y of {_vector} to y of {_vector} * 1
-					set z of {_vector} to z of {_vector} * 1
-					set velocity of loop-player to {_vector}
-				set {_el} to {_l}
-				add 100 to {_rad}
-				add 0.25 to {_high}
-				add {_high} to y-coordinate of {_el}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 30
-				wait a tick
+				loop all entities in radius 5 around {_l}:
+					kitCheckTeam(player, loop-player, false) is true
+					kitDamage(player, loop-player, 0.5)
+					push loop-player upwards at speed 0.1
+					set {_v} to setVector({_l}, location of loop-player)
+					set velocity of loop-player to {_v}
+				# --- 音演出 ---
+				playSound("entity.wither.shoot", 0.5, 1.5, {_l})
+				# -------------
+				# --- パーティクル演出 ---
+				set {_y} to 0
+				loop 50 times:
+					add 40 to {_rad}
+					add 0.1 to {_y}
+					add 0.1 to {_m}
+					set {_el} to {_l}
+					add {_y} to y-coordinate of {_el}
+					add {_m} * sin({_rad}) to x-coordinate of {_el}
+					add {_m} * cos({_rad}) to z-coordinate of {_el}
+					spawnParticle_DustTransition(rgb(0, 175, 204), rgb(161, 216, 226), 1.5, {_el})
+				# ----------------------
+				wait 5 ticks
 		else if "%type of {_n}%" is "grey dye":
 			kitMsg(player, "§8忍法・爆遁の術!")
 			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-BAKU"
