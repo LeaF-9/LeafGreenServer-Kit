@@ -109,3 +109,16 @@ function kunaiNinjutsu(player: player, type: text):
 				wait a tick
 			# ---------------------
 		# -----------
+		# --- 分身 ---
+		else if {_type} is "Bunshin":
+			loop 3 times:
+				set {_nbt} to nbt compound from "{IsBaby:0,Silent:1,Attributes:[{Name:""generic.movement_speed"",Base:0.6f}],ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%{_player}%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:8,Amplifier:2,Duration:999999}]}"
+				spawn a zombie at {_player} with nbt {_nbt}
+				set metadata value "gametype" of spawned zombie to "Kit"
+				set metadata value "kunai-bunshin" of spawned zombie to "%{_player}%"
+				set spawned zombie's display name to "%{_player}%"
+			wait 5 seconds
+			loop all zombies:
+				metadata value "kunai-bunshin" of loop-zombie is "%{_player}%"
+				delete loop-zombie
+		# -----------

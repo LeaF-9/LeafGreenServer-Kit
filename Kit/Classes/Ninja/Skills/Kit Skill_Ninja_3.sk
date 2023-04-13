@@ -6,13 +6,13 @@ function kitSkill_Ninja_3(player: player):
 	kitMsg({_player}, "§2忍法・分身の術!")
 	playSound("block.fire.extinguish", 1, 2, player)
 	delete {_player}'s tool
-	set {Stats.%{_player}%::LastNinjutsu} to "Bunshin"
 	loop 3 times:
 		set {_nbt} to nbt compound from "{IsBaby:0,Silent:1,Attributes:[{Name:""generic.movement_speed"",Base:0.6f}],ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%{_player}%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:8,Amplifier:2,Duration:999999}]}"
 		spawn a zombie at {_player} with nbt {_nbt}
 		set metadata value "gametype" of spawned zombie to "Kit"
 		set metadata value "bunshin" of spawned zombie to "%{_player}%"
 		set spawned zombie's display name to "%{_player}%"
+	kunaiNinjutsu({_player}, "Bunshin")
 	wait 5 seconds
 	loop all zombies:
 		metadata value "bunshin" of loop-zombie is "%{_player}%"
