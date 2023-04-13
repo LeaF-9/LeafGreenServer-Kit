@@ -7,7 +7,7 @@ function kitSkill_Ninja_6(player: player):
 		set {Stats.%{_player}%::Kamaitachi} to true
 		kitMsg({_player}, "§f忍法・鎌鼬の術!")
 		delete {_player}'s tool
-		set {Stats.%{_player}%::LastNinjutsu} to "Kamaitachi"
+		kunaiNinjutsu({_player}, "Kamaitachi")
 		apply speed 3 to {_player} for 5 seconds replacing existing effect
 		loop 100 times:
 			if {Stats.%{_player}%::Kamaitachi} is set:
@@ -16,7 +16,7 @@ function kitSkill_Ninja_6(player: player):
 					kitDamage({_player}, loop-entity, 0.25)
 					set {_loc} to location of loop-entity
 					add 1 to y-coordinate of {_loc}
-					draw 1 cloud particle at {_loc} with direction randomVector({_loc}) and speed 0.5, keepFor 1 tick
+					draw 1 cloud particle at {_loc} with direction randomVector() and speed 0.5, keepFor 1 tick
 				set {_pitch} to a random number between 0.5 and 2
 				playSound("entity.player.player,sweep", 1, {_pitch}, {_player})
 				loop all blocks in radius 5 around {_player}:

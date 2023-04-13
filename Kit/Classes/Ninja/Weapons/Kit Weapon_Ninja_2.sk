@@ -153,3 +153,20 @@ function kunaiNinjutsu(player: player, type: text):
 			loop {_ined::*}:
 				delete {Stats.%loop-value%::Zanzo}
 		# -----------
+		# --- 鎌鼬 ---
+		else if {_type} is "Kamaitachi":
+			loop 100 times:
+				loop all entities in radius 5 around {_loc}:
+					kitCheckTeam({_player}, loop-entity, false) is true
+					kitDamage({_player}, loop-entity, 0.25)
+					set {_el} to location of loop-entity
+					add 1 to y-coordinate of {_el}
+					spawnParticle_Vector(cloud, randomVector(), 0.5, {_el})
+				set {_pitch} to a random number between 0.5 and 2
+				playSound("entity.player.player,sweep", 1, {_pitch}, {_loc})
+				loop all blocks in radius 5 around {_loc}:
+					loop-block is passable
+					chance of 1%:
+						spawnParticle(explosion, location of loop-block)
+				wait a tick
+		# -----------
