@@ -90,7 +90,7 @@ function kunaiNinjutsu(player: player, type: text):
 		if {_type} is "Kakuremi":
 			loop all players in radius 5 around {_loc}:
 				{_player} is not loop-player
-				kitCheckTeam({_player}, loop-player, false) is true
+				kitCheckTeam({_player}, loop-player, true) is true
 				setSupporter(loop-player, {_player})
 				kitInvisible(loop-player, 5 seconds)
 			# --- 音演出 ---
@@ -111,9 +111,12 @@ function kunaiNinjutsu(player: player, type: text):
 		# -----------
 		# --- 分身 ---
 		else if {_type} is "Bunshin":
+			# --- 音演出 ---
+			playSound("block.fire.extinguish", 1, 2, {_loc})
+			# -------------
 			loop 3 times:
 				set {_nbt} to nbt compound from "{IsBaby:0,Silent:1,Attributes:[{Name:""generic.movement_speed"",Base:0.6f}],ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%{_player}%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:8,Amplifier:2,Duration:999999}]}"
-				spawn a zombie at {_player} with nbt {_nbt}
+				spawn a zombie at {_loc} with nbt {_nbt}
 				set metadata value "gametype" of spawned zombie to "Kit"
 				set metadata value "kunai-bunshin" of spawned zombie to "%{_player}%"
 				set spawned zombie's display name to "%{_player}%"
@@ -121,4 +124,32 @@ function kunaiNinjutsu(player: player, type: text):
 			loop all zombies:
 				metadata value "kunai-bunshin" of loop-zombie is "%{_player}%"
 				delete loop-zombie
+		# -----------
+		# --- 残像 ---
+		else if {_type} is "Zanzo":
+			# --- 音演出 ---
+			playSound("entity.bat.takeoff", 1, 1.5, {_loc})
+			# -------------
+			loop 100 times:
+				delete {_inow::*}
+				loop all players in radius 5 around {_loc}:
+					{Class::%loop-player%} is not "Ninja"
+					kitCheckTeam({_player}, loop-player, true) is true
+					add loop-player to {_inow::*}
+					if {_ined::*} does not contain loop-player:
+						add loop-player to {_ined::*}
+					set {Stats.%loop-player%::Zanzo} to true
+				loop {_ined::*}:
+					{_inow::*} does not contain loop-value-2
+					delete {Stats.%loop-value-2%::Zanzo}
+					delete {_ined::%loop-index%}
+				# --- パーティクル演出 ---
+				loop all blocks in radius 5 around {_loc}:
+					loop-block is passable
+					block below loop-block is not passable
+					spawnParticle_Color(ambient_entity_effect, 0, 0, 0, location of loop-block)
+				# ---------------------
+				wait a tick
+			loop {_ined::*}:
+				delete {Stats.%loop-value%::Zanzo}
 		# -----------
