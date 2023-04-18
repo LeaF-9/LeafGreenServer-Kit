@@ -197,3 +197,16 @@ function kunaiNinjutsu(player: player, type: text):
 				# ----------------------
 				wait 5 ticks
 		# ----------------
+		# --- 忍術 [爆] ---
+		else if {_type} is "Ninjutsu-BAKU":
+			set pitch of {_loc} to 0
+			playSound("entity.tnt.primed", 1, 0.8, {_loc})
+			loop 6 times:
+				add 60 to yaw of {_loc}
+				shoot a primed tnt from {_loc} at speed 0.5 upwards
+				set metadata value "attacker" of shot primed tnt to "%{_player}%"
+				set metadata value "kit-bomber" of shot primed tnt to 2
+				set metadata value "ninjutsu-baku" of shot primed tnt to "%{_player}%"
+				setFuseTime(shot primed tnt, 60)
+				spawnParticle(lava, shot primed tnt)
+		# ----------------

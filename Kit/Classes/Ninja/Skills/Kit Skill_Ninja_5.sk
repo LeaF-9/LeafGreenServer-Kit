@@ -126,21 +126,18 @@ on rightclick holding a dye:
 				wait 5 ticks
 		else if "%type of {_n}%" is "grey dye":
 			kitMsg(player, "§8忍法・爆遁の術!")
-			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-BAKU"
-			loop 3 times:
-				shoot a primed tnt from player at speed 0.5 upwards
+			kunaiNinjutsu(player, "Ninjutsu-BAKU")
+			set {_loc} to location of player
+			set pitch of {_loc} to 0
+			playSound("entity.tnt.primed", 1, 0.8, {_loc})
+			loop 6 times:
+				add 60 to yaw of {_loc}
+				shoot a primed tnt from {_loc} at speed 0.5 upwards
 				set metadata value "attacker" of shot primed tnt to "%player%"
-				set metadata value "kit-bomber" of shot primed tnt to 2.3
+				set metadata value "kit-bomber" of shot primed tnt to 2
 				set metadata value "ninjutsu-baku" of shot primed tnt to "%player%"
-				push shot primed tnt north at speed random number from -0.5 to 0.5
-				push shot primed tnt east at speed random number from -0.5 to 0.5
-				drawDot count 1, particle "lava", center shot primed tnt, visibleRange 30, keepFor 1 second
-			loop 10 times:
-				loop all primed tnts:
-					metadata value "ninjutsu-baku" of loop-primed tnt is "%player%"
-					set {_l} to location of loop-primed tnt
-					playSound("ui.button.click", 0.5, 2, {_l})
-				wait 2 ticks
+				setFuseTime(shot primed tnt, 60)
+				spawnParticle(lava, shot primed tnt)
 		else if "%type of {_n}%" is "light green dye":
 			kitMsg(player, "§2忍法・木遁の術!")
 			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-MOKU"
@@ -374,3 +371,44 @@ on rightclick holding a dye:
 				strike lightning effect at loop-player
 				kitDamage(player, loop-player, 2, true)
 				kitPalsy(loop-player, 5 seconds)
+
+# Ninjutsu -爆-
+on explosion:
+	if metadata value "ninjutsu-baku" of event-entity is set:
+		set {_act} to metadata value "pop" of event-entity
+		set {_act} to {_act} parsed as player
+		set {_loc} to event-location
+		wait a tick
+		loop 2 times:
+			drop a tnt bean named "%{_act}%" at event-location
+			set metadata value "gametype" of last dropped item to "Kit"
+			set metadata value "ninjutsu-baku-2" of last dropped item to "%{_act}%"
+			spawnParticle(flame, last dropped item)
+			push last dropped item upwards at speed 0.2
+			push last dropped item north at speed random number from -1 to 1
+			push last dropped item east at speed random number from -1 to 1
+		wait 20 ticks
+		loop all dropped items:
+			metadata value "ninjutsu-baku-2" of loop-dropped item is "%{_act}%"
+			add location of loop-dropped item to {_dloc::*}
+			delete loop-dropped item
+		loop {_dloc::*}:
+			kitExplosion({_act}, 1.8, loop-value)
+		wait a tick
+		loop {_dloc::*}:
+			loop 3 times:
+				drop a gunpowder named "%{_act}%" at loop-value-1
+				set metadata value "gametype" of last dropped item to "Kit"
+				set metadata value "ninjutsu-baku-3" of last dropped item to "%{_act}%"
+				spawnParticle(smoke, last dropped item)
+				push last dropped item upwards at speed 0.1
+				push last dropped item north at speed random number from -1 to 1
+				push last dropped item east at speed random number from -1 to 1
+		wait 20 ticks
+		delete {_dloc::*}
+		loop all dropped items:
+			metadata value "ninjutsu-baku-3" of loop-dropped item is "%{_act}%"
+			add location of loop-dropped item to {_dloc::*}
+			delete loop-dropped item
+		loop {_dloc::*}:
+			kitExplosion({_act}, 1.5, loop-value)
