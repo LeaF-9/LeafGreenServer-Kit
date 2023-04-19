@@ -103,11 +103,11 @@ on rightclick holding a dye:
 				set velocity of player to {_v}
 			loop 20 times:
 				loop all entities in radius 5 around {_l}:
-					kitCheckTeam(player, loop-player, false) is true
-					kitDamage(player, loop-player, 0.5)
-					push loop-player upwards at speed 0.1
-					set {_v} to setVector({_l}, location of loop-player)
-					set velocity of loop-player to {_v}
+					kitCheckTeam(player, loop-entity, false) is true
+					kitDamage(player, loop-entity, 0.5)
+					push loop-entity upwards at speed 0.1
+					set {_v} to setVector({_l}, location of loop-entity)
+					set velocity of loop-entity to {_v}
 				# --- 音演出 ---
 				playSound("entity.wither.shoot", 0.5, 1.5, {_l})
 				# -------------
@@ -380,7 +380,7 @@ on explosion:
 		set {_loc} to event-location
 		wait a tick
 		loop 2 times:
-			drop a tnt bean named "%{_act}%" at event-location
+			drop a tnt named "%{_act}%" at event-location
 			set metadata value "gametype" of last dropped item to "Kit"
 			set metadata value "ninjutsu-baku-2" of last dropped item to "%{_act}%"
 			spawnParticle(flame, last dropped item)
