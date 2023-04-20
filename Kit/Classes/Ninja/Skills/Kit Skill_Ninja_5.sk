@@ -254,22 +254,56 @@ on rightclick holding a dye:
 			# --------------------------
 		else if "%type of {_n}%" is "blue dye":
 			kitMsg(player, "§1忍法・水遁の術!")
-			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-MIZU"
-			playSound("entity.generic.splash", 1, 1, player)
+			kunaiNinjutsu(player, "Ninjutsu-MIZU")
 			set {_l} to location of player
-			loop all players in radius 5 around {_l}:
-				if kitCheckTeam(loop-player, player, true) is true:
-					{Stats.%loop-player%::NoSupport} is not set
-					if loop-player is not player:
-						setSupporter(loop-player, player)
-					apply regeneration 1 to loop-player for 10 seconds
-					extinguish loop-player
-				else if kitCheckTeam(loop-player, player, false) is true:
-					apply poison 1 to loop-player for 10 seconds
-			set {_y} to y-coordinate of block at player
-			loop all blocks in radius 5 around player:
-				y-coordinate of loop-block is {_y}
-				drawDot count 1, particle "mobspell", RGB 0, 0, 200, center location of loop-block, visibleRange 30
+			set {_y} to y-coordinate of block at {_l}
+			# --- 座標の追加 ---
+			loop 36 times:
+				set {_pl} to {_l}
+				add 10 to {_rad}
+				add 5 * sin({_rad}) to x-coordinate of {_pl}
+				add 5 * cos({_rad}) to z-coordinate of {_pl}
+				loop 7 times:
+					if block at {_pl} is air:
+						if {_locations::*} does not contain {_pl}:
+							add {_pl} to {_locations::*}
+					add 1 to y-coordinate of {_pl}
+				loop round(3 * sin({_rad})) times:
+					if block at {_pl} is air:
+						if {_locations::*} does not contain {_pl}:
+							add {_pl} to {_locations::*}
+					add 1 to y-coordinate of {_pl}
+			# ----------------
+			# --- 水のベール展開 ---
+			loop 10 times:
+				add 1 to {_checky}
+				loop {_locations::*}:
+					y-coordinate of loop-value-2 <= y-coordinate of {_l} + {_checky}
+					playSound("entity.generic.splash", 0.5, 1.5, loop-value-2)
+					spawnParticle_Color(entity_effect, 0, 0, 200, loop-value-2)
+					make all players see block at loop-value as water
+				wait a tick
+			# --------------------
+			# --- 展開中の処理 ---
+			loop 100 times:
+				# --- 味方プレイヤーへの効果付与 ---
+				loop all entities in radius 5 around {_l}:
+					kitCheckTeam(loop-entity, player. true) is true
+					extinguish loop-entity
+					if loop-entity does not have regeneration:
+						applyEffect(loop-entity, regeneration, 2, 1 second)
+				# ------------------------------
+				# ---ブロック表示 ---
+				loop {_locations::*}:
+					make all players see block at loop-value-2 as water
+				# -----------------
+				wait a tick
+			# ------------------
+			# --- ブロックを戻す処理 ---
+			loop {_locations::*}:
+				make all players see block at loop-value as air
+				playSound("ambient.underwater.exit", 0.5, 2, loop-value)
+			# -----------------------
 		else if "%type of {_n}%" is "red dye":
 			kitMsg(player, "§4忍法・火遁の術!")
 			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-HONO"
