@@ -209,3 +209,114 @@ function kunaiNinjutsu(player: player, type: text):
 				setFuseTime(shot primed tnt, 60)
 				spawnParticle(lava, shot primed tnt)
 		# ----------------
+		# --- 忍術 [木] ---
+		else if {_type} is "Ninjutsu-MOKU":
+			set {_baseloc} to {_loc}
+			set pitch of {_baseloc} to 0
+			add 1 to y-coordinate of {_baseloc}
+			set {_loc} to {_baseloc}
+			set {_meter.sum} to 0
+			set {_meter.front} to 5
+			# --- ブロックの捜索 ---
+			loop 5 times:  # 5mおきにブロックを探す処理 (初期は5なのでloopは5回)
+				loop 6 times:  # 6方向ごとにブロックを探す処理
+					if {_meter.sum} < 30:  # 合計meterがまだ30mである場合
+						if {_meter.ok::%loop-number-2%} is not set:  # その方向が未決定である場合に動作を行う
+							set {_ln} to 0
+							delete {_searched}
+							loop 5 times:  # 5m先のブロックを探す処理
+								{_searched} is not set
+								set {_baseblock} to location {_meter.front} + {_ln} meters in front of {_loc}
+								loop all blocks in radius 3 around {_baseblock}:
+									loop-block is not passable
+									set {_searched} to true
+								if {_searched} is true:
+									set {_meter.ok::%loop-number-2%} to {_meter.front} + {_ln}
+									add {_meter.ok::%loop-number-2%} to {_meter.sum}
+								add 1 to {_ln}
+					add 60 to yaw of {_loc}
+				add 5 to {_meter.front}
+			# --------------------
+			# --- 座標の決定 ---
+			set {_loc} to {_baseloc}
+			loop 6 times:
+				if {_meter.ok::%loop-number%} is set:
+					set {_ln} to 0
+					loop {_meter.ok::%loop-number%} times:
+						add 1 to {_ln}
+						set {_lb} to location {_ln} meters in front of {_loc}
+						if block at {_lb} is not passable:
+							add {_lb} to {_blocklocs::*}
+						loop all blocks in radius 1 around {_lb}:
+							{_blocklocs::*} does not contain location of loop-block
+							loop-block is not passable
+							chance of 5%:
+								add location of loop-block to {_leavelocs::*}
+					add 1 to {_ln}
+					set {_lb} to location {_ln} meters in front of {_loc}
+					subtract 1 from y-coordinate of {_lb}
+					if block at {_lb} is not passable:
+						add {_lb} to {_blocklocs::*}
+				add 60 to {_loc}
+			# ----------------
+			# --- ブロックの設置と吸収効果の付与 ---
+			set {_meter.near} to 0
+			loop 5 times:  # 近いブロックから表示する機能
+				add 5 to {_meter.near}
+				loop {_blocklocs::*}:
+					{_displayed::*} does not contain loop-value-2
+					distance between loop-value-2 and {_baseloc} <= {_meter.near}
+					add loop-value-2 to {_displayed::*}
+					make all players see block at loop-value-2 as (log)
+					loop all players in radius 3 around loop-value-2:
+						kitCheckTeam(loop-player, {_player}, false) is not set
+						kitDrain(loop-player, 5 seconds)
+					playSound("block.wood.place", 0.5, 1.5, loop-value-2)
+					loop all blocks in radius 2.5 around loop-value-2:
+						loop-block is air
+						chance of 5%:
+							spawnParticle(happy_villager, location of loop-block)
+				loop {_leavelocs::*}:
+					{_displayed::*} does not contain loop-value-2
+					distance between loop-value-2 and {_baseloc} <= {_meter.near}
+					add loop-value-2 to {_displayed::*}
+					make all players see block at loop-value-2 as (leaves)
+					playSound("block.azalea_leaves.place", 0.5, 1, loop-value-2)
+				wait a tick
+			loop {_blocklocs::*}:
+				{_displayed::*} does not contain loop-value
+				add loop-value to {_displayed::*}
+				make all players see block at loop-value as (log)
+				loop all players in radius 3 around loop-value:
+					kitCheckTeam(loop-player, {_player}, false) is not set
+					kitDrain(loop-player, 5 seconds)
+				playSound("block.wood.place", 0.5, 1.5, loop-value)
+				loop all blocks in radius 2.5 around loop-value:
+					loop-block is air
+					chance of 5%:
+						spawnParticle(happy_villager, location of loop-block)
+			loop {_leavelocs::*}:
+				{_displayed::*} does not contain loop-value
+				add loop-value to {_displayed::*}
+				make all players see block at loop-value as (leaves)
+				playSound("block.azalea_leaves.place", 0.5, 1, loop-value)
+			# ---------------------------------
+			# --- 5秒間常に表示 ---
+			loop 100 times:
+				loop {_blocklocs::*}:
+					make all players see block at loop-value-2 as (log)
+				loop {_leavelocs::*}:
+					make all players see block at loop-value-2 as (leaves)
+				wait a tick
+			# -------------------
+			# --- ブロック表示を戻す処理 ---
+			loop {_blocklocs::*}:
+				make all players see block at loop-value as air
+				playSound("block.grass.break", 0.5, 1.5, loop-value)
+				spawnParticle_Block(log, loop-value)
+			loop {_leavelocs::*}:
+				make all players see block at loop-value as air
+				playSound("block.grass.break", 0.5, 1.5, loop-value)
+				spawnParticle_Block(leaves, loop-value)
+			# --------------------------
+		# ----------------
