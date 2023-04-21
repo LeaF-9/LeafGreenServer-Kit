@@ -145,9 +145,31 @@ on rightclick holding a dye:
 			set pitch of {_baseloc} to 0
 			add 1 to y-coordinate of {_baseloc}
 			set {_loc} to {_baseloc}
-			set {_meter.sum} to 0
-			set {_meter.front} to 5
+			set {_meter.hp} to 30
 			# --- ブロックの捜索 ---
+			loop 6 times:  # 6方向ごとにサーチを行なう
+				if {_meter.hp} > 0:
+					set {_meter.front} to 5
+					loop 25 times:
+						set {_searchloc} to location {_meter.front} meters in front of {_loc}
+						set {_ln} to 0
+						loop 5 times:  # 下方向
+							add 1 to {_ln}
+							set {_roundloc} to location {_ln} meters below {_searchloc}
+							delete {_checkblock}
+							loop all blocks in radius 3 around {_roundloc}:
+								loop-block is not passable
+								if {_checkblock} is set:
+									if distance between {_roundloc} and location of {_checkblock} < distance between {_roundloc} and location of loop-block:
+										set {_checkblock} to loop-block
+								else:
+									set {_checkblock} to loop-block
+						set {_ln} to 0
+						loop 5 times:  # 上方向
+						add 1 to {_meter.front}
+				add 60 to yaw of {_loc}
+
+
 			loop 5 times:  # 5mおきにブロックを探す処理 (初期は5なのでloopは5回)
 				loop 6 times:  # 6方向ごとにブロックを探す処理
 					if {_meter.sum} < 30:  # 合計meterがまだ30mである場合
