@@ -1,0 +1,42 @@
+on chat:
+	set {ChatMsg::%player%} to message
+	replace "§7" with "" in {ChatMsg::%player%}
+	if {Game::%player%} is set:
+		send "[%{Game::%player%}%] %player% ≫ %{ChatMsg::%player%}%" to channel with id "423314328930746369" with "LeafGreenServer - BOT"
+	else:
+		send "[Lobby] %player% ≫ %{ChatMsg::%player%}%" to channel with id "423314328930746369" with "LeafGreenServer - BOT"
+	delete {ChatMsg::%player%}
+
+on server message received by "LeafGreenServer - BOT":
+	"%discord id of event-channel%" is "423314328930746369"
+	broadcast "<##7289d9>§lDiscord §f%discord name of event-user% §a≫ §f%event-message%"
+
+command /report <player> <text>:
+	usage: /report <player> <reason>
+	executable by: player
+	trigger:
+		message formatted "§c§l%arg 1%§eへのレポートが完了しました! 対応までお待ち下さい..." to player
+		loop all players:
+			loop-player has permission "sk.staff"
+			message formatted "§c----------§4§l!!!!! §c§lREPORT §4§l!!!!!§c----------" to loop-player
+			message formatted " " to loop-player
+			message formatted "§9通報者§7: §a%player%" to loop-player
+			message formatted "§c§l対象者§7: §4§l%arg 1%" to loop-player
+			message formatted "§e理由§7: §a%arg 2%" to loop-player
+			message formatted " " to loop-player
+			message formatted "§c---------------------------------" to loop-player
+		create embed:
+			set author info of embed to an author named "%player% からの通報" with no url and icon "https://cravatar.eu/helmavatar/%player%/100.png"
+			set the title of embed to "**New Report!**"
+			set the description of embed to "%arg 1% へのReportが届きました!"
+			set the thumbnail of embed to "https://cravatar.eu/helmavatar/%arg 1%/100.png"
+			set the color of embed to red
+			add field named "通報者" with value "%player%" to embed
+			add field named "対象者" with value "%arg 1%" to embed
+			add field named "理由" with value "%arg 2%" to embed
+		send the last created embed to channel with id "565349102397816833" with "LeafGreenServer - BOT"
+		loop 3 times:
+			loop all players:
+				loop-player has permission "sk.staff"
+				playSound("block.note_block.iron_xylophone", 2, 1, loop-player, true)
+			wait 3 ticks
