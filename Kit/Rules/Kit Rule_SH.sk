@@ -1,5 +1,5 @@
 ﻿# 用意すべきyaml項目:
-# - Kit-GameStageBalloons::*
+# - Kit-GameStageWools::*
 
 function kitDeathEvent_SH(attacker: player, victim: player, supporters: players):
 	# Death情報の更新
@@ -10,11 +10,33 @@ function kitDeathEvent_SH(attacker: player, victim: player, supporters: players)
 	add 1 to {Kit-Kill.personal::%{_attacker}%}
 	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
-	# ---victimがBalloon Carrierであった場合の処理---
-	kitDropBalloons_BH({_victim})
+	# ---victimがSheep Carrierであった場合の処理---
+	kitDropSheeps_SH({_victim})
 	# ---------------------------------------------
 
-function kitSpawnBalloon_SH(loc: location, color: text = "white"):  # 指定位置に設置状態のBalloonを召喚する関数
+# 羊毛をスポーンさせる関数
+function kitSpawnWools_SH():
+	loop {Kit-GameStageWools::*}:
+		if block at loop-value is not wool:
+			set {_ok} to true
+			set block at loop-value to wool
+			# --- 音演出 ---
+			playSound("block.wool.place", 1.5, 0.5, loop-value)
+			# -------------
+			# --- パーティクル演出 ---
+			loop 10 times:
+				set {_el} to loop-value-1
+				add a random number between 1 and 1.5 to x-coordinate of {_el}
+				add a random number between 1 and 1.5 to y-coordinate of {_el}
+				add a random number between 1 and 1.5 to z-coordinate of {_el}
+				spawnParticle_BlockData(falling_dust, wool, {_el})
+			# ---------------------
+	if {_ok} is true:
+		gameMsg("Kit", "§b§l---===[§6§l§nSHEEP EGG§b§l spawned!]===---")
+
+
+
+function kitSpawnSheep_SH(loc: location, color: text = "white"):  # 指定位置に設置状態のBalloonを召喚する関数
 	set {_uuid} to a random uuid
 	# ---地面に留めるためのエンティティ召喚---
 	set {_groundloc} to {_loc}
@@ -358,7 +380,5 @@ function kitTimer_SH():
 		add 1 to {_timer.balloon}
 		if {_timer.balloon} >= 30:
 			set {_timer.balloon} to 0
-			gameMsg("Kit", "§b§l---===[Balloons spawned!]===---")
-			loop {Kit-GameStageBalloons::*}:
-				kitSpawnBalloon_BH(loop-value)
+			kitSpawnWools_SH()
 		wait a second
