@@ -17,9 +17,9 @@ function kitDeathEvent_SH(attacker: player, victim: player, supporters: players)
 # 羊毛をスポーンさせる関数
 function kitSpawnWools_SH():
 	loop {Kit-GameStageWools::*}:
-		if block at loop-value is not wool:
+		if block at loop-value is not white wool:
 			set {_ok} to true
-			set block at loop-value to wool
+			set block at loop-value to white wool
 			# --- 音演出 ---
 			playSound("block.wool.place", 1.5, 0.5, loop-value)
 			# -------------
@@ -29,12 +29,35 @@ function kitSpawnWools_SH():
 				add a random number between 1 and 1.5 to x-coordinate of {_el}
 				add a random number between 1 and 1.5 to y-coordinate of {_el}
 				add a random number between 1 and 1.5 to z-coordinate of {_el}
-				spawnParticle_BlockData(falling_dust, wool, {_el})
+				spawnParticle_BlockData(falling_dust, white wool, {_el})
 			# ---------------------
 	if {_ok} is true:
 		gameMsg("Kit", "§b§l---===[§6§l§nSHEEP EGG§b§l spawned!]===---")
 
-
+# 羊毛を叩いた際の処理
+on leftclick on white wool:
+	cancel event
+	set {_baseloc} to location of targeted block
+	{Kit-GameStageWools::*} contains {_baseloc}
+	loop all blocks in radius 5 around {_baseloc}:
+		loop-block is passable
+		block below loop-block is not passable
+		add location of loop-block to {_sheepspawnlocs::*}
+	if {_sheepspawnlocs::1} is not set:
+		set {_sheepspawnlocs::1} to {_baseloc}
+	set {_spawnloc} to a random location out of {_sheepspawnlocs::*}
+	kitSpawnSheep_SH({_spawnloc})
+	# --- 線状のパーティクル演出 ---
+	set {_v} to setVector({_baseloc}, {_spawnloc})
+	set yaw of {_baseloc} to yaw of {_v}
+	set pitch of {_baseloc} to pitch of {_v}
+	set {_dis} to distance between {_baseloc} and {_spawnloc}
+	set {_m} to 0
+	loop 10 times:
+		add {_dis} / 10 to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		spawnParticle(end_rod, {_el})
+	# ---------------------------
 
 function kitSpawnSheep_SH(loc: location, color: text = "white"):  # 指定位置に設置状態のBalloonを召喚する関数
 	set {_uuid} to a random uuid
