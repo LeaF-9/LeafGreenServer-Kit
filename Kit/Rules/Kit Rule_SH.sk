@@ -67,13 +67,13 @@ function kitSpawnSheep_SH(loc: location):  # 指定位置に設置状態のBallo
 		set {_special} to true
 	# --- 大羊召喚 ---
 	if {_special} is true:
-		set {_nbt} to nbt compound from "{Color:0,NoAI:1b,PersistenceRequired:1b,Attributes:[{Name:""generic.knockback_resistance""",Base:1f}]}"
+		set {_nbt} to nbt compound from "{Color:0,NoAI:1b,PersistenceRequired:1b,Team:noCollision,Attributes:[{Name:""generic.knockback_resistance""",Base:1f}]}"
 		strike lightning effect at {_loc}
 		set {_age} to "adult"
 	# ---------------
 	# --- 子羊召喚 ---
 	else:
-		set {_nbt} to nbt compound from "{Color:0,NoAI:1b,PersistenceRequired:1b,Age:-1,ForcedAge:-1,Attributes:[{Name:""generic.knockback_resistance"",Base:1f}]}"
+		set {_nbt} to nbt compound from "{Color:0,NoAI:1b,PersistenceRequired:1b,Team:noCollision,Age:-1,ForcedAge:-1,Attributes:[{Name:""generic.knockback_resistance"",Base:1f}]}"
 		set {_age} to "baby"
 	# -------------
 	spawn a sheep at {_loc} with {_nbt}
@@ -90,36 +90,71 @@ function kitSpawnSheep_SH(loc: location):  # 指定位置に設置状態のBallo
 on damage of sheep:
 	if metadata value "sh-sheep" of victim is "true":
 		cancel event
-		# --- 無敵時間管理 ---
-		set {_now} to now
-		set {_nodamage} to metadata value "sh-nodamage" of victim
-		if {_nodamage} is set:
-			if difference between {_nodamage} and {_now} is more than 1 second:
-				delete metadata value "sh-nodamage" of victim
+		if damage was caused by void:
+			delete metadata value "sh-holder" of victim
+			set {_former} to metadata value "sh-former" of victim
+			if {_former} is set:
+				set {_spawnloc} to {Kit-GameStage::voidtp-%{_former}%}
 			else:
-				stop
-		# ------------------
-		set {_team.player} to {TrueTeam::%attacker%}
-		set {_team.sheep} to metadata value "sh-color" of victim
-		if {_team.player} is not {_team.sheep}:
-			set {_age} to metadata value "sh-age" of victim
-			set {_holdnum} to 0
-			delete {_holdadult}
-			loop all sheeps:
-				metadata value "sh-sheep" of loop-sheep is "true"
-				metadata value "sh-holder" of loop-sheep is attacker
-				add 1 to {_holdnum}
-				if metadata value "sh-age" is "adult":
-					set {_holdadult} to true
-			if {_age} is "baby":
-				set metadata value "sh-nodamage" of victim to {_now}
-				if {_holdadult} is not set:
+				set {_baseloc} to {Kit-GameStageWools::1}
+				loop all blocks in radius 5 around {_baseloc}:
+					loop-block is passable
+					block below loop-block is not passable
+					add location of loop-block to {_sheepspawnlocs::*}
+				if {_sheepspawnlocs::1} is not set:
+					set {_sheepspawnlocs::1} to {_baseloc}
+				set {_spawnloc} to a random location out of {_sheepspawnlocs::*}
+			teleport victim to {_spawnloc}
+			delete metadata value "sh-former" of victim
+		else if damage was caused by attack:
+			# --- 無敵時間管理 ---
+			set {_now} to now
+			set {_nodamage} to metadata value "sh-nodamage" of victim
+			if {_nodamage} is set:
+				if difference between {_nodamage} and {_now} is more than 1 second:
+					delete metadata value "sh-nodamage" of victim
+				else:
+					stop
+			# ------------------
+			set {_team.player} to {TrueTeam::%attacker%}
+			set {_team.sheep} to metadata value "sh-color" of victim
+			if {_team.player} is not {_team.sheep}:
+				set {_age} to metadata value "sh-age" of victim
+				set {_holdnum} to 0
+				delete {_holdadult}
+				loop all sheeps:
+					metadata value "sh-sheep" of loop-sheep is "true"
+					metadata value "sh-holder" of loop-sheep is attacker
+					add 1 to {_holdnum}
+					if metadata value "sh-age" is "adult":
+						set {_holdadult} to true
+				if {_age} is "baby":
+					set metadata value "sh-nodamage" of victim to {_now}
+					if {_holdadult} is not set:
+						if {_holdnum} is 0:
+							set {_damage} to 10
+						else if {_holdnum} is 1:
+							set {_damage} to 4
+						else if {_holdnum} is 2:
+							set {_damage} to 2
+						# --- 羊所持数が多い場合 ---
+						else:
+							send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
+							playSound("block.note_block.bass", 1, 1, attacker, true)
+							spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
+							stop
+						# -----------------------
+					# --- 大羊を持っていた場合 ---
+					else:
+						send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
+						playSound("block.note_block.bass", 1, 1, attacker, true)
+						spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
+						stop
+					# -------------------------
+				else if {_age} is "adult":
+					set metadata value "sh-nodamage" of victim to {_now}
 					if {_holdnum} is 0:
 						set {_damage} to 10
-					else if {_holdnum} is 1:
-						set {_damage} to 4
-					else if {_holdnum} is 2:
-						set {_damage} to 2
 					# --- 羊所持数が多い場合 ---
 					else:
 						send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
@@ -127,50 +162,36 @@ on damage of sheep:
 						spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
 						stop
 					# -----------------------
-				# --- 大羊を持っていた場合 ---
-				else:
-					send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
-					playSound("block.note_block.bass", 1, 1, attacker, true)
-					spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
-					stop
-				# -------------------------
-			else if {_age} is "adult":
-				set metadata value "sh-nodamage" of victim to {_now}
-				if {_holdnum} is 0:
-					set {_damage} to 10
-				# --- 羊所持数が多い場合 ---
-				else:
-					send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
-					playSound("block.note_block.bass", 1, 1, attacker, true)
-					spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
-					stop
-				# -----------------------
-			# --- ダメージを喰らう演出 ---
-			playSound("entity.sheep.hurt", 1, 2, victim)
-			loop 10 times:
-				set {_rv} to randomVector()
-				spanwParticle_Vector(damage_indicator, {_rv}, 0.5, location of victim)
-			# -------------------------
-			set {_health} to metadata value "sh-health" of victim
-			subtract {_damage} from {_health}
-			if {_health} >= 0:
-				set metadata value "sh-health" of victim to {_health}
-				set {_healthbar} to ""
+				# --- ダメージを喰らう演出 ---
+				playSound("entity.sheep.hurt", 1, 2, victim)
 				loop 10 times:
-					if loop-number <= {_health}:
-						set {_healthbar} to "%{_healthbar}%§4§l❤"
-					else:
-						set {_healthbar} to "%{_healthbar}%§f§l❤"
-				send action bar {_healthbar} to attacker
+					set {_rv} to randomVector()
+					spanwParticle_Vector(damage_indicator, {_rv}, 0.5, location of victim)
+				# -------------------------
+				set {_health} to metadata value "sh-health" of victim
+				subtract {_damage} from {_health}
+				if {_health} >= 0:
+					set metadata value "sh-health" of victim to {_health}
+					set {_healthbar} to ""
+					loop 10 times:
+						if loop-number <= {_health}:
+							set {_healthbar} to "%{_healthbar}%§4§l❤"
+						else:
+							set {_healthbar} to "%{_healthbar}%§f§l❤"
+					send action bar {_healthbar} to attacker
+				else:
+					set metadata value "sh-health" of victim to 10
+					set metadata value "sh-holder" of victim to attacker
+					if {_team.sheep} is not "white":
+						set metadata value "sh-former" of victim to {_team.sheep}
+					send title "§f§lSHEEP §6§lを獲得しました!" with subtitle "§b自チームの獲得陣地に持って帰ろう!" to attacker for 3 seconds
 			else:
-				set metadata value "sh-health" of victim to 10
-				set metadata value "sh-holder" of victim to attacker
-				send title "§f§lSHEEP §6§lを獲得しました!" with subtitle "§b自チームの獲得陣地に持って帰ろう!" to attacker for 3 seconds
-		else:
-			send action bar "§e⚠️ §c§l自分達の羊は獲得できません! §e⚠️" to attacker
-			playSound("block.note_block.bass", 1, 1, attacker, true)
-			spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
-			stop
+				send action bar "§e⚠️ §c§l自分達の羊は獲得できません! §e⚠️" to attacker
+				playSound("block.note_block.bass", 1, 1, attacker, true)
+				spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
+				stop
+
+
 
 
 
@@ -371,31 +392,6 @@ on damage of baby sheep:
 		if damage was caused by void or suffocation:
 			teleport victim to {Kit-GameStage::voidtp-%victim's display name%}
 
-on damage of player:
-	damage is caused by void
-	{Kit-AttackPoint::%victim%} is set
-	cancel event
-	teleport victim to {Kit-AttackPoint::%victim%}
-	kill victim
-	if {LastKiller::%victim%} is set:
-		execute console command "/givecoin %{LastKiller::%victim%}% 5 防衛"
-
-on death of player:
-	{Join::%victim%} is "Kit"
-	delete {Kit-AttackPoint::%victim%}
-	if victim has sheep egg named "§7Wool":
-		set {_amount} to amount of sheep egg named "§7Wool" in victim's inventory
-		loop {_amount} times:
-			drop a sheep egg named "§7Wool" at victim
-			set metadata value "undelete" of last dropped item to "true"
-		set {_coin} to 5
-	else if victim has llama egg named "§6§lSpecial Wool":
-		drop a llama egg named "§6§lSpecial Wool" at victim
-		set metadata value "undelete" of last dropped item to "true"
-		set {_coin} to 10
-	if {LastKiller::%victim%} is set:
-		execute console command "/givecoin %{LastKiller::%victim%}% %{_coin}% Wool強奪"
-
 on pick up sheep egg:
 	name of item is "§7Wool"
 	if player has 3 sheep egg named "§7Wool":
@@ -440,10 +436,38 @@ on pick up llama egg:
 # 			teleport loop-sheep to {Kit-GameStage::voidtp-%{_name}%}
 
 function kitTimer_SH():
-	set {_timer.balloon} to 0
+	set {_timer.wool} to 0
 	while {Kit-tochu} is true:
-		add 1 to {_timer.balloon}
-		if {_timer.balloon} >= 30:
-			set {_timer.balloon} to 0
+		# --- Wool Spawn Timer ---
+		add 1 to {_timer.wool}
+		if {_timer.wool} >= 30:
+			set {_timer.wool} to 0
 			kitSpawnWools_SH()
+		# ------------------------
+		loop all sheeps:
+			metadata value "sh-sheep" of loop-sheep is "true"
+			# --- Sheep Moving (holder) ---
+			set {_holder} to metadata value "sh-holder" of loop-sheep
+			if {_holder} is set:
+				# --- Holder Change ---
+				set {_leasher} to leash holder of loop-sheep
+				if {_leasher} is not {_holder}:
+					unleash {_leasher}
+					leash {_holder} to loop-sheep
+				else if {_leasher} is not set:
+					leash {_holder} to loop-sheep
+				# ---------------------
+				if distance between {_holder} and loop-sheep > 3:
+					set {_vector} to setVector(location of loop-sheep, location of {_holder})
+					set velocity of loop-sheep to {_vector}
+					if distance between {_holder} and loop-sheep > 10:
+						teleport loop-sheep to {_holder}
+			# -----------------------------
+			# --- Sheep Movings (voidtp) ---
+			# ------------------------------
+			# --- Sheep Team Colored ---
+
+			# --------------------------
+		# --- Point Calc ---
+		# ------------------
 		wait a second
