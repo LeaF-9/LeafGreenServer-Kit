@@ -32,7 +32,9 @@ function kitSpawnWools_SH():
 				spawnParticle_BlockData(falling_dust, white wool, {_el})
 			# ---------------------
 	if {_ok} is true:
-		gameMsg("Kit", "§b§l---===[§6§l§nSHEEP EGG§b§l spawned!]===---")
+		loop all players:
+			if metadata value "gametype" of loop-player is "Kit":
+				send title "§f§lSHEEP WOOL §6§lspawned!" with subtitle "§b羊毛を叩いて羊を呼び起こそう!" to loop-player for 3 seconds
 
 # 羊毛を叩いた際の処理
 on leftclick on white wool:
@@ -59,84 +61,124 @@ on leftclick on white wool:
 		spawnParticle(end_rod, {_el})
 	# ---------------------------
 
-function kitSpawnSheep_SH(loc: location, color: text = "white"):  # 指定位置に設置状態のBalloonを召喚する関数
+function kitSpawnSheep_SH(loc: location):  # 指定位置に設置状態のBalloonを召喚する関数
 	set {_uuid} to a random uuid
-	# ---地面に留めるためのエンティティ召喚---
-	set {_groundloc} to {_loc}
-	set y-coordinate of {_groundloc} to floor(y-coordinate of {_groundloc})
-	set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b}"
-	spawn an armor stand at {_groundloc} with nbt {_nbt}
-	set metadata value "gametype" of spawned armor stand to "Kit"
-	set metadata value "balloon-type" of spawned armor stand to "base"
-	set metadata value "balloon-uuid" of spawned armor stand to {_uuid}
-	set {_entity.base} to spawned armor stand
-	# -------------------------------------
-	# ---マーカーエンティティ召喚---
-	set {_markerloc} to {_loc}
-	subtract 0.25 from y-coordinate of {_markerloc}
-	loop 3 times:
-		{_true} is not set
-		if block at location 1 meters above {_markerloc} is not passable:
-			set {_true} to true
-		else:
-			set {_markerloc} to location 1 meters above {_markerloc}
-	set {_nbt} to nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}],Team:""kit-%{_color}%""}"
-	spawn a magma cube at {_markerloc} with nbt {_nbt}
-	set metadata value "gametype" of spawned magma cube to "Kit"
-	set metadata value "balloon-type" of spawned magma cube to "marker"
-	set metadata value "balloon-uuid" of spawned magma cube to {_uuid}
-	set {_entity.marker} to spawned magma cube
-	# ----------------------------
-	# ---ベースとマーカーをつなぐ処理---
-	leash {_entity.marker} to {_entity.base}
-	# -------------------------------
-	# ---風船エンティティ召喚---
-	set {_balloonloc} to {_markerloc}
-	subtract 0.25 from y-coordinate of {_balloonloc}
-	set {_x} to x-coordinate of {_balloonloc}
-	set {_y} to y-coordinate of {_balloonloc}
-	set {_z} to z-coordinate of {_balloonloc}
-	set {_world} to kitWorldNC({Kit-GameStage::name})
-	set {_block} to "%{_color}%_wool"
-	execute console command "/execute in %{_world}% run summon minecraft:armor_stand %{_x}% %{_y}% %{_z}% {NoGravity:1b,Marker:1b,Invisible:1,Invulnerable:1,NoBasePlate:1,Passengers:[{id:""falling_block"",BlockState:{Name:""%{_block}%""},NoGravity:1,Time:1,DropItem:0}]}"
-	set {_dis} to 100
-	loop all entities in radius 1 around {_balloonloc}:
-		type of loop-entity is armor stand
-		metadata value "gametype" of loop-entity is not set
-		set {_d} to distance between {_balloonloc} and loop-entity
-		if {_d} < {_dis}:
-			set {_dis} to {_d}
-			set {_entity} to loop-entity
-	set metadata value "gametype" of {_entity} to "Kit"
-	set metadata value "balloon-type" of {_entity} to "balloon-base"
-	set metadata value "balloon-uuid" of {_entity} to {_uuid}
-	set metadata value "balloon-color" of {_entity} to {_color}
-	set metadata value "balloon-health" of {_entity} to 10
-	set metadata value "balloon-nodamage" of {_entity} to 0
-	set metadata value "gametype" of passenger of {_entity} to "Kit"
-	set metadata value "balloon-type" of passenger of {_entity} to "balloon"
-	set metadata value "balloon-uuid" of passenger of {_entity} to {_uuid}
-	# ------------------------
-
-options:
-	enable-attack-time: 20
-
-on arm swing:
-	set {_tg} to target entity of player
-	type of {_tg} is armor stand
-	distance between player and {_tg} <= 5
-	metadata value "balloon-type" of {_tg} is "balloon-base"
-	set {_uuid} to metadata value "balloon-uuid" of {_tg}
-	set {_team} to metadata value "balloon-color" of {_tg}
-	set {_health} to metadata value "balloon-health" of {_tg}
-	set {_nodamage} to metadata value "balloon-nodamage" of {_tg}
-	# ---無効化処理---
-	if {_nodamage} > 0:  # ダメージを与えるクールタイムが終わっていない
-		stop
-	if {TrueTeam::%player%} is {_team}:  # 同じチームのバルーン
-		stop
+	chance of 10%:
+		set {_special} to true
+	# --- 大羊召喚 ---
+	if {_special} is true:
+		set {_nbt} to nbt compound from "{Color:0,NoAI:1b,PersistenceRequired:1b,Attributes:[{Name:""generic.knockback_resistance""",Base:1f}]}"
+		strike lightning effect at {_loc}
+		set {_age} to "adult"
 	# ---------------
-	
+	# --- 子羊召喚 ---
+	else:
+		set {_nbt} to nbt compound from "{Color:0,NoAI:1b,PersistenceRequired:1b,Age:-1,ForcedAge:-1,Attributes:[{Name:""generic.knockback_resistance"",Base:1f}]}"
+		set {_age} to "baby"
+	# -------------
+	spawn a sheep at {_loc} with {_nbt}
+	set metadata value "gametype" of spawned entity to "Kit"
+	set metadata value "sh-sheep" of spawned entity to "true"
+	set metadata value "sh-age" of spawned entity to {_age}
+	set metadata value "sh-color" of spawned entity to "white"
+	set metadata valuw "sh-health" of spawned entity to 10
+	applyEffect(spawned entity, glowing, 1, 5 seconds, false, "none")
+	loop 30 times:
+		set {_rv} to randomVector(1)
+		spawnParticle_Vector(end_rod, {_rv}, 0.5, location 1 meters above {_loc})
+
+on damage of sheep:
+	if metadata value "sh-sheep" of victim is "true":
+		cancel event
+		# --- 無敵時間管理 ---
+		set {_now} to now
+		set {_nodamage} to metadata value "sh-nodamage" of victim
+		if {_nodamage} is set:
+			if difference between {_nodamage} and {_now} is more than 1 second:
+				delete metadata value "sh-nodamage" of victim
+			else:
+				stop
+		# ------------------
+		set {_team.player} to {TrueTeam::%attacker%}
+		set {_team.sheep} to metadata value "sh-color" of victim
+		if {_team.player} is not {_team.sheep}:
+			set {_age} to metadata value "sh-age" of victim
+			set {_holdnum} to 0
+			delete {_holdadult}
+			loop all sheeps:
+				metadata value "sh-sheep" of loop-sheep is "true"
+				metadata value "sh-holder" of loop-sheep is attacker
+				add 1 to {_holdnum}
+				if metadata value "sh-age" is "adult":
+					set {_holdadult} to true
+			if {_age} is "baby":
+				set metadata value "sh-nodamage" of victim to {_now}
+				if {_holdadult} is not set:
+					if {_holdnum} is 0:
+						set {_damage} to 10
+					else if {_holdnum} is 1:
+						set {_damage} to 4
+					else if {_holdnum} is 2:
+						set {_damage} to 2
+					# --- 羊所持数が多い場合 ---
+					else:
+						send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
+						playSound("block.note_block.bass", 1, 1, attacker, true)
+						spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
+						stop
+					# -----------------------
+				# --- 大羊を持っていた場合 ---
+				else:
+					send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
+					playSound("block.note_block.bass", 1, 1, attacker, true)
+					spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
+					stop
+				# -------------------------
+			else if {_age} is "adult":
+				set metadata value "sh-nodamage" of victim to {_now}
+				if {_holdnum} is 0:
+					set {_damage} to 10
+				# --- 羊所持数が多い場合 ---
+				else:
+					send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
+					playSound("block.note_block.bass", 1, 1, attacker, true)
+					spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
+					stop
+				# -----------------------
+			# --- ダメージを喰らう演出 ---
+			playSound("entity.sheep.hurt", 1, 2, victim)
+			loop 10 times:
+				set {_rv} to randomVector()
+				spanwParticle_Vector(damage_indicator, {_rv}, 0.5, location of victim)
+			# -------------------------
+			set {_health} to metadata value "sh-health" of victim
+			subtract {_damage} from {_health}
+			if {_health} >= 0:
+				set metadata value "sh-health" of victim to {_health}
+				set {_healthbar} to ""
+				loop 10 times:
+					if loop-number <= {_health}:
+						set {_healthbar} to "%{_healthbar}%§4§l❤"
+					else:
+						set {_healthbar} to "%{_healthbar}%§f§l❤"
+				send action bar {_healthbar} to attacker
+			else:
+				set metadata value "sh-health" of victim to 10
+				set metadata value "sh-holder" of victim to attacker
+				send title "§f§lSHEEP §6§lを獲得しました!" with subtitle "§b自チームの獲得陣地に持って帰ろう!" to attacker for 3 seconds
+		else:
+			send action bar "§e⚠️ §c§l自分達の羊は獲得できません! §e⚠️" to attacker
+			playSound("block.note_block.bass", 1, 1, attacker, true)
+			spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
+			stop
+
+
+
+				
+				
+
+
+
 
 on break of white wool:
 	cancel event
