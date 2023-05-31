@@ -38,3 +38,12 @@ function kitHarmfulEffect(player: player):
 			add {_y} to y-coordinate of {_el}
 			drawDot count 1, particle "redstone", RGB 255, 0, 0, center {_el}, visibleRange 30
 		wait a tick
+
+on death of player:
+	{Class::%{LastKiller::%victim%}%} is "Mercenary"
+	{Kit-Blood::%victim%} is true
+	set {_potion} to kitSkillItem("Mercenary", 1)
+	set {_potion} to kitItemTagChanger({_potion}, "Mercenary", "Skill", 1)
+	if {LastKiller::%victim%}'s inventory does not contain {_potion}:
+		give {_potion} to {LastKiller::%victim%}
+		send action bar "§4§lHarmful Potion§bを獲得しました!" to {LastKiller::%victim%}
