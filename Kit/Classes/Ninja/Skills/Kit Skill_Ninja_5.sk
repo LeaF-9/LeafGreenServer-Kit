@@ -142,138 +142,15 @@ on rightclick holding a dye:
 			kitMsg(player, "§2忍法・木遁の術!")
 			kunaiNinjutsu(player, "Ninjutsu-MOKU")
 			set {_baseloc} to location of player
-			set pitch of {_baseloc} to 0
-			add 1 to y-coordinate of {_baseloc}
-			set {_loc} to {_baseloc}
-			set {_meter.hp} to 30
-			# --- ブロックの捜索 ---
-			loop 6 times:  # 6方向ごとにサーチを行なう
-				if {_meter.hp} > 0:  # 合計距離が30mを超えていない場合
-					set {_meter.front} to 5  # この方向にサーチを行なう
-					loop 25 times:
-						set {_searchloc} to location {_meter.front} meters in front of {_loc}
-						set {_ln} to 0
-						loop 5 times:  # 下方向
-							add 1 to {_ln}
-							set {_roundloc} to location {_ln} meters below {_searchloc}
-							delete {_checkblock}
-							loop all blocks in radius 3 around {_roundloc}:
-								loop-block is not passable
-								if {_checkblock} is set:
-									if distance between {_roundloc} and location of {_checkblock} < distance between {_roundloc} and location of loop-block:
-										set {_checkblock} to loop-block
-								else:
-									set {_checkblock} to loop-block
-						set {_ln} to 0
-						loop 5 times:  # 上方向
-						add 1 to {_meter.front}
-				add 60 to yaw of {_loc}
-
-
-			loop 5 times:  # 5mおきにブロックを探す処理 (初期は5なのでloopは5回)
-				loop 6 times:  # 6方向ごとにブロックを探す処理
-					if {_meter.sum} < 30:  # 合計meterがまだ30mである場合
-						if {_meter.ok::%loop-number-2%} is not set:  # その方向が未決定である場合に動作を行う
-							set {_ln} to 0
-							delete {_searched}
-							loop 5 times:  # 5m先のブロックを探す処理
-								{_searched} is not set
-								set {_baseblock} to location {_meter.front} + {_ln} meters in front of {_loc}
-								loop all blocks in radius 3 around {_baseblock}:
-									loop-block is not passable
-									set {_searched} to true
-								if {_searched} is true:
-									set {_meter.ok::%loop-number-2%} to {_meter.front} + {_ln}
-									add {_meter.ok::%loop-number-2%} to {_meter.sum}
-								add 1 to {_ln}
-					add 60 to yaw of {_loc}
-				add 5 to {_meter.front}
-			# --------------------
-			# --- 座標の決定 ---
-			set {_loc} to {_baseloc}
+			set {_tploc} to location 2 meters above {_baseloc}
+			teleport player to {_tploc}
+			set {_shootloc} to {_baseloc}
+			set pitch of {_shootloc} to 0
+			playSound("block.wet_grass.place", 1, 0.9, {_baseloc})
 			loop 6 times:
-				if {_meter.ok::%loop-number%} is set:
-					set {_ln} to 0
-					loop {_meter.ok::%loop-number%} times:
-						add 1 to {_ln}
-						set {_lb} to location {_ln} meters in front of {_loc}
-						if block at {_lb} is not passable:
-							add {_lb} to {_blocklocs::*}
-						loop all blocks in radius 1 around {_lb}:
-							{_blocklocs::*} does not contain location of loop-block
-							loop-block is not passable
-							chance of 5%:
-								add location of loop-block to {_leavelocs::*}
-					add 1 to {_ln}
-					set {_lb} to location {_ln} meters in front of {_loc}
-					subtract 1 from y-coordinate of {_lb}
-					if block at {_lb} is not passable:
-						add {_lb} to {_blocklocs::*}
-				add 60 to {_loc}
-			# ----------------
-			# --- ちょっと上にTP ---
-			teleport player to location 3 meters above {_baseloc}
-			# --------------------
-			# --- ブロックの設置と吸収効果の付与 ---
-			set {_meter.near} to 0
-			loop 5 times:  # 近いブロックから表示する機能
-				add 5 to {_meter.near}
-				loop {_blocklocs::*}:
-					{_displayed::*} does not contain loop-value-2
-					distance between loop-value-2 and {_baseloc} <= {_meter.near}
-					add loop-value-2 to {_displayed::*}
-					make all players see block at loop-value-2 as (log)
-					loop all players in radius 3 around loop-value-2:
-						kitCheckTeam(loop-player, player, false) is not set
-						kitDrain(loop-player, 5 seconds)
-					playSound("block.wood.place", 0.5, 1.5, loop-value-2)
-					loop all blocks in radius 2.5 around loop-value-2:
-						loop-block is air
-						chance of 5%:
-							spawnParticle(happy_villager, location of loop-block)
-				loop {_leavelocs::*}:
-					{_displayed::*} does not contain loop-value-2
-					distance between loop-value-2 and {_baseloc} <= {_meter.near}
-					add loop-value-2 to {_displayed::*}
-					make all players see block at loop-value-2 as (leaves)
-					playSound("block.azalea_leaves.place", 0.5, 1, loop-value-2)
-				wait a tick
-			loop {_blocklocs::*}:
-				{_displayed::*} does not contain loop-value
-				add loop-value to {_displayed::*}
-				make all players see block at loop-value as (log)
-				loop all players in radius 3 around loop-value:
-					kitCheckTeam(loop-player, player, false) is not set
-					kitDrain(loop-player, 5 seconds)
-				playSound("block.wood.place", 0.5, 1.5, loop-value)
-				loop all blocks in radius 2.5 around loop-value:
-					loop-block is air
-					chance of 5%:
-						spawnParticle(happy_villager, location of loop-block)
-			loop {_leavelocs::*}:
-				{_displayed::*} does not contain loop-value
-				add loop-value to {_displayed::*}
-				make all players see block at loop-value as (leaves)
-				playSound("block.azalea_leaves.place", 0.5, 1, loop-value)
-			# ---------------------------------
-			# --- 5秒間常に表示 ---
-			loop 100 times:
-				loop {_blocklocs::*}:
-					make all players see block at loop-value-2 as (log)
-				loop {_leavelocs::*}:
-					make all players see block at loop-value-2 as (leaves)
-				wait a tick
-			# -------------------
-			# --- ブロック表示を戻す処理 ---
-			loop {_blocklocs::*}:
-				make all players see block at loop-value as air
-				playSound("block.grass.break", 0.5, 1.5, loop-value)
-				spawnParticle_Block(log, loop-value)
-			loop {_leavelocs::*}:
-				make all players see block at loop-value as air
-				playSound("block.grass.break", 0.5, 1.5, loop-value)
-				spawnParticle_Block(leaves, loop-value)
-			# --------------------------
+				shoot a snowball from {_shootloc} at speed 1
+				kitEffect_Ninjutsu_MOKU(player, shot snowball)
+				add 60 to yaw of {_shootloc}
 		else if "%type of {_n}%" is "blue dye":
 			kitMsg(player, "§1忍法・水遁の術!")
 			kunaiNinjutsu(player, "Ninjutsu-MIZU")
@@ -466,3 +343,52 @@ on explosion:
 			delete loop-dropped item
 		loop {_dloc::*}:
 			kitExplosion({_act}, 1.5, loop-value)
+
+# Ninjutsu -木-
+function kitEffect_Ninjutsu_MOKU(player: player, proj: projectile):
+	set shooter of {_proj} to {_player}
+	set item of {_proj} to seeds
+	set metadata value "moku-seeds" of shot snowball to "%{_player}%"
+	loop 20 times:
+		set {_loc} to location of {_proj}
+		spawnParticle(composter, {_loc})
+		if block at {_loc} is air:
+			if {_lb::*} does not contain {_loc}:
+				set {_lb::%{_loc}%} to {_loc}
+				set block at {_loc} to oak log
+				add {_loc} to {Block.%{_player}%::*}
+		loop all blocks in radius 1 around {_loc}:
+			loop-block is air
+			chance of 10%:
+				if {_lb::*} does not contain location of loop-block:
+					set {_lb::%location of loop-block%} to location of loop-block
+					set loop-block to oak leaves
+					add location of loop-block to {Block.%{_player}%::*}
+		wait a tick
+	wait 5 seconds
+	loop {_lb::*}:
+		if block at loop-value is not air:
+			set block at loop-value to air
+			playSound("block.grass.break", 0.5, 0.9, loop-value)
+			spawnParticle_Block(oak leaves, loop-value)
+		remove loop-value from {Block.%{_player}%::*}
+
+on projectile hit:
+	metadata value "moku-seeds" of projectile is set
+	set {_player} to shooter of projectile
+	set {_loc} to location of projectile
+	# 効果
+	loop all players in radius 5 around {_loc}:
+		kitCheckTeam({_player}, loop-player, false) is true
+		kitDrain(loop-player, 5 seconds)
+		message formatted "§2木遁による根が体力を吸い上げます..." to loop-player
+	# 音
+	playSound("entity.drowned.death_water", 1, 0.75, {_shooter})
+	# 演出
+	set {_rad} to 0
+	loop 36 times:
+		set {_el} to {_loc}
+		add 5 * sin({_rad}) to x-coordinate of {_el}
+		add 5 * cos({_rad}) to z-coordinate of {_el}
+		spawnParticle(happy_villager, {_el})
+		add 10 to {_rad}
