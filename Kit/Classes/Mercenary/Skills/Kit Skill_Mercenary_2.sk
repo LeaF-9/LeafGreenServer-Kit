@@ -5,17 +5,10 @@ function kitSkill_Mercenary_2(player: player):
 	playSound("entity.wither.spawn", 1, 1, {_player})
 	kitMsg({_player}, "§5弱った敵を殲滅します...")
 	set {_bl} to location of {_player}
-	loop all entities in radius 10 around {_player}:
+	loop all entities in radius 5 around {_player}:
 		kitCheckTeam({_player}, loop-entity, false) is true
-		apply blindness 1 to loop-entity for 1.5 seconds
 		set {_true} to false
-		if loop-entity's health <= 3:
-			if type of loop-entity is a player:
-				if {Kit-Blood::%loop-entity%} is set:
-					set {_true} to true
-			else:
-				set {_true} to true
-		if {_true} is true:
+		if loop-entity's health <= 3:  # 体力が3以下の敵に対する効果
 			if {Class::%loop-entity%} is "Ghost":
 				message formatted "§4...?" to loop-entity
 			else:
@@ -27,6 +20,12 @@ function kitSkill_Mercenary_2(player: player):
 					delete {Kit-ShieldTime::%loop-entity%}
 				kitDamage({_player}, loop-entity, 10000, true)
 				message formatted "§0強制的に殺されてしまった..." to loop-entity
+		else if {Kit-Blood::%loop-entity%} is set:
+			loop 10 times:
+				set {_el} to aroundEffect(loop-entity)
+				drawDot count 1, particle "smoke", center {_el}, visibleRange 30
+			kitDamage({_player}, loop-entity, 3, true)
+			message formatted "§4体力を削られた..." to loop-entity		
 	set {_y} to 0
 	loop 5 times:
 		set {_rad} to 0
