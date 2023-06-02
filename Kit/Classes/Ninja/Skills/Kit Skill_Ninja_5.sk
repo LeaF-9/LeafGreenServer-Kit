@@ -235,6 +235,20 @@ on rightclick holding a dye:
 				remove loop-value from {Block.%player%::*}
 		else if "%type of {_n}%" is "cyan dye":
 			kitMsg(player, "§3忍法・氷遁の術!")
+			kunaiNinjutsu(player, "Ninjutsu-HYOU")
+			set {_loc} to location of player
+			kitParticle_Ninjutsu_HYOU_1({_loc})
+			wait a seconds
+			kitParticle_Ninjutsu_HYOU_2({_loc})
+			loop all players in radius 5 around {_loc}:
+				kitCheckTeam(player, loop-player, false) is true
+				kitFreeze(loop-player, 2 seconds)
+			loop 100 times:
+				loop all players in radius 5 around {_loc}:
+					kitCheckTeam()
+				wait a tick
+
+
 			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-HYOU"
 			playSound("entity.player.levelup", 1, 2, player)
 			set {_baseloc} to location of player
