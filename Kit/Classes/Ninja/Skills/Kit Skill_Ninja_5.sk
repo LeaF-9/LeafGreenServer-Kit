@@ -205,26 +205,34 @@ on rightclick holding a dye:
 			# -----------------------
 		else if "%type of {_n}%" is "red dye":
 			kitMsg(player, "§4忍法・火遁の術!")
-			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-HONO"
+			kunaiNinjutsu(player, "Ninjutsu-HONO")
+			set {_loc} to location of player
 			playSound("entity.ghast.shoot", 1, 1, player)
+			kitParticle_Ninjutsu_HONO_1(location of player)
 			loop all entities in radius 5 around player:
 				kitCheckTeam(player, loop-entity, false) is true
-				make player damage loop-entity by 4
-				ignite loop-entity for 5 seconds
-			set {_l} to location of player
-			loop 10 times:
-				add 0.5 to {_m}
-				add 5 to {_ln}
-				set {_radd} to 360 / {_ln}
-				set {_rad} to 0
-				loop {_ln} times:
-					add {_radd} to {_rad}
-					set {_el} to {_l}
-					add 1 to y-coordinate of {_el}
-					add {_m} * sin({_rad}) to x-coordinate of {_el}
-					add {_m} * cos({_rad}) to z-coordinate of {_el}
-					drawDot count 1, particle "flame", center {_el}, visibleRange 30
+				kitDamage(player, loop-entity, 2)
+			loop all blocks in radius 5 around {_loc}:
+				distance between {_loc} and loop-block >= 4
+				loop-block is air
+				block below loop-block is not passable
+				set {_lb::%location of loop-block%} to location of loop-block
+				set loop-block to fire
+				add location of loop-block to {Block.%player%::*}
+			loop 100 times:
+				loop all entities in radius 5 around {_loc}:
+					kitCheckTeam(loop-entity, player, false) is true
+					if loop-entity is not burning:
+						playSound("block.campfire.crackle", 1, 1, loop-entity)
+					ignite loop-entity by 5 seconds
+					kitParticle_Ninjutsu_HONO_2(location of loop-entity)
+				chance of 10%:
+					playSound("block.furnace.fire_crackle", 1, 1.25, {_loc})
 				wait a tick
+			loop {_lb::*}:
+				if block at loop-value is not air:
+					set block at loop-value to air
+				remove loop-value from {Block.%player%::*}
 		else if "%type of {_n}%" is "cyan dye":
 			kitMsg(player, "§3忍法・氷遁の術!")
 			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-HYOU"
@@ -392,3 +400,39 @@ on projectile hit:
 		add 5 * cos({_rad}) to z-coordinate of {_el}
 		spawnParticle(happy_villager, {_el})
 		add 10 to {_rad}
+
+# Ninjutsu -火-
+function kitParticle_Ninjutsu_HONO_1(baseloc: location):
+	set pitch of {_baseloc} to 0
+	loop 30 times:
+		set {_dl} to {_baseloc}
+		set yaw of {_dl} to a random number between 0 and 360
+		set {_v} to setVector({_dl}, location 1 meter in front of {_dl})
+		spawnParticle_Vector(flame, {_v}, 0.75, {_dl})
+	set {_baserad} to 0
+	loop 100 times:  # 5秒間
+		set {_y} to 0
+		set {_rad} to {_baserad}
+		loop 10 times:  # 上5m(0.5mおき)
+			set {_elbase} to {_baseloc}
+			add 0.5 to {_y}
+			add {_y} to y-coordinate of {_elbase}
+			loop 8 times:  # 回転
+				add 45 to {_rad}
+				set {_el} to {_elbase}
+				add 5 * sin({_rad}) to x-coordinate of {_el}
+				add 5 * cos({_rad}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				spawnParticle(flame, {_el})
+			add 10 to {_rad}
+		add 10 to {_baserad}
+		wait a tick
+
+function kitParticle_Ninjutsu_HONO_2(loc: location):
+	set pitch of {_loc} to 0
+	loop 5 times:
+		set {_el} to {_loc}
+		set yaw of {_el} to a random number between 0 and 360
+		subtract a random number between -90 and 0 from pitch of {_el}
+		set {_v} to setVector({_el}, location 1 meters in front of {_el})
+		spawnParticle_Vector(flame, {_v}, 0.1, {_el})

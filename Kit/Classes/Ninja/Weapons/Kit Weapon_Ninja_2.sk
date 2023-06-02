@@ -270,3 +270,32 @@ function kunaiNinjutsu(player: player, type: text):
 			loop {_locations::*}:
 				make all players see block at loop-value as air
 				playSound("ambient.underwater.exit", 0.5, 2, loop-value)
+		# ----------------
+		# --- 忍術 [火] ---
+			playSound("entity.ghast.shoot", 1, 1, {_loc})
+			kitParticle_Ninjutsu_HONO_1({_loc})
+			loop all entities in radius 5 around {_loc}:
+				kitCheckTeam({_player}, loop-entity, false) is true
+				kitDamage({_player}, loop-entity, 2)
+			loop all blocks in radius 5 around {_loc}:
+				distance between {_loc} and loop-block >= 4
+				loop-block is air
+				block below loop-block is not passable
+				set {_lb::%location of loop-block%} to location of loop-block
+				set loop-block to fire
+				add location of loop-block to {Block.%{_player}%::*}
+			loop 100 times:
+				loop all entities in radius 5 around {_loc}:
+					kitCheckTeam(loop-entity, {_player}, false) is true
+					if loop-entity is not burning:
+						playSound("block.campfire.crackle", 1, 1, loop-entity)
+					ignite loop-entity by 5 seconds
+					kitParticle_Ninjutsu_HONO_2(location of loop-entity)
+				chance of 10%:
+					playSound("block.furnace.fire_crackle", 1, 1.25, {_loc})
+				wait a tick
+			loop {_lb::*}:
+				if block at loop-value is not air:
+					set block at loop-value to air
+				remove loop-value from {Block.%{_player}%::*}
+		# ----------------
