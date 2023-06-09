@@ -25,6 +25,15 @@ on sneak toggle:
 			set {_v} to setVector(location of player, location 5 meters in front of player, 5)
 			set velocity of player to {_v}
 			loop 10 times:
+				if {_hit} is not set:
+					loop all players in radius 1.5 around player:
+						kitCheckTeam(loop-player, player, false) is true
+						{_hit} is not set
+						set {_hit} to loop-player
+					wait a tick
+			if {_hit} is set:
+				playSound("")
+				kitDamage(player, {_hit}, 3)
 
 
 
