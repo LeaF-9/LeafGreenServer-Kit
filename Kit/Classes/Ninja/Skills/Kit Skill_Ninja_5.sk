@@ -245,7 +245,23 @@ on rightclick holding a dye:
 				kitFreeze(loop-player, 2 seconds)
 			loop 100 times:
 				loop all players in radius 5 around {_loc}:
-					kitCheckTeam()
+					kitCheckTeam(loop-player, player, false) is true
+					if {Kit-Freeze::%loop-player%} is not set:
+						add 1 to {_eg::%loop-player%}
+						if {_eg::%loop-player%} >= 20:
+							set {_eg::%loop-player%} to 0
+							kitFreeze(loop-player, 0.25 seconds)
+					if {_jb::%loop-player%} is not set:
+						set {_jb::%id of loop-entity%} to true
+				loop all players:
+					metadata value "gametype" of loop-player is "Kit"
+					{_eg::%loop-player%} is set
+					if {_jb::%loop-player%} is true:
+						applyEffect(loop-player, slowness, 1, 0.2 seconds)
+						kitParticle_Ninjutsu_HYOU_3(loop-player)
+					else:
+						if {_eg::%loop-player%} > 0:
+							subtract 1 from {_eg::%loop-player%}
 				wait a tick
 
 
@@ -450,3 +466,10 @@ function kitParticle_Ninjutsu_HONO_2(loc: location):
 		subtract a random number between -90 and 0 from pitch of {_el}
 		set {_v} to setVector({_el}, location 1 meters in front of {_el})
 		spawnParticle_Vector(flame, {_v}, 0.1, {_el})
+
+# Ninjutsu -氷-
+function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出 1秒間
+
+function kitParticle_Ninjutsu_HYOU_2(loc: location):  # 発動後の爆発とフィールド演出 5秒間
+
+function kitParticle_Ninjutsu_HYOU_3(player: player):  # フィールド内のプレイヤー演出
