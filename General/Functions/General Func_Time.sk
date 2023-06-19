@@ -1,0 +1,87 @@
+function timeNumber(timer: text) :: number:
+	replace every " and " with "" in {_timer}
+	replace every ", " with "" in {_timer}
+	replace every " hours" with "h:" in {_timer}
+	replace every " hour" with "h:" in {_timer}
+	replace every " minutes" with "m:" in {_timer}
+	replace every " minute" with "m:" in {_timer}
+	replace every " seconds" with "s" in {_timer}
+	replace every " second" with "s" in {_timer}
+	set {_timers::*} to {_timer} split at ":"
+	loop {_timers::*}:
+		if loop-value contains "h":
+			set {_hour} to loop-value
+			replace every "h" with "" in {_hour}
+		if loop-value contains "m":
+			set {_minute} to loop-value
+			replace every "m" with "" in {_minute}
+		if loop-value contains "s":
+			if loop-value contains ".":
+				set {_seconds::*} to loop-value split at "."
+				loop {_seconds::*}:
+					if loop-value-2 contains "s":
+						set {_tick} to loop-value-2
+						replace every "s" with "" in {_tick}
+					else:
+						set {_second} to loop-value-2
+			else:
+				set {_second} to loop-value
+				replace every "s" with "" in {_second}
+	if {_hour} is not set:
+		set {_calc::hour} to 0
+	else:
+		set {_hour} to {_hour} parsed as number
+		set {_calc::hour} to {_hour}
+	if {_minute} is not set:
+		set {_calc::minute} to 0
+	else:
+		set {_minute} to {_minute} parsed as number
+		set {_calc::minute} to {_minute}
+	if {_second} is not set:
+		set {_calc::second} to 0
+	else:
+		set {_second} to {_second} parsed as number
+		set {_calc::second} to {_second}
+	if {_tick} is not set:
+		set {_calc::tick} to 0
+	else:
+		set {_tick} to {_tick} parsed as number
+		if {_tick} < 10:
+			set {_calc::tick} to {_tick} parsed as number
+		else:
+			set {_checktick} to "%{_tick}%"
+			replace every "0" with "" in {_checktick}
+			set {_calc::tick} to {_checktick} parsed as number
+	set {_timecalc} to 0
+	add {_calc::tick} to {_timecalc}
+	add ({_calc::second} * 100) to {_timecalc}
+	add ({_calc::minute} * 6000) to {_timecalc}
+	add ({_calc::hour} * 360000) to {_timecalc}
+	return {_timecalc}
+
+function timeDisplay(timecalc: number) :: text:
+	set {_hour} to 0
+	set {_minute} to 0
+	set {_second} to 0
+	set {_tick} to 0
+	while {_timecalc} >= 100:
+		if {_timecalc} >= 360000:
+			add 1 to {_hour}
+			subtract 360000 from {_timecalc}
+		else if {_timecalc} >= 6000:
+			add 1 to {_minute}
+			subtract 6000 from {_timecalc}
+		else if {_timecalc} >= 100:
+			add 1 to {_second}
+			subtract 100 from {_timecalc}
+	set {_tick} to {_timecalc}
+	if {_hour} < 10:
+		set {_hour} to "0%{_hour}%"
+	if {_minute} < 10:
+		set {_minute} to "0%{_minute}%"
+	if {_second} < 10:
+		set {_second} to "0%{_second}%"
+	if {_tick} < 10:
+		set {_tick} to "0%{_tick}%"
+	set {_display} to "%{_hour}%:%{_minute}%:%{_second}%:%{_tick}%"
+	return {_display}

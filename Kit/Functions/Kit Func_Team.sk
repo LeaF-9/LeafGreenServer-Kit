@@ -1,0 +1,63 @@
+function kitCheckTeam(player1: entity, player2: entity, ally: boolean, all: boolean = false) :: boolean:
+	if metadata value "gametype" of {_player1} is not "Kit":
+		return false
+	if metadata value "gametype" of {_player2} is not "Kit":
+		return false
+	set {_name1} to display name of {_player1}
+	if {_name1} is not set:
+		return false
+	set {_name2} to display name of {_player2}
+	if {_name2} is not set:
+		return false
+	if {_all} is true:
+		set {_change} to "TrueTeam"
+	else:
+		set {_change} to "team"
+	loop all players:
+		if name of loop-player is {_name1}:
+			set {_p1} to loop-player
+		if name of loop-player is {_name2}:
+			set {_p2} to loop-player
+	if {_p1} is not set:
+		return false
+	if {_p2} is not set:
+		return false
+	if gamemode of {_p1} is spectator:
+		return false
+	if gamemode of {_p2} is spectator:
+		return false
+	if {_ally} is true:
+		if {%{_change}%::%{_p1}%} is {%{_change}%::%{_p2}%}:
+			if {Stats.%{_player1}%::NoSupport} is true:
+				return false
+			else if {Stats.%{_player2}%::NoSupport} is true:
+				return false
+			else:
+				return true
+		else:
+			return false
+	else:
+		if {%{_change}%::%{_p1}%} is not {%{_change}%::%{_p2}%}:
+			return true
+		else:
+			return false
+
+function kitTeamColor(team: text) :: text:
+	if {_team} is "red":
+		set {_color} to "<##FF6464>"
+	else if {_team} is "blue":
+		set {_color} to "<##6464FF>"
+	else if {_team} is "yellow":
+		set {_color} to "<##FFFF64>"
+	else if {_team} is "green":
+		set {_color} to "<##64FF64>"
+	else if {_team} is "bandit":
+		set {_color} to "<##9600C8>"
+	return {_color}
+
+function kitTeamList() :: texts:
+	add "red" to {_teamlist::*}
+	add "blue" to {_teamlist::*}
+	add "yellow" to {_teamlist::*}
+	add "green" to {_teamlist::*}
+	return {_teamlist::*}

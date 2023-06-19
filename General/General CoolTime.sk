@@ -54,3 +54,18 @@ function toolCT(player: player, kit: text, num: number, type: text = "Skill"):
 			kitItemNumberChecker(loop-item) is {_num}
 			set {_cttool} to loop-item
 	detectCT({_player}, {_cttool})
+
+function checkCT(player: player, skill: text, only: boolean = false) :: boolean:
+	if {Kit-Palsy::%{_player}%} is true:
+		loop 30 times:
+			set {_loc} to location of {_player}
+			add 1 to y-coordinate of {_loc}
+			draw 1 critmagic particle at {_loc} with direction randomVector({_loc}) and speed 1, keepFor 1 tick
+		return false
+		stop
+	if {CT.%{_player}%::%{_skill}%} is not set:
+		return true
+	else:
+		if {_only} is false:
+			send action bar "§c§lクールタイムが終わっていません!" to {_player}
+		return false

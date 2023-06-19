@@ -1,0 +1,42 @@
+function kitPercent(player: player, per: number, buff: boolean) :: number:
+	if {Kit-Luck::%{_player}%} is not set:
+		set {_luck} to 1
+	else:
+		set {_luck} to {Kit-Luck::%{_player}%}
+	if {_buff} is true:
+		set {_percent} to {_per} * {_luck}
+	else:
+		set {_percent} to {_per} / {_luck}
+	if {_percent} > 100:
+		set {_percent} to 100
+	return {_percent}
+
+function kitPercentDuel(atk: entity, vcm: entity, per: number, buff: boolean) :: number:
+	set {_atkname} to display name of {_atk}
+	set {_vcmname} to display name of {_vcm}
+	loop all players:
+		if name of loop-player is {_atkname}:
+			set {_attacker} to loop-player
+		if name of loop-player is {_vcmname}:
+			set {_victim} to loop-player
+	if {_attacker} is not set:
+		return 0
+	if {_victim} is not set:
+		return 0
+	if {Kit-Luck::%{_victim}%} is not set:
+		set {_luck.v} to 1
+	else:
+		set {_luck.v} to {Kit-Luck::%{_victim}%}
+	if {Kit-Luck::%{_attacker}%} is not set:
+		set {_luck.a} to 1
+	else:
+		set {_luck.a} to {Kit-Luck::%{_attacker}%}
+	if {_buff} is true:
+		set {_percent} to {_per} * {_luck.a}
+		set {_percent} to {_per} / {_luck.v}
+	else:
+		set {_percent} to {_per} / {_luck.a}
+		set {_percent} to {_per} * {_luck.v}
+	if {_percent} > 100:
+		set {_percent} to 100
+	return {_percent}
