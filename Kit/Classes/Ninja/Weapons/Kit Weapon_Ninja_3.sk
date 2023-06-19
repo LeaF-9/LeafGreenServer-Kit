@@ -1,41 +1,93 @@
-# Kagizume
+# Weapon-Name: Naginata
+#
+# import-functions:
+# - General CoolTime.sk
+# - General Functions.sk
+# - General Particles.sk
+# - Kit ClassChecker.sk
+# - Kit Damage.sk
 
-on sneak toggle:
+on leftclick:
 	{Class::%player%} is "Ninja"
-	player is not sneaking
+	player is sneaking
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Ninja", "Weapon.main", 3) is true
-	if checkCT(player, name of {_tool}) is true:
-		playSound("entity.blaze.ambient", 1, 1.7, location of player)
+	checkCT(player, name of {_tool}) is true
+	toolCT(player, "Ninja", 3, "Weapon.main")
+	kitWeapon_Ninja_3(player)
+
+function kitWeapon_Ninja_3(player: player):  # 攻撃判定
+	set {_baseloc} to location of {_player}
+	add 1 to y-coordinate of {_baseloc}
+	playSound("entity.blaze.shoot", 1, 0.6, {_baseloc})
+	set {_rad} to 0
+	loop 11 times:
+		set {_effloc} to {_baseloc}
+		set {_effloc} to location 5 * sin({_rad}) meters in front of {_baseloc}
+		set {_effloc} to location 5 * cos({_rad}) meters to the right of {_baseloc}
+		kitParticle_Naginata_Blade({_baseloc}, {_effloc})
+		loop all entities in radius 2 around {_effloc}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			{_hit.%id of loop-entity%} is not set
+			set {_hit.%id of loop-entity%} to true
+			kitDamage({_player}, loop-entity, 3)
+			playSound("block.sweet_berry_bush.pick_berries", 1, 1.5, loop-entity)
+			kitParticle_Naginata_Hit(loop-entity, {_baseloc})
+		# ループ最後の処理
+		add 18 to {_rad}
 		wait a tick
-		set {_true} to true
-		while {_true} is true:
-			if player is not sneaking:
-				set {_true} to false
-			set {_tool} to player's tool
-			if kitItemAllChecker({_tool}, "Ninja", "Weapon.main", 3) is false:
-				delete {_true}
-			if {_true} is true:
-				loop 3 times:
-					set {_el} to aroundEffect(player)
-					spawnParticle(ash, {_el})
-				wait a tick
-		if {_true} is false:
-			playSound("")
-			set {_v} to setVector(location of player, location 5 meters in front of player, 5)
-			set velocity of player to {_v}
-			loop 10 times:
 
+function kitParticle_Naginata_Blade(from: location, to: location):  # 斬撃演出
+	set {_vector} to setVector({_from}, {_to})
+	set yaw of {_from} to yaw of {_vector}
+	set pitch of {_from} to pitch of {_vector}
+	# --- 柄の演出 ---
+	loop 30 times:
+		set {_effbaseloc} to location 0.1 * loop-number meters in front of {_from}
+		subtract 90 from pitch of {_effbaseloc}
+		set {_rad} to 90
+		loop 5 times:
+			set {_effloc} to {_effbaseloc}
+			set {_effloc} to location 0.25 * sin({_rad}) meters in front of {_effloc}
+			set {_effloc} to location 0.25 * cos({_rad}) meters to the right of {_effloc}
+			spawnParticle_Dust(rgb(141, 100, 73), 0.1, {_effloc})
+			add 72 to {_rad}
+	# ---------------
+	# --- 刃の演出 ---
+	loop 5 times:
+		set {_effbaseloc} to location 3 + 0.3 * loop-number meters in front of {_from}
+		set {_ln} to 0
+		loop 4 times:
+			set {_lrmeter} to 0.1 * {_ln}
+			set {_el.left} to location {_lrmeter} meters to the left of {_effbaseloc}
+			set {_el.right} to location {_lrmeter} meters to the right of {_effbaseloc}
+			spawnParticle_Dust(rgb(192, 198, 201), 0.1, {_el.left})
+			spawnParticle_Dust(rgb(192, 198, 201), 0.1, {_el.right})
+			add 1 to {_ln}
+	# ---------------
+	# --- 斬撃の演出 ---
+	set {_ln} to 0
+	loop 3 times:
+		set {_lrmeter} to 0.2 * {_ln}
+		set {_el.left} to location {_lrmeter} meters to the left of {_to}
+		set {_el.right} to location {_lrmeter} meters to the right of {_to}
+		spawnParticle_DustTransition(rgb(226, 4, 27), rgb(240, 131, 0), 2, {_el.left})
+		spawnParticle_DustTransition(rgb(226, 4, 27), rgb(240, 131, 0), 2, {_el.right})
+		add 1 to {_ln}
+	# -----------------
 
-
-function kitWeapon_Ninja_3(player: player):
-	if {Stats.%{_player}%::SkillLocation} is set:
-		toolCT({_player}, "Ninja", 3, "Weapon.main")
-		set {_loc} to {Stats.%{_player}%::SkillLocation}
-		set {_dir} to location of {_player}
-		set yaw of {_loc} to yaw of {_dir}
-		set pitch of {_loc} to pitch of {_dir}
-		teleport {_player} to {_loc}
-		playSound("entity.illusioner.mirror_move", 0.8, 2, {_player})
-	else:
-		send action bar "§c§lブロックを指定してください" to {_player}
+function kitParticle_Naginata_Hit(victim: entity, direction: location):  # ヒット演出
+	set {_from} to {_direction}
+	set {_to} to location 1 meter above location of {_victim}
+	set {_vector} to setVector({_from}, {_to})
+	set yaw of {_to} to yaw of {_vector}
+	set pitch of {_to} to pitch of {_vector}
+	set {_effbaseloc} to location 0.5 meters behind {_to}
+	set pitch of {_effbaseloc} to 0
+	set {_rad} to 0
+	loop 20 times:
+		set {_el} to {_effbaseloc}
+		set {_el} to location 2 * sin({_rad}) meters in front of {_el}
+		set {_el} to location 2 * cos({_rad}) meters above {_el}
+		spawnParticle_Dust(rgb(201, 23, 30), 1, {_el})
+		add 9 to {_rad}

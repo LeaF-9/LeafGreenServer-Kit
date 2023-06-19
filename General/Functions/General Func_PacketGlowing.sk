@@ -1,0 +1,15 @@
+function packetGlowing(player: player, target: entity):
+	set {_pkt} to new play_server_entity_metadata packet
+	set field 0 of {_pkt} to id of {_target}
+	set {_dw} to new data watcher for {_target}
+	set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
+	set field 1 of {_pkt} to {_dw}
+	send {_player} packet {_pkt}
+
+function packetUnglowing(player: player, target: entity):
+	set {_pkt} to new play_server_entity_metadata packet
+	set field 0 of {_pkt} to id of {_target}
+	set {_dw} to new data watcher for {_target}
+	set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
+	set field 1 of {_pkt} to {_dw}
+	send {_player} packet {_pkt}

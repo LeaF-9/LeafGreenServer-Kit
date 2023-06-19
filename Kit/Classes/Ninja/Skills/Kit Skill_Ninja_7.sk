@@ -1,11 +1,11 @@
 # Makibishi
 
 function kitSkill_Ninja_7(player: player):
-	kitMsg({_player}, "<##a0522d>現在地点に撒菱をばら撒きます...")
+	kitMsg({_player}, "<##a0522d>撒菱をばら撒きます...")
 	set {_name} to name of {_player}'s tool
 	set {_lore::*} to lore of {_player}'s tool
 	remove an pumpkin seed named {_name} with lore {_lore::*} from {_player}
-	playSound("block.grass.place", 0.9, 2, {_player})
+	playSound("item.bundle.insert", 1, 1.5, {_player})
 	set {_baseloc} to location of {_player}
 	set {_rad} to 0
 	loop 3 times:
@@ -14,25 +14,54 @@ function kitSkill_Ninja_7(player: player):
 		add 3 * sin({_rad}) to x-coordinate of {_el::%loop-number%}
 		add 3 * cos({_rad}) to z-coordinate of {_el::%loop-number%}
 	set {_hit} to false
-	while {_hit} is false:
-		loop {_el::*}:
-			set {_yaw} to 0
-			loop 3 times:
-				add 120 to {_yaw}
-				set {_el} to loop-value-1
-				set yaw of {_el} to {_yaw}
-				set pitch of {_el} to -30
-				loop 2 times:
-					set {_e} to location 0.05 * loop-number-2 meters in front of {_el}
-					drawDot count 1, particle "redstone", RGB 245, 222, 179, center {_e}, visibleRange 10
-		loop all players in radius 3 around {_baseloc}:
-			kitCheckTeam(loop-player, {_player}, false) is true
-			set {_hit} to true
-			playSound("block.grass.break", 0.9, 2, {_player})
-			message "§4撒菱を踏んでしまった!" to loop-player
-			kitDamage({_player}, loop-player, 2)
-			apply slowness 1 to loop-player for 5 seconds
-			set {_c} to kitPercentDuel({_player}, loop-player, 70, false)
-			chance of {_c}%:
-				kitBlood(loop-player)
-		wait a tick
+	loop 20 times:
+		if {_hit} is false:
+			loop {_el::*}:
+				set {_yaw} to 0
+				loop 3 times:
+					add 120 to {_yaw}
+					set {_el} to loop-value-2
+					set yaw of {_el} to {_yaw}
+					set pitch of {_el} to -30
+					loop 2 times:
+						set {_e} to location 0.05 * loop-number-3 meters in front of {_el}
+						spawnParticle_Dust(rgb(245, 222, 179), 0.1, {_el})
+			loop all players in radius 3 around {_baseloc}:
+				kitCheckTeam({_player}, loop-player, false) is true
+				{_hit} is false
+				set {_hit} to true
+				message formatted "§e展開前の撒菱を解除した!" to loop-player
+				playSound("entity.item.pickup", 1, 0.7, {_baseloc})
+			wait a tick
+	if {_hit} is false:
+		kitMsg({_player}, "§8§l撒菱の展開が完了した...!")
+		playSound("entity.villager.work_farmer", 0.5, 1.5, {_baseloc})
+		loop 200 times:
+			if {_hit} is false:
+				loop {_el::*}:
+					set {_yaw} to 0
+					loop 3 times:
+						add 120 to {_yaw}
+						set {_el} to loop-value-2
+						set yaw of {_el} to {_yaw}
+						set pitch of {_el} to -30
+						loop 2 times:
+							set {_e} to location 0.05 * loop-number-2 meters in front of {_el}
+							spawnParticle_Dust(rgb(220, 220, 220), 0.1, {_el}, {_player})
+				loop all players in radius 3 around {_baseloc}:
+					kitCheckTeam(loop-player, {_player}, false) is true
+					{_hit} is false
+					set {_hit} to true
+					playSound("block.grass.break", 1, 2, loop-player)
+					message formatted "§4撒菱を踏んでしまった!" to loop-player
+					kitMsg({_player}, "§6§l撒菱が踏まれた!")
+					kitDamage({_player}, loop-player, 2)
+					apply slowness 1 to loop-player for 5 seconds
+					set {_c} to kitPercentDuel({_player}, loop-player, 70, false)
+					chance of {_c}%:
+						kitBlood(loop-player)
+				wait a tick
+		if {_hit} is false:
+			kitMsg({_player}, "§2撒菱は飛んでいってしまった...")
+	else:
+		kitMsg({_player}, "§c撒菱が展開前に解除されてしまった!")
