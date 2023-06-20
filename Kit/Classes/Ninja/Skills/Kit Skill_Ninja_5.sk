@@ -96,61 +96,18 @@ on rightclick holding a dye:
 		if "%type of {_n}%" is "light blue dye":
 			kitMsg(player, "§b忍法・風遁の術!")
 			kunaiNinjutsu(player, "Ninjutsu-KAZE")
-			playSound("entity.wither.shoot", 1, 0.5, player)
 			set {_l} to location of player
-			if block at location 0.1 meters below {_l} is passable:
-				set {_v} to setVector({_l}, location 5 meters above {_l})
-				set velocity of player to {_v}
-			loop 20 times:
-				loop all entities in radius 5 around {_l}:
-					kitCheckTeam(player, loop-entity, false) is true
-					kitDamage(player, loop-entity, 0.5)
-					push loop-entity upwards at speed 0.1
-					set {_v} to setVector({_l}, location of loop-entity)
-					set velocity of loop-entity to {_v}
-				# --- 音演出 ---
-				playSound("entity.wither.shoot", 0.5, 1.5, {_l})
-				# -------------
-				# --- パーティクル演出 ---
-				set {_y} to 0
-				loop 50 times:
-					add 40 to {_rad}
-					add 0.1 to {_y}
-					add 0.1 to {_m}
-					set {_el} to {_l}
-					add {_y} to y-coordinate of {_el}
-					add {_m} * sin({_rad}) to x-coordinate of {_el}
-					add {_m} * cos({_rad}) to z-coordinate of {_el}
-					spawnParticle_DustTransition(rgb(0, 175, 204), rgb(161, 216, 226), 1.5, {_el})
-				# ----------------------
-				wait 5 ticks
+			kitNinjutsu_KAZE(player, {_l})
 		else if "%type of {_n}%" is "grey dye":
 			kitMsg(player, "§8忍法・爆遁の術!")
 			kunaiNinjutsu(player, "Ninjutsu-BAKU")
 			set {_loc} to location of player
-			set pitch of {_loc} to 0
-			playSound("entity.tnt.primed", 1, 0.8, {_loc})
-			loop 6 times:
-				add 60 to yaw of {_loc}
-				shoot a primed tnt from {_loc} at speed 0.5 upwards
-				set metadata value "attacker" of shot primed tnt to "%player%"
-				set metadata value "kit-bomber" of shot primed tnt to 2
-				set metadata value "ninjutsu-baku" of shot primed tnt to "%player%"
-				setFuseTime(shot primed tnt, 60)
-				spawnParticle(lava, shot primed tnt)
+			kitNinjutsu_BAKU(player, {_loc})
 		else if "%type of {_n}%" is "light green dye":
 			kitMsg(player, "§2忍法・木遁の術!")
 			kunaiNinjutsu(player, "Ninjutsu-MOKU")
-			set {_baseloc} to location of player
-			set {_tploc} to location 2 meters above {_baseloc}
-			teleport player to {_tploc}
-			set {_shootloc} to {_baseloc}
-			set pitch of {_shootloc} to 0
-			playSound("block.wet_grass.place", 1, 0.9, {_baseloc})
-			loop 6 times:
-				shoot a snowball from {_shootloc} at speed 1
-				kitEffect_Ninjutsu_MOKU(player, shot snowball)
-				add 60 to yaw of {_shootloc}
+			set {_loc} to location of player
+			kitNinjutsu_MOKU(player, {_loc})
 		else if "%type of {_n}%" is "blue dye":
 			kitMsg(player, "§1忍法・水遁の術!")
 			kunaiNinjutsu(player, "Ninjutsu-MIZU")
@@ -341,7 +298,49 @@ on rightclick holding a dye:
 				kitDamage(player, loop-player, 2, true)
 				kitPalsy(loop-player, 5 seconds)
 
+# Ninjutsu -風-
+function kitNinjutsu_KAZE(player: player, l: location):
+	playSound("entity.wither.shoot", 1, 0.5, {_player})
+	if block at location 0.1 meters below {_l} is passable:
+		set {_v} to setVector({_l}, location 5 meters above {_l})
+		set velocity of {_player} to {_v}
+	loop 20 times:
+		loop all entities in radius 5 around {_l}:
+			kitCheckTeam({_player}, loop-entity, false) is true
+			kitDamage({_player}, loop-entity, 0.5)
+			push loop-entity upwards at speed 0.1
+			set {_v} to setVector({_l}, location of loop-entity)
+			set velocity of loop-entity to {_v}
+		# --- 音演出 ---
+		playSound("entity.wither.shoot", 0.5, 1.5, {_l})
+		# -------------
+		# --- パーティクル演出 ---
+		set {_y} to 0
+		loop 50 times:
+			add 40 to {_rad}
+			add 0.1 to {_y}
+			add 0.1 to {_m}
+			set {_el} to {_l}
+			add {_y} to y-coordinate of {_el}
+			add {_m} * sin({_rad}) to x-coordinate of {_el}
+			add {_m} * cos({_rad}) to z-coordinate of {_el}
+			spawnParticle_DustTransition(rgb(0, 175, 204), rgb(161, 216, 226), 1.5, {_el})
+		# ----------------------
+		wait 5 ticks
+
 # Ninjutsu -爆-
+function kitNinjutsu_BAKU(player: player, loc: location):
+	set pitch of {_loc} to 0
+	playSound("entity.tnt.primed", 1, 0.8, {_loc})
+	loop 6 times:
+		add 60 to yaw of {_loc}
+		shoot a primed tnt from {_loc} at speed 0.5 upwards
+		set metadata value "attacker" of shot primed tnt to "%{_player}%"
+		set metadata value "kit-bomber" of shot primed tnt to 2
+		set metadata value "ninjutsu-baku" of shot primed tnt to "%{_player}%"
+		setFuseTime(shot primed tnt, 60)
+		spawnParticle(lava, shot primed tnt)
+
 on explosion:
 	if metadata value "ninjutsu-baku" of event-entity is set:
 		set {_act} to metadata value "pop" of event-entity
@@ -383,6 +382,12 @@ on explosion:
 			kitExplosion({_act}, 1.5, loop-value)
 
 # Ninjutsu -木-
+function kitNinjutsu_MOKU(player: player, loc: location):
+	# --- 草木フィールド展開 ---
+	loop all blocks in radius 5 around {_loc}:
+	
+	# -----------------------
+
 function kitEffect_Ninjutsu_MOKU(player: player, proj: projectile):
 	set shooter of {_proj} to {_player}
 	set item of {_proj} to seeds
