@@ -122,60 +122,7 @@ on rightclick holding a dye:
 			kitMsg(player, "§3忍法・氷遁の術!")
 			kunaiNinjutsu(player, "Ninjutsu-HYOU")
 			set {_loc} to location of player
-			kitParticle_Ninjutsu_HYOU_1({_loc})
-			wait a seconds
-			kitParticle_Ninjutsu_HYOU_2({_loc})
-			loop all players in radius 5 around {_loc}:
-				kitCheckTeam(player, loop-player, false) is true
-				kitFreeze(loop-player, 2 seconds)
-			loop 100 times:
-				loop all players in radius 5 around {_loc}:
-					kitCheckTeam(loop-player, player, false) is true
-					if {Kit-Freeze::%loop-player%} is not set:
-						add 1 to {_eg::%loop-player%}
-						if {_eg::%loop-player%} >= 20:
-							set {_eg::%loop-player%} to 0
-							kitFreeze(loop-player, 0.25 seconds)
-					if {_jb::%loop-player%} is not set:
-						set {_jb::%id of loop-entity%} to true
-				loop all players:
-					metadata value "gametype" of loop-player is "Kit"
-					{_eg::%loop-player%} is set
-					if {_jb::%loop-player%} is true:
-						applyEffect(loop-player, slowness, 1, 0.2 seconds)
-						kitParticle_Ninjutsu_HYOU_3(loop-player)
-					else:
-						if {_eg::%loop-player%} > 0:
-							subtract 1 from {_eg::%loop-player%}
-				wait a tick
-
-
-			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-HYOU"
-			playSound("entity.player.levelup", 1, 2, player)
-			set {_baseloc} to location of player
-			loop all players in radius 5 around player:
-				kitCheckTeam(loop-player, player, false) is true
-				make player damage loop-player by 4
-				kitFreeze(loop-player, 1 seconds)
-			set {_s} to 0
-			set {_t} to 0
-			set {_pl} to location of player
-			loop 20 times:
-				loop 19 times:
-					loop 36 times:
-						set {_loc} to {_pl}
-						set {_vector} to {_loc}
-						set {_x} to x-coordinate of {_loc}
-						set {_y} to y-coordinate of {_loc}
-						set {_z} to z-coordinate of {_loc}
-						set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
-						set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
-						set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
-						chance of 10%:
-							drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_vector}, visibleRange 30
-						add 10 to {_t}
-					add 10 to {_s}
-				wait a tick
+			kitNinjutsu_HYOU(player, {_loc})
 		else if "%type of {_n}%" is "orange dye":
 			kitMsg(player, "§6忍法・土遁の術!")
 			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-TSUCHI"
@@ -484,8 +431,43 @@ function kitParticle_Ninjutsu_HONO_2(loc: location):
 		spawnParticle_Vector(flame, {_v}, 0.1, {_el})
 
 # Ninjutsu -氷-
+function kitNinjutsu_HYOU(player: player, loc: location):
+	kitParticle_Ninjutsu_HYOU_1({_loc})
+	wait a seconds
+	kitParticle_Ninjutsu_HYOU_2({_loc})
+	loop all players in radius 5 around {_loc}:
+		kitCheckTeam({_player}, loop-player, false) is true
+		kitFreeze(loop-player, 2 seconds)
+	loop 100 times:
+		loop all players in radius 5 around {_loc}:
+			kitCheckTeam(loop-player, {_player}, false) is true
+			if {Kit-Freeze::%loop-player%} is not set:
+				add 1 to {_eg::%loop-player%}
+				if {_eg::%loop-player%} >= 20:
+					set {_eg::%loop-player%} to 0
+					kitFreeze(loop-player, 0.25 seconds)
+			if {_jb::%loop-player%} is not set:
+				set {_jb::%id of loop-entity%} to true
+		loop all players:
+			metadata value "gametype" of loop-player is "Kit"
+			{_eg::%loop-player%} is set
+			if {_jb::%loop-player%} is true:
+				applyEffect(loop-player, slowness, 1, 0.2 seconds)
+				kitParticle_Ninjutsu_HYOU_3(loop-player)
+			else:
+				if {_eg::%loop-player%} > 0:
+					subtract 1 from {_eg::%loop-player%}
+		wait a tick
+
 function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出 1秒間
+	loop 20 times:
+		playSound("block.powder_snow.break", 1, 0.1 * loop-number, {_loc})
+		wait a tick
 
 function kitParticle_Ninjutsu_HYOU_2(loc: location):  # 発動後の爆発とフィールド演出 5秒間
+	# 爆発演出
+	playSound("")
+	# フィールド演出
 
 function kitParticle_Ninjutsu_HYOU_3(player: player):  # フィールド内のプレイヤー演出
+	playSound("block.snow.step", 0.1, 1.1, {_player}, true)
