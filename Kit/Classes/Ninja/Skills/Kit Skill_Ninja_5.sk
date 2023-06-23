@@ -385,56 +385,60 @@ on explosion:
 function kitNinjutsu_MOKU(player: player, loc: location):
 	# --- 草木フィールド展開 ---
 	loop all blocks in radius 5 around {_loc}:
-	
+		loop-block is air
+		block below loop-block is not passable
+		add location of loop-block to {_grasses::*}
+		make all players see loop-block as dirt
+		chance of 30%:
+			spawnParticle(happy_villager, location of loop-block)
 	# -----------------------
-
-function kitEffect_Ninjutsu_MOKU(player: player, proj: projectile):
-	set shooter of {_proj} to {_player}
-	set item of {_proj} to seeds
-	set metadata value "moku-seeds" of shot snowball to "%{_player}%"
-	loop 20 times:
-		set {_loc} to location of {_proj}
-		spawnParticle(composter, {_loc})
-		if block at {_loc} is air:
-			if {_lb::*} does not contain {_loc}:
-				set {_lb::%{_loc}%} to {_loc}
-				set block at {_loc} to oak log
-				add {_loc} to {Block.%{_player}%::*}
-		loop all blocks in radius 1 around {_loc}:
-			loop-block is air
-			chance of 10%:
-				if {_lb::*} does not contain location of loop-block:
-					set {_lb::%location of loop-block%} to location of loop-block
-					set loop-block to oak leaves
-					add location of loop-block to {Block.%{_player}%::*}
+	loop 100 times:
+		kitParticle_Ninjutsu_MOKU({_loc})
+		delete {_nowentering::*}
+		loop all players in radius 5 around {_loc}:
+			if kitCheckTeam(loop-player, {_player}, true) is true:
+				add loop-player to {_nowentering::*}
+				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
+				applyEffect(loop-player, regeneration, 1, 5 seconds)
+				if {Kit-Invisible::%loop-player%} is not set:
+					kitInvisible(loop-player, 5 seconds)
+			else:
+				add loop-player to {_nowentering::*}
+				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
+				applyEffect(loop-player, poison, 1, 5 seconds)
+		loop {_entered::*}:
+			if {_nowentering::*} does not contain loop-value-2:
+				remove loop-value-2 from {_entered::*}
+				if kitCheckTeam(loop-value-2, {_player}, true) is true:
+					resetEffect(loop-value-2)
+					if {Kit-Invisible::%loop-value-2%} is true:
+						reveal loop-value-2 from all players
+						delete {Kit-Invisible::%loop-value-2%}
+						send action bar "§b§l透明化が解除されました!" to loop-value-2
+				else:
+					resetEffect(loop-value-2)
 		wait a tick
-	wait 5 seconds
-	loop {_lb::*}:
-		if block at loop-value is not air:
-			set block at loop-value to air
-			playSound("block.grass.break", 0.5, 0.9, loop-value)
-			spawnParticle_Block(oak leaves, loop-value)
-		remove loop-value from {Block.%{_player}%::*}
+	loop {_entered::*}:
+		if kitCheckTeam(loop-value, {_player}, true) is true:
+			resetEffect(loop-value)
+			if {Kit-Invisible::%loop-value%} is true:
+				reveal loop-value from all players
+				delete {Kit-Invisible::%loop-value%}
+				send action bar "§b§l透明化が解除されました!" to loop-value
+		else:
+			resetEffect(loop-value)
 
-on projectile hit:
-	metadata value "moku-seeds" of projectile is set
-	set {_player} to shooter of projectile
-	set {_loc} to location of projectile
-	# 効果
-	loop all players in radius 5 around {_loc}:
-		kitCheckTeam({_player}, loop-player, false) is true
-		kitDrain(loop-player, 5 seconds)
-		message formatted "§2木遁による根が体力を吸い上げます..." to loop-player
-	# 音
-	playSound("entity.drowned.death_water", 1, 0.75, {_shooter})
-	# 演出
-	set {_rad} to 0
+function kitParticle_Ninjutsu_MOKU(loc: location):
+	loop all blocks in radius 5 around {_loc}:
+		loop-block is passable
+		chance of 3%:
+			spawnParticle_Block(oak leaves, location of loop-block)
 	loop 36 times:
-		set {_el} to {_loc}
-		add 5 * sin({_rad}) to x-coordinate of {_el}
-		add 5 * cos({_rad}) to z-coordinate of {_el}
-		spawnParticle(happy_villager, {_el})
 		add 10 to {_rad}
+		set {_el} to {_loc}
+		add 5 * sin({_rad}) to x-pos of {_el}
+		add 5 * cos({_rad}) to z-pos of {_el}
+		spawnParticle_Dust(rgb(46, 139, 87), 1, {_el})
 
 # Ninjutsu -火-
 function kitParticle_Ninjutsu_HONO_1(baseloc: location):
