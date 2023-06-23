@@ -117,32 +117,7 @@ on rightclick holding a dye:
 			kitMsg(player, "§4忍法・火遁の術!")
 			kunaiNinjutsu(player, "Ninjutsu-HONO")
 			set {_loc} to location of player
-			playSound("entity.ghast.shoot", 1, 1, player)
-			kitParticle_Ninjutsu_HONO_1(location of player)
-			loop all entities in radius 5 around player:
-				kitCheckTeam(player, loop-entity, false) is true
-				kitDamage(player, loop-entity, 2)
-			loop all blocks in radius 5 around {_loc}:
-				distance between {_loc} and loop-block >= 4
-				loop-block is air
-				block below loop-block is not passable
-				set {_lb::%location of loop-block%} to location of loop-block
-				set loop-block to fire
-				add location of loop-block to {Block.%player%::*}
-			loop 100 times:
-				loop all entities in radius 5 around {_loc}:
-					kitCheckTeam(loop-entity, player, false) is true
-					if loop-entity is not burning:
-						playSound("block.campfire.crackle", 1, 1, loop-entity)
-					ignite loop-entity by 5 seconds
-					kitParticle_Ninjutsu_HONO_2(location of loop-entity)
-				chance of 10%:
-					playSound("block.furnace.fire_crackle", 1, 1.25, {_loc})
-				wait a tick
-			loop {_lb::*}:
-				if block at loop-value is not air:
-					set block at loop-value to air
-				remove loop-value from {Block.%player%::*}
+			kitNinjutsu_HONO(player, {_loc})
 		else if "%type of {_n}%" is "cyan dye":
 			kitMsg(player, "§3忍法・氷遁の術!")
 			kunaiNinjutsu(player, "Ninjutsu-HYOU")
@@ -445,6 +420,34 @@ function kitNinjutsu_MIZU(player: player, l: location):
 	# -----------------------
 
 # Ninjutsu -火-
+function kitNinjutsu_HONO(player: player, loc: location):
+	playSound("entity.ghast.shoot", 1, 1, {_player})
+	kitParticle_Ninjutsu_HONO_1({_loc})
+	loop all entities in radius 5 around {_loc}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		kitDamage({_player}, loop-entity, 2)
+	loop all blocks in radius 5 around {_loc}:
+		distance between {_loc} and loop-block >= 4
+		loop-block is air
+		block below loop-block is not passable
+		set {_lb::%location of loop-block%} to location of loop-block
+		set loop-block to fire
+		add location of loop-block to {Block.%{_player}%::*}
+	loop 100 times:
+		loop all entities in radius 5 around {_loc}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			if loop-entity is not burning:
+				playSound("block.campfire.crackle", 1, 1, loop-entity)
+			ignite loop-entity by 5 seconds
+			kitParticle_Ninjutsu_HONO_2(location of loop-entity)
+		chance of 10%:
+			playSound("block.furnace.fire_crackle", 1, 1.25, {_loc})
+		wait a tick
+	loop {_lb::*}:
+		if block at loop-value is not air:
+			set block at loop-value to air
+		remove loop-value from {Block.%{_player}%::*}
+
 function kitParticle_Ninjutsu_HONO_1(baseloc: location):
 	set pitch of {_baseloc} to 0
 	loop 30 times:
