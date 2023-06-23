@@ -16,18 +16,11 @@ function applyEffect(player: entity, effect: potion effect type, tier: number, t
 			apply {_effect} {_tier} without particles to {_player} for {_time}
 
 function resetEffect(player: player):
-	# --- 現在の所持エフェクトをチェック ---
-	set {_eff.player::*} to all potion effects of {_player}
-	# ---------------------------------
-	# --- Kit特有のエフェクトをチェック ---
-	# ---------------------------------
-	# --- 両者の比較 ---
-	# ----------------
-
-
-	set {_class} to {Class::%player%}
-	loop yaml node keys "effects" from "skclass.%arg 2%":
-		set {_effect} to potionChanger("%loop-key%")
-		set {_level} to yml value "effects.%loop-node%" from "skclass.%arg 2%"
-		# set {_level} to {_level} parsed as number
-		apply {_effect} {_level} without particles to {_player} for 10000000000 seconds
+	execute console command "/effect clear %{_player}%"
+	if {Class::%{_player}%} is set:
+		load yml "plugins/skript-yaml/General Classes/Kit-%{Class::%{_player}%}%.yml" as "EffectCheck.%{_player}%"
+		loop yaml node keys "effects" from "EffectCheck.%{_player}%":
+			set {_effect} to potionChanger("%loop-key%")
+			set {_level} to yml value "effects.%loop-node%" from "EffectCheck.%{_player}%"
+			# set {_level} to {_level} parsed as number
+			apply {_effect} {_level} without particles to {_player} for 10000000000 seconds
