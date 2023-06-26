@@ -1,45 +1,47 @@
-# Katana -双-
+# Weapon-Name: Katana -双-
 
 on damage of player:
-	{Class::%attacker%} is "Ninja"
-	if damage was caused by attack:
-		if {Stats.%attacker%::Katana-Sou} is true:
-			set {_now} to now
-			set {_victim} to victim
-			set maximum damage delay of {_victim} to 10 ticks
-			set {Stats.%attacker%::Katana-Sou-%{_victim}%} to {_now}
-			wait 10 ticks
-			if {Stats.%attacker%::Katana-Sou-%{_victim}%} is {_now}:
-				set maximum damage delay of {_victim} to 20 ticks
-		else:
-			set maximum damage delay of victim to 20 ticks
-	else if {Stats.%attacker%::Katana-Sou} is true:
+	# --- 例外排除処理 ---
+	if {Class::%attacker%} is not "Ninja":
+		set {_ng} to true
+	if attacker is not sneaking:
+		set {_ng} to true
+	set {_tool} to attacker's tool
+	if kitItemAllChecker({_tool}, "Ninja", "Weapon.main", 4) is false:
+		set {_ng} to true
+	if {_ng} is true:
+		{Stats.%victim%::Katana-Sou} is set
+		cancel event
+		delete {Stats.%victim%::Katana-Sou}
 		set maximum damage delay of victim to 20 ticks
+		stop
+	# ------------------
+	kitParticle_Katana_Sou(victim)
+	set {_now} to now
+	set {_victim} to victim
+	set maximum damage delay of {_victim} to 10 ticks
+	set {Stats.%{_victim}%::Katana-Sou} to {_now}
+	wait 10 ticks
+	if {Stats.%{_victim}%::Katana-Sou} is {_now}:
+		set maximum damage delay of {_victim} to 20 ticks
+
+function kitParticle_Katana_Sou(victim: player):
+	loop 3 times:
+		playSound("entity.player.attack.sweep", 0.8, 2, {_victim})
+		set {_el} to location 1 meter above {_victim}
+		set {_v} to randomVector({_el})
+		spawnParticle_Vector(cloud, {_v}, 0.3, {_el})
+		wait a tick
+
 
 function kitWeapon_Ninja_4(player: player):
-	if {Stats.%{_player}%::Katana-Sou} is true:
-		if {Stats.%{_player}%::Katana-SouCT} is not set:
-			set {Stats.%{_player}%::Katana-SouCT} to true
-			set {_loc} to location of {_player}
-			set pitch of {_loc} to 0
-			playSound("entity.arrow.shoot", 1, 2, {_player})
-			drawDot count 1, particle "explosionlarge", center {_player}, visibleRange 30, keepFor 0.5 seconds
-			set {_f} to location 10 meters in front of {_loc}
-			set {_from} to vector of {_f}
-			set {_to} to vector of {_player}
-			set {_vector} to {_from} -- {_to}
-			set {_vector} to normalized {_vector}
-			set velocity of {_player} to {_vector}
-			wait a second
-			delete {Stats.%{_player}%::Katana-SouCT}
-	else:
-		set {Stats.%{_player}%::Katana-Sou} to true
-		kitMsg({_player}, "§b§l剣の舞§e状態に入ります!")
-		playSound("entity.player.attack.crit", 1, 0.5, {_player})
-		loop 100 times:
-			set {_el} to aroundEffect({_player})
-			drawDot count 1, particle "cloud", center {_el}, visibleRange 30
-			wait a tick
-		kitMsg({_player}, "§b§l剣の舞§cは終わりました")
-		delete {Stats.%{_player}%::Katana-Sou}
-		toolCT({_player}, "Ninja", 4, "Weapon.main")
+	set {_loc} to location of {_player}
+	set pitch of {_loc} to 0
+	playSound("entity.arrow.shoot", 1, 2, {_player})
+	drawDot count 1, particle "explosionlarge", center {_player}, visibleRange 30, keepFor 0.5 seconds
+	set {_f} to location 10 meters in front of {_loc}
+	set {_from} to vector of {_f}
+	set {_to} to vector of {_player}
+	set {_vector} to {_from} -- {_to}
+	set {_vector} to normalized {_vector}
+	set velocity of {_player} to {_vector}
