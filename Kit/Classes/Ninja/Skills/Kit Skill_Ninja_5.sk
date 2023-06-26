@@ -460,8 +460,25 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 		wait a tick
 
 function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出 1秒間
+	add 1 to y-pos of {_loc}
+	set {_rad.in} to 0
+	set {_rad.ex} to 45
+	set {_meter.in} to 3
+	set {_meter.ex} to 5
 	loop 20 times:
-		playSound("block.powder_snow.break", 1, 0.1 * loop-number, {_loc})
+		playSound("block.powder_snow.break", 1, 0.5 + 0.05 * loop-number, {_loc})
+		set {_el.in} to {_loc}
+		add {_meter.in} * sin({_rad.in}) to x-pos of {_el.in}
+		add {_meter.in} * cos({_rad.in}) to z-pos of {_el.in}
+		spawnParticle_DustTransition(rgb(175, 238, 238), rgb(217, 238, 238), 0.8, {_el.in})
+		set {_el.ex} to {_loc}
+		add {_meter.ex} * sin({_rad.ex}) to x-pos of {_el.ex}
+		add {_meter.ex} * cos({_rad.ex}) to z-pos of {_el.ex}
+		spawnParticle_DustTransition(rgb(37, 183, 192), rgb(130, 205, 221), 1.5, {_el.ex})
+		add 3 to {_rad.in}
+		add 3 to {_rad.ex}
+		subtract 0.15 from {_meter.in}
+		subtract 0.25 from {_meter.ex}
 		wait a tick
 
 function kitParticle_Ninjutsu_HYOU_2(loc: location):  # 発動後の爆発とフィールド演出 5秒間
