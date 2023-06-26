@@ -171,132 +171,33 @@ function kunaiNinjutsu(player: player, type: text):
 		# -----------
 		# --- 忍術 [風] ---
 		else if {_type} is "Ninjutsu-KAZE":
-			playSound("entity.wither.shoot", 1, 0.5, {_loc})
-			loop 20 times:
-				loop all entities in radius 5 around {_loc}:
-					kitCheckTeam({_player}, loop-entity, false) is true
-					kitDamage({_player}, loop-entity, 0.5)
-					push loop-entity upwards at speed 0.1
-					set {_v} to setVector({_loc}, location of loop-entity)
-					set velocity of loop-entity to {_v}
-				# --- 音演出 ---
-				playSound("entity.wither.shoot", 0.5, 1.5, {_loc})
-				# -------------
-				# --- パーティクル演出 ---
-				set {_y} to 0
-				loop 50 times:
-					add 40 to {_rad}
-					add 0.1 to {_y}
-					add 0.1 to {_m}
-					set {_el} to {_loc}
-					add {_y} to y-coordinate of {_el}
-					add {_m} * sin({_rad}) to x-coordinate of {_el}
-					add {_m} * cos({_rad}) to z-coordinate of {_el}
-					spawnParticle_DustTransition(rgb(0, 175, 204), rgb(161, 216, 226), 1.5, {_el})
-				# ----------------------
-				wait 5 ticks
+			kitNinjutsu_KAZE({_player}, {_loc})
 		# ----------------
 		# --- 忍術 [爆] ---
 		else if {_type} is "Ninjutsu-BAKU":
-			set pitch of {_loc} to 0
-			playSound("entity.tnt.primed", 1, 0.8, {_loc})
-			loop 6 times:
-				add 60 to yaw of {_loc}
-				shoot a primed tnt from {_loc} at speed 0.5 upwards
-				set metadata value "attacker" of shot primed tnt to "%{_player}%"
-				set metadata value "kit-bomber" of shot primed tnt to 2
-				set metadata value "ninjutsu-baku" of shot primed tnt to "%{_player}%"
-				setFuseTime(shot primed tnt, 60)
-				spawnParticle(lava, shot primed tnt)
+			kitNinjutsu_BAKU({_player}, {_loc})
 		# ----------------
 		# --- 忍術 [木] ---
 		else if {_type} is "Ninjutsu-MOKU":
-			set {_baseloc} to {_loc}
-			set {_shootloc} to {_baseloc}
-			set pitch of {_shootloc} to 0
-			playSound("block.wet_grass.place", 1, 0.9, {_baseloc})
-			loop 6 times:
-				shoot a snowball from {_shootloc} at speed 1
-				kitEffect_Ninjutsu_MOKU({_player}, shot snowball)
-				add 60 to yaw of {_shootloc}
+			kitNinjutsu_MOKU({_player}, {_loc})
 		# ----------------
 		# --- 忍術 [水] ---
 		else if {_type} is "Ninjutsu-MIZU":
-			set {_l} to location of {_player}
-			set {_y} to y-coordinate of block at {_l}
-			# --- 座標の追加 ---
-			loop 36 times:
-				set {_pl} to {_l}
-				add 10 to {_rad}
-				add 5 * sin({_rad}) to x-coordinate of {_pl}
-				add 5 * cos({_rad}) to z-coordinate of {_pl}
-				loop 7 times:
-					if block at {_pl} is air:
-						if {_locations::*} does not contain {_pl}:
-							add {_pl} to {_locations::*}
-					add 1 to y-coordinate of {_pl}
-				loop round(3 * sin({_rad})) times:
-					if block at {_pl} is air:
-						if {_locations::*} does not contain {_pl}:
-							add {_pl} to {_locations::*}
-					add 1 to y-coordinate of {_pl}
-			# ----------------
-			# --- 水のベール展開 ---
-			loop 10 times:
-				add 1 to {_checky}
-				loop {_locations::*}:
-					y-coordinate of loop-value-2 <= y-coordinate of {_l} + {_checky}
-					playSound("entity.generic.splash", 0.5, 1.5, loop-value-2)
-					spawnParticle_Color(entity_effect, 0, 0, 200, loop-value-2)
-					make all players see block at loop-value as water
-				wait a tick
-			# --------------------
-			# --- 展開中の処理 ---
-			loop 100 times:
-				# --- 味方プレイヤーへの効果付与 ---
-				loop all entities in radius 5 around {_l}:
-					kitCheckTeam(loop-entity, {_player}. true) is true
-					extinguish loop-entity
-					if loop-entity does not have regeneration:
-						applyEffect(loop-entity, regeneration, 2, 1 second)
-				# ------------------------------
-				# ---ブロック表示 ---
-				loop {_locations::*}:
-					make all players see block at loop-value-2 as water
-				# -----------------
-				wait a tick
-			# ------------------
-			# --- ブロックを戻す処理 ---
-			loop {_locations::*}:
-				make all players see block at loop-value as air
-				playSound("ambient.underwater.exit", 0.5, 2, loop-value)
+			kitNinjutsu_MIZU({_player}, {_loc})
 		# ----------------
 		# --- 忍術 [火] ---
 		else if {_type} is "Ninjutsu-HONO":
-			playSound("entity.ghast.shoot", 1, 1, {_loc})
-			kitParticle_Ninjutsu_HONO_1({_loc})
-			loop all entities in radius 5 around {_loc}:
-				kitCheckTeam({_player}, loop-entity, false) is true
-				kitDamage({_player}, loop-entity, 2)
-			loop all blocks in radius 5 around {_loc}:
-				distance between {_loc} and loop-block >= 4
-				loop-block is air
-				block below loop-block is not passable
-				set {_lb::%location of loop-block%} to location of loop-block
-				set loop-block to fire
-				add location of loop-block to {Block.%{_player}%::*}
-			loop 100 times:
-				loop all entities in radius 5 around {_loc}:
-					kitCheckTeam(loop-entity, {_player}, false) is true
-					if loop-entity is not burning:
-						playSound("block.campfire.crackle", 1, 1, loop-entity)
-					ignite loop-entity by 5 seconds
-					kitParticle_Ninjutsu_HONO_2(location of loop-entity)
-				chance of 10%:
-					playSound("block.furnace.fire_crackle", 1, 1.25, {_loc})
-				wait a tick
-			loop {_lb::*}:
-				if block at loop-value is not air:
-					set block at loop-value to air
-				remove loop-value from {Block.%{_player}%::*}
+			kitNinjutsu_HONO({_player}, {_loc})
+		# ----------------
+		# --- 忍術 [氷] ---
+		else if {_type} is "Ninjutsu-HYOU":
+			kitNinjutsu_HYOU({_player}, {_loc})
+		# ----------------
+		# --- 忍術 [土] ---
+		else if {_type} is "Ninjutsu-TSUCHI":
+			kitNinjutsu_TSUCHI({_player}, {_loc})
+		# ----------------
+		# --- 忍術 [雷] ---
+		else if {_type} is "Ninjutsu-RAI":
+			kitNinjutsu_RAI({_player}, {_loc})
 		# ----------------
