@@ -125,44 +125,9 @@ on rightclick holding a dye:
 			kitNinjutsu_HYOU(player, {_loc})
 		else if "%type of {_n}%" is "orange dye":
 			kitMsg(player, "§6忍法・土遁の術!")
-			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-TSUCHI"
+			kunaiNinjutsu(player, "Ninjutsu-TSUCHI")
 			set {_l} to location of player
-			loop all entities in radius 5 around {_l}:
-				kitCheckTeam(loop-entity, player, true) is true
-				setSupporter(loop-entity, player)
-				apply resistance 1 to loop-entity for 5 seconds
-				apply mining fatigue 1 to loop-entity for 5 seconds
-			set {_y} to y-coordinate of block at player
-			loop all blocks in radius 5 around player:
-				distance between location of block at player and location of loop-block >= 4
-				y-coordinate of loop-block is {_y}
-				add location of loop-block to {_ci::*}
-			set {_nm} to 0
-			loop 10 times:
-				loop {_ci::*}:
-					set {_bl} to loop-value-2
-					if {_nm} is between 0 and 4:
-						set {_ch} to 1
-					else:
-						set {_ch} to a random integer between 1 and 2
-					if {_ch} is 1:
-						set {_ck} to location of block {_nm} meters above {_bl}
-						block at {_ck} is air
-						make all players see block at {_ck} as dirt
-						add {_ck} to {_lb::*}
-						playSound("block.grass.break", 0.5, 1.5, {_ck})
-						drawDot count 1, particle "blockcrack", material dirt, center {_ck}, visibleRange 30
-					else:
-						remove loop-value-2 from {_ci::*}
-				add 1 to {_nm}
-				wait a tick
-			loop 100 times:
-				loop {_lb::*}:
-					make all players see block at loop-value-2 as dirt
-				wait a tick
-			loop {_lb::*}:
-				make all players see block at loop-value as air
-				playSound("block.grass.break", 0.5, 1.2, loop-value)
+			kitNinjutsu_TSUCHI(player, {_l})
 		else if "%type of {_n}%" is "yellow dye":
 			kitMsg(player, "§e忍法・雷遁の術!")
 			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-RAI"
@@ -510,3 +475,42 @@ function kitParticle_Ninjutsu_HYOU_3(player: player):  # フィールド内の�
 	loop 3 times:
 		set {_el} to aroundEffect({_player})
 		spawnParticle_Block(snow block, {_el})
+
+# Ninjutsu -土-
+function kitNinjutsu_TSUCHI(player: player, l: location):
+	loop all entities in radius 5 around {_l}:
+		kitCheckTeam(loop-entity, {_player}, true) is true
+		setSupporter(loop-entity, {_player})
+		applyEffect(loop-entity, resistance, 1, 5 seconds)
+		applyEffect(loop-entity, minig fatigue, 1, 5 seconds)
+	set {_y} to y-coordinate of block at {_player}
+	loop all blocks in radius 5 around {_player}:
+		distance between location of block at {_player} and location of loop-block >= 4
+		y-coordinate of loop-block is {_y}
+		add location of loop-block to {_ci::*}
+	set {_nm} to 0
+	loop 10 times:
+		loop {_ci::*}:
+			set {_bl} to loop-value-2
+			if {_nm} is between 0 and 4:
+				set {_ch} to 1
+			else:
+				set {_ch} to a random integer between 1 and 2
+			if {_ch} is 1:
+				set {_ck} to location of block {_nm} meters above {_bl}
+				block at {_ck} is air
+				make all players see block at {_ck} as dirt
+				add {_ck} to {_lb::*}
+				playSound("block.grass.break", 0.5, 1.5, {_ck})
+				spawnParticle_Block(dirt, {_ck})
+			else:
+				remove loop-value-2 from {_ci::*}
+		add 1 to {_nm}
+		wait a tick
+	loop 100 times:
+		loop {_lb::*}:
+			make all players see block at loop-value-2 as dirt
+		wait a tick
+	loop {_lb::*}:
+		make all players see block at loop-value as air
+		playSound("block.grass.break", 0.5, 1.2, loop-value)
