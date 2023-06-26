@@ -483,8 +483,27 @@ function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出
 
 function kitParticle_Ninjutsu_HYOU_2(loc: location):  # 発動後の爆発とフィールド演出 5秒間
 	# 爆発演出
-	playSound("")
+	playSound("block.glass.break", 1, 0.5, {_loc})
+	loop all blocks in radius 5 around {_loc}:
+		loop-block is air
+		chance of 5%:
+			spawnParticle_Block(ice, location of loop-block)
+		chance of 5%:
+			spawnParticle_Block(blue ice, location of loop-block)
+		chance of 5%:
+			spawnParticle_Block(snow block, location of loop-block)
 	# フィールド演出
+	add 1 to y-pos of {_loc}
+	set {_rad} to 0
+	loop 100 times:
+		loop 8 times:
+			add 45 to {_rad}
+			set {_el} to {_loc}
+			add 5 * sin({_rad}) to x-pos of {_el}
+			add 5 * cos({_rad}) to z-pos of {_el}
+			spawnParticle_DustTransition(rgb(0, 163, 175), rgb(131, 204, 210), 0.5, {_el})
+		add 10 to {_rad}
+		wait a tick
 
 function kitParticle_Ninjutsu_HYOU_3(player: player):  # フィールド内のプレイヤー演出
 	playSound("block.snow.step", 0.1, 1.1, {_player}, true)
