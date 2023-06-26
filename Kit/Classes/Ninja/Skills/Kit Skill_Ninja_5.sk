@@ -130,13 +130,9 @@ on rightclick holding a dye:
 			kitNinjutsu_TSUCHI(player, {_l})
 		else if "%type of {_n}%" is "yellow dye":
 			kitMsg(player, "§e忍法・雷遁の術!")
-			set {Stats.%player%::LastNinjutsu} to "Ninjutsu-RAI"
-			strike lightning effect at player
-			loop all players in radius 5 around player:
-				kitCheckTeam(loop-player, player, false) is true
-				strike lightning effect at loop-player
-				kitDamage(player, loop-player, 2, true)
-				kitPalsy(loop-player, 5 seconds)
+			kunaiNinjutsu(player, "Ninjutsu-RAI")
+			set {_loc} to location of player
+			kitNinjutsu_RAI(player, {_loc})
 
 # Ninjutsu -風-
 function kitNinjutsu_KAZE(player: player, l: location):
@@ -514,3 +510,51 @@ function kitNinjutsu_TSUCHI(player: player, l: location):
 	loop {_lb::*}:
 		make all players see block at loop-value as air
 		playSound("block.grass.break", 0.5, 1.2, loop-value)
+
+# Ninjutsu -雷-
+function kitNinjutsu_RAI(player: player, loc: location):
+	strike lightning effect at {_loc}
+	loop all players in radius 5 around {_loc}:
+		kitCheckTeam(loop-player, {_player}, false) is true
+		add loop-player to {_hitplayers::*}
+		strike lightling effect at loop-player
+		kitDamage({_player}, loop-player, 2, true)
+		kitPalsy(loop-player, 5 seconds)
+	loop 100 times:
+		kitParticle_Ninjutsu_RAI_1(location 1 meters above {_loc})
+		loop {_hitplayers::*}:
+			kitParticle_Ninjutsu_RAI_2(loop-value-2)
+			set {_dis} to distance between {_loc} and loop-value-2
+			if {_dis} > 5:
+				kitParticle_Ninjutsu_RAI_3(loop-value-2, {_loc})
+				set {_vector} to setVector({_loc}, location of loop-value-2, 0.3)
+				set velocity of loop-value-2 to {_vector}
+		wait a tick
+
+function kitParticle_Ninjutsu_RAI_1(loc: location):
+	loop 36 times:
+		add 10 to {_rad}
+		set {_el} to {_loc}
+		add 5 * sin({_rad}) to x-pos of {_el}
+		add 5 * cos({_rad}) to z-pos of {_el}
+		spawnParticle(crit, {_el})
+
+function kitParticle_Ninjutsu_RAI_2(player: player):
+	set {_baseloc} to location of {_player}
+	add 1 to y-pos of {_baseloc}
+	loop 4 times:
+		set {_el} to {_baseloc}
+		add 90 to {_rad}
+		add 0.5 * sin({_rad}) to x-pos of {_el}
+		add 0.5 * cos({_rad}) to z-pos of {_el}
+		spawnParticle(crit, {_el})
+
+function kitParticle_Ninjutsu_RAI_3(toplayer: player, fromloc: location):
+	playSound("block.beehive.work", 1, 2, {_toplayer})
+	set {_vector} to setVector({_fromloc}, location 1 meter above {_toplayer})
+	set {_baseloc} to {_fromloc}
+	set yaw of {_baseloc} to yaw of {_vector}
+	set pitch of {_baseloc} to pitch of {_vector}
+	loop 50 times:
+		set {_el} to location 0.1 * loop-number meters in front of {_baseloc}
+		spawnParticle_Dust(rgb(215, 207, 58), 0.5, {_el})
