@@ -255,11 +255,13 @@ function woolPlace(player: player, team: text, block: block, point: number):
 	if type of {_block} is type of {Kit-GameStage::place-%{_team}%}:
 		if {TrueTeam::%{_player}%} is {_team}:
 			if {_point} is 1:
-				spawnMob(sheep, {_team}, location of block above {_block})
+				spawn a sheep at location of block above {_block}:
+					set event-entity's display name to {_team}
 				execute console command "/givecoin %{_player}% 5 Wool設置"
 				remove a sheep egg named "§7Wool" from {_player}
 			else:
-				spawnMob(baby sheep, {_team}, location of block above {_block})
+				spawn a baby sheep at location of block above {_block}:
+					set event-entity's display name to {_team}
 				execute console command "/givecoin %{_player}% 10 Wool設置"
 				remove a llama egg named "§6§lSpecial Wool" from {_player}
 			set {_color} to {_team} parsed as color
