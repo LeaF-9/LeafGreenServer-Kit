@@ -1,27 +1,48 @@
-# Spirit Haunted
+# Skill-Name: Spirit Haunted
 
 function kitSkill_Necromancer_1(player: player):
 	set {_tool} to kitNecromanceItem({_player}, 1)
-	if kitCheckNecromance({_player}, {_tool}) is true:
-		if {Stats.%{_player}%::SkillTarget} is set:
-			set {_tg} to {Stats.%{_player}%::SkillTarget}
-			toolCT({_player}, "Necromancer", 1)
-			kitRemoveNecromance({_player}, {_tool})
-			kitMsg({_player}, "§1%{_tg}% §8に亡霊を取り憑かせました...")
-			message "§5なんだか憑かれている気がする..." to {_tg}
-			set {Stats.%{_tg}%::SpiritHaunted} to {_player}
-			set {Stats.%{_tg}%::SpawnTime} to 10
-			kitBadLuck({_tg}, 3)
-			playSound("entity.zombie_villager.converted", 1.2, 0.5, {_tg})
-			drawDot count 1, particle "mobappearance", center {_tg}, visibleRange 1
-		else:
-			send action bar "§c§l対象が存在しません!" to {_player}
+	kitCheckNecromance({_player}, {_tool}) is true
+	if {Stats.%{_player}%::SkillTarget} is not set:
+		send action bar "§c§l対象が存在しません!" to {_player}
+		stop
+	set {_tg} to {Stats.%{_player}%::SkillTarget}
+	toolCT({_player}, "Necromancer", 1)
+	kitRemoveNecromance({_player}, {_tool})
+	kitMsg({_player}, "§1%{_tg}% §8に§5§l彷徨う魂§8を取り憑かせた...")
+	message "§5なんだか憑かれている気がする..." to {_tg}
+	playSound("entity.zombie_villager.converted", 1.2, 0.5, {_tg})
+	loop 5 times:
+		kitSpawnWander({_player}, location 1 meter above {_player}, {_tg})
 
-on death of player:
-	if {Stats.%victim%::SpiritHaunted} is set:
-		set {Kit-NoCorpse::%victim%} to true
-		set {_l} to location 2 meters below victim
-		loop 3 times:
-			kitSpawnVengeful({Stats.%victim%::SpiritHaunted}, {_l})
-			push spawned skeleton upwards at speed 0.85
-		delete {Stats.%victim%::SpiritHaunted}
+function kitSpawnWander(player: player, loc: location, target: player):
+	set {_nbt.text} to "{Silent:1,IsBaby:1,NoAI:1,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;-1158257574,-1119401897,-1510799436,-1210463917],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvM2RiZWIxZDg5NWY0YWM2NmIwOGQyYWRiNDU3ZmYwOWMyOGQwZjU0MTNmYzIwNjFkZDg2YWY1MzE3M2VhOWUyMCJ9fX0=""}]}}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}]}"
+	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt.text})
+	set metadata value "wander-soul" of {_mob} to "%{_player}%"
+	while {_mob} exists:
+		set {_v} to setVector(location of {_mob}, location of {_target})
+		set {_baseloc} to location of {_mob}
+		set yaw of {_baseloc} to yaw of {_v}
+		set pitch of {_baseloc} to pitch of {_baseloc}
+		set {_tploc} to location 0.1 meters in front of {_baseloc}
+		teleport {_mob} to {_tploc}
+		spawnParticle(soul_fire_flame, {_tploc})
+		if distance between {_target} and {_mob} <= 1:
+			set {_elbase} to location of {_mob}
+			delete {_mob}
+			kitDamage({_player}, {_target}, 1, true)
+			kitFear({_target}, 3 seconds)
+			playSound("entity.evoker.cast_spell", 1, 0.9, {_target})
+			loop 5 times:
+				set {_v} to randomVector({_elbase})
+				spawnParticle_Vector(sculk_soul, {_v}, 0.3, location 0.5 meters above {_elbase})
+		wait a tick
+
+on damage of zombie:
+	# Conditions
+	metadata value "wander-soul" of victim is set
+	attacker is set
+	# Effects
+	set {_baseloc} to location of victim
+	set {_attacker} to metadata value "wander-soul" of victim
+	set {_attacker} 
