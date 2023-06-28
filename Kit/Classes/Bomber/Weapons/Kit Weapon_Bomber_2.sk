@@ -1,14 +1,21 @@
-# Grenade Blaster
+# Weapon-Name: Grenade Thrower
 
 on shoot:
 	metadata value "gametype" of shooter is "Kit"
 	{Class::%shooter%} is "Bomber"
-	if projectile is an arrow:
-		set {_tool} to shooter's tool
-		kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 2) is true
-		wait 1 second
-#		set {_d} to distance between shooter and projectile
-#		{_d} > 5
-		set {_l} to location of projectile
-		delete projectile
-		kitExplosion(shooter, 2, {_l})
+	set {_tool} to shooter's tool
+	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 2) is true
+	cancel event
+	set {_t} to getBowDrawTime(shooter) * 0.125
+	shoot a primed tnt from shooter at speed {_t}
+	set metadata value "attacker" of shot primed tnt to "%shooter%"
+	set metadata value "kit-bomber" of shot primed tnt to 2.5
+	set {_uuid} to a random uuid
+	set metadata value "grenade-thrower-uuid" of shot primed tnt to {_uuid}
+	setFuseTime(shot primed tnt, 60)
+	playSound("entity.creeper.death", 1, 2, shooter)
+	loop 60 times:
+		loop all primed tnts:
+			metadata value "grenade-thrower-uuid" of loop-primed tnt is {_uuid}
+			spawnParticle(flame, location of loop-primed tnt)
+		wait a tick
