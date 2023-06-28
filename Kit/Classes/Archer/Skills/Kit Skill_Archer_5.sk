@@ -8,7 +8,6 @@ function kitSkill_Archer_5(player: player):
 	drawDot count 3, particle "mobspell", RGB 255, 100, 100, center {_player}, visibleRange 32, keepFor 7 seconds
 	wait 5 seconds
 	delete {Stats.%{_player}%::BarrageArrow}
-	delete {Stats.%{_player}%::DrawTime}
 	kitMsg({_player}, "§cBarrage Arrow§dの効果が切れました")
 
 on rightclick holding a bow:
@@ -29,11 +28,7 @@ on shoot:
 	{Stats.%shooter%::BarrageNG} is not set
 	projectile is an arrow or a spectral arrow
 	cancel event
-	if {Stats.%shooter%::DrawTime} is set:
-		set {_d} to {Stats.%shooter%::DrawTime}
-	else:
-		set {_d} to 3
-	delete {Stats.%shooter%::DrawTime}
+	set {_d} to getBowDrawTime(shooter) * 0.125
 	set {Stats.%shooter%::BarrageNG} to true
 	playSound("entity.ghast.shoot", 1, 1, shooter)
 	set {_l1} to location of head of shooter
