@@ -304,14 +304,14 @@ function kitNinjutsu_MIZU(player: player, l: location):
 			y-coordinate of loop-value-2 <= y-coordinate of {_l} + {_checky}
 			playSound("entity.generic.splash", 0.5, 1.5, loop-value-2)
 			spawnParticle_Color(entity_effect, 0, 0, 200, loop-value-2)
-			make all players see block at loop-value as water
+			make all players see block at loop-value-2 as water
 		wait a tick
 	# --------------------
 	# --- 展開中の処理 ---
 	loop 100 times:
 		# --- 味方プレイヤーへの効果付与 ---
 		loop all entities in radius 5 around {_l}:
-			kitCheckTeam(loop-entity, {_player}. true) is true
+			kitCheckTeam(loop-entity, {_player}, true) is true
 			extinguish loop-entity
 			if loop-entity does not have regeneration:
 				applyEffect(loop-entity, regeneration, 2, 1 second)
@@ -347,7 +347,7 @@ function kitNinjutsu_HONO(player: player, loc: location):
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			if loop-entity is not burning:
 				playSound("block.campfire.crackle", 1, 1, loop-entity)
-			ignite loop-entity by 5 seconds
+			ignite loop-entity for 5 seconds
 			kitParticle_Ninjutsu_HONO_2(location of loop-entity)
 		chance of 10%:
 			playSound("block.furnace.fire_crackle", 1, 1.25, {_loc})
@@ -518,7 +518,7 @@ function kitNinjutsu_RAI(player: player, loc: location):
 	loop all players in radius 5 around {_loc}:
 		kitCheckTeam(loop-player, {_player}, false) is true
 		add loop-player to {_hitplayers::*}
-		strike lightling effect at loop-player
+		strike lightning effect at loop-player
 		kitDamage({_player}, loop-player, 2, true)
 		kitPalsy(loop-player, 5 seconds)
 	loop 100 times:
