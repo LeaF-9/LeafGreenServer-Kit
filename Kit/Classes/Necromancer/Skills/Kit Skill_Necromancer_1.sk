@@ -45,4 +45,14 @@ on damage of zombie:
 	# Effects
 	set {_baseloc} to location of victim
 	set {_attacker} to metadata value "wander-soul" of victim
-	set {_attacker} 
+	set {_attacker} to {_attacker} parsed as player
+	delete victim
+	kitAddNecromance({_attacker}, 1)
+	kitParticle_WanderSoul_Death({_baseloc})
+
+function kitParticle_WanderSoul_Death(baseloc: location):
+	playSound("entity.vex.hurt", 1, 0.5, {_baseloc})
+	set {_el} to location 0.5 meters above {_baseloc}
+	loop 10 times:
+		set {_v} to randomVector({_el})
+		spawnParticle_Vector(sculk_charge_pop, {_v}, 0.3, {_el})
