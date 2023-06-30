@@ -1,32 +1,35 @@
-# Fay Stick
+# Weapon-Name: Fay Stick
 
 on damage of player:
 	if {Class::%attacker%} is "Paladin":
-		if damage was caused by attack:
-			set {_tool} to attacker's tool
-			kitItemAllChecker({_tool}, "Paladin", "Weapon.main", 2) is true
-			attacker is alive
-			set {_c} to kitPercent(attacker, 30, true)
-			chance of {_c}%:
-				kitHeal(attacker, 1)
+		damage was caused by attack
+		set {_tool} to attacker's tool
+		kitItemAllChecker({_tool}, "Paladin", "Weapon.main", 2) is true
+		attacker is alive
+		if attacker is sneaking:
+			kitHeal(attacker, 1)
+		else:
+			attacker does not have regeneration
+			applyEffect(attacker, regeneration, 1, 3 seconds)
 	if {Class::%victim%} is "Paladin":
-		damage was caused by potion
+		damage cause is potion or projectile
 		victim is blocking
+		victim is sneaking
+		set {_main} to victim's tool
+		kitItemAllChecker({_main}, "Paladin", "Weapon.main", 2) is true
 		set {_tool} to victim's offhand tool
 		kitItemAllChecker({_tool}, "Paladin", "Weapon.sub", 2) is true
-		set {_c} to kitPercent(victim, 80, true)
-		chance of {_c}%:
-			cancel event
-			set {_y} to -1
+		set damage to damage * 0.3
+		set {_y} to -1
+		loop 3 times:
+			set {_c} to 0
 			loop 3 times:
-				set {_c} to 0
-				loop 3 times:
-					add 1 to {_c}
-					set {_color::%{_c}%} to a random integer between 0 and 255
-				set {_el} to location of victim
-				add 1 to {_y}
-				add {_y} to y-coordinate of {_el}
-				add a random number between -1 and 1 to x-coordinate of {_el}
-				add a random number between -1 and 1 to z-coordinate of {_el}
-				drawDot count 1, particle "mobspell", RGB {_color::1}, {_color::2}, {_color::1}, center {_el}, visibleRange 30
-			playSound("block.conduit.activate", 1, 2, victim)
+				add 1 to {_c}
+				set {_color::%{_c}%} to a random integer between 0 and 255
+			set {_el} to location of victim
+			add 1 to {_y}
+			add {_y} to y-coordinate of {_el}
+			add a random number between -1 and 1 to x-coordinate of {_el}
+			add a random number between -1 and 1 to z-coordinate of {_el}
+			spawnParticle_Color(entity_effect, {_color::1}, {_color::2}, {_color::3}, {_el})
+		playSound("block.conduit.activate", 1, 2, victim)
