@@ -1,63 +1,99 @@
-# Sally Fatalities
+# Skill-Name: Sally Fatalities
 
 function kitSkill_Necromancer_3(player: player):
 	set {_tool} to kitNecromanceItem({_player}, 3)
-	if kitCheckNecromance({_player}, {_tool}) is true:
-		toolCT({_player}, "Necromancer", 3)
-		kitRemoveNecromance({_player}, {_tool})
-		kitMsg({_player}, "§4周辺のアンデッドと反撃の狼煙を上げる...")
-		playSound("entity.zombie_villager.cure", 1, 1.5, {_player})
-		set {_z} to true
-		chance of 50%:
-			set {_z} to false
-		if {_z} is true:
-			spawn a undead horse at {_player} with nbt compound from "{Attributes:[{Name:""generic.movement_speed"",Base:0.23f},{Name:""horse.jump_strength"",Base:0.6f}],Age:0}"
+	kitCheckNecromance({_player}, {_tool}) is true
+	toolCT({_player}, "Necromancer", 3)
+	kitRemoveNecromance({_player}, {_tool})
+	kitMsg({_player}, "§4周辺のアンデッドに死霊馬を与える...")
+	playSound("entity.zombie_villager.cure", 1, 1.5, {_player})
+	set {_now} to now
+	loop all entities in radius 10 around {_player}:
+		metadata value "necromancer-entity" of loop-entity is {_player}
+		metadata value "necromancer-entity-undead" of loop-entity is set
+		set {_type} of metadata value "necromancer-entity-undead" of loop-entity
+		if {_type} is "zombie":
+			set {_undeadHorse} to kitSpawnMob_NBT({_player}, undead horse, location of loop-entity, "{Attributes:[{Name:""generic.movement_speed"",Base:0.23f},{Name:""horse.jump_strength"",Base:0.6f}],Age:0}")
+			kitParticle_SallyFatalities_Undead({_undeadHorse})
+		else if {_type} is "skeleton":
+			set {_undeadHorse} to kitSpawnMob_NBT({_player}, skeleton horse, location of loop-entity, "{Attributes:[{Name:""generic.movement_speed"",Base:0.23f},{Name:""horse.jump_strength"",Base:0.6f}],Age:0}")
+			kitParticle_SallyFatalities_Skeleton({_undeadHorse})
 		else:
-			spawn a skeleton horse at {_player} with nbt compound from "{Attributes:[{Name:""generic.movement_speed"",Base:0.23f},{Name:""horse.jump_strength"",Base:0.6f}],Age:0}"
-		tame last spawned entity to {_player}
-		equip the spawned entity with saddle
-		set spawned entity's display name to "%{_player}%"
-		make {_player} ride spawned entity
-		set metadata value "gametype" of spawned entity to "Kit"
-		set metadata value "sally-fatalities" of spawned entity to "%{_player}%"
-		loop 200 times:
-			if vehicle of {_player} is a undead horse or a skeleton horse:
-				delete {_p}
-				delete {_pl::*}
-				set {_d} to 100
-				loop all players in radius 5 around {_player}:
-					kitCheckTeam(loop-player, {_player}, false) is true
-					add 1 to {_p}
-					add loop-player to {_pl::*}
-				if {_p} is set:
-					loop {_pl::*}:
-						set {_dis} to distance between {_player} and loop-value-2
-						if {_d} > {_dis}:
-							set {_d} to {_dis}
-							set {_t} to loop-value-2
-				else:
-					set {_t} to {_player}
-				loop all entities in radius 10 around {_player}:
-					metadata value "kit-dead" of loop-entity is "true"
-					loop-entity's display name is "%{_player}%"
-					apply strength 3 to loop-entity for 3 ticks replacing existing effect
-					apply speed 5 to loop-entity for 3 ticks replacing existing effect
-					apply resistance -5 to loop-entity for 3 ticks replacing existing effect
-					apply fire resistance 1 to loop-entity for 3 ticks replacing existing effect
-					drawDot count 1, particle "mobspell", XYZ 100, 0, 0, center loop-entity, visibleRange 32, keepFor a tick
-					set target of loop-entity to {_t}
-			wait a tick
-		loop all entities:
-			if metadata value "sally-fatalities" of loop-entity is "%{_player}%":
-				delete loop-entity
-			else if metadata value "kit-dead" of loop-entity is "true":
-				loop-entity's display name is "%{_player}%"
-				target of loop-entity is {_player}
-				delete target of loop-entity
+			continue
+		set {_uuid} to metadata value "uuid" of {_undeadHorse}
+		set metadata value "sally-fatalities" of loop-entity to {_uuid}
+		set metadata value "sally-fatalities-horse" of {_undeadHorse} to {_player}
+		set metadata value "sally-fatalities-time" of {_undeadHorse} to {_now}
+		make loop-entity ride {_undeadHorse}
+		set loop-entity's tool to a stone sword
+	wait 10 seconds
+	loop all entities:
+		metadata value "sally-fatalities-horse" of loop-entity is {_player}
+		metadata value "sally-fatalities-time" of loop-entity is {_now}
+		kitParticle_SallyFatalities_Death(loop-entity)
+		delete loop-entity
 
-on damage:
-	if metadata value "kit-dead" of victim is "true":
-		victim has strength
-		set damage to 100
-	else if metadata value "sally-fatalities" of victim is set:
+function kitParticle_SallyFatalities_Undead(horse: entity):
+	set {_baseloc} to location of {_horse}
+	set {_rad} to 0
+	set {_addy} to 0
+	set {_meter} to 0
+	loop 20 times:
+		loop 8 times:
+			add 45 to {_rad}
+			set {_el} to {_baseloc}
+			add {_meter} * sin({_rad}) to x-pos of {_el}
+			add {_meter} * cos({_rad}) to z-pos of {_el}
+			add {_addy} to y-pos of {_el}
+			spawnParticle_Dust(rgb(47, 93, 80), 1.5, {_el})
+		add 20 to {_rad}
+		add 0.15 to {_addy}
+		add 0.175 to {_meter}
+		wait a tick
+
+function kitParticle_SallyFatalities_Skeleton(horse: entity):
+	set {_baseloc} to location of {_horse}
+	set {_rad} to 0
+	set {_addy} to 0
+	set {_meter} to 0
+	loop 20 times:
+		loop 8 times:
+			add 45 to {_rad}
+			set {_el} to {_baseloc}
+			add {_meter} * sin({_rad}) to x-pos of {_el}
+			add {_meter} * cos({_rad}) to z-pos of {_el}
+			add {_addy} to y-pos of {_el}
+			spawnParticle_Dust(rgb(92, 92, 92), 1.5, {_el})
+		add 20 to {_rad}
+		add 0.15 to {_addy}
+		add 0.175 to {_meter}
+		wait a tick
+
+function kitParticle_SallyFatalities_Death(horse: entity):
+	playSound("entity.horse.eat", 1, 0.5, {_horse})
+	loop 10 times:
+		set {_randomloc} to aroundEffect({_horse})
+		add {_randomloc} to {_baselocs::*}
+	set {_size} to 0.5
+	set {_addy} to 0
+	loop 20 times:
+		loop {_randomlocs::*}:
+			set {_el} to loop-value-2
+			add {_addy} to y-pos of {_el}
+			spawnParticle_DustTransition(rgb(73, 55, 89), rgb(0, 0, 0), {_size}, {_el})
+		add 0.1 to {_addy}
+		subtract 0.025 from {_size}
+		wait a tick
+
+function kitSkill_SallyFatalities(victim: entity):  # 馬に乗ったアンデッドが死亡した際に発火する関数
+	set {_uuid} to metadata value "sally-fatalities" of {_victim}
+	set {_player} to metadata value "summon-player" of {_victim}
+	loop all entities:
+		metadata value "uuid" of loop-entity is {_uuid}
+		kitParticle_SallyFatalities_Death(loop-entity)
+		delete loop-entity
+		kitAddNecromance({_player}, 1)
+
+on death :
+	if metadata value "sally-fatalities-horse" of victim is true:
 		cancel event
