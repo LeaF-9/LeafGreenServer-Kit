@@ -1,1 +1,26 @@
 # Holy Lance
+
+on damage:
+	{Class::%attacker%} is "Paladin"
+	set {_tool} to attacker's toloc
+	kitItemAllChecker({_tool}, "Paladin", "Weapon.main", 3) is true
+	if {Stats.%attacker%::HolyLance-Charged} is set:
+	else:
+		set {_victimtype} to "%type of victim%"
+		set {_undeads::*} to kitWeapon_HolyLance_UndeadList()
+		{_undeads::*} contains {_victimtype}
+
+function kitWeapon_HolyLance_UndeadList():
+	add "zombie" to {_list::*}
+	add "skeleton" to {_list::*}
+	add "zombified piglin" to {_list::*}
+	add "zoglin" to {_list::*}
+	add "wither skeleton" to {_list::*}
+	add "drowned" to {_list::*}
+	add "husk" to {_list::*}
+	add "phantom" to {_list::*}
+	add "skeleton horse" to {_list::*}
+	add "stray" to {_list::*}
+	add "undead horse" to {_list::*}
+	add "zombie villager" to {_list::*}
+	return {_list::*}
