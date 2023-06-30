@@ -61,24 +61,7 @@ function kitSkill_DeathDetector(player: player):  # 死んだ際に発動する�
 				set {_vengeful} to true
 			set {_sumloc} to a random location out of {_locs::*}
 			if {_vengeful} is true:
-				kitSpawnVengeful({_player}, {_sumloc})
+				kitSpawn_Necromancer_Vengeful({_player}, {_sumloc})
 			else:
-				if {team::%{_player}%} is "red":
-					set {_color} to "16711680"
-				else if {team::%{_player}%} is "blue":
-					set {_color} to "255"
-				else if {team::%{_player}%} is "yellow":
-					set {_color} to "16776960"
-				else if {team::%{_player}%} is "green":
-					set {_color} to "65280"
-				else:
-					set {_color} to "16711935"
-				set {_nbt} to nbt compound from "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
-				spawn a skeleton at {_sumloc} with nbt {_nbt}
-				set metadata value "gametype" of spawned skeleton to "Kit"
-				set metadata value "kit-dead" of spawned skeleton to "true"
-				set spawned skeleton's display name to "%{_player}%"
-				if kitPlayerWeaponItem({_player}, "Necromancer", "main") is kitWeaponItem("Necromancer", 1, "main"):
-					set max health of spawned entity to 1.5
-				else:
-					set max health of spawned entity to 1
+				set {_skeleton} to kitSpawn_Necromancer_Skeleton({_player}, {_sumloc})
+				set max health of {_skeleton} to 1

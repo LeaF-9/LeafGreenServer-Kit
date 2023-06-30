@@ -5,14 +5,13 @@ function kitSkill_Necromancer_4(player: player):
 	kitMsg({_player}, "<##483d8b>周辺のMobの魂を回収して怨魂を召喚します...")
 	playSound("entity.evoker.cast_spell", 1, 1, {_player})
 	loop all entities in radius 10 around {_player}:
-		type of loop-entity is not player
-		loop-entity's display name is "%{_player}%"
-		metadata value "kit-dead" of loop-entity is "true"
+		metadata value "necromancer-entity" of loop-entity is {_player}
+		metadata value "necromancer-entity-undead" of loop-entity is set
 		drawDot count 1, particle "witchspell", center loop-entity, visibleRange 30, keepFor 1 second
 		set {_l} to location of loop-entity
 		delete loop-entity
 		kitAddNecromance({_player}, 1)
-		kitSpawnGrudge({_player}, {_l})
+		kitSpawn_Necromancer_Grudge({_player}, {_l})
 	set {_height} to 1
 	set {_baseloc} to location of {_player}
 	loop 5 times:
