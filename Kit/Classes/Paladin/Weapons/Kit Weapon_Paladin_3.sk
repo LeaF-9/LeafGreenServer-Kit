@@ -5,10 +5,35 @@ on damage:
 	set {_tool} to attacker's toloc
 	kitItemAllChecker({_tool}, "Paladin", "Weapon.main", 3) is true
 	if {Stats.%attacker%::HolyLance-Charged} is set:
-	else:
-		set {_victimtype} to "%type of victim%"
-		set {_undeads::*} to kitWeapon_HolyLance_UndeadList()
-		{_undeads::*} contains {_victimtype}
+		playSound()
+		kitParticle_HolyLance_Damage(victim)
+		set damage to damage * 2
+		applyEffect(victim, glowing, 1, 10 seconds)
+		ignite victim for 10 seconds
+		stop
+	set {_victimtype} to "%type of victim%"
+	set {_undeads::*} to kitWeapon_HolyLance_UndeadList()
+	{_undeads::*} contains {_victimtype}
+	playSound()
+	set damage to 10000
+	set {_now} to now
+	set {Stats.%attacker%::HolyLance-Charged} to {_now}
+	loop 100 times:
+		{Stats.%attacker%::HolyLance-Charged} is {_now}
+		kitParticle_HolyLance_Charged(attacker)
+		wait a tick
+	{Stats.%attacker%::HolyLance-Charged} is {_now}
+	delete {Stats.%attacker%::HolyLance-Charged}
+
+function kitParticle_HolyLance_Damage(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	loop 15 times:
+		set {_v} to randomVector({_baseloc})
+		spawnParticle_Vector(firework, {_v}, 0.3, {_baseloc})
+		set {_v} to randomVector({_baseloc})
+		spawnParticle_Vector(end_rod, {_v}, 0.2, {_baseloc})
+
+function kitParticle_HolyLance_Charged(player: player):
 
 function kitWeapon_HolyLance_UndeadList():
 	add "zombie" to {_list::*}
