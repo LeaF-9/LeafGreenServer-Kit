@@ -5,7 +5,7 @@ on damage:
 	set {_tool} to attacker's toloc
 	kitItemAllChecker({_tool}, "Paladin", "Weapon.main", 3) is true
 	if {Stats.%attacker%::HolyLance-Charged} is set:
-		playSound()
+		playSound("entity.zombie_villager.cure", 1, 2, victim)
 		kitParticle_HolyLance_Damage(victim)
 		set damage to damage * 2
 		applyEffect(victim, glowing, 1, 10 seconds)
@@ -14,7 +14,7 @@ on damage:
 	set {_victimtype} to "%type of victim%"
 	set {_undeads::*} to kitWeapon_HolyLance_UndeadList()
 	{_undeads::*} contains {_victimtype}
-	playSound()
+	playSound("block.beacon.activate", 1, 1.3, attacker)
 	set damage to 10000
 	set {_now} to now
 	set {Stats.%attacker%::HolyLance-Charged} to {_now}
@@ -34,6 +34,11 @@ function kitParticle_HolyLance_Damage(player: player):
 		spawnParticle_Vector(end_rod, {_v}, 0.2, {_baseloc})
 
 function kitParticle_HolyLance_Charged(player: player):
+	set {_baseloc} to aroundEffect({_player})
+	loop 10 times:
+		set {_el} to location loop-number * 0.1 meters above {_baseloc}
+		spawnParticle(end_rod, {_el})
+		wait a tick
 
 function kitWeapon_HolyLance_UndeadList():
 	add "zombie" to {_list::*}
