@@ -40,6 +40,16 @@ on damage of player:
 	{Stats.%victim%::Invincible} is true
 	cancel event
 
-function kitHeal(player: player, heart: number):
+function kitHeal(player: player, heart: number, particle: number = 5):
 	if {Kit-Blood::%{_player}%} is not set:
 		heal {_player} by {_heart} hearts
+		if {_particle} >= 1:
+			healEffect({_player}, {_particle})
+
+function healEffect(player: entity, count: number = 5):
+	loop {_count} times:
+		set {_loc} to location of {_player}
+		add a random number between -1 and 1 to x-coordinate of {_loc}
+		add a random number between 0 and 2 to y-coordinate of {_loc}
+		add a random number between -1 and 1 to z-coordinate of {_loc}
+		drawDot count 1, particle "heart", center {_loc}, visibleRange 30
