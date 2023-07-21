@@ -3,8 +3,13 @@
 on damage of player:
 	{Class::%attacker%} is "Paladin"
 	damage was caused by projectile
-	metadata value "angelic-bow" of projectile is "true"
+	if metadata value "angelic-bow-healing" of projectile is true:
+		cancel event
+		kitEffect_AngelicBow_Healing(attacker, location of projectile)
+		stop
+	metadata value "angelic-bow" of projectile is true
 	attacker is alive
+	kitHeal(attacker, 1, 3)
 	heal attacker by 1 heart
 
 on shoot:
@@ -12,29 +17,53 @@ on shoot:
 	{Class::%shooter%} is "Paladin"
 	set {_tool} to shooter's tool
 	kitItemAllChecker({_tool}, "Paladin", "Weapon.main", 3) is true
+	set metadata value "angelic-bow" of projectile to true
 	shooter is sneaking
 	set {_arrow} to amount of arrow in shooter's inventory
 	{_arrow} >= 3
 	loop 3 times:
 		remove an arrow from shooter
-	set metadata value "angelic-bow" of projectile to "true"
-	# --- 音の演出 ---
-	playSound("block.amethyst_cluster.break", 1, 0.5, shooter)
-	# --------------
+	set metadata value "angelic-bow-healing" of projectile to true
 	# --- パーティクルの演出 ---
-	kitEffect_HolyBow_Arrow(shooter, projectile)
+	kitParticle_AngelicBow_Arrow(shooter, projectile)
 	# -----------------------
 
-function kitEffect_HolyBow_Arrow(player: player, prj: projectile):
+function kitEffect_AngelicBow_Healing(player: player, baseloc: location):
+	kitParticle_AngelicBow_Ground({_baseloc})
+	loop all players in radius 5 around {_baseloc}:
+		{_player} is not loop-player
+		kitCheckTeam({_player}, loop-player, true) is true
+		kitHeal(loop-player, 3)
+		kitParticle_AngelicBow_Heal(loop-player)
+
+function kitParticle_AngelicBow_Ground(baseloc: loc):
+	playSound("block.beacon.power_select", 1, 2, {_baseloc})
+	set {_m} to 0
+	loop 10 times:
+		add 1 to {_m}
+		set {_rad} to 0
+		loop 36 times:
+			add 10 to {_rad}
+			set {_el} to {_baseloc}
+			add {_m} * sin({_rad}) to x-pos of {_el}
+			add {_m} * cos({_rad}) to z-pos of {_el}
+			spawnParticle_Color(entity_effect, 235, 235, 100, {_el})
+		wait a tick
+
+function kitParticle_AngelicBow_Heal(target: player):
+	playSound("entity.allay.ambient_without_item", 1, 1.6, {_target})
+	set {_el} to location 1 meter above {_target}
+	loop 10 times:
+		set {_v} to randomVector({_el})
+		spawnParticle_Vector(end_rod, {_v}, 0.1, {_el})
+
+function kitParticle_AngelicBow_Arrow(player: player, proj: projectile):
+	playSound("entity.allay.item_given", 1, 1.6, {_player})
 	set {_baseloc} to location of {_player}
-	set {_basebackloc} to {_baseloc}
-	add 180 to yaw of {_basebackloc}
-	set pitch of {_basebackloc} to pitch of {_basebackloc} * (-1)
-	set {_rad} to 0
 	loop 20 times:
-		set {_prjloc} to location of {_prj}
-		# --- 矢の周辺を回転する演出 ---
-		set {_eb} to {_prjloc}
+		set {_loc.proj} to location of {_proj}
+		# --- 矢に輪を描く演出 ---
+		set {_eb} to {_loc.proj}
 		set yaw of {_eb} to yaw of {_baseloc}
 		set pitch of {_eb} to pitch of {_baseloc}
 		set {_m1} to {_eb}
@@ -49,27 +78,17 @@ function kitEffect_HolyBow_Arrow(player: player, prj: projectile):
 		else:
 			set {_p} to {_p} - 90
 		set pitch of {_m1} to {_p}
-		set {_test1} to 0.5 * cos({_rad})
-		set {_t1} to location {_test1} meters in front of {_m1}
-		set {_m2} to {_eb}
-		set pitch of {_m2} to 0
-		set {_test2} to 0.5 * sin({_rad})
-		set {_t2} to location {_test2} meters to the right of {_m2}
-		set x-coordinate of {_eb} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_eb}
-		set y-coordinate of {_eb} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_eb}
-		set z-coordinate of {_eb} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_eb}
-		spawnParticle(end_rod, {_eb})
-		add 100 to {_rad}
+		loop 18 times:
+			set {_test1} to 0.5 * cos({_rad})
+			set {_t1} to location {_test1} meters in front of {_m1}
+			set {_m2} to {_eb}
+			set pitch of {_m2} to 0
+			set {_test2} to 0.5 * sin({_rad})
+			set {_t2} to location {_test2} meters to the right of {_m2}
+			set x-coordinate of {_eb} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_eb}
+			set y-coordinate of {_eb} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_eb}
+			set z-coordinate of {_eb} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_eb}
+			spawnParticle_DustTransition(rgb(235, 235, 110), rgb(255, 255, 255), 2.5, {_eb})
+			add 20 to {_rad}
 		# --------------------------
-		# --- 矢の後ろに流れ星的な演出 ---
-		set {_bel} to {_prjloc}
-		set yaw of {_bel} to yaw of {_basebackloc}
-		set pitch of {_bel} to pitch of {_basebackloc}
-		set {_to} to location 5 meters in front of {_bel}
-		add a random number between -0.5 and 0.5 to x-coordinate of {_to}
-		add a random number between -0.5 and 0.5 to y-coordinate of {_to}
-		add a random number between -0.5 and 0.5 to z-coordinate of {_to}
-		set {_v} to setVector({_bel}, {_to})
-		spawnParticle_Vector(electric_spark, {_v}, 1, {_bel})
-		# ----------------------------
 		wait a tick
