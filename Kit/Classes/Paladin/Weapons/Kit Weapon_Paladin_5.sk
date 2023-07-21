@@ -1,39 +1,83 @@
 # Guardian Staff
 
+on damage of player:
+	if {Stats.%victim%::GuardianStaff-Active} is true:
+		set damage to damage * 5
+		kitParticle_GuardianStaff_Critical(victim)
+		stop
+	{Stats.%victim%::GuardianStaff-Received} is set
+	set damage to damage * 0.5
+	kitParticle_GuardianStaff_Damage(victim)
+
 function kitWeapon_Paladin_5(player: player):
-	toolCT({_player}, "Paladin", 5, "Weapon.main")
-	kitMsg({_player}, "<##1e90ff>周辺に妖精の力を分配します!")
-	playSound("entity.illusioner.cast_spell", 1, 0.5, {_player})
-	loop all entities in radius 10 around {_player}:
-		if kitCheckTeam(loop-entity, {_player}, true) is true:
-			setSupporter(loop-entity, {_player})
-			apply regeneration 3 to loop-entity for 5 seconds
-			message formatted "<##1e90ff>%{_player}% <##00ffbf>より妖精の再生力が付与された!" to loop-entity
-			add loop-entity to {_loc.a::*}
-		else if kitCheckTeam(loop-entity, {_player}, false) is true:
-			LastKiller(loop-entity, {_player})
-			apply poison 3 to loop-entity for 5 seconds
-			message formatted "<##1e90ff>%{_player}% <##ff00bf>より妖精のいたずらが付与された!" to loop-entity
-			add loop-entity to {_loc.e::*}
-	set {_loc} to location of {_player}
 	loop 5 times:
-		loop all blocks in radius 10 around {_loc}:
-			loop-block is passable
-			chance of 1%:
-				set {_r} to a random integer between 0 and 255
-				set {_g} to a random integer between 0 and 255
-				set {_b} to a random integer between 0 and 255
-				drawDot count 1, particle "mobspell", RGB {_r}, {_g}, {_b}, center location of loop-block, visibleRange 30
-				set {_p} to a random number between 0.5 and 2
-				playSound("entity.firework_rocket.twinkle", 0.1, {_p}, location of loop-block)
-		loop {_loc.a::*}:
-			loop 3 times:
-				set {_l} to aroundEffect(loop-value-2)
-				set {_rb} to a random integer between 0 and 200
-				drawDot count 1, particle "mobspell", RGB {_rb}, 255, {_rb}, center {_l}, visibleRange 30
-		loop {_loc.e::*}:
-			loop 3 times:
-				set {_l} to aroundEffect(loop-value-2)
-				set {_gb} to a random integer between 0 and 200
-				drawDot count 1, particle "mobspell", RGB 255, {_gb}, {_gb}, center {_l}, visibleRange 30
+		if {_player} is not sneaking:
+			if {Stats.%{_player}%::GuardianStaff-Active} is true:
+				playSound("entity.armor_stand.break", 1, 0.5, {_player})
+				loop all players:
+					{Stats.%loop-player%::GuardianStaff-Received} is {_player}
+					delete {Stats.%loop-player%::GuardianStaff-Received}
+			delete {Stats.%{_player}%::GuardianStaff-Active}
+			stop
+		if {Stats.%{_player}%::GuardianStaff-Active} is not set:
+			playSound("item.armor.equip_diamond", 1, 0.5, {_player})
+		kitEffect_GuardianStaff({_player})
 		wait a tick
+
+function kitEffect_GuardianStaff(player: player):
+	set {Stats.%{_player}%::GuardianStaff-Active} to true
+	kitParticle_GuardianStaff_Active(location of {_player})
+	loop all players in radius 5 around {_player}:
+		loop-player is not {_player}
+		kitCheckTeam({_player}, loop-player, true) is true
+		add loop-player to {_allies::*}
+		set {Stats.%loop-player%::GuardianStaff-Received} to {_player}
+		kitParticle_GuardianStaff_Received(loop-player)
+	loop all players:
+		{_allies::*} does not contain loop-player
+		{Stats.%loop-player%::GuardianStaff-Received} is {_player}
+		delete {Stats.%loop-player%::GuardianStaff-Received}
+
+function kitParticle_GuardianStaff_Active(baseloc: location):
+	set {_rad} to 0
+	loop 15 times:
+		set {_el} to {_baseloc}
+		add 5 * sin({_rad}) to x-pos of {_el}
+		add 5 * cos({_rad}) to z-pos of {_el}
+		set {_y} to 0
+		loop 5 times:
+			add {_y} to y-pos of {_el}
+			spawnParticle_Dust(rgb(0, 163, 175), 2, {_el})
+			add 0.5 to {_y}
+		add 24 to {_rad}
+
+function kitParticle_GuardianStaff_Received(target: player):
+	set {_baseloc} to location 1 meter above {_target}
+	set {_rad} to 0
+	loop 36 times:
+		set {_el} to {_baseloc}
+		add 0.5 * sin({_rad}) to x-pos of {_el}
+		add 0.5 * cos({_rad}) to z-pos of {_el}
+		spawnParticle_Dust(rgb(193, 228, 233), 0.1, {_el})
+		add 10 to {_rad}
+
+function kitParticle_GuardianStaff_Critical(victim: player):
+	playSound("block.respawn_anchor.deplete", 1, 0.8, {_victim})
+	loop 30 times:
+		set {_el} to aroundEffect({_victim})
+		spawnParticle_Item(diamond, {_el})
+
+function kitParticle_GuardianStaff_Damage(victim: player):
+	playSound("block.respawn_anchor.charge", 1, 1.9, {_victim})
+	set {_baseloc} to location of {_victim}
+	set {_rad} to 0
+	loop 15 times:
+		set {_el} to {_baseloc}
+		add 0.5 * sin({_rad}) to x-pos of {_el}
+		add 0.5 * cos({_rad}) to z-pos of {_el}
+		set {_y} to 0
+		loop 5 times:
+			add {_y} to y-pos of {_el}
+			spawnParticle_DustTransition(rgb(0, 123, 187), rgb(234, 244, 252), 1.5, {_el})
+			add 0.5 to {_y}
+		add {_rad} to 24
