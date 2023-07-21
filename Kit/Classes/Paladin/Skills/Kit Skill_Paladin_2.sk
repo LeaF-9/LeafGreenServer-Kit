@@ -1,12 +1,12 @@
 # Sacrifice Heal
 
 function kitSkill_Paladin_2(player: player):
-	if {_player}'s health <= 5:
+	if {_player}'s health <= 3:
 		send action bar "§c§l体力が少なすぎます!" to {_player}
 	else:
 		toolCT({_player}, "Paladin", 2)
-		subtract 5 from {_player}'s health
-		loop all players:
+		subtract 3 from {_player}'s health
+		loop all players in radius 10 around {_player}:
 			loop-player is not {_player}
 			kitCheckTeam(loop-player, {_player}, true) is true
 			loop-player is alive
@@ -14,4 +14,20 @@ function kitSkill_Paladin_2(player: player):
 			setSupporter(loop-player, {_player})
 			message "§a%{_player}% §cが体力を回復してくれました!" to loop-player
 		kitMsg({_player}, "§c体力を削って味方全員の体力を回復しました!")
-		playSound("entity.vex.hurt", 1, 0.5, {_player})
+		kitParticle_SacrificeHeal({_player})
+
+function kitParticle_SacrificeHeal(player: player):
+	playSound("entity.vex.hurt", 1, 0.5, {_player})
+	set {_baseloc} to location of {_player}
+	set {_count} to 10
+	loop 10 times:
+		add 1 to {_m}
+		set {_rad} to 0
+		loop {_count} times:
+			add 360 / (40 - {_count}) to {_rad}
+			set {_el} to {_baseloc}
+			add {_m} * sin({_rad}) to x-pos of {_el}
+			add {_m} * cos({_rad}) to z-pos of {_el}
+			spawnParticle_DustTransition(rgb(200, 81, 121), rgb(235, 110, 165), 3, {_el})
+		add 3 to {_count}
+		wait a tick
