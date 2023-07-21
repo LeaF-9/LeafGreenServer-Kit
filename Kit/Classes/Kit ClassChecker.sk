@@ -1,3 +1,4 @@
+# Item tag Checker
 function kitItemKitChecker(skill: item) :: text:
 	set {_nbt} to nbt item compound of {_skill}
 	set {_kit} to tag "kit" of {_nbt}
@@ -33,3 +34,19 @@ function kitItemTagChanger(skill: item, kit: text, type: text, num: number) :: i
 	set tag "number" of {_nbt} to {_num}
 	set {_newitem} to {_skill} with nbt {_nbt}
 	return {_newitem}
+
+# Player Choosing Checker
+function kitSelectChecker_Weapon(player: player, kit: text) :: number:
+	set {_uuid} to UUID of {_player}
+	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%{_player}%.selectchecker"
+	set {_num} to yml value "custom.%{_kit}%.weapon" from "player.%{_player}%.selectchecker"
+	unload yml "player.%{_player}%.selectchecker"
+	return {_num}
+
+function kitSelectChecker_Skill(player: player, kit: text) :: numbers:
+	set {_uuid} to UUID of {_player}
+	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%{_player}%.selectchecker"
+	loop 3 times:
+		set {_num} to yml value "custom.%{_kit}%.skill.%loop-number%" from "player.%{_player}%.selectchecker"
+		add {_num} to {_numlist::*}
+	return {_numlist::*}
