@@ -1,16 +1,65 @@
-# Mechanic Knife
+# Weapon-Name: Bolt Knife
 
-function kitWeapon_Engineer_1(player: player):
-	if checkFuel({_player}, 1, "Weapon.main") is true:
-		toolCT({_player}, "Engineer", 1, "Weapon.main")
-		playSound("entity.arrow.shoot", 1, 1, {_player})
-		set {_bl} to location of head of {_player}
-		set {_l.1} to {_bl}
-		set {_l.2} to {_bl}
-		add 30 to yaw of {_l.2}
-		set {_l.3} to {_bl}
-		subtract 30 from yaw of {_l.3}
-		loop 3 times:
-			shoot an arrow from {_l.%loop-number%} at speed 1
-			set shooter of shot arrow to {_player}
-			drawDot particle "cloud", center shot arrow, visibleRange 30, keepFor 1 second
+on damage:
+	{Class::%attacker%} is "Engineer"
+	damage was caused by attack
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 1) is true
+	kitEffect_BoltKnife(attacker) is true
+	set damage to damage * 1.2
+	kitParticle_BoltKnife(attacker, victim)
+
+function kitEffect_BoltKnife(player: player) :: boolean:
+	set {_bool} to false
+	loop all entities in radius 5 around {_player}
+		type of loop-entity is armor stand
+		set {_meta} to metadata value "kit-armor" of loop-entity
+		{_meta} contains "Machine-"
+		set {_bool} to true
+	return {_bool}
+
+function kitParticle_BoltKnife(attacker: player, victim: player):
+	playSound("entity.villager.work_toolsmith", 1, 1, {_victim})
+	set {_from} to location 1 meters above {_attacker}
+	set {_to} to location 1 meters above {_victim}
+	set {_vector} to setVector({_from}, {_to})
+	set {_baseloc} to {_from}
+	set yaw of {_baseloc} to yaw of {_vector}
+	set pitch of {_baseloc} to pitch of {_vector}
+	set {_dist} to round(distance between {_from} and {_to})
+	loop {_dist} times:
+		set {_el} to location loop-number meters in front of {_baseloc}
+		spawnParticle(cloud, {_el})
+	set {_rad} to 0
+	# 準備
+	set {_eb} to {_to}
+	set yaw of {_eb} to yaw of {_baseloc}
+	set pitch of {_eb} to pitch of {_baseloc}
+	set {_m1} to {_eb}
+	set {_p} to pitch of {_m1}
+	if {_p} < 0:
+		set {_p} to -1 * 90 - {_p}
+		set {_y} to yaw of {_m1}
+		add 180 to {_y}
+		if {_y} >= 360:
+			set {_y} to {_y} - 360
+		set yaw of {_m1} to {_y}
+	else:
+		set {_p} to {_p} - 90
+	set pitch of {_m1} to {_p}
+	# particle
+	loop 5 times:
+		loop 2 times:
+			set {_test1} to 1 * cos({_rad})
+			set {_t1} to location {_test1} meters in front of {_m1}
+			set {_m2} to {_eb}
+			set pitch of {_m2} to 0
+			set {_test2} to 1 * sin({_rad})
+			set {_t2} to location {_test2} meters to the right of {_m2}
+			set x-coordinate of {_eb} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_eb}
+			set y-coordinate of {_eb} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_eb}
+			set z-coordinate of {_eb} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_eb}
+			spawnParticle(enchanted_hit, {_eb})
+			add 180 to {_rad}
+		add 36 to {_rad}
+		wait a tick
