@@ -365,6 +365,103 @@ function kitFear(player: player, time: time span):
 		reveal loop-player from {_player}
 	delete {Kit-Fear::%{_player}%}
 
+# 追跡
+function kitTrail(player: player, time: time span, from: location = location(0.0, 0.0, 0.0)):
+	addKitOS("Trail")
+	{Kit-Trail::%{_player}%} is not set
+	set {_now} to now
+	set {Kit-Trail::%{_player}%} to {_now}
+	create bossbar titled "&9d&l追跡" and id "%{_player}%-Trail" for {_player} with progress 100 with colors blue with style solid
+	message "§9追跡された! §d自分の位置情報が残留してしまう!" to {_player}
+	playSound("item.lodestone_compass.lock", 1, 0.5, {_player})
+	# タイマー初期設定
+	set {_tick} to "%{_time}%"
+	replace " seconds" with "" in {_tick}
+	replace " second" with "" in {_tick}
+	set {_tick} to {_tick} parsed as number
+	set {_looptick} to {_tick} * 20
+	set {_prog} to 100 / {_looptick}
+	# from-location設定
+	set {_sum.xyz} to x-pos of {_from} + y-pos of {_from} + z-pos of {_from}
+	if {_sum.xyz} = 0:
+		set {_from} to location of {_player}
+	add {_from} to {_traillocs::*}
+	# player位置をtrailに追加
+	set {_loc} to location of {_player}
+	if {_loc} is not {_traillocs::1}:
+		add {_loc} to {_traillocs::*}
+	# 効果
+	loop {_looptick} times:
+		# 例外処理
+		if {Kit-Trail::%{_player}%} is not {_now}:
+			continue
+		# initialize
+		delete {_player.trail::*}
+		# タイマー設定
+		set {_value} to value of bossbar "%{_player}%-Trail"
+		subtract {_prog} from {_value}
+		set bossbar "%{_player}%-Trail" value to {_value}
+		# 1秒おきの効果
+		if mod(loop-number, 20) is 0:
+			# 音
+			playSound("item.lodestone_compass.lock", 0.5, 2, {_player})
+			# 追跡位置追加
+			set {_loc} to location of {_player}
+			set {_index.last} to size of {_traillocs::*}
+			if {_traillocs::%{_index.last}%} is not {_loc}:
+				add {_loc} to {_traillocs::*}
+				# 追跡過程にポイント召喚
+				set {_mob} to kitSpawnMob_NBT({_player}, magma cube, {_loc}, "{NoGravity:1b,Size:0.3,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}")
+				set metadata value "trail-point" of {_mob} to {_player}
+				add {_mob} to {_magmacube.point::*}
+		# 追跡地点ループ
+		loop {_traillocs::*}:
+			if loop-index is "1":
+				continue
+			set {_loc.to} to {_traillocs::%loop-index%}
+			set {_index.now} to loop-index parsed as number
+			set {_index.former} to {_index.now} - 1
+			set {_loc.from} to {_traillocs::%{_index.former}%}
+			set {_vector} to setVector({_loc.from}, {_loc.to})
+			set yaw of {_loc.from} to yaw of {_vector}
+			set pitch of {_loc.from} to pitch of {_vector}
+			set {_loc.progress} to distance between {_loc.from} and {_loc.to} / 10
+			set {_loc.ln} to 0
+			# 追跡パーティクル
+			loop 10 times:
+				add 1 to {_loc.ln}
+				set {_el} to location {_loc.progress} * {_loc.ln} meters in front of {_loc.from}
+				spawnParticle_Dust(rgb(230, 230, 250), 0.5, {_el})
+				# 追跡を踏んだプレイヤー検知
+				loop all players in radius 3 around {_el}:
+					kitCheckTeam({_player}, loop-player, false) is true
+					{_player.trail::*} does not contain loop-player
+					add loop-player to {_player.trail::*}
+		# 追跡発光処理
+		loop all players:
+			# 発光対象
+			if {_player.trail::*} contains:
+				# player発光
+				packetGlowing(loop-player, {_player})
+				# ポイント発光
+				loop {_magmacube.point::*}:
+					packetGlowing(loop-player, loop-value-4)
+			# 消灯対象
+			else:
+				# player発光
+				packetUnglowing(loop-player, {_player})
+				# ポイント発光
+				loop {_magmacube.point::*}:
+					packetUnglowing(loop-player, loop-value-4)
+		wait a tick
+	remove bossbar "%{_player}%-Trail"
+	delete {Kit-Trail::%{_player}%}
+	loop {_magmacube.point::*}:
+		delete loop-value
+	loop {_player.trail::*}:
+		packetUnglowing(loop-value, {_player})
+
+# シールド
 function kitShield(player: player, shield: number):
 	addKitOS("Shield")
 	addKitOS("ShieldTime")
