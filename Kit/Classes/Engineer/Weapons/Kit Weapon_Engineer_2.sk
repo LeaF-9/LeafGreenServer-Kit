@@ -1,5 +1,72 @@
-# Bolt Stick
+# Cyber Lance
 
+on sneak toggle:
+	{Class::%player%} is "Engineer"
+	player is not sneaking
+	set {_tool} to player's tool
+	if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
+		stop
+	set {Stats.%player%::CyberLance-Energy} to 0
+	wait a tick
+	set {_true} to false
+	while {_true} is false:
+		set {_tool} to player's tool
+		# スニーク解除 (Energy保持)
+		if player is not sneaking:
+			set {_true} to true
+			continue
+		# ツール変更 (Energy消去)
+		else if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
+			delete {_true}
+			continue
+		# Energy満タン (Energy保持)
+		else if {Stats.%player%::CyberLance-Energy} >= 100:
+			set {Stats.%player%::CyberLance-Energy} to 100
+			set {_true} to true
+			continue
+		# Energy処理
+		add 1 to {Stats.%player%::CyberLance-Energy}
+		# Action Bar処理
+		set {_linenum} to round({Stats.%player%::CyberLance-Energy} / 2)
+		chargeActionBar(player, {_linenum}, 50)
+		# チャージ中サウンド
+		set {_sp} to {_num} / 200 + 0.5
+		playSound("block.lava.pop", 0.5, {_sp}, player)
+		# チャージ中のパーティクル
+		kitEffect_Pluto_1(player)
+		wait a tick
+	if {_true} is not true:
+		delete {Stats.%player%::CyberLance-Energy}
+		send action bar "§e§lEnergy§cは消滅しました" to player
+		stop
+	set {_now} to now
+	set {Stats.%player%::CyberLance-Saving} to {_now}
+	set {_savingtime} to 0
+	# チャージ完了時のパーティクル (開発中)
+	# チャージ完了時の音
+	playSound("entity.warden.roar", 1, 2, player)
+	# チャージ保持時間 (ここから下は全て開発中)
+	while {_true} is true:
+		add 1 to {_savingtime}
+		set {_tool} to player's tool
+		if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
+			delete {_true}
+		else if {Stats.%player%::PlutoCharge} is not set:
+			set {_true} to false
+		else:
+			send action bar "§7§lPluto §bのチャージが完了しました!" to player
+			# --- チャージ完了中のパーティクルの演出 ---
+			chance of 10%:
+				kitEffect_Pluto_2(player)
+			# ---------------------------------------
+			wait a tick
+		if {_true} is not set:
+			send action bar "§cチャージが中断されました!" to player
+			delete {Stats.%player%::PlutoCharge}
+		else:
+			send action bar "§8チャージに失敗しました" to player
+
+# エネルギー減少処理
 function kitWeapon_Engineer_2(player: player):
 	if {Stats.%{_player}%::SkillTarget} is set:
 		if checkFuel({_player}, 2, "Weapon.main") is true:

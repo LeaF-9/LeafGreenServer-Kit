@@ -3,9 +3,7 @@ function kitWeaponEngineer(player: player):
 	set {_tool} to {_player}'s tool
 	set {_item.num} to kitItemNumberChecker({_tool})
 	checkCT({_player}, name of {_tool}) is true
-	if {_item.num} is 2:
-		kitWeapon_Engineer_2({_player})
-	else if {_item.num} is 3:
+	if {_item.num} is 3:
 		kitWeapon_Engineer_3({_player})
 	else if {_item.num} is 4:
 		kitWeapon_Engineer_4({_player})
@@ -96,15 +94,19 @@ function setFuelCT(player: player):
 function kitTimerEngineer(player: player):
 	set {_fuels} to 0
 	while {Class::%{_player}%} is "Engineer":
+		# ツール情報の設定
 		set {_tool} to {_player}'s tool
 		set {_item.type} to kitItemTypeChecker({_tool})
 		set {_item.num} to kitItemNumberChecker({_tool})
+		# ループ回数の記録
 		add 1 to {_fuels}
+		# 燃料回復処理
 		if mod({_fuels}, 2) = 0:
 			set {_fuels} to 0
 			if {Kit-Fuel::%{_player}%} < 100:
 				if {Stats.%{_player}%::Fuel CT} is not set:
 					add 1 to {Kit-Fuel::%{_player}%}
+		# アクションバー表示条件
 		delete {_true}
 		if {_tool} is air:
 			set {_true} to true
@@ -118,9 +120,13 @@ function kitTimerEngineer(player: player):
 					delete {_true}
 		if {_true} is true:
 			send action bar "§8§lFuel§7: §4%{Kit-Fuel::%{_player}%}%" to {_player}
+		# Hover効果
+		delete {_true}
 		if {_player} is sneaking:
 			if block 0.1 meters below {_player} is passable:
 				if {Kit-Fuel::%{_player}%} >= 1:
+					set {_true} to true
+					set {_hovering} to true
 					setFuelCT({_player})
 					subtract 1 from {Kit-Fuel::%{_player}%}
 					apply levitation 1 to {_player} for 2 ticks
@@ -128,13 +134,9 @@ function kitTimerEngineer(player: player):
 					loop 3 times:
 						set {_el} to aroundEffect({_player})
 						drawDot count 1, particle "smoke", center {_el}, visibleRange 30
-				else:
-					if {_player} has levitation:
-						remove levitation from {_player}
-			else:
-				if {_player} has levitation:
-					remove levitation from {_player}
-		else:
-			if {_player} has levitation:
-				remove levitation from {_player}
+		if {_player} has levitation:
+			{_hovering} is true
+			{_true} is not set
+			delete {_hovering}
+			remove levitation from {_player}
 		wait a tick
