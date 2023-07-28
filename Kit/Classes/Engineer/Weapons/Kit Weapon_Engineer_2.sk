@@ -1,4 +1,4 @@
-# Cyber Lance
+# Weapon-Name: Cyber Lance
 
 on sneak toggle:
 	{Class::%player%} is "Engineer"
@@ -6,7 +6,11 @@ on sneak toggle:
 	set {_tool} to player's tool
 	if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
 		stop
-	set {Stats.%player%::CyberLance-Energy} to 0
+	# Energyセット
+	if {Stats.%player%::CyberLance-Energy} is not set:
+		set {Stats.%player%::CyberLance-Energy} to 0
+	set {_now} to now
+	set {Stats.%player%::CyberLance-Saving} to {_now}
 	wait a tick
 	set {_true} to false
 	while {_true} is false:
@@ -30,57 +34,66 @@ on sneak toggle:
 		set {_linenum} to round({Stats.%player%::CyberLance-Energy} / 2)
 		chargeActionBar(player, {_linenum}, 50)
 		# チャージ中サウンド
-		set {_sp} to {_num} / 200 + 0.5
-		playSound("block.lava.pop", 0.5, {_sp}, player)
+		set {_soundpitch} to {Stats.%player%::CyberLance-Energy} / 75 + 0.5
+		playSound("item.armor.equip_chain", 0.5, {_soundpitch}, player)
 		# チャージ中のパーティクル
-		kitEffect_Pluto_1(player)
+		kitParticle_CyberLance_Charge(player)
 		wait a tick
 	if {_true} is not true:
 		delete {Stats.%player%::CyberLance-Energy}
 		send action bar "§e§lEnergy§cは消滅しました" to player
 		stop
-	set {_now} to now
-	set {Stats.%player%::CyberLance-Saving} to {_now}
 	set {_savingtime} to 0
-	# チャージ完了時のパーティクル (開発中)
+	# チャージ完了時のパーティクル
+	kitParticle_CyberLance_Complete(player)
 	# チャージ完了時の音
-	playSound("entity.warden.roar", 1, 2, player)
-	# チャージ保持時間 (ここから下は全て開発中)
+	playSound("entity.villager.work_weaponsmith", 1, 2, player)
+	# チャージ保持時間
 	while {_true} is true:
 		add 1 to {_savingtime}
 		set {_tool} to player's tool
+		# ツール変更 (Energy削除)
 		if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
-			delete {_true}
-		else if {Stats.%player%::PlutoCharge} is not set:
+			delete {Stats.%player%::CyberLance-Energy}
+			delete {Stats.%player%::CyberLance-Saving}
+			stop
+		# 再チャージ (処理ストップ)
+		if {Stats.%player%::CyberLance-Saving} is not {_now}:
+			stop
+		# savingtime超過
+		if {_savingtime} > 20:
 			set {_true} to false
-		else:
-			send action bar "§7§lPluto §bのチャージが完了しました!" to player
-			# --- チャージ完了中のパーティクルの演出 ---
-			chance of 10%:
-				kitEffect_Pluto_2(player)
-			# ---------------------------------------
-			wait a tick
-		if {_true} is not set:
-			send action bar "§cチャージが中断されました!" to player
-			delete {Stats.%player%::PlutoCharge}
-		else:
-			send action bar "§8チャージに失敗しました" to player
+			continue
+		# Action Bar処理
+		set {_linenum} to round({Stats.%player%::CyberLance-Energy} / 2)
+		chargeActionBar(player, {_linenum}, 50)
+		# 保持中のパーティクル演出
+		kitParticle_CyberLance_Saving(player)
+		wait a tick
+	while {Stats.%player%::CyberLance-Energy} > 0:
+		# ツール変更 (Energy削除)
+		set {_tool} to player's tool
+		if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
+			delete {Stats.%player%::CyberLance-Energy}
+			delete {Stats.%player%::CyberLance-Saving}
+			stop
+		# 再チャージ (処理ストップ)
+		if {Stats.%player%::CyberLance-Saving} is not {_now}:
+			stop
+		# 減少処理
+		subtract 1 from {Stats.%player%::CyberLance-Energy}
+		# Action Bar処理
+		set {_linenum} to round({Stats.%player%::CyberLance-Energy} / 2)
+		chargeActionBar(player, {_linenum}, 50)
+		wait a tick
 
-# エネルギー減少処理
-function kitWeapon_Engineer_2(player: player):
-	if {Stats.%{_player}%::SkillTarget} is set:
-		if checkFuel({_player}, 2, "Weapon.main") is true:
-			toolCT({_player}, "Engineer", 2, "Weapon.main")
-			set {_tg} to {Stats.%{_player}%::SkillTarget}
-			loop {CT.%{_tg}%::*}:
-				subtract 60 from {CT.%{_tg}%::%loop-index%}
-			kitMsg({_player}, "§b%{_tg}% §eのクールタイムを短縮しました!")
-			message formatted "§9%{_player}% §eによりクールタイムが§b60秒§e短縮された!" to {_player}
-			playSound("block.grindstone.use", 1, 0.5, {_tg})
-			loop 20 times:
-				set {_loc} to location of {_tg}
-				set {_speed} to a random number between 0.5 and 2
-				draw 1 smoke particle at {_loc} with direction randomVector(1) and speed {_speed}, keepFor 1 tick
-				wait a tick
-	else:
-		message formatted "§c§l対象のプレイヤーがいません" to {_player}
+function kitParticle_CyberLance_Charge(player: player):
+	set {_baseloc} to aroundEffect({_player})
+	loop 5 times:
+		set {_el} to location 0.2 * loop-number meters above {_baseloc}
+		wait a tick
+
+function kitParticle_CyberLance_Complete(player: player):
+
+
+function kitParticle_CyberLance_Saving(player: player):
