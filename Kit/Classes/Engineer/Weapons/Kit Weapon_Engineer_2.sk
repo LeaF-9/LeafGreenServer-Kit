@@ -11,6 +11,8 @@ on damage:
 	delete {Stats.%attacker%::CyberLance-Energy}
 	delete {Stats.%attacker%::CyberLance-Saving}
 	set {_energy.calc} to {_energy} / 20
+	if checkFuel(attacker, round({_energy.calc} * 10), "Weapon.main") is false:
+		stop
 	kitParticle_CyberLance_Attack(attacker, victim, {_energy.calc})
 	set {_damage.add} to 0.25 * {_energy.calc}
 	set damage to damage + {_damage.add}
