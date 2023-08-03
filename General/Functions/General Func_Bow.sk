@@ -3,12 +3,15 @@
 
 on rightclick holding a bow:
 	set {BowDrawTime::%player%} to 0
-	set {BowDrawStart::%player%} is now
+	set {_now} to now
+	set {BowDrawStart::%player%} is {_now}
 	while {BowDrawTime::%player%} is set:
 		wait a tick
 		if {BowDrawTime::%player%} is not set:
 			stop
 		if type of player's tool is not a bow:
+			stop
+		if {BowDrawStart::%player%} is not {_now}:
 			stop
 		add 1 to {BowDrawTime::%player%}
 
