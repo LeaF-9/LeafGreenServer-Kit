@@ -7,48 +7,48 @@ function kitReadYML(map: text):
 	set {Kit-GameStage::team} to yml value "team" from "KitRead.%{_map}%"
 	set {Kit-GameStage::spec} to invertLocation("spec", "KitRead.%{_map}%")
 	loop yaml node keys "respawns.red" from "KitRead.%{_map}%":
-		set {Kit-GameStageRespawns.red::%loop-key%} to invertLocation("respawns.red.%loop-node%", "KitRead.%{_map}%")
+		set {Kit-GameStageRespawns.red::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
 	loop yaml node keys "respawns.blue" from "KitRead.%{_map}%":
-		set {Kit-GameStageRespawns.blue::%loop-key%} to invertLocation("respawns.blue.%loop-node%", "KitRead.%{_map}%")
+		set {Kit-GameStageRespawns.blue::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
 	if {Kit-GameStage::team} is 4:
 		loop yaml node keys "respawns.yellow" from "KitRead.%{_map}%":
-			set {Kit-GameStageRespawns.yellow::%loop-key%} to invertLocation("respawns.yellow.%loop-node%", "KitRead.%{_map}%")
+			set {Kit-GameStageRespawns.yellow::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
 		loop yaml node keys "respawns.green" from "KitRead.%{_map}%":
-			set {Kit-GameStageRespawns.green::%loop-key%} to invertLocation("respawns.green.%loop-node%", "KitRead.%{_map}%")
+			set {Kit-GameStageRespawns.green::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
 	if yml value "rule" from "KitRead.%{_map}%" is "TDM":
 		set {Kit-GameStage::goal} to yml value "tdm-rule.goal" from "KitRead.%{_map}%"
 	else if yml value "rule" from "KitRead.%{_map}%" is "DTC":
 		loop yaml node keys "dtc-rule.red-cores" from "KitRead.%{_map}%":
 			add 1 to {Kit-GameStage::corenumber-red}
 			add loop-key to {Kit-GameStageCore_red::*}
-			set {Kit-GameStageCoreHP::%loop-key%} to yml value "dtc-rule.red-cores.%loop-node%.hp" from "KitRead.%{_map}%"
-			set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "dtc-rule.red-cores.%loop-node%.material" from "KitRead.%{_map}%"
-			set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("dtc-rule.red-cores.%loop-node%.location", "KitRead.%{_map}%")
+			set {Kit-GameStageCoreHP::%loop-key%} to yml value "%loop-node%.hp" from "KitRead.%{_map}%"
+			set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "%loop-node%.material" from "KitRead.%{_map}%"
+			set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("%loop-node%.location", "KitRead.%{_map}%")
 		loop yaml node keys "dtc-rule.blue-cores" from "KitRead.%{_map}%":
 			add 1 to {Kit-GameStage::corenumber-blue}
 			add loop-key to {Kit-GameStageCore_blue::*}
-			set {Kit-GameStageCoreHP::%loop-key%} to yml value "dtc-rule.blue-cores.%loop-node%.hp" from "KitRead.%{_map}%"
-			set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "dtc-rule.blue-cores.%loop-node%.material" from "KitRead.%{_map}%"
-			set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("dtc-rule.blue-cores.%loop-node%.location", "KitRead.%{_map}%")
+			set {Kit-GameStageCoreHP::%loop-key%} to yml value "%loop-node%.hp" from "KitRead.%{_map}%"
+			set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "%loop-node%.material" from "KitRead.%{_map}%"
+			set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("%loop-node%.location", "KitRead.%{_map}%")
 		if {Kit-GameStage::team} is 4:
 			loop yaml node keys "dtc-rule.yellow-cores" from "KitRead.%{_map}%":
 				add 1 to {Kit-GameStage::corenumber-yellow}
 				add loop-key to {Kit-GameStageCore_yellow::*}
-				set {Kit-GameStageCoreHP::%loop-key%} to yml value "dtc-rule.yellow-cores.%loop-node%.hp" from "KitRead.%{_map}%"
-				set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "dtc-rule.yellow-cores.%loop-node%.material" from "KitRead.%{_map}%"
-				set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("dtc-rule.yellow-cores.%loop-node%.location", "KitRead.%{_map}%")
+				set {Kit-GameStageCoreHP::%loop-key%} to yml value "%loop-node%.hp" from "KitRead.%{_map}%"
+				set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "%loop-node%.material" from "KitRead.%{_map}%"
+				set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("%loop-node%.location", "KitRead.%{_map}%")
 			loop yaml node keys "dtc-rule.green-cores" from "KitRead.%{_map}%":
 				add 1 to {Kit-GameStage::corenumber-green}
 				add loop-key to {Kit-GameStageCore_green::*}
-				set {Kit-GameStageCoreHP::%loop-key%} to yml value "dtc-rule.green-cores.%loop-node%.hp" from "KitRead.%{_map}%"
-				set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "dtc-rule.green-cores.%loop-node%.material" from "KitRead.%{_map}%"
-				set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("dtc-rule.green-cores.%loop-node%.location", "KitRead.%{_map}%")
+				set {Kit-GameStageCoreHP::%loop-key%} to yml value "%loop-node%.hp" from "KitRead.%{_map}%"
+				set {Kit-GameStageCoreMaterial::%loop-key%} to yml value "%loop-node%.material" from "KitRead.%{_map}%"
+				set {Kit-GameStageCoreLocation::%loop-key%} to invertLocation("%loop-node%.location", "KitRead.%{_map}%")
 		loop yaml node keys "dtc-rule.bandit.locations" from "KitRead.%{_map}%":
-			set {Kit-GameStageRespawns.bandit::%loop-key%} to invertLocation("dtc-rule.bandit.locations.%loop-node%", "KitRead.%{_map}%")
+			set {Kit-GameStageRespawns.bandit::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
 	else if yml value "rule" from "KitRead.%{_map}%" is "CTF":
 		set {Kit-GameStage::goal} to yml value "ctf-rule.goal" from "KitRead.%{_map}%"
 		loop yaml node keys "ctf-rule.flags" from "KitRead.%{_map}%":
-			set {Kit-GameStageFlags::%loop-key%} to invertLocation("ctf-rule.flags.%loop-node%", "KitRead.%{_map}%")
+			set {Kit-GameStageFlags::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
 	else if yml value "rule" from "KitRead.%{_map}%" is "BH":
 		set {Kit-GameStage::goal} to yml value "bh-rule.goal" from "KitRead.%{_map}%"
 		set {Kit-GameStage::place-red} to yml value "bh-rule.places.red" from "KitRead.%{_map}%"
@@ -61,7 +61,7 @@ function kitReadYML(map: text):
 			set {Kit-GameStage::place-green} to yml value "bh-rule.places.green" from "KitRead.%{_map}%"
 			set {Kit-GameStage::voidtp-green} to invertLocation("bh-rule.voidtp.green", "KitRead.%{_map}%")
 		loop yaml node keys "bh-rule.balloons" from "KitRead.%{_map}%":
-			set {Kit-GameStageBalloons::%loop-key%} to invertLocation("bh-rule.balloons.%loop-node%", "KitRead.%{_map}%")
+			set {Kit-GameStageBalloons::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
 	else if yml value "rule" from "KitRead.%{_map}%" is "CP":
 		set {Kit-GameStage::goal} to yml value "cp-rule.goal" from "KitRead.%{_map}%"
 		set {Kit-GameStage::color-white} to yml value "cp-rule.color.white" from "KitRead.%{_map}%"
@@ -71,7 +71,7 @@ function kitReadYML(map: text):
 			set {Kit-GameStage::color-yellow} to yml value "cp-rule.color.yellow" from "KitRead.%{_map}%"
 			set {Kit-GameStage::color-green} to yml value "cp-rule.color.green" from "KitRead.%{_map}%"
 		loop yaml node keys "cp-rule.areas" from "KitRead.%{_map}%":
-			set {Kit-GameStageAreas::%loop-key%} to invertLocation("cp-rule.areas.%loop-node%.location", "KitRead.%{_map}%")
-			set {Kit-GameStageType::%loop-key%} to yml value "cp-rule.areas.%loop-node%.type" from "KitRead.%{_map}%"
-			set {Kit-GameStageTime::%loop-key%} to yml value "cp-rule.areas.%loop-node%.time" from "KitRead.%{_map}%"
-			set {Kit-GameStageRange::%loop-key%} to yml value "cp-rule.areas.%loop-node%.range" from "KitRead.%{_map}%"
+			set {Kit-GameStageAreas::%loop-key%} to invertLocation("%loop-node%.location", "KitRead.%{_map}%")
+			set {Kit-GameStageType::%loop-key%} to yml value "%loop-node%.type" from "KitRead.%{_map}%"
+			set {Kit-GameStageTime::%loop-key%} to yml value "%loop-node%.time" from "KitRead.%{_map}%"
+			set {Kit-GameStageRange::%loop-key%} to yml value "%loop-node%.range" from "KitRead.%{_map}%"

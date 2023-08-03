@@ -192,11 +192,11 @@ function openKitUnitList(player: player, kit: text):
 		set {_exist} to true
 		set {_listnum} to "%loop-key%" parsed as number
 		set {_slot} to {_listnum} - 1
-		set {_name} to yml value "unit.%{_kit}%.%loop-node%.name" from "class.%{_player}%.unit"
-		set {_slot-1} to yml value "unit.%{_kit}%.%loop-node%.skill.1" from "class.%{_player}%.unit"
-		set {_slot-2} to yml value "unit.%{_kit}%.%loop-node%.skill.2" from "class.%{_player}%.unit"
-		set {_slot-3} to yml value "unit.%{_kit}%.%loop-node%.skill.3" from "class.%{_player}%.unit"
-		set {_slot-w} to yml value "unit.%{_kit}%.%loop-node%.weapon" from "class.%{_player}%.unit"
+		set {_name} to yml value "%loop-node%.name" from "class.%{_player}%.unit"
+		set {_slot-1} to yml value "%loop-node%.skill.1" from "class.%{_player}%.unit"
+		set {_slot-2} to yml value "%loop-node%.skill.2" from "class.%{_player}%.unit"
+		set {_slot-3} to yml value "%loop-node%.skill.3" from "class.%{_player}%.unit"
+		set {_slot-w} to yml value "%loop-node%.weapon" from "class.%{_player}%.unit"
 		delete {_unit::*}
 		set {_unit::skill-1} to kitSkillItem({_kit}, {_slot-1})
 		set {_unit::skill-2} to kitSkillItem({_kit}, {_slot-2})
@@ -263,7 +263,7 @@ function openKitUnitCustom(player: player, kit: text, num: number):
 		add 1 to {_num}
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "skill" from "class.custom.%{_kit}%":
-		set {_skill} to yml value "skill.%loop-node%" from "class.custom.%{_kit}%"
+		set {_skill} to yml value "%loop-node%" from "class.custom.%{_kit}%"
 		add {_skill} to {_skills::*}
 	unload yml "class.custom.%{_kit}%"
 	set {_slot} to 0
@@ -311,7 +311,7 @@ function openKitUnitCreate(player: player, kit: text):
 		add 1 to {_num}
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "skill" from "class.custom.%{_kit}%":
-		set {_skill} to yml value "skill.%loop-node%" from "class.custom.%{_kit}%"
+		set {_skill} to yml value "%loop-node%" from "class.custom.%{_kit}%"
 		add {_skill} to {_skills::*}
 	unload yml "class.custom.%{_kit}%"
 	loop {_skills::*}:
@@ -326,7 +326,7 @@ function kitUnitCreate(player: player, kit: text):
 	close {_player}'s inventory
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "skill" from "class.custom.%{_kit}%":
-		set {_skill} to yml value "skill.%loop-node%" from "class.custom.%{_kit}%"
+		set {_skill} to yml value "%loop-node%" from "class.custom.%{_kit}%"
 		add {_skill} to {_skills::*}
 	unload yml "class.custom.%{_kit}%"
 	delete {_true}
@@ -388,9 +388,9 @@ function openKitUnitWeapon(player: player, kit: text, num: number):
 	set {_slot} to 2
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "weapon" from "class.custom.%{_kit}%":
-		set {_main} to yml value "weapon.%loop-node%.main" from "class.custom.%{_kit}%"
+		set {_main} to yml value "%loop-node%.main" from "class.custom.%{_kit}%"
 		add {_main} to {_main-weapon::*}
-		set {_sub} to yml value "weapon.%loop-node%.sub" from "class.custom.%{_kit}%"
+		set {_sub} to yml value "%loop-node%.sub" from "class.custom.%{_kit}%"
 		add {_sub} to {_sub-weapon::*}
 	unload yml "class.custom.%{_kit}%"
 	loop {_main-weapon::*}:
@@ -475,11 +475,11 @@ command /kit-unitlist <text> <player>:
 		loop yaml node keys "unit.%{_kit}%" from "class.%{_player}%.unit":
 			set {_listnum} to "%loop-key%" parsed as number
 			set {_slot} to {_listnum} - 1
-			set {_name} to yml value "unit.%{_kit}%.%loop-node%.name" from "class.%{_player}%.unit"
-			set {_slot-1} to yml value "unit.%{_kit}%.%loop-node%.skill.1" from "class.%{_player}%.unit"
-			set {_slot-2} to yml value "unit.%{_kit}%.%loop-node%.skill.2" from "class.%{_player}%.unit"
-			set {_slot-3} to yml value "unit.%{_kit}%.%loop-node%.skill.3" from "class.%{_player}%.unit"
-			set {_slot-w} to yml value "unit.%{_kit}%.%loop-node%.weapon" from "class.%{_player}%.unit"
+			set {_name} to yml value "%loop-node%.name" from "class.%{_player}%.unit"
+			set {_slot-1} to yml value "%loop-node%.skill.1" from "class.%{_player}%.unit"
+			set {_slot-2} to yml value "%loop-node%.skill.2" from "class.%{_player}%.unit"
+			set {_slot-3} to yml value "%loop-node%.skill.3" from "class.%{_player}%.unit"
+			set {_slot-w} to yml value "%loop-node%.weapon" from "class.%{_player}%.unit"
 			delete {_unit::*}
 			set {_unit::skill-1} to kitSkillItem({_kit}, {_slot-1})
 			set {_unit::skill-2} to kitSkillItem({_kit}, {_slot-2})
