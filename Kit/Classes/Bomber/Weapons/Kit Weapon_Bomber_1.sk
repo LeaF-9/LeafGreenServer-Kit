@@ -8,6 +8,7 @@ on damage:
 	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is true
 	{Stats.%attacker%::NitroBlade} is true
 	cancel event
+	delete {Stats.%attacker%::NitroBlade}
 	kitExplosion(attacker, 2, location of victim)
 
 on sneak toggle:
@@ -15,6 +16,7 @@ on sneak toggle:
 	player is not sneaking
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is true
+	{Stats.%player%::NitroBlade} is not set
 	set {_num} to 0
 	wait a tick
 	set {_true} to false
@@ -77,7 +79,7 @@ on shoot:
 	metadata value "gametype" of shooter is "Kit"
 	{Class::%shooter%} is "Bomber"
 	projectile is an arrow
-	set {_tool} to shooter's tool
+	set {_tool} to shooter's offhand tool
 	kitItemAllChecker({_tool}, "Bomber", "Weapon.sub", 1) is true
 	wait 1 second
 #	set {_d} to distance between shooter and projectile
