@@ -85,3 +85,19 @@ function timeDisplay(timecalc: number) :: text:
 		set {_tick} to "0%{_tick}%"
 	set {_display} to "%{_hour}%:%{_minute}%:%{_second}%:%{_tick}%"
 	return {_display}
+
+# seconds / ticks表記をnumberに変換する関数
+function convertTimeNumber(time: time span) :: number:
+	set {_timetext} to "%{_time}%"
+	if {_timetext} contains "second":
+		replace " seconds" with "" in {_timetext}
+		replace " second" with "" in {_timetext}
+		set {_timenumber} to {_timetext} parsed as number
+		set {_timenumber} to {_timenumber} * 20
+	else if {_timetext} contains "tick":
+		replace " ticks" with "" in {_timetext}
+		replace " tick" with "" in {_timetext}
+		set {_timenumber} to {_timetext} parsed as number
+	else:
+		return NaN
+	return {_timeNumber}
