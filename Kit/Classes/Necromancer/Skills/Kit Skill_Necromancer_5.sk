@@ -8,79 +8,15 @@ function kitSkill_Necromancer_5(player: player):
 			kitRemoveNecromance({_player}, {_tool})
 			kitMsg({_player}, "§5§l収集した魂が死を運ぶ...")
 			set {_point} to {Stats.%{_player}%::SkillLocation}
-#		弧を描く
-			set {_n.k} to 0
-			loop 60 times:
-				set {_effbaseloc} to {_point}
-				add 15 * sin({_n.k}) to x-coordinate of {_effbaseloc}
-				add 15 * cos({_n.k}) to z-coordinate of {_effbaseloc}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_effbaseloc}, visibleRange 100, keepFor 3 seconds
-				add 6 to {_n.k}
-#		弦を描く
-			if {_l.A} is not set:
-				set {_l.A} to {_point}
-				set yaw of {_l.A} to 120
-				set pitch of {_l.A} to 0
-				add 15 * sin(90) to x-coordinate of {_l.A}
-				add 15 * cos(90) to z-coordinate of {_l.A}
-			if {_l.B} is not set:
-				set {_l.B} to {_point}
-				set yaw of {_l.B} to 0
-				set pitch of {_l.B} to 0
-				add 15 * sin(210) to x-coordinate of {_l.B}
-				add 15 * cos(210) to z-coordinate of {_l.B}
-			if {_l.C} is not set:
-				set {_l.C} to {_point}
-				set yaw of {_l.C} to 240
-				set pitch of {_l.C} to 0
-				add 15 * sin(330) to x-coordinate of {_l.C}
-				add 15 * cos(330) to z-coordinate of {_l.C}
-			if {_l.D} is not set:
-				set {_l.D} to {_point}
-				set yaw of {_l.D} to 180
-				set pitch of {_l.D} to 0
-				add 15 * sin(30) to x-coordinate of {_l.D}
-				add 15 * cos(30) to z-coordinate of {_l.D}
-			if {_l.E} is not set:
-				set {_l.E} to {_point}
-				set yaw of {_l.E} to 60
-				set pitch of {_l.E} to 0
-				add 15 * sin(150) to x-coordinate of {_l.E}
-				add 15 * cos(150) to z-coordinate of {_l.E}
-			if {_l.F} is not set:
-				set {_l.F} to {_point}
-				set yaw of {_l.F} to 300
-				set pitch of {_l.F} to 0
-				add 15 * sin(270) to x-coordinate of {_l.F}
-				add 15 * cos(270) to z-coordinate of {_l.F}
-			loop 30 times:
-				add sqrt(3) / 2 to {_n.g}
-#			A-B
-				set {_loc.g} to location {_n.g} meters in front of {_l.A}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-#			D-E
-				set {_loc.g} to location {_n.g} meters in front of {_l.D}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-#			B-C
-				set {_loc.g} to location {_n.g} meters in front of {_l.B}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-#			E-F
-				set {_loc.g} to location {_n.g} meters in front of {_l.E}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-#			C-A
-				set {_loc.g} to location {_n.g} meters in front of {_l.C}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
-#			F-D
-				set {_loc.g} to location {_n.g} meters in front of {_l.F}
-				drawDot count 1, particle "redstone", RGB 50, 0, 70, center {_loc.g}, visibleRange 100, keepFor 3 seconds
 			set {_ln} to 60
 			loop 60 times:
+				kitParticle_Necronomicon({_point})
 				if mod({_ln}, 20) = 0:
 					playSound("item.lodestone_compass.lock", 1, 0.5, {_point})
 				subtract 1 from {_ln}
 				loop all entities in radius 15 around {_point}:
 					kitCheckTeam(loop-entity, {_player}, false) is true
-					applyEffect(loop-entity, slowness, 3, 10 ticks)
+					applyEffect(loop-entity, slowness, 3, 1 ticks)
 				wait a tick
 			message formatted "<##493759>§l術が発動した..." to {_player}
 			playSound("entity.wither.death", 1, 0.9, {_point})
@@ -90,7 +26,7 @@ function kitSkill_Necromancer_5(player: player):
 					LastKiller(loop-entity, {_player})
 					message formatted "<##2e2930>魂の滅殺を受けてしまった..." to loop-entity
 				add location of loop-entity to {_locs::*}
-				apply wither 3 to loop-entity for 15 seconds
+				apply wither 4 to loop-entity for 15 seconds
 			set {_y} to 0
 			loop 5 times:
 				add 0.25 to {_y}
@@ -103,7 +39,74 @@ function kitSkill_Necromancer_5(player: player):
 						add 0.5 * sin({_rad}) to x-coordinate of {_el}
 						add 0.5 * cos({_rad}) to z-coordinate of {_el}
 						add {_y} to y-coordinate of {_el}
-						drawDot count 1, particle "mobspell", RGB 50, 0, 70, center {_el}, visibleRange 100
+						spawnParticle_Color(entity_effect, 50, 0, 70, {_el})
 				wait a tick
 		else:
 			send action bar "§c§l対象位置が存在しません!" to {_player}
+
+function kitParticle_Necronomicon(point: location):
+	# 弧を描く
+	set {_n.k} to 0
+	loop 60 times:
+		set {_effbaseloc} to {_point}
+		add 15 * sin({_n.k}) to x-coordinate of {_effbaseloc}
+		add 15 * cos({_n.k}) to z-coordinate of {_effbaseloc}
+		spawnParticle_Dust(rgb(50, 0, 70), 1.2, {_effbaseloc})
+		add 6 to {_n.k}
+	# 弦を描く
+	if {_l.A} is not set:
+		set {_l.A} to {_point}
+		set yaw of {_l.A} to 120
+		set pitch of {_l.A} to 0
+		add 15 * sin(90) to x-coordinate of {_l.A}
+		add 15 * cos(90) to z-coordinate of {_l.A}
+	if {_l.B} is not set:
+		set {_l.B} to {_point}
+		set yaw of {_l.B} to 0
+		set pitch of {_l.B} to 0
+		add 15 * sin(210) to x-coordinate of {_l.B}
+		add 15 * cos(210) to z-coordinate of {_l.B}
+	if {_l.C} is not set:
+		set {_l.C} to {_point}
+		set yaw of {_l.C} to 240
+		set pitch of {_l.C} to 0
+		add 15 * sin(330) to x-coordinate of {_l.C}
+		add 15 * cos(330) to z-coordinate of {_l.C}
+	if {_l.D} is not set:
+		set {_l.D} to {_point}
+		set yaw of {_l.D} to 180
+		set pitch of {_l.D} to 0
+		add 15 * sin(30) to x-coordinate of {_l.D}
+		add 15 * cos(30) to z-coordinate of {_l.D}
+	if {_l.E} is not set:
+		set {_l.E} to {_point}
+		set yaw of {_l.E} to 60
+		set pitch of {_l.E} to 0
+		add 15 * sin(150) to x-coordinate of {_l.E}
+		add 15 * cos(150) to z-coordinate of {_l.E}
+	if {_l.F} is not set:
+		set {_l.F} to {_point}
+		set yaw of {_l.F} to 300
+		set pitch of {_l.F} to 0
+		add 15 * sin(270) to x-coordinate of {_l.F}
+		add 15 * cos(270) to z-coordinate of {_l.F}
+	loop 30 times:
+		add sqrt(3) / 2 to {_n.g}
+	# A-B
+		set {_loc.g} to location {_n.g} meters in front of {_l.A}
+		spawnParticle_Dust(rgb(50, 0, 70), 1.2, {_loc.g})
+	# D-E
+		set {_loc.g} to location {_n.g} meters in front of {_l.D}
+		spawnParticle_Dust(rgb(50, 0, 70), 1.2, {_loc.g})
+	# B-C
+		set {_loc.g} to location {_n.g} meters in front of {_l.B}
+		spawnParticle_Dust(rgb(50, 0, 70), 1.2, {_loc.g})
+	# E-F
+		set {_loc.g} to location {_n.g} meters in front of {_l.E}
+		spawnParticle_Dust(rgb(50, 0, 70), 1.2, {_loc.g})
+	# C-A
+		set {_loc.g} to location {_n.g} meters in front of {_l.C}
+		spawnParticle_Dust(rgb(50, 0, 70), 1.2, {_loc.g})
+	# F-D
+		set {_loc.g} to location {_n.g} meters in front of {_l.F}
+		spawnParticle_Dust(rgb(50, 0, 70), 1.2, {_loc.g})
