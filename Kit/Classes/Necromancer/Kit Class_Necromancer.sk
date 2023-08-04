@@ -81,7 +81,7 @@ on death:
 				kitAddNecromance(victim, 5)
 			else:
 				kitAddNecromance(victim, 1)
-				kitSpawnGhost(victim, location of victim, true)
+				kitSpawn_Necromancer_Ghost(victim, location of victim, true)
 		loop all players:
 			{Stats.%loop-player%::DeathDetector} is true
 			kitSkill_DeathDetector(loop-player)
@@ -123,7 +123,7 @@ on rightclick:
 	loop {_dis} times:
 		add 1 to {_num}
 		set {_loc} to location {_num} meters in front of {_baseloc}
-		drawDot count 1, particle "redstone", RGB 100, 0, 100, center {_loc}, visibleRange 100
+		spawnParticle_Dust(rgb(100, 0, 100), 1.25, {_loc})
 
 command /necroset <number>:
 	permission: sk.admin
@@ -201,6 +201,8 @@ function kitSpawn_Necromancer_Grudge(player: player, loc: location):
 		spawnParticle(smoke, {_l})
 
 on damage:
+	if metadata value "necromancer-entity-grudgesoul" of attacker is true:
+		set damage to 1
 	if metadata value "necromancer-entity-grudgesoul" of victim is true:
 		cancel event
 		if attacker is set:
@@ -212,8 +214,6 @@ on damage:
 		loop 20 times:
 			spawnParticle(witch, {_el})
 			wait a tick
-	else if metadata value "necromancer-entity-grudgesoul" of attacker is true:
-		set damage to 1
 
 function kitSpawn_Necromancer_Vengeful(player: player, loc: location):
 	set {_nbt} to nbt compound from "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:16750230}},Count:1b},{id:""minecraft:zombie_head"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:1,Amplifier:0,Duration:999999},{Id:14,Amplifier:0,Duration:999999}]}"
@@ -292,6 +292,9 @@ function kitNecromanceItem(player: player, num: number, type: text = "Skill") ::
 
 # Timer
 function kitTimerNecromancer(player: player):
+	if {Kit-Necromance::%{_player}%} is not set:
+		set {Kit-Necromance::%{_player}%} to 0
+	create bossbar titled "&5&lNecromance&0: &4&l%{Kit-Necromance::%{_player}%}%" and id "%{_player}%-Necromance" for {_player} with progress {Kit-Odo::%{_player}%} with colors purple with style segmented 10
 	while {Class::%{_player}%} is "Necromancer":
 		add 1 to {_timer}  # Timer処理
 		# --- Undead処理 ---
@@ -299,59 +302,46 @@ function kitTimerNecromancer(player: player):
 			set {_timer} to 0
 		if {_timer} = 0:
 			loop all zombies:
-				metadata value "kit-dead" of loop-zombie is "true"
+				metadata value "necromancer-entity-undead" of loop-zombie is "zombie"
 				subtract 1.2 from loop-zombie's health
 			loop all skeletons:
-				metadata value "kit-dead" of loop-skeleton is "true"
+				metadata value "necromancer-entity-undead" of loop-skeleton is "skeleton"
 				subtract 1.2 from loop-skeleton's health
 		# -----------------
-		# --- Action Bar処理 ---
-		delete {_true}
-		set {_tool} to {_player}'s tool
-		if {_tool} is air:
-			set {_true} to true
-		else:
-			set {_name} to display name of {_tool}
-			if checkCT({_player}, {_name}, true) is true:
-				set {_true} to true
-		if {_true} is true:
-			send action bar "§5§lNecromance§0: §4%{Kit-Necromance::%{_player}%}%" to {_player}
+		# --- Boss Bar処理 ---
+		set bossbar "%{_player}%-Necromance" title to "&5&lNecromance&0: &4&l%{Kit-Necromance::%{_player}%}%"
+		set bossbar "%{_player}%-Necromance" value to {Kit-Necromance::%{_player}%}
 		# ---------------------
 		# --- 死体発光処理 ---
+		delete {_undetected}
 		delete {_tg}
 		set {_tg} to target entity of {_player}
-		if {_targeted} is set:
-			if {_tg} is set:
-				if type of {_tg} is an armor stand:
-					if distance between {_tg} and {_player} <= 50:
-						if metadata value "deadplayer" of {_tg} is set:
-							packetGlowing({_player}, {_tg})
-							if {_tg} is not {_targeted}:
-								# --- 発光消滅処理 ---
-								packetUnglowing({_player}, {_targeted})
-								# ------------------
-								set {_targeted} to {_tg}
-						else:
-							# --- 発光消滅処理 ---
-							packetUnglowing({_player}, {_targeted})
-							# ------------------
-							delete {_targeted}
-					else:
-						# --- 発光消滅処理 ---
-						packetUnglowing({_player}, {_targeted})
-						# ------------------
-						delete {_targeted}
-				else:
-					# --- 発光消滅処理 ---
-					packetUnglowing({_player}, {_targeted})
-					# ------------------
-					delete {_targeted}
-			else:
+		# --- 例外処理 ---
+		if {_targeted} is not set:
+			set {_undetected} to true
+		if {_tg} is not set:
+			set {_undetected} to true
+		if type of {_tg} is not armor stand:
+			set {_undetected} to true
+		if metadata value "deadplayer" of {_tg} is not set:
+			set {_undetected} to true
+		if distance between {_tg} and {_player} > 50:
+			set {_undetected} to true
+		if {_undetected} is true:
+			if {_targeted} is set:
 				# --- 発光消滅処理 ---
 				packetUnglowing({_player}, {_targeted})
 				# ------------------
-				delete {_targeted}
-		else:
-			set {_targeted} to {_tg}
-		# ------------------
+			delete {_targeted}
+			wait a tick
+			continue
+		# ----------------
+		packetGlowing({_player}, {_tg})
+		if {_tg} is not {_targeted}:
+			# --- 発光消滅処理 ---
+			packetUnglowing({_player}, {_targeted})
+			# ------------------
+		set {_targeted} to {_tg}
+		# ---------------------
 		wait a tick
+	remove bossbar "%{_player}%-Necromance"
