@@ -22,7 +22,7 @@ function kitBlood(player: player):
 			damage {_player} by 1 hearts
 			loop 10 times:
 				set {_el} to aroundEffect({_player})
-				drawDot count 1, particle "redstone", RGB 100, 0, 10, center {_el}, visibleRange 30
+				spawnParticle_Dust(rgb(100, 0, 10), 1.5, {_el})
 			chance of 30%:
 				delete {Kit-Blood::%{_player}%}
 				message "§d出血が収まった!" to {_player}
@@ -67,11 +67,7 @@ function kitFreeze(player: player, time: time span, msg: boolean = true):
 	set {_loc} to location of {_player}
 	set {_now} to now
 	set {Kit-Freeze::%{_player}%} to {_now}
-	set {_tick} to "%{_time}%"
-	replace " seconds" with "" in {_tick}
-	replace " second" with "" in {_tick}
-	set {_tick} to {_tick} parsed as number
-	set {_tick} to {_tick} * 20
+	set {_tick} to convertTimeNumber({_time})
 	if {_msg} is true:
 		message "§b凍ってしまった!" to {_player}
 		create bossbar titled "&b&l凍結" and id "%{_player}%-Freeze" for {_player} with progress 100 with colors blue with style solid
@@ -115,11 +111,7 @@ function kitPalsy(player: player, time: time span, eff: boolean = true):
 	if {_eff} is true:
 		message "§e痺れてしまった!" to {_player}
 	create bossbar titled "&e&l麻痺" and id "%{_player}%-Palsy" for {_player} with progress 100 with colors yellow with style solid
-	set {_tick} to "%{_time}%"
-	replace " seconds" with "" in {_tick}
-	replace " second" with "" in {_tick}
-	set {_tick} to {_tick} parsed as number
-	set {_tick} to {_tick} * 20
+	set {_tick} to convertTimeNumber({_time})
 	set {_prog} to 100 / {_tick}
 	loop {_tick} times:
 		if {_eff} is true:
@@ -177,11 +169,7 @@ function kitDrain(player: player, time: time span):
 	message "§2§l体力が養分として吸われていく!" to {_player}
 	set {_level} to round({_level})
 	create bossbar titled "&2&l吸収" and id "%{_player}%-Drain" for {_player} with progress 100 with colors green with style solid
-	set {_tick} to "%{_time}%"
-	replace " seconds" with "" in {_tick}
-	replace " second" with "" in {_tick}
-	set {_tick} to {_tick} parsed as number
-	set {_tick} to {_tick} * 20
+	set {_tick} to convertTimeNumber({_time})
 	set {_prog} to 100 / {_tick}
 	loop {_tick} times:
 		set {_value} to value of bossbar "%{_player}%-Drain"
@@ -228,11 +216,7 @@ function kitSleep(player: player, time: time span):
 	apply blindness 1 to {_player} for {_time} replacing existing effect
 	create bossbar titled "&5&l睡眠" and id "%{_player}%-Sleep" for {_player} with progress 100 with colors purple with style solid
 	set {Kit-Sleep::%{_player}%} to true
-	set {_tick} to "%{_time}%"
-	replace " seconds" with "" in {_tick}
-	replace " second" with "" in {_tick}
-	set {_tick} to {_tick} parsed as number
-	set {_tick} to {_tick} * 20
+	set {_tick} to convertTimeNumber({_time})
 	set {_prog} to 100 / {_tick}
 	set {_loc} to location of {_player}
 	loop {_tick} times:
@@ -282,16 +266,12 @@ function kitStun(player: player, time: time span):
 	create bossbar titled "&6&l眩暈" and id "%{_player}%-Stun" for {_player} with progress 100 with colors yellow with style solid
 	message "§6眩暈を起こしてしまった!" to {_player}
 	playSound("entity.iron_golem.hurt", 0.7, 0.7, {_player})
-	set {_tick} to "%{_time}%"
-	replace " seconds" with "" in {_tick}
-	replace " second" with "" in {_tick}
-	set {_tick} to {_tick} parsed as number
-	set {_looptick} to {_tick} * 20
-	set {_prog} to 100 / {_looptick}
+	set {_tick} to convertTimeNumber({_time})
+	set {_prog} to 100 / {_tick}
 	set walk speed of {_player} to 0.1
 	set attack speed attribute of {_player} to 4
 	set {_rad} to 0
-	loop {_looptick} times:
+	loop {_tick} times:
 		if {Kit-Stun::%{_player}%} is {_now}:
 			set {_value} to value of bossbar "%{_player}%-Stun"
 			subtract {_prog} from {_value}
@@ -324,14 +304,10 @@ function kitFear(player: player, time: time span):
 	create bossbar titled "&0&l恐怖" and id "%{_player}%-Fear" for {_player} with progress 100 with colors purple with style solid
 	message "§0恐怖で視力と聴力が弱まってしまった..." to {_player}
 	playSound("entity.warden.tendril_clicks", 1, 0.5, {_player})
-	set {_tick} to "%{_time}%"
-	replace " seconds" with "" in {_tick}
-	replace " second" with "" in {_tick}
-	set {_tick} to {_tick} parsed as number
-	set {_looptick} to {_tick} * 20
-	set {_prog} to 100 / {_looptick}
+	set {_tick} to convertTimeNumber({_time})
+	set {_prog} to 100 / {_tick}
 	applyEffect({_player}, darkness, 1, {_time})
-	loop {_looptick} times:
+	loop {_tick} times:
 		if {Kit-Fear::%{_player}%} is {_now}:
 			set {_value} to value of bossbar "%{_player}%-Fear"
 			subtract {_prog} from {_value}
@@ -375,12 +351,8 @@ function kitTrail(player: player, time: time span, from: location = location(0.0
 	message "§9追跡された! §d自分の位置情報が残留してしまう!" to {_player}
 	playSound("item.lodestone_compass.lock", 1, 0.5, {_player})
 	# タイマー初期設定
-	set {_tick} to "%{_time}%"
-	replace " seconds" with "" in {_tick}
-	replace " second" with "" in {_tick}
-	set {_tick} to {_tick} parsed as number
-	set {_looptick} to {_tick} * 20
-	set {_prog} to 100 / {_looptick}
+	set {_tick} to convertTimeNumber({_time})
+	set {_prog} to 100 / {_tick}
 	# from-location設定
 	set {_sum.xyz} to x-pos of {_from} + y-pos of {_from} + z-pos of {_from}
 	if {_sum.xyz} = 0:
@@ -391,7 +363,7 @@ function kitTrail(player: player, time: time span, from: location = location(0.0
 	if {_loc} is not {_traillocs::1}:
 		add {_loc} to {_traillocs::*}
 	# 効果
-	loop {_looptick} times:
+	loop {_tick} times:
 		# 例外処理
 		if {Kit-Trail::%{_player}%} is not {_now}:
 			continue
@@ -490,7 +462,7 @@ function kitShield(player: player, shield: number):
 		add 9 to {_rad}
 		add 0.5 * sin({_rad}) to x-coordinate of {_loc}
 		add 0.5 * cos({_rad}) to z-coordinate of {_loc}
-		drawDot count 1, particle "redstone", RGB 100, 100, 255, center {_loc}, visibleRange 30
+		spawnParticle_Dust(rgb(100, 100, 255), 1, {_loc})
 		wait a tick
 	if {Kit-Shield::%{_player}%} is not set:
 		remove bossbar "%{_player}%-Shield"
@@ -523,7 +495,7 @@ function kitLuck(player: player, lvl: number):
 		add a random number between -1 and 1 to x-coordinate of {_loc}
 		add a random number between 0 and 2 to y-coordinate of {_loc}
 		add a random number between -1 and 1 to z-coordinate of {_loc}
-		drawDot count 1, particle "totem", center {_loc}, visibleRange 30
+		spawnParticle(totem_of_undying, {_loc})
 	remove luck from {_player}
 	remove bad luck from {_player}
 	if {_lvl} is not 0:
@@ -540,7 +512,7 @@ function kitBadLuck(player: player, lvl: number):
 		add a random number between -1 and 1 to x-coordinate of {_loc}
 		add a random number between 0 and 2 to y-coordinate of {_loc}
 		add a random number between -1 and 1 to z-coordinate of {_loc}
-		drawDot count 1, particle "totem", center {_loc}, visibleRange 30
+		spawnParticle(totem_of_undying, {_loc})
 	remove luck from {_player}
 	remove bad luck from {_player}
 	apply bad luck {_lvl} to {_player} for 10000000000 seconds
