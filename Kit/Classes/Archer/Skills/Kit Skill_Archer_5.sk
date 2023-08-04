@@ -5,8 +5,9 @@ function kitSkill_Archer_5(player: player):
 	set {Stats.%{_player}%::BarrageArrow} to true
 	kitMsg({_player}, "§e5秒間§6放つ矢の本数が§e5本§6になります!")
 	playSound("entity.zombie.attack_iron_door", 1, 1, {_player})
-	drawDot count 3, particle "mobspell", RGB 255, 100, 100, center {_player}, visibleRange 32, keepFor 7 seconds
-	wait 5 seconds
+	loop 100 times:
+		spawnParticle_Color(entity_effect, 255, 100, 100, {_player})
+		wait a tick
 	delete {Stats.%{_player}%::BarrageArrow}
 	kitMsg({_player}, "§cBarrage Arrow§dの効果が切れました")
 
@@ -34,7 +35,7 @@ on shoot:
 	set {_l1} to location of head of shooter
 	shoot an arrow from {_l1} at speed {_d}
 	set shooter of shot projectile to shooter
-	drawDot particle "flame", center shot arrow, visibleRange 30, keepFor 1 second
+	kitParticle_BarrageArrow_Flame(shot arrow)
 	set {_l2} to {_l1}
 	set {_yaw} to yaw of {_l2} - 20
 	if {_yaw} < 0:
@@ -42,7 +43,7 @@ on shoot:
 	set yaw of {_l2} to {_yaw}
 	shoot an arrow from {_l2} at speed {_d}
 	set shooter of shot projectile to shooter
-	drawDot particle "flame", center shot arrow, visibleRange 30, keepFor 1 second
+	kitParticle_BarrageArrow_Flame(shot arrow)
 	set {_l3} to {_l1}
 	set {_yaw} to yaw of {_l3} + 20
 	if {_yaw} >= 360:
@@ -50,7 +51,7 @@ on shoot:
 	set yaw of {_l3} to {_yaw}
 	shoot an arrow from {_l3} at speed {_d}
 	set shooter of shot projectile to shooter
-	drawDot particle "flame", center shot arrow, visibleRange 30, keepFor 1 second
+	kitParticle_BarrageArrow_Flame(shot arrow)
 	set {_l4} to {_l1}
 	set {_yaw} to yaw of {_l4} - 40
 	if {_yaw} < 0:
@@ -58,7 +59,7 @@ on shoot:
 	set yaw of {_l4} to {_yaw}
 	shoot an arrow from {_l4} at speed {_d}
 	set shooter of shot projectile to shooter
-	drawDot particle "flame", center shot arrow, visibleRange 30, keepFor 1 second
+	kitParticle_BarrageArrow_Flame(shot arrow)
 	set {_l5} to {_l1}
 	set {_yaw} to yaw of {_l5} + 40
 	if {_yaw} >= 360:
@@ -66,9 +67,14 @@ on shoot:
 	set yaw of {_l5} to {_yaw}
 	shoot an arrow from {_l5} at speed {_d}
 	set shooter of shot projectile to shooter
-	drawDot particle "flame", center shot arrow, visibleRange 30, keepFor 1 second
+	kitParticle_BarrageArrow_Flame(shot arrow)
 #	wait a tick
 	delete {Stats.%shooter%::BarrageNG}
+
+function kitParticle_BarrageArrow_Flame(entity: entity):
+	loop 20 times:
+		spawnParticle(flame, {_entity})
+		wait a tick
 
 on damage:
 	damage was caused by projectile

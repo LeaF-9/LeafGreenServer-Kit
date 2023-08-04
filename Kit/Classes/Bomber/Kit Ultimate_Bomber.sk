@@ -17,7 +17,10 @@ on rightclick holding a redstone block:
 	set metadata value "kit-bomber" of shot primed tnt to 10
 	set metadata value "ult-bomber" of shot primed tnt to "true"
 	setFuseTime(shot primed tnt, 100)
-	drawDot count 1, particle "lava", center shot primed tnt, visibleRange 100, keepFor 5 seconds
+	set {_shotentity} to shot primed tnt
+	loop 100 times:
+		spawnParticle(lava, {_shotentity})
+		wait a tick
 
 on explosion:
 	if metadata value "ult-bomber" of event-entity is set:
@@ -45,7 +48,7 @@ on explosion:
 					loop all entities in radius 5 around {_rl}:
 						kitCheckTeam(loop-entity, {_act}, false, true) is true
 						make {_act} damage loop-entity by 6
-					drawDot count 1, particle "explosionhuge", center {_rl}, visibleRange 100
+					spawnParticle(explosion_emitter, {_rl})
 					set {_rb} to a random integer between 1 and 2
 					set {_pitch} to a random number between 0.5 and 2
 					if {_rb} is 1:

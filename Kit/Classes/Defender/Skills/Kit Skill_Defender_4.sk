@@ -4,7 +4,7 @@ function kitSkill_Defender_4(player: player):
 	toolCT({_player}, "Defender", 4)
 	kitMsg({_player}, "§c正面に突進します!")
 	playSound("entity.wither.shoot", 1, 0.5, {_player})
-	drawDot particle "explosionlarge", center {_player}, visibleRange 30, keepFor 1 second
+	kitParticle_BodyImpact_Rush({_player})
 	set {_ff} to location 100 meters in front of {_player}
 	set y-coordinate of {_ff} to y-coordinate of {_player}
 	loop 20 times:
@@ -37,4 +37,9 @@ function kitSkill_Defender_4(player: player):
 			set {_vector2} to {_from2} -- {_to}
 			set {_vector2} to normalized {_vector2}
 			set velocity of loop-entity to {_vector2}
+		wait a tick
+
+function kitParticle_BodyImpact_Rush(player: player):
+	loop 20 times:
+		spawnParticle(explosion, {_player})
 		wait a tick

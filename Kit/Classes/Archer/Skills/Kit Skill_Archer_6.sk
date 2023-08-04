@@ -16,7 +16,7 @@ function kitSkill_Archer_6(player: player):
 				add 0.5 * sin({_tr}) to x-coordinate of {_el}
 				add 0.5 * cos({_tr}) to z-coordinate of {_el}
 				add {_y} to y-coordinate of {_el}
-				drawDot particle "endrod", center {_el}, visibleRange 30
+				spawnParticle(end_rod, {_el})
 			add 18 to {_rad}
 			add 0.1 to {_y}
 			wait a tick
@@ -25,7 +25,7 @@ function kitSkill_Archer_6(player: player):
 		spawn armor stand at {_baseloc} with nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Marker:1b,ArmorItems:[{},{},{},{id:""skeleton_skull"",Count:1b}],HandItems:[{},{id:""bow"",Count:1b}],Pose:{RightLeg:[10f,30f,0f],LeftArm:[270f,30f,0f],RightArm:[270f,300f,0f]}}"
 		set metadata value "arrowdiffusion" of spawned armor stand to "%{_player}%"
 		loop 30 times:
-			draw 1 endrod particle at {_baseloc} with direction randomVector({_el}) and speed 0.3, keepFor 1 tick
+			spawnParticle_Vector(end_rod, randomVector(), {_baseloc})
 		wait 1 second
 		set {_yaw} to -45
 		loop 40 times:
@@ -41,7 +41,7 @@ function kitSkill_Archer_6(player: player):
 			set metadata value "arrowdamage" of shot arrow to 2
 			set shooter of shot projectile to {_player}
 			set metadata value "arrowdf" of shot projectile to "true"
-			drawDot count 1, particle "cloud", center shot projectile, visibleRange 32, keepFor 0.5 seconds
+			kitParticle_ArrowDiffusion_Cloud(shot projectile)
 			playSound("entity.arrow.shoot", 1, 2, {_baseloc})
 			wait a tick
 		loop all entities:
@@ -50,3 +50,8 @@ function kitSkill_Archer_6(player: player):
 			delete loop-entity
 	else:
 		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+
+function kitParticle_ArrowDiffusion_Cloud(entity: entity):
+	loop 10 times:
+		spawnParticle(cloud, {_entity})
+		wait a tick

@@ -31,7 +31,7 @@ function kitSkill_Engineer_5(player: player, loc: location):
 			loop 10 times:
 				add 1 to {_ln}
 				set {_el} to location {_dis} * {_ln} meters in front of {_elbase}
-				drawDot count 1, particle "critmagic", center {_el}, visibleRange 30, keepFor 1 second
+				kitParticle_DowsingMachine_Beam({_el})
 		delete {_exist}
 		loop all entities:
 			type of loop-entity is armor stand
@@ -42,3 +42,8 @@ function kitSkill_Engineer_5(player: player, loc: location):
 			kitFakeReload({_player}, "Machine-Dowsing Machine")
 		else:
 			delete {Stats.%{_player}%::DowsingMachine-Time}
+
+function kitParticle_DowsingMachine_Beam(loc: location):
+	loop 20 times:
+		spawnParticle(crit, {_loc})
+		wait a tick

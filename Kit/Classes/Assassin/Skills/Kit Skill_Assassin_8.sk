@@ -18,7 +18,7 @@ function kitSkill_Assassin_8(player: player):
 		set yaw of {_loc} to {_yaw}
 		kitMsg({_player}, "<##8a2be2>背後より暗殺を試みる...")
 		playSound("entity.enderman.teleport", 1, 0.75, {_player})
-		drawDot count 1, particle "mobspell", RGB 138, 43, 226, center {_player}, visibleRange 30, keepFor 5 seconds
+		kitParticle_ShadowMurder_Spell({_player})
 		teleport {_player} to {_loc}
 		loop 100 times:
 			if {_ok2} is not set:
@@ -40,8 +40,13 @@ function kitSkill_Assassin_8(player: player):
 					set {_bn} to {_bnm} - 1
 					if distance between {_bl} and {_pl} >= {_bn}:
 						add -0.3 to y-coordinate of {_bl}
-						drawDot count 3, particle "witchspell", center {_bl}, visibleRange 30
+						spawnParticle(witch, {_bl})
 				add 1 to {_bnm}
 				wait a tick
 	else:
 		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+
+function kitParticle_ShadowMurder_Spell(player: player):
+	loop 100 times:
+		spawnParticle_Color(entity_effect, 138, 43, 226, {_player})
+		wait a tick

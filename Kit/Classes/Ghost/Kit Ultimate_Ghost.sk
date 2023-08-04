@@ -1,7 +1,7 @@
 # Hellish Occultism
 
 function kitUltGhost(player: player):
-	drawDot count 5, particle "mobspell", RGB 50, 0, 50, center {_player}, visibleRange 30, keepFor 10 seconds
+	kitParticle_HellishOccultism_Form{_player})
 	message "§cWitherに変身して空を飛べるようになります!" to {_player}
 	message "§c左クリックで弾を発射し,周辺の敵に衰弱 IIIを3秒付与します!" to {_player}
 	remove invisibility from {_player}
@@ -20,6 +20,11 @@ function kitUltGhost(player: player):
 	wait 5 seconds
 	delete {Stats.%{_player}%::UltGhostFalling}
 
+function kitParticle_HellishOccultism_Form(player: player):
+	loop 200 times:
+		spawnParticle_Color(entity_effect, 50, 0, 50, {_player})
+		wait a tick
+
 on damage of player:
 	metadata value "gametype" of victim is "Kit"
 	{Stats.%victim%::UltGhostFalling} is true
@@ -36,7 +41,7 @@ on leftclick:
 	set {_now} to now
 	set metadata value "kit-ghostult" of shot falling coal block to "%player%"
 	set metadata value "kit-ghostulttime" of shot falling coal block to "%{_now}%"
-	drawDot count 1, particle "mobspell", RGB 0, 0, 0, center shot falling coal block, visibleRange 30, keepFor 3 seconds
+	kitParticle_HellishOccultism_Attack(shot falling coal block)
 	playSound("entity.wither.shoot", 1, 0.5, player)
 	loop 60 times:
 		{_true} is not set
@@ -80,6 +85,11 @@ on leftclick:
 			set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
 			set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
 			chance of 10%:
-				drawDot count 1, particle "redstone", RGB 0, 0, 0, center {_vector}, visibleRange 100
+				spawnParticle_Dust(rgb(0, 0, 0), 1, {_vector})
 			add 10 to {_t}
 		add 10 to {_s}
+
+function kitParticle_HellishOccultism_Attack(entity: entity):
+	loop 60 times:
+		spanwParticle_Color(entity_effect, 0, 0, 0, {_entity})
+		wait a tick

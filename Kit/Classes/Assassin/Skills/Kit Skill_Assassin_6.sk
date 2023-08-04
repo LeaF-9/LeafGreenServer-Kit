@@ -5,7 +5,10 @@ function kitSkill_Assassin_6(player: player):
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
 	shoot a thrown potion of mundane from {_player} at speed 1
 	set metadata value "poisonmist" of shot thrown potion to "true"
-	drawDot count 3, particle "mobspell", RGB 0, 150, 0, center shot thrown potion, visibleRange 30, keepFor 1 second
+	set {_shotentity} to shot thrown potion
+	loop 20 times:
+		spawnParticle_Color(entity_effect, 0, 150, 0, {_shotentity})
+		wait a tick
 
 on projectile hit:
 	projectile is thrown potion
@@ -29,16 +32,16 @@ on projectile hit:
 				set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
 				set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
 				chance of 10%:
-					drawDot count 1, particle "redstone", RGB 0, 100, 0, center {_vector}, visibleRange 100
+					spawnParticle_Dust(rgb(0, 100, 0), 1, {_vector})
 				add 10 to {_t}
 			add 10 to {_s}
 		loop all blocks in radius 5 around {_l}:
 			loop-block is passable
 			chance of 1%:
-				drawDot count 1, particle "mobspell", RGB 0, 100, 0, center location of loop-block, visibleRange 100
+				spawnParticle_Color(entity_effect, 0, 100, 0, location of loop-block)
 		loop all entities in radius 5 around {_l}:
 			if kitCheckTeam(loop-entity, shooter, false) is true:
-				drawDot count 3, particle "mobspell", RGB 0, 150, 0, center loop-entity, visibleRange 30
+				spanwParticle_Color(entity_effect, 0, 150, 0, loop-entity)
 				set {_eg::%id of loop-entity%} to true
 				if {_jb::%id of loop-entity%} is not set:
 					set {_jb::%id of loop-entity%} to true

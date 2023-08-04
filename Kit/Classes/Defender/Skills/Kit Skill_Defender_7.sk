@@ -20,7 +20,10 @@ function kitSkill_Defender_7(player: player):
 		else:
 			set {_size} to "9*5"
 		set metadata value "wallprotection" of shot entity to {_size}
-		drawDot count 3, particle "redstone", RGB 64, 224, 208, center shot entity, visibleRange 30, keepFor 1.5 seconds
+		set {_shotentity} to shot entity
+		loop 30 times:
+			spawnParticle_Dust(rgb(64, 224, 208), 1, {_shotentity})
+			wait a tick
 
 on projectile hit:
 	projectile is a snowball
@@ -69,7 +72,7 @@ on projectile hit:
 	loop {_lb::*}:
 		if block at loop-value is not air:
 			set block at loop-value to air
-			drawDot count 1, particle "blockcrack", material blue glass, center loop-value, visibleRange 30
+			spawnParticle_Block(blue glass, loop-value)
 		remove loop-value from {Block.%shooter%::*}
 
 on break of blue glass:

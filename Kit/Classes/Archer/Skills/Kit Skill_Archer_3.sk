@@ -6,8 +6,11 @@ function kitSkill_Archer_3(player: player):
 	set {Stats.%{_player}%::ArrowRain} to location of {_player}
 	shoot an egg from {_player} at speed 1.5
 	set metadata value "arrowegg" of shot entity to "true"
-	drawDot count 1, particle "redstone", XYZ 0, 0, 255, center shot entity, visibleRange 32, keepFor 1 seconds
+	set {_shotegg} to shot entity
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
+	loop 20 times:
+		spawnParticle_Dust(rgb(0, 0, 255), 1, {_shotegg})
+		wait a tick
 
 on projectile hit:
 	projectile is an egg
@@ -22,7 +25,7 @@ on projectile hit:
 	loop 10 times:
 		set {_n} to loop-number
 		set {_cloud} to location of block {_n} meters upwards {_baseloc}
-		drawDot count 1, particle "cloud", center location of {_cloud}, visibleRange 32
+		spawnParticle(cloud, {_cloud})
 		wait a tick
 	playSound("entity.lightning_bolt.thunder", 1, 0.5, location of {_sky})
 	loop 10 times:
@@ -41,18 +44,28 @@ on projectile hit:
 			set {_z} to a random number between -1 and 1
 			add {_x} to x-coordinate of {_cloud}
 			add {_z} to z-coordinate of {_cloud}
-			drawDot count 1, particle "cloud", center location of {_cloud}, visibleRange 32
+			spawnParticle(cloud, {_cloud})
 			loop {_rain::*}:
 				chance of 5%:
 					shoot an arrow from block at loop-value-3 at speed 3 downward
 					set metadata value "arrowdamage" of shot arrow to 2
 					set shooter of shot arrow to shooter
 					set metadata value "arrowrain" of shot arrow to "%shooter%"
-					drawDot count 1, particle "redstone", XYZ 255, 255, 255, center location of loop-value-3, visibleRange 32, keepFor 0.2 seconds
-					drawDot count 1, particle "mobspell", XYZ 0, 0, 255, center shot entity, visibleRange 32, keepFor 0.5 seconds
+					kitParticle_ArrowRain_Dust(loop-value-3)
+					kitParticle_ArrowRain_Spell(shot entity)
 			loop all projectiles in radius 5 around shooter:
 				loop-projectile is an arrow
 				metadata value "arrowrain" of loop-projectile is "%shooter%"
 				delete loop-projectile
 			wait a tick
 		delete {_rain::*}
+
+function kitParticle_ArrowRain_Dust(loc: location):
+	loop 4 times:
+		spawnParticle_Dust(rgb(255, 255, 255), 1, {_loc})
+		wait a tick
+
+function kitParticle_ArrowRain_Spell(entity: entity):
+	loop 10 times:
+		spawnParticle_Color(entity_effect, 0, 0, 255, {_entity})
+		wait a tick

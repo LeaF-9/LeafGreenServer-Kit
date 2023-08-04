@@ -37,7 +37,7 @@ function kitSkill_Defender_8(player: player):
 					add 5 * sin({_rad}) to x-coordinate of {_el}
 					add 5 * cos({_rad}) to z-coordinate of {_el}
 					add {_y} to y-coordinate of {_el}
-					drawDot count 1, particle "redstone", RGB 178, 34, 34, center {_el}, visibleRange 30
+					spawnParticle_Dust(rgb(178, 34, 34), 1, {_el})
 				wait a tick
 			if {Stats.%{_player}%::GuardCrash} is true:
 				if {Kit-Shield::%{_player}%} is set:
@@ -53,7 +53,7 @@ function kitSkill_Defender_8(player: player):
 					add 9 to {_rad}
 					add 0.5 * sin({_rad}) to x-coordinate of {_loc}
 					add 0.5 * cos({_rad}) to z-coordinate of {_loc}
-					drawDot count 1, particle "flame", center {_loc}, visibleRange 30
+					spawnParticle(flame, {_loc})
 				else:
 					set {Stats.%{_player}%::GuardCrash} to false
 					playSound("block.respawn_anchor.deplete", 1.5, 1, {_player})
@@ -62,7 +62,7 @@ function kitSkill_Defender_8(player: player):
 					set {_gl} to location of {_player}
 					add 1 to y-coordinate of {_gl}
 					loop 50 times:
-						draw 1 flame particle at {_gl} with direction randomVector({_gl}) and speed 0.5, keepFor 1 tick
+						spawnParticle_Vector(flame, randomVector(), 0.5, {_gl})
 			wait a tick
 		{Stats.%{_player}%::GuardCrash} is set
 		kitMsg({_player}, "§4Guard Crash§eの効果が終了しました")

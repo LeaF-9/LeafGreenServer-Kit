@@ -24,7 +24,7 @@ function kitSkill_Archer_7(player: player):
 			set {Stats.%{_player}%::HawkBlastLoc} to {_block}
 			if block at {_block} is not passable:  # ブロックと衝突した際の挙動
 				delete {Stats.%{_player}%::HawkBlast}
-			drawDot count 1, particle "endrod", center {_block}, visibleRange 100, keepFor 5 ticks
+			kitParticle_HawkBlast_Trail({_block})
 			if mod({_count}, 5) is 0:
 				playSound("entity.phantom.flap", 1, 2, {_block})
 			drawHawkBlast({_block})
@@ -49,13 +49,13 @@ function kitSkill_Archer_7(player: player):
 				add {_len} * sin({_rad}) to x-coordinate of {_el}
 				add {_len} * cos({_rad}) to z-coordinate of {_el}
 				add {_y} to y-coordinate of {_el}
-				drawDot count 3, particle "redstone", RGB 200, 240, 250, center {_el}, visibleRange 100, keepFor 3 ticks
+				kitParticle_HawkBlast_Dust({_el})
 				set {_el} to {_bloc}
 				set {_truerad} to {_rad} + 180
 				add {_len} * sin({_truerad}) to x-coordinate of {_el}
 				add {_len} * cos({_truerad}) to z-coordinate of {_el}
 				subtract {_y} from y-coordinate of {_el}
-				drawDot count 3, particle "redstone", RGB 200, 240, 250, center {_el}, visibleRange 100, keepFor 3 ticks
+				kitParticle_HawkBlast_Dust({_el})
 			wait a tick
 		wait 4 ticks
 		set {_hig} to 8
@@ -64,14 +64,14 @@ function kitSkill_Archer_7(player: player):
 				subtract 0.4 from {_hig}
 				set {_el} to {_bloc}
 				add {_hig} to y-coordinate of {_el}
-				drawDot count 1, particle "endrod", center {_el}, visibleRange 100
+				spawnParticle(end_rod, {_el})
 				set {_el} to {_bloc}
 				subtract {_hig} from y-coordinate of {_el}
-				drawDot count 1, particle "endrod", center {_el}, visibleRange 100
+				spawnParticle(end_rod, {_el})
 			wait a tick
 		playSound("entity.phantom.death", 1, 0.8, {_bloc})
 		loop 100 times:
-			draw 1 endrod particle at {_bloc} with direction randomVector(1) and speed 0.8, keepFor 1 tick
+			spawnParticle_Vector(end_rod, randomVector(1), {_bloc})
 		loop all entities in radius 8 around {_bloc}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			make {_player} damage loop-entity by 6
@@ -79,6 +79,16 @@ function kitSkill_Archer_7(player: player):
 			if type of loop-entity is player:
 				message formatted "§e鷹の閃光§6がヒットした!" to loop-entity
 	# ------------------
+
+function kitParticle_HawkBlast_Trail(loc: location):
+	loop 5 times:
+		spawnParticle(end_rod, {_loc})
+		wait a tick
+
+function kitParticle_HawkBlast_Dust(loc: location):
+	loop 3 times:
+		spawnParticle_Dust(rgb(200, 240, 250), 1, {_loc})
+		wait a tick
 
 function drawHawkBlast(loc: location):
 	set {_froloc} to location 0.6 meters in front of {_loc}
@@ -89,14 +99,14 @@ function drawHawkBlast(loc: location):
 # 胴体中心
 	loop 5 times:
 		set {_el} to location loop-number * 0.2 meters in front of {_froloc}
-		drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+		spawnParticle_Dust(rgb(0, 255, 255), 1, {_el})
 # 尾
 	set {_cariloc} to location 1.2 meters in front of {_froloc}
 	set pitch of {_cariloc} to 0
 	set {_el} to location 0.1 meters to the left of {_cariloc}
-	drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+	spawnParticle_Dust(rgb(0, 255, 255), 1, {_el})
 	set {_el} to location 0.1 meters to the right of {_cariloc}
-	drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+	spawnParticle_Dust(rgb(0, 255, 255), 1, {_el})
 # 胴体端
 	set {_yokloc} to location 0.4 meters in front of {_loc}
 	set {_yaw} to yaw of {_yokloc} + 180
@@ -107,9 +117,9 @@ function drawHawkBlast(loc: location):
 		set {_cariloc} to location loop-number * 0.1 meters in front of {_yokloc}
 		set pitch of {_cariloc} to 0
 		set {_el} to location 0.1 meters to the left of {_cariloc}
-		drawDot count 1, particle "redstone", RGB 50, 255, 255, center {_el}, visibleRange 100
+		spawnParticle_Dust(rgb(50, 255, 255), 1, {_el})
 		set {_el} to location 0.1 meters to the right of {_cariloc}
-		drawDot count 1, particle "redstone", RGB 50, 255, 255, center {_el}, visibleRange 100
+		spawnParticle_Dust(rgb(50, 255, 255), 1, {_el})
 # 背
 	set {_seloc} to location 0.3 meters in front of {_loc}
 	set {_yaw} to yaw of {_seloc} + 180
@@ -124,7 +134,7 @@ function drawHawkBlast(loc: location):
 		set {_upfroloc} to location 0.1 * loop-number meters in front of {_upfroloc}
 		loop 3 times:
 			set {_el} to location loop-number-2 * 0.1 meters in front of {_upfroloc}
-			drawDot count 1, particle "redstone", RGB 0, 255, 255, center {_el}, visibleRange 100
+			spawnParticle_Dust(rgb(0, 255, 255), 1, {_el})
 # 翼
 	set {_floc} to location 0.3 meters in front of {_loc}
 	set {_yaw} to yaw of {_floc} + 180
@@ -141,9 +151,9 @@ function drawHawkBlast(loc: location):
 			set pitch of {_lloc} to pitch of {_bloc}
 			set pitch of {_rloc} to pitch of {_bloc}
 			set {_el} to location loop-number-2 * 0.1 meters in front of {_lloc}
-			drawDot count 1, particle "redstone", RGB 50 * loop-number-1, 255, 255, center {_el}, visibleRange 100
+			spawnParticle_Dust(rgb(50 * loop-number-1, 255, 255), 1, {_el})
 			set {_el} to location loop-number-2 * 0.1 meters in front of {_rloc}
-			drawDot count 1, particle "redstone", RGB 50 * loop-number-1, 255, 255, center {_el}, visibleRange 100
+			spawnParticle_Dust(rgb(50 * loop-number-1, 255, 255), 1, {_el})
 
 on leftclick:
 	metadata value "gametype" of player is "Kit"

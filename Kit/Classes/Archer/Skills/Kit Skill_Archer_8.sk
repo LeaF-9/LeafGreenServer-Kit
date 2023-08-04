@@ -13,7 +13,7 @@ function kitSkill_Archer_8(player: player):
 			add 3 * sin({_rad}) to x-coordinate of {_el}
 			add 3 * cos({_rad}) to z-coordinate of {_el}
 			add 1 to y-coordinate of {_el}
-			drawDot count 1, particle "redstone", RGB 100, 150, 255, center {_el}, visibleRange 30
+			spawnParticle_Dust(rgb(100, 150, 255), 1, {_el})
 			add 36 to {_rad}
 		loop all entities in radius 3 around {_baseloc}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
@@ -31,4 +31,7 @@ function kitSkill_Archer_8(player: player):
 			shoot an arrow from {_pl} at speed 1.5
 			set shooter of shot arrow to {_player}
 			set metadata value "arrowdamage" of shot arrow to 3
-			drawDot count 1, particle "mobspell", RGB 100, 150, 255, center shot arrow, visibleRange 30, keepFor 1 second
+			set {_shotarrow} to shot arrow
+			loop 20 times:
+				spawnParticle_Color(entity_effect, 100 ,150, 255, {_shotarrow})
+				wait a tick

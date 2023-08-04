@@ -1,4 +1,4 @@
-# Electrod
+# Weapon-Name: Geary Cog
 
 function kitWeapon_Engineer_3(player: player):
 	if checkFuel({_player}, 3, "Weapon.main") is true:
@@ -12,7 +12,7 @@ function kitWeapon_Engineer_3(player: player):
 				{_tg} is not set
 				add 1 to {_m}
 				set {_loc} to location {_m} meters in front of {_baseloc}
-				drawDot particle "endrod", center {_loc}, visibleRange 30
+				spawnParticle(end_rod, {_loc})
 				loop all players in radius 2 around {_loc}:
 					{_tg} is not set
 					kitCheckTeam(loop-player, {_player}, false) is true
@@ -24,4 +24,4 @@ function kitWeapon_Engineer_3(player: player):
 			playSound("item.lodestone_compass.lock", 1, 0.5, {_tg})
 			loop 10 times:
 				set {_l} to aroundEffect({_tg})
-				drawDot particle "redstone", RGB 255, 255, 0, center {_l}, visibleRange 30
+				spawnParticle_Dust(rgb(255, 255, 0), 1, {_l})

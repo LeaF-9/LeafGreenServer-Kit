@@ -37,7 +37,7 @@ function kitWeapon_Engineer_5(player: player):
 					send action bar "§e[ §a%{_ok.line}%§8%{_ng.line}% §e]" to {_player}
 					loop 3 times:
 						set {_el} to aroundEffect({_player})
-						drawDot count 1, particle "smoke", center {_el}, visibleRange 30
+						spawnParticle(smoke, {_el})
 					wait a tick
 				wait a tick
 				if {Stats.%{_player}%::BotChargeNow} is {_now}:
@@ -81,7 +81,7 @@ function kitSub_Engineer_5(player: player):
 				add 1.5 to y-coordinate of {_bl}
 				loop {_dis} times:
 					set {_el} to location loop-number meters in front of {_bl}
-					drawDot count 1, particle "endrod", center {_el}, visibleRange 30
+					spawnParticle(end_rod, {_el})
 
 on damage of skeleton:
 	metadata value "Bot Owner" of victim is set
@@ -103,7 +103,7 @@ on damage of skeleton:
 				add a random number between -0.5 and 0.5 to x-coordinate of {_el}
 				add a random number between -0.5 and 0.5 to z-coordinate of {_el}
 				add a random number between 0 and 2 to y-coordinate of {_el}
-				drawDot count 1, particle "critmagic", center {_el}, visibleRange 30
+				spawnParticle(crit, {_el})
 	else:
 		cancel event
 
@@ -270,9 +270,9 @@ function engineerBotBeam(player: player, loc: location, attack: boolean):
 			set {_el} to location {_fr} meters in front of {_loc}
 			if block at {_el} is passable:
 				if {_attack} is false:
-					drawDot count 1, particle "redstone", RGB 44, 169, 225, center {_el}, visibleRange 30
+					spawnParticle_Dust(rgb(44, 169, 225), 1, {_el})
 				else:
-					drawDot count 1, particle "redstone", RGB 211, 56, 28, center {_el}, visibleRange 30
+					spawnParticle_Dust(rgb(211, 56, 28), 1, {_el})
 				loop all entities in radius 1 around {_el}:
 					kitCheckTeam(loop-entity, {_player}, false) is true
 					metadata value "Bot Owner" of loop-entity is not set

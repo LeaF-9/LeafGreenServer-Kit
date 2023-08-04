@@ -15,7 +15,9 @@ function kitSkill_Archer_2(player: player):
 on shoot:
 	{Stats.%shooter%::ForceSnipe} is true
 	projectile is an arrow or a spectral arrow
-	drawDot count 1, particle "redstone", RGB 0, 255, 255, center projectile, visibleRange 30, keepFor a second
+	loop 20 times:
+		spawnParticle_Dust(rgb(0, 255, 255), 1, projectile)
+		wait a tick
 
 on projectile hit:
 	{Stats.%shooter%::ForceSnipe} is true
@@ -30,7 +32,7 @@ on projectile hit:
 		add loop-entity to {_sp::*}
 	set {_loc} to location of projectile
 	loop 10 times:
-		draw 1 critmagic particle at {_loc} with direction randomVector(1) and speed 3, keepFor 1 tick
+		spawnParticle_Vector(crit, randomVector(1), 3)
 	loop 5 times:
 		add 0.4 to {_h}
 		loop {_sp::*}:
@@ -41,7 +43,7 @@ on projectile hit:
 				add 0.5 * sin({_rad}) to x-coordinate of {_el}
 				add 0.5 * cos({_rad}) to z-coordinate of {_el}
 				add {_h} to y-coordinate of {_el}
-				drawDot count 1, particle "mobspell", RGB 0, 255, 255, center {_el}, visibleRange 30
+				spawnParticle_Color(entity_effect, 0, 255, 255, {_el})
 		wait a tick
 
 on damage:

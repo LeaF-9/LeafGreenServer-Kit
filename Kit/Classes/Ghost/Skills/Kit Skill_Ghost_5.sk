@@ -28,7 +28,7 @@ function kitSkill_Ghost_5(player: player):
 							playSound("entity.wither.hurt", 2, 1, {_player})
 							loop loop-number * 2 times:
 								set {_el} to aroundEffect({_player})
-								drawDot count 1, particle "redstone", RGB 100, 0, 0, center {_el}, visibleRange 100
+								spawnParticle_Dust(rgb(100, 0, 0), 1, {_el})
 							subtract 1 from {_health}
 							wait a second
 					if {_ok} is set:
@@ -65,7 +65,7 @@ function kitSkill_Ghost_5(player: player):
 								set {_elbase} to location of loop-block
 								set {_vector} to setVector({_baseloc}, {_elbase}, a random number between 1 and 3)
 								set {_sp} to a random number between 0.75 and 1.5
-								draw 1 smoke particle at {_elbase} with direction {_vector} and speed {_sp}, keepFor 1 tick
+								spawnParticle_Vector(smoke, {_vector}, {_sp}, {_elbase})
 						loop 10 times:
 							loop {_cursed::*}:
 								loop 3 times:
@@ -73,7 +73,7 @@ function kitSkill_Ghost_5(player: player):
 									add a random number between -1 and 1 to x-coordinate of {_l}
 									add a random number between -1 and 1 to z-coordinate of {_l}
 									add a random number between 0 and 3 to y-coordinate of {_l}
-									drawDot count 1, particle "mobspell", RGB 0, 0, 0, center {_l}, visibleRange 100
+									spawnParticle_Color(entity_effect, 0, 0, 0, {_l})
 							wait a tick
 					else:
 						set {_memsg} to kitGhostMessage("§7呪術は失敗した...")

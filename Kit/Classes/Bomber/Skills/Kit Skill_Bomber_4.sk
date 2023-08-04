@@ -7,7 +7,7 @@ function kitSkill_Bomber_4(player: player):
 	add 1.2 to y-coordinate of {_loc}
 	shoot a falling slime block from {_loc} at speed 1.5
 	set metadata value "sticky-bomb" of shot entity to "%{_player}%"
-	drawDot count 1, particle "slime", center shot entity, visibleRange 30, keepFor 3 seconds
+	kitParticle_StickyBomb_Slime(shot entity)
 	playSound("entity.slime.jump", 1, 1, {_player})
 	loop 100 times:
 		{_target} is not set
@@ -88,3 +88,8 @@ function kitSkill_Bomber_4(player: player):
 			metadata value "sticky-armor" of loop-entity is "%{_player}%"
 			delete loop-entity
 		kitExplosion({_player}, 3, {_bl})
+
+function kitParticle_StickyBomb_Slime(entity: entity):
+	loop 60 times:
+		spawnParticle(item_slime, {_entity})
+		wait a tick

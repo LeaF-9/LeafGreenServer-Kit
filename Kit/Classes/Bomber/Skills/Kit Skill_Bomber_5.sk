@@ -8,7 +8,7 @@ function kitSkill_Bomber_5(player: player):
 	set metadata value "kit-bomber" of shot primed tnt to 2
 	set metadata value "pop" of shot primed tnt to "%{_player}%"
 	playSound("entity.tnt.primed", 1, 1.5, {_player})
-	drawDot count 1, particle "lava", center shot primed tnt, visibleRange 30, keepFor 40 ticks
+	kitParticle_PopBurst_Lava(shot primed tnt, 20 ticks)
 	setFuseTime(shot primed tnt, 40)
 	loop 40 times:
 		{_alr} is not set
@@ -39,7 +39,7 @@ on explosion:
 			drop a cocoa bean named "%{_act}%" at event-location
 			set metadata value "gametype" of last dropped item to "Kit"
 			set metadata value "pop-burst" of last dropped item to "%{_act}%"
-			drawDot count 1, particle "lava", center last dropped item, visibleRange 30, keepFor 10 ticks
+			kitParticle_PopBurst_Lava(last dropped item, 10 ticks)
 			push last dropped item upwards at speed 0.2
 			push last dropped item north at speed random number from -1 to 1
 			push last dropped item east at speed random number from -1 to 1
@@ -57,7 +57,7 @@ on explosion:
 				drop a cocoa bean named "%{_act}%" at event-location
 				set metadata value "gametype" of last dropped item to "Kit"
 				set metadata value "pop-burst" of last dropped item to "%{_act}%"
-				drawDot count 1, particle "lava", center last dropped item, visibleRange 30, keepFor 10 ticks
+				kitParticle_PopBurst_Lava(last dropped item, 10 ticks)
 				push last dropped item upwards at speed 0.1
 				push last dropped item north at speed random number from -1 to 1
 				push last dropped item east at speed random number from -1 to 1
@@ -69,3 +69,9 @@ on explosion:
 			delete loop-dropped item
 		loop {_dloc::*}:
 			kitExplosion({_act}, 1.3, loop-value)
+
+function kitParticle_PopBurst_Lava(entity: entity, time: time span):
+	set {_ln} to convertTimeNumber({_time})
+	loop {_ln} times:
+		spawnParticle(lava, {_entity})
+		wait a tick

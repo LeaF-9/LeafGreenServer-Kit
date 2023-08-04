@@ -27,7 +27,7 @@ function kitUltAssassin(player: player):
 				delete {Kit-Invisible::%{_player}%}
 				send action bar "§c§l透明化が解除された!" to {_player}
 			set {_eb} to aroundEffect({_player})
-			drawDot count 1, particle "mobspell", RGB 100, 0, 10, center {_eb}, visibleRange 30
+			spawnParticle_Color(entity_effect, 100, 0, 10, {_eb})
 		wait a tick
 	delete {Stats.%{_player}%::UltAssassin}
 	if {Kit-Invisible::%{_player}%} is true:
@@ -61,6 +61,6 @@ on damage:
 				set {_e} to aroundEffect(victim, 5)
 				set {_r} to a random number between 0 and 5
 				set y-coordinate of {_e} to y-coordinate of victim + {_r}
-				drawDot count 1, particle "witchspell", center {_e}, visibleRange 30
+				spawnParticle(witch, {_e})
 		else:
 			set damage to 1

@@ -4,8 +4,7 @@ function kitUltHealer(player: player):
 	message "§c効果中,空を飛ぶことが可能になります!" to {_player}
 	message "§c周辺の味方の体力を回復し,オドを増加させていきます!" to {_player}
 	message "§c既に満タンであれば,徐々に最大体力を増やします!" to {_player}
-	set {_c} to drawCount({_player})
-	drawWings style 6, particle1 "redstone", RGB 255, 255, 255, particle2 "redstone", RGB2 179, 255, 255, particle3 "mobspell", RGB3 229, 151, 178, center {_player}, id "%{_player}%-%{_c}%", angle 110, height 0, space 0.2, visibleRange 30, tps 0, second 3
+	kitParticle_AngelHealing_Wing({_player})
 	allow fly for {_player}
 	loop 200 times:
 		delete {_og}
@@ -31,5 +30,153 @@ function kitUltHealer(player: player):
 				delete {_ogn}
 				add 10 to {Kit-Odo::%{_player}%}
 		wait a tick
-	stopEffect "%{_player}%-%{_c}%"
 	disallow fly for {_player}
+
+function kitParticle_AngelHealing_Wing(player: player):
+	loop 200 times:
+		set {_upper::*} to kitParticle_AngelHealing_Locs_Upper({_player})
+		set {_middle::*} to kitParticle_AngelHealing_Locs_Middle({_player})
+		set {_lower::*} to kitParticle_AngelHealing_Locs_Lower({_player})
+		loop {_upper::*}:
+			spawnParticle_Dust(rgb(255, 255, 255), 1.1, loop-value)
+		loop {_middle::*}:
+			spawnParticle_Dust(rgb(179, 255, 255), 0.75, loop-value)
+		loop {_lower::*}:
+			spawnaParticle_Color(entity_effect, 229, 151, 178, loop-value)
+		wait a tick
+
+# 羽上部分
+function kitParticle_AngelHealing_Locs_Upper(player: player) :: locations:
+	# baseloc
+	set {_baseloc} to location 1.25 meters above {_player}
+	set pitch of {_baseloc} to 0
+	set {_baseloc} to location 0.25 meters behind {_baseloc}
+	# left-1
+	set {_baselefts::1} to location 0.25 meters to the left of {_baseloc}
+	# left-2
+	set {_baselefts::2} to location 0.3 meters to the left of {_baselefts::1}
+	set {_baselefts::2} to location 0.25 meters above {_baselefts::2}
+	# left-3
+	set {_baselefts::3} to location 0.6 meters to the left of {_baselefts::1}
+	# left-1 - left-2
+	set {_dis} to distance between {_baselefts::1} and {_baselefts::2}
+	set {_v} to setVector({_baselefts::1}, {_baselefts::2})
+	set yaw of {_baselefts::1} to yaw of {_v}
+	set pitch of {_baselefts::1} to pitch of {_v}
+	loop 5 times:
+		set {_el} to location {_dis} / 5 * loop-number meters in front of {_baselefts::1}
+		add {_el} to {_resultlocs::*}
+	# left-2 - left-3
+	set {_dis} to distance between {_baselefts::2} and {_baselefts::3}
+	set {_v} to setVector({_baselefts::2}, {_baselefts::3})
+	set yaw of {_baselefts::2} to yaw of {_v}
+	set pitch of {_baselefts::2} to pitch of {_v}
+	loop 5 times:
+		set {_el} to location {_dis} / 5 * loop-number meters in front of {_baselefts::2}
+		add {_el} to {_resultlocs::*}
+	# right-1
+	set {_baserights::1} to location 0.25 meters to the right of {_baseloc}
+	# right-2
+	set {_baserights::2} to location 0.3 meters to the right of {_baserights::1}
+	set {_baserights::2} to location 0.25 meters above {_baserights::2}
+	# right-3
+	set {_baserights::3} to location 0.6 meters to the right of {_baserights::1}
+	# right-1 - right-2
+	set {_dis} to distance between {_baserights::1} and {_baserights::2}
+	set {_v} to setVector({_baserights::1}, {_baserights::2})
+	set yaw of {_baserights::1} to yaw of {_v}
+	set pitch of {_baserights::1} to pitch of {_v}
+	loop 5 times:
+		set {_el} to location {_dis} / 5 * loop-number meters in front of {_baserights::1}
+		add {_el} to {_resultlocs::*}
+	# right-2 - right-3
+	set {_dis} to distance between {_baserights::2} and {_baserights::3}
+	set {_v} to setVector({_baserights::2}, {_baserights::3})
+	set yaw of {_baserights::2} to yaw of {_v}
+	set pitch of {_baserights::2} to pitch of {_v}
+	loop 5 times:
+		set {_el} to location {_dis} / 5 * loop-number meters in front of {_baserights::2}
+		add {_el} to {_resultlocs::*}
+	return {_resultlocs::*}
+
+# 羽中部分
+function kitParticle_AngelHealing_Locs_Middle(player: player) :: locations:
+	# baseloc
+	set {_baseloc} to location 1.2 meters above {_player}
+	set pitch of {_baseloc} to 0
+	set {_baseloc} to location 0.25 meters behind {_baseloc}
+	# left-1
+	set {_baselefts::1} to location 0.25 meters to the left of {_baseloc}
+	# left-2
+	set {_baselefts::2} to location 0.3 meters to the left of {_baselefts::1}
+	set {_baselefts::2} to location 0.25 meters above {_baselefts::2}
+	# left-3
+	set {_baselefts::3} to location 0.6 meters to the left of {_baselefts::1}
+	# left-1 - left-2
+	set {_dis} to distance between {_baselefts::1} and {_baselefts::2}
+	set {_v} to setVector({_baselefts::1}, {_baselefts::2})
+	set yaw of {_baselefts::1} to yaw of {_v}
+	set pitch of {_baselefts::1} to pitch of {_v}
+	loop 10 times:
+		set {_el} to location {_dis} / 10 * loop-number meters in front of {_baselefts::1}
+		add {_el} to {_resultlocs::*}
+	# left-2 - left-3
+	set {_dis} to distance between {_baselefts::2} and {_baselefts::3}
+	set {_v} to setVector({_baselefts::2}, {_baselefts::3})
+	set yaw of {_baselefts::2} to yaw of {_v}
+	set pitch of {_baselefts::2} to pitch of {_v}
+	loop 10 times:
+		set {_el} to location {_dis} / 10 * loop-number meters in front of {_baselefts::2}
+		add {_el} to {_resultlocs::*}
+	# right-1
+	set {_baserights::1} to location 0.25 meters to the right of {_baseloc}
+	# right-2
+	set {_baserights::2} to location 0.3 meters to the right of {_baserights::1}
+	set {_baserights::2} to location 0.25 meters above {_baserights::2}
+	# right-3
+	set {_baserights::3} to location 0.6 meters to the right of {_baserights::1}
+	# right-1 - right-2
+	set {_dis} to distance between {_baserights::1} and {_baserights::2}
+	set {_v} to setVector({_baserights::1}, {_baserights::2})
+	set yaw of {_baserights::1} to yaw of {_v}
+	set pitch of {_baserights::1} to pitch of {_v}
+	loop 10 times:
+		set {_el} to location {_dis} / 10 * loop-number meters in front of {_baserights::1}
+		add {_el} to {_resultlocs::*}
+	# right-2 - right-3
+	set {_dis} to distance between {_baserights::2} and {_baserights::3}
+	set {_v} to setVector({_baserights::2}, {_baserights::3})
+	set yaw of {_baserights::2} to yaw of {_v}
+	set pitch of {_baserights::2} to pitch of {_v}
+	loop 10 times:
+		set {_el} to location {_dis} / 10 * loop-number meters in front of {_baserights::2}
+		add {_el} to {_resultlocs::*}
+	return {_resultlocs::*}
+
+# 羽下部分
+function kitParticle_AngelHealing_Locs_Lower(player: player) :: locations:
+	# baseloc
+	set {_baseloc} to location 1.1 meters above {_player}
+	set pitch of {_baseloc} to 0
+	set {_baseloc} to location 0.25 meters behind {_baseloc}
+	# left-1
+	set {_baselefts::1} to location 0.25 meters to the left of {_baseloc}
+	# left-2
+	set {_baselefts::2} to location 0.3 meters to the left of {_baselefts::1}
+	set {_baselefts::2} to location 0.25 meters above {_baselefts::2}
+	# left-3
+	set {_baselefts::3} to location 0.6 meters to the left of {_baselefts::1}
+	# left-1 left-2 left-3
+	loop {_baselefts::*}:
+		add loop-value to {_resultlocs::*}
+	# right-1
+	set {_baserights::1} to location 0.25 meters to the right of {_baseloc}
+	# right-2
+	set {_baserights::2} to location 0.3 meters to the right of {_baserights::1}
+	set {_baserights::2} to location 0.25 meters above {_baserights::2}
+	# right-3
+	set {_baserights::3} to location 0.6 meters to the right of {_baserights::1}
+	# right-1 right-2 right-3
+	loop {_baserights::*}:
+		add loop-value to {_resultlocs::*}
+	return {_resultlocs::*}

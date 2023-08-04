@@ -20,7 +20,12 @@ function kitSkill_Bomber_8(player: player):
 		set metadata value "biologic-bomb" of spawned creeper to "%{_player}%"
 		set metadata value "kit-bomber" of spawned creeper to 2
 		set metadata value "attacker" of spawned creeper to "%{_player}%"
-		drawDot count 1, particle "mobspell", RGB 173, 255, 47, center spawned creeper, visibleRange 30, keepFor 3 seconds
+		kitParticle_BiologicalBomb_Spell(spawned creeper)
+
+function kitParticle_BiologicalBomb_Spell(entity: entity):
+	loop 60 times:
+		spawnParticle_Color(entity_effect, 173, 255, 47, {_entity})
+		wait a tick
 
 on damage of creeper:
 	metadata value "biologic-bomb" of victim is set
