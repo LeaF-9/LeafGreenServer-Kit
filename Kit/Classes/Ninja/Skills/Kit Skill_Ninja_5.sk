@@ -227,7 +227,7 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 		loop-block is air
 		block below loop-block is not passable
 		add location of loop-block to {_grasses::*}
-		make all players see loop-block as dirt
+		make all players see loop-block as short grass
 		chance of 30%:
 			spawnParticle(happy_villager, location of loop-block)
 	# -----------------------
@@ -256,6 +256,8 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 						send action bar "§b§l透明化が解除されました!" to loop-value-2
 				else:
 					resetEffect(loop-value-2)
+		loop {_grasses::*}:
+			make all players see block at loop-value-2 as short grass
 		wait a tick
 	loop {_entered::*}:
 		if kitCheckTeam(loop-value, {_player}, true) is true:
@@ -266,6 +268,8 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 				send action bar "§b§l透明化が解除されました!" to loop-value
 		else:
 			resetEffect(loop-value)
+	loop {_grasses::*}:
+			make all players see block at loop-value as air
 
 function kitParticle_Ninjutsu_MOKU(loc: location):
 	loop all blocks in radius 5 around {_loc}:
