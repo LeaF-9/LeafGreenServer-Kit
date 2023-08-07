@@ -341,6 +341,7 @@ function kitNinjutsu_MIZU(player: player, l: location):
 # Ninjutsu -火-
 function kitNinjutsu_HONO(player: player, loc: location):
 	playSound("entity.ghast.shoot", 1, 1, {_player})
+	applyEffect({_player}, fire resistance, 1, 5 seconds)
 	kitParticle_Ninjutsu_HONO_1({_loc})
 	loop all entities in radius 5 around {_loc}:
 		kitCheckTeam({_player}, loop-entity, false) is true
@@ -357,7 +358,7 @@ function kitNinjutsu_HONO(player: player, loc: location):
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			if loop-entity is not burning:
 				playSound("block.campfire.crackle", 1, 1, loop-entity)
-			ignite loop-entity for 5 seconds
+				ignite loop-entity for 5 seconds
 			kitParticle_Ninjutsu_HONO_2(location of loop-entity)
 		chance of 10%:
 			playSound("block.furnace.fire_crackle", 1, 1.25, {_loc})
@@ -366,6 +367,7 @@ function kitNinjutsu_HONO(player: player, loc: location):
 		if block at loop-value is not air:
 			set block at loop-value to air
 		remove loop-value from {Block.%{_player}%::*}
+	extinguish {_player}
 
 function kitParticle_Ninjutsu_HONO_1(baseloc: location):
 	set pitch of {_baseloc} to 0
@@ -378,9 +380,9 @@ function kitParticle_Ninjutsu_HONO_1(baseloc: location):
 	loop 100 times:  # 5秒間
 		set {_y} to 0
 		set {_rad} to {_baserad}
-		loop 10 times:  # 上5m(0.5mおき)
+		loop 10 times:  # 上3m(0.3mおき)
 			set {_elbase} to {_baseloc}
-			add 0.5 to {_y}
+			add 0.3 to {_y}
 			add {_y} to y-coordinate of {_elbase}
 			loop 8 times:  # 回転
 				add 45 to {_rad}
