@@ -441,14 +441,17 @@ function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出
 	set {_meter.ex} to 5
 	loop 20 times:
 		playSound("block.powder_snow.break", 1, 0.5 + 0.05 * loop-number, {_loc})
-		set {_el.in} to {_loc}
-		add {_meter.in} * sin({_rad.in}) to x-pos of {_el.in}
-		add {_meter.in} * cos({_rad.in}) to z-pos of {_el.in}
-		spawnParticle_DustTransition(rgb(175, 238, 238), rgb(217, 238, 238), 0.8, {_el.in})
-		set {_el.ex} to {_loc}
-		add {_meter.ex} * sin({_rad.ex}) to x-pos of {_el.ex}
-		add {_meter.ex} * cos({_rad.ex}) to z-pos of {_el.ex}
-		spawnParticle_DustTransition(rgb(37, 183, 192), rgb(130, 205, 221), 1.5, {_el.ex})
+		loop 4 times:
+			add 90 to {_rad.in}
+			set {_el.in} to {_loc}
+			add {_meter.in} * sin({_rad.in}) to x-pos of {_el.in}
+			add {_meter.in} * cos({_rad.in}) to z-pos of {_el.in}
+			spawnParticle_DustTransition(rgb(175, 238, 238), rgb(217, 238, 238), 0.8, {_el.in})
+			add 90 to {_rad.ex}
+			set {_el.ex} to {_loc}
+			add {_meter.ex} * sin({_rad.ex}) to x-pos of {_el.ex}
+			add {_meter.ex} * cos({_rad.ex}) to z-pos of {_el.ex}
+			spawnParticle_DustTransition(rgb(37, 183, 192), rgb(130, 205, 221), 1.5, {_el.ex})
 		add 3 to {_rad.in}
 		add 3 to {_rad.ex}
 		subtract 0.15 from {_meter.in}
@@ -475,8 +478,16 @@ function kitParticle_Ninjutsu_HYOU_2(loc: location):  # 発動後の爆発とフ
 			set {_el} to {_loc}
 			add 5 * sin({_rad}) to x-pos of {_el}
 			add 5 * cos({_rad}) to z-pos of {_el}
-			spawnParticle_DustTransition(rgb(0, 163, 175), rgb(131, 204, 210), 0.5, {_el})
+			spawnParticle_DustTransition(rgb(0, 163, 175), rgb(131, 204, 210), 2, {_el})
 		add 10 to {_rad}
+		loop all blocks in radius 5 around {_loc}:
+			loop-block is air
+			chance of 3%:
+				spawnParticle_BlockData(falling_dust, ice, location of loop-block)
+			chance of 3%:
+				spawnParticle_BlockData(falling_dust, blue ice, location of loop-block)
+			chance of 3%:
+				spawnParticle_BlockData(falling_dust, snow block, location of loop-block)
 		wait a tick
 
 function kitParticle_Ninjutsu_HYOU_3(player: player):  # フィールド内のプレイヤー演出
