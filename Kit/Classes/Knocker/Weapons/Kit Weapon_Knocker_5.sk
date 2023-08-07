@@ -32,7 +32,7 @@ on projectile hit:
 				loop {_dis} times:
 					add 1 to {_ln}
 					set {_el} to location 0.5 * {_ln} meters in front of {_elbase}
-					drawDot count 1, particle "redstone", RGB 112, 128, 144, center {_el}, visibleRange 30
+					spawnParticle_Dust(rgb(112, 128, 144), 1, {_el})
 				if distance between loop-entity and {_center} > 3:
 					set {_to} to location of loop-entity
 					set {_vector} to setVector({_to}, {_center}, 0.1)
@@ -43,7 +43,7 @@ on projectile hit:
 				add 0.2 to {_ln}
 				set {_ce} to location {_ln} meters above {_center}
 				chance of 10%:
-					drawDot count 1, particle "redstone", RGB 199, 227, 255, center {_ce}, visibleRange 30
+					spawnParticle_Dust(rgb(199, 227, 255), 1, {_ce})
 			wait a tick
 
 function kitWeapon_Knocker_5(player: player):
@@ -78,4 +78,4 @@ function kitWeapon_Knocker_5(player: player):
 				set {_el} to {_baseloc}
 				add 5 * sin({_rad}) to x-coordinate of {_el}
 				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "witchspell", center {_el}, visibleRange 30
+				spawnParticle(witch, {_el})

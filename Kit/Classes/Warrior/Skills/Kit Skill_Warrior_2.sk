@@ -7,16 +7,18 @@ function kitSkill_Warrior_2(player: player):
 	set {Stats.%{_player}%::LimiterRemovalTime} to {_now}
 	kitMsg({_player}, "§5リミッターを外しました...")
 	playSound("entity.blaze.ambient", 1, 0.5, {_player})
-	drawDot count 5, particle "mobspell", RGB 255, 0, 0, center {_player}, visibleRange 30, keepFor 5 seconds
 	apply speed 2 to {_player} for 5 seconds
-	wait 5 seconds
+	loop 100 times:
+		spawnParticle_Color(entity_effect, 255, 0, 0, location of {_player})
+		wait a tick
 	if {Stats.%{_player}%::LimiterRemovalTime} is {_now}:
 		set {Stats.%{_player}%::LimiterRemoval} to false
-		drawDot count 5, particle "mobspell", RGB 0, 0, 255, center {_player}, visibleRange 30, keepFor 5 seconds
 		kitMsg({_player}, "§1リミッターが戻り,疲れてしまった...")
 		remove slowness from {_player}
 		apply slowness 3 to {_player} for 5 seconds
-		wait 5 seconds
+		loop 100 times:
+			spanwParticle_Color(entity_effect, 0, 0, 255, location of {_player})
+			wait a tick
 		delete {Stats.%{_player}%::LimiterRemoval}
 		if {Stats.%{_player}%::LimiterRemovalTime} is {_now}:
 			kitMsg({_player}, "§2疲れがとれた!")

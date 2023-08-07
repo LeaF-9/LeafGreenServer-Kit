@@ -22,7 +22,7 @@ function kitSkill_Knight_1(player: player):
 				set shooter of loop-projectile to {_player}
 				set metadata value "reject-projectile" of loop-projectile to "true"
 				playSound("block.anvil.land", 1, 1.5, {_player})
-				drawDot count 1, particle "explosionlarge", center {_player}, visibleRange 50
+				spawnParticle(explosion, {_player})
 				teleport loop-projectile to {_floc}
 				delete velocity of loop-projectile
 				set {_v} to setVector(location of head of {_player}, location 10 meters in front of head of {_player})
@@ -62,7 +62,7 @@ function kitEffect_RejectProjectile(player: player, num: number):
 	loop 5 times:
 		set {_effloc} to location loop-number meters in front of {_baseloc}
 		set {_g} to a random number between 0 and 255
-		drawDot count 1, particle "redstone", RGB 0, {_g}, 255, center {_effloc}, visibleRange 30
+		spawnParticle_Dust(rgb(0, {_g}, 255), 1, {_effloc})
 
 on damage:
 	damage was caused by projectile

@@ -14,7 +14,7 @@ function kitSkill_Mercenary_7(player: player):
 			set metadata value "gametype" of last dropped item to "Kit"
 			set metadata value "unpickable" of last dropped item to "true"
 			set metadata value "sanguine-bog" of last dropped item to "%{_player}%"
-			drawDot count 1, particle "redstone", RGB 100, 1, 37, center last dropped item, visibleRange 50, keepFor 2 seconds
+			kitParticle_SanguineBog_Generate(last dropped item)
 		set {_to} to location 15 meters above {_loc}
 		loop 20 times:
 			loop all entities:
@@ -28,7 +28,7 @@ function kitSkill_Mercenary_7(player: player):
 				add a random number between -1 and 1 to x-coordinate of {_el}
 				add a random number between -1 and 1 to y-coordinate of {_el}
 				add a random number between -1 and 1 to z-coordinate of {_el}
-				drawDot count 1, particle "mobspell", RGB 200, 1, 37, center {_el}, visibleRange 50
+				spawnParticle_Color(entity_effect, 200, 1, 37, {_el})
 			wait a tick
 		playSound("block.respawn_anchor.charge", 1, 0.5, {_loc})
 		kitEffect_SanguineBog({_loc})
@@ -50,7 +50,7 @@ function kitSkill_Mercenary_7(player: player):
 				loop 3 times:
 					add 1 to {_m}
 					set {_plel} to location {_m} meters in front of {_pel}
-					drawDot count 1, particle "redstone", RGB 200, 1, 37, center {_plel}, visibleRange 50
+					spawnParticle_Color(entity_effect, 200, 1, 37, {_plel})
 		playSound("block.lava.ambient", 1, 2, {_loc})
 		loop 20 times:
 			loop all players in radius 10 around {_loc}:
@@ -65,7 +65,7 @@ function kitSkill_Mercenary_7(player: player):
 					set {_el} to {_loc}
 					add {_m} * sin({_rad}) to x-coordinate of {_el}
 					add {_m} * cos({_rad}) to z-coordinate of {_el}
-					drawDot count 1, particle "redstone", RGB 200, 1, 37, center {_el}, visibleRange 50
+					spawnParticle_Dust(rgb(200, 1, 37), 1, {_el})
 					add {_drad} to {_rad}
 			wait a tick
 		loop all entities:
@@ -95,7 +95,7 @@ function kitSkill_Mercenary_7(player: player):
 				add 36 to {_rad}
 				add {_pullm} * sin({_rad}) to x-coordinate of {_el}
 				add {_pullm} * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "mobspell", RGB 200, 1, 37, center {_el}, visibleRange 50
+				spawnParticle_Color(entity_effect, 200, 1, 37, {_el})
 			add 10 to {_rad}
 			add 0.003 to {_pullpow}
 			subtract 1 from {_pullm}
@@ -104,6 +104,11 @@ function kitSkill_Mercenary_7(player: player):
 			wait a tick
 	else:
 		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+
+function kitParticle_SanguineBog_Generate(entity: entity):
+	loop 40 times:
+		spawnParticle_Dust(rgb(100, 1, 37), 1, {_entity})
+		wait a tick
 
 function kitEffect_SanguineBog(loc: location):
 	set {_y} to 15
@@ -118,5 +123,5 @@ function kitEffect_SanguineBog(loc: location):
 			add {_len} * sin({_rad}) to x-coordinate of {_el}
 			add {_len} * cos({_rad}) to z-coordinate of {_el}
 			add {_y} to y-coordinate of {_el}
-			drawDot count 1, particle "mobspell", RGB 200, 1, 37, center {_el}, visibleRange 50, keepFor 3 ticks
+			spawnParticle_Color(entity_effect, 200, 1, 37, {_el})
 		wait a tick

@@ -12,7 +12,7 @@ function kitSkill_Mercenary_3(player: player):
 			set {_el} to {_bl}
 			set {_v} to randomVector({_el})
 			drop a redstone named "%{_player}%" at {_bl}
-			drawDot count 1, particle "redstone", RGB 255, 0, 0, center {_el}, visibleRange 30, keepFor 1 seconds
+			spawnParticle_Dust(rgb(255, 0, 0), 2.5, {_el})
 			set metadata value "kit-bloodysplash" of dropped item to "%{_player}%"
 			set metadata value "kit-bloodytimer" of dropped item to "%{_now}%"
 			set velocity of dropped item to {_v}
@@ -35,4 +35,4 @@ on pick up redstone:
 		playSound("block.glass.break", 1, 1.5, player)
 		loop 10 times:
 			set {_el} to aroundEffect(player)
-			drawDot count 1, particle "itemcrack", material redstone, center {_el}, visibleRange 30
+			spawnParticle_Item(redstone, {_el})

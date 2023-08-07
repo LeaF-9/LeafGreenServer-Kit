@@ -15,7 +15,7 @@ function kitSkill_Thief_7(player: player):
 		set metadata value "gametype" of last dropped item to "Kit"
 		set metadata value "unpickable" of last dropped item to "true"
 		set metadata value "theft-declaration" of last dropped item to "%{_player}%"
-		drawDot count 1, particle "cloud", center last dropped item, visibleRange 30, keepFor 3 seconds
+		kitParticle_TheftDeclaration_Paper(last dropped item)
 		set velocity of last dropped item to {_vector}
 		wait 3 seconds
 		loop all entities:
@@ -83,6 +83,11 @@ function kitSkill_Thief_7(player: player):
 			delete {StealItem-Theft Declaration.%{_player}%::*}
 			delete {Stats.%{_player}%::Stealing.Theft Declaration}
 
+function kitParticle_TheftDeclaration_Paper(entity: entity):
+	loop 60 times:
+		spawnParticle(cloud, location of {_entity})
+		wait a tick
+
 on damage of dropped item:
 	metadata value "theft-declaration" of victim is set
 	cancel event
@@ -96,6 +101,6 @@ function kitEffect_TheftDeclaration(loc: location):
 			add 36 to {_rad}
 			add {_m} * sin({_rad}) to x-coordinate of {_el}
 			add {_m} * cos({_rad}) to z-coordinate of {_el}
-			drawDot count 1, particle "redstone", RGB 255, 255, 255, center {_el}, visibleRange 30
+			spawnParticle_Dust(rgb(255, 255, 255), 1, {_el})
 		add 10 to {_rad}
 		wait a tick

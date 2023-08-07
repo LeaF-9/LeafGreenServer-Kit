@@ -14,7 +14,7 @@ function kitSkill_Mercenary_2(player: player):
 			else:
 				loop 10 times:
 					set {_el} to aroundEffect(loop-entity)
-					drawDot count 1, particle "smoke", center {_el}, visibleRange 30
+					spawnParticle(smoke, {_el})
 				if {Kit-Shield::%loop-entity%} is set:
 					delete {Kit-Shield::%loop-entity%}
 					delete {Kit-ShieldTime::%loop-entity%}
@@ -23,7 +23,7 @@ function kitSkill_Mercenary_2(player: player):
 		else if {Kit-Blood::%loop-entity%} is set:
 			loop 10 times:
 				set {_el} to aroundEffect(loop-entity)
-				drawDot count 1, particle "smoke", center {_el}, visibleRange 30
+				spawnParticle(smoke, {_el})
 			kitDamage({_player}, loop-entity, 3, true)
 			message formatted "§4体力を削られた..." to loop-entity		
 	set {_y} to 0
@@ -35,6 +35,6 @@ function kitSkill_Mercenary_2(player: player):
 			add 10 * sin({_rad}) to x-coordinate of {_effectloc}
 			add 10 * cos({_rad}) to z-coordinate of {_effectloc}
 			add {_y} to y-coordinate of {_effectloc}
-			drawDot count 1, particle "mobspell", RGB 100, 0, 50, center {_effectloc}, visibleRange 30
+			spawnParticle_Color(entity_effect, 100, 0, 50, {_effectloc})
 		add 0.25 to {_y}
 		wait a tick

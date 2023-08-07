@@ -26,7 +26,7 @@ function kitSkill_Warrior_5(player: player):
 				set {_dis} to distance between {_baseloc} and loop-value-2
 				set {_em} to {_dis} / 20 * {_ln}
 				set {_eloc} to location {_em} meters in front of loop-value-2
-				drawDot count 1, particle "endrod", center {_eloc}, visibleRange 30
+				spawnParticle(end_rod, {_eloc})
 			wait a tick
 		playSound("entity.wither.spawn", 1, 0.5, {_player})
 		kill {_player}
@@ -38,9 +38,9 @@ function kitSkill_Warrior_5(player: player):
 			set {_el} to location of loop-entity
 			add 1 to y-coordinate of {_el}
 			loop 30 times:
-				draw 1 critmagic particle at {_el} with direction randomVector({_el}) and speed 2, keepFor 1 tick
+				spawnParticle_Vector(crit, randomVector(), 1.5, {_el})
 		add 1 to y-coordinate of {_baseloc}
 		loop 200 times:
-			draw 1 campfirecozy particle at {_baseloc} with direction randomVector({_baseloc}) and speed 5, keepFor 5 tick
+			spawnParticle_Vector(campfire_cosy_smoke, randomVector(), 3, {_baseloc})
 	else:
 		send action bar "§c§l体力が多すぎます!" to {_player}

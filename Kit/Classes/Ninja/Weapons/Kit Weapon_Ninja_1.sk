@@ -5,11 +5,16 @@ function kitWeapon_Ninja_1(player: player):
 	shoot a snowball from {_player} at speed 5
 	set metadata value "shuriken" of shot projectile to "true"
 	set item of shot projectile to prismarine crystal
-	drawDot count 1, particle "redstone", RGB 176, 196, 222, center shot projectile, visibleRange 30, keepFor 0.5 seconds
+	kitParticle_Shuriken_Trail(shot projectile)
 	playSound("entity.arrow.shoot", 1, 2, player)
 	set {_name} to display name of {_player}'s offhand tool
 	set {_lore::*} to lore of {_player}'s offhand tool
 	remove a prismarine crystal named {_name} with lore {_lore::*} from {_player}
+
+function kitParticle_Shuriken_Trail(proj: entity):
+	loop 10 times:
+		spawnParticle_Dust(rgb(176, 196, 222), 1, location of {_proj})
+		wait a tick
 
 on damage of player:
 	{Class::%attacker%} is "Ninja"

@@ -6,7 +6,7 @@ function kitUltThief(player: player):
 	loop all players in radius 10 around {_player}:
 		if kitCheckTeam(loop-player, {_player}, false, true) is true:
 			make a fake explosion at loop-player
-			drawDot count 1, particle "blockcrack", material oak log, center loop-player, visibleRange 30, keepFor 100 ticks
+			kitParticle_HeinousLarceny_Hit(loop-player)
 			add loop-player to {_hit::*}
 			if {Class::%loop-player%} is "Werewolf":
 				if {Stats.%loop-player%::Instinct} is true:
@@ -45,3 +45,8 @@ function kitUltThief(player: player):
 		giveEmJItems(loop-value, {_jewel}, {_gem})
 		giveStWItems(loop-value, {_wool}, {_spwool})
 		delete {Stats.%loop-value%::ThiefUlt}
+
+function kitParticle_HeinousLarceny_Hit(player: player):
+	loop 100 times:
+		spawnParticle_Block(dirt, location of {_player}
+		wait a tick

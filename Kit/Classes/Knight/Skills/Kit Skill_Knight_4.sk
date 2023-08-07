@@ -15,9 +15,11 @@ function kitSkill_Knight_4(player: player):
 		set spawned skeleton's display name to "%{_player}%"
 		set metadata value "soldsk" of spawned skeleton to "%{_player}%"
 		set metadata value "gametype" of spawned skeleton to "Kit"
-		drawDot count 10, particle "cloud", center location of block above {_l}, visibleRange 30, keepFor 20 ticks
+		loop 15 times:
+			spawnParticle_Vector(cloud, randomVector(), 0.3, location 1 meter above {_l})
 	wait 10 seconds
 	loop all skeletons:
 		metadata value "soldsk" of loop-skeleton is "%{_player}%"
-		drawDot count 10, particle "cloud", center location of block above loop-skeleton, visibleRange 30, keepFor 20 ticks
+		loop 10 times:
+			spawnParticle(smoke, aroundEffect(loop-skeleton))
 		delete loop-skeleton

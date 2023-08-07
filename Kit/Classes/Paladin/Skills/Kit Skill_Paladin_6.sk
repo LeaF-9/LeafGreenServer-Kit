@@ -27,7 +27,7 @@ function kitSkill_Paladin_6(player: player):
 				add a random number between -1 and 1 to x-coordinate of {_el}
 				add a random number between -1 and 1 to z-coordinate of {_el}
 				add a random number between -0.5 and 2.5 to y-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 255, 191, 128, center {_el}, visibleRange 50
+				spawnParticle_Dust(rgb(255, 191, 128), 1, {_el})
 				wait a tick
 		if {_exist} is true:
 			playSound("entity.illusioner.prepare_mirror", 1, 1.5, {_target})
@@ -58,7 +58,7 @@ function kitEffect_PlankBarrier_1(player: player, l: location):
 	set {_l9} to location {@height} * 2 meters below {_l7}
 	loop 9 times:
 		set {_loc} to location 2.5 meters above {_l%loop-number%}
-		drawDot count 1, particle "happyvillager", center {_loc}, visibleRange 30
+		spawnParticle(happy_villager, {_loc})
 		set {_nbt} to nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Pose:{Head:[0f,0f,0f]},HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}"
 		spawn an armor stand at {_l%loop-number%} with nbt {_nbt}
 		set metadata value "prank-barrier" of spawned armor stand to "%{_player}%"
@@ -90,7 +90,7 @@ on damage of slime:
 			add a random number between -0.5 and 0.5 to x-coordinate of {_el}
 			add a random number between -0.5 and 0.5 to y-coordinate of {_el}
 			add a random number between -0.5 and 0.5 to z-coordinate of {_el}
-			drawDot count 1, particle "critmagic", center {_el}, visibleRange 30
+			spawnParticle(crit, {_el})
 	else if {team::%{_name}%} is {team::%attacker%}:
 		cancel event
 

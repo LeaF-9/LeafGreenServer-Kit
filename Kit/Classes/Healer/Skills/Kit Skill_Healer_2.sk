@@ -7,7 +7,7 @@ function kitSkill_Healer_2(player: player):
 		shoot a snowball from {_player} at speed 2
 		set item of shot entity to heart of the sea
 		set metadata value "cureorb" of shot entity to "true"
-		drawDot count 1, particle "mobspell", RGB 0, 161, 233, center shot entity, visibleRange 30, keepFor 2 seconds
+		kitParticle_CureOrb_Projectile(shot entity)
 		playSound("entity.arrow.shoot", 1, 2, {_player})
 	else:
 		kitMsg({_player}, "§cオドが足りません! 必要オドは §310 §cです!")
@@ -30,4 +30,14 @@ on projectile hit:
 		block below loop-block is not air
 		set {_l} to location of loop-block
 		subtract 0.4 from y-coordinate of {_l}
-		drawDot count 1, particle "mobspell", RGB 0, 161, 233, center {_l}, visibleRange 30, keepFor 1 second
+		kitParticle_CureOrb_Aura({_l})
+
+function kitParticle_CureOrb_Projectile(proj: entity):
+	loop 50 times:
+		spawnParticle_Color(entity_effect, 0, 161, 233, {_proj})
+		wait a tick
+
+function kitParticle_CureOrb_Aura(loc: location):
+	loop 20 times:
+		spawnParticle_Color(entity_effect, 0, 161, 233, {_loc})
+		wait a tick

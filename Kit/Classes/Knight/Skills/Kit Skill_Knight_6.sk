@@ -13,7 +13,7 @@ function kitSkill_Knight_6(player: player):
 		add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
 		add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
 		add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
-		drawDot count 5, particle "mobspell", RGB 255, 255, 100, center {_loc}, visibleRange 30, keepFor 5 ticks
+		kitParticle_HerosCourage({_loc})
 	loop all players in radius 5 around {_player}:
 		loop-player is not {_player}
 		{team::%loop-player%} is {team::%{_player}%}
@@ -28,7 +28,7 @@ function kitSkill_Knight_6(player: player):
 			add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
 			add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
 			add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
-			drawDot count 5, particle "mobspell", RGB 255, 255, 100, center {_loc}, visibleRange 30, keepFor 5 ticks
+			kitParticle_HerosCourage({_loc})
 	set {_ploc} to location of block at {_player}
 	set {_bn} to 1
 	loop 5 times:
@@ -39,6 +39,11 @@ function kitSkill_Knight_6(player: player):
 			set {_bnn} to {_bn} - 1
 			if distance between {_bloc} and {_ploc} >= {_bnn}:
 				add -0.3 to y-coordinate of {_bloc}
-				drawDot count 5, particle "mobspell", RGB 255, 100, 100, center {_bloc}, visibleRange 30
+				spawnParticle_Color(entity_effect, 255, 100, 100, {_bloc})
 		add 1 to {_bn}
+		wait a tick
+
+function kitParticle_HerosCourage(loc: location):
+	loop 5 times:
+		spawnParticle_Color(entity_effect, 255, 255, 100, {_loc})
 		wait a tick

@@ -7,7 +7,10 @@ function kitSkill_Knocker_6(player: player):
 	shoot a snowball from {_player} at speed 0.9
 	set metadata value "shockgrenade" of shot projectile to "true"
 	set item of shot projectile to beacon
-	drawDot count 1, particle "endrod", center shot projectile, visibleRange 32, keepFor 1 second
+	set {_shotproj} to shot projectile
+	loop 20 times:
+		spawnParticle(end_rod, {_shotproj})
+		wait a tick
 
 on projectile hit:
 	projectile is a snowball
@@ -36,7 +39,7 @@ on projectile hit:
 			set y-coordinate of {_v} to {_y} + ( 5 * cos({_s}) )
 			set z-coordinate of {_v} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
 			chance of 30%:
-				drawDot count 1, particle "mobspell", RGB 0, 100, 200, center {_v}, visibleRange 30
+				spawnParticle_Color(entity_effect, 0, 100, 200, {_v})
 			add 10 to {_t}
 		add 10 to {_s}
 	wait 5 seconds

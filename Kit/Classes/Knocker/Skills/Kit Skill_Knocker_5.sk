@@ -6,8 +6,9 @@ function kitSkill_Knocker_5(player: player):
 	set {Stats.%{_player}%::DiveImpact} to true
 	push {_player} upwards at speed 2.5
 	playSound("entity.wither.shoot", 1, 0.8, {_player})
-	drawDot count 1, particle "fallingdust", material light blue concrete powder, center {_player}, visibleRange 32, keepFor 5 ticks
-	wait 5 ticks
+	loop 5 times:
+		spawnParticle_BlockData(falling_dust, light blue concrete powder, {_player})
+		wait a tick
 	loop 100 times:
 		if {_t} is not set:
 			if block below {_player} is not passable:
@@ -16,9 +17,9 @@ function kitSkill_Knocker_5(player: player):
 				loop all blocks in radius 5 around {_player}:
 					y-coordinate of loop-block is y-coordinate of block at {_player}
 					loop-block is passable
-					drawDot count 1, particle "blockcrack", material purple wool, center location of loop-block, visibleRange 32, keepFor 5 ticks
+					kitParticle_DiveImpact(location of loop-block)
 			else:
-				drawDot count 1, particle "fallingdust", material light blue concrete powder, center {_player}, visibleRange 32
+				spawnParticle_BlockData(falling_dust, {_player})
 				wait a tick
 	loop all entities in radius 5 around {_player}:
 		kitCheckTeam(loop-entity, {_player}, false)
@@ -26,6 +27,11 @@ function kitSkill_Knocker_5(player: player):
 		make a fake explosion at loop-entity
 		kitDamage({_player}, loop-entity, 2)
 		push loop-entity upwards at speed 1.5
+
+function kitParticle_DiveImpact(loc: location):
+	loop 5 times:
+		spawnParticle_Block(purple wool, {_loc})
+		wait a tick
 
 on damage of player:
 	metadata value "gametype" of victim is "Kit"

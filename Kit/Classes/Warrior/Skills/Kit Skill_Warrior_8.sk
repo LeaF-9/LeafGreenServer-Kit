@@ -27,7 +27,7 @@ on sneak toggle:
 					playSound("block.wooden_button.click_on", 0.5, {_sp}, player, true)
 				# --------------------------
 				# --- チャージ中のパーティクルの演出 ---
-				drawDot count 1, particle "explosion", center player, visibleRange 30
+				spawnParticle(cloud, location of player)
 				# -----------------------------------
 				wait a tick
 		if {_true} is true:
@@ -57,7 +57,7 @@ function kitSkill_Warrior_8(player: player):
 		add 1 to {_metre}
 		set {_loc} to location {_metre} meters in front of {_baseloc}
 		add 1 to y-coordinate of {_loc}
-		drawDot count 1, particle "explosionlarge", center {_loc}, visibleRange 50
+		spawnParticle(explosion, {_loc})
 		playSound("entity.player.attack.sweep", 1, 1, {_loc})
 		loop all entities in radius 3 around {_loc}:
 			{_hit::%id of loop-entity%} is not set
@@ -77,7 +77,7 @@ function kitEffect_SonicBoom_1(from: location, to: location):
 		set {_eff} to location {_meter} * loop-number meters in front of {_from}
 		set {_g} to a random number between 200 and 255
 		set {_r} to a random number between 0 and {_g}
-		drawDot count 1, particle "redstone", RGB {_r}, {_g}, 255, center {_eff}, visibleRange 30
+		spawnParticle_Dust(rgb({_r}, {_g}, 255), 1, {_eff})
 		wait a tick
 
 function kitEffect_SonicBoom_2(player: player):
@@ -98,7 +98,7 @@ function kitEffect_SonicBoom_2(player: player):
 			add a random number between -0.5 and 2.5 to y-coordinate of {_effloc}
 			set {_g} to a random number between 200 and 255
 			set {_r} to a random number between 0 and {_g}
-			drawDot count 1, particle "redstone", RGB {_r}, {_g}, 255, center {_eff}, visibleRange 30
+			spawnParticle_Dust(rgb({_r}, {_g}, 255), 1, {_eff})
 			# -------------------------------------
 			send action bar "§f§lSonic Boom§eエネルギー保持中 §3§l右クリック§eで§6§l放出" to {_player}
 			wait a tick

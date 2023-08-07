@@ -32,7 +32,7 @@ function kitSkill_Healer_3(player: player):
 							{Stats.%loop-player%::NoSupport} is not set
 							setSupporter(loop-player, {_player})
 							apply regeneration 1 to loop-player for 1 second
-							drawDot count 3, particle "mobspell", RGB 255, 102, 255, center loop-player, visibleRange 30, keepFor 1 seconds
+							kitParticle_FieldHospital_Player(loop-player)
 					set {_baseloc} to {_loc1}
 					set {_rad} to 0
 					loop 36 times:
@@ -40,10 +40,20 @@ function kitSkill_Healer_3(player: player):
 						add 10 to {_rad}
 						add 5 * sin({_rad}) to x-coordinate of {_el}
 						add 5 * cos({_rad}) to z-coordinate of {_el}
-						drawDot count 1, particle "mobspell", RGB 255, 255, 153, center {_el}, visibleRange 30, keepFor 1 seconds
+						kitParticle_FieldHospital_Field({_el})
 				else:
 					delete {Stats.%{_player}%::FieldHospital-Time}
 		else:
 			kitMsg({_player}, "§cオドが足りません! 必要オドは §340 §cです!")
 	else:
 		send action bar "§c§l地点を指定してください" to {_player}
+
+function kitParticle_FieldHospital_Player(player: player):
+	loop 20 times:
+		spawnParticle_Color(entity_effect, 255, 102, 255, {_player})
+		wait a tick
+
+function kitParticle_FieldHospital_Field(loc: location):
+	loop 20 times:
+		spawnParticle_Color(entity_effect, 255, 255, 153, {_loc})
+		wait a tick

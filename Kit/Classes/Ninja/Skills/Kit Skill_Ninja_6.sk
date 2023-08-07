@@ -16,13 +16,13 @@ function kitSkill_Ninja_6(player: player):
 					kitDamage({_player}, loop-entity, 0.25)
 					set {_loc} to location of loop-entity
 					add 1 to y-coordinate of {_loc}
-					draw 1 cloud particle at {_loc} with direction randomVector() and speed 0.5, keepFor 1 tick
+					spawnParticle_Vector(cloud, randomVector(), 0.5, {_loc})
 				set {_pitch} to a random number between 0.5 and 2
 				playSound("entity.player.player,sweep", 1, {_pitch}, {_player})
 				loop all blocks in radius 5 around {_player}:
 					loop-block is passable
 					chance of 1%:
-						drawDot count 1, particle "explosionlarge", center location of loop-block, visibleRange 30
+						spawnParticle(explosion, location of loop-block)
 				wait a tick
 		{Stats.%{_player}%::Kamaitachi} is set
 		apply speed 2 to {_player} for 10000000000 seconds

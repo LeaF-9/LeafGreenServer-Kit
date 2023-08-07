@@ -34,7 +34,7 @@ function kitEffect_UltWarrior(player: player):
 		add 9 to {_rad}
 		add 0.5 * sin({_rad}) to x-coordinate of {_loc}
 		add 0.5 * cos({_rad}) to z-coordinate of {_loc}
-		drawDot count 1, particle "angryvillager", center {_loc}, visibleRange 30
+		spawnParticle(angry_villager, {_loc})
 		wait a tick
 
 on sneak toggle:
@@ -61,7 +61,7 @@ on sneak toggle:
 					set {_sound} to {_num} / 20
 					playSound("entity.experience_orb.pickup", 0.75, {_sound}, player)
 					# パーティクルの演出
-					drawDot count 1, particle "explosionlarge", center player, visibleRange 30
+					spawnParticle(explosion, location of player)
 					wait a tick
 			if {_true} is true:
 				playSound("entity.player.levelup", 1.2, 0.5, player)
@@ -76,4 +76,4 @@ on damage:
 		strike lightning effect at victim
 		loop 10 times:
 			set {_loc} to aroundEffect(victim)
-			drawDot count 1, particle "soul", center {_loc}, visibleRange 30
+			spawnParticle(soul, {_loc})

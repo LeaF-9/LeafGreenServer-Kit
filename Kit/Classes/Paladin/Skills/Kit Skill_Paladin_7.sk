@@ -11,7 +11,7 @@ function kitSkill_Paladin_7(player: player):
 			add a random number between -7 and 7 to x-coordinate of {_el}
 			add a random number between -0.5 and 0.5 to y-coordinate of {_el}
 			add a random number between -7 and 7 to z-coordinate of {_el}
-			drawDot count 1, particle "mobspell", RGB 77, 77, 255, center {_el}, visibleRange 30
+			spawnParticle_Color(entity_effect, 77, 77, 255, {_el})
 		loop all players in radius 7 around {_player}:
 			loop-player is not {_player}
 			kitCheckTeam(loop-player, {_player}, true) is true
@@ -50,7 +50,7 @@ on damage of player:
 	loop {_dis} times:
 		add 1 to {_m}
 		set {_el} to location {_m} meters in front of {_from}
-		drawDot count 1, particle "critmagic", center {_el}, visibleRange 30
+		spawnParticle(crit, {_el})
 	set {_y} to 0
 	loop 8 times:
 		set {_rad} to 0
@@ -60,5 +60,5 @@ on damage of player:
 			add sin({_rad}) to x-coordinate of {_el}
 			add cos({_rad}) to z-coordinate of {_el}
 			add {_y} to y-coordinate of {_el}
-			drawDot count 1, particle "redstone", RGB 100, 100, 255, center {_el}, visibleRange 30
+			spawnParticle_Dust(rgb(100, 100, 255), 1, {_el})
 		add 0.25 to {_y}

@@ -15,7 +15,7 @@ function kitWeapon_Necromancer_2(player: player, loc: location):
 		set {_effbaseloc} to {_point}
 		add 5 * sin({_n.k}) to x-coordinate of {_effbaseloc}
 		add 5 * cos({_n.k}) to z-coordinate of {_effbaseloc}
-		drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_effbaseloc}, visibleRange 100, keepFor 1 second
+		kitParticle_CurseStaff_Magic({_effbaseloc})
 		add 6 to {_n.k}
 #	弦を描く
 	if {_l.A} is not set:
@@ -58,19 +58,24 @@ function kitWeapon_Necromancer_2(player: player, loc: location):
 		add sqrt(3) / 2 to {_n.g}
 #		A-B
 		set {_loc.g} to location {_n.g} meters in front of {_l.A}
-		drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
+		kitParticle_CurseStaff_Magic({_loc.g})
 #		D-E
 		set {_loc.g} to location {_n.g} meters in front of {_l.D}
-		drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
+		kitParticle_CurseStaff_Magic({_loc.g})
 #		B-C
 		set {_loc.g} to location {_n.g} meters in front of {_l.B}
-		drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
+		kitParticle_CurseStaff_Magic({_loc.g})
 #		E-F
 		set {_loc.g} to location {_n.g} meters in front of {_l.E}
-		drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
+		kitParticle_CurseStaff_Magic({_loc.g})
 #		C-A
 		set {_loc.g} to location {_n.g} meters in front of {_l.C}
-		drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
+		kitParticle_CurseStaff_Magic({_loc.g})
 #		F-D
 		set {_loc.g} to location {_n.g} meters in front of {_l.F}
-		drawDot count 1, particle "redstone", RGB 71, 38, 110, center {_loc.g}, visibleRange 100, keepFor 1 second
+		kitParticle_CurseStaff_Magic({_loc.g})
+
+function kitParticle_CurseStaff_Magic(loc: location):
+	loop 20 times:
+		spawnParticle_Dust(rgb(71, 38, 110), 1, {_loc})
+		wait a tick

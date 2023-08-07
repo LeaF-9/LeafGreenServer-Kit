@@ -11,7 +11,7 @@ function kitSkill_Mercenary_6(player: player):
 		set {_effbaseloc} to {_point}
 		add 6 * sin({_n.k}) to x-coordinate of {_effbaseloc}
 		add 6 * cos({_n.k}) to z-coordinate of {_effbaseloc}
-		drawDot count 1, particle "redstone", RGB 100, 1, 37, center {_effbaseloc}, visibleRange 30, keepFor 10 seconds
+		kitParticle_IschemiaCurse_Magic({_effbaseloc})
 		add 12 to {_n.k}
 # 弦を描く
 		if {_l.A} is not set:
@@ -36,19 +36,19 @@ function kitSkill_Mercenary_6(player: player):
 		add sqrt(3) / 2 to {_n.g}
 #	A-B
 		set {_loc.g} to location {_n.g} meters in front of {_l.A}
-		drawDot count 1, particle "redstone", RGB 100, 1, 37, center {_loc.g}, visibleRange 30, keepFor 10 seconds
+		kitParticle_IschemiaCurse_Magic({_loc.g})
 #	B-C
 		set {_loc.g} to location {_n.g} meters in front of {_l.B}
-		drawDot count 1, particle "redstone", RGB 100, 1, 37, center {_loc.g}, visibleRange 30, keepFor 10 seconds
+		kitParticle_IschemiaCurse_Magic({_loc.g})
 #	C-A
 		set {_loc.g} to location {_n.g} meters in front of {_l.C}
-		drawDot count 1, particle "redstone", RGB 100, 1, 37, center {_loc.g}, visibleRange 30, keepFor 10 seconds
+		kitParticle_IschemiaCurse_Magic({_loc.g})
 	loop 200 times:
 		delete {_eg::*}
 		loop all players in radius 6 around {_point}:
 			kitCheckTeam({_player}, loop-player, false) is true
 			{Kit-Blood::%loop-player%} is set
-			drawDot count 1, particle "mobspell", RGB 100, 1, 37, center loop-player, visibleRange 30
+			spawnParticle_Color(entity_effect, 100, 1, 37, location of loop-player)
 			set {_eg::%loop-player%} to true
 			if {_jb::%loop-player%} is not set:
 				set {_jb::%loop-player%} to true
@@ -67,6 +67,11 @@ function kitSkill_Mercenary_6(player: player):
 		{_jb::%loop-player%} is true
 		delete {Stats.%loop-player%::IschemiaCurse}
 
+function kitParticle_IschemiaCurse_Magic(loc: location):
+	loop 200 times:
+		spawnParticle_Dust(rgb(100, 1, 37), 1, {_loc})
+		wait a tick
+
 on damage of player:
 	metadata value "gametype" of victim is "Kit"
 	{Stats.%victim%::IschemiaCurse} is true
@@ -76,4 +81,4 @@ on damage of player:
 	set {_el} to location of victim
 	add 1 to y-coordinate of {_el}
 	loop 10 times:
-		draw 1 endrod particle at {_el} with direction randomVector({_el}) and speed 1, keepFor 1 tick
+		spawnParticle_Vector(end_rod, randomVector(), 1, {_el})

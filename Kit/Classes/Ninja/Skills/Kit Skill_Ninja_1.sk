@@ -3,11 +3,16 @@
 function kitSkill_Ninja_1(player: player):
 	shoot a small fireball from {_player} at speed 2
 	set metadata value "horoku" of shot projectile to "true"
-	drawDot count 1, particle "lava", center shot projectile, visibleRange 30, keepFor 0.5 seconds
+	kitParticle_HorokuDama_Trail(shot projectile)
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
 	set {_name} to name of {_player}'s tool
 	set {_lore::*} to lore of {_player}'s tool
 	remove a firework charge named {_name} with lore {_lore::*} from {_player}
+
+function kitParticle_HorokuDama_Trail(proj: entity):
+	loop 10 times:
+		spawnParticle(lava, location of {_proj})
+		wait a tick
 
 on damage of player:
 	damage was caused by projectile

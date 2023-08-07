@@ -22,7 +22,7 @@ on sneak toggle:
 				chargeActionBar(player, {_num}, 60)
 				set {_pitch} to 0.5 + 0.025 * {_num}
 				playSound("item.armor.equip_chain", 1, {_pitch}, player)
-				drawDot count 1, particle "explosion", center player, visibleRange 30
+				spawnParticle(cloud, location of player)
 				wait a tick
 		if {_true} is true:
 			kitWeapon_Mercenary_4(player, {_num})
@@ -40,7 +40,7 @@ function kitWeapon_Mercenary_4(player: player, distance: num):
 			set y of {_vector} to y of {_vector} - 0.1
 		set velocity of {_player} to {_vector}
 		playSound("block.chain.place", 1, 0.5, {_player})
-		drawDot count 1, particle "explosionlarge", center {_player}, visibleRange 30
+		spawnParticle(explosion, {_player})
 		loop all entities in radius 1 around {_player}:
 			kitCheckTeam({_player}, loop-entity, false) is true
 			add loop-entity to {_list::*}
@@ -48,7 +48,7 @@ function kitWeapon_Mercenary_4(player: player, distance: num):
 			kitDamage({_player}, loop-entity, 0.3)
 			playSound("entity.blaze.hurt", 0.8, 2, loop-entity)
 			set {_el} to aroundEffect(loop-entity)
-			drawDot count 1, particle "blockcrack", material redstone block, center {_el}, visibleRange 30
+			spawnParticle_Block(redstone block, {_el})
 			if type of loop-entity is a player:
 				set {_c} to kitPercentDuel({_player}, loop-entity, 10, true)
 				chance of {_c}%:

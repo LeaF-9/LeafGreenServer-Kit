@@ -1,7 +1,7 @@
 # Sanguinary Murder
 
 function kitUltMercenary(player: player):
-	drawDot count 5, particle "mobspell", RGB 150, 0, 0, center {_player}, visibleRange 30, keepFor 10 seconds
+	kitParticle_SanguinaryMurder({_player})
 	message "§c血を噴出させ,それを踏んだ敵を出血させ,❤1ダメージを与えます!" to {_player}
 	message "§c攻撃した敵の体力が3以下かつ出血済であれば一撃で倒します!" to {_player}
 	set {Stats.%{_player}%::UltMercenary} to true
@@ -39,6 +39,11 @@ function kitUltMercenary(player: player):
 	loop {_lb::*}:
 		make all players see block at loop-value as air
 
+function kitParticle_SanguinaryMurder(player: player):
+	loop 200 times:
+		spawnParticle_Color(entity_effect, 150, 0, 0, {_player})
+		wait a tick
+
 on damage of player:
 	metadata value "gametype" of victim is "Kit"
 	{Stats.%attacker%::UltMercenary} is true
@@ -52,5 +57,5 @@ on damage of player:
 			add a random number between -1 and 1 to x-coordinate of {_el}
 			add a random number between -1 and 1 to z-coordinate of {_el}
 			add a random number between 0 and 2 to y-coordinate of {_el}
-			drawDot count 1, particle "explosionhuge", center {_el}, visibleRange 30
+			spawnParticle(explosion_emitter, {_el})
 		wait a tick

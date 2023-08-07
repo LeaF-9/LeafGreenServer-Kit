@@ -1,4 +1,4 @@
-# Blood Rainy
+# Blood Rain
 
 function kitSkill_Mercenary_4(player: player):
 	toolCT({_player}, "Mercenary", 4)
@@ -19,14 +19,20 @@ function kitSkill_Mercenary_4(player: player):
 					add a random number between -0.5 and 0.5 to x-coordinate of {_sel}
 					add a random number between -0.5 and 0.5 to y-coordinate of {_sel} 
 					add a random number between -0.5 and 0.5 to z-coordinate of {_sel}
-					drawDot count 1, particle "redstone", RGB 150, 0, 0, center {_sel}, visibleRange 50
+					spawnParticle_Dust(rgb(150, 0, 0), 2, {_sel})
 			chance of 5%:
 				shoot a snowball from loop-block at speed 1 downward
 				set item of shot snowball to redstone block
 				set shooter of shot snowball to {_player}
 				set metadata value "kit-bloodrain" of shot snowball to "%{_player}%"
-				drawDot count 1, particle "mobspell", XYZ 255, 0, 0, center shot snowball, visibleRange 32, keepFor 1 seconds
+				set {_shot} to shot snowball
+				kitParticle_BloodRain({_shot})
 				playSound("entity.generic.splash", 0.5, 0.5, location of loop-block)
+		wait a tick
+
+function kitParticle_BloodRain(proj: entity):
+	loop 20 times:
+		spanwParticle_Color(entity_effect, 255, 0, 0, {_proj})
 		wait a tick
 
 on damage:
@@ -39,4 +45,4 @@ on damage:
 		kitBlood(victim)
 	loop 3 times:
 		set {_el} to aroundEffect(victim)
-		drawDot count 1, particle "mobspell", XYZ 50, 0, 0, center {_el}, visibleRange 32
+		spawnParticle_Color(entity_effect, 50, 0, 0, {_el})

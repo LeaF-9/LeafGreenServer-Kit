@@ -22,12 +22,12 @@ function kitSkill_Warrior_6(player: player):
 					block below loop-block is not air
 					set {_lloc} to location of loop-block
 					subtract 0.4 from y-coordinate of {_lloc}
-					drawDot count 1, particle "mobspell", RGB 73, 55, 89, center {_lloc}, visibleRange 30
+					spawnParticle_Color(entity_effect, 73, 55, 89, {_lloc})
 				loop all entities in radius 10 around {_loc}:
 					kitCheckTeam(loop-entity, {_player}, false) is true
 					make {_player} damage loop-entity by 2
 					loop 30 times:
-						draw 1 critmagic particle at location of loop-entity with direction randomVector() and speed 3, keepFor 1 tick
+						spawnParticle_Vector(crit, randomVector(), 2.5, location of loop-entity)
 				wait a second
 			loop all entities:
 				type of loop-entity is an armor stand

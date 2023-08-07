@@ -28,7 +28,7 @@ on rightclick holding a netherite sword:
 		set {_loc} to location of player
 		set pitch of {_loc} to 0
 		set {_fb} to location 100 meters in front of {_loc}
-		drawDot particle "cloud", center player, visibleRange 30, keepFor 10 ticks
+		kitParticle_AcrobaticAggresion_Trail(player)
 		set {_from} to vector of {_fb}
 		set {_to} to vector of player
 		set {_vector} to {_from} -- {_to}
@@ -43,5 +43,10 @@ on rightclick holding a netherite sword:
 				{_hit.%id of loop-entity%} is not set
 				set {_hit.%id of loop-entity%} to true
 				make player damage loop-entity by 6
-				drawDot particle "explosionlarge", center loop-entity, visibleRange 30
+				spawnParticle(explosion, location of loop-entity)
 			wait a tick
+
+function kitParticle_AcrobaticAggresion_Trail(player: player):
+	loop 10 times:
+		spawnParticle(cloud, location of {_player})
+		wait a tick
