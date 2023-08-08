@@ -91,6 +91,7 @@ function setFuelCT(player: player):
 # Timer
 function kitTimerEngineer(player: player):
 	set {_fuels} to 0
+	create bossbar titled "&8&lFuel&7: &4&l%{Kit-Fuel::%{_player}%}%" and id "%{_player}%-Fuel" for {_player} with progress {Kit-Fuel::%{_player}%} with colors red with style segmented 10
 	while {Class::%{_player}%} is "Engineer":
 		# ツール情報の設定
 		set {_tool} to {_player}'s tool
@@ -104,20 +105,15 @@ function kitTimerEngineer(player: player):
 			if {Kit-Fuel::%{_player}%} < 100:
 				if {Stats.%{_player}%::Fuel CT} is not set:
 					add 1 to {Kit-Fuel::%{_player}%}
-		# アクションバー表示条件
-		delete {_true}
-		if {_tool} is air:
-			set {_true} to true
-		else:
-			set {_name} to name of {_tool}
-			if checkCT({_player}, {_name}, true) is true:
-				set {_true} to true
-				{_item.type} is "Weapon.main"
-				if {_item.num} is 5:
-					{_player} is sneaking
-					delete {_true}
-		if {_true} is true:
-			send action bar "§8§lFuel§7: §4%{Kit-Fuel::%{_player}%}%" to {_player}
+		# ボスバー表示
+		set bossbar "%{_player}%-Fuel" title to "&8&lFuel&7: &4&l%{Kit-Fuel::%{_player}%}%"
+		set bossbar "%{_player}%-Fuel" value to {Kit-Fuel::%{_player}%}
+		# アクションバー表示
+		if {_item.type} is "Weapon.main":
+			if {_item.num} is 3:
+				if {Stats.%{_player}%::GearyCog} is not set:
+					set {Stats.%{_player}%::GearyCog} to true
+				kitEffect_GearyCog_ActionBar({_player})
 		# Hover効果
 		delete {_true}
 		if {_player} is sneaking:
