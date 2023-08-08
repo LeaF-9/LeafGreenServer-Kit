@@ -1,27 +1,152 @@
 # Weapon-Name: Geary Cog
 
-function kitWeapon_Engineer_3(player: player):
-	if checkFuel({_player}, 3, "Weapon.main") is true:
-		toolCT({_player}, "Engineer", 3, "Weapon.main")
-		set {_baseloc} to location of head of {_player}
-		set {_m} to 0
-		playSound("block.enchantment_table.use", 1, 2, {_player})
-		loop 10 times:
-			{_tg} is not set
+on sneak toggle:
+	# 条件
+	{Class::%player%} is "Engineer"
+	player is not sneaking
+	set {_tool} to player's tool
+	if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 3) is false:
+		stop
+	# Fuel Check
+	if checkFuel(player, 3, "Weapon.main") is false:
+		stop
+	# ギアチェンジ
+	kitEffect_GearyCog_Change(player)
+
+on damage:
+	# Geary Cogでの攻撃時
+	if {Class::%attacker%} is "Engineer":
+		set {_tool} to attacker's tool
+		if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 3) is false:
+			stop
+		if {Stats.%attacker%::GearyCog} is true:
+			set damage to damage * 2
+			kitParticle_GearyCog_Positive(location of attacker, location of victim)
+		else:
+			set damage to damage * 0.2
+			kitParticle_GearyCog_Negative(location of attacker, location of victim)
+		kitEffect_GearyCog_Change(attacker)
+	# Geary Cog選択時のダメージ
+	if {Class::%victim%} is "Engineer":
+		kitSelectChecker_Weapon(victim, "Engineer") is 3
+		kitEffect_GearyCog_Change(victim)
+
+function kitEffect_GearyCog_Change(player: player):
+	if {Stats.%{_player}%::GearyCog} is true:
+		set {Stats.%{_player}%::GearyCog} to false
+	else:
+	 	set {Stats.%{_player}%::GearyCog} to true
+	kitParticle_GearyCog_Change(location of {_player})
+
+function kitEffect_GearyCog_ActionBar(player: player):
+	if {Stats.%{_player}%::GearyCog} is true:
+		set {_state} to "§a§lPositive"
+	else:
+		set {_state} to "§c§lNegative"
+	send action bar "§6§lGear§7: %{_state}%" to {_player}
+
+# 渦が相手に迫る演出
+function kitParticle_GearyCog_Positive(fromloc: location, toloc: location):
+	playSound("block.respawn_anchor.deplete", 1, 1.5, {_toloc})
+	set {_distance} to distance between {_fromloc} and {_toloc}
+	set {_vector} to setVector({_fromloc}, {_toloc})
+	set yaw of {_fromloc} to yaw of {_vector}
+	set pitch of {_fromloc} to pitch of {_vector}
+	add 1 to y-pos of {_fromloc}
+	set {_rad} to 0
+	loop 5 times:
+		set {_m} to {_distance} / 5 * loop-number
+		set {_centerloc} to location {_m} meters in front of {_fromloc}
+		loop 8 times:
+			set {_tmprad} to {_rad} + (45 * loop-number-2)
+			set {_el} to {_centerloc}
+			set {_mt} to 0
 			loop 10 times:
-				{_tg} is not set
-				add 1 to {_m}
-				set {_loc} to location {_m} meters in front of {_baseloc}
-				spawnParticle(end_rod, {_loc})
-				loop all players in radius 2 around {_loc}:
-					{_tg} is not set
-					kitCheckTeam(loop-player, {_player}, false) is true
-					set {_tg} to loop-player
-			wait a tick
-		if {_tg} is set:
-			kitPalsy({_tg}, 5 seconds)
-			kitMsg({_player}, "§6%{_tg}% §eのスキルを封じました!")
-			playSound("item.lodestone_compass.lock", 1, 0.5, {_tg})
-			loop 10 times:
-				set {_l} to aroundEffect({_tg})
-				spawnParticle_Dust(rgb(255, 255, 0), 1, {_l})
+				add 0.1 to {_mt}
+				add {_mt} * sin({_tmprad}) to x-coordinate of {_el}
+				add {_mt} * cos({_tmprad}) to z-coordinate of {_el}
+				spawnParticle_Dust(rgb(255, 243, 82), 0.5, {_el})
+				set {_sub} to loop-number-3 * loop-number-3 / 10
+				subtract {_sub} from {_tmprad}
+		add 10 to {_rad}
+		wait a tick
+	
+# 円が相手に迫る演出
+function kitParticle_GearyCog_Negative(fromloc: location, toloc: location):
+	playSound("block.amethyst_block.fall", 1, 2, {_toloc})
+	set {_distance} to distance between {_fromloc} and {_toloc}
+	set {_vector} to setVector({_fromloc}, {_toloc})
+	set yaw of {_fromloc} to yaw of {_vector}
+	set pitch of {_fromloc} to pitch of {_vector}
+	add 1 to y-pos of {_fromloc}
+	set {_rad} to 0
+	loop 5 times:
+		set {_m} to {_distance} / 5 * loop-number
+		set {_centerloc} to location {_m} meters in front of {_fromloc}
+		loop 8 times:
+			set {_tmprad} to {_rad} + (45 * loop-number-2)
+			set {_el} to {_centerloc}
+			add 1 * sin({_tmprad}) to x-coordinate of {_el}
+			add 1 * cos({_tmprad}) to z-coordinate of {_el}
+			spawnParticle_Dust(rgb(90, 68, 152), 0.5, {_el})
+		add 10 to {_rad}
+		wait a tick
+
+# ギアが回るような演出
+function kitParticle_GearyCog_Change(baseloc: location):
+	playSound("item.lodestone_compass.lock", 1, 1, {_baseloc})
+	add 1 to y-pos of {_baseloc}
+	set pitch of {_baseloc} to 0
+	# 円の座標保存
+	set {_rad} to 0
+	loop 60 times:
+		add 6 to {_rad}
+		set {_m.upper} to 0.5 * cos({_rad})
+		set {_loc.upper} to location {_m.upper} meters above {_baseloc}
+		set {_m.right} to 0.5 * sin({_rad})
+		set {_loc.right} to location {_m.right} meters to the right of {_baseloc}
+		set {_el} to {_baseloc}
+		set x-coordinate of {_el} to x-pos of {_loc.upper} + x-pos of {_loc.right} - x-pos of {_el}
+		set y-coordinate of {_el} to y-pos of {_loc.upper} + y-pos of {_loc.right} - y-pos of {_el}
+		set z-coordinate of {_el} to z-pos of {_loc.upper} + z-pos of {_loc.right} - z-pos of {_el}
+		set {_circles::%{_rad}%} to {_el}
+	# 回転中のギア
+	set {_baserad} to 0
+	loop 3 times:
+		# 円
+		loop {_circles::*}:
+			spawnParticle_Dust(rgb(148, 108, 69), 0.5, loop-value-2)
+			# ギア
+			set {_angle} to loop-index parsed as number
+			if mod({_angle} + 60, 60) is {_baserad}:
+				set {_loc.gear} to loop-value-2
+				set {_v} to setVector({_baseloc}, {_loc.gear})
+				set yaw of {_loc.gear} to yaw of {_v}
+				set pitch of {_loc.gear} to pitch of {_v}
+				set {_m} to 0
+				loop 5 times:
+					add 0.1 to {_m}
+					set {_el} to location {_m} meters in front of {_loc.gear}
+					spawnParticle_Dust(rgb(148, 108, 69), 0.5, {_el})
+		add 20 to {_baserad}
+		wait a tick
+	playSound("item.lodestone_compass.lock", 1, 0.5, {_baseloc})
+	# 回転後のギア
+	set {_baserad} to 0
+	loop 3 times:
+		# 円
+		loop {_circles::*}:
+			spawnParticle_Dust(rgb(148, 108, 69), 0.5, loop-value-2)
+			# ギア
+			set {_angle} to loop-index parsed as number
+			if mod({_angle} + 60, 60) is {_baserad}:
+				set {_loc.gear} to loop-value-2
+				set {_v} to setVector({_baseloc}, {_loc.gear})
+				set yaw of {_loc.gear} to yaw of {_v}
+				set pitch of {_loc.gear} to pitch of {_v}
+				set {_m} to 0
+				loop 5 times:
+					add 0.1 to {_m}
+					set {_el} to location {_m} meters in front of {_loc.gear}
+					spawnParticle_Dust(rgb(148, 108, 69), 0.5, {_el})
+		wait a tick
