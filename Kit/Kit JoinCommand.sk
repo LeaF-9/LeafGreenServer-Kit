@@ -7,9 +7,12 @@ command /join:
 			if {Kit-Testing::%player%} is true:
 				message "§cスキルテスト中はJoinすることが出来ません!" to player
 				stop
+			# --- ここ多分いらなくなる ---
 			else if {Kit-GameStage::name} is not set:
 				message "§cステージがセットされていません!" to player
 				stop
+			# -----------------------
+			# --- ここ多分いらなくなる ---
 			else if {Kit-Tutorial::%player%} is true:
 				message "§a§lTutorial§eが有効になっているため,§b8§e秒後に開始します..." to player
 				message "§e必要なければ§6インベントリ内のメニュー§eにて無効化して下さい" to player
@@ -21,6 +24,7 @@ command /join:
 					KitTutorial(player)
 					while {Kit-TutorialNow::%player%} is true:
 						wait 10 ticks
+			# ----------------------
 			set {Join::%player%} to "Kit"
 			add 1 to {Kit-Join}
 			broadcast "§2[§aKit PvP§2] §6%player% §eが参加しました §7(§b%{Kit-Join}%§9人参加中です§7)"

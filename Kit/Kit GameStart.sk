@@ -1,40 +1,36 @@
 options:
-	prefix-Kit: §2[§aKit PvP§2]
+	prefix: §2[§aKit PvP§2]
 
-command /gamestart <text="none">:
+command /gamestart:
 	trigger:
-		set {_game} to arg 1
-		if {_game} is "none":
-			set {_game} to "Kit"
-		if {_game} is "Kit":
-			if {Kit-Join} is more than 3:
-				if {Kit-GameStart} is not set:
-					set {Kit-GameStart} to false
-				if {Kit-GameStart} is false:
-					set {Kit-GameStart} to true
-					set {_prepareTime} to 20
-					while {_prepareTime} is more than 0:
-						if {_prepareTime} is 1, 2, 3, 5, 10 or 20:
-							loop all players:
-								{Join::%loop-player%} is "Kit"
-								message "{@prefix-Kit} §bチーム分けまで... §e%{_prepareTime}% §b秒" to loop-player
-								play sound "block.note_block.snare" with volume 1 with pitch 1 to loop-player
-								if {_prepareTime} is 20:
-									message formatted "§e⚠ §4§l10§c秒後にステージにTPします! §e⚠" to loop-player
-								else if {_prepareTime} is 10:
-									if world of loop-player is not world of {Kit-GameStage::spec}:
-										teleport loop-player to {Kit-GameStage::spec}
-										message formatted "§dステージにTPしました" to loop-player
-										set gamemode of loop-player to spectator
-						subtract 1 from {_prepareTime}
-						wait a second
-					rtfcheck()
-					setGameID()
-					execute console command "/timer start Kit-%{Kit-GameStage::rule}%"
-				else:
-					message "§c既にゲームが開始されています!" to player
+		if {Kit-Join} is more than 3:
+			if {Kit-GameStart} is not set:
+				set {Kit-GameStart} to false
+			if {Kit-GameStart} is false:
+				set {Kit-GameStart} to true
+				set {_prepareTime} to 20
+				while {_prepareTime} is more than 0:
+					if {_prepareTime} is 1, 2, 3, 5, 10 or 20:
+						loop all players:
+							{Join::%loop-player%} is "Kit"
+							message "{@prefix-Kit} §bチーム分けまで... §e%{_prepareTime}% §b秒" to loop-player
+							play sound "block.note_block.snare" with volume 1 with pitch 1 to loop-player
+							if {_prepareTime} is 20:
+								message formatted "§e⚠ §4§l10§c秒後にステージにTPします! §e⚠" to loop-player
+							else if {_prepareTime} is 10:
+								if world of loop-player is not world of {Kit-GameStage::spec}:
+									teleport loop-player to {Kit-GameStage::spec}
+									message formatted "§dステージにTPしました" to loop-player
+									set gamemode of loop-player to spectator
+					subtract 1 from {_prepareTime}
+					wait a second
+				rtfcheck()
+				setGameID()
+				kitTimer_Start()
 			else:
-				message "§c参加人数が足りません!" to player
+				message "§c既にゲームが開始されています!" to player
+		else:
+			message "§c参加人数が足りません!" to player
 
 function mapVote(rule: text):
 	if {_rule} is "Kit":

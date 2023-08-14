@@ -1,40 +1,57 @@
 options:
 	prefix: <##00bfff>[<##00fa9a>Timer<##00bfff>]
 
-command /timer <text> <text>:
-	permission: sk.admin
-	trigger:
-		if arg 1 is "start":
-			if arg 2 contains "Kit":
-				loop all players:
-					{Join::%loop-player%} is "Kit"
-					message "{@prefix} §d10秒後に試合が開始されます..." to loop-player
-				wait 5 seconds
-				set {_time} to 5
-				loop 5 times:
-					loop all players:
-						{Join::%loop-player%} is "Kit"
-						message "{@prefix} §b%{_time}%§d..." to loop-player
-						play sound "block.note_block.pling" with volume 1 with pitch 1 to loop-player
-					subtract 1 from {_time}
-					wait a second
-				loop all players:
-					{Join::%loop-player%} is "Kit"
-					message "{@prefix} §a開始!" to loop-player
-					play sound "block.note_block.pling" with volume 1 with pitch 2 to loop-player
-					set loop-player's gamemode to survival
-					set {_tp} to a random location out of {Kit-GameStageRespawns.%{TrueTeam::%loop-player%}%::*}
-					teleport loop-player to {_tp}
-				execute console command "/bbt start %arg 2%"
-				kitScore({Kit-GameStage::rule})
-				execute console command "/gigives"
-				set {Kit-tochu} to true
-				kitGameStart({Kit-GameStage::rule})
-		if arg 1 is "end":
-			if arg 2 contains "Kit":
-				loop all players:
-					{Join::%loop-player%} is "Kit"
-					message "{@prefix} §c終了!" to loop-player
-					play sound "block.note_block.pling" with volume 1 with pitch 2 to loop-player
-				execute console command "/bbt stop %arg 2%"
-				kitGameEnd({Kit-GameStage::rule})
+function startTimer(prop: text, timersec: number, title: text, color: BossBarColor, countdown: number = 5):
+	if {BossBarTimer::%{_prop}%} is true:
+		loop all players:
+			loop-player has permission "sk.admin"
+			message formatted "{@prefix} §b§l%{_prop}%§cのタイマーは既に開始されています!" to loop-player
+		stop
+	set {BossBarTimer::%{_prop}%} to true
+	set {_time} to {_timersec}
+	set {_timer.display} to displayTimer({_timersec})
+	set {_timer.title} to "%{_title}% §f§l%{_timer.display}%"
+	create bossbar titled {_timer.title} and id {_prop} for all players with progress 100 with colors {_color} with style segmented 10
+	loop {_timersec} times:
+		if {BossBarTimer::%{_prop}%} is not true:
+			continue
+		wait a second
+		subtract 1 from {_time}
+		# カウントダウン
+		if {_time} <= {_countdown}:
+			{_time} is not 0
+			loop all players:
+				message "{@prefix} §b%{_time}%§d..." to loop-player
+				play sound "block.note_block.pling" with volume 1 with pitch 1 to loop-player
+		set {_timer.display} to displayTimer({_timersec})
+		set {_timer.title} to "%{_title}% §f§l%{_timer.display}%"
+		set {_timer.value} to {_time} / {_timersec} * 100
+		set bossbar {_prop} title to {_timer.title}
+		set bossbar {_prop} value to {_timer.value}
+	remove bossbar "%{_prop}%"
+	if {BossBarTimer::%{_prop}%} is true:
+		stopTimer({_prop})
+
+function stopTimer(prop: text):
+	if {BossBarTimer::%{_prop}%} is not true:
+		loop all players:
+			loop-player has permission "sk.admin"
+			message formatted "{@prefix} §b§l%{_prop}%§cのタイマーは開始されていません!" to loop-player
+			stop
+	delete {BossBarTimer::%{_prop}%}
+	executeEndTimer({_prop})
+
+function displayTimer(sec: number) :: text:
+	set {_minute} to 0
+	set {_second} to 0
+	while {_sec} >= 60:
+		if {_sec} >= 60:
+			add 1 to {_minute}
+			subtract 60 from {_sec}
+	set {_second} to {_sec}
+	if {_minute} < 10:
+		set {_minute} to "0%{_minute}%"
+	if {_second} < 10:
+		set {_second} to "0%{_second}%"
+	set {_display} to "%{_minute}%:%{_second}%"
+	return {_display}
