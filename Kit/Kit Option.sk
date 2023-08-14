@@ -92,13 +92,11 @@ on rightclick on sheep holding a dye:
 	cancel event
 
 on inventory click:
-	{Join::%player%} is "Kit"
-	if type of event-inventory is player inventory:
-		if type of player's current inventory is not merchant inventory:
-			cancel event
-	else if type of event-inventory is not merchant inventory:
-		if type of event-inventory is not chest inventory:
-			cancel event
+	if {Join::%player%} is not set:
+		stop
+	if type of event-inventory is chest inventory:
+		stop
+	cancel event
 
 on swap hand items:
 	{Join::%player%} is "Kit"
