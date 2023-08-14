@@ -281,88 +281,84 @@ command /tochu <text>:
 
 function rtfcheck():
 	if {Kit-GameStage::team} is "2" or 2:
-		execute console command "/rt"
+		kitRT()
 	if {Kit-GameStage::team} is "4" or 4:
-		execute console command "/rf"
+		kitRF()
 
-command /rt:
-	permission: sk.admin
-	trigger:
-		set {_pnum} to 0
-		set {Kit-lnum} to 0
-		delete {Kit-teamred::*}
-		delete {Kit-teamblue::*}
-		delete {Kit-teamwhite::*}
-		loop all players:
-			{Join::%loop-player%} is "Kit"
-			add loop-player to {Kit-teamwhite::*}
-			add 1 to {_pnum}
-		loop {_pnum} times:
-			add 1 to {Kit-lnum}
-			set {_random} to a random player out of {Kit-teamwhite::*}
-			remove {_random} from {Kit-teamwhite::*}
-			if {Kit-lnum} is 1:
-				add {_random} to {Kit-teamred::*}
-				set {TrueTeam::%{_random}%} to "red"
-				set {team::%{_random}%} to "red"
-				execute console command "/team join kit-red %{_random}%"
-			else if {Kit-lnum} is 2:
-				add {_random} to {Kit-teamblue::*}
-				set {TrueTeam::%{_random}%} to "blue"
-				set {team::%{_random}%} to "blue"
-				execute console command "/team join kit-blue %{_random}%"
-				remove 2 from {Kit-lnum}
-		loop all players:
-			{Join::%loop-player%} is "Kit"
-			message "§cRed§6: %{Kit-teamred::*}%" to loop-player
-			message "§9Blue§6: %{Kit-teamblue::*}%" to loop-player
+function kitRT():
+	set {_pnum} to 0
+	set {Kit-lnum} to 0
+	delete {Kit-teamred::*}
+	delete {Kit-teamblue::*}
+	delete {Kit-teamwhite::*}
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		add loop-player to {Kit-teamwhite::*}
+		add 1 to {_pnum}
+	loop {_pnum} times:
+		add 1 to {Kit-lnum}
+		set {_random} to a random player out of {Kit-teamwhite::*}
+		remove {_random} from {Kit-teamwhite::*}
+		if {Kit-lnum} is 1:
+			add {_random} to {Kit-teamred::*}
+			set {TrueTeam::%{_random}%} to "red"
+			set {team::%{_random}%} to "red"
+			execute console command "/team join kit-red %{_random}%"
+		else if {Kit-lnum} is 2:
+			add {_random} to {Kit-teamblue::*}
+			set {TrueTeam::%{_random}%} to "blue"
+			set {team::%{_random}%} to "blue"
+			execute console command "/team join kit-blue %{_random}%"
+			remove 2 from {Kit-lnum}
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		message "§cRed§6: %{Kit-teamred::*}%" to loop-player
+		message "§9Blue§6: %{Kit-teamblue::*}%" to loop-player
 
-command /rf:
-	permission: sk.admin
-	trigger:
-		set {Kit-tochu} to true
-		set {_pnum} to 0
-		set {Kit-lnum} to 0
-		delete {Kit-teamred::*}
-		delete {Kit-teamblue::*}
-		delete {Kit-teamyellow::*}
-		delete {Kit-teamgreen::*}
-		delete {Kit-teamwhite::*}
-		loop all players:
-			{Join::%loop-player%} is "Kit"
-			add loop-player to {Kit-teamwhite::*}
-			add 1 to {_pnum}
-		loop {_pnum} times:
-			add 1 to {Kit-lnum}
-			set {_random} to a random player out of {Kit-teamwhite::*}
-			remove {_random} from {Kit-teamwhite::*}
-			if {Kit-lnum} is 1:
-				add {_random} to {Kit-teamred::*}
-				set {TrueTeam::%{_random}%} to "red"
-				set {team::%{_random}%} to "red"
-				execute console command "/team join kit-red %{_random}%"
-			else if {Kit-lnum} is 2:
-				add {_random} to {Kit-teamblue::*}
-				set {TrueTeam::%{_random}%} to "blue"
-				set {team::%{_random}%} to "blue"
-				execute console command "/team join kit-blue %{_random}%"
-			else if {Kit-lnum} is 3:
-				add {_random} to {Kit-teamyellow::*}
-				set {TrueTeam::%{_random}%} to "yellow"
-				set {team::%{_random}%} to "yellow"
-				execute console command "/team join kit-yellow %{_random}%"
-			else if {Kit-lnum} is 4:
-				add {_random} to {Kit-teamgreen::*}
-				set {TrueTeam::%{_random}%} to "green"
-				set {team::%{_random}%} to "green"
-				execute console command "/team join kit-green %{_random}%"
-				remove 4 from {Kit-lnum}
-		loop all players:
-			{Join::%loop-player%} is "Kit"
-			message "§cRed§6: %{Kit-teamred::*}%" to loop-player
-			message "§9Blue§6: %{Kit-teamblue::*}%" to loop-player
-			message "§eYellow§6: %{Kit-teamyellow::*}%" to loop-player
-			message "§aGreen§6: %{Kit-teamgreen::*}%" to loop-player
+function kitRF():
+	set {Kit-tochu} to true
+	set {_pnum} to 0
+	set {Kit-lnum} to 0
+	delete {Kit-teamred::*}
+	delete {Kit-teamblue::*}
+	delete {Kit-teamyellow::*}
+	delete {Kit-teamgreen::*}
+	delete {Kit-teamwhite::*}
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		add loop-player to {Kit-teamwhite::*}
+		add 1 to {_pnum}
+	loop {_pnum} times:
+		add 1 to {Kit-lnum}
+		set {_random} to a random player out of {Kit-teamwhite::*}
+		remove {_random} from {Kit-teamwhite::*}
+		if {Kit-lnum} is 1:
+			add {_random} to {Kit-teamred::*}
+			set {TrueTeam::%{_random}%} to "red"
+			set {team::%{_random}%} to "red"
+			execute console command "/team join kit-red %{_random}%"
+		else if {Kit-lnum} is 2:
+			add {_random} to {Kit-teamblue::*}
+			set {TrueTeam::%{_random}%} to "blue"
+			set {team::%{_random}%} to "blue"
+			execute console command "/team join kit-blue %{_random}%"
+		else if {Kit-lnum} is 3:
+			add {_random} to {Kit-teamyellow::*}
+			set {TrueTeam::%{_random}%} to "yellow"
+			set {team::%{_random}%} to "yellow"
+			execute console command "/team join kit-yellow %{_random}%"
+		else if {Kit-lnum} is 4:
+			add {_random} to {Kit-teamgreen::*}
+			set {TrueTeam::%{_random}%} to "green"
+			set {team::%{_random}%} to "green"
+			execute console command "/team join kit-green %{_random}%"
+			remove 4 from {Kit-lnum}
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		message "§cRed§6: %{Kit-teamred::*}%" to loop-player
+		message "§9Blue§6: %{Kit-teamblue::*}%" to loop-player
+		message "§eYellow§6: %{Kit-teamyellow::*}%" to loop-player
+		message "§aGreen§6: %{Kit-teamgreen::*}%" to loop-player
 
 command /st <text> <offline player=%player%>:
 	permission: sk.admin
