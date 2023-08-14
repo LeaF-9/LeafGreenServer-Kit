@@ -1,0 +1,26 @@
+options:
+	baseslot: 18
+
+function openAdminTool_Check(player: player):
+	if {Server} is "Kit":
+		openAdminTool_Kit({_player})
+
+function openAdminTool_Kit(player: player):
+	if inventory name of {_player}'s current inventory is not "§bAdmin Tools":
+		stop
+	set slot 21 of {_player}'s current inventory to feather named "§b/joinset 4"
+	set slot 23 of {_player}'s current inventory to diamond named "§6/gamestart"
+	set slot 26 of {_player}'s current inventory to book named "§9§lDetail Settings"
+
+function executeAdminTool_Check(player: player, item: item, slot: number):
+	if {Server} is "Kit":
+		executeAdminTool_Kit({_player}, {_item}, {_slot})
+
+function executeAdminTool_Kit(player: player, item: item, slot: number):
+	close {_player}'s inventory
+	if name of {_item} contains "/joinset":
+		make {_player} execute command "/joinset"
+	else if name of {_item} contains "/gamestart":
+		make {_player} execute command "/gamestart"
+	else if {_slot} is 26:
+		openAdminTool_KitDetail({_player})

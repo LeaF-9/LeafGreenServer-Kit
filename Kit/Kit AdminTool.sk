@@ -1,0 +1,68 @@
+options:
+	invname: "§a§lKit PvP §bStage Option"
+
+on inventory click:
+	type of event-inventory is chest inventory
+	if inventory name of event-inventory is {@invname}:
+		cancel event
+		executeAdminTool_KitDetail(player, clicked item, clicked slot)
+
+function openAdminTool_KitDetail(player: player):
+	wait a tick
+	open chest with 3 row named {@invname} to {_player}
+	wait a tick
+	set slot 0 of {_player}'s current inventory to bow named "§6§lRules"
+	set slot 2 of {_player}'s current inventory to iron sword named "§erule: §a§lTDM"
+	set slot 3 of {_player}'s current inventory to diamond pickaxe named "§erule: §a§lDTC"
+	set slot 4 of {_player}'s current inventory to emerald named "§erule: §a§lCTF"
+	set slot 5 of {_player}'s current inventory to sheep egg named "§erule: §a§lSH"
+	set slot 6 of {_player}'s current inventory to eye of ender named "§erule: §a§lCP"
+	set slot 8 of {_player}'s current inventory to nether star named "§erule: §c§lRESET"
+	set slot 9 of {_player}'s current inventory to white dye named "§6§lTeams"
+	set slot 12 of {_player}'s current inventory to blue dye named "§eteam: §a§l2"
+	set slot 14 of {_player}'s current inventory to light green dye named "§eteam: §a§l4"
+	set slot 17 of {_player}'s current inventory to nether star named "§eteam: §c§lRESET"
+	set slot 18 of {_player}'s current inventory to redstone comparator item named "§6§lOptions"
+	set slot 20 of {_player}'s current inventory to bottle o' enchanting named "§estage option: §a§lVote" with lore "§8Current§7: §6§l%{Kit-StageVote}%"
+	set slot 22 of {_player}'s current inventory to paper named "§estage option: §a§lListing" with lore "§8Current§7: §6§l%{Kit-StageListing}%"
+
+function executeAdminTool_KitDetail(player: player, item: item, slot: number):
+	close {_player}'s inventory
+	set {_itemname} to name of {_item}
+	if {_itemname} contains "§erule:":
+		if {_itemname} contains "§c§lRESET":
+			kitStageRandomize("rule")
+			stop
+		set {_rule} to {_itemname}
+		replace "§erule: §a§l" with "" in {_rule}
+		kitStageRandomize("rule", {_rule})
+	else if {_itemname} contains "§eteam:":
+		if {_itemname} contains "§c§lRESET":
+			kitStageRandomize("team")
+			stop
+		set {_team} to {_itemname}
+		replace "§eteam: §a§l" with "" in {_team}
+		kitStageRandomize("team", {_team})
+	else if {_itemname} contains "§estage option:":
+		set {_category} to {_itemname}
+		replace "§estage option: §a§l" with "" in {_category}
+		kitToggleStageOption({_category})
+
+function kitStageRandomize(cat: text, opt: text = "reset"):
+	if {_opt} is "reset":
+		delete {Kit-StageRandomize.%{_cat}%}
+		stop
+	if {_cat} is "team":
+		set {_opt} to {_opt} parsed as number
+	set {Kit-StageRandomize.%{_cat}%} to {_opt}
+	broadcast "§e[§aKit PvP§e] §6%{_cat}%§bを §c%{_opt}% §bに指定しました"
+
+function kitToggleStageOption(cat: text):
+	set {_var} to "Kit-Stage%{_cat}%"
+	if {%{_var}%} is not set:
+		set {%{_var}%} to false
+	if {%{_var}%} is false:
+		set {%{_var}%} to true
+	else if {%{_var}%} is true:
+		set {%{_var}%} to false
+	broadcast "§e[§aKit PvP§e] §6Map %{_cat}%§bを §a§l%{%{_var}%}% §bに設定しました"
