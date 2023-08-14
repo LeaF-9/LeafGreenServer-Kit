@@ -8,6 +8,9 @@ aliases:
 	redsignal2 = minecraft:oak_door, minecraft:spruce_door, minecraft:birch_door, minecraft:jungle_door, minecraft:acacia_door, minecraft:dark_oak_door, minecraft:redstone_lamp, minecraft:tripwire_hook, minecraft:tripwire, minecraft:trapped_chest, minecraft:light_weighted_pressure_plate, minecraft:heavy_weighted_pressure_plate, minecraft:daylight_detector, minecraft:hopper, minecraft:dropper, minecraft:iron_trapdoor, minecraft:observer, minecraft:iron_door, minecraft:repeater, minecraft:comparator, minecraft:redstone_wire, minecraft:lectern, minecraft:powered_rail, minecraft:detector_rail, minecraft:activator_rail, minecraft:redstone_block, minecraft:command_block, minecraft:chain_command_block, minecraft:repeating_command_block
 #	likeair = 0, 6, 8, 9, 10, 11, 18, 20, 26, 27, 28, 29, 30, 31, 32, 33, 34, 36, 37, 38, 39, 40, 46, 50, 51, 54, 55, 59, 60, 63, 64, 65, 66, 68, 69, 70, 71, 72, 75, 76, 77, 78, 79, 81, 83, 85, 90, 92, 93, 94, 95, 96, 101, 102, 104, 104, 106, 107, 111, 113, 115, 116, 117, 118, 119, 120, 122, 127, 130, 131, 132, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 154, 157, 160, 161, 165, 167, 169, 171, 175, 176, 177, 178, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197
 
+variables:
+	{BlockPhysics} = false
+
 command /physics <boolean>:
 	permission: sk.admin
 	trigger:
@@ -15,12 +18,14 @@ command /physics <boolean>:
 		message "§bBlockPhysic §9を §a%arg 1% §9に設定しました"
 
 on physics:
-	if world of event-location is "Kit-StoneRiver":
-		if type of event-block is water:
+	set {_world} to "%world of event-location%"
+	set {_bool} to checkPhysics_physics({_world}, event-block)
+	if {_bool} is true:
+		stop
+	if {BlockPhysics} is false:
+		if event-block is redsignal1 or redsignal2:
 			stop
-	if {BlockPhysics} is true:
-		if event-block is not redsignal1 or redsignal2:
-			cancel event
+	cancel event
 #	else if event-block is redsignal:
 #		if block below event-block is likeair:
 #			cancel event
@@ -31,33 +36,50 @@ on physics:
 #	cancel event
 
 on entity block change:
-	if entity is a falling fire:
-		if "%world of event-location%" contains "Kit-":
-			if "%world of event-location%" is "Kit-Volcano":
-				stop
-			else:
-				cancel event
-		else:
-			cancel event
-	else:
-		cancel event
+	set {_world} to "%world of event-location%"
+	set {_bool} to checkPhysics_entity({_world}, entity)
+	if {_bool} is true:
+		stop
+	cancel event
 
 on flow:
-	if world of event-location is "Kit-StoneRiver", "Lobby_nether" or "Lobby":
+	set {_world} to "%world of event-location%"
+	set {_bool} to checkPhysics_flow({_world}, event-block)
+	if {_bool} is true:
 		stop
 	cancel event
 
 on fade:
+	set {_world} to "%world of event-location%"
+	set {_bool} to checkPhysics_fade({_world}, event-block)
+	if {_bool} is true:
+		stop
 	cancel event
 
 on form:
+	set {_world} to "%world of event-location%"
+	set {_bool} to checkPhysics_form({_world}, event-block)
+	if {_bool} is true:
+		stop
 	cancel event
 
 on grow:
+	set {_world} to "%world of event-location%"
+	set {_bool} to checkPhysics_grow({_world}, event-block)
+	if {_bool} is true:
+		stop
 	cancel event
 
 on burn:
+	set {_world} to "%world of event-location%"
+	set {_bool} to checkPhysics_burn({_world}, event-block)
+	if {_bool} is true:
+		stop
 	cancel event
 
 on leaves decay:
+	set {_world} to "%world of event-location%"
+	set {_bool} to checkPhysics_decay({_world}, event-block)
+	if {_bool} is true:
+		stop
 	cancel event
