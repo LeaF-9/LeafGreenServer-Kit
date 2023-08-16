@@ -1,34 +1,73 @@
-# Clock Sword
+# Weapon-Name: Electron Booster
 
-function kitWeapon_Engineer_4(player: player):
-	if checkFuel({_player}, 4, "Weapon.main") is true:
-		toolCT({_player}, "Engineer", 4, "Weapon.main")
-		kitMsg({_player}, "<##a0d8ef>追い風を吹かせます!")
-		set {_now} to now
-		set {Stats.%{_player}%::Wind Stick} to {_now}
-		loop 200 times:
-			if {Stats.%{_player}%::Wind Stick} is {_now}:
-				loop all entities in radius 7 around location of {_player}:
-					if kitCheckTeam({_player}, loop-entity, true) is true:
-						loop-entity does not have speed
-						apply speed 1 to loop-entity for 1 tick
-					else if kitCheckTeam({_player}, loop-entity, false) is true:
-						loop-entity does not have slowness
-						apply slowness 1 to loop-entity for 1 tick
-				loop all blocks in radius 7 around {_player}:
-					loop-block is air
-					chance of 0.1%:
-						set {_lb} to location of loop-block
-						playSound("entity.phantom.flap", 1, 2, {_lb})
-						effectWindStick({_player}, {_lb})
-				wait a tick
-		delete {Stats.%{_player}%::Wind Stick}
+on leftclick:
+	{Class::%player%} is "Engineer"
+	player is sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 4) is true
+	checkCT(player, name of {_tool}) is true
+	checkFuel(player, 4, "Weapon.main") is true
+	kitEffect_ElectronBooster_Shoot(player)
 
-function effectWindStick(player: player, loc: location):
-	set {_el} to {_loc}
-	set pitch of {_el} to 20
-	loop 5 times:
-		set yaw of {_el} to yaw of {_player}
-		set {_el} to location 0.6 meters in front of {_el}
-		spawnParticle_Color(entity_effect, 160, 216, 239, {_el})
+on projectile hit:
+	projectile is snowball
+	metadata value "electronbooster" of projectile is true
+	kitEffect_ElectronBooster_Hit(shooter, location of projectile)
+
+function kitEffect_ElectronBooster_Shoot(player: player):
+	# 電子弾の発射
+	shoot a snowball from {_player} at speed 1
+	set item of shot snowball to gold block
+	set metadata value "electronbooster" of shot snowball to true
+	kitParticle_ElectronBooster_Projectile(shot snowball)
+
+function kitEffect_ElectronBooster_Hit(player: player, loc: location):
+	playSound("entity.illusioner.prepare_mirror", 1, 0.9, {_loc})
+	loop 100 times:
+		kitParticle_ElectronBooster_Area({_loc})
+		loop all entities in radius 5 around {_loc}:
+			if entity type of loop-entity is player:
+				if kitCheckTeam({_player}, loop-entity, true) is true:
+					applyEffect(loop-entity, speed, 1, 1 tick)
+				else if kitCheckTeam({_player}. loop-entity, false) is true:
+					kitPalsy(loop-entity, 5 seconds)
+			else if entity type of loop-entity is armor stand:
+				metadata value "kit-armor" of loop-entity is set
+				set {_machinename} to metadata value "kit-armor" of loop-entity
+				metadata value {_machinename} of loop-entity is "%{_player}%"
+				kitParticle_ElectronBooster_Machine(loop-entity)
+				metadata value "nofuel" of loop-entity is not set
+				set metadata value "nofuel" of loop-entity to true
+				add loop-entity to {_machines::*}
+				playSound("block.iron_trapdoor.open", 1, 0.8, loop-entity)
 		wait a tick
+	loop {_machines::*}:
+		set metadata value "nofuel" of loop-value to false
+
+function kitParticle_ElectronBooster_Projectile(proj: projectile):
+	playSound("entity.evoker.cast_spell", 1, 0.65, {_proj})
+	loop 20 times:
+		loop 3 times:
+			spawnParticle_Vector(crit, randomVector(), 0.3, location of {_proj})
+		wait a tick
+
+function kitParticle_ElectronBooster_Area(loc: location):
+	set {_s} to 0
+	set {_t} to 0
+	loop 19 time:
+		loop 36 time:
+			set {_vector} to {_loc}
+			set {_x} to x-coordinate of {_loc}
+			set {_y} to y-coordinate of {_loc}
+			set {_z} to z-coordinate of {_loc}
+			set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
+			set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
+			set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
+			chance of 10%:
+				spawnParticle(crit, {_vector})
+			add 10 to {_t}
+		add 10 to {_s}
+
+function kitParticle_ElectronBooster_Machine(machine: entity):
+	loop 3 times:
+		spawnParticle_Vector(end_rod, randomVector(), 0.1, aroundEffect({_machine}))
