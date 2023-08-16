@@ -1,17 +1,28 @@
 function kitPercent(player: player, per: number, buff: boolean) :: number:
+	# Luck Statsの確認
 	if {Kit-Luck::%{_player}%} is not set:
-		set {_luck} to 1
+		set {_lucklvl} to 0
 	else:
-		set {_luck} to {Kit-Luck::%{_player}%}
+		set {_lucklvl} to {Kit-Luck::%{_player}%}
+	# Luckの計算
 	if {_buff} is true:
-		set {_percent} to {_per} * {_luck}
+		if {_lucklvl} > 0:
+			set {_ex} to 1
+		else if {_lucklvl} < 0:
+			set {_ex} to 0.5
 	else:
-		set {_percent} to {_per} / {_luck}
-	if {_percent} > 100:
-		set {_percent} to 100
-	return {_percent}
+		if {_lucklvl} > 0:
+			set {_ex} to 0.5
+		else if {_lucklvl} < 0:
+			set {_ex} to 1
+	set {_luck} to 1 + ({_lucklvl} / 5 * {_ex})
+	set {_percent} to {_per} / 100
+	set {_result} to (1 - ((1 - {_percent}) ^ {_luck})) * 100
+	return {_result}
 
+# buffはattacker目線
 function kitPercentDuel(atk: entity, vcm: entity, per: number, buff: boolean) :: number:
+	# atkとvcmのプレイヤー検知
 	set {_atkname} to display name of {_atk}
 	set {_vcmname} to display name of {_vcm}
 	loop all players:
@@ -23,20 +34,29 @@ function kitPercentDuel(atk: entity, vcm: entity, per: number, buff: boolean) ::
 		return 0
 	if {_victim} is not set:
 		return 0
+	# victim Luck Statsの確認
 	if {Kit-Luck::%{_victim}%} is not set:
-		set {_luck.v} to 1
+		set {_lucklvl.v} to 0
 	else:
-		set {_luck.v} to {Kit-Luck::%{_victim}%}
+		set {_lucklvl.v} to {Kit-Luck::%{_victim}%}
+	# attacker Luck Statsの確認
 	if {Kit-Luck::%{_attacker}%} is not set:
-		set {_luck.a} to 1
+		set {_lucklvl.a} to 0
 	else:
-		set {_luck.a} to {Kit-Luck::%{_attacker}%}
+		set {_lucklvl.a} to {Kit-Luck::%{_attacker}%}
+	# Luckの計算
+	set {_lucklvl} to {_lucklvl.a} - {_lucklvl.v}
 	if {_buff} is true:
-		set {_percent} to {_per} * {_luck.a}
-		set {_percent} to {_per} / {_luck.v}
+		if {_lucklvl} > 0:
+			set {_ex} to 1
+		else if {_lucklvl} < 0:
+			set {_ex} to 0.5
 	else:
-		set {_percent} to {_per} / {_luck.a}
-		set {_percent} to {_per} * {_luck.v}
-	if {_percent} > 100:
-		set {_percent} to 100
-	return {_percent}
+		if {_lucklvl} > 0:
+			set {_ex} to 0.5
+		else if {_lucklvl} < 0:
+			set {_ex} to 1
+	set {_luck} to 1 + ({_lucklvl} / 5 * {_ex})
+	set {_percent} to {_per} / 100
+	set {_result} to (1 - ((1 - {_percent}) ^ {_luck})) * 100
+	return {_result}
