@@ -484,12 +484,28 @@ on damage of player:
 	else:
 		playSound("block.anvil.land", 0.7, 2, victim)
 
-function kitLuck(player: player, lvl: number):
+function kitLuck(player: player, pluslvl: number):
 	addKitOS("Luck")
-	set {_per} to 1 + (0.2 * {_lvl})
-	set {Kit-Luck::%{_player}%} to {_per}
-	if {_lvl} is not 0:
-		message "<##3cb371>幸運だ! 確率が良くなりそうだ!" to {_player}
+	if {_pluslvl} = 0:  # リセット処理
+		delete {Kit-Luck::%{_player}%}
+		message formatted "<##008000>運がリセットされました" to {_player}
+		stop
+	if {_pluslvl} > 0:
+		if {Kit-Luck::%{_player}%} >= 5:
+			message formatted "<##3cb371>既に§l最大幸運<##3cb371>を持っています!" to {_player}
+			stop
+		add {_pluslvl} to {Kit-Luck::%{_player}%}
+		if {Kit-Luck::%{_player}%} > 5:
+			set {Kit-Luck::%{_player}%} to 5
+		message formatted "<##3cb371>§l幸運<##3cb371>だ! 確率が良くなりそうだ! <##ffd700>幸運レベル§7: §e§l%{Kit-Luck::%{_player}%}%" to {_player}
+	else:
+		if {Kit-Luck::%{_player}%} <= -5:
+			message formatted "<##2e8b57>既に§l最大不運<##2e8b57>を持っています..." to {_player}
+			stop
+		add {_pluslvl} to {Kit-Luck::%{_player}%}
+		if {Kit-Luck::%{_player}%} < -5:
+			set {Kit-Luck::%{_player}%} to -5
+		message formatted "<##2e8b57>§l不運<##2e8b57>だ! 確率が悪くなりそうだ... <##ffd700>幸運レベル§7: §e§l%{Kit-Luck::%{_player}%}%" to {_player}
 	loop 10 times:
 		set {_loc} to location of {_player}
 		add a random number between -1 and 1 to x-coordinate of {_loc}
@@ -498,22 +514,18 @@ function kitLuck(player: player, lvl: number):
 		spawnParticle(totem_of_undying, {_loc})
 	remove luck from {_player}
 	remove bad luck from {_player}
-	if {_lvl} is not 0:
-		apply luck {_lvl} to {_player} for 10000000000 seconds
-	playSound("entity.experience_orb.pickup", 1, {_per}, {_player}, true)
-
-function kitBadLuck(player: player, lvl: number):
-	addKitOS("Luck")
-	set {_per} to 1 - ({_lvl} / 5 * 0.5)
-	set {Kit-Luck::%{_player}%} to {_per}
-	message "<##2e8b57>不運だ! 確率が悪くなりそうだ..." to {_player}
-	loop 10 times:
-		set {_loc} to location of {_player}
-		add a random number between -1 and 1 to x-coordinate of {_loc}
-		add a random number between 0 and 2 to y-coordinate of {_loc}
-		add a random number between -1 and 1 to z-coordinate of {_loc}
-		spawnParticle(totem_of_undying, {_loc})
-	remove luck from {_player}
-	remove bad luck from {_player}
-	apply bad luck {_lvl} to {_player} for 10000000000 seconds
-	playSound("entity.experience_orb.pickup", 1, {_per}, {_player}, true)
+	set {_efflvl} to abs({Kit-Luck::%{_player}%})
+	if {Kit-Luck::%{_player}%} > 0:
+		apply luck {_efflvl} to {_player} for 10000000000 seconds
+	else if {Kit-Luck::%{_player}%} < 0:
+		apply bad luck {_efflvl} to {_player} for 10000000000 seconds
+	# pitchの設定
+	set {_pitchlvl} to {Kit-Luck::%{_player}%}
+	if {_pitchlvl} = 0:
+		set {_pitch} to 1
+	else if {_pitchlvl} > 0:
+		set {_pitch} to 1 + (0.2 * {_pitchlvl})
+	else if {_pitchlvl} < 0:
+		set {_pitchlvl} to abs({_pitchlvl})
+		set {_pitch} to 1 - ({_pitchlvl} / 5 * 0.5)
+	playSound("entity.experience_orb.pickup", 1, {_pitch}, {_player}, true)
