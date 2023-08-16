@@ -1,37 +1,44 @@
-# Corrupt Land
+# Weapon-Name: Corrupt Land
 
-function kitWeapon_Ghost_2(player: player):
-	if {Stats.%{_player}%::SkillLocation} is set:
-		set {_loc} to {Stats.%{_player}%::SkillLocation}
-		toolCT({_player}, "Ghost", 2, "Weapon.main")
-		set {_memsg} to kitGhostMessage("§2枯渇地帯を設置した...")
-		kitMsg({_player}, {_memsg})
-		playSound("block.grass.place", 1, 0.5, {_loc})
-		loop all blocks in radius 5 around {_loc}:
-			loop-block is air
-			block below loop-block is not passable
-			add location of loop-block to {_locs::*}
-		loop {_locs::*}:
-			make all players see block at loop-value as dead grass
-		loop 100 times:
-			loop {_locs::*}:
-				chance of 3%:
-					spawnParticle_Color(entity_effect, 87, 138, 61, loop-value-2)
-			loop all players in radius 5 around {_loc}:
-				kitCheckTeam({_player}, loop-player, false) is true
-				if {_players::*} does not contain loop-player:
-					add loop-player to {_players::*}
-					set {Stats.%loop-player%::Hunger} to true
-				set {_fl} to food level of loop-player
-				subtract 0.5 from {_fl}
-				set food level of loop-player to {_fl}
-			wait a tick
-		playSound("block.grass.break", 1, 0.5, {_loc})
-		loop {_locs::*}:
-			block at loop-value is air
-			make all players see block at loop-value as air
-		loop {_players::*}:
-			set food level of loop-value to 10
-			delete {Stats.%loop-value%::Hunger}
-	else:
-		send action bar "§c§l対象地点が存在しません!" to {_player}
+on sneak toggle:
+	{Class::%player%} is "Ghost"
+	player is not sneaking
+	set {_tool} to player's tool
+	if kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 2) is false:
+		stop
+	set {_true} to true
+	wait a tick
+	while {_true} is true:
+		set {_tool} to player's tool
+		if kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 2) is false:
+			set {_true} to false
+			continue
+		else if player is not sneaking:
+			set {_true} to false
+			continue
+		kitEffect_CorruptLand(player)
+		wait a tick
+
+function kitEffect_CorruptLand(player: player):
+	kitParticle_CorruptLand_Area(location of {_player})
+	loop all players in radius 10 around {_player}:
+		kitCheckTeam(loop-player, {_player}, false) is true
+		loop-player does not have hunger
+		applyEffect(loop-player, hunger, 1, 1 seconds)
+		set food level of loop-player to 1
+		kitParticle_CorruptLand_Player(loop-player)
+
+function kitParticle_CorruptLand_Area(loc: location):
+	chance of 5%:
+		playSound("entity.player.burp", 1, 1, {_loc})
+	set {_rad} to 0
+	loop 36 times:
+		set {_el} to {_loc}
+		add 10 * sin({_rad}) to x-pos of {_el}
+		add 10 * cos({_rad}) to z-pos of {_el}
+		spawnParticle_Color(entity_effect, 91, 99, 86, {_el})
+		add 10 to {_rad}
+
+function kitParticle_CorruptLand_Player(player: player):
+	loop 3 times:
+		spawnParticle_Item(rotten flesh, aroundEffect({_player}))
