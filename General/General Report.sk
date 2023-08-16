@@ -1,0 +1,20 @@
+command /report <player> <text>:
+	usage: /report <player> <reason>
+	executable by: player
+	trigger:
+		message formatted "§c§l%arg 1%§eへのレポートが完了しました! 対応までお待ち下さい..." to player
+		loop all players:
+			loop-player has permission "sk.staff"
+			message formatted "§c----------§4§l!!!!! §c§lREPORT §4§l!!!!!§c----------" to loop-player
+			message formatted " " to loop-player
+			message formatted "§9通報者§7: §a%player%" to loop-player
+			message formatted "§c§l対象者§7: §4§l%arg 1%" to loop-player
+			message formatted "§e理由§7: §a%arg 2%" to loop-player
+			message formatted " " to loop-player
+			message formatted "§c---------------------------------" to loop-player
+		discordReport(player, arg 1, arg 2)
+		loop 3 times:
+			loop all players:
+				loop-player has permission "sk.staff"
+				playSound("block.note_block.iron_xylophone", 2, 1, loop-player, true)
+			wait 3 ticks
