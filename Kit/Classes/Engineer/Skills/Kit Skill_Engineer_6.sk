@@ -39,6 +39,10 @@ function kitSkill_Engineer_6(player: player, loc: location):
 			metadata value "kit-armor" of loop-entity is "Machine-Respawn Controller"
 			metadata value "Machine-Respawn Controller" of loop-entity is "%{_player}%"
 			set {_exist} to true
+			if metadata value "nofuel" of loop-entity is true:
+				set {Stats.%{_player}%::RespawnController-NoFuel} to true
+			else:
+				delete {Stats.%{_player}%::RespawnController-NoFuel}
 		if {_exist} is true:
 			kitFakeReload({_player}, "Machine-Respawn Controller")
 		else:
@@ -49,5 +53,8 @@ function kitSkill_Engineer_6(player: player, loc: location):
 
 on death of player:
 	{Stats.%victim%::RespawnController} is set
-	checkFuel(victim, 6) is true
+	set {_player} to {Stats.%victim%::RespawnController}
+	if {Stats.%{_player}%::RespawnController-NoFuel} is not set:
+		if checkFuel({_player}, 6) is false:
+			stop
 	set {Stats.%victim%::SpawnTime} to 15

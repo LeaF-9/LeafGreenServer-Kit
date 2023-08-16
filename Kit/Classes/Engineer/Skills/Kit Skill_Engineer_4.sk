@@ -33,18 +33,20 @@ function kitSkill_Engineer_4(player: player, loc: location):
 	playSound("block.respawn_anchor.charge", 1, 2, {_loc})
 	while {Stats.%{_player}%::TrackingSystem-Time-%{_num}%} is {_now}:
 		wait a tick
-		delete {_true}
 		loop all entities in radius 5 around {_loc}:
 			kitCheckTeam({_player}, loop-entity, false) is true
 			{Kit-Invisible::%loop-entity%} is not set
-			add 1 to {_fuel}
 			delete {_true}
-			if mod({_fuel}, 20) = 0:
-				if checkFuel({_player}, 4) is true:
-					set {_true} to true
+			if {_nofuel} is true:
+				set {_true} to true
 			else:
-				if {Kit-Fuel::%{_player}%} >= 1:
-					set {_true} to true
+				add 1 to {_fuel}
+				if mod({_fuel}, 20) = 0:
+					if checkFuel({_player}, 4) is true:
+						set {_true} to true
+				else:
+					if {Kit-Fuel::%{_player}%} >= 1:
+						set {_true} to true
 			if {_true} is true:
 				kitDamage({_player}, loop-entity, 0.3)
 				if loop-entity does not have slowness:
@@ -67,6 +69,10 @@ function kitSkill_Engineer_4(player: player, loc: location):
 			type of loop-entity is armor stand
 			metadata value "kit-armor" of loop-entity is "Machine-Tracking System-%{_num}%"
 			metadata value "Machine-Tracking System-%{_num}%" of loop-entity is "%{_player}%"
+			if metadata value "nofuel" of loop-entity is true:
+				set {_nofuel} to true
+			else:
+				delete {_nofuel}
 			set {_exist} to true
 		if {_exist} is true:
 			kitFakeReload({_player}, "Machine-Tracking System-%{_num}%")

@@ -21,6 +21,10 @@ function kitSkill_Engineer_7(player: player, loc: location):
 			metadata value "kit-armor" of loop-entity is "Machine-Hacking Device"
 			metadata value "Machine-Hacking Device" of loop-entity is "%{_player}%"
 			set {_exist} to true
+			if metadata value "nofuel" of loop-entity is true:
+				set {Stats.%{_player}%::HackingDevice-NoFuel} to true
+			else:
+				delete {Stats.%{_player}%::HackingDevice-NoFuel}
 		if {_exist} is true:
 			kitFakeReload({_player}, "Machine-Hacking Device")
 		else:
@@ -37,59 +41,64 @@ on leftclick holding a structure block:
 	{_item.num} is 7
 	{Stats.%player%::HackingDevice} is set
 	checkCT(player, "Hacking Wave") is true
-	if checkFuel(player, 7) is true:
-		setCT(player, "Hacking Wave", 3)
-		kitMsg(player, "§e§lHacking Device §6のチャージを行ないます...")
-		set {_pitch} to 0.5
-		set {_round} to 0
+	if {Stats.%player%::HackingDevice-NoFuel} is true:
+		set {_ok} to true
+	else if checkFuel(player, 7) is true:
+		set {_ok} to true
+	if {_ok} is not set:
+		stop
+	setCT(player, "Hacking Wave", 3)
+	kitMsg(player, "§e§lHacking Device §6のチャージを行ないます...")
+	set {_pitch} to 0.5
+	set {_round} to 0
+	loop all falling blocks:
+		metadata value "kit-block" of loop-falling block is "%player%"
+		loop-falling block is riding
+		metadata value "kit-armor" of vehicle of loop-falling block is "Machine-Hacking Device"
+		metadata value "Machine-Hacking Device" of vehicle of loop-falling block is "%player%"
+		set glowing of loop-falling block to true
+	loop 60 times:
+		if {Stats.%player%::HackingDevice} is set:
+			add 0.25 to {_round}
+			set {_baseloc} to {Stats.%player%::HackingDevice}
+			add 0.5 to y-coordinate of {_baseloc}
+			loop 10 times:
+				set {_el} to {_baseloc}
+				add a random number between {_round} * -1 and {_round} to x-coordinate of {_el}
+				add a random number between {_round} * -1 and {_round} to z-coordinate of {_el}
+				add a random number between {_round} * -1 and {_round} to y-coordinate of {_el}
+				spawnParticle(crit, {_el})
+			playSound("entity.blaze.hurt", 0.6, {_pitch}, {Stats.%player%::HackingDevice})
+			add 0.025 to {_pitch}
+			wait a tick
+	if {Stats.%player%::HackingDevice} is set:
+		kitMsg(player, "§5装置より <##E9BC00>§lハッキングウェーブ §5を放出しました!")
+		playSound("block.respawn_anchor.set_spawn", 1, 1, {Stats.%player%::HackingDevice})
+		loop all players in radius 15 around {Stats.%player%::HackingDevice}:
+			kitCheckTeam(player, loop-player, false) is true
+			kitPalsy(loop-player, 5 seconds)
+			apply mining fatigue 1 to loop-player for 5 seconds
+			message formatted "§eハッキングでスキルの使用が禁じられた!" to loop-player
 		loop all falling blocks:
 			metadata value "kit-block" of loop-falling block is "%player%"
 			loop-falling block is riding
 			metadata value "kit-armor" of vehicle of loop-falling block is "Machine-Hacking Device"
 			metadata value "Machine-Hacking Device" of vehicle of loop-falling block is "%player%"
-			set glowing of loop-falling block to true
-		loop 60 times:
-			if {Stats.%player%::HackingDevice} is set:
-				add 0.25 to {_round}
-				set {_baseloc} to {Stats.%player%::HackingDevice}
-				add 0.5 to y-coordinate of {_baseloc}
-				loop 10 times:
-					set {_el} to {_baseloc}
-					add a random number between {_round} * -1 and {_round} to x-coordinate of {_el}
-					add a random number between {_round} * -1 and {_round} to z-coordinate of {_el}
-					add a random number between {_round} * -1 and {_round} to y-coordinate of {_el}
-					spawnParticle(crit, {_el})
-				playSound("entity.blaze.hurt", 0.6, {_pitch}, {Stats.%player%::HackingDevice})
-				add 0.025 to {_pitch}
-				wait a tick
-		if {Stats.%player%::HackingDevice} is set:
-			kitMsg(player, "§5装置より <##E9BC00>§lハッキングウェーブ §5を放出しました!")
-			playSound("block.respawn_anchor.set_spawn", 1, 1, {Stats.%player%::HackingDevice})
-			loop all players in radius 15 around {Stats.%player%::HackingDevice}:
-				kitCheckTeam(player, loop-player, false) is true
-				kitPalsy(loop-player, 5 seconds)
-				apply mining fatigue 1 to loop-player for 5 seconds
-				message formatted "§eハッキングでスキルの使用が禁じられた!" to loop-player
-			loop all falling blocks:
-				metadata value "kit-block" of loop-falling block is "%player%"
-				loop-falling block is riding
-				metadata value "kit-armor" of vehicle of loop-falling block is "Machine-Hacking Device"
-				metadata value "Machine-Hacking Device" of vehicle of loop-falling block is "%player%"
-				set glowing of loop-falling block to false
-			set {_s} to 0
-			set {_t} to 0
-			set {_pl} to {_baseloc}
-			loop 19 time:
-				loop 36 time:
-					set {_loc} to {_pl}
-					set {_vector} to {_loc}
-					set {_x} to x-coordinate of {_loc}
-					set {_y} to y-coordinate of {_loc}
-					set {_z} to z-coordinate of {_loc}
-					set x-coordinate of {_vector} to {_x} + ( 15 * sin({_s}) * cos({_t}) )
-					set y-coordinate of {_vector} to {_y} + ( 15 * cos({_s}) )
-					set z-coordinate of {_vector} to {_z} + ( 15 * sin({_s}) * sin({_t}) )
-					chance of 30%:
-						spawnParticle_Color(entity_effect, 255, 255, 0, {_vector})
-					add 10 to {_t}
-				add 10 to {_s}
+			set glowing of loop-falling block to false
+		set {_s} to 0
+		set {_t} to 0
+		set {_pl} to {_baseloc}
+		loop 19 time:
+			loop 36 time:
+				set {_loc} to {_pl}
+				set {_vector} to {_loc}
+				set {_x} to x-coordinate of {_loc}
+				set {_y} to y-coordinate of {_loc}
+				set {_z} to z-coordinate of {_loc}
+				set x-coordinate of {_vector} to {_x} + ( 15 * sin({_s}) * cos({_t}) )
+				set y-coordinate of {_vector} to {_y} + ( 15 * cos({_s}) )
+				set z-coordinate of {_vector} to {_z} + ( 15 * sin({_s}) * sin({_t}) )
+				chance of 30%:
+					spawnParticle_Color(entity_effect, 255, 255, 0, {_vector})
+				add 10 to {_t}
+			add 10 to {_s}

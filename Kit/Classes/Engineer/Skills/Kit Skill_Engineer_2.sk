@@ -20,73 +20,83 @@ function kitSkill_Engineer_2(player: player, loc: location):
 	replace every "§8Fuel§7: §4" with "" in {_fuel}
 	set {_fuel} to {_fuel} parsed as number
 	while {Stats.%{_player}%::RestoreFaster-Time} is {_now}:
-		delete {_ok}
-		loop 10 times:
-			if {Stats.%{_player}%::RestoreFaster-Time} is {_now}:
-				if {_ok} is true:
-					delete {_tp::*}
-#				新しい人の追加 + 範囲内チェック
-					loop all players in radius 30 around {_loc.base}:
-						kitCheckTeam(loop-player, {_player}, true) is true
-						{Class::%loop-player%} is not "Engineer"
-						{Stats.%loop-player%::NoSupport} is not set
-						if {_pl::*} contains loop-player:
-							set {_tp::%loop-player%} to true
-						else:
-							if {Kit-Fuel::%{_player}%} >= {_fuel}:
-								set {_ok} to true
-								if {_fu::%loop-player%} is not set:
-									set {_fu::%loop-player%} to true
-									setFuelCT({_player})
-									subtract {_checkfuel} from {Kit-Fuel::%{_player}%}
-								add loop-player to {_pl::*}
-								set {_tp::%loop-player%} to true
-								setSupporter(loop-player, {_player})
-								set {Stats.%loop-player%::FastCT} to true
-								message formatted "§bクールタイム短縮時間§eが短くなります!" to loop-player
-								kitEffect_RestoreFaster(loop-player, true)
-					loop {_pl::*}:
-						{Stats.%loop-value-2%::FastCT} is true
-						{_tp::%loop-value-2%} is not set
-						delete {Stats.%loop-value-2%::FastCT}
-						message formatted "§bクールタイム短縮§c効果が切れました" to loop-value-2
-						kitEffect_RestoreFaster(loop-value-2, false)
-						delete {_pl::%loop-index%}
-				else:
-					delete {_ally}
-					delete {_pl::*}
-					loop all players in radius 30 around {_loc.base}:
-						kitCheckTeam(loop-player, {_player}, true) is true
-						{Class::%loop-player%} is not "Engineer"
-						{Stats.%loop-player%::NoSupport} is not set
-						add 1 to {_ally}
-						add loop-player to {_pl::*}
-					set {_checkfuel} to {_fuel} * {_ally}
-					if {Kit-Fuel::%{_player}%} >= {_checkfuel}:
-						set {_ok} to true
+		wait a second
+		# 現在範囲内の味方リストをリセット
+		delete {_enter.now::*}
+		# fuel check(最低でも消費Fuel以上存在しない場合は効果を発揮しない)
+		delete {_execute}
+		if {_nofuel} is true:
+			set {_execute} to true
+		else if {Kit-Fuel::%{_player}%} >= {_fuel}:
+			set {_execute} to true
+		# 効果発動時
+		if {_execute} is true:
+			loop all players in radius 30 around {_loc}:
+				{_execute} is true
+				loop-player is not {_player}
+				kitCheckTeam(loop-player, {_player}, true) is true
+				{Stats.%loop-player%::NoSupport} is not set
+				# もし入った履歴がなければFuel消費
+				if {_enter.hist::*} does not contain loop-player:
+					if {_nofuel} is not set:
+						set {_checkfuel} to 0
+					else if {_timer::%loop-player%} is set:
+						set {_checkfuel} to 0
+					else:
+						set {_checkfuel} to {_fuel}
 						setFuelCT({_player})
-						subtract {_checkfuel} from {Kit-Fuel::%{_player}%}
-						loop {_pl::*}:
-							setSupporter(loop-value-2, {_player})
-							set {Stats.%loop-value-2%::FastCT} to true
-							message formatted "§bクールタイム短縮時間§eが短くなります!" to loop-value-2
-							kitEffect_RestoreFaster(loop-value-2, true)
-				wait a second
-				delete {_exist}
-				loop all entities:
-					type of loop-entity is armor stand
-					metadata value "kit-armor" of loop-entity is "Machine-Restore Faster"
-					metadata value "Machine-Restore Faster" of loop-entity is "%{_player}%"
-					set {_exist} to true
-				if {_exist} is true:
-					kitFakeReload({_player}, "Machine-Restore Faster")
-				else:
-					delete {Stats.%{_player}%::RestoreFaster-Time}
-					loop {_pl::*}:
-						{Stats.%loop-value-2%::FastCT} is true
-						delete {Stats.%loop-value-2%::FastCT}
-						message "§bクールタイム短縮§c効果が切れました" to loop-value-2
-						kitEffect_RestoreFaster(loop-value-2, false)
+					subtract {_checkfuel} from {Kit-Fuel::%{_player}%}
+					if {Kit-Fuel::%{_player}%} < {_fuel}:
+						delete {_execute}
+					add loop-player to {_enter.hist::*}
+					setSupporter(loop-player, {_player})
+					message formatted "§bクールタイム短縮時間§eが短くなります!" to loop-player
+					kitEffect_RestoreFaster(loop-player, true)
+				# 現在入っている記録 & 効果とタイマー設定
+				add loop-player to {_enter.now::*}
+				set {_timer::%loop-player%} to 5
+				set {Stats.%loop-player%::FastCT} to true
+			# 入った履歴内で現在いないプレイヤーのタイマー消費
+			loop {_enter.hist::*}:
+				{_enter.now::*} does not contain loop-value
+				# 効果発動中であれば効果削除
+				if {Stats.%loop-value%::FastCT} is true:
+					delete {Stats.%loop-value%::FastCT}
+					message formatted "§bクールタイム短縮§c効果が切れました" to loop-value
+					kitEffect_RestoreFaster(loop-value, false)
+				subtract 1 from {_timer::%loop-value%}
+				# 範囲外に立ってから5秒以上が経過した際の処理
+				if {_timer::%loop-value%} <= 0:
+					delete {_timer::%loop-value%}
+					remove loop-value from {_enter.hist::*}
+		# 効果未発動時
+		else:
+			loop {_enter.hist::*}:
+				# 効果発動中であれば効果削除
+				if {Stats.%loop-value%::FastCT} is true:
+					delete {Stats.%loop-value%::FastCT}
+					message formatted "§bクールタイム短縮§c効果が切れました" to loop-value
+					kitEffect_RestoreFaster(loop-value, false)
+		# 機械存在のチェック
+		delete {_exist}
+		loop all entities:
+			type of loop-entity is armor stand
+			metadata value "kit-armor" of loop-entity is "Machine-Restore Faster"
+			metadata value "Machine-Restore Faster" of loop-entity is "%{_player}%"
+			set {_exist} to true
+			if metadata value "nofuel" of loop-entity is true:
+				set {_nofuel} to true
+			else:
+				delete {_nofuel}
+		if {_exist} is true:
+			kitFakeReload({_player}, "Machine-Restore Faster")
+		else:
+			delete {Stats.%{_player}%::RestoreFaster-Time}
+			loop {_enter.hist::*}:
+				{Stats.%loop-value%::FastCT} is true
+				delete {Stats.%loop-value%::FastCT}
+				message "§bクールタイム短縮§c効果が切れました" to loop-value
+				kitEffect_RestoreFaster(loop-value, false)
 
 function kitEffect_RestoreFaster(player: player, bool: boolean):
 	set {_up} to -0.5

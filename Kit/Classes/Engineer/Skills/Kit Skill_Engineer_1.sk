@@ -35,7 +35,9 @@ function kitSkill_Engineer_1(player: player, loc: location):
 			{_time::%loop-player%} is not set
 			{team::%loop-player%} is {team::%{_player}%}
 			{Stats.%loop-player%::NoSupport} is not set
-			checkFuel({_player}, 1) is true
+			if {_nofuel} is not set:
+				if checkFuel({_player}, 1) is false:
+					continue
 			setSupporter(loop-player, {_player})
 			set {Stats.%loop-player%::LaunchPad} to true
 			push loop-player upwards at speed 1
@@ -51,6 +53,10 @@ function kitSkill_Engineer_1(player: player, loc: location):
 			metadata value "kit-armor" of loop-entity is "Machine-Launch Pad"
 			metadata value "Machine-Launch Pad" of loop-entity is "%{_player}%"
 			set {_exist} to true
+			if metadata value "nofuel" of loop-entity is true:
+				set {_nofuel} to true
+			else:
+				delete {_nofuel}
 		if {_exist} is true:
 			kitFakeReload({_player}, "Machine-Launch Pad")
 		else:

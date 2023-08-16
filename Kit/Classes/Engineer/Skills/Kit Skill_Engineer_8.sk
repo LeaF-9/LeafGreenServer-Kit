@@ -26,7 +26,9 @@ function kitSkill_Engineer_8(player: player, loc: location):
 					setCT(loop-player, "Crystal Shield", 5)
 				else:
 					checkCT(loop-player, "Crystal Shield", true) is true
-					checkFuel({_player}, 8) is true
+					if {_nofuel} is not set:
+						if checkFuel({_player}, 8) is false:
+							continue
 					setSupporter(loop-player, {_player})
 					kitShield(loop-player, 3)
 #					set {_nosh::%loop-value%} to 10
@@ -51,6 +53,10 @@ function kitSkill_Engineer_8(player: player, loc: location):
 			metadata value "kit-armor" of loop-entity is "Machine-Shield Crystal"
 			metadata value "Machine-Shield Crystal" of loop-entity is "%{_player}%"
 			set {_exist} to true
+			if metadata value "nofuel" of loop-entity is true:
+				set {_nofuel} to true
+			else:
+				delete {_nofuel}
 		if {_exist} is true:
 			kitFakeReload({_player}, "Machine-Shield Crystal")
 		else:

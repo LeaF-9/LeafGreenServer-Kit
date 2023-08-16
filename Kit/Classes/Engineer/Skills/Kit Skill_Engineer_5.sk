@@ -17,7 +17,9 @@ function kitSkill_Engineer_5(player: player, loc: location):
 		loop all players in radius 20 around {_loc.core}:
 			kitCheckTeam({_player}, loop-player, false) is true
 			loop-player does not have glowing
-			checkFuel({_player}, 5) is true
+			if {_nofuel} is not set:
+				if checkFuel({_player}, 5) is false:
+					continue
 			kitDamage({_player}, loop-player, 2)
 			apply glowing 1 to loop-player for 10 seconds
 			playSound("block.conduit.attack.target", 1, 1, loop-player)
@@ -38,6 +40,10 @@ function kitSkill_Engineer_5(player: player, loc: location):
 			metadata value "kit-armor" of loop-entity is "Machine-Dowsing Machine"
 			metadata value "Machine-Dowsing Machine" of loop-entity is "%{_player}%"
 			set {_exist} to true
+			if metadata value "nofuel" of loop-entity is true:
+				set {_nofuel} to true
+			else:
+				delete {_nofuel}
 		if {_exist} is true:
 			kitFakeReload({_player}, "Machine-Dowsing Machine")
 		else:
