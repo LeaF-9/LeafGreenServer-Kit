@@ -1,29 +1,62 @@
-# Phantasma
+# Weapon-Name: Phantasma
 
-function kitWeapon_Ghost_5(player: player):
-	if {Stats.%{_player}%::SkillLocation} is set:
-		if kitCheckSpirit({_player}, 5, "Weapon.main") is true:
-			set {_loc} to {Stats.%{_player}%::SkillLocation}
-			toolCT({_player}, "Ghost", 5, "Weapon.main")
-			set {_memsg} to kitGhostMessage("§5自身の幻影を召喚します...")
-			kitMsg({_player}, {_memsg})
-			playSound("entity.zombie.infect", 1, 0.8, {_loc})
-			kitInvisible({_player}, 3 seconds)
-			set {_now} to now
-			loop 5 times:
-				add 72 to {_rad}
-				set {_el} to {_loc}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				spawn a skeleton at {_el} with nbt compound from "{Silent:1b,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:wither_skeleton_skull"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}]}"
-				set metadata value "gametype" of spawned skeleton to "Kit"
-				set metadata value "kit-phantasma" of spawned skeleton to "%{_now}%"
-				set spawned skeleton's display name to "%{_player}%"
-				set spawned skeleton's tool to kitWeaponItem("Ghost", 5, "main")
-			wait 5 seconds
-			loop all skeletons:
-				loop-skeleton's display name is "%{_player}%"
-				metadata value "kit-phantasma" of loop-skeleton is "%{_now}%"
-				delete loop-skeleton
-	else:
-		send action bar "§c§l対象地点が存在しません!" to {_player}
+on sneak toggle:
+	{Class::%player%} is "Ghost"
+	player is not sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 5) is true
+	kitCheckSpirit(player, 5, "Weapon.main") is true
+	kitEffect_Phantasma(player)
+	wait a tick
+	set {_true} to false
+	while {_true} is false:
+		set {_tool} to player's tool
+		if player is not sneaking:
+			delete {_true}
+			continue
+		if kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 5) is false:
+			delete {_true}
+			continue
+		wait a tick
+	kitEffect_Phantasma_End(player)
+
+function kitEffect_Phantasma(player: player):
+	# 透明効果
+	kitInvisible({_player}, 600 seconds)
+	kitParticle_Phantasma_Entity({_player})
+	# 分身効果
+	kitEffect_Phantasma_Summon({_player})
+
+function kitEffect_Phantasma_Summon(player: player):
+	set {_baseloc} to location of {_player}
+	loop 3 times:
+		add 120 to {_rad}
+		set {_el} to {_baseloc}
+		add 5 * sin({_rad}) to x-coordinate of {_el}
+		add 5 * cos({_rad}) to z-coordinate of {_el}
+		set {_entity} to kitSpawnMob_NBT({_player}, skeleton, {_el}, "{Silent:1b,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:wither_skeleton_skull"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}]}")
+		set metadata value "phantasma-ghost" of {_entity} to "%{_player}%"
+		set tool of {_entity} to kitWeaponItem("Ghost", 5, "main")
+		kitParticle_Phantasma_Entity({_entity})
+
+function kitEffect_Phantasma_End(player: player):
+	delete {Kit-Invisible::%{_player}%}
+	kitParticle_Phantasma_Reveal({_player})
+	loop all skeletons:
+		metadata value "phantasma-ghost" of loop-skeleton is "%{_player}%"
+		kitParticle_Phantasma_Entity(loop-entity)
+		delete loop-skeleton
+
+function kitParticle_Phantasma_Entity(entity: entity):
+	playSound("entity.zombie.infect", 0.75, 0.8, {_entity})
+	set {_baseloc} to location of {_entity}
+	add 1 to y-pos of {_baseloc}
+	loop 20 times:
+		spawnParticle_Vector(smoke, randomVector(), 0.5, {_baseloc})
+
+function kitParticle_Phantasma_Reveal(player: player):
+	playSound("entity.experience_orb.pickup", 0.75, 0.65, {_player})
+	set {_baseloc} to location of {_player}
+	add 1 to y-pos of {_baseloc}
+	loop 20 times:
+		spawnParticle_Vector(end_rod, randomVector(), 0.5, {_baseloc})
