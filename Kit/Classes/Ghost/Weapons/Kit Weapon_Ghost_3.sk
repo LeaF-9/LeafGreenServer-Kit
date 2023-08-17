@@ -1,16 +1,72 @@
-# Anima Massa
+# Weapon-Name: Anima Massa
 
-function kitWeapon_Ghost_3(player: player):
-	if {Stats.%{_player}%::SpareSoul} is not set:
-		if kitCheckSpirit({_player}, 3, "Weapon.main") is true:
-			toolCT({_player}, "Ghost", 3, "Weapon.main")
-			set {Stats.%{_player}%::SpareSoul} to true
-			set {Stats.%{_player}%::Resurrection} to true
-			set {_memsg} to kitGhostMessage("§5Spare Soul §8を獲得した...", true)
-			kitMsg({_player}, {_memsg})
-			loop 10 times:
-				set {_el} to aroundEffect({_player})
-				spawnParticle(soul, {_el})
-			playSound("entity.zombie_villager.converted", 1, 0.5, {_player})
-	else:
-		send action bar "§c§l既にSpare Soulを所持しています!" to {_player}
+on sneak toggle:
+	{Class::%player%} is "Ghost"
+	{Stats.%player%::SpareSoul} is not set
+	player is not sneaking
+	set {_tool} to player's tool
+	if kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 3) is false:
+		stop
+	set {_num} to 0
+	set {_lore::*} to lore of {_tool}
+	loop {_lore::*}:
+		loop-value contains "§4Spirit§7:"
+		set {_spirit} to loop-value
+	replace every "§4Spirit§7: §5" with "" in {_spirit}
+	set {_spirit} to {_spirit} parsed as number
+	wait a tick
+	set {_true} to false
+	while {_true} is false:
+		set {_tool} to player's tool
+		if player is not sneaking:
+			delete {_true}
+			continue
+		if kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 3) is false:
+			delete {_true}
+			continue
+		if {Kit-Spirits::%player%} < {_spirit}:
+			delete {_true}
+			continue
+		if {Stats.%player%::SpareSoul} is true:
+			delete {_true}
+			continue
+		if {_num} is 200:
+			set {_true} to true
+			continue
+		add 1 to {_num}
+		set {_linenum} to round({_num} / 4)
+		chargeActionBar(player, {_linenum}, 50)
+		# --- チャージ中の演出 ---
+		kitParticle_AnimaMassa_Charge(player, {_num})
+		# ------------------------------------
+		wait a tick
+	if {_true} is not set:
+		send action bar "§8チャージに失敗しました" to player
+		stop
+	if kitCheckSpirit(player, 3, "Weapon.main") is false:
+		stop
+	set {Stats.%player%::SpareSoul} to true
+	set {Stats.%player%::Resurrection} to true
+	set {_memsg} to kitGhostMessage("§5Spare Soul §8を獲得した...", true)
+	kitMsg(player, {_memsg})
+	kitParticle_AnimaMassa_Complete(player)
+
+function kitParticle_AnimaMassa_Charge(player: player, prog: number):
+	playSound("block.campfire.crackle", 0.5, 2, {_player})
+	set {_baseloc} to location of {_player}
+	set {_y} to {_prog} / 100
+	add {_y} to y-pos of {_baseloc}
+	set {_rad} to 0
+	loop 10 times:
+		add 36 to {_rad}
+		set {_el} to {_baseloc}
+		add 0.5 * sin({_rad}) to x-pos of {_el}
+		add 0.5 * cos({_rad}) to z-pos of {_el}
+		spawnParticle(soul_fire_flame, {_el})
+
+function kitParticle_AnimaMassa_Complete(player: player):
+	playSound("entity.zombie_villager.converted", 1, 0.5, {_player})
+	set {_baseloc} to location of {_player}
+	add 1 to y-pos of {_baseloc}
+	loop 20 times:
+		spawnParticle_Vector(soul, randomVector(), 0.5, {_baseloc})
