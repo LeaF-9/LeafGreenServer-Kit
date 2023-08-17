@@ -1,12 +1,39 @@
-# Poltergeist
+# Weapon-Name: Poltergeist
 
-on damage:
-	metadata value "gametype" of attacker is "Kit"
+on damage of player:
 	{Class::%attacker%} is "Ghost"
 	damage was caused by attack
 	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 4) is true
-	loop all blocks in radius 3 around victim:
+	kitSound_Poltergeist_Attack(victim)
+	attacker is sneaking
+	kitEffect_Poltergeist(attacker, victim)
+
+function kitEffect_Poltergeist(player: player, tg: player):
+	if kitCheckSpirit({_player}, 4, "Weapon.main") is false:
+		stop
+	set {_memsg} to kitGhostMessage("§5%{_tg}% §4に音のいたずらを誘発する...")
+	set {_youmsg} to kitGhostMessage("§8不思議な音が鳴り響く...", true)
+	kitMsg({_player}, {_memsg})
+	message formatted {_youmsg} to {_tg}
+	playSound("ambient.cave", 1, 2, {_tg})
+	apply nausea 1 to {_tg} for 8 seconds
+	loop 100 times:
+		if mod(loop-number, 2) is 0:
+			set {_yaw} to 5
+		else:
+			set {_yaw} to -5
+		playerYawRotation({_tg}, {_yaw}, true)
+		chance of 10%:
+			kitSound_Poltergeist_Foot({_tg})
+		set {_el} to aroundEffect({_tg})
+		set y-coordinate of {_el} to y-coordinate of {_tg} + 2
+		set {_n} to a random integer between 0 and 25
+		spawnParticle_NoteOption({_n}, {_el})
+		wait a tick
+
+function kitSound_Poltergeist_Attack(player: player):
+	loop all blocks in radius 3 around {_player}:
 		loop-block is passable
 		add location of loop-block to {_sounds::*}
 	loop 3 times:
@@ -19,34 +46,7 @@ on damage:
 			set {_pitch} to a random number between 0.5 and 2
 			playSound("block.glass.break", 0.5, {_pitch}, {_sound})
 
-function kitWeapon_Ghost_4(player: player):
-	if {Stats.%{_player}%::SkillTarget} is set:
-		if kitCheckSpirit({_player}, 4, "Weapon.main") is true:
-			set {_tg} to {Stats.%{_player}%::SkillTarget}
-			toolCT({_player}, "Ghost", 4, "Weapon.main")
-			set {_memsg} to kitGhostMessage("§5%{_tg}% §4に音のいたずらを誘発する...")
-			set {_youmsg} to kitGhostMessage("§8不思議な音が鳴り響く...", true)
-			kitMsg({_player}, {_memsg})
-			message formatted {_youmsg} to {_tg}
-			playSound("ambient.cave", 1, 2, {_tg})
-			apply nausea 1 to {_tg} for 8 seconds
-			loop 100 times:
-				if mod(loop-number, 2) is 0:
-					set {_yaw} to 5
-				else:
-					set {_yaw} to -5
-				playerYawRotation({_tg}, {_yaw}, true)
-				chance of 10%:
-					kitGhostFoot({_tg})
-				set {_el} to aroundEffect({_tg})
-				set y-coordinate of {_el} to y-coordinate of {_tg} + 2
-				set {_n} to a random integer between 0 and 25
-				spawnParticle_NoteOption({_n}, {_el})
-				wait a tick
-	else:
-		send action bar "§c§l対象が存在しません!" to {_player}
-
-function kitGhostFoot(player: player):
+function kitSound_Poltergeist_Foot(player: player):
 	set {_loc} to location of {_player}
 	set {_xnum} to a random number between -5 and 5
 	if {_xnum} >= 0:
