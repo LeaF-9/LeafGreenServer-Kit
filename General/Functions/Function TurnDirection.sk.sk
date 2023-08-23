@@ -1,0 +1,27 @@
+function setDirToVec(loc.old: location, vec: vector) :: location:
+	set {_loc.new} to {_loc.old}
+	set yaw of {_loc.new} to yaw of {_vec}
+	set pitch of {_loc.new} to pitch of {_vec}
+	return {_loc.new}
+
+# +がright -がleft
+function checkTurnDiff(yaw.old: number, yaw.new: number) :: number:
+	set {_returndiff} to {_yaw.new} - {_yaw.old}
+	if {_returndiff} > 180:
+		set {_returndiff} to ({_yaw.new} - 360) - {_yaw.old}
+	else if {_returndiff} <= -180:
+		set {_returndiff} to (360 + {_yaw.new}) - {_yaw.old}
+	return {_returndiff}
+		
+
+function forceTurnAngle(dir.old: location, dir.new: location, maxdiff: number) :: location:
+	set {_returnloc} to {_dir.old}
+	set {_diff} to checkTurnDiff(yaw of {_dir.old}, yaw of {_dir.new})
+	if abs({_diff}) > {_maxdiff}:
+		if {_diff} => 0:
+			set yaw of {_returnloc} to yaw of {_dir.old} + {_diff}
+		else:
+			set yaw of {_returnloc} to yaw of {_dir.old} - {_diff}
+	else:
+		set yaw of {_returnloc} to {_dir.new}
+	return {_returnloc}
