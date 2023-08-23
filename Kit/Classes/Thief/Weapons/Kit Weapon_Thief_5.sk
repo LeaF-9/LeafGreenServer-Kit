@@ -1,62 +1,27 @@
 # Weapon-Name: Venom Rosalie
 
-function kitWeapon_Thief_5(player: player):
-	toolCT({_player}, "Thief", 5, "Weapon.main")
-	shoot a snowball from {_player} at speed 1.2
-	set metadata value "kit-thornyrose" of shot snowball to "%{_player}%"
-	set item of shot snowball to red dye
-	drawDot count 1, particle "redstone", RGB 255, 0, 0, center shot snowball, visibleRange 30, keepFor 1 second
-	playSound("entity.arrow.shoot", 1, 0.5, {_player})
-
-on projectile hit:
-	projectile is a snowball
-	metadata value "kit-thornyrose" of projectile is set
-	playSound("entity.generic.explode", 1, 2, projectile)
-	loop all entities in radius 5 around projectile:
-		kitCheckTeam(loop-entity, shooter, false) is true
-		apply blindness 1 to loop-entity for 3 seconds
-	loop all blocks in radius 5 around projectile:
-		loop-block is passable
-		chance of 50%:
-			set {_el} to location of loop-block
-			add a random number between -0.5 and 0.5 to x-coordinate of {_el}
-			add a random number between -0.5 and 0.5 to y-coordinate of {_el}
-			add a random number between -0.5 and 0.5 to z-coordinate of {_el}
-			drawDot count 1, particle "smoke", center {_el}, visibleRange 30
-	set {_baseloc} to location of projectile
-	set {_m} to 0
-	set {_rad} to 0
-	loop 20 times:
-		playSound("block.grass.step", 0.8, 1, {_baseloc})
-		add 0.25 to {_m}
-		loop 10 times:
-			add 40 to {_rad}
-			set {_el} to {_baseloc}
-			add {_m} * sin({_rad}) to x-coordinate of {_el}
-			add {_m} * cos({_rad}) to z-coordinate of {_el}
-			drawDot count 1, particle "happyvillager", center {_el}, visibleRange 30
-		wait a tick
-	playSound("block.grass.break", 1, 1, {_baseloc})
-	loop all entities in radius 5 around projectile:
-		kitCheckTeam(loop-entity, shooter, false) is true
-		kitDamage(shooter, loop-entity, 2)
-	set {_y} to 0
-	loop 5 times:
-		add 1 to {_y}
-		loop 10 times:
-			add 36 to {_rad}
-			set {_el} to {_baseloc}
-			add 5 * sin({_rad}) to x-coordinate of {_el}
-			add 5 * cos({_rad}) to z-coordinate of {_el}
-			add {_y} to y-coordinate of {_el}
-			drawDot count 1, particle "happyvillager", center {_el}, visibleRange 30
+# スニーク時のパーティクル表記
+on sneak toggle:
 
 on damage of player:
 	attacker is set
-	metadata value "gametype" of victim is "Kit"
-	if {Class::%victim%} is "Thief":
-		set {_tool} to victim's tool
-		kitItemAllChecker({_tool}, "Thief", "Weapon.main", 4) is true
-		set {_c} to kitPercentDuel(attacker, victim, 20, false)
-		chance of {_c}%:
-			kitDamage(victim, attacker, 2)
+	{Class::%victim%} is "Thief"
+	set {_tool} to victim's tool
+	kitItemAllChecker({_tool}, "Thief", "Weapon.main", 5) is true
+	kitDamage(victim, attacker, 0.5, true)
+	set {_c} to kitPercentDuel(victim, attacker, 30, true)
+	chance of {_c}%:
+		kitBlood(attacker)
+
+on leftclick:
+	player is sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Thief", "Weapon.main", 5) is true
+	checkCT(player, name of {_tool}) is true
+	toolCT(player, "Thief", 5, "Weapon.main")
+	kitEffect_VenomRosalie(player)
+
+function kitEffect_VenomRosalie(player: player):
+
+# 何tickかで下から上に螺旋状のトゲ付き蔦が伸びてくる演出
+function kitParticle_VenomRosalie_Ivy(player: player):
