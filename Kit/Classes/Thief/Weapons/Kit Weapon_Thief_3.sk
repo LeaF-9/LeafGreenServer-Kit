@@ -6,7 +6,58 @@ function kitWeapon_Thief_3(player: player):
 	kitEffect_MysticCard_Throw({_player})
 
 function kitEffect_MysticCard_Throw(player: player):
-	
+	set {_baseloc} to location of {_player}
+	set {_locpitch} to pitch of {_baseloc}
+	set pitch of {_baseloc} to 0
+	set {_baseloc} to location 0.5 meters to the left of {_baseloc}
+	subtract 0.5 from y-coordinate of {_baseloc}
+	set pitch of {_baseloc} to {_locpitch}
+	set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""dune_armor_trim_smithing_template"",Count:1b},{}],Pose:{RightArm:[0f,0f,270f]}}"
+	set {_entity} to kitSpawnMob_NBT({_player}, armor stand, {_baseloc}, {_nbt})
+	set metadata value "mystic-card" of {_entity} to false
+	# 発射音
+	playSound("entity.arrow.shoot", 1, 1.6, {_player})
+	set {_spin} to 0
+	set {_front} to 0
+	set {_loc} to {_baseloc}
+	loop 60 times:
+		add 1 to {_front}
+		add 36 to {_spin}
+		if {_target} is not set:
+			# プレイヤー感知
+			loop all players in radius 5 around {_loc}:
+				kitCheckTeam({_player}, loop-player, false) is true
+				{_target} is not set
+				set {_target} to loop-player
+		if {_target} is set:
+		wait a tick
+
+		
+		set {_f} to 0
+		loop 20 times:
+			add 0.5 to {_f}
+			set {_l} to location {_f} meters in front of {_loc}
+			loop all entities:
+				type of loop-entity is an armor stand
+				metadata value "cutlass" of loop-entity is "%player%"
+				teleport loop-entity to {_l}
+			loop all entities in radius 2 around {_l}:
+				{_hit.%id of loop-entity%} is not set
+				kitCheckTeam(loop-entity, player, false) is true
+				set {_hit.%id of loop-entity%} to true
+				make player damage loop-entity by 6
+				playSound("entity.player.attack.sweep", 1, 1, loop-entity)
+				loop 5 times:
+					set {_el} to aroundEffect(loop-entity)
+					spawnParticle_Block(redstone block, {_el})
+			wait a tick
+		loop all entities:
+			type of loop-entity is an armor stand
+			metadata value "cutlass" of loop-entity is "%player%"
+			delete loop-entity
+		if {Stats.%player%::Cutlass} is true:
+			set player's offhand tool to {_tool}
+		delete {Stats.%player%::Cutlass}
 
 function kitEffect_MysticCard_Restore(player: player):
 
