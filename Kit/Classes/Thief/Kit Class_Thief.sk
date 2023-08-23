@@ -174,13 +174,12 @@ on damage of player:
 
 # Timer
 function kitTimerThief(player: player):
+	if kitSelectChecker_Weapon({_player}, "Thief") is not 3:
+		stop
 	set {_timer} to 0
 	while {Class::%{_player}%} is "Thief":
-		set {_tool} to {_player}'s tool
 		add 1 to {_timer}
-		if kitItemTypeChecker({_tool}) is "Weapon.main":
-			if kitItemNumberChecker({_tool}) is not 5:
-				stop
-		if {_timer} > 30:
+		if {_timer} > 5:
+			kitEffect_MysticCard_Restore({_player})
 			set {_timer} to 0
 		wait a second

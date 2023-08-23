@@ -18,10 +18,10 @@ function kitEffect_MysticCard_Throw(player: player):
 	# 発射音
 	playSound("entity.arrow.shoot", 1, 1.6, {_player})
 	set {_spin} to 0
-	set {_front} to 0
 	set {_loc} to {_baseloc}
 	loop 60 times:
-		add 1 to {_front}
+		if metadata value "mystic-card" of {_entity} is true:
+			continue
 		add 36 to {_spin}
 		if {_target} is not set:
 			# プレイヤー感知
@@ -29,36 +29,50 @@ function kitEffect_MysticCard_Throw(player: player):
 				kitCheckTeam({_player}, loop-player, false) is true
 				{_target} is not set
 				set {_target} to loop-player
+				kitParticle_MysticCard_Target({_loc})
 		if {_target} is set:
+			set {_vec} to setVector({_loc}, location of head of {_target})
+			set {_newloc} to setDirToVec({_loc}, {_vec})
+			set {_loc} to forceTurnAngle({_loc}, {_newloc}, 10)
+		set {_loc} to location 1 meter in front of {_loc}
+		kitParticle_MysticCard_Trail({_loc})
+		set {_nbt} to nbt compound of {_entity}
+		set compound list tag "Pose" of {_nbt} to "{RightArm:[0f,%{_spin}%f,270f]}"
+		loop all entities in radius 2 around {_loc}:
+			metadata value "mystic-card" of {_entity} is false
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set metadata value "mystic-card" of {_entity} to true
+			kitDamage({_player}, loop-entity, 2)
+			if entity type of loop-entity is player:
+				kitTrail(loop-entity, 5 seconds, location of {_player})
 		wait a tick
-
-		
-		set {_f} to 0
-		loop 20 times:
-			add 0.5 to {_f}
-			set {_l} to location {_f} meters in front of {_loc}
-			loop all entities:
-				type of loop-entity is an armor stand
-				metadata value "cutlass" of loop-entity is "%player%"
-				teleport loop-entity to {_l}
-			loop all entities in radius 2 around {_l}:
-				{_hit.%id of loop-entity%} is not set
-				kitCheckTeam(loop-entity, player, false) is true
-				set {_hit.%id of loop-entity%} to true
-				make player damage loop-entity by 6
-				playSound("entity.player.attack.sweep", 1, 1, loop-entity)
-				loop 5 times:
-					set {_el} to aroundEffect(loop-entity)
-					spawnParticle_Block(redstone block, {_el})
-			wait a tick
-		loop all entities:
-			type of loop-entity is an armor stand
-			metadata value "cutlass" of loop-entity is "%player%"
-			delete loop-entity
-		if {Stats.%player%::Cutlass} is true:
-			set player's offhand tool to {_tool}
-		delete {Stats.%player%::Cutlass}
+	kitParticle_MysticCard_Hit({_loc})
 
 function kitEffect_MysticCard_Restore(player: player):
+	loop all items in {_player}'s inventory:
+		name of loop-item contains "Mystic Card"
+		set {_hi} to loop-item
+	if {_hi} is set:
+		if item amount of {_hi} > 3:
+			stop
+	set {_tool} to kitWeaponItem("Thief", 3, "main")
+	set {_item} to kitItemTagChanger({_item}, "Thief", "Weapon.main", 3)
+	set item amount of {_item} to 1
+	give {_item} to {_player}
+	playSound("entity.item.pickup", 1, 1, {_player}, true)
+
+function kitParticle_MysticCard_Target(loc: location):
+	playSound("entity.phantom.flap", 1.2, 1.15, {_loc})
+	loop 5 times:
+		set {_el} to {_loc}
+		add a random number -0.5 and 0.5 to x-pos of {_el}
+		add a random number -0.5 and 0.5 to y-pos of {_el}
+		add a random number -0.5 and 0.5 to z-pos of {_el}
+		spawnParticle_Color(entity_effect, 112, 108, 170, {_el})
+
+function kitParticle_MysticCard_Trail(loc: location):
+	spawnParticle_Vector(end_rod, randomVector(), 0.01, {_loc})
 
 function kitParticle_MysticCard_Hit(loc: location):
+	loop 10 times:
+		spawnParticle_Vector(end_rod, randomVector(), 0.1, {_loc})
