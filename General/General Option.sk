@@ -23,14 +23,13 @@ on command:
 	command is not "kit-evaluate"
 	command is not "tell"
 	command is not "athletics"
-	if arguments is set:
-		loop all players:
-			loop-player has permission "sk.admin"
-			message "§9[CMD]§a%player%§7: §b/%command% §b%arguments%" to loop-player
-	else:
-		loop all players:
-			loop-player has permission "sk.admin"
-			message "§9[CMD]§a%player%§7: §b/%command%" to loop-player
+	set {_arg::*} to arguments
+	set {_arg} to ""
+	loop {_arg::*}:
+		set {_arg} to "%{_arg}% %loop-value%"
+	loop all players:
+		loop-player has permission "sk.admin"
+		message "§9[CMD]§a%player%§7: §b/%command% §b%{_arg}%" to loop-player
 
 # maxhp
 command /maxhp <number> <player>:
