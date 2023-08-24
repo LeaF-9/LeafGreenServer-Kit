@@ -8,8 +8,8 @@ function kitPercent(player: player, per: number, buff: boolean) :: number:
 	set {_percent} to kitCalcPercent({_per}, {_lucklvl}, {_buff})
 	return {_percent}
 
-# buffはattacker目線
-function kitPercentDuel(atk: entity, vcm: entity, per: number, buff: boolean) :: number:
+# 常にbufferをatkに設定
+function kitPercentDuel(atk: entity, vcm: entity, per: number) :: number:
 	# atkとvcmのプレイヤー検知
 	set {_atkname} to display name of {_atk}
 	set {_vcmname} to display name of {_vcm}
@@ -34,20 +34,14 @@ function kitPercentDuel(atk: entity, vcm: entity, per: number, buff: boolean) ::
 		set {_lucklvl.a} to {Kit-Luck::%{_attacker}%}
 	# Luckの計算
 	set {_lucklvl} to {_lucklvl.a} - {_lucklvl.v}
-	set {_percent} to kitCalcPercent({_per}, {_lucklvl}, {_buff})
+	set {_percent} to kitCalcPercent({_per}, {_lucklvl})
 	return {_percent}
 
-function kitCalcPercent(per: number, lucklvl: number, buff: boolean) :: number:
-	if {_buff} is true:
-		if {_lucklvl} > 0:
-			set {_ex} to 1
-		else if {_lucklvl} < 0:
-			set {_ex} to 0.5
-	else:
-		if {_lucklvl} > 0:
-			set {_ex} to -0.5
-		else if {_lucklvl} < 0:
-			set {_ex} to -1
+function kitCalcPercent(per: number, lucklvl: number) :: number:
+	if {_lucklvl} > 0:
+		set {_ex} to 1
+	else if {_lucklvl} < 0:
+		set {_ex} to 0.5
 	set {_luck} to 1 + ({_lucklvl} / 5 * {_ex})
 	set {_percent} to {_per} / 100
 	set {_result} to (1 - ((1 - {_percent}) ^ {_luck})) * 100
