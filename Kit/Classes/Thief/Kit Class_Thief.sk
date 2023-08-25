@@ -40,6 +40,21 @@ function kitSkillThief(player: player) :: boolean:
 			kitSkill_Thief_8({_player})
 			return true
 
+on drop:
+	{Class::%player%} is "Thief"
+	set {_item} to event-item
+	set {_nbt} to nbt item compound of {_skill}
+	set {_tag} to tag "stolen" of {_nbt}
+	loop {StealItem-%{_tag}%.%player%::*}:
+		loop-value is {_item}
+		set {_index} to loop-index parsed as number + 1
+	if {StealItem-%{_tag}%.%player%::%{_index}%} is not set:
+		set {_index} to 1
+	remove event-item from player
+	give {StealItem-%{_tag}%.%player%::%{_index}%} to player
+	playSound("entity.experience_orb.pickup" 1, 1.65, player, true)
+	send action bar "§b§lスキルを変更しました!" to player
+
 # Abilities
 
 # --- Stealed Item管理 ---
