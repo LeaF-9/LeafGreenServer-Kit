@@ -46,12 +46,34 @@ function kitParticle_EnormousHurricane_Hurricane(baseloc: location, ln: number):
 		playSound("entity.wither.shoot", 1, {_pitch}, {_baseloc})
 	# 見た目
 	set {_baserad} to {_ln} * 15
+	set {_m} to 5
 	loop 60 times:
+		add 0.17 to {_m}
 		add 0.5 to {_y}
 		loop 10 times:
-			set {_rad} to 
+			set {_rotrad} to {_baserad} + 36 * loop-number-2
+			set {_rad} to {_rotrad} + 20 * loop-number-1
+			set {_el} to {_baseloc}
+			add {_m} * sin({_rad}) to x-pos of {_el}
+			add {_m} * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			set {_size} to a random number between 0.5 and 2.5
+			spawnParticle_DustTransition(rgb(187, 226, 241), rgb(160, 216, 239), {_size}, {_el})
 
 # 風演出
-function kitParticle_EnormousHurricane_Hit(player: player, vector: vector):
+function kitParticle_EnormousHurricane_Hit(entity: entity, vector: vector):
 	# 音
+	set {_pitch} to a random number between 1 and 2
+	playSound("entity.phantom.flap", 0.75, {_pitch}, {_entity})
 	# 見た目
+	loop 5 times:
+		set {_baseel} to location of {_entity}
+		add a random number between -1 and 1 to x-pos of {_baseel}
+		add a random number between -1 and 1 to z-pos of {_baseel}
+		add a random number between 0 and 2 to y-pos of {_baseel}
+		set {_baseel} to setDirToVec({_baseel}, {_vector})
+		set {_m} to 0
+		loop 10 times:
+			add 0.1 to {_m}
+			set {_el} to location {_m} meters in front of {_baseel}
+			spawnParticle_Dust(rgb(235, 246, 247), 0.5, {_el})
