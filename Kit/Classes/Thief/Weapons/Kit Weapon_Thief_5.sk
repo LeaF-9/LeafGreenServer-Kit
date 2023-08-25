@@ -51,7 +51,7 @@ function kitEffect_VenomRosalie(player: player):
 	loop all entities in radius 3 around {_baseeff}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		kitDamage({_player}, loop-entity, 3)
-		if entity type of loop-entity is player:
+		if entity type of loop-entity is a player:
 			{Kit-Blood::%loop-entity%} is set
 			applyEffect(loop-entity, poison, 3, 5 seconds)
 
@@ -60,7 +60,7 @@ function kitParticle_VenomRosalie_Ivy(player: player, count: number):
 	playSound("block.wet_grass.step", 0.75, 2, {_player})
 	if mod({_count}, 20) is not 0:
 		stop
-	set {_baseloc} to location of {_player}
+	set {_baseloc} to location of head of {_player}
 	loop 10 times:
 		add 0.2 to {_y}
 		loop 4 times:
@@ -109,7 +109,7 @@ function kitParticle_VenomRosalie_Rose(baseloc: location):
 		loop 8 times:
 			set {_baserad} to 45 * loop-number-2
 			set {_rad} to {_baserad} + 5 * loop-number-1
-			set {_el} to {_baseloc}
+			set {_el} to location {_f} meters in front of {_baseloc}
 			set {_m1} to {_el}
 			set {_p} to pitch of {_m1} - 90
 			set pitch of {_m1} to {_p}
