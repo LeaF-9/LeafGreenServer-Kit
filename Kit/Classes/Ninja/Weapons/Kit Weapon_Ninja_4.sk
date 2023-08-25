@@ -4,18 +4,24 @@ on damage of player:
 	# --- 例外排除処理 ---
 	if {Class::%attacker%} is not "Ninja":
 		set {_ng} to true
+		log "test1"
 	if attacker is not sneaking:
 		set {_ng} to true
+		log "test2"
 	set {_tool} to attacker's tool
 	if kitItemAllChecker({_tool}, "Ninja", "Weapon.main", 4) is false:
 		set {_ng} to true
+		log "test3"
 	if {_ng} is true:
+		log "test4"
 		{Stats.%victim%::Katana-Sou} is set
+		log "test5"
 		cancel event
 		delete {Stats.%victim%::Katana-Sou}
 		set maximum damage delay of victim to 20 ticks
 		stop
 	# ------------------
+	log "test6"
 	kitParticle_Katana_Sou(victim)
 	set {_now} to now
 	set {_victim} to victim
@@ -26,14 +32,12 @@ on damage of player:
 		set maximum damage delay of {_victim} to 20 ticks
 
 function kitParticle_Katana_Sou(victim: player):
-	log "test"
 	loop 3 times:
 		playSound("entity.player.attack.sweep", 0.8, 2, {_victim})
 		set {_el} to location 1 meter above {_victim}
 		set {_v} to randomVector({_el})
 		spawnParticle_Vector(cloud, {_v}, 0.3, {_el})
 		wait a tick
-
 
 function kitWeapon_Ninja_4(player: player):
 	set {_loc} to location of {_player}
