@@ -1,18 +1,17 @@
 # Weapon-Name: Mystic Card
 
 function kitWeapon_Thief_3(player: player):
-	{_player} is sneaking
 	subtract 1 from item amount of tool of {_player}
 	kitEffect_MysticCard_Throw({_player})
 
 function kitEffect_MysticCard_Throw(player: player):
-	set {_baseloc} to location of {_player}
+	set {_baseloc} to location of head of {_player}
 	set {_locpitch} to pitch of {_baseloc}
 	set pitch of {_baseloc} to 0
 	set {_baseloc} to location 0.5 meters to the left of {_baseloc}
 	subtract 0.5 from y-coordinate of {_baseloc}
 	set pitch of {_baseloc} to {_locpitch}
-	set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""dune_armor_trim_smithing_template"",Count:1b},{}],Pose:{RightArm:[0f,0f,270f]}}"
+	set {_nbt} to "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""dune_armor_trim_smithing_template"",Count:1b},{}],Pose:{RightArm:[0f,0f,270f]}}"
 	set {_entity} to kitSpawnMob_NBT({_player}, armor stand, {_baseloc}, {_nbt})
 	set metadata value "mystic-card" of {_entity} to false
 	# 発射音
@@ -55,7 +54,7 @@ function kitEffect_MysticCard_Restore(player: player, timer: number):
 		name of loop-item contains "Mystic Card"
 		set {_hi} to loop-item
 	if {_hi} is set:
-		if item amount of {_hi} > 3:
+		if item amount of {_hi} >= 3:
 			stop
 	set {_tool} to kitWeaponItem("Thief", 3, "main")
 	set {_item} to kitItemTagChanger({_tool}, "Thief", "Weapon.main", 3)
