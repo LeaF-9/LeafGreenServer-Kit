@@ -6,11 +6,7 @@ function kitWeapon_Thief_3(player: player):
 
 function kitEffect_MysticCard_Throw(player: player):
 	set {_baseloc} to location of head of {_player}
-	set {_locpitch} to pitch of {_baseloc}
-	set pitch of {_baseloc} to 0
-	set {_baseloc} to location 0.5 meters to the left of {_baseloc}
 	subtract 0.5 from y-coordinate of {_baseloc}
-	set pitch of {_baseloc} to {_locpitch}
 	set {_nbt} to "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""dune_armor_trim_smithing_template"",Count:1b},{}],Pose:{RightArm:[0f,0f,270f]}}"
 	set {_entity} to kitSpawnMob_NBT({_player}, armor stand, {_baseloc}, {_nbt})
 	set metadata value "mystic-card" of {_entity} to false
@@ -34,6 +30,7 @@ function kitEffect_MysticCard_Throw(player: player):
 			set {_newloc} to setDirToVec({_loc}, {_vec})
 			set {_loc} to forceTurnAngle({_loc}, {_newloc}, 10)
 		set {_loc} to location 1 meter in front of {_loc}
+		teleport {_entity} to {_loc}
 		kitParticle_MysticCard_Trail({_loc})
 		set {_nbt} to nbt compound of {_entity}
 		add "{RightArm:[0f,%{_spin}%f,270f]}" to {_nbt}
@@ -42,7 +39,7 @@ function kitEffect_MysticCard_Throw(player: player):
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			set metadata value "mystic-card" of {_entity} to true
 			kitDamage({_player}, loop-entity, 2)
-			if entity type of loop-entity is a player:
+			if "%type of loop-entity%" is "player":
 				kitTrail(loop-entity, 5 seconds, location of {_player})
 		wait a tick
 	kitParticle_MysticCard_Hit({_loc})
