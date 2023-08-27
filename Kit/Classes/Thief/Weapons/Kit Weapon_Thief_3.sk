@@ -36,8 +36,8 @@ function kitEffect_MysticCard_Throw(player: player):
 			set {_loc} to forceTurnAngle({_loc}, {_newloc}, 10)
 		set {_loc} to location 1 meter in front of {_loc}
 		kitParticle_MysticCard_Trail({_loc})
-		set {_nbt} to "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""dune_armor_trim_smithing_template"",Count:1b},{}],Pose:{RightArm:[0f,%{_spin}%f,270f]}}"
-		set nbt compound of {_entity} to {_nbt}
+		set {_nbt} to nbt compound of {_entity}
+		add "{RightArm:[0f,%{_spin}%f,270f]}" to {_nbt}
 		loop all entities in radius 2 around {_loc}:
 			metadata value "mystic-card" of {_entity} is false
 			kitCheckTeam(loop-entity, {_player}, false) is true
