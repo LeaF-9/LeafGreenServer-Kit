@@ -123,33 +123,7 @@ on projectile hit:
 			loop 3 times:
 				strike lightning effect at {_l}
 			kitParticle_Wizard_Circle({_l}, rgb(255, 255, 0))
-			loop all entities in radius 5 around projectile:
-				kitCheckTeam(loop-entity, shooter, false) is true
-				delete {_frcan}
-				if {Stats.%{_name}%::FreezeMagic} is true:
-					set {_per} to kitPercent({_name}, 50, false)
-					chance of {_per}%:
-						set {_frcan} to true
-				{_frcan} is not set
-				kitDamage(shooter, loop-entity, 2, true)
-				strike lightning effect at loop-entity
-				message "§e電撃魔法を受けた!" to loop-entity
-				kitMsg(shooter, "§5%loop-entity% §dに§e電撃魔法§dを付与した!")
-				if type of loop-entity is player:
-					kitPalsy(loop-entity, 10 seconds)
-				add loop-entity to {_sp::*}
-			loop 5 times:
-				add 0.4 to {_h}
-				loop {_sp::*}:
-					set {_rad} to 0
-					loop 10 times:
-						set {_el} to location of loop-value-2
-						add 36 to {_rad}
-						add 0.5 * sin({_rad}) to x-coordinate of {_el}
-						add 0.5 * cos({_rad}) to z-coordinate of {_el}
-						add {_h} to y-coordinate of {_el}
-						drawDot count 1, particle "mobspell", RGB 100, 100, 0, center {_el}, visibleRange 30
-				wait a tick
+			kitEffect_ElectroMagic(shooter, {_l})
 		else if metadata value "magic" of projectile is "drain":
 			playSound("block.bubble_column.upwards_inside", 1, 1, {_l})
 			kitParticle_Wizard_Circle({_l}, rgb(0, 255, 0))
