@@ -93,18 +93,23 @@ function kitParticle_Wizard_Magic(proj: projectile, R: number, G: number, B: num
 		spawnParticle_Color(entity_effect, {_R}, {_G}, {_B}, {_proj})
 		wait a tick
 
+function kitParticle_Wizard_Circle(baseloc: location, color: color):
+	loop 20 times:
+		loop 72 times:
+			add 5 to {_rad}
+			set {_el} to {_baseloc}
+			add 5 * sin({_rad}) to x-pos of {_el}
+			add 5 * cos({_rad}) to z-pos of {_el}
+			spawnParticle_Dust({_color}, 1.5, {_el})
+		wait a tick
+
 on projectile hit:
 	projectile is a snowball
 	if metadata value "magic" of projectile is set:
 		set {_l} to location of block at projectile
 		if metadata value "magic" of projectile is "blood":
 			playSound("entity.husk.converted_to_zombie", 1, 1, {_l})
-			loop 72 times:
-				add 5 to {_rad}
-				set {_el} to {_l}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 255, 0, 0, center {_el}, visibleRange 30, keepFor 1 second
+			kitParticle_Wizard_Circle({_l}, rgb(255, 0, 0))
 			loop all entities in radius 5 around projectile:
 				kitCheckTeam(loop-entity, shooter, false) is true
 				delete {_frcan}
@@ -135,12 +140,7 @@ on projectile hit:
 				wait a tick
 		else if metadata value "magic" of projectile is "dark":
 			playSound("entity.phantom.bite", 1, 1, {_l})
-			loop 72 times:
-				add 5 to {_rad}
-				set {_el} to {_l}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 0, 0, 0, center {_el}, visibleRange 30, keepFor 1 second
+			kitParticle_Wizard_Circle({_l}, rgb(0, 0, 0))
 			loop all entities in radius 5 around projectile:
 				kitCheckTeam(loop-entity, shooter, false) is true
 				delete {_frcan}
@@ -170,12 +170,7 @@ on projectile hit:
 				wait a tick
 		else if metadata value "magic" of projectile is "freeze":
 			playSound("entity.vex.death", 1, 1, {_l})
-			loop 72 times:
-				add 5 to {_rad}
-				set {_el} to {_l}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 0, 0, 255, center {_el}, visibleRange 30, keepFor 1 second
+			kitParticle_Wizard_Circle({_l}, rgb(0, 0, 255))
 			loop all players in radius 5 around projectile:
 				{team::%loop-player%} is not {team::%shooter%}
 				LastKiller(loop-player, shooter)
@@ -257,12 +252,7 @@ on projectile hit:
 		else if metadata value "magic" of projectile is "electro":
 			loop 3 times:
 				strike lightning effect at {_l}
-			loop 72 times:
-				add 5 to {_rad}
-				set {_el} to {_l}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_el}, visibleRange 30, keepFor 1 second
+			kitParticle_Wizard_Circle({_l}, rgb(255, 255, 0))
 			loop all entities in radius 5 around projectile:
 				kitCheckTeam(loop-entity, shooter, false) is true
 				delete {_frcan}
@@ -292,12 +282,7 @@ on projectile hit:
 				wait a tick
 		else if metadata value "magic" of projectile is "drain":
 			playSound("block.bubble_column.upwards_inside", 1, 1, {_l})
-			loop 72 times:
-				add 5 to {_rad}
-				set {_el} to {_l}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 0, 255, 0, center {_el}, visibleRange 30, keepFor 1 second
+			kitParticle_Wizard_Circle({_l}, rgb(0, 255, 0))
 			loop all players in radius 5 around projectile:
 				{team::%loop-player%} is not {team::%shooter%}
 				delete {_frcan}
