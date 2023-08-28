@@ -42,7 +42,9 @@ function kitEffect_MysticCard_Throw(player: player):
 				kitTrail(loop-entity, 5 seconds, location of {_player})
 		wait a tick
 	kitParticle_MysticCard_Hit({_loc})
-	delete {_entity}
+	loop all entities:
+		loop-entity is {_entity}
+		delete loop-entity
 
 function kitEffect_MysticCard_Restore(player: player, timer: number):
 	if mod({_timer}, 5) is not 0:
@@ -69,8 +71,8 @@ function kitParticle_MysticCard_Target(loc: location):
 		spawnParticle_Color(entity_effect, 112, 108, 170, {_el})
 
 function kitParticle_MysticCard_Trail(loc: location):
-	spawnParticle_Vector(end_rod, randomVector(), 0.01, {_loc})
+	spawnParticle_Vector(end_rod, randomVector(), 0.2, {_loc})
 
 function kitParticle_MysticCard_Hit(loc: location):
 	loop 10 times:
-		spawnParticle_Vector(end_rod, randomVector(), 0.1, {_loc})
+		spawnParticle_Vector(end_rod, randomVector(), 0.5, {_loc})
