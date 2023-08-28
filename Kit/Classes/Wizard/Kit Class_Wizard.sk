@@ -110,34 +110,7 @@ on projectile hit:
 		if metadata value "magic" of projectile is "blood":
 			playSound("entity.husk.converted_to_zombie", 1, 1, {_l})
 			kitParticle_Wizard_Circle({_l}, rgb(255, 0, 0))
-			loop all entities in radius 5 around projectile:
-				kitCheckTeam(loop-entity, shooter, false) is true
-				delete {_frcan}
-				if {Stats.%{_name}%::FreezeMagic} is true:
-					set {_per} to kitPercent({_name}, 50, false)
-					chance of {_per}%:
-						set {_frcan} to true
-				{_frcan} is not set
-				kitDamage(shooter, loop-entity, 3)
-				if type of loop-entity is player:
-					set {_per} to kitPercent(loop-entity, 30, false)
-					chance of {_per}%:
-						kitBlood(loop-entity)
-				message "§4出血魔法を受けた!" to loop-entity
-				kitMsg(shooter, "§5%loop-entity% §dに§4出血魔法§dを付与した!")
-				add loop-entity to {_sp::*}
-			loop 5 times:
-				add 0.4 to {_h}
-				loop {_sp::*}:
-					set {_rad} to 0
-					loop 10 times:
-						set {_el} to location of loop-value-2
-						add 36 to {_rad}
-						add 0.5 * sin({_rad}) to x-coordinate of {_el}
-						add 0.5 * cos({_rad}) to z-coordinate of {_el}
-						add {_h} to y-coordinate of {_el}
-						drawDot count 1, particle "mobspell", RGB 100, 0, 0, center {_el}, visibleRange 30
-				wait a tick
+			kitEffect_BloodMagic(shooter, {_l})
 		else if metadata value "magic" of projectile is "dark":
 			playSound("entity.phantom.bite", 1, 1, {_l})
 			kitParticle_Wizard_Circle({_l}, rgb(0, 0, 0))

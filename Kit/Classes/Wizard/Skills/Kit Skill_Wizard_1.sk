@@ -10,3 +10,36 @@ function kitSkill_Wizard_1(player: player):
 		subtract {_mana} from {Kit-Mana::%{_player}%}
 	else:
 		send action bar "§4§lマナが足りません!" to {_player}
+
+function kitEffect_BloodMagic(player: player, loc: location):
+	loop all entities in radius 5 around {_l}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		delete {_frcan}
+		if "%type of loop-entity%" is "player":
+			if {Stats.%loop-entity%::FreezeMagic} is true:
+				set {_per} to kitPercent(loop-entity, 50)
+				chance of {_per}%:
+					set {_frcan} to true
+		if {_frcan} is true:
+			continue
+		kitDamage({_player}, loop-entity, 3)
+		if "%type of loop-entity%" is "player":
+			set {_per} to kitPercentDuel({_player}, loop-entity, 30)
+			chance of {_per}%:
+				kitBlood(loop-entity)
+		message formatted "§4出血魔法を受けた!" to loop-entity
+		kitMsg(shooter, "§5%loop-entity% §dに§4出血魔法§dを付与した!")
+		kitParticle_BloodMagic_Hit(loop-entity)
+
+function kitParticle_BloodMagic_Hit(entity: entity):
+	loop 5 times:
+		add 0.4 to {_h}
+		set {_rad} to 0
+		loop 10 times:
+			set {_el} to location of {_entity}
+			add 36 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			add {_h} to y-coordinate of {_el}
+			spawnParticle_Color(entity_effect, 100, 0, 0, {_el})
+		wait a tick
