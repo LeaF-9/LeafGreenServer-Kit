@@ -96,6 +96,7 @@ function kitGhostMessage(text: text, bold: boolean = false) :: text:
 
 # Timer
 function kitTimerGhost(player: player):
+	create bossbar titled "&4&lSpirit&0: &5&l%{Kit-Spirits::%{_player}%}%" and id "%{_player}%-Spirit" for {_player} with progress {Kit-Spirits::%{_player}%} with colors red with style segmented 10
 	while {Class::%{_player}%} is "Ghost":
 		add 1 to {_timer}
 		if {_timer} >= 20:
@@ -107,13 +108,7 @@ function kitTimerGhost(player: player):
 				set {_spirit} to true
 			if {_spirit} is true:
 				add 1 to {Kit-Spirits::%{_player}%}
-		delete {_true}
-		if {_player}'s tool is air:
-			set {_true} to true
-		else:
-			set {_name} to name of {_player}'s tool
-			if checkCT({_player}, name of {_player}'s tool, true) is true:
-				set {_true} to true
-		if {_true} is true:
-			send action bar "§4§lSpirit§0: §5%{Kit-Spirits::%{_player}%}%" to {_player}
+		set bossbar "%{_player}%-Spirit" title to "&4&lSpirit&0: &5&l%{Kit-Spirits::%{_player}%}%"
+		set bossbar "%{_player}%-Spirit" value to {Kit-Spirits::%{_player}%}
 		wait a tick
+	remove bossbar "%{_player}%-Spirit"
