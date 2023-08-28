@@ -6,7 +6,10 @@ function kitWeapon_Thief_3(player: player):
 
 function kitEffect_MysticCard_Throw(player: player):
 	set {_baseloc} to location of {_player}
+	set {_pitch} to pitch of {_baseloc}
 	set pitch of {_baseloc} to 0
+	set {_baseloc} to location 0.5 meters to the right of {_baseloc}
+	set pitch of {_baseloc} to {_pitch}
 	spawn an armor stand at {_baseloc} with nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""dune_armor_trim_smithing_template"",Count:1b},{}],Pose:{RightArm:[0f,0f,270f]}}"
 	set {_entity} to spawned armor stand
 	set metadata value "mystic-card" of {_entity} to false
@@ -71,7 +74,8 @@ function kitParticle_MysticCard_Target(loc: location):
 		spawnParticle_Color(entity_effect, 112, 108, 170, {_el})
 
 function kitParticle_MysticCard_Trail(loc: location):
-	spawnParticle_Vector(end_rod, randomVector(), 0.2, {_loc})
+	set {_el} to location 1 meter above {_loc}
+	spawnParticle_Vector(end_rod, randomVector(), 0.2, {_el})
 
 function kitParticle_MysticCard_Hit(loc: location):
 	loop 10 times:
