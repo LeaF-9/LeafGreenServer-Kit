@@ -10,3 +10,27 @@ function kitSkill_Wizard_2(player: player):
 		subtract {_mana} from {Kit-Mana::%{_player}%}
 	else:
 		send action bar "§4§lマナが足りません!" to {_player}
+
+function kitEffect_DarkMagic(player: player, loc: location):
+	loop all entities in radius 5 around {_loc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		if "%type of loop-entity%" is "player":
+			LastKiller(loop-entity, shooter)
+		apply blindness 1 to loop-entity for 5 seconds
+		apply wither 2 to loop-entity for 5 seconds
+		message formatted "§0暗闇魔法を受けた!" to loop-entity
+		kitMsg(shooter, "§5%loop-entity% §dに§0暗闇魔法§dを付与した!")
+		kitParticle_DarkMagic_Hit(loop-entity)
+
+function kitParticle_DarkMagic_Hit(entity: entity):
+	loop 5 times:
+		add 0.4 to {_h}
+		set {_rad} to 0
+		loop 10 times:
+			set {_el} to location of {_entity}
+			add 36 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			add {_h} to y-coordinate of {_el}
+			spawnParticle_Color(entity_effect, 0, 0, 0, {_el})
+		wait a tick
