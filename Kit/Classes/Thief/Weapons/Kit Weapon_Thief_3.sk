@@ -5,14 +5,13 @@ function kitWeapon_Thief_3(player: player):
 	kitEffect_MysticCard_Throw({_player})
 
 function kitEffect_MysticCard_Throw(player: player):
-	set {_baseloc} to location of head of {_player}
-	subtract 0.5 from y-coordinate of {_baseloc}
-	set {_nbt} to "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""dune_armor_trim_smithing_template"",Count:1b},{}],Pose:{RightArm:[0f,0f,270f]}}"
-	set {_entity} to kitSpawnMob_NBT({_player}, armor stand, {_baseloc}, {_nbt})
+	set {_baseloc} to location of {_player}
+	set pitch of {_baseloc} to 0
+	spawn an armor stand at {_baseloc} with nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""dune_armor_trim_smithing_template"",Count:1b},{}],Pose:{RightArm:[0f,0f,270f]}}"
+	set {_entity} to spawned armor stand
 	set metadata value "mystic-card" of {_entity} to false
 	# 発射音
 	playSound("entity.arrow.shoot", 1, 1.6, {_player})
-	set {_spin} to 0
 	set {_loc} to {_baseloc}
 	loop 60 times:
 		if metadata value "mystic-card" of {_entity} is true:
@@ -33,7 +32,7 @@ function kitEffect_MysticCard_Throw(player: player):
 		teleport {_entity} to {_loc}
 		kitParticle_MysticCard_Trail({_loc})
 		set {_nbt} to nbt compound of {_entity}
-		add "{RightArm:[0f,%{_spin}%f,270f]}" to {_nbt}
+		add nbt from "{RightArm:[0f,%{_spin}%f,270f]}" to {_nbt}
 		loop all entities in radius 2 around {_loc}:
 			metadata value "mystic-card" of {_entity} is false
 			kitCheckTeam(loop-entity, {_player}, false) is true
@@ -43,6 +42,7 @@ function kitEffect_MysticCard_Throw(player: player):
 				kitTrail(loop-entity, 5 seconds, location of {_player})
 		wait a tick
 	kitParticle_MysticCard_Hit({_loc})
+	delete {_entity}
 
 function kitEffect_MysticCard_Restore(player: player, timer: number):
 	if mod({_timer}, 5) is not 0:
