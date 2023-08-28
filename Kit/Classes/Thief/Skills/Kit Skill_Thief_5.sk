@@ -45,47 +45,29 @@ function kitSkill_Thief_5(player: player):
 			spawnParticle(happy_villager, {_eb})
 		# #############################
 			wait a tick
-		if {_tg} is set:
-			playSound("entity.player.levelup", 1, 1, {_tg})
-			playSound("entity.player.levelup", 1, 1, {_player})
-			kitMsg({_player}, "§6%{_tg}% §aの職を奪った!")
-			message formatted "§3職を奪われてしまった!" to {_tg}
-			set {_class} to {Class::%{_tg}%}
-			set {Stats.%{_tg}%::Stealed.Job Switch} to true
-			set {Stats.%{_player}%::Stealing.Job Switch} to true
+		if {_tg} is not set:
+			stop
+		playSound("entity.player.levelup", 1, 1, {_tg})
+		playSound("entity.player.levelup", 1, 1, {_player})
+		kitMsg({_player}, "§6%{_tg}% §aの職を奪った!")
+		message formatted "§3職を奪われてしまった!" to {_tg}
+		set {_class} to {Class::%{_tg}%}
+		set {Stats.%{_tg}%::Stolen.Job Switch} to true
 		# Needyにする処理 ##############
-			set {_jewel} to saveJewels({_tg})
-			set {_gem} to saveGems({_tg})
-			set {_wool} to saveWools({_tg})
-			set {_spwool} to saveSpecialWool({_tg})
-			set {_th} to {_tg}'s health
-			execute console command "/skclass %{_tg}% Kit-Needy"
-			set {_tg}'s health to {_th}
-			giveEmJItems({_tg}, {_jewel}, {_gem})
-			giveStWItems({_tg}, {_wool}, {_spwool})
-		# lootアイテムを渡す処理 ########
-			set {_skills::*} to kitSkillList({_class})
-			loop {_skills::*}:
-				add 1 to {_sknum}
-				set {_skills::%loop-index%} to kitItemTagChanger({_skills::%loop-index%}, {_class}, "Skill", {_sknum})
-			set {StealItem-Job Switch.%{_player}%::*} to {_skills::*}
-			set {_lootitem} to a bundle named "%display name of {_tool}% §b[§eloot§b]" with lore lore of {_tool}
-			set {_lootitem} to kitItemTagChanger({_lootitem}, "Thief", "Skill", 5)
-			remove {_tool} from {_player}
-			give {_lootitem} to {_player}
+		set {_th} to health of {_tg}
+		execute console command "/skclass %{_tg}% Kit-Needy"
+		set health of {_tg} to {_th}
+		# Kitを変更する処理 ########
+		execute console command "/kjc %{_player}%"
+		execute console command "/class %{_class}% %{_player}% false"
+		set {Stats.%{_player}%::Stealing.Job Switch} to true
 		# #############################
-			wait 5 seconds
-			if {Stats.%{_tg}%::Stealed.Job Switch} is true:
-				set {_jewel} to saveJewels({_tg})
-				set {_gem} to saveGems({_tg})
-				set {_wool} to saveWools({_tg})
-				set {_spwool} to saveSpecialWool({_tg})
-				execute console command "/class %{_class}% %{_tg}% false"
-				giveEmJItems({_tg}, {_jewel}, {_gem})
-				giveStWItems({_tg}, {_wool}, {_spwool})
-				delete {Stats.%{_tg}%::Stealed.Job Switch}
-			if {Stats.%{_player}%::Stealing.Job Switch} is true:
-				remove {_lootitem} from {_player}
-				give {_tool} to {_player}
-				delete {StealItem-Job Switch.%{_player}%::*}
-				delete {Stats.%{_player}%::Stealing.Job Switch}
+		wait 3 seconds
+		if {Stats.%{_tg}%::Stolen.Job Switch} is true:
+			execute console command "/class %{_class}% %{_tg}% false"
+			delete {Stats.%{_tg}%::Stolen.Job Switch}
+		wait 7 seconds
+		if {Stats.%{_player}%::Stealing.Job Switch} is true:
+			execute console command "/kjc %{_player}%"
+			execute console command "/class %{_class}% %{_player}% false"
+			delete {Stats.%{_player}%::Stealing.Job Switch}
