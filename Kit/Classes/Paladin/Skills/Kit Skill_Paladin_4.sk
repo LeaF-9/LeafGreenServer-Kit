@@ -1,48 +1,52 @@
-# Sprite Talisman
+# Skill-Name: Sprite Talisman
 
 function kitSkill_Paladin_4(player: player):
 	toolCT({_player}, "Paladin", 4)
 	kitMsg({_player}, "§e守護の力を分け与えます...")
 	playSound("entity.iron_golem.death", 1, 1, {_player})
-	kitEffect_SpriteTalisman_1({_player})
+	kitParticle_SpriteTalisman_Aura({_player})
 	loop all players in radius 10 around {_player}:
 		kitCheckTeam(loop-player, {_player}, true) is true
 		setSupporter(loop-player, {_player})
-		apply resistance 1 to loop-player for 10 seconds
-		set {Stats.%loop-player%::SpriteTalisman} to true
 		add loop-player to {_effects::*}
-	loop 100 times:
+	set {_ln} to 0
+	loop 200 times:
+		add 1 to {_ln}
 		loop {_effects::*}:
-			set {_loc} to location of loop-value-2
-			set {_vector} to {_loc}
-#			座標の設定　主軸{_loc}{_w}{_vw}
-			set {_x} to x-coordinate of {_loc}
-			set {_y} to y-coordinate of {_loc} + 0.2
-			set {_z} to z-coordinate of {_loc}
-#			軸の設定　座標{_A}{_vwA}
-			set {_A} to {_loc}
-			set {_vyA} to 0
-			set pitch of {_A} to 0
-			set {_vxA1} to location 1 meters to the right of {_A}
-			set {_vzA1} to location 1 meters in front of {_A}
-#			方向ベクトル{_vwnw}
-			set {_vxnx} to x-coordinate of {_vxA1} - {_x}
-			set {_vxnz} to z-coordinate of {_vxA1} - {_z}
-			set {_vznx} to x-coordinate of {_vzA1} - {_x}
-			set {_vznz} to z-coordinate of {_vzA1} - {_z}
-			set {_s} to a random number between 0 and 360
-			set {_t} to a random number between -1 and 1
-			set {_ax} to ({_vxnx} * cos({_s}) + {_vznx} * sin({_s})) * 1.2
-			set {_az} to ({_vxnz} * cos({_s}) + {_vznz} * sin({_s})) * 1.2
-			set x-coordinate of {_vector} to {_x} + {_ax}
-			set y-coordinate of {_vector} to {_y} + {_t}
-			set z-coordinate of {_vector} to {_z} + {_az}
-			drawDot count 1, particle "redstone", RGB 160, 255, 160, center {_vector}, visibleRange 100, keepFor 0.1 seconds
-		wait 2 ticks
+			kitParticle_SpriteTalisman_Apply(loop-value-2)
+			if ({_ln}, 20) is 0:
+				kitEffect_SpriteTalisman(loop-value-2)
+		wait a tick
 	loop {_effects::*}:
 		delete {Stats.%loop-value%::SpriteTalisman}
 
-function kitEffect_SpriteTalisman_1(player: player):
+on damage of player:
+	{Stats.%victim%::SpriteTalisman} is set
+	set damage to damage - {Stats.%victim%::SpriteTalisman} * 0.5
+	delete {Stats.%victim%::SpriteTalisman}
+	kitParticle_SpriteTalisman_Protect(victim)
+
+function kitEffect_SpriteTalisman(player: player):
+	loop all players in radius 10 around {_player}:
+		kitCheckTeam(loop-player, {_player}, false) is true
+		kitEffect_SpriteTalisman_Fairy({_player}, loop-player)
+
+function kitEffect_SpriteTalisman_Fairy(player: player, target: player):
+	playSound("entity.allay.item_thrown", 0.7, 1.1, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	set {_vec} to setVector({_baseloc}, location 1 meter above {_target})
+	set {_baseloc} to setDirToVec({_baseloc}, {_vec})
+	loop 10 times:
+		set {_el} to location loop-number meters in front of {_baseloc}
+		kitParticle_SpriteTalisman_Fairy({_el})
+		wait a tick
+	kitParticle_SpriteTalisman_Explode({_el})
+	if distance between {_el} and {_target} > 2.5:
+		stop
+	kitDamage({_player}, {_target}, 1)
+	kitParticle_SpriteTalisman_Add({_player})
+
+function kitParticle_SpriteTalisman_Aura(player: player):
 	set {_loc} to location of {_player}
 	set {_vector} to {_loc}
 #	座標の設定　主軸{_loc}{_w}{_vw}
@@ -70,7 +74,7 @@ function kitEffect_SpriteTalisman_1(player: player):
 			set x-coordinate of {_vector} to {_x} + {_ax} * {_s}
 			set y-coordinate of {_vector} to {_y} + 2 - 0.02 * {_s} ^ 2
 			set z-coordinate of {_vector} to {_z} + {_az} * {_s}
-			drawDot count 1, particle "redstone", RGB 192, 255, 192, center {_vector}, visibleRange 100, keepFor 1 seconds
+			kitParticle_Spritetalisman_Static({_vector})
 			add 1 to {_s}
 		set {_s} to 0
 		loop 5 times:
@@ -79,12 +83,69 @@ function kitEffect_SpriteTalisman_1(player: player):
 			set x-coordinate of {_vector} to {_x} + {_ax} * 10
 			set y-coordinate of {_vector} to {_y} - {_t} * 0.02
 			set z-coordinate of {_vector} to {_z} + {_az} * 10
-			drawDot count 1, particle "redstone", RGB 160, 255, 160, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+			spawnParticle_Dust(rgb(160, 255, 160), 1, {_vector})
 			add 72 to {_s}
 		add 36 to {_t}
 		wait a tick
 
-function kitEffect_SpriteTalisman_2(player: player):
+function kitParticle_Spritetalisman_Static(loc: location):
+	loop 20 times:
+		spawnParticle_Dust(rgb(192, 255, 192), 1, {_loc})
+		wait a tick
+
+function kitParticle_SpriteTalisman_Apply(player: player):
+	set {_loc} to location of {_player}
+	set {_vector} to {_loc}
+#	座標の設定　主軸{_loc}{_w}{_vw}
+	set {_x} to x-coordinate of {_loc}
+	set {_y} to y-coordinate of {_loc} + 0.2
+	set {_z} to z-coordinate of {_loc}
+#	軸の設定　座標{_A}{_vwA}
+	set {_A} to {_loc}
+	set {_vyA} to 0
+	set pitch of {_A} to 0
+	set {_vxA1} to location 1 meters to the right of {_A}
+	set {_vzA1} to location 1 meters in front of {_A}
+#	方向ベクトル{_vwnw}
+	set {_vxnx} to x-coordinate of {_vxA1} - {_x}
+	set {_vxnz} to z-coordinate of {_vxA1} - {_z}
+	set {_vznx} to x-coordinate of {_vzA1} - {_x}
+	set {_vznz} to z-coordinate of {_vzA1} - {_z}
+	set {_s} to a random number between 0 and 360
+	set {_t} to a random number between -1 and 1
+	set {_ax} to ({_vxnx} * cos({_s}) + {_vznx} * sin({_s})) * 1.2
+	set {_az} to ({_vxnz} * cos({_s}) + {_vznz} * sin({_s})) * 1.2
+	set x-coordinate of {_vector} to {_x} + {_ax}
+	set y-coordinate of {_vector} to {_y} + {_t}
+	set z-coordinate of {_vector} to {_z} + {_az}
+	spawnParticle_Dust(rgb(160, 255, 160), 1, {_vector})
+
+function kitParticle_SpriteTalisman_Fairy(loc: location):
+	loop 3 times:
+		set {_el} to {_loc}
+		add a random number between -0.3 and 0.3 to x-pos of {_el}
+		add a random number between -0.3 and 0.3 to y-pos of {_el}
+		add a random number between -0.3 and 0.3 to z-pos of {_el}
+		spawnParticle_Dust(rgb(56, 180, 139), 0.5, {_el})
+
+function kitParticle_SpriteTalisman_Explode(loc: location):
+	playSound("entity.allay.hurt", 1, 1.1, {_loc})
+	loop 10 times:
+		spawnParticle_Vector(firework, randomVector(1), 0.25, {_loc})
+
+function kitParticle_SpriteTalisman_Add(player: player):
+	set {_rad} to a random integer between 0 and 360
+	loop 10 times:
+		set {_el} to location of {_player}
+		add 90 to {_rad}
+		add loop-number * 0.2 to y-pos of {_el}
+		add 0.5 * sin({_rad}) to x-pos of {_el}
+		add 0.5 * cos({_rad}) to z-pos of {_el}
+		spawnParticle_Dust(rgb(152, 217, 142), 1, {_el})
+		wait a tick
+
+function kitParticle_SpriteTalisman_Protect(player: player):
+	playSound("entity.allay.ambient_without_item", 1, 2, {_player})
 	set {_loc} to location of {_player}
 	set {_x} to x-coordinate of {_loc}
 	set {_y} to y-coordinate of {_loc} + 0.7
@@ -99,13 +160,5 @@ function kitEffect_SpriteTalisman_2(player: player):
 			set x-coordinate of {_vector} to {_x} + {_s} * {_p}
 			set y-coordinate of {_vector} to {_y} + {_t} * {_p}
 			set z-coordinate of {_vector} to {_z} + {_u} * {_p}
-			drawDot count 1, particle "redstone", RGB 192, 255, 192, center {_vector}, visibleRange 100, keepFor 0.1 seconds
+			spawnParticle_Dust(rgb(192, 255, 192), 1, {_vector})
 		wait a tick
-
-on damage of player:
-	{Stats.%victim%::SpriteTalisman} is true
-	set {_c} to kitPercentDuel(victim, attacker, 10)
-	chance of {_c}%:
-		cancel event
-		playSound("entity.iron_golem.damage", 1, 1.5, victim)
-		kitEffect_SpriteTalisman_2(victim)
