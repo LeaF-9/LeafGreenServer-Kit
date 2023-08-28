@@ -14,14 +14,6 @@ function kitSkill_Wizard_1(player: player):
 function kitEffect_BloodMagic(player: player, loc: location):
 	loop all entities in radius 5 around {_l}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
-		delete {_frcan}
-		if "%type of loop-entity%" is "player":
-			if {Stats.%loop-entity%::FreezeMagic} is true:
-				set {_per} to kitPercent(loop-entity, 50)
-				chance of {_per}%:
-					set {_frcan} to true
-		if {_frcan} is true:
-			continue
 		kitDamage({_player}, loop-entity, 3)
 		if "%type of loop-entity%" is "player":
 			set {_per} to kitPercentDuel({_player}, loop-entity, 30)
