@@ -11,7 +11,84 @@ function kitSkill_Wizard_3(player: player):
 	else:
 		send action bar "§4§lマナが足りません!" to {_player}
 
-on damage of player:
-	damage was caused by potion
-	{Stats.%victim%::FreezeMagic} is true
-	cancel event
+function kitEffect_FreezeMagic(player: player: loc: location):
+	loop all players in radius 5 around {_loc}:
+		kitCheckTeam({_player}, loop-player, false) is true
+		set {_pl} to location of block at loop-player
+		subtract 0.5 from y-pos of {_pl}
+		set yaw of {_pl} to yaw of loop-player
+		set pitch of {_pl} to pitch of loop-player}
+		# 0
+		if block below {_pl} is air:
+			set {_loc} to location of block below {_pl}
+			add {_loc} to {_lb::*}
+			make all players see block at {_loc} as ice
+		# 1
+		if block 1 meters north of {_pl} is air:
+			set {_loc} to location of block 1 meters north of {_pl}
+			add {_loc} to {_lb::*}
+			make all players see block at {_loc} as ice
+		if block 1 meters east of {_pl} is air:
+			set {_loc} to location of block 1 meters east of {_pl}
+			add {_loc} to {_lb::*}
+			make all players see block at {_loc} as ice
+		if block 1 meters south of {_pl} is air:
+			set {_loc} to location of block 1 meters south of {_pl}
+			add {_loc} to {_lb::*}
+			make all players see block at {_loc} as ice
+		if block 1 meters west of {_pl} is air:
+			set {_loc} to location of block 1 meters west of {_pl}
+			add {_loc} to {_lb::*}
+			make all players see block at {_loc} as ice
+		# 2
+		set {_plu} to location of block above {_pl}
+		if block 1 meters north of {_plu} is air:
+			set {_loc} to location of block 1 meters north of {_plu}
+			add {_loc} to {_lb::*}
+			make all players see block at {_loc} as ice
+		if block 1 meters east of {_plu} is air:
+			set {_loc} to location of block 1 meters east of {_plu}
+			add {_loc} to {_lb::*}
+			make all players see block at {_loc} as ice
+		if block 1 meters south of {_plu} is air:
+			set {_loc} to location of block 1 meters south of {_plu}
+			add {_loc} to {_lb::*}
+			make all players see block at {_loc} as ice
+		if block 1 meters west of {_plu} is air:
+			set {_loc} to location of block 1 meters west of {_plu}
+			add {_loc} to {_lb::*}
+			make all players see block at {_loc} as ice
+		# 3
+		if block above {_plu} is air:
+			set {_loc} to location of block above {_plu}
+			add {_loc} to {_lb::*}
+			make all players see block at {_loc} as ice
+		teleport loop-player to {_pl}
+		set {Stats.%loop-player%::Invincible} to true
+		message formatted "§1凍結魔法を受けた!" to loop-player
+		kitMsg({_player}, "§5%loop-player% §dに§1凍結魔法§dを付与した!")
+		kitParticle_FreezeMagic_Hit(loop-player)
+		add loop-player to {_hit::*}
+	loop 40 times:
+		loop {_lb::*}:
+			make all players see block at loop-value-2 as ice
+		wait a tick
+	loop {_lb::*}:
+		make all players see block at loop-value as air
+		spawnParticle_Block(packed ice, loop-value)
+	loop {_hit::*}:
+		delete {Stats.%loop-value%::Invincible}
+		playSound("block.glass.break", 1, 1, loop-value)
+
+function kitParticle_FreezeMagic_Hit(player: player):
+	loop 40 times:
+		add 0.4 to {_h}
+		set {_rad} to 0
+		loop 10 times:
+			set {_el} to location of {_player}
+			add 36 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			add {_h} to y-coordinate of {_el}
+			spawnParticle_Color(entity_effect, 0, 0, 100, {_el})
+		wait a tick
