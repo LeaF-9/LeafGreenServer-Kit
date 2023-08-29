@@ -2,41 +2,68 @@
 
 function kitSkill_Wizard_8(player: player):
 	set {_mana} to kitManaCalc({_player}, 20)
-	if {Kit-Mana::%{_player}%} >= {_mana}:
-		toolCT({_player}, "Wizard", 8)
-		set {_baseloc} to location of head of {_player}
-		set {_front} to 0
-		loop 20 times:
-			if {_ok} is not set:
-				loop 5 times:
-					{_ok} is not set
-					add 1 to {_front}
-					set {_loc} to location {_front} meters in front of {_baseloc}
-					drawDot count 1, particle "witchspell", center {_loc}, visibleRange 100
-					if block at {_loc} is not passable:
-						set {_ok} to true
-				wait a tick
-		{_ok} is true
-		subtract {_mana} from {Kit-Mana::%{_player}%}
-		kitMsg({_player}, "<##8b4513>地響き<##f0e68c>を召喚します...")
-		kitFreeze({_player}, 1 seconds, false)
-		set {_bn} to 0
-		while {_blockok} is not set:
-			add 0.1 to {_bn}
-			set {_bl} to location {_bn} meters above {_loc}
-			if block at {_bl} is passable:
-				set {_blockok} to true
-				set {_point} to {_bl}
-		playSound("entity.evoker.prepare_summon", 1.5, 2, {_point})
-#	弧を描く
+	if {Kit-Mana::%{_player}%} < {_mana}:
+		send action bar "§4§lマナが足りません!" to {_player}
+		stop
+	toolCT({_player}, "Wizard", 8)
+	set {_baseloc} to location of head of {_player}
+	set {_front} to 0
+	loop 20 times:
+		if {_ok} is not set:
+			loop 5 times:
+				{_ok} is not set
+				add 1 to {_front}
+				set {_loc} to location {_front} meters in front of {_baseloc}
+				drawDot count 1, particle "witchspell", center {_loc}, visibleRange 100
+				if block at {_loc} is not passable:
+					set {_ok} to true
+			wait a tick
+	{_ok} is true
+	subtract {_mana} from {Kit-Mana::%{_player}%}
+	kitMsg({_player}, "<##8b4513>地響き<##f0e68c>を召喚します...")
+	kitFreeze({_player}, 1 seconds, false)
+	set {_bn} to 0
+	while {_blockok} is not set:
+		add 0.1 to {_bn}
+		set {_bl} to location {_bn} meters above {_loc}
+		if block at {_bl} is passable:
+			set {_blockok} to true
+			set {_point} to {_bl}
+	kitParticle_EarthMagic({_point})
+	set {_el} to location of {_player}
+	loop 30 times:
+		spawnParticle_Vector(witch, randomVector(), 0.3, {_el})
+	wait a second
+	playSound("entity.evoker.prepare_attack", 1.5, 1.5, {_point})
+	set {_ran} to 0
+	loop 8 times:
+		add 1 to {_ran}
+		loop all blocks in radius {_ran} around location of {_point}:
+			block below loop-block is not air
+			loop-block is air
+			distance between {_point} and loop-block is between {_ran} - 1 and {_ran}
+			set {_material} to type of block below loop-block
+			spawnParticle_Block({_material}, location of loop-block)
+		loop all players in radius {_ran} around location of {_point}:
+			kitCheckTeam({_player}, loop-player, false) is true
+			{_hit::%loop-player%} is not set
+			set {_hit::%loop-player%} to true
+			kitStun(loop-player, 8 seconds)
+		playSound("block.grass.break", 0.5, 1, location of {_point})
+		wait a tick
+
+function kitParticle_EarthMagic(point: location):
+	playSound("entity.evoker.prepare_summon", 1.5, 2, {_point})
+	loop 20 times:
+	#	弧を描く
 		set {_n.k} to 0
 		loop 60 times:
 			set {_effbaseloc} to {_point}
 			add 8 * sin({_n.k}) to x-coordinate of {_effbaseloc}
 			add 8 * cos({_n.k}) to z-coordinate of {_effbaseloc}
-			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_effbaseloc}, visibleRange 100, keepFor 1 second
+			spawnParticle_Dust(rgb(255, 215, 0), 1, {_effbaseloc})
 			add 6 to {_n.k}
-#	弦を描く
+	#	弦を描く
 		if {_l.A} is not set:
 			set {_l.A} to {_point}
 			set yaw of {_l.A} to 120
@@ -75,44 +102,22 @@ function kitSkill_Wizard_8(player: player):
 			add 8 * cos(270) to z-coordinate of {_l.F}
 		loop 16 times:
 			add sqrt(3) / 2 to {_n.g}
-#		A-B
+	#		A-B
 			set {_loc.g} to location {_n.g} meters in front of {_l.A}
-			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		D-E
+			spawnParticle_Dust(rgb(255, 215, 0), 1, {_loc.g})
+	#		D-E
 			set {_loc.g} to location {_n.g} meters in front of {_l.D}
-			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		B-C
+			spawnParticle_Dust(rgb(255, 215, 0), 1, {_loc.g})
+	#		B-C
 			set {_loc.g} to location {_n.g} meters in front of {_l.B}
-			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		E-F
+			spawnParticle_Dust(rgb(255, 215, 0), 1, {_loc.g})
+	#		E-F
 			set {_loc.g} to location {_n.g} meters in front of {_l.E}
-			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		C-A
+			spawnParticle_Dust(rgb(255, 215, 0), 1, {_loc.g})
+	#		C-A
 			set {_loc.g} to location {_n.g} meters in front of {_l.C}
-			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		F-D
+			spawnParticle_Dust(rgb(255, 215, 0), 1, {_loc.g})
+	#		F-D
 			set {_loc.g} to location {_n.g} meters in front of {_l.F}
-			drawDot count 1, particle "redstone", RGB 255, 215, 0, center {_loc.g}, visibleRange 100, keepFor 1 second
-		set {_el} to location of {_player}
-		loop 30 times:
-			draw 1 witchspell particle at {_el} with direction randomVector({_el}) and speed 0.3, keepFor 1 tick
-		wait a second
-		playSound("entity.evoker.prepare_attack", 1.5, 1.5, {_point})
-		set {_ran} to 0
-		loop 8 times:
-			add 1 to {_ran}
-			loop all blocks in radius {_ran} around location of {_point}:
-				block below loop-block is not air
-				loop-block is air
-				distance between {_point} and loop-block is between {_ran} - 1 and {_ran}
-				set {_material} to type of block below loop-block
-				drawDot count 5, particle "blockcrack", material {_material}, center location of loop-block, visibleRange 30
-			loop all players in radius {_ran} around location of {_point}:
-				kitCheckTeam({_player}, loop-player, false) is true
-				{_hit::%loop-player%} is not set
-				set {_hit::%loop-player%} to true
-				kitStun(loop-player, 8 seconds)
-			playSound("block.grass.break", 0.5, 1, location of {_point})
-			wait a tick
-	else:
-		send action bar "§4§lマナが足りません!" to {_player}
+			spawnParticle_Dust(rgb(255, 215, 0), 1, {_loc.g})
+		wait a tick
