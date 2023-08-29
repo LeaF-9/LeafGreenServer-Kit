@@ -14,54 +14,40 @@ function kitDeathEvent_SH(attacker: player, victim: player, supporters: players)
 	kitDropSheeps_SH({_victim})
 	# ---------------------------------------------
 
-# 羊毛をスポーンさせる関数
-function kitSpawnWools_SH():
+function kitSpawnCheck_SH():
 	loop {Kit-GameStageWools::*}:
-		if block at loop-value is not white wool:
-			set {_ok} to true
-			set block at loop-value to white wool
-			# --- 音演出 ---
-			playSound("block.wool.place", 1.5, 0.5, loop-value)
-			# -------------
-			# --- パーティクル演出 ---
-			loop 10 times:
-				set {_el} to loop-value-1
-				add a random number between 1 and 1.5 to x-coordinate of {_el}
-				add a random number between 1 and 1.5 to y-coordinate of {_el}
-				add a random number between 1 and 1.5 to z-coordinate of {_el}
-				spawnParticle_BlockData(falling_dust, white wool, {_el})
-			# ---------------------
-	if {_ok} is true:
+		set {_baseloc} to loop-value
+		loop all sheeps in radius 5 around {_baseloc}:
+			metadata value "sh-sheep" of loop-sheep is true
+			add 1 to {_sheepcount}
+		if {_sheepcount} >= 3:
+			continue
+		loop all blocks in radius 5 around {_baseloc}:
+			loop-block is passable
+			block below loop-block is not passable
+			add location of loop-block to {_sheepspawnlocs::*}
+		set {_spawn} to true
+		if {_sheepspawnlocs::1} is not set:
+			set {_sheepspawnlocs::1} to {_baseloc}
+		set {_spawnloc} to a random location out of {_sheepspawnlocs::*}
+		kitSpawnSheep_SH({_spawnloc})
+		# --- 線状のパーティクル演出 ---
+		set {_v} to setVector({_baseloc}, {_spawnloc})
+		set yaw of {_baseloc} to yaw of {_v}
+		set pitch of {_baseloc} to pitch of {_v}
+		set {_dis} to distance between {_baseloc} and {_spawnloc}
+		set {_m} to 0
+		loop 10 times:
+			add {_dis} / 10 to {_m}
+			set {_el} to location {_m} meters in front of {_baseloc}
+			spawnParticle(end_rod, {_el})
+		# ---------------------------
+	if {_spawn} is true:
 		loop all players:
-			if metadata value "gametype" of loop-player is "Kit":
-				send title "§f§lSHEEP WOOL §6§lspawned!" with subtitle "§b羊毛を叩いて羊を呼び起こそう!" to loop-player for 3 seconds
+			if {Join::%loop-player%} is "Kit":
+				send title "§f§lSHEEP §6§lspawned!" with subtitle "§b羊毛を陣地に連れて行こう!" to loop-player for 3 seconds
 
-# 羊毛を叩いた際の処理
-on leftclick on white wool:
-	cancel event
-	set {_baseloc} to location of targeted block
-	{Kit-GameStageWools::*} contains {_baseloc}
-	loop all blocks in radius 5 around {_baseloc}:
-		loop-block is passable
-		block below loop-block is not passable
-		add location of loop-block to {_sheepspawnlocs::*}
-	if {_sheepspawnlocs::1} is not set:
-		set {_sheepspawnlocs::1} to {_baseloc}
-	set {_spawnloc} to a random location out of {_sheepspawnlocs::*}
-	kitSpawnSheep_SH({_spawnloc})
-	# --- 線状のパーティクル演出 ---
-	set {_v} to setVector({_baseloc}, {_spawnloc})
-	set yaw of {_baseloc} to yaw of {_v}
-	set pitch of {_baseloc} to pitch of {_v}
-	set {_dis} to distance between {_baseloc} and {_spawnloc}
-	set {_m} to 0
-	loop 10 times:
-		add {_dis} / 10 to {_m}
-		set {_el} to location {_m} meters in front of {_baseloc}
-		spawnParticle(end_rod, {_el})
-	# ---------------------------
-
-function kitSpawnSheep_SH(loc: location):  # 指定位置に設置状態のBalloonを召喚する関数
+function kitSpawnSheep_SH(loc: location):
 	set {_uuid} to a random uuid
 	chance of 10%:
 		set {_special} to true
@@ -78,14 +64,17 @@ function kitSpawnSheep_SH(loc: location):  # 指定位置に設置状態のBallo
 	# -------------
 	spawn a sheep at {_loc} with {_nbt}
 	set metadata value "gametype" of spawned entity to "Kit"
-	set metadata value "sh-sheep" of spawned entity to "true"
+	set metadata value "sh-sheep" of spawned entity to true
 	set metadata value "sh-age" of spawned entity to {_age}
 	set metadata value "sh-color" of spawned entity to "white"
-	set metadata valuw "sh-health" of spawned entity to 10
 	applyEffect(spawned entity, glowing, 1, 5 seconds, false, "none")
 	loop 30 times:
 		set {_rv} to randomVector(1)
 		spawnParticle_Vector(end_rod, {_rv}, 0.5, location 1 meters above {_loc})
+
+function kitCheckHolding_SH(player: player) :: number:
+
+function kitTakingSheep_SH(player: player, sheep: entity):
 
 on damage of sheep:
 	if metadata value "sh-sheep" of victim is "true":
@@ -444,8 +433,9 @@ function kitTimer_SH():
 		add 1 to {_timer.wool}
 		if {_timer.wool} >= 30:
 			set {_timer.wool} to 0
-			kitSpawnWools_SH()
+			kitSpawnCheck_SH()
 		# ------------------------
+		# --- Sheep Checker ---
 		loop all sheeps:
 			metadata value "sh-sheep" of loop-sheep is "true"
 			# --- Sheep Moving (holder) ---
@@ -465,13 +455,29 @@ function kitTimer_SH():
 					if distance between {_holder} and loop-sheep > 10:
 						teleport loop-sheep to {_holder}
 			# -----------------------------
-			# --- Sheep Movings (voidtp) ---
-			# ------------------------------
+			# --- Sheep Securing(no holder) ---
+			else:
+				loop all players in radius 1.5 around loop-sheep:
+					if loop-player is sneaking:
+						if metadata value "sh-age" of loop-value is "adult":
+							if kitCheckHolding_SH(loop-player) < 1:
+								kitTakingSheep_SH(loop-player, loop-sheep)
+							else:
+								send subtitle "§c§l既に最大所持数を超えています!" to loop-player for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
+						else if metadata value "sh-age" of loop-value is "baby":
+							if kitCheckHolding_SH(loop-player) < 3:
+								kitTakingSheep_SH(loop-player, loop-sheep)
+							else:
+								send subtitle "§c§l既に最大所持数を超えています!" to loop-player for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
+					else:
+						send subtitle "§3§lスニーク長押し §bで羊を確保できます!"  to loop-player for 1 seconds with fadein 0 seconds and fadeout 0 seconds
+			# ---------------------------------
 			# --- Sheep Team Colored ---
 			set {_color} to metadata value "sh-color" of loop-sheep
 			set {_blocktype} to block at location 0.1 meters below loop-sheep
 			
 			# --------------------------
+		# ----------------------
 		# --- Point Calc ---
 		# ------------------
 		wait a second
