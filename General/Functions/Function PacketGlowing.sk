@@ -14,25 +14,6 @@ function packetUnglowing(player: player, target: entity):
 	set field 1 of {_pkt} to {_dw}
 	send {_player} packet {_pkt}
 
-function packetGlowing_SR(player: player, target: entity):
-	set {_manager} to ProtocolLibrary.getProtocolManager()
-	set {_packet} to {_manager}.createPacket(PacketType.Play.Server.ENTITY_METADATA)
-
-	{_packet}.getIntegers().write(0, {_target}.getEntityId())
-
-	set {_watcher} to new WrappedDataWatcher()
-	set {_serializer} to WrappedDataWatcher.Registry.get(Byte.class)
-	
-	{_watcher}.setEntity({_target})
-
-	{_watcher}.setObject(0, {_serializer}, 64.byteValue())
-
-	set {_l} to (new ArrayList())
-	set {_li::*} to ...{_watcher}.getWatchableObjects().stream()
-
-	loop {_li::*}:
-		set {_do} to loop-value.getWatcherObject()
-		{_l}.add(new WrappedDataValue({_do}.getIndex(), {_do}.getSerializer(), loop-value.getRawValue()))
-
-	{_packet}.getDataValueCollectionModifier().write(0, {_l})
-	{_manager}.sendServerPacket({_player}, {_packet})
+on packet event play_server_entity_metadata:
+    set {_dw} to new data watcher from nms field 1
+    broadcast "%{_dw}%"
