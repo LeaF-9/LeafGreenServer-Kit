@@ -76,6 +76,12 @@ function kitCheckHolding_SH(player: player) :: number:
 
 function kitTakingSheep_SH(player: player, sheep: entity):
 
+function kitGetSheep_SH(player: player, sheep: entity, color: color):
+	# 全体メッセージ
+	# sheep演出
+
+
+
 on damage of sheep:
 	if metadata value "sh-sheep" of victim is "true":
 		cancel event
@@ -179,14 +185,6 @@ on damage of sheep:
 				playSound("block.note_block.bass", 1, 1, attacker, true)
 				spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
 				stop
-
-
-
-
-
-				
-				
-
 
 
 
@@ -479,8 +477,10 @@ function kitTimer_SH():
 						send subtitle "§3§lスニーク長押し §bで羊を確保できます!"  to loop-player for 1 seconds with fadein 0 seconds and fadeout 0 seconds
 			# ---------------------------------
 			# --- Sheep Team Colorize ---
+			set {_color.before} to white
 			set {_blocktype} to block at location 0.5 meters below loop-sheep
-			if tyoe of block below {_blocktype} is glowstone block:
+			if type of block below {_blocktype} is glowstone block:
+				set {_color.before} to metadata value "sh-color" of loop-sheep
 				if type of {_blocktype} is type of {Kit-GameStage::place-red}:
 					add 1 to {_teampoint::red}
 					set metadata value "sh-color" of loop-value to red
@@ -495,10 +495,25 @@ function kitTimer_SH():
 					set metadata value "sh-color" of loop-value to green
 				else:
 					set metadata value "sh-color" of loop-value to white
-				set {_color} to metadata value "sh-color" of loop-sheep
-				set color of loop-sheep to {_color}
+			else:
+				set metadata value "sh-color" of loop-value to white
+			set {_color.after} to metadata value "sh-color" of loop-sheep
+			set color of loop-sheep to {_color.after}
+			if {_color.before} is "white":
+				if {_color.after} is not white:
+					set {_holder} to metadata value "sh-holder" of loop-sheep
+					delete metadata value "sh-holder" of loop-sheep
+					add 1 to {Kit-Carry.personal::%{_holder}%}
+					kitGetSheep_SH({_holder}, loop-sheep, {_color.after})
 			# --------------------------
 		# ----------------------
+		# --- Scoreboard Reload ---
+		kitScoreGlobal(7, "§c赤§7: §6%{_teampoint::red}%")
+		kitScoreGlobal(6, "§9青§7: §6%{_teampoint::blue}%")
+		if {Kit-GameStage::team} is "4" or 4:
+			kitScoreGlobal(5, "§e黄§7: §6%{_teampoint::yellow}%")
+			kitScoreGlobal(4, "§a緑§7: §6%{_teampoint::green}%")
+		# -------------------------
 		# --- Point Calc ---
 		loop {_teampoint::*}:
 			if loop-value >= {Kit-GameStage::goal}:
