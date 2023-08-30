@@ -1,6 +1,14 @@
 ﻿# 用意すべきyaml項目:
 # - Kit-GameStageWools::*
 
+# sheepが持つmetadata一覧
+# - sheep: boolean(trueのみ)
+# - age: text(adult or baby)
+# - color: color(red, blue, yellow, green or white)
+# - holder: player(持っているプレイヤーが保存される)
+# - taking: number(獲得状況を示す数字が保存される)
+# - getlocation: location(羊を獲得した地点が保存される)
+
 function kitDeathEvent_SH(attacker: player, victim: player, supporters: players):
 	# Death情報の更新
 	add 1 to {Kit-Death.personal::%{_victim}%}
@@ -15,8 +23,22 @@ function kitDeathEvent_SH(attacker: player, victim: player, supporters: players)
 	# ---------------------------------------------
 
 function kitDropSheeps_SH(player: player):
+	unleash {_player}
+	loop all sheeps:
+		metadata value "sh-holder" of loop-sheep is {_player}
+		delete metadata value "sh-holder" of loop-sheep
+		teleport loop-sheep to metadata value "sh-getlocation" of loop-sheep
+		delete metadata value "sh-getlocation" of loop-sheep
 
 on damage of sheep:
+	metadata value "sh-sheep" of victim is true
+	cancel event
+	if damage was caused by void:
+		delete metadata value "sh-holder" of victim
+		if metadata value "sh-getlocation" of victim is set:
+			teleport victim to metadata value "sh-getlocation" of victim
+		else:
+			delete victim
 
 function kitSpawnCheck_SH():
 	loop {Kit-GameStageWools::*}:
