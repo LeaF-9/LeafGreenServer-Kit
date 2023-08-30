@@ -49,15 +49,15 @@ function kitReadYML(map: text):
 		set {Kit-GameStage::goal} to yml value "ctf-rule.goal" from "KitRead.%{_map}%"
 		loop yaml node keys "ctf-rule.flags" from "KitRead.%{_map}%":
 			set {Kit-GameStageFlags::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
-	else if yml value "rule" from "KitRead.%{_map}%" is "BH":
-		set {Kit-GameStage::goal} to yml value "bh-rule.goal" from "KitRead.%{_map}%"
-		set {Kit-GameStage::place-red} to yml value "bh-rule.places.red" from "KitRead.%{_map}%"
-		set {Kit-GameStage::place-blue} to yml value "bh-rule.places.blue" from "KitRead.%{_map}%"
+	else if yml value "rule" from "KitRead.%{_map}%" is "SH":
+		set {Kit-GameStage::goal} to yml value "sh-rule.goal" from "KitRead.%{_map}%"
+		set {Kit-GameStage::place-red} to yml value "sh-rule.places.red" from "KitRead.%{_map}%"
+		set {Kit-GameStage::place-blue} to yml value "sh-rule.places.blue" from "KitRead.%{_map}%"
 		if {Kit-GameStage::team} is 4:
-			set {Kit-GameStage::place-yellow} to yml value "bh-rule.places.yellow" from "KitRead.%{_map}%"
-			set {Kit-GameStage::place-green} to yml value "bh-rule.places.green" from "KitRead.%{_map}%"
-		loop yaml node keys "bh-rule.balloons" from "KitRead.%{_map}%":
-			set {Kit-GameStageBalloons::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
+			set {Kit-GameStage::place-yellow} to yml value "sh-rule.places.yellow" from "KitRead.%{_map}%"
+			set {Kit-GameStage::place-green} to yml value "sh-rule.places.green" from "KitRead.%{_map}%"
+		loop yaml node keys "sh-rule.sheepspawns" from "KitRead.%{_map}%":
+			set {Kit-GameStageSheepSpawns::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
 	else if yml value "rule" from "KitRead.%{_map}%" is "CP":
 		set {Kit-GameStage::goal} to yml value "cp-rule.goal" from "KitRead.%{_map}%"
 		set {Kit-GameStage::color-white} to yml value "cp-rule.color.white" from "KitRead.%{_map}%"
