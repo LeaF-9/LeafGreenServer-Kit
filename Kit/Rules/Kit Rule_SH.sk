@@ -89,7 +89,7 @@ function kitCheckAvailable_SH(player: player, sheep: entity):
 			send subtitle "§c§l既に最大所持数を超えています!" to loop-player for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
 	else if metadata value "sh-age" of {_sheep} is "baby":
 		if {_count} < 3:
-			kitTakingSheep_SH({_player}, {_sheep})
+			kitTakingSheep_SH({_player}, {_sheep}, {_count})
 		else:
 			send subtitle "§c§l既に最大所持数を超えています!" to loop-player for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
 
@@ -105,17 +105,52 @@ function kitCheckHolding_SH(player: player) :: number:
 	return {_count}
 
 # スニーク時に羊を獲得しようとする処理
-function kitTakingSheep_SH(player: player, sheep: entity):
+function kitTakingSheep_SH(player: player, sheep: entity, hadnum: number = 0):
+	playSound("entity.item.pickup", 1, 0.5, {_player}, true)
+	add 1 to {_hadnum}
 	set {_ok} to false
 	# 獲得までの時間計算
 	if metadata value "sh-age" of {_sheep} is "adult":
-		
+		if {_player} has mining fatigue:
+			set {_count} to 300
+		else:
+			set {_count} to 200
+	else:
+		if {_player} has mining fatigue:
+			set {_count} to 100 * {_hadnum}
+		else:
+			set {_count} to 60 * {_hadnum}
+	set metadata value "sh-taking" of {_sheep} to 0
 	# 獲得中の処理
 	while {_ok} is false:
 		if {_player} is not sneaking:
 			set {_ok} to true
-		if {_}
+			continue
+		if distance between {_player} and {_sheep} > 1.5:
+			set {_ok} to true
+			continue
+		if metadata value "sh-taking" of {_sheep} >= {_count}:
+			set {_ok} to true
+			set {_get} to true
+			continue
+		add 1 to metadata value "sh-taking" of {_sheep}
+		set {_barcount} to metadata value "sh-taking" of {_sheep} / ({_count} / 50)
+		set {_bar} to ""
+		loop 50 times:
+			if loop-number <= {_barcount}:
+				set {_bar} to "%{_bar}%§a|"
+			else:
+				set {_bar} to "%{_bar}%§8|"
+		send title "§b§l獲得中です..." with subtitle "%{_bar}%" to {_player} for 2 ticks with fadein 0 tick and fadeout 0 tick
 		wait a tick
+	delete metadata value "sh-taking" of {_sheep}
+	if {_get} is true:
+		playSound("block.note_block.chime", 1, 2, {_player}, true)
+		set metadata value "sh-holder" of {_sheep} to {_player}
+		send title "§f§l羊 §bを獲得しました!" with subtitle "§e陣地の§6§l獲得エリア§eまで持ち帰ろう!" for 5 seconds with fadein 0.5 seconds and fadeout 0.5 seconds
+	else:
+		playSound("block.note_block.chime", 1, 0.5, {_player}, true)
+
 
 function kitGetSheep_SH(player: player, sheep: entity, color: color):
 	# 全体メッセージ
