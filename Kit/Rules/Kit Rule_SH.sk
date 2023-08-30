@@ -72,9 +72,18 @@ function kitSpawnSheep_SH(loc: location):
 		set {_rv} to randomVector(1)
 		spawnParticle_Vector(end_rod, {_rv}, 0.5, location 1 meters above {_loc})
 
+# Sheepをいくつ持っているかのチェック
 function kitCheckHolding_SH(player: player) :: number:
+	set {_count} to 0
+	loop all sheeps:
+		metadata value "sh-sheep" of loop-sheep is true
+		metadata value "sh-holder" of loop-sheep is {_player}
+		add 1 to {_count}
+	return {_count}
 
+# スニーク時に羊を獲得しようとする処理
 function kitTakingSheep_SH(player: player, sheep: entity):
+
 
 function kitGetSheep_SH(player: player, sheep: entity, color: color):
 	# 全体メッセージ
@@ -461,6 +470,7 @@ function kitTimer_SH():
 			# -----------------------------
 			# --- Sheep Securing(no holder) ---
 			else:
+				unleash holder of loop-sheep
 				loop all players in radius 1.5 around loop-sheep:
 					if loop-player is sneaking:
 						if metadata value "sh-age" of loop-value is "adult":
