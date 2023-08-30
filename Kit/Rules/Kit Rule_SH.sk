@@ -74,6 +74,11 @@ function kitSpawnSheep_SH(loc: location):
 
 # Sheepを獲得できるかのチェック
 function kitCheckAvailable_SH(player: player, sheep: entity):
+	# 獲得中かのチェック
+	set {_taking} to metadata value "sh-taking" of {_sheep}
+	if {_taking} is true:
+		stop
+	# 所持羊数のチェック
 	set {_count} to kitCheckHolding_SH({_player})
 	if metadata value "sh-age" of {_sheep} is "adult":
 		if {_count} < 1:
@@ -499,7 +504,7 @@ function kitTimer_SH():
 				loop all players in radius 1.5 around loop-sheep:
 					if loop-player is sneaking:
 						kitCheckAvailable_SH(loop-player, loop-sheep)
-					else:
+					else if metadata value "sh-taking" of loop-sheep is not set:
 						send subtitle "§3§lスニーク長押し §bで羊を確保できます!"  to loop-player for 1 seconds with fadein 0 seconds and fadeout 0 seconds
 			# ---------------------------------
 			# --- Sheep Team Colorize ---
