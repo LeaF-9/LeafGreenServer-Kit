@@ -66,7 +66,7 @@ function kitSpawnSheep_SH(loc: location):
 	set metadata value "gametype" of spawned entity to "Kit"
 	set metadata value "sh-sheep" of spawned entity to true
 	set metadata value "sh-age" of spawned entity to {_age}
-	set metadata value "sh-color" of spawned entity to "white"
+	set metadata value "sh-color" of spawned entity to white
 	applyEffect(spawned entity, glowing, 1, 5 seconds, false, "none")
 	loop 30 times:
 		set {_rv} to randomVector(1)
@@ -429,6 +429,12 @@ on pick up llama egg:
 function kitTimer_SH():
 	set {_timer.wool} to 0
 	while {Kit-tochu} is true:
+		# --- reset variables ---
+		set {_teampoint::red} to 0
+		set {_teampoint::blue} to 0
+		set {_teampoint::yellow} to 0
+		set {_teampoint::green} to 0
+		# -----------------------
 		# --- Wool Spawn Timer ---
 		add 1 to {_timer.wool}
 		if {_timer.wool} >= 30:
@@ -472,12 +478,34 @@ function kitTimer_SH():
 					else:
 						send subtitle "§3§lスニーク長押し §bで羊を確保できます!"  to loop-player for 1 seconds with fadein 0 seconds and fadeout 0 seconds
 			# ---------------------------------
-			# --- Sheep Team Colored ---
-			set {_color} to metadata value "sh-color" of loop-sheep
-			set {_blocktype} to block at location 0.1 meters below loop-sheep
-			
+			# --- Sheep Team Colorize ---
+			set {_blocktype} to block at location 0.5 meters below loop-sheep
+			if tyoe of block below {_blocktype} is glowstone block:
+				if type of {_blocktype} is type of {Kit-GameStage::place-red}:
+					add 1 to {_teampoint::red}
+					set metadata value "sh-color" of loop-value to red
+				else if type of {_blocktype} is type of {Kit-GameStage::place-blue}:
+					add 1 to {_teampoint::blue}
+					set metadata value "sh-color" of loop-value to blue
+				else if type of {_blocktype} is type of {Kit-GameStage::place-yellow}:
+					add 1 to {_teampoint::yellow}
+					set metadata value "sh-color" of loop-value to yellow
+				else if type of {_blocktype} is type of {Kit-GameStage::place-green}:
+					add 1 to {_teampoint::green}
+					set metadata value "sh-color" of loop-value to green
+				else:
+					set metadata value "sh-color" of loop-value to white
+				set {_color} to metadata value "sh-color" of loop-sheep
+				set color of loop-sheep to {_color}
 			# --------------------------
 		# ----------------------
 		# --- Point Calc ---
+		loop {_teampoint::*}:
+			if loop-value >= {Kit-GameStage::goal}:
+				set {_gameend} to true
+				add loop-index to {_winteam::*}
+		if {_gameend} is true:  # game end
+			gameMsg("Kit", "§c§l試合終了!")
+			execute console command "/timer end Kit-SH"
 		# ------------------
 		wait a second
