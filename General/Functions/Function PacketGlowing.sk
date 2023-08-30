@@ -13,19 +13,3 @@ function packetUnglowing(player: player, target: entity):
 	set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
 	set field 1 of {_pkt} to {_dw}
 	send {_player} packet {_pkt}
-
-on packet event play_server_entity_metadata:
-	set {_dw} to field 1 of event-packet
-	broadcast "-----[test]-----"
-	broadcast "%event-packet%"
-	broadcast "%{_dw}%"
-	set {_pkt} to new play_server_entity_metadata packet
-	set field 0 of {_pkt} to id of event-player
-	set {_dw} to new data watcher for event-player
-	set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
-	set field 1 of {_pkt} to {_dw}
-	broadcast "%{_pkt}%"
-	broadcast "%{_dw}%"
-	set {_dw} to new data watcher from nms field 1
-	broadcast "%{_dw}%"
-	broadcast "%datawatcher index 0 of {_dw}%"
