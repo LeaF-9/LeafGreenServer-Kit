@@ -16,6 +16,8 @@ function kitDeathEvent_SH(attacker: player, victim: player, supporters: players)
 
 function kitDropSheeps_SH(player: player):
 
+on damage of sheep:
+
 function kitSpawnCheck_SH():
 	loop {Kit-GameStageWools::*}:
 		set {_baseloc} to loop-value
@@ -147,6 +149,7 @@ function kitTakingSheep_SH(player: player, sheep: entity, hadnum: number = 0):
 	if {_get} is true:
 		playSound("block.note_block.chime", 1, 2, {_player}, true)
 		set metadata value "sh-holder" of {_sheep} to {_player}
+		set metadata value "sh-getlocation" of {_sheep} to location of {_sheep}
 		send title "§f§l羊 §bを獲得しました!" with subtitle "§e陣地の§6§l獲得エリア§eまで持ち帰ろう!" for 5 seconds with fadein 0.5 seconds and fadeout 0.5 seconds
 	else:
 		playSound("block.note_block.chime", 1, 0.5, {_player}, true)
@@ -154,7 +157,14 @@ function kitTakingSheep_SH(player: player, sheep: entity, hadnum: number = 0):
 
 function kitGetSheep_SH(player: player, sheep: entity, color: color):
 	# 全体メッセージ
+	gameMsg("Kit", "<%{_color}%>§l%{_color}% §6Team§bが§6§l羊を獲得しました!")
 	# sheep演出
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		playSound("entity.firework_rocket.blast", 1, 1, loop-player, true)
+	loop 15 times:
+		set {_base} to location 0.5 meters above {_sheep}
+		spawnParticle_Vector(firework, randomVector(), 0.5, {_base})
 
 
 
@@ -551,24 +561,32 @@ function kitTimer_SH():
 				set {_color.before} to metadata value "sh-color" of loop-sheep
 				if type of {_blocktype} is type of {Kit-GameStage::place-red}:
 					add 1 to {_teampoint::red}
-					set metadata value "sh-color" of loop-value to red
+					if metadata value "sh-age" of loop-sheep is "adult":
+						add 2 to {_teampoint::red}
+					set metadata value "sh-color" of loop-sheep to red
 				else if type of {_blocktype} is type of {Kit-GameStage::place-blue}:
 					add 1 to {_teampoint::blue}
-					set metadata value "sh-color" of loop-value to blue
+					if metadata value "sh-age" of loop-sheep is "adult":
+						add 2 to {_teampoint::blue}
+					set metadata value "sh-color" of loop-sheep to blue
 				else if type of {_blocktype} is type of {Kit-GameStage::place-yellow}:
 					add 1 to {_teampoint::yellow}
-					set metadata value "sh-color" of loop-value to yellow
+					if metadata value "sh-age" of loop-sheep is "adult":
+						add 2 to {_teampoint::yellow}
+					set metadata value "sh-color" of loop-sheep to yellow
 				else if type of {_blocktype} is type of {Kit-GameStage::place-green}:
 					add 1 to {_teampoint::green}
-					set metadata value "sh-color" of loop-value to green
+					if metadata value "sh-age" of loop-sheep is "adult":
+						add 2 to {_teampoint::green}
+					set metadata value "sh-color" of loop-sheep to green
 				else:
-					set metadata value "sh-color" of loop-value to white
+					set metadata value "sh-color" of loop-sheep to white
 			else:
-				set metadata value "sh-color" of loop-value to white
+				set metadata value "sh-color" of loop-sheep to white
 			set {_color.after} to metadata value "sh-color" of loop-sheep
 			set color of loop-sheep to {_color.after}
-			if {_color.before} is "white":
-				if {_color.after} is not white:
+			if {_color.before} is white:
+				if "%{_color.after}%" is {TrueTeam::%loop-player%}:
 					set {_holder} to metadata value "sh-holder" of loop-sheep
 					delete metadata value "sh-holder" of loop-sheep
 					add 1 to {Kit-Carry.personal::%{_holder}%}
