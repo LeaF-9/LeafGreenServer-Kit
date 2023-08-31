@@ -1,15 +1,56 @@
 function packetGlowing(player: player, target: entity):
-	set {_pkt} to new play_server_entity_metadata packet
-	set field 0 of {_pkt} to id of {_target}
-	set {_dw} to new data watcher for {_target}
-	set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
-	set field 1 of {_pkt} to {_dw}
-	send {_player} packet {_pkt}
+	# waiting update of skript-packet...
+	# #
+	# set {_pkt} to new play_server_entity_metadata packet
+	# set field 0 of {_pkt} to id of {_target}
+	# set {_dw} to new data watcher for {_target}
+	# set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
+	# set field 1 of {_pkt} to {_dw}
+	# send {_player} packet {_pkt}
+	targetParticles({_player}, {_target})
 
 function packetUnglowing(player: player, target: entity):
-	set {_pkt} to new play_server_entity_metadata packet
-	set field 0 of {_pkt} to id of {_target}
-	set {_dw} to new data watcher for {_target}
-	set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
-	set field 1 of {_pkt} to {_dw}
-	send {_player} packet {_pkt}
+	# waiting update of skript-packet...
+	# #
+	# set {_pkt} to new play_server_entity_metadata packet
+	# set field 0 of {_pkt} to id of {_target}
+	# set {_dw} to new data watcher for {_target}
+	# set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
+	# set field 1 of {_pkt} to {_dw}
+	# send {_player} packet {_pkt}
+
+function targetParticles(player: player, target: entity):
+	if type of {_target} is not player:
+		stop
+	if kitCheckTeam({_player}, {_target}, true) is true:
+		set {_color} to rgb(0, 255, 0)
+	else:
+		set {_color} to rgb(255, 0, 0)
+	# ターゲットの方向を示す直線
+	set {_baseloc.player} to location of {_player}
+	add 1 to y-pos of {_baseloc.player}
+	set {_vector} to setVector(location of {_player}, location of {_target})
+	set {_baseloc.player} to setDirtoVec({_baseloc.player}, {_vector})
+	set {_dis} round(distance between {_player} and {_target}) * 2
+	loop {_dis} times:
+		set {_el} to location 0.5 * loop-number meters in front of {_baseloc.player}
+		spawnParticle_Dust({_color}, 0.5, {_el}, {_player})
+	# ターゲットを囲う箱
+	set {_baseloc.target} to location of {_target}
+	set {_baseloc} to {_baseloc.target}
+	subtract 0.5 from x-pos of {_baseloc}
+	subtract 0.5 from z-pos of {_baseloc}
+	set yaw of {_baseloc} to 270
+	set pitch of {_baseloc} to 0
+	loop 4 times:
+		set {_ln} to 0
+		loop 5 times:
+			set {_el} to location 0.2 * {_ln} meters in front of {_baseloc}
+			spawnParticle_Dust({_color}, 0.5, {_el}, {_player})
+			set {_el} to location 2 meters above {_el}
+			spawnParticle_Dust({_color}, 0.5, {_el}, {_player})
+			add 1 to {_ln}
+		loop 10 times:
+			set {_el} location 0.2 * loop-number-2 meters above {_baseloc}
+			spawnParticle_Dust({_color}, 0.5, {_el}, {_player})
+		add 90 to yaw of {_baseloc}

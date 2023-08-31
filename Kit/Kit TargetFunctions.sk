@@ -23,12 +23,7 @@ function kitTargetPlayer(player: player, distance: number, ally: boolean = false
 			set field 1 of {_pkt} to {_dw}
 			send {_player} packet {_pkt}
 		set {Stats.%{_player}%::SkillTarget} to {_target}
-		set {_pkt} to new play_server_entity_metadata packet
-		set field 0 of {_pkt} to id of {_target}
-		set {_dw} to new data watcher for {_target}
-		set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
-		set field 1 of {_pkt} to {_dw}
-		send {_player} packet {_pkt}
+		packetGlowing({_player}, {_target})
 	else:
 		if {Stats.%{_player}%::SkillTarget} is set:
 			set {_former} to {Stats.%{_player}%::SkillTarget}
