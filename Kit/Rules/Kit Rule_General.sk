@@ -24,14 +24,9 @@ function kitGameStart(rule: text):
 		set {_flagloc} to {Kit-GameStageFlags::1}
 		kitFlagSpawn_CTF({_flagloc})
 		kitTimer_CTF()
-	else if {_rule} is "BH":
-		set {Kit-Balloons::red} to 0
-		set {Kit-Balloons::blue} to 0
-		set {Kit-Balloons::yellow} to 0
-		set {Kit-Balloons::green} to 0
-		loop {Kit-GameStageBalloons::*}:
-			kitSpawnBalloon_BH(loop-value)
-		kitTimer_BH()
+	else if {_rule} is "SH":
+		kitSpawnCheck_SH()
+		kitTimer_SH()
 	else if {_rule}
 
 command /gameend <text>:
@@ -103,13 +98,13 @@ function kitGameEnd(rule: text):
 			loop-value = {_maxData}
 			add loop-index to {_highplayer::*}
 		gameMsg("Kit", "§6§lTop Holder§7: §e§l%{_highplayer::*}% §9%{_maxData}% Seconds")
-	# BH戦
-	else if {_rule} is "BH":
+	# SH戦
+	else if {_rule} is "SH":
 		set {_maxData} to max({Kit-Carry.personal::*})
 		loop {Kit-Carry.personal::*}:
 			loop-value = {_maxData}
 			add loop-index to {_highplayer::*}
-		gameMsg("Kit", "§6§lTop Carrier§7: §e§l%{_highplayer::*}% §9%{_maxData}% Balloons")
+		gameMsg("Kit", "§6§lTop Carrier§7: §e§l%{_highplayer::*}% §9%{_maxData}% Sheeps")
 	# 自分の戦績と勝利チームのタイトル表示
 	gameMsg("Kit", " ")
 	loop all players:

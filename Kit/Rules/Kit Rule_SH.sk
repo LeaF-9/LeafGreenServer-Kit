@@ -1,5 +1,13 @@
 ﻿# 用意すべきyaml項目:
-# - Kit-GameStageWools::*
+# - Kit-GameStageSpawnLocations::*
+
+# sheepが持つmetadata一覧
+# - sheep: boolean(trueのみ)
+# - age: text(adult or baby)
+# - color: color(red, blue, yellow, green or white)
+# - holder: player(持っているプレイヤーが保存される)
+# - taking: number(獲得状況を示す数字が保存される)
+# - getlocation: location(羊を獲得した地点が保存される)
 
 function kitDeathEvent_SH(attacker: player, victim: player, supporters: players):
 	# Death情報の更新
@@ -14,54 +22,56 @@ function kitDeathEvent_SH(attacker: player, victim: player, supporters: players)
 	kitDropSheeps_SH({_victim})
 	# ---------------------------------------------
 
-# 羊毛をスポーンさせる関数
-function kitSpawnWools_SH():
-	loop {Kit-GameStageWools::*}:
-		if block at loop-value is not white wool:
-			set {_ok} to true
-			set block at loop-value to white wool
-			# --- 音演出 ---
-			playSound("block.wool.place", 1.5, 0.5, loop-value)
-			# -------------
-			# --- パーティクル演出 ---
-			loop 10 times:
-				set {_el} to loop-value-1
-				add a random number between 1 and 1.5 to x-coordinate of {_el}
-				add a random number between 1 and 1.5 to y-coordinate of {_el}
-				add a random number between 1 and 1.5 to z-coordinate of {_el}
-				spawnParticle_BlockData(falling_dust, white wool, {_el})
-			# ---------------------
-	if {_ok} is true:
-		loop all players:
-			if metadata value "gametype" of loop-player is "Kit":
-				send title "§f§lSHEEP WOOL §6§lspawned!" with subtitle "§b羊毛を叩いて羊を呼び起こそう!" to loop-player for 3 seconds
+function kitDropSheeps_SH(player: player):
+	unleash {_player}
+	loop all sheeps:
+		metadata value "sh-holder" of loop-sheep is {_player}
+		delete metadata value "sh-holder" of loop-sheep
 
-# 羊毛を叩いた際の処理
-on leftclick on white wool:
+on damage of sheep:
+	metadata value "sh-sheep" of victim is true
 	cancel event
-	set {_baseloc} to location of targeted block
-	{Kit-GameStageWools::*} contains {_baseloc}
-	loop all blocks in radius 5 around {_baseloc}:
-		loop-block is passable
-		block below loop-block is not passable
-		add location of loop-block to {_sheepspawnlocs::*}
-	if {_sheepspawnlocs::1} is not set:
-		set {_sheepspawnlocs::1} to {_baseloc}
-	set {_spawnloc} to a random location out of {_sheepspawnlocs::*}
-	kitSpawnSheep_SH({_spawnloc})
-	# --- 線状のパーティクル演出 ---
-	set {_v} to setVector({_baseloc}, {_spawnloc})
-	set yaw of {_baseloc} to yaw of {_v}
-	set pitch of {_baseloc} to pitch of {_v}
-	set {_dis} to distance between {_baseloc} and {_spawnloc}
-	set {_m} to 0
-	loop 10 times:
-		add {_dis} / 10 to {_m}
-		set {_el} to location {_m} meters in front of {_baseloc}
-		spawnParticle(end_rod, {_el})
-	# ---------------------------
+	if damage was caused by void:
+		delete metadata value "sh-holder" of victim
+		if metadata value "sh-getlocation" of victim is set:
+			teleport victim to metadata value "sh-getlocation" of victim
+		else:
+			delete victim
 
-function kitSpawnSheep_SH(loc: location):  # 指定位置に設置状態のBalloonを召喚する関数
+function kitSpawnCheck_SH():
+	loop {Kit-GameStageSpawnLocations::*}:
+		set {_baseloc} to loop-value
+		loop all sheeps in radius 5 around {_baseloc}:
+			metadata value "sh-sheep" of loop-sheep is true
+			add 1 to {_sheepcount}
+		if {_sheepcount} >= 3:
+			continue
+		loop all blocks in radius 5 around {_baseloc}:
+			loop-block is passable
+			block below loop-block is not passable
+			add location of loop-block to {_sheepspawnlocs::*}
+		set {_spawn} to true
+		if {_sheepspawnlocs::1} is not set:
+			set {_sheepspawnlocs::1} to {_baseloc}
+		set {_spawnloc} to a random location out of {_sheepspawnlocs::*}
+		kitSpawnSheep_SH({_spawnloc})
+		# --- 線状のパーティクル演出 ---
+		set {_v} to setVector({_baseloc}, {_spawnloc})
+		set yaw of {_baseloc} to yaw of {_v}
+		set pitch of {_baseloc} to pitch of {_v}
+		set {_dis} to distance between {_baseloc} and {_spawnloc}
+		set {_m} to 0
+		loop 10 times:
+			add {_dis} / 10 to {_m}
+			set {_el} to location {_m} meters in front of {_baseloc}
+			spawnParticle(end_rod, {_el})
+		# ---------------------------
+	if {_spawn} is true:
+		loop all players:
+			if {Join::%loop-player%} is "Kit":
+				send title "§f§l羊 §6§lがスポーンしました!" with subtitle "§b羊毛を陣地に連れて行こう!" to loop-player for 3 seconds
+
+function kitSpawnSheep_SH(loc: location):
 	set {_uuid} to a random uuid
 	chance of 10%:
 		set {_special} to true
@@ -78,379 +88,140 @@ function kitSpawnSheep_SH(loc: location):  # 指定位置に設置状態のBallo
 	# -------------
 	spawn a sheep at {_loc} with {_nbt}
 	set metadata value "gametype" of spawned entity to "Kit"
-	set metadata value "sh-sheep" of spawned entity to "true"
+	set metadata value "sh-sheep" of spawned entity to true
 	set metadata value "sh-age" of spawned entity to {_age}
-	set metadata value "sh-color" of spawned entity to "white"
-	set metadata valuw "sh-health" of spawned entity to 10
+	set metadata value "sh-color" of spawned entity to white
 	applyEffect(spawned entity, glowing, 1, 5 seconds, false, "none")
 	loop 30 times:
 		set {_rv} to randomVector(1)
 		spawnParticle_Vector(end_rod, {_rv}, 0.5, location 1 meters above {_loc})
 
-on damage of sheep:
-	if metadata value "sh-sheep" of victim is "true":
-		cancel event
-		if damage was caused by void:
-			delete metadata value "sh-holder" of victim
-			set {_former} to metadata value "sh-former" of victim
-			if {_former} is set:
-				set {_spawnloc} to {Kit-GameStage::voidtp-%{_former}%}
-			else:
-				set {_baseloc} to {Kit-GameStageWools::1}
-				loop all blocks in radius 5 around {_baseloc}:
-					loop-block is passable
-					block below loop-block is not passable
-					add location of loop-block to {_sheepspawnlocs::*}
-				if {_sheepspawnlocs::1} is not set:
-					set {_sheepspawnlocs::1} to {_baseloc}
-				set {_spawnloc} to a random location out of {_sheepspawnlocs::*}
-			teleport victim to {_spawnloc}
-			delete metadata value "sh-former" of victim
-		else if damage was caused by attack:
-			# --- 無敵時間管理 ---
-			set {_now} to now
-			set {_nodamage} to metadata value "sh-nodamage" of victim
-			if {_nodamage} is set:
-				if difference between {_nodamage} and {_now} is more than 1 second:
-					delete metadata value "sh-nodamage" of victim
-				else:
-					stop
-			# ------------------
-			set {_team.player} to {TrueTeam::%attacker%}
-			set {_team.sheep} to metadata value "sh-color" of victim
-			if {_team.player} is not {_team.sheep}:
-				set {_age} to metadata value "sh-age" of victim
-				set {_holdnum} to 0
-				delete {_holdadult}
-				loop all sheeps:
-					metadata value "sh-sheep" of loop-sheep is "true"
-					metadata value "sh-holder" of loop-sheep is attacker
-					add 1 to {_holdnum}
-					if metadata value "sh-age" is "adult":
-						set {_holdadult} to true
-				if {_age} is "baby":
-					set metadata value "sh-nodamage" of victim to {_now}
-					if {_holdadult} is not set:
-						if {_holdnum} is 0:
-							set {_damage} to 10
-						else if {_holdnum} is 1:
-							set {_damage} to 4
-						else if {_holdnum} is 2:
-							set {_damage} to 2
-						# --- 羊所持数が多い場合 ---
-						else:
-							send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
-							playSound("block.note_block.bass", 1, 1, attacker, true)
-							spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
-							stop
-						# -----------------------
-					# --- 大羊を持っていた場合 ---
-					else:
-						send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
-						playSound("block.note_block.bass", 1, 1, attacker, true)
-						spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
-						stop
-					# -------------------------
-				else if {_age} is "adult":
-					set metadata value "sh-nodamage" of victim to {_now}
-					if {_holdnum} is 0:
-						set {_damage} to 10
-					# --- 羊所持数が多い場合 ---
-					else:
-						send action bar "§e⚠️ §c§lこれ以上Sheepを所持することはできません! §e⚠️" to attacker
-						playSound("block.note_block.bass", 1, 1, attacker, true)
-						spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
-						stop
-					# -----------------------
-				# --- ダメージを喰らう演出 ---
-				playSound("entity.sheep.hurt", 1, 2, victim)
-				loop 10 times:
-					set {_rv} to randomVector()
-					spanwParticle_Vector(damage_indicator, {_rv}, 0.5, location of victim)
-				# -------------------------
-				set {_health} to metadata value "sh-health" of victim
-				subtract {_damage} from {_health}
-				if {_health} >= 0:
-					set metadata value "sh-health" of victim to {_health}
-					set {_healthbar} to ""
-					loop 10 times:
-						if loop-number <= {_health}:
-							set {_healthbar} to "%{_healthbar}%§4§l❤"
-						else:
-							set {_healthbar} to "%{_healthbar}%§f§l❤"
-					send action bar {_healthbar} to attacker
-				else:
-					set metadata value "sh-health" of victim to 10
-					set metadata value "sh-holder" of victim to attacker
-					if {_team.sheep} is not "white":
-						set metadata value "sh-former" of victim to {_team.sheep}
-					send title "§f§lSHEEP §6§lを獲得しました!" with subtitle "§b自チームの獲得陣地に持って帰ろう!" to attacker for 3 seconds
-			else:
-				send action bar "§e⚠️ §c§l自分達の羊は獲得できません! §e⚠️" to attacker
-				playSound("block.note_block.bass", 1, 1, attacker, true)
-				spawnParticle_BlockData(block_marker, barrier, location 1 meters above victim, attacker)
-				stop
-
-
-
-
-
-				
-				
-
-
-
-
-on break of white wool:
-	cancel event
-	{Kit-GameStageWools::*} contains location of block
-	if player has 3 sheep egg named "§7Wool":
-		message "§c羊毛を所持しすぎているため取得できません!" to player
-	else if player has llama egg named "§6§lSpecial Wool":
-		message "§c特別な羊毛を所持しているため取得できません!" to player
-	else:
-		set block to air
-		loop all magma cubes in radius 1.5 around location of block:
-			metadata value "kit-wool" of loop-magma cube is true
-			delete loop-magma cube
-		give a sheep egg named "§7Wool" to player
-		message "§6§l羊毛を入手しました!" to player
-
-on break of black wool:
-	cancel event
-	{Kit-GameStageWools::*} contains location of block
-	if player has sheep egg named "§7Wool":
-		message "§c羊毛を所持しているため取得できません!" to player
-	else if player has llama egg named "§6§lSpecial Wool":
-		message "§c特別な羊毛を所持しているため取得できません!" to player
-	else:
-		set block to air
-		loop all magma cubes in radius 1.5 around location of block:
-			metadata value "kit-wool" of loop-magma cube is true
-			delete loop-magma cube
-		give a llama egg named "§6§lSpecial Wool" to player
-		message "§c§l特別な羊毛を入手しました!" to player
-
-on rightclick holding a sheep egg:
-	cancel event
-	if target entity is sheep:
+# Sheepを獲得できるかのチェック
+function kitCheckAvailable_SH(player: player, sheep: entity):
+	# 獲得中かのチェック
+	set {_taking} to metadata value "sh-taking" of {_sheep}
+	if {_taking} is true:
 		stop
-	set {_tb} to target block
-	set {_distance} to distance between player and {_tb}
-	{_distance} is less than 5
-	block below {_tb} is glowstone
-	woolPlace(player, {TrueTeam::%player%}, {_tb}, 1)
-	delete {Kit-AttackPoint::%player%}
-
-on rightclick holding a llama egg:
-	cancel event
-	set {_tb} to target block
-	set {_distance} to distance between player and {_tb}
-	{_distance} is less than 5
-	block below {_tb} is glowstone
-	woolPlace(player, {TrueTeam::%player%}, {_tb}, 3)
-	delete {Kit-AttackPoint::%player%}
-
-function woolPlace(player: player, team: text, block: block, point: number):
-	if type of {_block} is type of {Kit-GameStage::place-%{_team}%}:
-		if {TrueTeam::%{_player}%} is {_team}:
-			if {_point} is 1:
-				spawn a sheep at location of block above {_block}:
-					set event-entity's display name to {_team}
-				execute console command "/givecoin %{_player}% 5 Wool設置"
-				remove a sheep egg named "§7Wool" from {_player}
-			else:
-				spawn a baby sheep at location of block above {_block}:
-					set event-entity's display name to {_team}
-				execute console command "/givecoin %{_player}% 10 Wool設置"
-				remove a llama egg named "§6§lSpecial Wool" from {_player}
-			set {_color} to {_team} parsed as color
-			set color of spawned sheep to {_color}
-			set metadata value "gametype" of spawned sheep to "Kit"
-			set knockback resistance attribute of spawned sheep to 1
-			apply slowness 100 without particles to spawned sheep for 10000000000 seconds
-			apply jump boost -2 without particles to spawned sheep for 10000000000 seconds
-			apply fire resistance 1 without particles to spawned sheep for 10000000000 seconds
-			add {_point} to {Kit-TeamWool::%{_team}%}
-			if {_team} is "red":
-				kitScoreGlobal(7, "§c赤§7: §6%{Kit-TeamWool::red}%")
-			else if {_team} is "blue":
-				kitScoreGlobal(6, "§9青§7: §6%{Kit-TeamWool::blue}%")
-			else if {_team} is "yellow":
-				kitScoreGlobal(5, "§e黄§7: §6%{Kit-TeamWool::yellow}%")
-			else if {_team} is "green":
-				kitScoreGlobal(4, "§a緑§7: §6%{Kit-TeamWool::green}%")
-			add 1 to {Kit-WoolPlace::%{_player}%}
-			set {_text} to {_team} in pascal case
-			if {_point} is 1:
-				gameMsg("Kit", "<%{_team}%>%{_text}% §7gained the Wool! §bTotal§7: §6§l%{Kit-TeamWool::%{_team}%}%")
-			else:
-				gameMsg("Kit", "<%{_team}%>%{_text}% §7gained the §6§lSpecial Wool§7! §bTotal§7: §6§l%{Kit-TeamWool::%{_team}%}%")
-			if {Kit-TeamWool::%{_team}%} >= {Kit-GameStage::goal}:
-				add {_team} to {Kit-WinTeam::*}
-				gameMsg("Kit", "§c§l試合終了!")
-				execute console command "/timer end Kit-StW"
-
-on death of adult sheep:
-	clear drops
-	victim's display name is set
-	world of victim is worldChecker("Kit", {Kit-GameStage::name})
-	set {_dis} to victim's display name
-	set {_attacker} to metadata value "lastattacker" of victim
-	set {_attacker} to {_attacker} parsed as player
-	give a sheep egg named "§7Wool" to {_attacker}
-	woolDeath({_dis}, 1)
-	execute console command "/givecoin %{_attacker}% 3 Wool奪取"
-
-on death of baby sheep:
-	clear drops
-	victim's display name is set
-	if victim's display name is "§7Wool":
-		drop a sheep egg named "§7Wool"
-		stop
-	world of victim is worldChecker("Kit", {Kit-GameStage::name})
-	set {_dis} to victim's display name
-	give a llama egg named "§6§lSpecial Wool" to attacker
-	woolDeath({_dis}, 3)
-	execute console command "/givecoin %attacker% 5 Wool奪取"
-
-function woolDeath(team: text, point: number):
-	subtract {_point} from {Kit-TeamWool::%{_team}%}
-	if {_team} is "red":
-		kitScoreGlobal(7, "§c赤§7: §6%{Kit-TeamWool::red}%")
-	else if {_team} is "blue":
-		kitScoreGlobal(6, "§9青§7: §6%{Kit-TeamWool::blue}%")
-	else if {_team} is "yellow":
-		kitScoreGlobal(5, "§e黄§7: §6%{Kit-TeamWool::yellow}%")
-	else if {_team} is "green":
-		kitScoreGlobal(4, "§a緑§7: §6%{Kit-TeamWool::green}%")
-	set {_text} to {_team} in pascal case
-	if {_point} is 1:
-		gameMsg("Kit", "<%{_team}%>%{_text}% §8lost the Wool! §bTotal§7: §6§l%{Kit-TeamWool::%{_team}%}%")
-	else:
-		gameMsg("Kit", "<%{_team}%>%{_text}% §8lost the §6§lSpecial Wool§8! §bTotal§7: §6§l%{Kit-TeamWool::%{_team}%}%")
-
-on heal:
-	type of event-entity is sheep
-	world of event-entity is worldChecker("Kit", {Kit-GameStage::name})
-	cancel event
-
-on damage of adult sheep:
-	world of victim is worldChecker("Kit", {Kit-GameStage::name})
-	if attacker is set:
-		if damage cause is not attack:
-			cancel event
+	# 所持羊数のチェック
+	set {_count} to kitCheckHolding_SH({_player})
+	if metadata value "sh-age" of {_sheep} is "adult":
+		if {_count} < 1:
+			kitTakingSheep_SH({_player}, {_sheep})
 		else:
-			if victim's display name is "%{TrueTeam::%attacker%}%":
-				cancel event
-			else:
-				if attacker has 3 sheep egg named "§7Wool":
-					cancel event
-				else if attacker has llama egg named "§6§lSpecial Wool":
-					cancel event
-				else:
-					if distance between attacker and victim is less than 5:
-						set damage to 0
-						set metadata value "lastattacker" of victim to "%attacker%"
-						if attacker has mining fatigue:
-							set {_HP} to health of victim
-							subtract 0.8 from {_HP}
-							set health of victim to {_HP}
-						else:
-							set {_amount} to amount of sheep egg named "§7Wool" in attacker's inventory
-							set {_base} to 4 * {Kit-TeamBuff::%{TrueTeam::%attacker%}%}
-							set {_damage} to {_base} / ({_amount} + 1)
-							set {_HP} to health of victim
-							subtract {_damage} from {_HP}
-							set health of victim to {_HP}
-						set {Kit-AttackPoint::%attacker%} to location of attacker
-					else:
-						cancel event
-	else:
-		cancel event
-		if damage was caused by void or suffocation:
-			teleport victim to {Kit-GameStage::voidtp-%victim's display name%}
-
-on damage of baby sheep:
-	world of victim is worldChecker("Kit", {Kit-GameStage::name})
-	if attacker is set:
-		if victim's display name is "%{TrueTeam::%attacker%}%":
-			cancel event
-		else if victim's display name is "§7Wool":
-			set damage to 10
+			send subtitle "§e⚠️ §c§l既に羊の最大所持数を超えています! §e⚠️" to loop-player for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
+	else if metadata value "sh-age" of {_sheep} is "baby":
+		if {_count} < 3:
+			kitTakingSheep_SH({_player}, {_sheep}, {_count})
 		else:
-			if distance between attacker and victim is less than 20:
-				if attacker has sheep egg named "§7Wool":
-					cancel event
-				else if attacker has llama egg named "§6§lSpecial Wool":
-					cancel event
-				else:
-					set damage to 10
-					set {Kit-AttackPoint::%attacker%} to location of attacker
-			else:
-				cancel event
+			send subtitle "§e⚠️ §c§l既に羊の最大所持数を超えています! §e⚠️" to loop-player for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
+
+# Sheepをいくつ持っているかのチェック
+function kitCheckHolding_SH(player: player) :: number:
+	set {_count} to 0
+	loop all sheeps:
+		metadata value "sh-sheep" of loop-sheep is true
+		metadata value "sh-holder" of loop-sheep is {_player}
+		add 1 to {_count}
+		if metadata value "sh-age" of loop-sheep is "adult":
+			add 2 to {_count}
+	return {_count}
+
+# スニーク時に羊を獲得しようとする処理
+function kitTakingSheep_SH(player: player, sheep: entity, hadnum: number = 0):
+	playSound("entity.item.pickup", 1, 0.5, {_player}, true)
+	add 1 to {_hadnum}
+	set {_ok} to false
+	# 獲得までの時間計算
+	if metadata value "sh-age" of {_sheep} is "adult":
+		if {_player} has mining fatigue:
+			set {_count} to 300
+		else:
+			set {_count} to 200
 	else:
-		cancel event
-		if damage was caused by void or suffocation:
-			teleport victim to {Kit-GameStage::voidtp-%victim's display name%}
+		if {_player} has mining fatigue:
+			set {_count} to 100 * {_hadnum}
+		else:
+			set {_count} to 60 * {_hadnum}
+	set metadata value "sh-taking" of {_sheep} to 0
+	# 獲得中の処理
+	while {_ok} is false:
+		if {_player} is not sneaking:
+			set {_ok} to true
+			continue
+		if distance between {_player} and {_sheep} > 1.5:
+			set {_ok} to true
+			continue
+		if metadata value "sh-taking" of {_sheep} >= {_count}:
+			set {_ok} to true
+			set {_get} to true
+			continue
+		add 1 to metadata value "sh-taking" of {_sheep}
+		set {_barcount} to metadata value "sh-taking" of {_sheep} / ({_count} / 50)
+		set {_bar} to ""
+		loop 50 times:
+			if loop-number <= {_barcount}:
+				set {_bar} to "%{_bar}%§a|"
+			else:
+				set {_bar} to "%{_bar}%§8|"
+		send title "§b§l獲得中です..." with subtitle "%{_bar}%" to {_player} for 2 ticks with fadein 0 tick and fadeout 0 tick
+		wait a tick
+	delete metadata value "sh-taking" of {_sheep}
+	if {_get} is true:
+		playSound("block.note_block.chime", 1, 2, {_player}, true)
+		set metadata value "sh-holder" of {_sheep} to {_player}
+		set metadata value "sh-getlocation" of {_sheep} to location of {_sheep}
+		send title "§f§l羊 §bを獲得しました!" with subtitle "§e陣地の§6§l獲得エリア§eまで持ち帰ろう!" for 5 seconds with fadein 0.5 seconds and fadeout 0.5 seconds
+	else:
+		playSound("block.note_block.chime", 1, 0.5, {_player}, true)
 
-on pick up sheep egg:
-	name of item is "§7Wool"
-	if player has 3 sheep egg named "§7Wool":
-		cancel event
-		stop
-	else if player has llama egg named "§6§lSpecial Wool":
-		cancel event
-		stop
-	execute console command "/givecoin %player% 5 Wool拾得"
+function kitGetSheepEffects_SH(player: player, sheep: entity, color: color):
+	# 全体メッセージ
+	gameMsg("Kit", "<%{_color}%>§l%{_color}% §6Team§bが§6§l羊を獲得しました!")
+	# sheep演出
+	loop all sheeps:
+		metadata value "sh-color" of loop-sheep is {_color}
+		add 1 to {_shcount}
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		playSound("entity.firework_rocket.blast", 1, 1, loop-player, true)
+		if {TrueTeam::%loop-player%} is "%{_color}%":
+			send title "§9%{_player}% §bが§f§l羊§bを獲得しました!" with subtitle "§e現在のポイントは §6§l%{_shcount}% §eです" to loop-player for 1.5 seconds with fadein 0.5 seconds and fadeout 0.5 seconds
+	loop 15 times:
+		set {_base} to location 0.5 meters above {_sheep}
+		spawnParticle_Vector(firework, randomVector(), 0.5, {_base})
 
-on pick up llama egg:
-	name of item is "§6§lSpecial Wool"
-	if player has sheep egg named "§7Wool":
-		cancel event
-		stop
-	else if player has llama egg named "§6§lSpecial Wool":
-		cancel event
-		stop
-	execute console command "/givecoin %player% 10 Wool拾得"
-
-# every a second:
-# 	loop all players:
-# 		set {_walkremove} to 0
-# 		if loop-player has sheep egg named "§7Wool":
-# 			playSound("block.note_block.pling", 1.8, 1.5, loop-player)
-# 			drawDot count 1, particle "redstone", RGB 255, 255, 255, center location 2 meters above loop-player, visibleRange 32, keepFor 10 ticks
-# 			set {_amount} to amount of sheep egg named "§7Wool" in loop-player's inventory
-# 			set {_walkremove} to 0.05 * {_amount}
-# 		else if loop-player has llama egg named "§6§lSpecial Wool":
-# 			playSound("block.note_block.pling", 1.8, 0.75, loop-player)
-# 			apply glowing 1 to loop-player for 1 second
-# 			set {_walkremove} to 0.1
-# 		set {_speed} to 0.2 - {_walkremove}
-# 		if walk speed of loop-player is not {_speed}:
-# 			set walk speed of loop-player to {_speed}
-# 	loop all sheeps:
-# 		loop-sheep's display name is set
-# 		loop-sheep's display name is not "§7Wool"
-# 		world of loop-sheep is worldChecker("Kit", {Kit-GameStage::name})
-# 		set {_name} to loop-sheep's display name
-# 		if distance between loop-sheep and {Kit-GameStage::voidtp-%{_name}%} is more than 10:
-# 			teleport loop-sheep to {Kit-GameStage::voidtp-%{_name}%}
+function kitLostSheepEffects_SH(color: color):
+	set {_shcount} to 0
+	loop all sheeps:
+		metadata value "sh-color" of loop-sheep is {_color}
+		add 1 to {_shcount}
+	loop all players:
+		{TrueTeam::%loop-player%} is "%{_color}%"
+		playSound("entity.blase.death", 1, 0.5, loop-player, true)
+		send title "§f§l羊 §bが奪われました!" with subtitle "§e現在のポイントは §6§l%{_shcount}% §eです" to loop-player for 1.5 seconds with fadein 0.5 seconds and fadeout 0.5 seconds
 
 function kitTimer_SH():
 	set {_timer.wool} to 0
 	while {Kit-tochu} is true:
+		# --- reset variables ---
+		set {_teampoint::red} to 0
+		set {_teampoint::blue} to 0
+		set {_teampoint::yellow} to 0
+		set {_teampoint::green} to 0
+		# -----------------------
 		# --- Wool Spawn Timer ---
 		add 1 to {_timer.wool}
 		if {_timer.wool} >= 30:
 			set {_timer.wool} to 0
-			kitSpawnWools_SH()
+			kitSpawnCheck_SH()
 		# ------------------------
+		# --- Sheep Checker ---
 		loop all sheeps:
 			metadata value "sh-sheep" of loop-sheep is "true"
 			# --- Sheep Moving (holder) ---
 			set {_holder} to metadata value "sh-holder" of loop-sheep
 			if {_holder} is set:
+				apply glowing 1 to loop-sheep for 1 second
 				# --- Holder Change ---
 				set {_leasher} to leash holder of loop-sheep
 				if {_leasher} is not {_holder}:
@@ -465,13 +236,87 @@ function kitTimer_SH():
 					if distance between {_holder} and loop-sheep > 10:
 						teleport loop-sheep to {_holder}
 			# -----------------------------
-			# --- Sheep Movings (voidtp) ---
-			# ------------------------------
-			# --- Sheep Team Colored ---
-			set {_color} to metadata value "sh-color" of loop-sheep
-			set {_blocktype} to block at location 0.1 meters below loop-sheep
-			
+			# --- Sheep Securing(no holder) ---
+			else:
+				unleash holder of loop-sheep
+				loop all players in radius 1.5 around loop-sheep:
+					set {_teamcolor} to metadata value "sh-color" of loop-sheep
+					{TrueTeam::%loop-player%} is not "%{_teamcolor}%"
+					if loop-player is sneaking:
+						kitCheckAvailable_SH(loop-player, loop-sheep)
+					else if metadata value "sh-taking" of loop-sheep is not set:
+						send subtitle "§3§lスニーク長押し §bで羊を確保できます!"  to loop-player for 1 seconds with fadein 0 seconds and fadeout 0 seconds
+			# ---------------------------------
+			# --- Sheep Team Colorize ---
+			set {_color.before} to white
+			set {_blocktype} to block at location 0.5 meters below loop-sheep
+			if type of block below {_blocktype} is glowstone block:
+				set {_color.before} to metadata value "sh-color" of loop-sheep
+				if type of {_blocktype} is type of {Kit-GameStage::place-red}:
+					add 1 to {_teampoint::red}
+					if metadata value "sh-age" of loop-sheep is "adult":
+						add 2 to {_teampoint::red}
+					set metadata value "sh-color" of loop-sheep to red
+				else if type of {_blocktype} is type of {Kit-GameStage::place-blue}:
+					add 1 to {_teampoint::blue}
+					if metadata value "sh-age" of loop-sheep is "adult":
+						add 2 to {_teampoint::blue}
+					set metadata value "sh-color" of loop-sheep to blue
+				else if type of {_blocktype} is type of {Kit-GameStage::place-yellow}:
+					add 1 to {_teampoint::yellow}
+					if metadata value "sh-age" of loop-sheep is "adult":
+						add 2 to {_teampoint::yellow}
+					set metadata value "sh-color" of loop-sheep to yellow
+				else if type of {_blocktype} is type of {Kit-GameStage::place-green}:
+					add 1 to {_teampoint::green}
+					if metadata value "sh-age" of loop-sheep is "adult":
+						add 2 to {_teampoint::green}
+					set metadata value "sh-color" of loop-sheep to green
+				else:
+					set metadata value "sh-color" of loop-sheep to white
+			else:
+				set metadata value "sh-color" of loop-sheep to white
+			set {_color.after} to metadata value "sh-color" of loop-sheep
+			set color of loop-sheep to {_color.after}
+			if {_color.before} is white:
+				set {_holder} to metadata value "sh-holder" of loop-sheep
+				if {_holder} is set:
+					if "%{_color.after}%" is {TrueTeam::%{_holder}%}:
+						delete metadata value "sh-holder" of loop-sheep
+						add 1 to {Kit-Carry.personal::%{_holder}%}
+						kitGetSheep_SH({_holder}, loop-sheep, {_color.after})
+			else:
+				if {_color.after} is white:
+					kitLostSheepEffects_SH({_color.before})
 			# --------------------------
+		# ----------------------
+		# --- Player Walk Speed ---
+		loop all players:
+			metadata value "gametype" of loop-player is "Kit"
+			set {_shcount} to kitCheckHolding_SH(loop-player)
+			set {_setspeed} to 0.2 - (0.03 * {_shcount})
+			set {_nowspeed} to walk speed of loop-player
+			if {_shcount} is 0:
+				if {_nowspeed} < 0.2:
+					set walk speed of loop-player to 0.2
+			else:
+				if {_nowspeed} > {_setspeed}:
+					set walk speed of loop-player to {_setspeed}
+		# -------------------------
+		# --- Scoreboard Reload ---
+		kitScoreGlobal(7, "§c赤§7: §6%{_teampoint::red}%")
+		kitScoreGlobal(6, "§9青§7: §6%{_teampoint::blue}%")
+		if {Kit-GameStage::team} is "4" or 4:
+			kitScoreGlobal(5, "§e黄§7: §6%{_teampoint::yellow}%")
+			kitScoreGlobal(4, "§a緑§7: §6%{_teampoint::green}%")
+		# -------------------------
 		# --- Point Calc ---
+		loop {_teampoint::*}:
+			if loop-value >= {Kit-GameStage::goal}:
+				set {_gameend} to true
+				add loop-index to {_winteam::*}
+		if {_gameend} is true:  # game end
+			gameMsg("Kit", "§c§l試合終了!")
+			execute console command "/timer end Kit-SH"
 		# ------------------
 		wait a second
