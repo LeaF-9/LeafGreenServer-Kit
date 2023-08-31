@@ -16,24 +16,14 @@ function kitTargetPlayer(player: player, distance: number, ally: boolean = false
 	if {_target} is set:
 		if {Stats.%{_player}%::SkillTarget} is set:
 			set {_former} to {Stats.%{_player}%::SkillTarget}
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of {_former}
-			set {_dw} to new data watcher for {_former}
-			set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
+			packetUnglowing({_player}, {_former})
 		set {Stats.%{_player}%::SkillTarget} to {_target}
 		packetGlowing({_player}, {_target})
 	else:
 		if {Stats.%{_player}%::SkillTarget} is set:
 			set {_former} to {Stats.%{_player}%::SkillTarget}
 			delete {Stats.%{_player}%::SkillTarget}
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of {_former}
-			set {_dw} to new data watcher for {_former}
-			set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
+			packetUnglowing({_player}, {_former})
 
 function kitTargetLocation(player: player, distance: number):
 	set {_baseloc} to location of head of {_player}
@@ -84,12 +74,7 @@ function kitTargetReset(player: player):
 	if {Stats.%{_player}%::SkillTarget} is set:
 		set {_former} to {Stats.%{_player}%::SkillTarget}
 		delete {Stats.%{_player}%::SkillTarget}
-		set {_pkt} to new play_server_entity_metadata packet
-		set field 0 of {_pkt} to id of {_former}
-		set {_dw} to new data watcher for {_former}
-		set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
-		set field 1 of {_pkt} to {_dw}
-		send {_player} packet {_pkt}
+		packetUnglowing({_player}, {_former})
 		delete {Stats.%{_player}%::SkillTarget}
 	if {Stats.%{_player}%::SkillLocation} is set:
 		delete {Stats.%{_player}%::SkillLocation}
