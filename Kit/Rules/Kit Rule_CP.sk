@@ -1,17 +1,7 @@
 ﻿aliases:
 	coreblock = minecraft:iron_block, minecraft:gold_block, minecraft:diamond_block, minecraft:air, minecraft:bedrock
 
-command /kit-CPASetting:
-	permission: sk.admin
-	trigger:
-		kitCPAHolograph({Kit-GameStage::name})
-		set {Kit-PointGoal} to {Kit-GameStage::goal}
-		set {Kit-TeamPoint::red} to 0
-		set {Kit-TeamPoint::blue} to 0
-		set {Kit-TeamPoint::yellow} to 0
-		set {Kit-TeamPoint::green} to 0
-
-function kitCPAHolograph(stage: text):
+function kitSetHologram_CP(stage: text):
 	loop {Kit-GameStageAreas::*}:
 		set {_paloc} to loop-value
 		set {_loc} to location 0.25 meters below {_paloc}
@@ -78,6 +68,12 @@ on death of player:
 		set {Kit-CPAKD::%{LastKiller::%victim%}%} to {Kit-CPAKill::%{LastKiller::%victim%}%} / {Kit-CPADeath::%{LastKiller::%victim%}%}
 		add 1 to {Kit-TeamKills::%{TrueTeam::%{LastKiller::%victim%}%}%}
 
+function kitTimer_CP():
+	while {Kit-tochu} is true:
+		kitCheckArea_CP()
+
+		wait a second
+
 every a second:
 	checkPA()
 	loop {Kit-TeamPoint::*}:
@@ -97,7 +93,7 @@ every a second:
 			loop {_list::*}:
 				set {Kit-PRank::%loop-index%} to 4
 
-function checkPA():
+function kitCheckArea_CP():
 	loop {Kit-GameStageAreas::*}:
 		set {_teamcolor::red} to 0
 		set {_teamcolor::blue} to 0
