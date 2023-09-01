@@ -78,10 +78,11 @@ function kitCheckArea_CP():
 		# loop all projectiles in radius 3 around loop-value:
 		# 	loop-projectile is an arrow or a spectral arrow
 		# 	delete loop-projectile
-		loop all players in radius {Kit-GameStageRange::%loop-index%} around loop-value:
+		loop all players:
 			{Join::%loop-player%} is "Kit"
-			loop-player's gamemode is survival
-			{Class::%loop-player%} is set
+			metadata value "gametype" of loop-player is true
+			kitCheckAlive(loop-player) is true
+			kitCheckInPlayer(loop-player, loop-index) is true
 			set {_team} to {TrueTeam::%loop-player%}
 			add 1 to {_teamcolor::%{_team}%}
 		set {_max} to max({_teamcolor::red}, {_teamcolor::blue}, {_teamcolor::yellow}, {_teamcolor::green})
@@ -393,6 +394,32 @@ command /cpaend:
 
 # プレイヤーが領域内にいるかどうか確認する関数
 function kitCheckInPlayer_CP(player: player, areaname: text) :: boolean:
+	set {_loc} to {Kit-GameStageAreas::%{_areaname}%}
+	add 0.5 to y-pos of {_loc}
+	set {_form} to {Kit-GameStageForm::%{_areaname}%}
+	set {_range} to {Kit-GameStageRange::%{_areaname}%}
+	if {_form} is "sphere":
+		if y-pos of {_player} < y-pos of {_loc}:
+			return false
+		if distance between {_loc} and {_player} > {_range}:
+			return false
+		return true
+	else if {_form} is "cuboid":
+		set {_loc.player} to location of {_player}
+		# loc.1 (negative)
+		set {_loc.1} to {_loc}
+		subtract {_range} from x-pos of {_loc.1}
+		subtract {_range} from z-pos of {_loc.1}
+		# loc.2 (positive)
+		set {_loc.2} to {_loc}
+		add {_range} to x-pos of {_loc.2}
+		add {_range} to z-pos of {_loc.2}
+		add 5 to y-pos of {_loc.2}
+		if {_loc.player} is not within {_loc.1} and {_loc.2}:
+			return false
+		return true
+	else:
+		return false
 
 function kitTimer_CP():
 	while {Kit-tochu} is true:
