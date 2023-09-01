@@ -127,7 +127,13 @@ function kitGameEnd(rule: text):
 	# ゲーム終了後のMap修正
 	if {_rule} is "DTC":
 		loop {Kit-GameStageCoreLocation::*}:
-			set type of block at loop-value to {Kit-GameStageCoreMaterial::%loop-index%}
+			set {_block} to "%{Kit-GameStageCoreMaterial::%loop-index%}%" parsed as item
+			set block at loop-value to {_block}
+	if {_rule} is "CP":
+		loop {Kit-GameStageAreas::*}:
+			set {_blocks::*} to kitCompileBlocksInArea_CP(loop-index)
+			loop {_blocks::*}:
+				set block at loop-value-2 to kitSetColorBlock_CP(block at loop-value, "white")
 	# ゲーム記録をymlに記述
 	kitGameInsert()
 	wait 10 seconds
@@ -145,6 +151,11 @@ function kitGameEnd(rule: text):
 	delete {Kit-FlagHolder}
 	delete {Kit-SheepPoint::*}
 	delete {Kit-Carry.personal::*}
+	delete {Kit-AreaRelease::*}
+	delete {Kit-AreaOccupy::*}
+	delete {Kit-AreaSecure::*}
+	delete {Kit-TeamPoint::*}
+	delete {SBChanger::Kit-CPA}
 	delete {Kit-WinTeam::*}
 	delete {Kit-TeamBuff::*}
 	execute console command "/kjclear"
