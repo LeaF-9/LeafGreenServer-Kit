@@ -79,10 +79,7 @@ function kitCheckArea_CP():
 		# 	loop-projectile is an arrow or a spectral arrow
 		# 	delete loop-projectile
 		loop all players:
-			{Join::%loop-player%} is "Kit"
-			metadata value "gametype" of loop-player is true
-			kitCheckAlive(loop-player) is true
-			kitCheckInPlayer(loop-player, loop-index) is true
+			kitCheckInPlayer_CP(loop-player, loop-index) is true
 			set {_team} to {TrueTeam::%loop-player%}
 			add 1 to {_teamcolor::%{_team}%}
 		set {_max} to max({_teamcolor::red}, {_teamcolor::blue}, {_teamcolor::yellow}, {_teamcolor::green})
@@ -99,16 +96,17 @@ function kitCheckArea_CP():
 			set {_win} to "green"
 			add 1 to {_teamnum}
 		if {_teamnum} is 1:
-			executePA({_win}, loop-index, {Kit-GameStageType::%loop-index%})
+			kitExecuteArea_CP({_win}, loop-index)
 
-function executePA(team: text, pa: text, type: text):
+function kitExecuteArea_CP(team: text, pa: text):
 	set {_true} to 0
 	set {_false} to 0
 	set {_red} to "&c"
 	set {_blue} to "&9"
 	set {_yellow} to "&e"
 	set {_green} to "&a"
-	set {_typecolor} to setTypeColorPA({_type})
+	set {_type} to {Kit-GameStageType::%{_pa}%}
+	set {_typecolor} to kitSetTypeColor_CP({_type})
 	# set {_pa} to setCasePA({_pa})
 	set {_loc} to {Kit-GameStageAreas::%{_pa}%}
 	set {_range} to {Kit-GameStageRange::%{_pa}%}
@@ -123,47 +121,45 @@ function executePA(team: text, pa: text, type: text):
 			stop
 #	占領が自チームでなければ占領解除
 		set {Kit-AreaRelease::%{_pa}%} to {_team}
-		loop all blocks in radius {_blockrange} around {_loc}:
-			loop-block is not coreblock
-			block below loop-block is glowstone
-			loop all players in radius {_range} around {_loc}:
+		# エリア内の変更ブロック全てを保存してループ
+		set {_cpblocks::*} to kitCompileBlocksInArea_CP({_pa})
+		loop {_cpblocks::*}:
+			# 範囲内のプレイヤーをループ
+			loop all players:
+				kitCheckInPlayer_CP(loop-player, {_pa}) is true
 				kitCheckAlive(loop-player) is true
 				if {TrueTeam::%loop-player%} is not {Kit-AreaSecure::%{_pa}%}:
 					add 1 to {_true}
 				else:
-					{Join::%loop-player%} is "Kit"
 					add 1 to {_false}
-#		人数同数であればループする
+			# 人数同数であればループする
 			if {_true} = {_false}:
 				while {_true} = {_false}:
 					set {_true} to 0
 					set {_false} to 0
-					loop all players in radius {_range} around {_loc}:
-						loop-player's gamemode is survival
+					loop all players:
+						kitCheckInPlayer_CP(loop-player, {_pa})
 						if {TrueTeam::%loop-player%} is not {Kit-AreaSecure::%{_pa}%}:
 							add 1 to {_true}
 						else:
-							{Join::%loop-player%} is "Kit"
 							add 1 to {_false}
 					set {_tf} to {_true} + {_false}
 					if {_tf} = 0:
 						set {_false} to 100
 					wait a tick
-#		占領解除の人数が足りているかどうか
+			#　占領解除の人数が足りている場合
 			if {_true} > {_false}:
 				set {_true} to 0
 				set {_false} to 0
-#		足りていなければ元の色に戻す
+			# 足りていない場合は元のチーム色に戻す
 			else:
-				loop all blocks in radius {_blockrange} around {_loc}:
-					loop-block-2 is not coreblock
-					block below loop-block-2 is glowstone
-					set loop-block-2 to setBlockPA(loop-block-2, {Kit-AreaSecure::%{_pa}%})
+				loop {_cpblocks::*}:
+					set block at loop-value-2 to kitSetColorBlock_CP(block at loop-value-2, {Kit-AreaSecure::%{_pa}%})
 				delete {Kit-AreaRelease::%{_pa}%}
-#		占領解除がなお自チームのものであるか
+			# 占領解除がなお自チームのものである場合
 			if {Kit-AreaRelease::%{_pa}%} is {_team}:
-				set loop-block to setBlockPA(loop-block, "white")
-#			順位によって解除速度の変更
+				set block at loop-value to setBlockPA(block at loop-value, "white")
+				# 順位によって解除速度の変更
 				set {_dif} to {Kit-PRank::%{Kit-AreaSecure::%{_pa}%}%} - {Kit-PRank::%{Kit-AreaRelease::%{_pa}%}%}
 				if {_dif} > 0:
 					add 1 to {_dif}
@@ -171,7 +167,7 @@ function executePA(team: text, pa: text, type: text):
 				else:
 					set {_dtick} to a tick
 				wait {_dtick}
-#		そうでなければコードストップ
+			# そうでなければコードストップ
 			else:
 				stop
 		delete {Kit-AreaSecure::%{_pa}%}
@@ -180,61 +176,55 @@ function executePA(team: text, pa: text, type: text):
 		kitCPAChangeHolo("white", {_pa})
 		loop all players in radius {_range} around {_loc}:
 			{TrueTeam::%loop-player%} is {_team}
-			execute console command "/givecoin %loop-player% 3 占領解除"
-# 占領中が自チームであればコードストップ
+			# execute console command "/givecoin %loop-player% 3 占領解除"
+	# 占領中が自チームであればコードストップ
 	if {Kit-AreaOccupy::%{_pa}%} is {_team}:
 		stop
-# 占領の開始
+	# 占領の開始
 	set {Kit-AreaOccupy::%{_pa}%} to {_team}
-	loop all blocks in radius {_blockrange} around {_loc}:
-		loop-block is not coreblock
-		block below loop-block is glowstone
-		loop all players in radius {_range} around {_loc}:
-			{Join::%loop-player%} is "Kit"
-			kitCheckAlive(loop-player) is true
+	set {_cpblocks::*} to kitCompileBlocksInArea_CP({_pa})
+	loop {_cpblocks::*}:
+		loop all players:
+			kitCheckInPlayer_CP(loop-player, {_pa}) is true
 			if {TrueTeam::%loop-player%} is {Kit-AreaOccupy::%{_pa}%}:
 				add 1 to {_true}
 			else:
-				{Join::%loop-player%} is "Kit"
 				add 1 to {_false}
-#	人数同数であればループする
+		# 人数同数であればループする
 		if {_true} = {_false}:
 			while {_true} = {_false}:
 				set {_true} to 0
 				set {_false} to 0
-				loop all players in radius {_range} around {_loc}:
-					loop-player's gamemode is survival
+				loop all players:
+					kitCheckInPlayer_CP(loop-player, {_pa}) is true
 					if {TrueTeam::%loop-player%} is {Kit-AreaOccupy::%{_pa}%}:
 						add 1 to {_true}
 					else:
-						{Join::%loop-player%} is "Kit"
 						add 1 to {_false}
 				set {_tf} to {_true} + {_false}
 				if {_tf} = 0:
 					set {_false} to 100
 				wait a tick
-#	占領解除の人数が足りているかどうか
+		# 占領解除の人数が足りているかどうか
 		if {_true} > {_false}:
 			set {_true} to 0
 			set {_false} to 0
-#	足りていなければ白色に戻す
+		# 足りていなければ白色に戻す
 		else:
-			loop all blocks in radius {_blockrange} around {_loc}:
-				loop-block-2 is not coreblock
-				block below loop-block-2 is glowstone
-				set loop-block-2 to setBlockPA(loop-block-2, "white")
+			loop {_cpblocks::*}:
+				set block at loop-value-2 to kitSetColorBlock_CP(block at loop-value-2, "white")
 			delete {Kit-AreaOccupy::%{_pa}%}
-#	占領中がなお自チームであるかどうか
+		# 占領中がなお自チームであるかどうか
 		if {Kit-AreaOccupy::%{_pa}%} is {_team}:
-			set loop-block to setBlockPA(loop-block, {_team})
+			set block at loop-value to kitSetColorBlock_CP(loop-block, {_team})
 			set {_preotick} to {Kit-GameStageTime::%{_pa}%}
-			set {_nomf} to false
-			loop all players in radius {_range} around {_loc}:
+			set {_mf} to false
+			loop all players:
+				kitCheckInPlayer_CP(loop-player, {_pa}) is true
 				{TrueTeam::%loop-player%} is {_team}
-				loop-player's gamemode is survival
-				if loop-player does not have mining fatigue:
-					set {_nomf} to true
-			if {_nomf} is false:
+				if loop-player has mining fatigue:
+					set {_mf} to true
+			if {_mf} is true:
 				add 1 to {_preotick}
 			set {_otick} to "%{_preotick}% ticks" parsed as time span
 			wait {_otick}
@@ -244,17 +234,18 @@ function executePA(team: text, pa: text, type: text):
 	set {Kit-AreaSecure::%{_pa}%} to {_team}
 	delete {Kit-AreaOccupy::%{_pa}%}
 	gameMsg("Kit", "§e§l!§6§l!§c§l! %{_typecolor}%§l%{_pa}% §aが <%{_team}%>%{_team}% §aに占領されました! §e§l!§6§l!§c§l!")
-	kitCPAChangeHolo({_team}, {_pa})
-	loop all players in radius {_range} around {_loc}:
-		{TrueTeam::%loop-player%} is {_team}
-		if {_type} is "Iron":
-			execute console command "/givecoin %loop-player% 5 アイアン占領"
-		else if {_type} is "Gold":
-			execute console command "/givecoin %loop-player% 7 ゴールド占領"
-		else if {_type} is "Diamond":
-			execute console command "/givecoin %loop-player% 10 ダイヤ占領"
+	kitChangeHologram_CP({_team}, {_pa})
+	# loop all players:
+	# 	{TrueTeam::%loop-player%} is {_team}
+	# 	kitCheckInPlayer(loop-player, {_pa}) is true
+	# 	if {_type} is "Iron":
+	# 		execute console command "/givecoin %loop-player% 5 アイアン占領"
+	# 	else if {_type} is "Gold":
+	# 		execute console command "/givecoin %loop-player% 7 ゴールド占領"
+	# 	else if {_type} is "Diamond":
+	# 		execute console command "/givecoin %loop-player% 10 ダイヤ占領"
 
-function setTypeColorPA(type: text) :: text:
+function kitSetTypeColor_CP(type: text) :: text:
 	if {_type} is "Iron":
 		set {_color} to "§8"
 	else if {_type} is "Gold":
@@ -263,7 +254,7 @@ function setTypeColorPA(type: text) :: text:
 		set {_color} to "§b"
 	return {_color}
 
-function setBlockPA(block: block, color: text) :: item:
+function kitSetColorBlock_CP(block: block, color: text) :: item:
 	if {Kit-GameStage::color-%{_color}%} is set:
 		return {Kit-GameStage::color-%{_color}%}
 	else:
@@ -282,44 +273,6 @@ function setBlockPA(block: block, color: text) :: item:
 		else if type of {_block} is concrete powder:
 			set {_pb} to "%{_color}% concrete powder" parsed as item
 			return {_pb}
-
-function CPAScore(type: text):
-	if {_type} is "point":
-		loop all players:
-			if {Join::%loop-player%} is "Kit":
-				set title of skoreboard loop-player to "§a§lKit PvP"
-				if {Kit-GameStage::team} is "4" or 4:
-					set slot 7 of skoreboard loop-player to "§c赤§7: §6%{Kit-TeamPoint::red}%"
-					set slot 6 of skoreboard loop-player to "§9青§7: §6%{Kit-TeamPoint::blue}%"
-					set slot 5 of skoreboard loop-player to "§e黄§7: §6%{Kit-TeamPoint::yellow}%"
-					set slot 4 of skoreboard loop-player to "§a緑§7: §6%{Kit-TeamPoint::green}%"
-				else:
-					set slot 5 of skoreboard loop-player to "§c赤§7: §6%{Kit-TeamPoint::red}%"
-					set slot 4 of skoreboard loop-player to "§9青§7: §6%{Kit-TeamPoint::blue}%"
-				set slot 3 of skoreboard loop-player to " "
-				set slot 2 of skoreboard loop-player to "§6あなたの戦績"
-				set slot 1 of skoreboard loop-player to "§4%{Kit-CPAKill::%loop-player%}% §7/ §1%{Kit-CPADeath::%loop-player%}%"
-	else if {_type} is "area":
-		loop all players:
-			if {Join::%loop-player%} is "Kit":
-				set title of skoreboard loop-player to "§a§lKit PvP"
-				set {_slot} to 16
-				loop {Kit-GameStageAreas::*}:
-					delete {_team}
-					subtract 1 from {_slot}
-					set {_pa} to loop-index
-					set {_team} to {Kit-AreaSecure::%{_pa}%}
-					if {_team} is set:
-						set {_color} to kitTeamColor({_team})
-					else:
-						set {_color} to "<##FFFFFF>"
-					if {Kit-GameStageType::%{_pa}%} is "Iron":
-						set {_ct} to "8"
-					else if {Kit-GameStageType::%{_pa}%} is "Gold":
-						set {_ct} to "6"
-					else if {Kit-GameStageType::%{_pa}%} is "Diamond":
-						set {_ct} to "b"
-					set slot {_slot} of skoreboard loop-player to "§%{_ct}%- %{_color}%%{_pa}%"
 
 command /cpaend:
 	permission: sk.admin
@@ -394,6 +347,12 @@ command /cpaend:
 
 # プレイヤーが領域内にいるかどうか確認する関数
 function kitCheckInPlayer_CP(player: player, areaname: text) :: boolean:
+	if {Join::%{_player}%} is not "Kit":
+		return false
+	if metadata value "gametype" of {_player} is not true:
+		return false
+	if kitCheckAlive({_player}) is false:
+		return false
 	set {_loc} to {Kit-GameStageAreas::%{_areaname}%}
 	add 0.5 to y-pos of {_loc}
 	set {_form} to {Kit-GameStageForm::%{_areaname}%}
@@ -420,6 +379,32 @@ function kitCheckInPlayer_CP(player: player, areaname: text) :: boolean:
 		return true
 	else:
 		return false
+
+# エリア内のブロック地点をまとめて出力する関数
+function kitCompileBlocksInArea_CP(areaname: text) :: locations:
+	set {_loc} to {Kit-GameStageAreas::%{_areaname}%}
+	set {_form} to {Kit-GameStageForm::%{_areaname}%}
+	set {_range} to {Kit-GameStageRange::%{_areaname}%} + 1
+	if {_form} is "sphere":
+		loop all blocks in radius {_range} around {_loc}:
+			loop-block is not coreblock
+			block below loop-block is glowstone
+			add location of loop-block to {_locs::*}
+	else if {_form} is "cuboid":
+		# loc.1 (negative)
+		set {_loc.1} to {_loc}
+		subtract {_range} from x-pos of {_loc.1}
+		subtract {_range} from z-pos of {_loc.1}
+		# loc.2 (positive)
+		set {_loc.2} to {_loc}
+		add {_range} to x-pos of {_loc.2}
+		add {_range} to z-pos of {_loc.2}
+		add {_range} * 2 + 1 to y-pos of {_loc.2}
+		loop all blocks within {_loc.1} and {_loc.2}:
+			loop-block is not coreblock
+			block below loop-block is glowstone
+			add location of loop-block to {_locs::*}
+	return {_locs::*}
 
 function kitTimer_CP():
 	while {Kit-tochu} is true:
@@ -493,3 +478,41 @@ every 10 seconds:
 			{Kit-tochu} is true
 			CPAScore("area")
 			wait a second
+
+function CPAScore(type: text):
+	if {_type} is "point":
+		loop all players:
+			if {Join::%loop-player%} is "Kit":
+				set title of skoreboard loop-player to "§a§lKit PvP"
+				if {Kit-GameStage::team} is "4" or 4:
+					set slot 7 of skoreboard loop-player to "§c赤§7: §6%{Kit-TeamPoint::red}%"
+					set slot 6 of skoreboard loop-player to "§9青§7: §6%{Kit-TeamPoint::blue}%"
+					set slot 5 of skoreboard loop-player to "§e黄§7: §6%{Kit-TeamPoint::yellow}%"
+					set slot 4 of skoreboard loop-player to "§a緑§7: §6%{Kit-TeamPoint::green}%"
+				else:
+					set slot 5 of skoreboard loop-player to "§c赤§7: §6%{Kit-TeamPoint::red}%"
+					set slot 4 of skoreboard loop-player to "§9青§7: §6%{Kit-TeamPoint::blue}%"
+				set slot 3 of skoreboard loop-player to " "
+				set slot 2 of skoreboard loop-player to "§6あなたの戦績"
+				set slot 1 of skoreboard loop-player to "§4%{Kit-CPAKill::%loop-player%}% §7/ §1%{Kit-CPADeath::%loop-player%}%"
+	else if {_type} is "area":
+		loop all players:
+			if {Join::%loop-player%} is "Kit":
+				set title of skoreboard loop-player to "§a§lKit PvP"
+				set {_slot} to 16
+				loop {Kit-GameStageAreas::*}:
+					delete {_team}
+					subtract 1 from {_slot}
+					set {_pa} to loop-index
+					set {_team} to {Kit-AreaSecure::%{_pa}%}
+					if {_team} is set:
+						set {_color} to kitTeamColor({_team})
+					else:
+						set {_color} to "<##FFFFFF>"
+					if {Kit-GameStageType::%{_pa}%} is "Iron":
+						set {_ct} to "8"
+					else if {Kit-GameStageType::%{_pa}%} is "Gold":
+						set {_ct} to "6"
+					else if {Kit-GameStageType::%{_pa}%} is "Diamond":
+						set {_ct} to "b"
+					set slot {_slot} of skoreboard loop-player to "§%{_ct}%- %{_color}%%{_pa}%"
