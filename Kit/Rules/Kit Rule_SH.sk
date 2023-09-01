@@ -304,11 +304,19 @@ function kitTimer_SH():
 					set walk speed of loop-player to {_setspeed}
 		# -------------------------
 		# --- Scoreboard Reload ---
-		kitScoreGlobal(7, "§c赤§7: §6%{_teampoint::red}%")
-		kitScoreGlobal(6, "§9青§7: §6%{_teampoint::blue}%")
+		if {Kit-SheepPoint::red} != {_teampoint::red}:
+			set {Kit-SheepPoint::red} to {_teampoint::red}
+			kitScoreGlobal(7, "§c赤§7: §6%{_teampoint::red}%")
+		if {Kit-SheepPoint::blue} != {_teampoint::blue}:
+			set {Kit-SheepPoint::blue} to {_teampoint::blue}
+			kitScoreGlobal(6, "§9青§7: §6%{_teampoint::blue}%")
 		if {Kit-GameStage::team} is "4" or 4:
-			kitScoreGlobal(5, "§e黄§7: §6%{_teampoint::yellow}%")
-			kitScoreGlobal(4, "§a緑§7: §6%{_teampoint::green}%")
+			if {Kit-SheepPoint::yellow} != {_teampoint::yellow}:
+				set {Kit-SheepPoint::yellow} to {_teampoint::yellow}
+				kitScoreGlobal(5, "§e黄§7: §6%{_teampoint::yellow}%")
+			if {Kit-SheepPoint::green} != {_teampoint::green}:
+				set {Kit-SheepPoint::green} to {_teampoint::green}
+				kitScoreGlobal(4, "§a緑§7: §6%{_teampoint::green}%")
 		# -------------------------
 		# --- Point Calc ---
 		loop {_teampoint::*}:
