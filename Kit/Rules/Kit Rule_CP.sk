@@ -25,7 +25,7 @@ function kitSetHologram_CP(stage: text):
 		set spawned armor stand's display name to "%{_color}%%{_type}% Area"
 		set metadata value "gametype" of spawned armor stand to "Kit"
 
-function kitCPAChangeHolo(team: text, area: text):
+function kitChangeHologram_CP(team: text, area: text):
 	set {_color} to kitTeamColor({_team})
 	loop all entities:
 		type of loop-entity is an armor stand
@@ -40,58 +40,32 @@ function kitCPAChangeHolo(team: text, area: text):
 	set metadata value "gametype" of spawned magma cube to "Kit"
 	set metadata value "kit-areaname" of spawned magma cube to "%{_area}%"
 
+# TeamBuff適用
 on damage of player:
+	{Kit-tochu} is true
+	{Kit-GameStage::rule} is "DTC"
 	if {Join::%victim%} is "Kit":
 		delete {_ok}
 		loop {Kit-GameStageAreas::*}:
-			distance between victim and loop-value <= {Kit-GameStageRange::%loop-index%}
-			set {_ok} to true
+			set {_ok} to kitCheckInPlayer_CP(victim, loop-index)
 		if {_ok} is true:
 			set damage to damage / {Kit-TeamBuff::%{TrueTeam::%victim%}%}
 	if {Join::%attacker%} is "Kit":
 		delete {_ok}
 		loop {Kit-GameStageAreas::*}:
-			distance between attacker and loop-value <= {Kit-GameStageRange::%loop-index%}
-			set {_ok} to true
+			set {_ok} to kitCheckInPlayer_CP(attacker, loop-index)
 		if {_ok} is true:
 			set damage to damage * {Kit-TeamBuff::%{TrueTeam::%attacker%}%}
 
-on death of player:
-	{Join::%victim%} is "Kit"
-	add 1 to {Kit-CPADeath::%victim%}
-	add 1 to {Kit-TeamDeaths::%{TrueTeam::%victim%}%}
-	kitScorePersonal(victim, 1, "§4%{Kit-CPAKill::%victim%}% §7/ §1%{Kit-CPADeath::%victim%}%")
-	set {Kit-CPAKD::%victim%} to {Kit-CPAKill::%victim%} / {Kit-CPADeath::%victim%}
-	if {LastKiller::%victim%} is set:
-		add 1 to {Kit-CPAKill::%{LastKiller::%victim%}%}
-		kitScorePersonal({LastKiller::%victim%}, 1, "§4%{Kit-CPAKill::%{LastKiller::%victim%}%}% §7/ §1%{Kit-CPADeath::%{LastKiller::%victim%}%}%")
-		set {Kit-CPAKD::%{LastKiller::%victim%}%} to {Kit-CPAKill::%{LastKiller::%victim%}%} / {Kit-CPADeath::%{LastKiller::%victim%}%}
-		add 1 to {Kit-TeamKills::%{TrueTeam::%{LastKiller::%victim%}%}%}
-
-function kitTimer_CP():
-	while {Kit-tochu} is true:
-		kitCheckArea_CP()
-
-		wait a second
-
-every a second:
-	checkPA()
-	loop {Kit-TeamPoint::*}:
-		set {_list::%loop-index%} to loop-value
-	loop 4 times:
-		add 1 to {_rank}
-		set {_high} to 0
-		loop {_list::*}:
-			loop-value-2 > {_high}
-			set {_high} to loop-value-2
-			set {_highteam} to loop-index
-		if {_high} is not 0:
-			set {Kit-PRank::%{_highteam}%} to {_rank}
-			delete {_list::%{_highteam}%}
-			delete {_highteam}
-		else:
-			loop {_list::*}:
-				set {Kit-PRank::%loop-index%} to 4
+function kitDeathEvent_CP(attacker: player, victim: player, supporters: players):
+	# Death情報の更新
+	add 1 to {Kit-Death.personal::%{_victim}%}
+	kitScorePersonal({_victim}, 1, "§4%{Kit-Kill.personal::%{_victim}%}% §7/ §1%{Kit-Death.personal::%{_victim}%}%")
+	set {Kit-KD.personal::%{_victim}%} to {Kit-Kill.personal::%{_victim}%} / {Kit-Death.personal::%{_victim}%}
+	# Kill情報の更新
+	add 1 to {Kit-Kill.personal::%{_attacker}%}
+	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
+	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
 
 function kitCheckArea_CP():
 	loop {Kit-GameStageAreas::*}:
@@ -308,54 +282,6 @@ function setBlockPA(block: block, color: text) :: item:
 			set {_pb} to "%{_color}% concrete powder" parsed as item
 			return {_pb}
 
-every a second:
-	size of {Kit-WinTeam::*} is 0
-	loop {Kit-GameStageAreas::*}:
-		{Kit-AreaSecure::%loop-index%} is set
-		if {Kit-GameStageType::%loop-index%} is "Iron":
-			set {_point} to round(1 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%})
-		else if {Kit-GameStageType::%loop-index%} is "Gold":
-			set {_point} to round(3 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%})
-		else if {Kit-GameStageType::%loop-index%} is "Diamond":
-			set {_point} to round(5 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%})
-		add {_point} to {Kit-TeamPoint::%{Kit-AreaSecure::%loop-index%}%}
-	if {Kit-TeamPoint::red} >= {Kit-GameStage::goal}:
-		add "red" to {Kit-WinTeam::*}
-		gameMsg("Kit", "§c§l試合終了!")
-		stopTimer("Kit-CP")
-	else if {Kit-TeamPoint::blue} >= {Kit-GameStage::goal}:
-		add "blue" to {Kit-WinTeam::*}
-		gameMsg("Kit", "§c§l試合終了!")
-		stopTimer("Kit-CP")
-	else if {Kit-TeamPoint::yellow} >= {Kit-GameStage::goal}:
-		add "yellow" to {Kit-WinTeam::*}
-		gameMsg("Kit", "§c§l試合終了!")
-		stopTimer("Kit-CP")
-	else if {Kit-TeamPoint::green} >= {Kit-GameStage::goal}:
-		add "green" to {Kit-WinTeam::*}
-		gameMsg("Kit", "§c§l試合終了!")
-		stopTimer("Kit-CP")
-
-#Sidebar 更新
-every 10 seconds:
-	if {Kit-tochu} is true:
-		loop all players:
-			if {Join::%loop-player%} is "Kit":
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
-		loop 5 times:
-			{Kit-tochu} is true
-			CPAScore("point")
-			wait a second
-		loop all players:
-			if {Join::%loop-player%} is "Kit":
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
-		loop 5 times:
-			{Kit-tochu} is true
-			CPAScore("area")
-			wait a second
-
 function CPAScore(type: text):
 	if {_type} is "point":
 		loop all players:
@@ -464,5 +390,79 @@ command /cpaend:
 		execute console command "/kjclear"
 		execute console command "/sk disable Kit CPA"
 
-on quit:
-	delete {damager.%player%::*}
+
+# プレイヤーが領域内にいるかどうか確認する関数
+function kitCheckInPlayer_CP(player: player, areaname: text) :: boolean:
+
+function kitTimer_CP():
+	while {Kit-tochu} is true:
+		kitCheckArea_CP()
+
+		wait a second
+
+every a second:
+	checkPA()
+	loop {Kit-TeamPoint::*}:
+		set {_list::%loop-index%} to loop-value
+	loop 4 times:
+		add 1 to {_rank}
+		set {_high} to 0
+		loop {_list::*}:
+			loop-value-2 > {_high}
+			set {_high} to loop-value-2
+			set {_highteam} to loop-index
+		if {_high} is not 0:
+			set {Kit-PRank::%{_highteam}%} to {_rank}
+			delete {_list::%{_highteam}%}
+			delete {_highteam}
+		else:
+			loop {_list::*}:
+				set {Kit-PRank::%loop-index%} to 4
+
+every a second:
+	size of {Kit-WinTeam::*} is 0
+	loop {Kit-GameStageAreas::*}:
+		{Kit-AreaSecure::%loop-index%} is set
+		if {Kit-GameStageType::%loop-index%} is "Iron":
+			set {_point} to round(1 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%})
+		else if {Kit-GameStageType::%loop-index%} is "Gold":
+			set {_point} to round(3 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%})
+		else if {Kit-GameStageType::%loop-index%} is "Diamond":
+			set {_point} to round(5 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%})
+		add {_point} to {Kit-TeamPoint::%{Kit-AreaSecure::%loop-index%}%}
+	if {Kit-TeamPoint::red} >= {Kit-GameStage::goal}:
+		add "red" to {Kit-WinTeam::*}
+		gameMsg("Kit", "§c§l試合終了!")
+		stopTimer("Kit-CP")
+	else if {Kit-TeamPoint::blue} >= {Kit-GameStage::goal}:
+		add "blue" to {Kit-WinTeam::*}
+		gameMsg("Kit", "§c§l試合終了!")
+		stopTimer("Kit-CP")
+	else if {Kit-TeamPoint::yellow} >= {Kit-GameStage::goal}:
+		add "yellow" to {Kit-WinTeam::*}
+		gameMsg("Kit", "§c§l試合終了!")
+		stopTimer("Kit-CP")
+	else if {Kit-TeamPoint::green} >= {Kit-GameStage::goal}:
+		add "green" to {Kit-WinTeam::*}
+		gameMsg("Kit", "§c§l試合終了!")
+		stopTimer("Kit-CP")
+
+#Sidebar 更新
+every 10 seconds:
+	if {Kit-tochu} is true:
+		loop all players:
+			if {Join::%loop-player%} is "Kit":
+				reset skoreboard of loop-player
+				setup skoreboard of loop-player
+		loop 5 times:
+			{Kit-tochu} is true
+			CPAScore("point")
+			wait a second
+		loop all players:
+			if {Join::%loop-player%} is "Kit":
+				reset skoreboard of loop-player
+				setup skoreboard of loop-player
+		loop 5 times:
+			{Kit-tochu} is true
+			CPAScore("area")
+			wait a second
