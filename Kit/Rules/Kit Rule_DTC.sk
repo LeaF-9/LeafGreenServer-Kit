@@ -70,21 +70,19 @@ on break:
 			set {_slotbase} to kitSlotChecker_DTC({_teamname})
 			if {Kit-GameStageCore_%{_teamname}%::*} contains {_corename}:
 				if {TrueTeam::%player%} is not {_teamname}:
-					set {_percent} to round({Kit-TeamBuff::%{TrueTeam::%player%}%} * 100)
-					chance of {_percent}%:
-						subtract 1 from {Kit-GameStageCoreHP::%{_corename}%}
-						set {_stop} to false
-						set {_num} to 0
-						loop {Kit-GameStageCore_%{_teamname}%::*}:
-							if {_stop} is false:
-								add 1 to {_num}
-							if loop-value-2 is {_corename}:
-								set {_stop} to true
-						set {_slot} to {_slotbase} - {_num}
-						kitScoreGlobal({_slot}, "§7- §6%{_corename}%§7: §b%{Kit-GameStageCoreHP::%{_corename}%}%")
-						add 1 to {Kit-Break.team::%{TrueTeam::%player%}%}
-						add 1 to {Kit-Break.personal::%player%}
-						set {_ok} to true
+					subtract {Kit-TeamBuff::%{TrueTeam::%player%}%} from {Kit-GameStageCoreHP::%{_corename}%}
+					set {_stop} to false
+					set {_num} to 0
+					loop {Kit-GameStageCore_%{_teamname}%::*}:
+						if {_stop} is false:
+							add 1 to {_num}
+						if loop-value-2 is {_corename}:
+							set {_stop} to true
+					set {_slot} to {_slotbase} - {_num}
+					kitScoreGlobal({_slot}, "§7- §6%{_corename}%§7: §b%ceil({Kit-GameStageCoreHP::%{_corename}%})%")
+					add 1 to {Kit-Break.team::%{TrueTeam::%player%}%}
+					add 1 to {Kit-Break.personal::%player%}
+					set {_ok} to true
 					send action bar "%{_teamcolor}%§l%{_teamname}%§8の§6コア: §l%{_corename}%§8を破壊中... §cHP§7: §b%{Kit-GameStageCoreHP::%{_corename}%}%" to player
 					loop all players:
 						{Game::%loop-player%} is "Kit"
