@@ -337,78 +337,62 @@ function kitCompileBlocksInArea_CP(areaname: text) :: locations:
 
 function kitTimer_CP():
 	while {Kit-tochu} is true:
+		# CPのプレイヤー数をチェック
 		kitCheckArea_CP()
-
+		# チーム順位を設定
+		loop {Kit-TeamPoint::*}:
+			set {_list::%loop-index%} to loop-value
+		delete {_rank}
+		loop 4 times:
+			add 1 to {_rank}
+			set {_high} to 0
+			loop {_list::*}:
+				loop-value-2 > {_high}
+				set {_high} to loop-value-2
+				set {_highteam} to loop-index
+			if {_high} is not 0:
+				set {Kit-PRank::%{_highteam}%} to {_rank}
+				delete {_list::%{_highteam}%}
+				delete {_highteam}
+			else:
+				loop {_list::*}:
+					set {Kit-PRank::%loop-index%} to 4
+		# TeamPoint更新
+		loop {Kit-GameStageAreas::*}:
+			{Kit-AreaSecure::%loop-index%} is set
+			if {Kit-GameStageType::%loop-index%} is "Iron":
+				set {_point} to 1 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%}
+			else if {Kit-GameStageType::%loop-index%} is "Gold":
+				set {_point} to 3 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%}
+			else if {Kit-GameStageType::%loop-index%} is "Diamond":
+				set {_point} to 5 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%}
+			add {_point} to {Kit-TeamPoint::%{Kit-AreaSecure::%loop-index%}%}
+		# 勝敗決定
+		loop {Kit-TeamPoint::*}:
+			if loop-value >= {Kit-GameStage::goal}:
+				add loop-index to {Kit-WinTeam::*}
+				gameMsg("Kit", "§c§l試合終了!")
+				stopTimer("Kit-CP")
+		# Scoreboard更新
+		add 1 to {_sc}
+		if {_sc} > 10:
+			set {_sc} to 1
+			loop all players:
+				{Join::%loop-player%} is "Kit"
+				reset skoreboard of loop-player
+				setup skoreboard of loop-player
+		else if {_sc} = 6:
+			loop all players:
+				{Join::%loop-player%} is "Kit"
+				reset skoreboard of loop-player
+				setup skoreboard of loop-player
+		if {_sc} <= 5:
+			kitChangeScoreboard_CP("point")
+		else:
+			kitChangeScoreboard_CP("area")
 		wait a second
 
-every a second:
-	checkPA()
-	loop {Kit-TeamPoint::*}:
-		set {_list::%loop-index%} to loop-value
-	loop 4 times:
-		add 1 to {_rank}
-		set {_high} to 0
-		loop {_list::*}:
-			loop-value-2 > {_high}
-			set {_high} to loop-value-2
-			set {_highteam} to loop-index
-		if {_high} is not 0:
-			set {Kit-PRank::%{_highteam}%} to {_rank}
-			delete {_list::%{_highteam}%}
-			delete {_highteam}
-		else:
-			loop {_list::*}:
-				set {Kit-PRank::%loop-index%} to 4
-
-every a second:
-	size of {Kit-WinTeam::*} is 0
-	loop {Kit-GameStageAreas::*}:
-		{Kit-AreaSecure::%loop-index%} is set
-		if {Kit-GameStageType::%loop-index%} is "Iron":
-			set {_point} to round(1 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%})
-		else if {Kit-GameStageType::%loop-index%} is "Gold":
-			set {_point} to round(3 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%})
-		else if {Kit-GameStageType::%loop-index%} is "Diamond":
-			set {_point} to round(5 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%})
-		add {_point} to {Kit-TeamPoint::%{Kit-AreaSecure::%loop-index%}%}
-	if {Kit-TeamPoint::red} >= {Kit-GameStage::goal}:
-		add "red" to {Kit-WinTeam::*}
-		gameMsg("Kit", "§c§l試合終了!")
-		stopTimer("Kit-CP")
-	else if {Kit-TeamPoint::blue} >= {Kit-GameStage::goal}:
-		add "blue" to {Kit-WinTeam::*}
-		gameMsg("Kit", "§c§l試合終了!")
-		stopTimer("Kit-CP")
-	else if {Kit-TeamPoint::yellow} >= {Kit-GameStage::goal}:
-		add "yellow" to {Kit-WinTeam::*}
-		gameMsg("Kit", "§c§l試合終了!")
-		stopTimer("Kit-CP")
-	else if {Kit-TeamPoint::green} >= {Kit-GameStage::goal}:
-		add "green" to {Kit-WinTeam::*}
-		gameMsg("Kit", "§c§l試合終了!")
-		stopTimer("Kit-CP")
-
-#Sidebar 更新
-every 10 seconds:
-	if {Kit-tochu} is true:
-		loop all players:
-			if {Join::%loop-player%} is "Kit":
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
-		loop 5 times:
-			{Kit-tochu} is true
-			CPAScore("point")
-			wait a second
-		loop all players:
-			if {Join::%loop-player%} is "Kit":
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
-		loop 5 times:
-			{Kit-tochu} is true
-			CPAScore("area")
-			wait a second
-
-function CPAScore(type: text):
+function kitChangeScoreboard_CP(type: text):
 	if {_type} is "point":
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
@@ -423,7 +407,7 @@ function CPAScore(type: text):
 					set slot 4 of skoreboard loop-player to "§9青§7: §6%{Kit-TeamPoint::blue}%"
 				set slot 3 of skoreboard loop-player to " "
 				set slot 2 of skoreboard loop-player to "§6あなたの戦績"
-				set slot 1 of skoreboard loop-player to "§4%{Kit-CPAKill::%loop-player%}% §7/ §1%{Kit-CPADeath::%loop-player%}%"
+				set slot 1 of skoreboard loop-player to "§4%{Kit-Kill.personal::%loop-player%}% §7/ §1%{Kit-Death.personal::%loop-player%}%"
 	else if {_type} is "area":
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
