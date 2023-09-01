@@ -10,18 +10,17 @@
 	add 1 to {Kit-Kill.personal::%{_attacker}%}
 	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
-	set {_percent} to round({Kit-TeamBuff:%{_team.attacker}%} * 100)
-	chance of {_percent}%:
-		add 1 to {Kit-Kill.team::%{_team.attacker}%}
-		if {_team.attacker} is "red":
-			kitScoreGlobal(7, "§c赤§7: §6%{Kit-Kill.team::red}%")
-		else if {_team.attacker} is "blue":
-			kitScoreGlobal(6, "§9青§7: §6%{Kit-Kill.team::blue}%")
-		else if {_team.attacker} is "yellow":
-			kitScoreGlobal(5, "§e黄§7: §6%{Kit-Kill.team::yellow}%")
-		else if {_team.attacker} is "green":
-			kitScoreGlobal(4, "§a緑§7: §6%{Kit-Kill.team::green}%")
-		if {Kill.team::%{_team.attacker}%} >= {Kit-GameStage::goal}:
-			add {_team.attacker} to {Kit-WinTeam::*}
-			gameMsg("Kit", "§c§l試合終了!")
-			stopTimer("Kit-TDM")
+	# Team Pointの設定
+	add 1 to {Kit-TeamBuff:%{_team.attacker}%}
+	if {_team.attacker} is "red":
+		kitScoreGlobal(7, "§c赤§7: §6%floor({Kit-Kill.team::red})%")
+	else if {_team.attacker} is "blue":
+		kitScoreGlobal(6, "§9青§7: §6%floor({Kit-Kill.team::blue})%")
+	else if {_team.attacker} is "yellow":
+		kitScoreGlobal(5, "§e黄§7: §6%floor({Kit-Kill.team::yellow})%")
+	else if {_team.attacker} is "green":
+		kitScoreGlobal(4, "§a緑§7: §6%floor({Kit-Kill.team::green})%")
+	if {Kill.team::%{_team.attacker}%} >= {Kit-GameStage::goal}:
+		add {_team.attacker} to {Kit-WinTeam::*}
+		gameMsg("Kit", "§c§l試合終了!")
+		stopTimer("Kit-TDM")
