@@ -1,335 +1,291 @@
 options:
-	time: 8 seconds
+	time: 6 seconds
 
-function KitTutorial(player: player):
-	message formatted "§bMap Tutorialを開始します..." to {_player}
-	wait a second
-	teleport {_player} to {Kit-GameStage::spec}
-	wait a second
-	set gamemode of {_player} to spectator
+function kitCheckTutorial():
+	set {_stage} to {Kit-GameStage::name}
+	load yml "plugins/skript-yaml/Kit Stages/%{_stage}%.yml" as "CheckTutorial"
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		set {_uuid} to uuid of loop-player
+		if yml value "rating.%{_uuid}%" from "CheckTutorial" is not set:
+			set {_tutorial} to true
+	unload yml "CheckTutorial"
+	if {_tutorial} is not set:
+		return false
+		stop
+	return true
+
+function KitTutorial():
+	loop all players:
+		{Kit-Join::%loop-player%} is "Kit"
+		message formatted "§bMap Tutorialを開始します..." to loop-player
+		add loop-player to {_players::*}
 	wait 2 seconds
-# Goal of Killing
-	if {Kit-GameStage::rule} is "GoK":
+# Team Death Match
+	if {Kit-GameStage::rule} is "TDM":
 #	(1) ルール説明
-		send title "§aルール説明" with subtitle "§b§oGoal of Killing" to {_player}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§a今回のゲームルールは§b§lGoal Of Killing§aです" to {_player}
-		message formatted "§a一番最初に決められたポイントまでキルを達成したチームの勝利となります" to {_player}
-		message formatted "§aこのステージのゴールポイントは §c§l%{Kit-GameStage::goal}% §aです" to {_player}
-		message formatted "§2------------------------------" to {_player}
+		send title "§aルール説明" with subtitle "§b§oTeam Death Match" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§a今回のゲームルールは§b§lTeam Death Match§aです" to {_players::*}
+		message formatted "§a一番最初に決められたポイントまでキルを達成したチームの勝利となります" to {_players::*}
+		message formatted "§aこのステージのゴールポイントは §c§l%{Kit-GameStage::goal}% §aです" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 #	(2) スポーン地
-		send title "§aスポーン地点" with subtitle "§bSpawn Points" to {_player}
+		set {_players::*} to kitTutorialPlayers()
+		send title "§aスポーン地点" with subtitle "§bSpawn Points" to {_players::*}
 		set {_tp} to a random location out of {Kit-GameStageRespawns.red::*}
-		teleport {_player} to {_tp}
-		set gamemode of {_player} to spectator
+		teleport {_players::*} to {_tp}
+		set gamemode of {_players::*} to spectator
 		loop {Kit-GameStageRespawns.red::*}:
-			spawn an armor stand at loop-value with nbt "{Invulnerable:1b,Invisible:1b,Marker:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b}"
-			set metadata value "Tutorial-Spawn" of spawned armor stand to "%{_player}%"
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of spawned armor stand
-			set {_dw} to new data watcher for spawned armor stand
-			set datawatcher index 0 of {_dw} to (64 as byte)
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_player}
-		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_player}
-		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_player}
-		message formatted "§2------------------------------" to {_player}
+			spawn an armor stand at loop-value with nbt "{Invulnerable:1b,Invisible:1b,Marker:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Glowing:1b}"
+			set metadata value "Tutorial-Spawn" of spawned entity to true
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_players::*}
+		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_players::*}
+		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 		loop all entities:
 			type of loop-entity is an armor stand
-			metadata value "Tutorial-Spawn" of loop-entity is "%{_player}%"
+			metadata value "Tutorial-Spawn" of loop-entity is true
 			delete loop-entity
 #	(3) ゲームスタート
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§6これにてチュートリアルは終了です!" to {_player}
-		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_player}
-		message formatted "§2------------------------------" to {_player}
-# Break Enemy's Core
-	else if {Kit-GameStage::rule} is "BEC":
+		set {_players::*} to kitTutorialPlayers()
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
+		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+# Destroy The Core
+	else if {Kit-GameStage::rule} is "DTC":
 #	(1) ルール説明
-		send title "§aルール説明" with subtitle "§b§oBreak Enemy's Core" to {_player}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§a今回のゲームルールは§b§lBreak Enemy's Core§aです" to {_player}
-		message formatted "§a相手のコアを全て破壊することで勝利となります" to {_player}
-		message formatted "§2------------------------------" to {_player}
+		send title "§aルール説明" with subtitle "§b§oDestroy The Core" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§a今回のゲームルールは§b§lDestroy The Core§aです" to {_players::*}
+		message formatted "§a相手のコアを全て破壊することで勝利となります" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 #	(2) スポーン地点
-		send title "§aスポーン地点" with subtitle "§bSpawn Points" to {_player}
+		set {_players::*} to kitTutorialPlayers()
+		send title "§aスポーン地点" with subtitle "§bSpawn Points" to {_players::*}
 		set {_tp} to a random location out of {Kit-GameStageRespawns.red::*}
-		teleport {_player} to {_tp}
-		set gamemode of {_player} to spectator
+		teleport {_players::*} to {_tp}
+		set gamemode of {_players::*} to spectator
 		loop {Kit-GameStageRespawns.red::*}:
-			spawn an armor stand at loop-value with nbt "{Invulnerable:1b,Invisible:1b,Marker:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b}"
-			set metadata value "Tutorial-Spawn" of spawned armor stand to "%{_player}%"
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of spawned armor stand
-			set {_dw} to new data watcher for spawned armor stand
-			set datawatcher index 0 of {_dw} to (64 as byte)
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_player}
-		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_player}
-		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_player}
-		message formatted "§2------------------------------" to {_player}
+			spawn an armor stand at loop-value with nbt "{Invulnerable:1b,Invisible:1b,Marker:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Glowing:1b}"
+			set metadata value "Tutorial-Spawn" of spawned armor stand to true
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_players::*}
+		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_players::*}
+		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 		loop all entities:
 			type of loop-entity is an armor stand
-			metadata value "Tutorial-Spawn" of loop-entity is "%{_player}%"
+			metadata value "Tutorial-Spawn" of loop-entity is true
 			delete loop-entity
 #	(3) コア地点
-		send title "§aコア地点" with subtitle "§bCore's Location" to {_player}
+		set {_players::*} to kitTutorialPlayers()
+		send title "§aコア地点" with subtitle "§bCore's Location" to {_players::*}
 		loop {Kit-GameStageCoreLocation::*}:
 			{Kit-GameStageCore_red::*} contains loop-index
 			set {_loc} to loop-value
 			add -0.25 to y-coordinate of {_loc}
-			spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:200,ShowParticles:0b}]}"
-			set metadata value "Tutorial-Core" of spawned magma cube to "%{_player}%"
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of spawned magma cube
-			set {_dw} to new data watcher for spawned magma cube
-			set datawatcher index 0 of {_dw} to (64 as byte)
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§aコアの位置は§e発光§aが付与されている場所になります" to {_player}
-		message formatted "§aこのコアを§c全て破壊する§aことで勝利となります" to {_player}
-		message formatted "§aコアの耐久力は右にあるスコアボードに記載されます" to {_player}
-		message formatted "§2------------------------------" to {_player}
+			spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:200,ShowParticles:0b}]}"
+			set metadata value "Tutorial-Core" of spawned magma cube to true
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§aコアの位置は§e発光§aが付与されている場所になります" to {_players::*}
+		message formatted "§aこのコアを§c全て破壊する§aことで勝利となります" to {_players::*}
+		message formatted "§aコアの耐久力は右にあるスコアボードに記載されます" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 		loop all magma cubes:
-			metadata value "Tutorial-Core" of loop-magma cube is "%{_player}%"
+			metadata value "Tutorial-Core" of loop-magma cube is true
 			delete loop-magma cube
 #	(4) ゲームスタート
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§6これにてチュートリアルは終了です!" to {_player}
-		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_player}
-		message formatted "§2------------------------------" to {_player}
+		set {_players::*} to kitTutorialPlayers()
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
+		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 # Earn many Jewels
-	else if {Kit-GameStage::rule} is "EmJ":
+	else if {Kit-GameStage::rule} is "Capture The Flag":
 #	(1) ルール説明
-		send title "§aルール説明" with subtitle "§b§oEarn many Jewels" to {_player}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§a今回のゲームルールは§b§lEarn many Jewels§aです" to {_player}
-		message formatted "§aキルをするとJewelが1つ手に入ります" to {_player}
-		message formatted "§aゴールポイントまでJewelを集めることで勝利となります" to {_player}
-		message formatted "§aこのステージのゴールポイントは §c§l%{Kit-GameStage::goal}% §aです" to {_player}
-		message formatted "§2------------------------------" to {_player}
+		send title "§aルール説明" with subtitle "§b§oCapture The Flag" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§a今回のゲームルールは§b§lCapture The Flag§aです" to {_players::*}
+		message formatted "§a一定時間でMapの凡ゆる地点にFlagがスポーンします" to {_players::*}
+		message formatted "§aゴールポイントまでFlagを占有し続けることが勝利条件となります" to {_players::*}
+		message formatted "§aこのステージのゴールポイントは §c§l%{Kit-GameStage::goal}% §aです" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 #	(2) スポーン地点
-		send title "§aスポーン地点" with subtitle "§bSpawn Points" to {_player}
+		set {_players::*} to kitTutorialPlayers()
+		send title "§aスポーン地点" with subtitle "§bSpawn Points" to {_players::*}
 		set {_tp} to a random location out of {Kit-GameStageRespawns.red::*}
-		teleport {_player} to {_tp}
-		set gamemode of {_player} to spectator
+		teleport {_players::*} to {_tp}
+		set gamemode of {_players::*} to spectator
 		loop {Kit-GameStageRespawns.red::*}:
-			spawn an armor stand at loop-value with nbt "{Invulnerable:1b,Invisible:1b,Marker:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b}"
-			set metadata value "Tutorial-Spawn" of spawned armor stand to "%{_player}%"
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of spawned armor stand
-			set {_dw} to new data watcher for spawned armor stand
-			set datawatcher index 0 of {_dw} to (64 as byte)
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_player}
-		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_player}
-		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_player}
-		message formatted "§2------------------------------" to {_player}
+			spawn an armor stand at loop-value with nbt "{Invulnerable:1b,Invisible:1b,Marker:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Glowing:1b}"
+			set metadata value "Tutorial-Spawn" of spawned armor stand to true
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_players::*}
+		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_players::*}
+		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_players::*}
+		message formatted "§aFlag所有者がスポーン地点に近い場合は復活時間が長くなります" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 		loop all entities:
 			type of loop-entity is an armor stand
-			metadata value "Tutorial-Spawn" of loop-entity is "%{_player}%"
+			metadata value "Tutorial-Spawn" of loop-entity is true
 			delete loop-entity
-#	(3) Gem Box地点
-		send title "§aGemの保管庫" with subtitle "§bGem Box" to {_player}
-		set {_loc} to {Kit-GameStage::gembox-red}
-		add -0.25 to y-coordinate of {_loc}
-		spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:200,ShowParticles:0b}]}"
-		set metadata value "Tutorial-GemBox" of spawned magma cube to "%{_player}%"
-		set {_pkt} to new play_server_entity_metadata packet
-		set field 0 of {_pkt} to id of spawned magma cube
-		set {_dw} to new data watcher for spawned magma cube
-		set datawatcher index 0 of {_dw} to (64 as byte)
-		set field 1 of {_pkt} to {_dw}
-		send {_player} packet {_pkt}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§bGem Box§aは§e発光§aが付与されている場所になります" to {_player}
-		message formatted "§a後に紹介する村人より交換できる§bGem§aを保管できます" to {_player}
-		message formatted "§a保管した§bGem§aはポイントに換算されます" to {_player}
-		message formatted "§a中の§bGem§aは特定のアイテムが無いと取り出せなくなっています" to {_player}
-		message formatted "§a上手く利用して試合を有利に進めましょう" to {_player}
-		message formatted "§2------------------------------" to {_player}
-		wait {@time}
-		loop all magma cubes:
-			metadata value "Tutorial-GemBox" of loop-magma cube is "%{_player}%"
-			delete loop-magma cube
-#	(4) 村人紹介
-		send title "§aJewel交易所" with subtitle "§bJewel Exchanger" to {_player}
-		set {_world} to worldChecker("Kit", {Kit-GameStage::name})
-		loop all villagers:
-			"%world of loop-villager%" is {_world}
-			loop-villager's display name contains "Jewel"
-			set {_loc} to location of loop-villager
-			spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:200,ShowParticles:0b}]}"
-			set metadata value "Tutorial-JewelEX" of spawned magma cube to "%{_player}%"
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of spawned magma cube
-			set {_dw} to new data watcher for spawned magma cube
-			set datawatcher index 0 of {_dw} to (64 as byte)
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§2Jewel Exchanger§aは§e発光§aしている村人です" to {_player}
-		message formatted "§aここでJewelを§bGem§aや§c便利なアイテム§aと交換できます" to {_player}
-		message formatted "§aJewelを対価とするためよく考えて利用しましょう" to {_player}
-		message formatted "§2------------------------------" to {_player}
-		wait {@time}
-		loop all magma cubes:
-			metadata value "Tutorial-JewelEX" of loop-magma cube is "%{_player}%"
-			delete loop-magma cube
-#	(5) ゲームスタート
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§6これにてチュートリアルは終了です!" to {_player}
-		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_player}
-		message formatted "§2------------------------------" to {_player}
-# Secure the Wool
-	else if {Kit-GameStage::rule} is "StW":
-#	(1) ルール説明
-		send title "§aルール説明" with subtitle "§b§oSecure the Wool" to {_player}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§a今回のゲームルールは§b§lSecure the Wool§aです" to {_player}
-		message formatted "§aゴールポイント数まで§dWool(羊)§aを集めたチームの勝利となります" to {_player}
-		message formatted "§aこのステージのゴールポイントは §c§l%{Kit-WoolGoal::%{KitPvP_Stage}%}% §aです" to {_player}
-		message formatted "§2------------------------------" to {_player}
-		wait {@time}
-#	(2) スポーン地点
-		send title "§aスポーン地点" with subtitle "§bSpawn Points" to {_player}
-		set {_tp} to a random location out of {Kit-GameStageRespawns.red::*}
-		teleport {_player} to {_tp}
-		set gamemode of {_player} to spectator
-		loop {Kit-GameStageRespawns.red::*}:
-			spawn an armor stand at loop-value with nbt "{Invulnerable:1b,Invisible:1b,Marker:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b}"
-			set metadata value "Tutorial-Spawn" of spawned armor stand to "%{_player}%"
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of spawned armor stand
-			set {_dw} to new data watcher for spawned armor stand
-			set datawatcher index 0 of {_dw} to (64 as byte)
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_player}
-		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_player}
-		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_player}
-		message formatted "§2------------------------------" to {_player}
-		wait {@time}
-		loop all entities:
-			type of loop-entity is an armor stand
-			metadata value "Tutorial-Spawn" of loop-entity is "%{_player}%"
-			delete loop-entity
-#	(3) Woolスポーン地点
-		send title "§aWoolの出現場所" with subtitle "§bWool Spawn Points" to {_player}
-		loop {Kit-GameStageWools::*}:
+#	(3) Flag Spawn地点
+		set {_players::*} to kitTutorialPlayers()
+		send title "§aFlagの出現地点" with subtitle "§bFlag Locations" to {_players::*}
+		loop {Kit-GameStageFlags::*}:
 			set {_loc} to loop-value
 			add -0.25 to y-coordinate of {_loc}
-			spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:200,ShowParticles:0b}]}"
-			set metadata value "Tutorial-WoolSpawn" of spawned magma cube to "%{_player}%"
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of spawned magma cube
-			set {_dw} to new data watcher for spawned magma cube
-			set datawatcher index 0 of {_dw} to (64 as byte)
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§bWoolの出現場所§aは§e発光§aしている地点です" to {_player}
-		message formatted "§c30秒おき§aにこの地点から§bWool§aが現れます" to {_player}
-		message formatted "§aこの羊毛を壊すことで§bWool(sheep egg)§aが貰えます" to {_player}
-		message formatted "§a稀に§6§lSpecial Wool§aが現れます" to {_player}
-		message formatted "§6§lSpecial Wool§aは貰えるポイントが3倍です" to {_player}
-		message formatted "§2------------------------------" to {_player}
+			spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:200,ShowParticles:0b}]}"
+			set metadata value "Tutorial-Flag" of spawned magma cube to true
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§bFlag§aは発光地点からスポーンします" to {_players::*}
+		message formatted "§bFlag§aは接近することで確保できます" to {_players::*}
+		message formatted "§bFlag所有者§aがデスするとその地点にドロップします" to {_players::*}
+		message formatted "§a味方が拾うと占有を継続します" to {_players::*}
+		message formatted "§a敵が拾うと再度スポーン地点から現れます" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 		loop all magma cubes:
-			metadata value "Tutorial-WoolSpawn" of loop-magma cube is "%{_player}%"
+			metadata value "Tutorial-Flag" of loop-magma cube is true
 			delete loop-magma cube
-#	(4) Wool設置地点
-		send title "§aWoolの設置場所" with subtitle "§bWool Place Points" to {_player}
-		teleport {_player} to {Kit-GameStage::voidtp-red}
-		set gamemode of {_player} to spectator
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§bWoolの設置場所§aはこの地点になります" to {_player}
-		message formatted "§aこの地点で§bWool§aを右クリックすることでポイントとなります" to {_player}
-		message formatted "§a現れた羊は敵に殴られると§bWool(sheep egg)§aに戻ってしまいます" to {_player}
-		message formatted "§a敵から羊を守りつつ羊を集めて勝利を目指しましょう" to {_player}
-		message formatted "§2------------------------------" to {_player}
-		wait {@time}
-#	(5) ゲームスタート
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§6これにてチュートリアルは終了です!" to {_player}
-		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_player}
-		message formatted "§2------------------------------" to {_player}
-# Capture Point Areas
-	else if {Kit-GameStage::rule} is "CPA":
+#	(4) ゲームスタート
+		set {_players::*} to kitTutorialPlayers()
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
+		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+# Sheep Hunt
+	else if {Kit-GameStage::rule} is "SH":
 #	(1) ルール説明
-		send title "§aルール説明" with subtitle "§b§oCapture Point Areas" to {_player}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§a今回のゲームルールは§b§lCapture Point Areas§aです" to {_player}
-		message formatted "§aマップ各地のエリアを取ってゴールポイントに達したチームの勝利です" to {_player}
-		message formatted "§aこのステージのゴールポイントは §c§l%{Kit-PAGoal::%{KitPvP_Stage}%}% §aです" to {_player}
-		message formatted "§2------------------------------" to {_player}
+		send title "§aルール説明" with subtitle "§b§oSheep Hunt" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§a今回のゲームルールは§b§lSheep Hunt§aです" to {_players::*}
+		message formatted "§aゴールポイント数まで§d羊§aを集めたチームの勝利となります" to {_players::*}
+		message formatted "§aこのステージのゴールポイントは §c§l%{Kit-GameStage::goal}% §aです" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 #	(2) スポーン地点
-		send title "§aスポーン地点" with subtitle "§bSpawn Points" to {_player}
+		set {_players::*} to kitTutorialPlayers()
+		send title "§aスポーン地点" with subtitle "§bSpawn Points" to {_players::*}
 		set {_tp} to a random location out of {Kit-GameStageRespawns.red::*}
-		teleport {_player} to {_tp}
-		set gamemode of {_player} to spectator
+		teleport {_players::*} to {_tp}
+		set gamemode of {_players::*} to spectator
 		loop {Kit-GameStageRespawns.red::*}:
-			spawn an armor stand at loop-value with nbt "{Invulnerable:1b,Invisible:1b,Marker:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b}"
-			set metadata value "Tutorial-Spawn" of spawned armor stand to "%{_player}%"
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of spawned armor stand
-			set {_dw} to new data watcher for spawned armor stand
-			set datawatcher index 0 of {_dw} to (64 as byte)
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_player}
-		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_player}
-		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_player}
-		message formatted "§2------------------------------" to {_player}
+			spawn an armor stand at loop-value with nbt "{Invulnerable:1b,Invisible:1b,Marker:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Glowing:1b}"
+			set metadata value "Tutorial-Spawn" of spawned armor stand to true
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_players::*}
+		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_players::*}
+		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 		loop all entities:
 			type of loop-entity is an armor stand
-			metadata value "Tutorial-Spawn" of loop-entity is "%{_player}%"
+			metadata value "Tutorial-Spawn" of loop-entity is true
+			delete loop-entity
+#	(3) Sheepスポーン地点
+		set {_players::*} to kitTutorialPlayers()
+		send title "§a羊の出現場所" with subtitle "§bSheep Spawn Points" to {_players::*}
+		loop {Kit-GameStageSpawnLocations::*}:
+			set {_loc} to loop-value
+			add -0.25 to y-coordinate of {_loc}
+			spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:200,ShowParticles:0b}]}"
+			set metadata value "Tutorial-WoolSpawn" of spawned magma cube to true
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§b羊の出現場所§aは§e発光§aしている地点周辺です" to {_players::*}
+		message formatted "§c30秒おき§aにこの地点から§b羊§aが現れます" to {_players::*}
+		message formatted "§a羊の近くで§eスニーク長押し§aをすることで確保できます" to {_players::*}
+		message formatted "§a稀に§6§lSpecial Sheep§aが現れます" to {_players::*}
+		message formatted "§6§lSpecial Sheep§aは貰えるポイントが3倍です" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+		wait {@time}
+		loop all magma cubes:
+			metadata value "Tutorial-WoolSpawn" of loop-magma cube is true
+			delete loop-magma cube
+#	(4) Sheep確保地点
+		set {_players::*} to kitTutorialPlayers()
+		send title "§a羊の確保場所" with subtitle "§bSheep Securing Points" to {_players::*}
+		set gamemode of {_players::*} to spectator
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§b羊§aは拠点付近にある§b確保エリア§aまで連れていきましょう" to {_players::*}
+		message formatted "§aこの地点まで連れて行くことでポイントとなります" to {_players::*}
+		message formatted "§a敵から羊を守りつつ,羊を集めて勝利を目指しましょう" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+		wait {@time}
+#	(5) ゲームスタート
+		set {_players::*} to kitTutorialPlayers()
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
+		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+# Control Point
+	else if {Kit-GameStage::rule} is "CP":
+#	(1) ルール説明
+		send title "§aルール説明" with subtitle "§b§oControl Point" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§a今回のゲームルールは§b§lControl Point§aです" to {_players::*}
+		message formatted "§aマップ各地のエリアを取ってゴールポイントに達したチームの勝利です" to {_players::*}
+		message formatted "§aこのステージのゴールポイントは §c§l%{Kit-GameStage::goal}% §aです" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+		wait {@time}
+#	(2) スポーン地点
+		set {_players::*} to kitTutorialPlayers()
+		send title "§aスポーン地点" with subtitle "§bSpawn Points" to {_players::*}
+		set {_tp} to a random location out of {Kit-GameStageRespawns.red::*}
+		teleport {_players::*} to {_tp}
+		set gamemode of {_players::*} to spectator
+		loop {Kit-GameStageRespawns.red::*}:
+			spawn an armor stand at loop-value with nbt "{Invulnerable:1b,Invisible:1b,Marker:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Glowing:1b}"
+			set metadata value "Tutorial-Spawn" of spawned armor stand to true
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_players::*}
+		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_players::*}
+		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+		wait {@time}
+		loop all entities:
+			type of loop-entity is an armor stand
+			metadata value "Tutorial-Spawn" of loop-entity is true
 			delete loop-entity
 #	(3) エリア地点
-		send title "§aエリア地点" with subtitle "§bArea's Location" to {_player}
+		set {_players::*} to kitTutorialPlayers()
+		send title "§aエリア地点" with subtitle "§bArea's Location" to {_players::*}
 		loop {Kit-GameStageAreas::*}:
 			set {_loc} to loop-value
 			add -0.25 to y-coordinate of {_loc}
-			spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:200,ShowParticles:0b}]}"
-			set metadata value "Tutorial-Area" of spawned magma cube to "%{_player}%"
-			set {_pkt} to new play_server_entity_metadata packet
-			set field 0 of {_pkt} to id of spawned magma cube
-			set {_dw} to new data watcher for spawned magma cube
-			set datawatcher index 0 of {_dw} to (64 as byte)
-			set field 1 of {_pkt} to {_dw}
-			send {_player} packet {_pkt}
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§aエリアの位置は§e発光§aが付与されている場所になります" to {_player}
-		message formatted "§aこのエリア内に入ると占拠が開始されます" to {_player}
-		message formatted "§a占拠が終わると1秒おきにポイントが手に入ります" to {_player}
-		message formatted "§8鉄: §c1§a,§6金: §c3§a, §bダイヤ: §c5§aになります" to {_player}
-		message formatted "§aエリアを上手く占拠して勝利につなげましょう" to {_player}
-		message formatted "§2------------------------------" to {_player}
+			spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:200,ShowParticles:0b}]}"
+			set metadata value "Tutorial-Area" of spawned magma cube to true
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§aエリアの位置は§e発光§aが付与されている場所になります" to {_players::*}
+		message formatted "§aこのエリア内に入ると占拠が開始されます" to {_players::*}
+		message formatted "§a占拠が終わると1秒おきにポイントが手に入ります" to {_players::*}
+		message formatted "§8鉄: §c1§a,§6金: §c3§a, §bダイヤ: §c5§aになります" to {_players::*}
+		message formatted "§aエリアを上手く占拠して勝利につなげましょう" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
 		loop all magma cubes:
-			metadata value "Tutorial-Area" of loop-magma cube is "%{_player}%"
+			metadata value "Tutorial-Area" of loop-magma cube is true
 			delete loop-magma cube
 #	(4) ゲームスタート
-		message formatted "§2------------------------------" to {_player}
-		message formatted "§6これにてチュートリアルは終了です!" to {_player}
-		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_player}
-		message formatted "§2------------------------------" to {_player}
-	delete {Kit-TutorialNow::%{_player}%}
+		set {_players::*} to kitTutorialPlayers()
+		message formatted "§2------------------------------" to {_players::*}
+		message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
+		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
+		message formatted "§2------------------------------" to {_players::*}
+	kitTimer_Start()
+
+function kitTutorialPlayers() :: players:
+	loop all players:
+		{Join::%loop-player%} is "Kit"
+		add loop-player to {_players::*}
+	return {_players::*}
