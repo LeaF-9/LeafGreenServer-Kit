@@ -30,3 +30,16 @@ function kitVoteSetting():
 		set {_stage} to a random element out of {_stages::*}
 		remove {_stage} from {_stages::*}
 		set {Kit-VoteStage::%loop-number%} to {_stage}
+
+function kitOpenVoting(player: player):
+	open chest with 1 row named "§6§lMap Vote§r §b|| §a遊びたいマップを選んでね" to {_player}
+	wait a tick
+	set {_slot} to 2
+	loop 5 times:
+		set {_name} to {Kit-VoteStage::%loop-number%}
+		load yml "plugins/skript-yaml/Kit Stages/%{_name}%.yml" as "VoteInv"
+		set {_team} to yml value "team" from "VoteInv"
+		set {_rule} to yml value "rule" from "VoteInv"
+		unload yml "VoteInv"
+		set slot {_slot} of current inventory of {_player} to diamond sword named "§6§l%{_name}%" with lore "§bチーム数§7: §6§l%{_team}%" and "§bゲームルール§7: §6§l%{_rule}%"
+		add 1 to {_slot}
