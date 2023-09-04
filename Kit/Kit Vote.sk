@@ -1,3 +1,6 @@
+options:
+	prefix: §e[§6§lVOTE§e]§r
+
 function kitVoteSetting():
 	# Listingの指定
 	if {Kit-StageListing} is true:
@@ -30,6 +33,20 @@ function kitVoteSetting():
 		set {_stage} to a random element out of {_stages::*}
 		remove {_stage} from {_stages::*}
 		set {Kit-VoteStage::%loop-number%} to {_stage}
+
+on inventory click:
+	type of event-inventory is chest inventory
+	name of event-inventory contains "§6§lMap Vote"
+	set {_name} to clicked item
+	replace "§6§l" with "" in {_name}
+	loop {Kit-VoteStage::*}:
+		if loop-value is {_name}:
+			set {_num} to loop-index
+	if {_num} is not set:
+		message formatted "{@prefix} §c§l既に投票は終了しています" to player
+		stop
+	set {Kit-Vote::%player%} to {_num}
+	message formatted "{@prefix} §6§l%{_name}% §eに投票しました" to player
 
 function kitOpenVoting(player: player):
 	open chest with 1 row named "§6§lMap Vote§r §b|| §a遊びたいマップを選んでね" to {_player}
