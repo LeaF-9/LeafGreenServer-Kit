@@ -92,12 +92,17 @@ command /join:
 						{Join::%loop-player%} is "Kit"
 						message "§d人数が集まりました! §cゲームを開始します..." to loop-player
 					execute console command "/gamestart"
+				# 投票機能
+				if {Kit-StageVote} is true:  # 投票の場合
+					if {Kit-VoteStage::1} is not set:  # 投票ステージが未決定
+						kitVoteSetting()
+					kitOpenVoting(player)
 
-command /joinset <number> <text>:
+command /joinset <number>:
 	permission: sk.admin
 	trigger:
-		set {%arg 2%-Join} to arg 1
-		message "§b%arg 2%§7の現在の参加人数を§a%{%arg 2%-Join}%§7に設定しました"
+		set {Kit-Join} to arg 1
+		message "§bKit§7の現在の参加人数を§a%{Kit-Join}%§7に設定しました"
 
 command /leave:
 	executable by: player
