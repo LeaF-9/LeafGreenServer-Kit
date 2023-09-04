@@ -132,16 +132,17 @@ function kitTakingSheep_SH(player: player, sheep: entity, hadnum: number = 0):
 	add 1 to {_hadnum}
 	set {_ok} to false
 	# 獲得までの時間計算
+	set {_team} to {TrueTeam::%{_player}%}
 	if metadata value "sh-age" of {_sheep} is "adult":
 		if {_player} has mining fatigue:
-			set {_count} to 300
+			set {_count} to round(300 / {Kit-TeamBuff::%{_team}%})
 		else:
-			set {_count} to 200
+			set {_count} to round(200 / {Kit-TeamBuff::%{_team}%})
 	else:
 		if {_player} has mining fatigue:
-			set {_count} to 100 * {_hadnum}
+			set {_count} to round(100 / {Kit-TeamBuff::%{_team}%}) * {_hadnum}
 		else:
-			set {_count} to 60 * {_hadnum}
+			set {_count} to round(60 / {Kit-TeamBuff::%{_team}%}) * {_hadnum}
 	set metadata value "sh-taking" of {_sheep} to 0
 	# 獲得中の処理
 	while {_ok} is false:
@@ -254,24 +255,28 @@ function kitTimer_SH():
 			if type of block below {_blocktype} is glowstone block:
 				set {_color.before} to metadata value "sh-color" of loop-sheep
 				if type of {_blocktype} is type of {Kit-GameStage::place-red}:
-					add 1 to {_teampoint::red}
+					set {_basepoint} to {Kit-TeamBuff::red}
+					add {_basepoint} to {_teampoint::red}
 					if metadata value "sh-age" of loop-sheep is "adult":
-						add 2 to {_teampoint::red}
+						add {_basepoint} * 2 to {_teampoint::red}
 					set metadata value "sh-color" of loop-sheep to red
 				else if type of {_blocktype} is type of {Kit-GameStage::place-blue}:
-					add 1 to {_teampoint::blue}
+					set {_basepoint} to {Kit-TeamBuff::blue}
+					add {_basepoint} to {_teampoint::blue}
 					if metadata value "sh-age" of loop-sheep is "adult":
-						add 2 to {_teampoint::blue}
+						add {_basepoint} * 2 to {_teampoint::blue}
 					set metadata value "sh-color" of loop-sheep to blue
 				else if type of {_blocktype} is type of {Kit-GameStage::place-yellow}:
-					add 1 to {_teampoint::yellow}
+					set {_basepoint} to {Kit-TeamBuff::yellow}
+					add {_basepoint} to {_teampoint::yellow}
 					if metadata value "sh-age" of loop-sheep is "adult":
-						add 2 to {_teampoint::yellow}
+						add {_basepoint} * 2 to {_teampoint::yellow}
 					set metadata value "sh-color" of loop-sheep to yellow
 				else if type of {_blocktype} is type of {Kit-GameStage::place-green}:
-					add 1 to {_teampoint::green}
+					set {_basepoint} to {Kit-TeamBuff::green}
+					add {_basepoint} to {_teampoint::green}
 					if metadata value "sh-age" of loop-sheep is "adult":
-						add 2 to {_teampoint::green}
+						add {_basepoint} * 2 to {_teampoint::green}
 					set metadata value "sh-color" of loop-sheep to green
 				else:
 					set metadata value "sh-color" of loop-sheep to white
@@ -307,17 +312,17 @@ function kitTimer_SH():
 		# --- Scoreboard Reload ---
 		if {Kit-SheepPoint::red} != {_teampoint::red}:
 			set {Kit-SheepPoint::red} to {_teampoint::red}
-			kitScoreGlobal(7, "§c赤§7: §6%{_teampoint::red}%")
+			kitScoreGlobal(7, "§c赤§7: §6%floor({_teampoint::red})%")
 		if {Kit-SheepPoint::blue} != {_teampoint::blue}:
 			set {Kit-SheepPoint::blue} to {_teampoint::blue}
-			kitScoreGlobal(6, "§9青§7: §6%{_teampoint::blue}%")
+			kitScoreGlobal(6, "§9青§7: §6%floor({_teampoint::blue})%")
 		if {Kit-GameStage::team} is "4" or 4:
 			if {Kit-SheepPoint::yellow} != {_teampoint::yellow}:
 				set {Kit-SheepPoint::yellow} to {_teampoint::yellow}
-				kitScoreGlobal(5, "§e黄§7: §6%{_teampoint::yellow}%")
+				kitScoreGlobal(5, "§e黄§7: §6%floor({_teampoint::yellow})%")
 			if {Kit-SheepPoint::green} != {_teampoint::green}:
 				set {Kit-SheepPoint::green} to {_teampoint::green}
-				kitScoreGlobal(4, "§a緑§7: §6%{_teampoint::green}%")
+				kitScoreGlobal(4, "§a緑§7: §6%floor({_teampoint::green})%")
 		# -------------------------
 		# --- Point Calc ---
 		loop {_teampoint::*}:
