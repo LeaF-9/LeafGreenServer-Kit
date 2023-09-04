@@ -1,219 +1,97 @@
 command /join:
 	executable by: player
 	trigger:
-		if {Join::%player%} is set:
+		if {Join::%player%} is set:  # 既に参加済
 			message "§cあなたは既にゲームに参加しています" to player
-		else:
-			if {Kit-Testing::%player%} is true:
-				message "§cスキルテスト中はJoinすることが出来ません!" to player
-				stop
-			# --- ここ多分いらなくなる ---
-			else if {Kit-GameStage::name} is not set:
-				message "§cステージがセットされていません!" to player
-				stop
-			# -----------------------
-			# --- ここ多分いらなくなる ---
-			else if {Kit-Tutorial::%player%} is true:
-				message "§a§lTutorial§eが有効になっているため,§b8§e秒後に開始します..." to player
-				message "§e必要なければ§6インベントリ内のメニュー§eにて無効化して下さい" to player
-				loop 8 times:
-					if {Kit-Tutorial::%player%} is true:
-						wait a second
-				if {Kit-Tutorial::%player%} is true:
-					set {Kit-TutorialNow::%player%} to true
-					KitTutorial(player)
-					while {Kit-TutorialNow::%player%} is true:
-						wait 10 ticks
-			# ----------------------
-			set {Join::%player%} to "Kit"
-			add 1 to {Kit-Join}
-			broadcast "§2[§aKit PvP§2] §6%player% §eが参加しました §7(§b%{Kit-Join}%§9人参加中です§7)"
-			delete {Class::%player%}
-			delete {CLS::%player%}
-			if {Kit-tochu} is true:
-				if {team::%player%} is not set:
+			stop
+		if {Kit-Testing::%player%} is true:  # スキルテスト中の排除
+			message "§cスキルテスト中はJoinすることが出来ません!" to player
+			stop
+		set {Join::%player%} to "Kit"
+		add 1 to {Kit-Join}
+		broadcast "§2[§aKit PvP§2] §6%player% §eが参加しました §7(§b%{Kit-Join}%§9人参加中です§7)"
+		delete {Class::%player%}
+		delete {CLS::%player%}
+		if {Kit-tochu} is true:  # 試合開始済
+			if {TrueTeam::%player%} is not set:  # チーム未分類
+				add 1 to {Kit-lnum}
+				if {Kit-GameStage::team} is 4:
+					if {Kit-lnum} is 1:
+						set {_setteam} to "red"
+					else if {Kit-lnum} is 2:
+						set {_setteam} to "blue"
+					else if {Kit-lnum} is 3:
+						set {_setteam} to "yellow"
+					else if {Kit-lnum} is 4:
+						set {_setteam} to "green"
+						remove 4 from {Kit-lnum}
+				else if {Kit-GameStage::team} is 2:
+					if {Kit-lnum} is 1:
+						set {_setteam} to "red"
+					else if {Kit-lnum} is 2:
+						set {_setteam} to "blue"
+						remove 2 from {Kit-lnum}
+				add player to {Kit-team%{_setteam}%::*}
+				set {TrueTeam::%player%} to {_setteam}
+				set {team::%player%} to {_setteam}
+				if {Kit-GameStage::rule} is "DTC":
+					if {Kit-GameStage::corenumber-%{_setteam}%} is less than 1:
+						execute console command "/team join bandit %player%"
+						set {TrueTeam::%player%} to "purple"
+						set {team::%player%} to "purple"
+					else:
+						execute console command "/team join kit-%{_setteam}% %player%"
+				else:
+					execute console command "/team join kit-%{_setteam}% %player%"
+			else:
+				set {_setteam} to {TrueTeam::%player%}
+				if {Kit-GameStage::rule} is "DTC":
+					if {Kit-GameStage::corenumber-%{_setteam}%} is less than 1:
+						execute console command "/team join bandit %player%"
+						set {TrueTeam::%player%} to "purple"
+						set {team::%player%} to "purple"
+					else:
+						execute console command "/team join kit-%{_setteam}% %player%"
+				else:
+					execute console command "/team join kit-%{_setteam}% %player%"
+			set {_tp} to a random location out of {Kit-GameStageRespawns.%{TrueTeam::%player%}%::*}
+			teleport player to {_tp}
+			set gamemode of player to survival
+			execute console command "/skclass %player% Kit-GameInv"
+			kitScoreJoining(player)
+		else:  # 未試合
+			if {Kit-lnum} is set:  # チーム分け済
+				if {TrueTeam::%player%} is not set:  # チーム未分類時
 					add 1 to {Kit-lnum}
 					if {Kit-GameStage::team} is 4:
 						if {Kit-lnum} is 1:
-							add player to {Kit-teamred::*}
-							set {TrueTeam::%player%} to "red"
-							set {team::%player%} to "red"
-							if {Kit-GameStage::rule} is "DTC":
-								if {Kit-GameStage::corenumber-red} is less than 1:
-									execute console command "/team join bandit %player%"
-									set {TrueTeam::%player%} to "purple"
-									set {team::%player%} to "purple"
-								else:
-									execute console command "/team join kit-red %player%"
-							else:
-								execute console command "/team join kit-red %player%"
+							set {_setteam} to "red"
 						else if {Kit-lnum} is 2:
-							add player to {Kit-teamblue::*}
-							set {TrueTeam::%player%} to "blue"
-							set {team::%player%} to "blue"
-							if {Kit-GameStage::rule} is "DTC":
-								if {Kit-GameStage::corenumber-blue} is less than 1:
-									execute console command "/team join bandit %player%"
-									set {TrueTeam::%player%} to "purple"
-									set {team::%player%} to "purple"
-								else:
-									execute console command "/team join kit-blue %player%"
-							else:
-								execute console command "/team join kit-blue %player%"
+							set {_setteam} to "blue"
 						else if {Kit-lnum} is 3:
-							add player to {Kit-teamyellow::*}
-							set {TrueTeam::%player%} to "yellow"
-							set {team::%player%} to "yellow"
-							if {Kit-GameStage::rule} is "DTC":
-								if {Kit-GameStage::corenumber-yellow} is less than 1:
-									execute console command "/team join bandit %player%"
-									set {TrueTeam::%player%} to "purple"
-									set {team::%player%} to "purple"
-								else:
-									execute console command "/team join kit-yellow %player%"
-							else:
-								execute console command "/team join kit-yellow %player%"
+							set {_setteam} to "yellow"
 						else if {Kit-lnum} is 4:
-							add player to {Kit-teamgreen::*}
-							set {TrueTeam::%player%} to "green"
-							set {team::%player%} to "green"
-							if {Kit-GameStage::rule} is "DTC":
-								if {Kit-GameStage::corenumber-green} is less than 1:
-									execute console command "/team join bandit %player%"
-									set {TrueTeam::%player%} to "purple"
-									set {team::%player%} to "purple"
-								else:
-									execute console command "/team join kit-green %player%"
-							else:
-								execute console command "/team join kit-green %player%"
+							set {_setteam} to "green"
 							remove 4 from {Kit-lnum}
 					else if {Kit-GameStage::team} is 2:
 						if {Kit-lnum} is 1:
-							add player to {Kit-teamred::*}
-							set {TrueTeam::%player%} to "red"
-							set {team::%player%} to "red"
-							if {Kit-GameStage::rule} is "DTC":
-								if {Kit-GameStage::corenumber-red} is less than 1:
-									execute console command "/team join bandit %player%"
-									set {TrueTeam::%player%} to "purple"
-									set {team::%player%} to "purple"
-								else:
-									execute console command "/team join kit-red %player%"
-							else:
-								execute console command "/team join kit-red %player%"
+							set {_setteam} to "red"
 						else if {Kit-lnum} is 2:
-							add player to {Kit-teamblue::*}
-							set {TrueTeam::%player%} to "blue"
-							set {team::%player%} to "blue"
-							if {Kit-GameStage::rule} is "DTC":
-								if {Kit-GameStage::corenumber-blue} is less than 1:
-									execute console command "/team join bandit %player%"
-									set {TrueTeam::%player%} to "purple"
-									set {team::%player%} to "purple"
-								else:
-									execute console command "/team join kit-blue %player%"
-							else:
-								execute console command "/team join kit-blue %player%"
+							set {_setteam} to "blue"
 							remove 2 from {Kit-lnum}
-				else if {TrueTeam::%player%} is "red":
-					if {Kit-GameStage::rule} is "DTC":
-						if {Kit-GameStage::corenumber-red} is less than 1:
-							execute console command "/team join bandit %player%"
-							set {TrueTeam::%player%} to "purple"
-							set {team::%player%} to "purple"
-						else:
-							execute console command "/team join kit-red %player%"
-					else:
-						execute console command "/team join kit-red %player%"
-				else if {TrueTeam::%player%} is "blue":
-					if {Kit-GameStage::rule} is "DTC":
-						if {Kit-GameStage::corenumber-blue} is less than 1:
-							execute console command "/team join bandit %player%"
-							set {TrueTeam::%player%} to "purple"
-							set {team::%player%} to "purple"
-						else:
-							execute console command "/team join kit-blue %player%"
-					else:
-						execute console command "/team join kit-blue %player%"
-				else if {TrueTeam::%player%} is "yellow":
-					if {Kit-GameStage::rule} is "DTC":
-						if {Kit-GameStage::corenumber-yellow} is less than 1:
-							execute console command "/team join bandit %player%"
-							set {TrueTeam::%player%} to "purple"
-							set {team::%player%} to "purple"
-						else:
-							execute console command "/team join kit-yellow %player%"
-					else:
-						execute console command "/team join kit-yellow %player%"
-				else if {TrueTeam::%player%} is "green":
-					if {Kit-GameStage::rule} is "DTC":
-						if {Kit-GameStage::corenumber-green} is less than 1:
-							execute console command "/team join bandit %player%"
-							set {TrueTeam::%player%} to "purple"
-							set {team::%player%} to "purple"
-						else:
-							execute console command "/team join kit-green %player%"
-					else:
-						execute console command "/team join kit-green %player%"
-				set {_tp} to a random location out of {Kit-GameStageRespawns.%{TrueTeam::%player%}%::*}
-				teleport player to {_tp}
-				set gamemode of player to survival
-				execute console command "/cclass %player% Kit-GameInv"
-				kitScoreJoining(player)
+					add player to {Kit-team%{_setteam}%::*}
+					set {TrueTeam::%player%} to {_setteam}
+					set {team::%player%} to {_setteam}
+					execute console command "/team join kit-%{_setteam}% %player%"
+				else:  # チーム分類済
+					execute console command "/team join kit-%{TrueTeam::%player%}% %player%"
+#			試合未開始 (vote機能)
 			else:
-#			試合開始済
-				if {Kit-lnum} is set:
-					if {TrueTeam::%player%} is not set:
-						add 1 to {Kit-lnum}
-						if {Kit-GameStage::team} is 4:
-							if {Kit-lnum} is 1:
-								add player to {Kit-teamred::*}
-								set {TrueTeam::%player%} to "red"
-								set {team::%player%} to "red"
-								execute console command "/team join kit-red %player%"
-							else if {Kit-lnum} is 2:
-								add player to {Kit-teamblue::*}
-								set {TrueTeam::%player%} to "blue"
-								set {team::%player%} to "blue"
-								execute console command "/team join kit-blue %player%"
-							else if {Kit-lnum} is 3:
-								add player to {Kit-teamyellow::*}
-								set {TrueTeam::%player%} to "yellow"
-								set {team::%player%} to "yellow"
-								execute console command "/team join kit-yellow %player%"
-							else if {Kit-lnum} is 4:
-								add player to {Kit-teamgreen::*}
-								set {TrueTeam::%player%} to "green"
-								set {team::%player%} to "green"
-								execute console command "/team join kit-green %player%"
-								remove 4 from {Kit-lnum}
-						else if {Kit-GameStage::team} is 2:
-							if {Kit-lnum} is 1:
-								add player to {Kit-teamred::*}
-								set {TrueTeam::%player%} to "red"
-								set {team::%player%} to "red"
-								execute console command "/team join kit-red %player%"
-							else if {Kit-lnum} is 2:
-								add player to {Kit-teamblue::*}
-								set {TrueTeam::%player%} to "blue"
-								set {team::%player%} to "blue"
-								execute console command "/team join kit-blue %player%"
-								remove 2 from {Kit-lnum}
-					else if {TrueTeam::%player%} is "red":
-						execute console command "/team join kit-red %player%"
-					else if {TrueTeam::%player%} is "blue":
-						execute console command "/team join kit-blue %player%"
-					else if {TrueTeam::%player%} is "yellow":
-						execute console command "/team join kit-yellow %player%"
-					else if {TrueTeam::%player%} is "green":
-						execute console command "/team join kit-green %player%"
-#			試合未開始
-				else:
-					if {Kit-Join} is more than 3:
-						loop all players:
-							{Game::%loop-player%} is "Kit"
-							message "§d人数が集まりました! §cゲームを開始します..." to loop-player
-						execute console command "/gamestart Kit"
+				if {Kit-Join} >= 4:
+					loop all players:
+						{Join::%loop-player%} is "Kit"
+						message "§d人数が集まりました! §cゲームを開始します..." to loop-player
+					execute console command "/gamestart"
 
 command /joinset <number> <text>:
 	permission: sk.admin
