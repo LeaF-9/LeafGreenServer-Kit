@@ -1,0 +1,32 @@
+function kitVoteSetting():
+	# Listingの指定
+	if {Kit-StageListing} is true:
+		set {_stages::*} to {Kit-StageListUP::*}
+	else:
+		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
+		set {_stages::*} to yml list "Stages" from "KitStages"
+		unload yml "KitStages"
+	# enable: trueチェック
+	loop {_stages::*}:
+		load yml "plugins/skript-yaml/Kit Stages/%loop-value%.yml" as "KitStage"
+		if yml value "enable" from "KitStage" is not true:
+			remove loop-value from {_stages::*}
+			unload yml "KitStage"
+			continue
+		# Ruleの指定
+		if {Kit-StageRandomize.rule} is set:
+			if yml value "rule" from "KitStage" is not {Kit-StageRandomize.rule}:
+				remove loop-value from {_stages::*}
+				unload yml "KitStage"
+				continue
+		if {Kit-StageRandomize.team} is set:
+			if yml value "team" from "KitStage" is not {Kit-StageRandomize.team}:
+				remove loop-value from {_stages::*}
+				unload yml "KitStage"
+				continue
+		unload yml "KitStage"
+	# VoteStage設定
+	loop 5 times:
+		set {_stage} to a random element out of {_stages::*}
+		remove {_stage} from {_stages::*}
+		set {Kit-VoteStage::%loop-number%} to {_stage}
