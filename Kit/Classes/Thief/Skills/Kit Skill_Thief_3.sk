@@ -1,55 +1,60 @@
-# Perfect Steal
+# Skill-Name: Perfect Steal
 
 function kitSkill_Thief_3(player: player):
-	if {Stats.%{_player}%::Stealing.Perfect Steal} is true:
-		kitStealItem({_player}, "Perfect Steal")
-	else:
-		if {Stats.%{_player}%::SkillTarget} is set:
-			set {_tool} to {_player}'s tool
-			set {_tg} to {Stats.%{_player}%::SkillTarget}
-			if {TrueTeam::%{_tg}%} is {TrueTeam::%{_player}%}:
-				set action bar of {_player} to "§c§l同じチームのプレイヤーからは盗めません!"
-				stop
-			toolCT({_player}, "Thief", 3)
-			playSound("entity.item.pickup", 1, 2, {_player})
-			kitMsg({_player}, "§6%{_tg}% §bのスキルを全部しまいこんだ!")
-			message formatted "§dスキルを全部盗まれてしまった!" to {_tg}
-			set {Stats.%{_tg}%::Stealed.Perfect Steal} to true
-			set {Stats.%{_player}%::Stealing.Perfect Steal} to true
-			if {Class::%{_tg}%} is "Werewolf":
-				if {Stats.%{_tg}%::Instinct} is true:
-					set {_type} to "Werewolf_Instinct"
-				else:
-					set {_type} to {Class::%{_tg}%}
-			else if {Class::%{_tg}%} is "Vampire":
-				if {Stats.%{_tg}%::BatMode} is true:
-					set {_type} to "Vampire_Bat"
-				else:
-					set {_type} to {Class::%{_tg}%}
-			else:
-				set {_type} to {Class::%{_tg}%}
-			loop 3 times:
-				set {_skill} to kitPlayerSkillItem({_tg}, {_type}, loop-number)
-				add {_skill} to {_skills::*}
-			loop {_skills::*}:
-				{_tg}'s inventory contains loop-value
-				add loop-value to {_own::*}
-			loop {_own::*}:
-				remove loop-value from {_tg}
-			set {StealItem-Perfect Steal.%{_player}%::*} to {_own::*}
-			set {_lootitem} to a bundle named "%display name of {_tool}% §b[§eloot§b]" with lore lore of {_tool}
-			set {_lootitem} to kitItemTagChanger({_lootitem}, "Thief", "Skill", 3)
-			remove {_tool} from {_player}
-			give {_lootitem} to {_player}
-			wait 7 seconds
-			if {Stats.%{_tg}%::Stealed.Perfect Steal} is true:
-				loop {_own::*}:
-					give loop-value to {_tg}
-				delete {Stats.%{_tg}%::Stealed.Perfect Steal}
-			if {Stats.%{_player}%::Stealing.Perfect Steal} is true:
-				remove {_lootitem} from {_player}
-				give {_tool} to {_player}
-				delete {StealItem-Perfect Steal.%{_player}%::*}
-				delete {Stats.%{_player}%::Stealing.Perfect Steal}
+	if {Stats.%{_player}%::SkillTarget} is not set:
+		send action bar "§c§l対象が存在しません!" to {_player}
+		stop
+	set {_tool} to {_player}'s tool
+	set {_tg} to {Stats.%{_player}%::SkillTarget}
+	if {TrueTeam::%{_tg}%} is {TrueTeam::%{_player}%}:
+		set action bar of {_player} to "§c§l同じチームのプレイヤーからは盗めません!"
+		stop
+	toolCT({_player}, "Thief", 3)
+	if {Class::%{_tg}%} is "Werewolf":
+		if {Stats.%{_tg}%::Instinct} is true:
+			set {_type} to "Werewolf_Instinct"
 		else:
-			send action bar "§c§l対象が存在しません!" to {_player}
+			set {_type} to {Class::%{_tg}%}
+	else if {Class::%{_tg}%} is "Vampire":
+		if {Stats.%{_tg}%::BatMode} is true:
+			set {_type} to "Vampire_Bat"
+		else:
+			set {_type} to {Class::%{_tg}%}
+	else:
+		set {_type} to {Class::%{_tg}%}
+	loop 3 times:
+		set {_skill} to kitPlayerSkillItem({_tg}, {_type}, loop-number)
+		add {_skill} to {_skills::*}
+	loop {_skills::*}:
+		inventory of {_tg} contains loop-value
+		add loop-value to {_own::*}
+	if size of {_own::*} is 0:
+		kitMsg({_player}, "§8スキルを上手く盗めませんでした...")
+		stop
+	playSound("entity.item.pickup", 1, 2, {_player})
+	kitMsg({_player}, "§6%{_tg}% §bのスキルを全部しまいこんだ!")
+	message formatted "§dスキルを全部盗まれてしまった!" to {_tg}
+	set {Stats.%{_tg}%::Stolen.Perfect Robbery} to true
+	set {Stats.%{_player}%::Stealing.Perfect Robbery} to true
+	loop {_own::*}:
+		remove loop-value from {_tg}
+		set {_nbt} to nbt item compound of loop-value
+		set tag "stolen" of {_nbt} to "Perfect Robbery"
+		set {_stolenskill} to loop-value with nbt {_nbt}
+		add {_stolenskill} to {_giveitems::*}
+	set {StealItem-Perfect Robbery.%{_player}%::*} to {_giveitems::*}
+	remove {_tool} from {_player}
+	wait a tick
+	give {_giveitems::1} to {_player}
+	wait 7 seconds
+	if {Stats.%{_tg}%::Stolen.Perfect Robbery} is true:
+		loop 3 times:
+			set {_skill} to kitPlayerSkillItem({_tg}, {_type}, loop-number)
+			give {_skill} to {_tg}
+		delete {Stats.%{_tg}%::Stolen.Perfect Robbery}
+	if {Stats.%{_player}%::Stealing.Perfect Robbery} is true:
+		loop {_giveitems::*}:
+			remove loop-value from {_player}
+		give {_tool} to {_player}
+		delete {StealItem-Perfect Robbery.%{_player}%::*}
+		delete {Stats.%{_player}%::Stealing.Perfect Robbery}

@@ -1,91 +1,70 @@
 # Job Switch
 
 function kitSkill_Thief_5(player: player):
-	if {Stats.%{_player}%::Stealing.Job Switch} is true:
-		kitStealItem({_player}, "Job Switch")
-	else:
-		set {_tool} to {_player}'s tool
-		toolCT({_player}, "Thief", 5)
-		kitMsg({_player}, "§2光線を発射します...")
-		set {_baseloc} to location of head of {_player}
-		loop 30 times:
+	set {_tool} to {_player}'s tool
+	toolCT({_player}, "Thief", 5)
+	kitMsg({_player}, "§2光線を発射します...")
+	set {_baseloc} to location of head of {_player}
+	loop 30 times:
+		{_tg} is not set
+		add 1 to {_front}
+		add 40 to {_rad}
+		set {_loc} to location {_front} meters in front of {_baseloc}
+		loop all players in radius 2 around {_loc}:
+			kitCheckTeam(loop-player, {_player}, false, true) is true
 			{_tg} is not set
-			add 1 to {_front}
-			add 40 to {_rad}
-			set {_loc} to location {_front} meters in front of {_baseloc}
-			loop all players in radius 2 around {_loc}:
-				kitCheckTeam(loop-player, {_player}, false, true) is true
-				{_tg} is not set
-				set {_tg} to loop-player
-			playSound("entity.experience_orb.pickup", 1, 0.05 * {_front}, {_loc})
-			spawnParticle(happy_villager, {_loc})
-		# 円を描くパーティクル ##########
-			set {_eb} to {_loc}
-			set {_m1} to {_eb}
-			set {_p} to pitch of {_m1}
-			if {_p} < 0:
-				set {_p} to -1 * 90 - {_p}
-				set {_y} to yaw of {_m1}
-				add 180 to {_y}
-				if {_y} >= 360:
-					set {_y} to {_y} - 360
-				set yaw of {_m1} to {_y}
-			else:
-				set {_p} to {_p} - 90
-			set pitch of {_m1} to {_p}
-			set {_test1} to 0.5 * cos({_rad})
-			set {_t1} to location {_test1} meters in front of {_m1}
-			set {_m2} to {_eb}
-			set pitch of {_m2} to 0
-			set {_test2} to 0.5 * sin({_rad})
-			set {_t2} to location {_test2} meters to the right of {_m2}
-			set x-coordinate of {_eb} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_eb}
-			set y-coordinate of {_eb} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_eb}
-			set z-coordinate of {_eb} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_eb}
-			spawnParticle(happy_villager, {_eb})
-		# #############################
-			wait a tick
-		if {_tg} is set:
-			playSound("entity.player.levelup", 1, 1, {_tg})
-			playSound("entity.player.levelup", 1, 1, {_player})
-			kitMsg({_player}, "§6%{_tg}% §aの職を奪った!")
-			message formatted "§3職を奪われてしまった!" to {_tg}
-			set {_class} to {Class::%{_tg}%}
-			set {Stats.%{_tg}%::Stealed.Job Switch} to true
-			set {Stats.%{_player}%::Stealing.Job Switch} to true
-		# Needyにする処理 ##############
-			set {_jewel} to saveJewels({_tg})
-			set {_gem} to saveGems({_tg})
-			set {_wool} to saveWools({_tg})
-			set {_spwool} to saveSpecialWool({_tg})
-			set {_th} to {_tg}'s health
-			execute console command "/skclass %{_tg}% Kit-Needy"
-			set {_tg}'s health to {_th}
-			giveEmJItems({_tg}, {_jewel}, {_gem})
-			giveStWItems({_tg}, {_wool}, {_spwool})
-		# lootアイテムを渡す処理 ########
-			set {_skills::*} to kitSkillList({_class})
-			loop {_skills::*}:
-				add 1 to {_sknum}
-				set {_skills::%loop-index%} to kitItemTagChanger({_skills::%loop-index%}, {_class}, "Skill", {_sknum})
-			set {StealItem-Job Switch.%{_player}%::*} to {_skills::*}
-			set {_lootitem} to a bundle named "%display name of {_tool}% §b[§eloot§b]" with lore lore of {_tool}
-			set {_lootitem} to kitItemTagChanger({_lootitem}, "Thief", "Skill", 5)
-			remove {_tool} from {_player}
-			give {_lootitem} to {_player}
-		# #############################
-			wait 5 seconds
-			if {Stats.%{_tg}%::Stealed.Job Switch} is true:
-				set {_jewel} to saveJewels({_tg})
-				set {_gem} to saveGems({_tg})
-				set {_wool} to saveWools({_tg})
-				set {_spwool} to saveSpecialWool({_tg})
-				execute console command "/class %{_class}% %{_tg}% false"
-				giveEmJItems({_tg}, {_jewel}, {_gem})
-				giveStWItems({_tg}, {_wool}, {_spwool})
-				delete {Stats.%{_tg}%::Stealed.Job Switch}
-			if {Stats.%{_player}%::Stealing.Job Switch} is true:
-				remove {_lootitem} from {_player}
-				give {_tool} to {_player}
-				delete {StealItem-Job Switch.%{_player}%::*}
-				delete {Stats.%{_player}%::Stealing.Job Switch}
+			set {_tg} to loop-player
+		playSound("entity.experience_orb.pickup", 1, 0.05 * {_front}, {_loc})
+		spawnParticle(happy_villager, {_loc})
+	# 円を描くパーティクル ##########
+		set {_eb} to {_loc}
+		set {_m1} to {_eb}
+		set {_p} to pitch of {_m1}
+		if {_p} < 0:
+			set {_p} to -1 * 90 - {_p}
+			set {_y} to yaw of {_m1}
+			add 180 to {_y}
+			if {_y} >= 360:
+				set {_y} to {_y} - 360
+			set yaw of {_m1} to {_y}
+		else:
+			set {_p} to {_p} - 90
+		set pitch of {_m1} to {_p}
+		set {_test1} to 0.5 * cos({_rad})
+		set {_t1} to location {_test1} meters in front of {_m1}
+		set {_m2} to {_eb}
+		set pitch of {_m2} to 0
+		set {_test2} to 0.5 * sin({_rad})
+		set {_t2} to location {_test2} meters to the right of {_m2}
+		set x-coordinate of {_eb} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_eb}
+		set y-coordinate of {_eb} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_eb}
+		set z-coordinate of {_eb} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_eb}
+		spawnParticle(happy_villager, {_eb})
+	# #############################
+		wait a tick
+	if {_tg} is not set:
+		stop
+	playSound("entity.player.levelup", 1, 1, {_tg})
+	playSound("entity.player.levelup", 1, 1, {_player})
+	kitMsg({_player}, "§6%{_tg}% §aの職を奪った!")
+	message formatted "§3職を奪われてしまった!" to {_tg}
+	set {_class} to {Class::%{_tg}%}
+	set {Stats.%{_tg}%::Stolen.Job Switch} to true
+	# Needyにする処理 ##############
+	set {_th} to health of {_tg}
+	execute console command "/skclass %{_tg}% Kit-Needy"
+	set health of {_tg} to {_th}
+	# Kitを変更する処理 ########
+	execute console command "/kjc %{_player}%"
+	execute console command "/class %{_class}% %{_player}% false"
+	set {Stats.%{_player}%::Stealing.Job Switch} to true
+	# #############################
+	wait 3 seconds
+	if {Stats.%{_tg}%::Stolen.Job Switch} is true:
+		execute console command "/class %{_class}% %{_tg}% false"
+		delete {Stats.%{_tg}%::Stolen.Job Switch}
+	wait 7 seconds
+	if {Stats.%{_player}%::Stealing.Job Switch} is true:
+		execute console command "/kjc %{_player}%"
+		execute console command "/class Thief %{_player}% false"
+		delete {Stats.%{_player}%::Stealing.Job Switch}
