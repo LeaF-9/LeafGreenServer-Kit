@@ -45,13 +45,13 @@ function kitSkill_Thief_7(player: player):
 			set {_type.%loop-player%} to {Class::%loop-player%}
 		loop 3 times:
 			set {_skill} to kitPlayerSkillItem(loop-player, {_type.%loop-player%}, loop-number)
+			remove {_skill} from loop-player
 			if loop-player's inventory contains {_skill}:
 				add {_skill} to {_stolenskills.%loop-player%::*}
 				set {_nbt} to nbt item compound of {_skill}
 				set tag "stolen" of {_nbt} to "Theft Declaration"
 				set {_newskill} to {_skill} with nbt {_nbt}
 				add {_newskill} to {_skills::*}
-			remove {_skill} from loop-player
 		if size of {_stolenskills.%loop-player%::*} is not 0:
 			set {Stats.%loop-player%::Stolen.Theft Declaration} to true
 			add loop-player to {_stolens::*}
