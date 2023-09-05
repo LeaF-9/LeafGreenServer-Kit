@@ -114,21 +114,25 @@ command /testyaml-preparing:
 command /testyaml-execute:
 	permission: sk.admin
 	trigger:
-		message formatted "§a実行方法①: §b多数のymlに分けて読み込む方法" to player
-		message formatted "§9実行開始時間: §b%now%" to player
+		log "§a実行方法①: §b多数のymlに分けて読み込む方法"
+		set {_old} to now
+		log "§9実行開始..."
 		loop 10000 times:
 			load yml "plugins/skript-yaml/Test Files/File/%loop-number%.yml" as "test"
 			set {_v} to yml value "kill" from "test"
 			add {_v} to {_results::*}
 			unload yml "test"
-		message formatted "§9実行完了時間: §b%now%" to player
+		set {_now} to now
+		log "§9実行完了! §b%difference between {_old} and {_now}%"
 		delete {_results::*}
-		message formatted "§a実行方法②: §b単一のymlに詰めて読み込む方法" to player
-		message formatted "§9実行開始時間: §b%now%" to player
+		log "§a実行方法②: §b単一のymlに詰めて読み込む方法"
+		set {_old} to now
+		log "§9実行開始..."
 		load yml "plugins/skript-yaml/Test Files/Yaml/test.yml" as "test"
 		loop 10000 times:
 			set {_v} to yml value "%loop-number%.kill" from "test"
 			add {_v} to {_results::*}
 		unload yml "test"
-		message formatted "§9実行完了時間: §b%now%" to player
+		set {_now} to now
+		log "§9実行完了! §b%difference between {_old} and {_now}%"
 			
