@@ -43,11 +43,15 @@ function kitSkillThief(player: player) :: boolean:
 on drop:
 	{Class::%player%} is "Thief"
 	set {_item} to event-item
+	log "%{_item}%"
 	set {_nbt} to nbt item compound of {_skill}
 	set {_tag} to tag "stolen" of {_nbt}
+	log "%{_tag}%"
 	loop {StealItem-%{_tag}%.%player%::*}:
 		loop-value is {_item}
 		set {_index} to loop-index parsed as number + 1
+	log "%{_index}%"
+	log "%{StealItem-%{_tag}%.%player%::%{_index}%}%"
 	if {StealItem-%{_tag}%.%player%::%{_index}%} is not set:
 		set {_index} to 1
 	remove event-item from player
@@ -61,46 +65,8 @@ on drop:
 on inventory click:
 	metadata value "gametype" of player is "Kit"
 	type of event-inventory is chest inventory
-	if inventory name of event-inventory contains "§e§lLoot Item§8:":
-		cancel event
-		set {_skill} to clicked item
-		{_skill} is set
-		"%type of {_skill}%" is not "air"
-		if kitItemKitChecker({_skill}) is not "Thief":
-			set {_inv} to inventory name of event-inventory
-			replace "§e§lLoot Item§8: §6" with "" in {_inv}
-			if {Stats.%player%::Stealing.%{_inv}%} is true:
-				set {Stats.%player%::UsingSteal.%{_inv}%} to true
-				delete {Stats.%player%::Stealing.%{_inv}%}
-				delete {StealItem-%{_inv}%.%player%::*}
-				loop all items in player's inventory:
-					name of loop-item contains "%{_inv}%"
-					name of loop-item contains "§b[§eloot§b]"
-					set {_lootitem} to loop-item
-				remove {_lootitem} from player
-				give {_skill} to player
-				kitItemTargetTimer(player, {_skill})
-				kitMsg(player, "§b選択スキルを§6§l獲得§bしました!")
-				close player's inventory
-				wait 10 seconds
-				if {Stats.%player%::UsingSteal.%{_inv}%} is true:
-					delete {Stats.%player%::UsingSteal.%{_inv}%}
-					if {_inv} is "Perfect Steal":
-						set {_skillnum} to 3
-					else if {_inv} is "Job Switch":
-						set {_skillnum} to 5
-					else if {_inv} is "Theft Declaration":
-						set {_skillnum} to 7
-					set {_return} to kitSkillItem("Thief", {_skillnum})
-					set {_return} to kitItemTagChanger({_return}, "Thief", "Skill", {_skillnum})
-					remove {_skill} from player
-					give {_return} to player
-			else:
-				kitMsg(player, "§c§l既にスキルを返却済です!")
-		else:
-			kitMsg(player, "§c§lThiefのスキルを盗むことは出来ません!")
 	# --- Skill 6 ---
-	else if inventory name of event-inventory is "§6§lSkin Scanner":
+	if inventory name of event-inventory is "§6§lSkin Scanner":
 		cancel event
 		set {_playeritem} to clicked item
 		{_playeritem} is set
@@ -171,15 +137,6 @@ on inventory click:
 		else:
 			send action bar "§c§l既にマーカーが破壊されています!" to player
 	# -----------------
-
-function kitStealItem(player: player, inv: text):
-	wait a tick
-	open chest with 3 row named "§e§lLoot Item§8: §6%{_inv}%" to {_player}
-	wait a tick
-	set {_slot} to 0
-	loop {StealItem-%{_inv}%.%{_player}%::*}:
-		set slot {_slot} of {_player}'s current inventory to loop-value
-		add 1 to {_slot}
 # -----------------------
 
 on damage of player:
