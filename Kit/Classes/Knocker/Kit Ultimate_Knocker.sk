@@ -1,44 +1,80 @@
 # Enormous Hurricane
 
 function kitUltKnocker(player: player):
-	message "§c自身を中心に半径10mの絶対領域を展開します!" to {_player}
-	message "§c展開時,中に居た敵は脱出が不可能になります!" to {_player}
-	message "§c展開時,外に居た敵は侵入が不可能になります!" to {_player}
+	message "§c前方に進んでいく超巨大竜巻を召喚します!" to {_player}
+	message "§cこの竜巻内にいる敵は渦巻状に吹き飛ばされます!" to {_player}
 	set {_loc} to location of {_player}
-	loop all entities in radius 10 around {_loc}:
-		kitCheckTeam(loop-entity, {_player}, false) is true
-		add id of loop-entity to {_ats::*}
 	loop 200 times:
-		if mod(loop-number, 20) is 0:
-			playSound("block.portal.ambient", 0.5, 1, {_loc})
+		# 竜巻中心点の設定
+		set {_loc} to location 0.15 meters in front of {_loc}
+		if block at {_loc} is not passable:
+			set {_loc} to location 0.1 meters above {_loc}
+		else if block 0.1 meters below {_loc} is passable:
+			set {_loc} to location 0.1 meters below {_loc}
+		# 演出関数
+		kitParticle_EnormousHurricane_Hurricane({_loc}, loop-number)
+		# 吹き飛ばし効果
 		loop all entities:
-			kitCheckTeam(loop-entity, {_player}, false) is true
-			set {_dis} to distance between loop-entity and {_loc}
-			set {_to} to location of loop-entity
-			if {_ats::*} contains id of loop-entity:
-				if {_dis} > 20:
-					teleport loop-entity to {_loc}
-				else if {_dis} > 10:
-					set {_vector} to setVector({_to}, {_loc})
-					set velocity of loop-entity to {_vector}
-			else:
-				if {_dis} <= 10:
-					set {_vector} to setVector({_loc}, {_to})
-					set velocity of loop-entity to {_vector}
-		set {_s} to 0
-		set {_t} to 0
-		loop 37 time:
-			loop 72 time:
-				set {_el} to {_loc}
-				set {_v} to {_el}
-				set {_x} to x-coordinate of {_el}
-				set {_y} to y-coordinate of {_el}
-				set {_z} to z-coordinate of {_el}
-				set x-coordinate of {_v} to {_x} + ( 10 * sin({_s}) * cos({_t}) )
-				set y-coordinate of {_v} to {_y} + ( 10 * cos({_s}) )
-				set z-coordinate of {_v} to {_z} + ( 10 * sin({_s}) * sin({_t}) )
-				chance of 0.5%:
-					drawDot count 1, particle "redstone", RGB 150, 0, 150, center {_v}, visibleRange 100, keepFor 5 ticks
-				add 5 to {_t}
-			add 5 to {_s}
+			kitCheckTeam({_player}, loop-entity, false) is true
+			# 効果範囲チェック
+			set {_checkloc} to location of loop-entity
+			if y-pos of {_checkloc} < y-pos of {_loc}:
+				continue
+			if y-pos of {_checkloc} > y-pos of {_loc} + 30:
+				continue
+			set y-pos of {_checkloc} to y-pos of {_loc}
+			if distance between {_loc} and {_checkloc} > 15:
+				continue
+			# vector設定
+			set {_v} to setVector({_loc}, {_checkloc})
+			set {_vl} to setDirToVec(location of loop-entity, {_v})
+			set {_vyaw} to yaw of {_vl} - 80
+			set {_vpitch} to -10
+			set {_pushvec} to vector from yaw {_vyaw} and pitch {_vpitch}
+			set {_pushvec} to normalized {_pushvec} ** vector(0.5, 0.5, 0.5)
+			# 吹き飛ばし
+			set velocity of loop-entity to {_pushvec}
+			# ヒット演出
+			kitParticle_EnormousHurricane_Hit(loop-entity, {_pushvec})
 		wait a tick
+
+# 竜巻演出
+function kitParticle_EnormousHurricane_Hurricane(baseloc: location, ln: number):
+	# 音
+	chance of 10%:
+		set {_pitch} to a random number between 0.5 and 2
+		playSound("entity.wither.shoot", 1, {_pitch}, {_baseloc})
+	# 見た目
+	set {_baserad} to {_ln} * 15
+	set {_m} to 5
+	loop 60 times:
+		add 0.17 to {_m}
+		add 0.5 to {_y}
+		loop 10 times:
+			set {_rotrad} to {_baserad} + 36 * loop-number-2
+			set {_rad} to {_rotrad} + 20 * loop-number-1
+			set {_el} to {_baseloc}
+			add {_m} * sin({_rad}) to x-pos of {_el}
+			add {_m} * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			set {_size} to a random number between 0.5 and 2.5
+			chance of 30%:
+				spawnParticle_DustTransition(rgb(187, 226, 241), rgb(160, 216, 239), {_size}, {_el})
+
+# 風演出
+function kitParticle_EnormousHurricane_Hit(entity: entity, vector: vector):
+	# 音
+	set {_pitch} to a random number between 1 and 2
+	playSound("entity.phantom.flap", 0.75, {_pitch}, {_entity})
+	# 見た目
+	loop 5 times:
+		set {_baseel} to location of {_entity}
+		add a random number between -1 and 1 to x-pos of {_baseel}
+		add a random number between -1 and 1 to z-pos of {_baseel}
+		add a random number between 0 and 2 to y-pos of {_baseel}
+		set {_baseel} to setDirToVec({_baseel}, {_vector})
+		set {_m} to 0
+		loop 10 times:
+			add 0.1 to {_m}
+			set {_el} to location {_m} meters in front of {_baseel}
+			spawnParticle_Dust(rgb(235, 246, 247), 0.5, {_el})
