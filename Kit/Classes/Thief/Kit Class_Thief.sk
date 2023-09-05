@@ -45,7 +45,8 @@ on drop:
 	set {_item} to event-item
 	set {_nbt} to nbt item compound of {_item}
 	set {_tag} to tag "stolen" of {_nbt}
-	log "%{_tag}%"
+	if {_tag} is not set::
+		stop
 	loop {StealItem-%{_tag}%.%player%::*}:
 		loop-value is {_item}
 		set {_index} to loop-index parsed as number + 1
