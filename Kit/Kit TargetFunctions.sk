@@ -18,7 +18,11 @@ function kitTargetPlayer(player: player, distance: number, ally: boolean = false
 			set {_former} to {Stats.%{_player}%::SkillTarget}
 			packetUnglowing({_player}, {_former})
 		set {Stats.%{_player}%::SkillTarget} to {_target}
-		packetGlowing({_player}, {_target})
+		if {_ally} is true:
+			set {_color} to rgb(0, 255, 0)
+		else:
+			set {_color} to rgb(255, 0, 0)
+		packetGlowing({_player}, {_target}, {_color})
 	else:
 		if {Stats.%{_player}%::SkillTarget} is set:
 			set {_former} to {Stats.%{_player}%::SkillTarget}
