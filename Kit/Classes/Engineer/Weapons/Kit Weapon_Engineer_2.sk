@@ -21,7 +21,7 @@ on damage:
 	set damage to damage + {_damage.add}
 	loop all players in radius 10 * {_energy.calc} around victim:
 		kitCheckTeam(victim, loop-player, true) is true
-		kitParticle_CyberLance_Trail(victim. loop-player)
+		kitParticle_CyberLance_Trail(victim, loop-player)
 		kitTrail(loop-player, 10 seconds)
 
 on sneak toggle:
@@ -123,7 +123,7 @@ function kitParticle_CyberLance_Attack(player: player, target: entity, power: nu
 	set {_num.distance} to round(distance between {_player} and {_target})
 	loop {_num.distance} times:
 		set {_el} to location loop-number meters in front of {_from}
-		spanwParticle(end_rod, {_el})
+		spawnParticle(end_rod, {_el})
 	# toに円形爆風
 	set {_s} to 0
 	set {_t} to 0
@@ -149,7 +149,7 @@ function kitParticle_CyberLance_Attack(player: player, target: entity, power: nu
 		set {_v} to setVector({_from}, {_to})
 		set yaw of {_from} to yaw of {_v}
 		set pitch of {_from} to pitch of {_v}
-		set {_ln}
+		set {_ln} to 0
 		loop round({_power} * 5) times:
 			add 0.2 to {_ln}
 			set {_el} to location {_ln} meters in front of {_from}
@@ -159,7 +159,7 @@ function kitParticle_CyberLance_Trail(player.from: entity, player.to: player):
 	# from-to Vibration
 	set {_loc.from} to location of {_player.from}
 	set {_loc.to} to location of {_player.to}
-	spawnParticle_Vibration({_loc.to}, 1 second, {_loc.from})
+	spawnParticle_Vibration({_loc.from}, {_loc.to}, 1 second)
 
 function kitParticle_CyberLance_Charge(player: player):
 	set {_baseloc} to aroundEffect({_player})
