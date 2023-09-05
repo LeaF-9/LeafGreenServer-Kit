@@ -117,10 +117,11 @@ command /testyaml-execute:
 		log "§a実行方法①: §b多数のymlに分けて読み込む方法"
 		set {_old} to now
 		log "§9実行開始..."
+		set {_total} to 0
 		loop 10000 times:
 			load yml "plugins/skript-yaml/Test Files/File/%loop-number%.yml" as "test"
 			set {_v} to yml value "kill" from "test"
-			add {_v} to {_results::*}
+			add 1 to {_total}
 			unload yml "test"
 		set {_now} to now
 		log "§9実行完了! §b%difference between {_old} and {_now}%"
@@ -128,10 +129,11 @@ command /testyaml-execute:
 		log "§a実行方法②: §b単一のymlに詰めて読み込む方法"
 		set {_old} to now
 		log "§9実行開始..."
+		set {_total} to 0
 		load yml "plugins/skript-yaml/Test Files/Yaml/test.yml" as "test"
 		loop 10000 times:
 			set {_v} to yml value "%loop-number%.kill" from "test"
-			add {_v} to {_results::*}
+			add 1 to {_total}
 		unload yml "test"
 		set {_now} to now
 		log "§9実行完了! §b%difference between {_old} and {_now}%"
