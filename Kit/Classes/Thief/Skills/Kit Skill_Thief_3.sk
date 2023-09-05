@@ -47,8 +47,9 @@ function kitSkill_Thief_3(player: player):
 	give {_giveitems::1} to {_player}
 	wait 7 seconds
 	if {Stats.%{_tg}%::Stolen.Perfect Robbery} is true:
-		loop {_own::*}:
-			give loop-value to {_tg}
+		loop 3 times:
+			set {_skill} to kitPlayerSkillItem({_tg}, {_type}, loop-number)
+			give {_skill} to {_tg}
 		delete {Stats.%{_tg}%::Stolen.Perfect Robbery}
 	if {Stats.%{_player}%::Stealing.Perfect Robbery} is true:
 		loop {_giveitems::*}:
