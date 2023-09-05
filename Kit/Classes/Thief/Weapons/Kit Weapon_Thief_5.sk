@@ -23,10 +23,11 @@ on sneak toggle:
 
 on damage of player:
 	attacker is set
+	victim is sneaking
 	{Class::%victim%} is "Thief"
 	set {_tool} to victim's tool
 	kitItemAllChecker({_tool}, "Thief", "Weapon.main", 5) is true
-	kitDamage(victim, attacker, 0.5, true)
+	kitDamage(victim, attacker, 1, true)
 	set {_c} to kitPercentDuel(victim, attacker, 30)
 	chance of {_c}%:
 		kitBlood(attacker)
