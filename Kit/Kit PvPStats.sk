@@ -15,93 +15,34 @@ on death of player:
 # Ultのチャージ
 	if {Ulting::%{LastKiller::%victim%}%} is not set:
 		add 5 to {Ultimate::%{LastKiller::%victim%}%}
-# UUIDやKitなど変数の保存
-	set {_attacker.name} to {LastKiller::%victim%}
-	set {_attacker.UUID} to {LastKiller::%victim%}'s UUID
-	set {_victim.name} to victim
-	set {_victim.UUID} to victim's UUID
-	set {_attacker.kit} to {Class::%{LastKiller::%victim%}%}
-	set {_victim.kit} to {Class::%victim%}
-	set {_damagecause} to damage cause
-	set {_now} to now
-# yaml動作 ######################################
-#
-# kill idの設定
-	set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Kills"
-	set {_id.kill} to size of {_files::*}
-	add 1 to {_id.kill}
-#
-# 内容の記述
-	load yml "plugins/skript-yaml/Kit Kills/%{_id.kill}%.yml" as "kill.%{_id.kill}%"
-	set yml value "game" from "kill.%{_id.kill}%" to {Kit-GameID}
-	set yml value "killer-player" from "kill.%{_id.kill}%" to {_attacker.UUID}
-	set yml value "killer-kit" from "kill.%{_id.kill}%" to {_attacker.kit}
-	set yml value "victim-player" from "kill.%{_id.kill}%" to {_victim.UUID}
-	set yml value "victim-kit" from "kill.%{_id.kill}%" to {_victim.kit}
-	set yml value "cause" from "kill.%{_id.kill}%" to {_damagecause}
-	set yml value "time" from "kill.%{_id.kill}%" to {_now}
-	save yml "kill.%{_id.kill}%"
-#
-# ###############################################
-# message送信
+	set {_killid} to kitSaveKillInfo(victim, damage cause)
 	message "{@prefix} §e%victim% §dをキルしました" to {LastKiller::%victim%}
 # Soulの贈与
 	add 2 to {Kit-Soul::%{_attacker.UUID}%}
-# Assist Check ##################################
-#
-# 自身をAssist候補から省く
+# Assist Check
+# # 自身をAssist候補から省く
 	set {_true.%{LastKiller::%victim%}%} to true
-#
-# victimに攻撃を与えた者をループ
+# # victimに攻撃を与えた者をループ
 	loop {damager.%victim%::*}:
 		loop-value is not {LastKiller::%victim%}  # アシスト者とキラーが同一人物でないかどうか
 		{TrueTeam::%loop-value%} is {TrueTeam::%{LastKiller::%victim%}%}  # チームが同一であるかどうか
 		{_true.%loop-value%} is not set  # 既にアシストとして換算済でないかどうか
 		add loop-value to {_supporters::*}  # サポート者の保存
-		set {_assist.UUID} to loop-value's UUID  # UUIDの保存
-		set {_assist.kit} to {Class::%loop-value%}  # Kitの保存
+		kitSaveAssistInfo(loop-value, {_killid})
 		if {Ulting::%loop-value%} is not set:  # Ultのチャージ
 			add 3 to {Ultimate::%loop-value%}
-#
-#	assist ID の取得
-		set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Assists"
-		set {_id.assist} to size of {_files::*}
-		add 1 to {_id.assist}
-#
-#	内容の記述
-		load yml "plugins/skript-yaml/Kit Assists/%{_id.assist}%.yml" as "assist.%{_id.assist}%"
-		set yml value "kill-id" from "assist.%{_id.assist}%" to {_id.kill}
-		set yml value "assist-player" from "assist.%{_id.assist}%" to {_assist.UUID}
-		set yml value "assist-kit" from "assist.%{_id.assist}%" to {_assist.kit}
-		save yml "assist.%{_id.assist}%"
-#
 		set {_true.%loop-value%} to true  # 換算済として設定
 		message "{@prefix} §e%victim% §aのキルアシストをしました" to loop-value  # メッセージ送信
 		add 1 to {Kit-Soul::%loop-value's UUID%}  # Soulの贈与
-#
-# Killerにアシストした者をループ
+# # Killerにアシストした者をループ
 	loop {supporter.%{LastKiller::%victim%}%::*}:
 		loop-value is not {LastKiller::%victim%}  # アシスト者とキラーが同一人物でないかどうか
 		{TrueTeam::%loop-value%} is {TrueTeam::%{LastKiller::%victim%}%}  # チームが同一であるかどうか
 		{_true.%loop-value%} is not set  # 既にアシストとして換算済でないかどうか
 		add loop-value to {_supporters::*}  # サポート者の保存
-		set {_assist.UUID} to loop-value's UUID  # UUIDの保存
-		set {_assist.kit} to {Class::%loop-value%}  # Kitの保存
+		kitSaveAssistInfo(loop-value, {_killid})
 		if {Ulting::%loop-value%} is not set:  # Ultのチャージ
 			add 3 to {Ultimate::%loop-value%}
-#
-#	assist ID の取得
-		set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Assists"
-		set {_id.assist} to size of {_files::*}
-		add 1 to {_id.assist}
-#
-#	内容の記述
-		load yml "plugins/skript-yaml/Kit Assists/%{_id.assist}%.yml" as "assist.%{_id.assist}%"
-		set yml value "kill-id" from "assist.%{_id.assist}%" to {_id.kill}
-		set yml value "assist-player" from "assist.%{_id.assist}%" to {_assist.UUID}
-		set yml value "assist-kit" from "assist.%{_id.assist}%" to {_assist.kit}
-		save yml "assist.%{_id.assist}%"
-#
 		set {_true.%loop-value%} to true  # 換算済として設定
 		message "{@prefix} §e%victim% §aのキルアシストをしました" to loop-value  # メッセージ送信
 		add 1 to {Kit-Soul::%loop-value's UUID%}  # Soulの贈与

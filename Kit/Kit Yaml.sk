@@ -1,7 +1,102 @@
-function kitSaveKillLogs():
+function kitSaveKillInfo(victim: player, damagecause: damage cause) :: number:
+	set {_attacker.name} to {LastKiller::%{_victim}%}
+	set {_attacker.UUID} to {LastKiller::%{_victim}%}'s UUID
+	set {_victim.name} to {_victim}
+	set {_victim.UUID} to UUID of {_victim}
+	set {_attacker.kit} to {Class::%{LastKiller::%{_victim}%}%}
+	set {_victim.kit} to {Class::%{_victim}%}
+	set {_damagecause} to damage cause
+	set {_now} to now
+	set {_killid} to a random UUID
+	add {_killid} to {Kit-GameInfo.Kills::*}
+	set {Kit-GameInfo.killer-player::%{_killid}%} to {_attacker.UUID}
+	set {Kit-GameInfo.killer-kit::%{_killid}%} to {_attacker.kit}
+	set {Kit-GameInfo.victim-player::%{_killid}%} to {_victim.UUID}
+	set {Kit-GameInfo.victim-kit::%{_killid}%} to {_victim.kit}
+	set {Kit-GameInfo.cause::%{_killid}%} to {_damagecause}
+	set {Kit-GameInfo.time::%{_killid}%} to {_now} to {_now}
+	return {_killid}
 
-function kitSaveGameLogs():
+function kitSaveAssistInfo(player: player, killid: number):
+	set {_assistid} to a random UUID
+	add {_assistid} to {Kit-GameInfo.Assists::*}
+	set {_assist.UUID} to uuid of {_player}
+	set {_assist.kit} to {Class::%{_player}%}
+	set {Kit-GameInfo.assist-killid::%{_assistid}%} to {_killid}
+	set {Kit-GameInfo.assist-player::%{_assistid}%} to {_assist.UUID}
+	set {Kit-GameInfo.assist-kit::%{_assistid}%} to {_assist.kit}
 
+function kitStoreKillLogs():
+	# Kills
+	set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Kills"
+	set {_baseid.kill} to size of {_files::*}
+	set {_ln} to 0
+	loop {Kit-GameInfo.Kills::*}:
+		add 1 to {_ln}
+		set {_id.kill} to {_baseid.kill} + {_ln}
+		set {_uuid.kill} to loop-value
+		load yml "plugins/skript-yaml/Kit Kills/%{_id.kill}%.yml" as "kill.%{_id.kill}%"
+		set yml value "game" from "kill.%{_id.kill}%" to {Kit-GameID}
+		set yml value "killer-player" from "kill.%{_id.kill}%" to {Kit-GameInfo.killer-player::%{_uuid.kill}%}
+		set yml value "killer-kit" from "kill.%{_id.kill}%" to {Kit-GameInfo.killer-kit::%{_uuid.kill}%}
+		set yml value "victim-player" from "kill.%{_id.kill}%" to {Kit-GameInfo.victim-player::%{_uuid.kill}%}
+		set yml value "victim-kit" from "kill.%{_id.kill}%" to {Kit-GameInfo.victim-kit::%{_uuid.kill}%}
+		set yml value "cause" from "kill.%{_id.kill}%" to {Kit-GameInfo.cause::%{_uuid.kill}%}
+		set yml value "time" from "kill.%{_id.kill}%" to {Kit-GameInfo.time::%{_uuid.kill}%}
+		save yml "kill.%{_id.kill}%"
+	delete {Kit-GameInfo.Kills::*}
+	delete {Kit-GameInfo.killer-player::*}
+	delete {Kit-GameInfo.killer-kit::*}
+	delete {Kit-GameInfo.victim-player::*}
+	delete {Kit-GameInfo.victim-kit::*}
+	delete {Kit-GameInfo.cause::*}
+	delete {Kit-GameInfo.time::*}
+	# Assists
+	set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Assists"
+	set {_baseid.assist} to size of {_files::*}
+	set {_ln} to 0
+	loop {Kit-GameInfo.Assists::*}:
+		add 1 to {_ln}
+		set {_id.assist} to {_baseid.assist} + {_ln}
+		set {_uuid.assist} to loop-value
+		load yml "plugins/skript-yaml/Kit Assists/%{_id.assist}%.yml" as "assist.%{_id.assist}%"
+		set yml value "kill-id" from "assist.%{_id.assist}%" to {Kit-GameInfo.assist-killid::%{_uuid.assist}%}
+		set yml value "assist-player" from "assist.%{_id.assist}%" to {Kit-GameInfo.assist-player::%{_uuid.assist}%}
+		set yml value "assist-kit" from "assist.%{_id.assist}%" to {Kit-GameInfo.assist-kit::%{_uuid.assist}%}
+		save yml "assist.%{_id.assist}%"
+	delete {Kit-GameInfo.Assists::*}
+	delete {Kit-GameInfo.assist-killid::*}
+	delete {Kit-GameInfo.assist-player::*}
+	delete {Kit-GameInfo.assist-kit::*}
+
+function kitStoreGameLogs():
+	set {_id.game} to {Kit-GameID}
+	set {_time.game} to {Kit-GameTimestamp}
+	set {_duration.game} to {Kit-GameTime}
+	delete {Kit-GameID}
+	delete {Kit-GameTimestamp}
+	load yml "plugins/skript-yaml/Kit Games/%{_id.game}%.yml" as "game.%{_id.game}%"
+	set yml value "map" from "game.%{_id.game}%" to {Kit-GameStage::name}
+	set yml list "win-team" from "game.%{_id.game}%" to {Kit-WinTeam::*}
+	set yml value "time" from "game.%{_id.game}%" to {_time.game}
+	set yml value "duration" from "game.%{_id.game}%" to {_duration.game}
+	loop {Kit-GamePlayTime::*}:
+		set {_uuid} to loop-index
+		set {_player} to {UUID::%{_uuid}%}
+		set {_team} to {TrueTeam::%{_player}%}
+		if {Kit-GameStage::rule} is "DTC":
+			set {_action-1} to {Kit-Break.personal::%{_player}%}
+		else if {Kit-GameStage::rule} is "CTF":
+			set {_action-1} to {Kit-Hold.personal::%{_player}%}
+		else if {Kit-GameStage::rule} is "SH":
+			set {_action-1} to {Kit-Carry.personal::%{_player}%}
+		if {_action-1} is not set:
+			set {_action-1} to 0
+		set {_playtime} to loop-value
+		set yml value "players.%{_uuid}%.team" from "game.%{_id.game}%" to {_team}
+		set yml value "players.%{_uuid}%.action-1" from "game.%{_id.game}%" to {_action-1}
+		set yml value "players.%{_uuid}%.playtime" from "game.%{_id.game}%" to {_playtime}
+	save yml "game.%{_id.game}%"
 
 # test
 command /testyaml-preparing:
