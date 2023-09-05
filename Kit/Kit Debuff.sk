@@ -347,7 +347,7 @@ function kitTrail(player: player, time: time span, from: location = location(0.0
 	{Kit-Trail::%{_player}%} is not set
 	set {_now} to now
 	set {Kit-Trail::%{_player}%} to {_now}
-	create bossbar titled "&9d&l追跡" and id "%{_player}%-Trail" for {_player} with progress 100 with colors blue with style solid
+	create bossbar titled "&9&l追跡" and id "%{_player}%-Trail" for {_player} with progress 100 with colors blue with style solid
 	message "§9追跡された! §d自分の位置情報が残留してしまう!" to {_player}
 	playSound("item.lodestone_compass.lock", 1, 0.5, {_player})
 	# タイマー初期設定
@@ -380,6 +380,9 @@ function kitTrail(player: player, time: time span, from: location = location(0.0
 			# 追跡位置追加
 			set {_loc} to location of {_player}
 			set {_index.last} to size of {_traillocs::*}
+			set {_lastloc} to {_traillocs::%{_index.last}%}
+			set yaw of {_lastloc} to yaw of {_loc}
+			set pitch of {_lastloc} to pitch of {_loc}
 			if {_traillocs::%{_index.last}%} is not {_loc}:
 				add {_loc} to {_traillocs::*}
 				# 追跡過程にポイント召喚
