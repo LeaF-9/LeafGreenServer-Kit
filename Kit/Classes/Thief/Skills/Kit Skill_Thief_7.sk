@@ -33,18 +33,18 @@ function kitSkill_Thief_7(player: player):
 		applyEffect(loop-player, blindness, 1, 5 seconds)
 		if {Class::%loop-player%} is "Werewolf":
 			if {Stats.%loop-player%::Instinct} is true:
-				set {_type} to "Werewolf_Instinct"
+				set {_type.%loop-player%} to "Werewolf_Instinct"
 			else:
-				set {_type} to {Class::%loop-player%}
+				set {_type.%loop-player%} to {Class::%loop-player%}
 		else if {Class::%loop-player%} is "Vampire":
 			if {Stats.%loop-player%::BatMode} is true:
-				set {_type} to "Vampire_Bat"
+				set {_type.%loop-player%} to "Vampire_Bat"
 			else:
-				set {_type} to {Class::%loop-player%}
+				set {_type.%loop-player%} to {Class::%loop-player%}
 		else:
-			set {_type} to {Class::%loop-player%}
+			set {_type.%loop-player%} to {Class::%loop-player%}
 		loop 3 times:
-			set {_skill} to kitPlayerSkillItem(loop-player, {_type}, loop-number)
+			set {_skill} to kitPlayerSkillItem(loop-player, {_type.%loop-player%}, loop-number)
 			if loop-player's inventory contains {_skill}:
 				add {_skill} to {_stolenskills.%loop-player%::*}
 				set {_nbt} to nbt item compound of {_skill}
@@ -61,13 +61,15 @@ function kitSkill_Thief_7(player: player):
 	set {Stats.%{_player}%::Stealing.Theft Declaration} to true
 	set {StealItem-Theft Declaration.%{_player}%::*} to {_skills::*}
 	remove {_tool} from {_player}
+	wait a tick
 	give {_skills::1} to {_player}
 	wait 10 seconds
 	loop all players:
 		{_stolens::*} contains loop-player
 		if {Stats.%loop-player%::Stolen.Theft Declaration} is true:
-			loop {_stolenskill.%loop-player%::*}:
-				give loop-value-2 to loop-player
+			loop 3 times:
+				set {_skill} to kitPlayerSkillItem(loop-player, {_type.%loop-player%}, loop-number-2)
+				give {_skill} to loop-player
 			delete {Stats.%loop-player%::Stolen.Theft Declaration}
 	if {Stats.%{_player}%::Stealing.Theft Declaration} is true:
 		loop {_skills::*}:
