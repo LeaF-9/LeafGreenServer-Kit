@@ -133,6 +133,7 @@ function rankingChange(game: text, stats: text):
 			rankingUpdate("Kit", {_stats}, "lifetime")
 
 function rankingUpdate(game: text, stats: text, conf: text):
+	deleteRankingDisplay({_stats})
 	if {_conf} is "weekly":
 		set {_time} to "week"
 	if {_conf} is "monthly":
@@ -169,6 +170,18 @@ function rankingUpdate(game: text, stats: text, conf: text):
 		delete {_list::%{_highplayer}%}
 		delete {_highplayer}
 		wait 5 ticks
+
+function deleteRankingDisplay(stats: text):
+	loop all entities:
+		type of loop-entity is armor stand
+		set {_nbt} to nbt compound of loop-entity
+		tag "RankingDisplay" of {_nbt} is set
+
+function checkRankingDisplay(tag: text):
+	loop all entities:
+		type of loop-entity is armor StageRandomize
+		set {_tnt.nbt} to nbt compound of loop-entity
+		set tag "Fuse" of {_tnt.nbt} to {_tick}
 
 command /ranking <text> <text> <text>:
 	usage: /ranking <arg> <game> <stats>
