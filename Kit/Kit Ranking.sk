@@ -165,17 +165,29 @@ function rankingUpdate(game: text, stats: text, conf: text):
 			set {_highplayer} to loop-index
 		if {_high} is 0:
 			delete {_high}
+		setRankingDisplay({_stats}, {_num})
 		execute console command "/hd setline kit-ranking-%{_stats}% %{_hdnum}% &a%{_num}%&e. &f&l%{UUID::%{_highplayer}%}% &7 - &b%{_high}%"
 		set {_high} to 0
 		delete {_list::%{_highplayer}%}
 		delete {_highplayer}
 		wait 5 ticks
 
+function setRankingDisplay(stats: text, rank: number, display: text):
+	loop all entities:
+		type of loop-entity os armor stand
+		set {_nbt} to nbt compound of loop-entity
+		tag "RankingDisplay" of {_nbt} is {_stats}
+		tag "RankingDisplay-Rank" of {_nbt} is {_rank}
+		set {_disent} to loop-entity
+	if {_disent} is not set:
+		
+
 function deleteRankingDisplay(stats: text):
 	loop all entities:
 		type of loop-entity is armor stand
 		set {_nbt} to nbt compound of loop-entity
-		tag "RankingDisplay" of {_nbt} is set
+		tag "RankingDisplay" of {_nbt} is {_stats}
+		delete loop-entity
 
 function checkRankingDisplay(tag: text):
 	loop all entities:
