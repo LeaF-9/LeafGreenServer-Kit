@@ -52,9 +52,7 @@ function kitSkill_Engineer_3(player: player, loc: location):
 			loop all players:
 				kitCheckTeam(loop-player, {_player}, true) is true
 				if tool of loop-player is a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします":
-					packetGlowing(loop-player, {_fallingblock})
-				else:
-					packetUnglowing(loop-player, {_fallingblock})
+					kitParticle_JumpBeacon_Location(loop-player, {_fallingblock})
 		else:
 			delete {Stats.%{_player}%::JumpBeacon-Time-%{_num}%}
 	if {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} is not set:
@@ -127,3 +125,21 @@ function kitParticle_JumpBeacon_Jumped(baseloc: location):
 			add 0.5 * cos({_rad}) to z-coordinate of {_el}
 			spawnParticle_Color(entity_effect, 255, 0, 255, {_el})
 		wait a tick
+
+# Beaconの位置に向けてパーティクルを表示する演出
+function kitParticle_JumpBeacon_Location(player: player, beacon: entity):
+	set {_baseloc} to location of {_player}
+	set {_vec} to setVector({_baseloc}, location of {_beacon})
+	set {_baseloc} to setDirToVec({_baseloc}, {_vec})
+	set {_dis} to floor(distance between {_player} and {_beacon})
+	# 直線表示
+	set {_baseline} to location 1 meter above {_baseloc}
+	loop {_dis} times:
+		set {_el} to location loop-number meters in front of {_baseline}
+		spawnParticle_Dust(rgb(255, 100, 100), 0.75, {_el})
+		if {_lastloc} is set:
+			continue
+		if block at {_el} is not passable:
+			set {_lastloc} to location 1 meter below {_baseloc}
+	# display表示
+	spawnParticle_BlockData(block_marker, redstone torch, {_lastloc})
