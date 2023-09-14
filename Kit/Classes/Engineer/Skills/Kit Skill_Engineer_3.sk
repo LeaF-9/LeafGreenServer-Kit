@@ -37,12 +37,11 @@ function kitSkill_Engineer_3(player: player, loc: location):
 			give a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします" to loop-player
 		delete {_exist}
 		loop all entities:
-			if entity type of loop-entity is armor stand:
+			if type of loop-entity is armor stand:
 				metadata value "kit-armor" of loop-entity is "Machine-Jump Beacon-%{_num}%"
 				metadata value "Machine-Jump Beacon-%{_num}%" of loop-entity is "%{_player}%"
 				set {_exist} to true
 			if {_fallingblock} is not set:
-				type of loop-entity is falling block
 				metadata value "kit-block" of loop-entity is "%{_player}%"
 				loop-entity is riding
 				metadata value "kit-armor" of vehicle of loop-entity is "Machine-Jump Beacon-%{_num}%"
@@ -74,7 +73,7 @@ function kitEffect_JumpBeacon_Select(player: player):
 		set {_loc} to location loop-number meters in front of {_baseloc}
 		loop all entities in radius 3 around {_loc}:
 			{_target} is not set
-			entity type of loop-entity is armor stand
+			type of loop-entity is armor stand
 			set {_metadata} to metadata value "kit-armor" of loop-entity
 			{_metadata} contains "Machine-Jump Beacon"
 			set {_holder} to metadata value {_metadata} of loop-entity parsed as offline player
