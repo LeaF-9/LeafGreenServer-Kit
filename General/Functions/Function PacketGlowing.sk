@@ -7,7 +7,7 @@ function packetGlowing(player: player, target: entity, color: color = white):
 	# set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
 	# set field 1 of {_pkt} to {_dw}
 	# send {_player} packet {_pkt}
-	targetParticles({_player}, {_target}, {_color})
+	skacketGlowing({_player}, {_target})
 
 function packetUnglowing(player: player, target: entity):
 	# waiting update of skript-packet...
@@ -18,7 +18,15 @@ function packetUnglowing(player: player, target: entity):
 	# set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
 	# set field 1 of {_pkt} to {_dw}
 	# send {_player} packet {_pkt}
+	skacketUnglowing({_player}, {_target})
 
+function skacketGlowing(player: player, target: entity):
+	set client glowing of {_target} to true for {_player}
+
+function skacketUnglowing(player: player, target: entity):
+	set client glowing of {_target} to false for {_player}
+
+# clientside particles
 function targetParticles(player: player, target: entity, color: color):
 	if "%type of {_target}%" is not "player":
 		stop
