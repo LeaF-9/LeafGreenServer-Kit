@@ -1,0 +1,49 @@
+# Saturn
+
+on sneak toggle:
+	{Class::%player%} is "Warrior"
+	player is not sneaking
+	set {_tool} to player's tool
+	if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 2) is true:
+		enchant player's tool with knockback 3
+		set {_true} to true
+		set {_num} to 0
+		wait a tick
+		while {_true} is true:
+			if player is not sneaking:
+				delete {_true}
+			set {_tool} to player's tool
+			if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 2) is false:
+				delete {_true}
+			add 1 to {_num}
+			if {_num} > 16:
+				set {_num} to 1
+			kitEffect_Saturn_1(player, {_num})
+			wait a tick
+		loop all items in player's inventory:
+			kitItemAllChecker(loop-item, "Warrior", "Weapon.main", 2) is true
+			disenchant loop-item
+			enchant loop-item with knockback 1
+
+function kitEffect_Saturn_1(player: player, pos: number):
+	# 音
+	chance of 50%:
+		playSound("entity.phantom.flap", 1, 2, {_player})
+	# 見た目
+	set {_baseloc} to location of {_player}
+	set {_baserad} to 120 - 7.5 * {_pos}
+	loop 3 times:
+		set {_rad} to 0
+		set {_y} to 0
+		set {_d} to 0
+		loop 10 times:
+			set {_effloc} to {_baseloc}
+			add 5 to {_rad}
+			set {_rad} to {_rad} + {_baserad}
+			add 0.15 to {_y}
+			add {_y} to y-coordinate of {_effloc}
+			add 0.1 + (0.025 * loop-number-2) to {_d}
+			add {_d} * sin({_rad}) to x-coordinate of {_effloc}
+			add {_d} * cos({_rad}) to z-coordinate of {_effloc}
+			spawnParticle_Dust(rgb(176, 196, 222), 1, {_effloc})
+		add 120 to {_baserad}
