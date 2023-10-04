@@ -1,18 +1,43 @@
-# Wind Dagger
+# Assassin Dagger
 
-on damage of player:
-	{Class::%victim%} is "Assassin"
-	victim is sneaking
-	attacker is set
-	set {_tool} to victim's tool
-	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 2) is true
-	set {_per} to kitPercent(victim, 50, true)
-	chance of {_per}%:
-		cancel event
-		playSound("entity.wither.shoot", 0.8, 2, victim)
-		spawnParticle_Color(entity_effect, 135, 206, 250, victim)
-		set {_v} to setVector(location of attacker, location of victim, 2)
-		set velocity of victim to {_v}
-		loop 10 times:
-			set {_ev} to randomVector(0.5)
-			spawnParticle_Vector(glow_squid_ink, {_ev}, 1, location 1 meters above victim)
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
+	{Class::%attacker%} is "Assassin"
+	attacker is sneaking
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 4) is true
+	if victim's health <= 5:
+		set {_per} to kitPercentDuel(attacker, victim, 5)
+		chance of {_per}%:
+			cancel event
+			LastKiller(victim, attacker)
+			kill victim
+			playSound("entity.phantom.bite", 1, 1, victim)
+			spawnParticle_Color(entity_effect, 108, 36, 99, victim)
+
+function kitWeapon_Assassin_4(attacker: player, victim: player) :: boolean:
+	set {_tool} to {_attacker}'s tool
+	if kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 4) is true:
+		if {_attacker} is sneaking:
+			if health of {_victim} <= 5:
+				kitMsg({_attacker}, "§5§l%{_victim}% §4の抹殺に成功しました...!")
+				kitEffect_AssassinDagger_Killed({_victim})
+				return true
+			else:
+				return false
+		else:
+			return false
+	else:
+		return false
+
+function kitEffect_AssassinDagger_Killed(victim: player):
+	message formatted "<##630101>背後から抹殺の一撃を喰らってしまった..." to {_victim}
+	# --- 音の演出 ---
+	playSound("entity.phantom.bite", 1, 0.5, {_victim})
+	# ---------------
+	# --- パーティクルの演出 ---
+	loop 5 times:
+		set {_el} to aroundEffect({_victim})
+		spawnParticle_DustTransition(rgb(50, 0, 10), rgb(0, 0, 0), 10, {_el})
+	# -----------------------

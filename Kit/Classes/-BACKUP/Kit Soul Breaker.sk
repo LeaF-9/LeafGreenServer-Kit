@@ -1,0 +1,34 @@
+# Soul Breaker
+
+on death of player:
+	damage was caused by attack
+	if {Join::%victim%} is set:
+		{LastKiller::%victim%} is set
+		set {_attacker} to {LastKiller::%victim%}
+	else:
+		attacker exists
+		set {_attacker} to attacker
+	{_attacker} is set
+	{Class::%{_attacker}%} is "Assassin"
+	set {_tool} to {_attacker}'s tool
+	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 3) is true
+	kitCheckAlive({_attacker}) is true
+	set {Kit-NoCorpse::%victim%} to true
+	set {_heal} to 1
+	set {_dis} to distance between attacker and victim
+	if {_dis} <= 1.5:
+		add 2 to {_heal}
+	else if victim's facing is {_attacker}'s facing:
+		add 2 to {_heal}
+	kitHeal({_attacker}, {_heal})
+	playSound("block.sculk_catalyst.bloom", 1, 1, victim)
+	healEffect({_attacker})
+	loop {_heal} * 3 times:
+		set {_el} to location of victim
+		add 1 to y-coordinate of {_el}
+		set {_baseloc} to {_el}
+		add a random number between -0.1 and 0.1 to x-coordinate of {_el}
+		add a random number between -0.1 and 0.1 to y-coordinate of {_el}
+		add a random number between -0.1 and 0.1 to z-coordinate of {_el}
+		set {_v} to setVector({_baseloc}, {_el})
+		spawnParticle_Vector(sculk_soul, {_v}, 0.1, {_el})
