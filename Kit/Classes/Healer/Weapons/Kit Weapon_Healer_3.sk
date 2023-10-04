@@ -1,21 +1,68 @@
-# Solace Rod
+# Dealing Staff
 
 function kitWeapon_Healer_3(player: player):
-	loop all entities in radius 5 around {_player}:
-		loop-entity is not {_player}
-		kitCheckTeam({_player}, loop-entity, true) is true
-		healEffect(loop-entity, 1)
-		loop-entity does not have regeneration
-		applyEffect(loop-entity, regeneration, 1, 3 seconds, true)
-		if type of loop-entity is player:
-			setSupporter(loop-entity, {_player})
-	# --- パーティクル処理 ---
+	if health of {_player} > 1:
+		toolCT({_player}, "Healer", 3, "Weapon.main")
+		kitMsg({_player}, "§5命の取引を行います...")
+		set {_true} to true
+		# --- 音の演出 ---
+		playSound("entity.warden.listening", 1, 0.9, {_player})
+		# ---------------
+		# --- パーティクルの演出 ---
+		kitEffect_DealingStaff({_player})
+		# -----------------------
+		loop all entities in radius 10 around {_player}:
+			loop-entity is not {_player}
+			kitCheckTeam(loop-entity, {_player}, true) is true
+			add loop-entity to {_targets::*}
+			if type of loop-entity is player:
+				setSupporter(loop-entity, {_player})
+				message formatted "<##ba55d3>取引により<##9932cc>命<##ba55d3>を頂いた..." to loop-entity
+			# --- ヒット時のパーティクルの演出 ---
+			kitEffect_DealingStaff_Hitting(loop-entity)
+			# -------------------------------
+		set {_health} to health of {_player}
+		while {_true} is true:
+			delete {_max}
+			if {_health} <= 1:
+				delete {_true}
+			else:
+				loop {_targets::*}:
+					if max health of loop-value is health of loop-value:
+						set {_max} to true
+					else:
+						delete {_max}
+						kitHeal(loop-value, 1)
+						healEffect(loop-value, 1)
+			if {_max} is true:
+				delete {_true}
+			if {_true} is true:
+				subtract 1 from {_health}
+		set health of {_player} to {_health}
+
+function kitEffect_DealingStaff(player: player):
 	set {_baseloc} to location of {_player}
-	set {_rad} to 0
-	loop 36 times:
-		add 10 to {_rad}
-		set {_el} to {_baseloc}
-		add 5 * sin({_rad}) to x-coordinate of {_el}
-		add 5 * cos({_rad}) to z-coordinate of {_el}
-		spawnParticle_Color(entity_effect, 255, 192, 203, {_el})
-	# ---------------------
+	set {_y} to 5.16
+	set {_baserad} to 0
+	loop 30 times:
+		subtract 0.16 from {_y}
+		add 24 to {_baserad}
+		set {_rad} to {_baserad}
+		loop 4 times:
+			set {_el} to {_baseloc}
+			add 90 to {_rad}
+			add {_y} to y-coordinate of {_y}
+			add 10 * sin({_rad}) to x-coordinate of {_el}
+			add 10 * cos({_rad}) to z-coordinate of {_el}
+			spawnParticle(witch, {_el})
+		if mod(loop-number, 3) is 0:
+			wait a tick
+
+function kitEffect_DealingStaff_Hitting(target: entity):
+	set {_el} to location 1 meter above {_target}
+	loop 10 times:
+		loop 3 times:
+			set {_rn} to a random number between 0.01 and 0.1
+			set {_vn::%loop-number-2%} to {_rn}
+		set {_v} to vector({_vn::1}, {_vn::2}, {_vn::3})
+		spawnParticle_Vector(sculk_soul, {_v}, 1, {_el})
