@@ -1,82 +1,131 @@
-# Weapon-Name: Mystic Card
+# Weapon-Name: Venom Rosalie
 
-function kitWeapon_Thief_3(player: player):
-	subtract 1 from item amount of tool of {_player}
-	kitEffect_MysticCard_Throw({_player})
-
-function kitEffect_MysticCard_Throw(player: player):
-	set {_baseloc} to location of {_player}
-	set {_pitch} to pitch of {_baseloc}
-	set pitch of {_baseloc} to 0
-	set {_baseloc} to location 0.5 meters to the right of {_baseloc}
-	set pitch of {_baseloc} to {_pitch}
-	spawn an armor stand at {_baseloc} with nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""dune_armor_trim_smithing_template"",Count:1b},{}],Pose:{RightArm:[0f,0f,270f]}}"
-	set {_entity} to spawned armor stand
-	set metadata value "mystic-card" of {_entity} to false
-	# 発射音
-	playSound("entity.arrow.shoot", 1, 1.6, {_player})
-	set {_loc} to {_baseloc}
-	loop 60 times:
-		if metadata value "mystic-card" of {_entity} is true:
+# スニーク時のパーティクル表記
+on sneak toggle:
+	{Class::%player%} is "Thief"
+	player is not sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Thief", "Weapon.main", 3) is true
+	wait a tick
+	set {_true} to true
+	set {_count} to 0
+	while {_true} is true:
+		set {_tool} to player's tool
+		if player is not sneaking:
+			set {_true} to false
 			continue
-		add 36 to {_spin}
-		if {_target} is not set:
-			# プレイヤー感知
-			loop all players in radius 5 around {_loc}:
-				kitCheckTeam({_player}, loop-player, false) is true
-				{_target} is not set
-				set {_target} to loop-player
-				kitParticle_MysticCard_Target({_loc})
-		if {_target} is set:
-			set {_vec} to setVector({_loc}, location of head of {_target})
-			set {_newloc} to setDirToVec({_loc}, {_vec})
-			set {_loc} to forceTurnAngle({_loc}, {_newloc}, 10)
-		set {_loc} to location 1 meter in front of {_loc}
-		teleport {_entity} to {_loc}
-		kitParticle_MysticCard_Trail({_loc})
-		set {_nbt} to nbt compound of {_entity}
-		add nbt from "{RightArm:[0f,%{_spin}%f,270f]}" to {_nbt}
-		loop all entities in radius 2 around {_loc}:
-			metadata value "mystic-card" of {_entity} is false
-			kitCheckTeam(loop-entity, {_player}, false) is true
-			set metadata value "mystic-card" of {_entity} to true
-			kitDamage({_player}, loop-entity, 2)
-			if "%type of loop-entity%" is "player":
-				kitTrail(loop-entity, 5 seconds, location of {_player})
+		if kitItemAllChecker({_tool}, "Thief", "Weapon.main", 3) is false:
+			set {_true} to false
+			continue
+		add 1 to {_count}
+		kitParticle_VenomRosalie_Ivy(player, {_count})
 		wait a tick
-	kitParticle_MysticCard_Hit({_loc})
-	loop all entities:
-		loop-entity is {_entity}
-		delete loop-entity
 
-function kitEffect_MysticCard_Restore(player: player, timer: number):
-	if mod({_timer}, 5) is not 0:
-		stop
-	loop all items in {_player}'s inventory:
-		name of loop-item contains "Mystic Card"
-		set {_hi} to loop-item
-	if {_hi} is set:
-		if item amount of {_hi} >= 3:
-			stop
-	set {_tool} to kitWeaponItem("Thief", 3, "main")
-	set {_item} to kitItemTagChanger({_tool}, "Thief", "Weapon.main", 3)
-	set item amount of {_item} to 1
-	give {_item} to {_player}
-	playSound("entity.item.pickup", 1, 1, {_player}, true)
+on damage of player:
+	attacker is set
+	victim is sneaking
+	{Class::%victim%} is "Thief"
+	set {_tool} to victim's tool
+	kitItemAllChecker({_tool}, "Thief", "Weapon.main", 3) is true
+	kitDamage(victim, attacker, 1, true)
+	set {_c} to kitPercentDuel(victim, attacker, 30)
+	chance of {_c}%:
+		kitBlood(attacker)
 
-function kitParticle_MysticCard_Target(loc: location):
-	playSound("entity.phantom.flap", 1.2, 1.15, {_loc})
+on leftclick:
+	player is sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Thief", "Weapon.main", 3) is true
+	checkCT(player, name of {_tool}) is true
+	toolCT(player, "Thief", 5, "Weapon.main")
+	kitEffect_VenomRosalie(player)
+
+function kitEffect_VenomRosalie(player: player):
+	set {_baseloc} to location of head of {_player}
 	loop 5 times:
-		set {_el} to {_loc}
+		set {_el} to location loop-number - 1 meters in front of {_baseloc}
+		kitParticle_VenomRosalie_Stem({_el})
+		wait a tick
+	set {_baserose} to location 5 meters in front of {_baseloc}
+	kitParticle_VenomRosalie_Rose({_baserose})
+	set {_baseeff} to location 1 meter in front of {_baserose}
+	loop all entities in radius 3 around {_baseeff}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		kitDamage({_player}, loop-entity, 3)
+		if "%type of loop-entity%" is "player":
+			{Kit-Blood::%loop-entity%} is set
+			applyEffect(loop-entity, poison, 3, 5 seconds)
+
+# 何tickかで下から上に螺旋状のトゲ付き蔦が伸びてくる演出
+function kitParticle_VenomRosalie_Ivy(player: player, count: number):
+	playSound("block.wet_grass.step", 0.75, 2, {_player})
+	if mod({_count}, 20) is not 0:
+		stop
+	set {_baseloc} to location of {_player}
+	loop 10 times:
+		add 0.2 to {_y}
+		loop 4 times:
+			# 蔦
+			set {_baserad} to 90 * loop-number-2
+			set {_rad} to {_baserad} + 10 * loop-number-1
+			set {_el} to {_baseloc}
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle(composter, {_el})
+			# 刺
+			if mod(loop-number-1, 2) is 0:
+				set {_basey} to location {_y} meters above {_baseloc}
+				set {_v} to setVector({_basey}, {_el})
+				set {_baseivy} to setDirToVec({_el}, {_v})
+				loop 3 times:
+					set {_il} to location 0.1 * loop-number-3 meters in front of {_baseivy}
+					spawnParticle_Dust(rgb(0, 123, 67), 0.35, {_il})
+		wait a tick
+
+function kitParticle_VenomRosalie_Stem(baseloc: location):
+	playSound("block.grass.step", 1, 1.25, {_baseloc})
+	# 茎
+	loop 10 times:
+		set {_el} to location 0.1 * loop-number meters in front of {_baseloc}
+		add a random number between -0.05 and 0.05 to x-pos of {_el}
+		add a random number between -0.05 and 0.05 to y-pos of {_el}
+		add a random number between -0.05 and 0.05 to z-pos of {_el}
+		spawnParticle_DustTransition(rgb(152, 217, 142), rgb(105, 176, 118), 0.5, {_el})
+	# 根
+	loop 5 times:
+		set {_el} to location 0.5 meters in front of {_baseloc}
 		add a random number between -0.5 and 0.5 to x-pos of {_el}
 		add a random number between -0.5 and 0.5 to y-pos of {_el}
 		add a random number between -0.5 and 0.5 to z-pos of {_el}
-		spawnParticle_Color(entity_effect, 112, 108, 170, {_el})
+		spawnParticle_Dust(rgb(159, 111, 85), 0.3, {_el})
 
-function kitParticle_MysticCard_Trail(loc: location):
-	set {_el} to location 1 meter above {_loc}
-	spawnParticle_Vector(end_rod, randomVector(), 0.2, {_el})
-
-function kitParticle_MysticCard_Hit(loc: location):
-	loop 10 times:
-		spawnParticle_Vector(end_rod, randomVector(), 0.5, {_loc})
+function kitParticle_VenomRosalie_Rose(baseloc: location):
+	playSound("block.wet_grass.break", 1, 0.5, {_baseloc})
+	set {_f} to 0
+	set {_baserad} to 0
+	loop 15 times:
+		add 0.2 to {_f}
+		loop 8 times:
+			set {_baserad} to 45 * loop-number-2
+			set {_rad} to {_baserad} + 5 * loop-number-1
+			set {_el} to location {_f} meters in front of {_baseloc}
+			set {_m1} to {_el}
+			set {_p} to pitch of {_m1} - 90
+			set pitch of {_m1} to {_p}
+			set {_test1} to (0.1 * loop-number-1) * cos({_rad})
+			set {_t1} to location {_test1} meters in front of {_m1}
+			set {_m2} to {_el}
+			set pitch of {_m2} to 0
+			set {_test2} to (0.1 * loop-number-1) * sin({_rad})
+			set {_t2} to location {_test2} meters to the right of {_m2}
+			set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
+			set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
+			set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+			spawnParticle_Dust(rgb(200, 45, 85), 1.5, {_el})
+	loop 20 times:
+		set {_el} to location 1 meter in front of {_baseloc}
+		add a random number between -3 and 3 to x-pos of {_el}
+		add a random number between -3 and 3 to y-pos of {_el}
+		add a random number between -3 and 3 to z-pos of {_el}
+		spawnParticle(cherry_leaves, {_el})
