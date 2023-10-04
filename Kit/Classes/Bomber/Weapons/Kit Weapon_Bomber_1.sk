@@ -1,89 +1,22 @@
-# Weapon-Name: Nitro Blade
-
-on damage:
-	metadata value "gametype" of attacker is "Kit"
-	damage was caused by attack
-	{Class::%attacker%} is "Bomber"
-	set {_tool} to attacker's tool
-	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is true
-	{Stats.%attacker%::NitroBlade} is true
-	cancel event
-	delete {Stats.%attacker%::NitroBlade}
-	kitExplosion(attacker, 2, location of victim)
-
-on sneak toggle:
-	{Class::%player%} is "Bomber"
-	player is not sneaking
-	set {_tool} to player's tool
-	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is true
-	{Stats.%player%::NitroBlade} is not set
-	set {_num} to 0
-	wait a tick
-	set {_true} to false
-	while {_true} is false:
-		set {_tool} to player's tool
-		if player is not sneaking:
-			delete {_true}
-		else if kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is false:
-			delete {_true}
-		else if {_num} is 20:
-			set {_true} to true
-		else:
-			add 1 to {_num}
-			set {_linenum} to round({_num} * 2.5)
-			chargeActionBar(player, {_linenum}, 50)
-			# --- チャージ中の音の演出 ---
-			set {_sp} to {_num} / 13.25 + 0.5
-			playSound("item.flintandsteel.use", 0.5, {_sp}, player)
-			# --------------------------
-			# --- チャージ中のパーティクルの演出 ---
-			kitParticle_NitroBlade_1(player)
-			# ------------------------------------
-			wait a tick
-	if {_true} is not true:
-		send action bar "§8チャージに失敗しました" to player
-		stop
-	set {Stats.%player%::NitroBlade} to true
-	# --- チャージ完了時の音の演出 ---
-	playSound("entity.creeper.primed", 1, 1.5, player)
-	# ---------------------------
-	while {_true} is true:
-		set {_tool} to player's tool
-		if kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is false:
-			delete {_true}
-		else if {Stats.%player%::NitroBlade} is not set:
-			set {_true} to false
-		else:
-			send action bar "§4§lNitro Blade §bのチャージが完了しました!" to player
-			# --- チャージ完了中のパーティクルの演出 ---
-			chance of 30%:
-				kitParticle_NitroBlade_2(player)
-			# ---------------------------------------
-			wait a tick
-	if {_true} is not set:
-		send action bar "§cチャージが中断されました" to player
-		delete {Stats.%player%::NitroBlade}
-
-function kitParticle_NitroBlade_1(player: player):
-	set {_el} to aroundEffect({_player})
-	spawnParticle(lava, {_el})
-
-function kitParticle_NitroBlade_2(player: player):
-	set {_v} to randomVector()
-	set {_el} to aroundEffect({_player})
-	spawnParticle_Vector(flame, {_v}, 0.1, {_el})
-
-# Subweapon-Name: Nitro Blaster
+# Weapon-Name: Grenade Thrower
 
 on shoot:
 	metadata value "gametype" of shooter is "Kit"
 	{Class::%shooter%} is "Bomber"
-	projectile is an arrow
-	set {_tool} to shooter's offhand tool
-	kitItemAllChecker({_tool}, "Bomber", "Weapon.sub", 1) is true
-	wait 1 second
-#	set {_d} to distance between shooter and projectile
-#	{_d} > 5
-	set {_l} to location of projectile
-	delete projectile
-	kitExplosion(shooter, 2, {_l})
+	set {_tool} to shooter's tool
+	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is true
+	cancel event
+	remove an arrow from shooter
+	set {_t} to getBowDrawTime(shooter) * 0.083
+	shoot a primed tnt from shooter at speed {_t}
+	set metadata value "attacker" of shot primed tnt to "%shooter%"
+	set metadata value "kit-bomber" of shot primed tnt to 2.5
+	set {_uuid} to a random uuid
+	set metadata value "grenade-thrower-uuid" of shot primed tnt to {_uuid}
+	setFuseTime(shot primed tnt, 60)
+	playSound("entity.creeper.death", 1, 2, shooter)
+	loop 60 times:
+		loop all primed tnts:
+			metadata value "grenade-thrower-uuid" of loop-primed tnt is {_uuid}
+			spawnParticle(flame, location of loop-primed tnt)
+		wait a tick
