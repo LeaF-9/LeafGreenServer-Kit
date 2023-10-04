@@ -1,152 +1,312 @@
-# Weapon-Name: Geary Cog
+# Bot Commander
 
-on sneak toggle:
-	# 条件
+on leftclick:
 	{Class::%player%} is "Engineer"
-	player is not sneaking
 	set {_tool} to player's tool
-	if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 3) is false:
-		stop
-	# Fuel Check
-	if checkFuel(player, 3, "Weapon.main") is false:
-		stop
-	# ギアチェンジ
-	kitEffect_GearyCog_Change(player)
+	kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 3) is true
+	kitSub_Engineer_3(player)
 
-on damage:
-	# Geary Cogでの攻撃時
-	if {Class::%attacker%} is "Engineer":
-		set {_tool} to attacker's tool
-		if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 3) is false:
-			stop
-		if {Stats.%attacker%::GearyCog} is true:
-			set damage to damage * 2
-			kitParticle_GearyCog_Positive(location of attacker, location of victim)
+function kitWeapon_Engineer_3(player: player):
+	if {_player} is sneaking:
+		if {Stats.%{_player}%::BotNumber} is not set:
+			set {Stats.%{_player}%::BotNumber} to 0
+			set {Stats.%{_player}%::BotCharge} to 0
+			set {Stats.%{_player}%::BotPattern} to "Defence"
+			engineerBotAI({_player})
+		if {Stats.%{_player}%::BotNumber} < 5:
+			if {Stats.%{_player}%::BotCharge} < 20:
+				set {_now} to now
+				set {Stats.%{_player}%::BotChargeNow} to {_now}
+				playSound("entity.blaze.burn", 1, 2, {_player})
+				loop 5 times:
+					if {Stats.%{_player}%::BotCharge} < 20:
+						add 1 to {Stats.%{_player}%::BotCharge}
+					loop {Stats.%{_player}%::BotCharge} times:
+						if loop-number-2 is 1:
+							set {_ok.line} to "|"
+						else:
+							set {_ok.line} to "%{_ok.line}%|"
+					set {_ngtime} to 20 - {Stats.%{_player}%::BotCharge}
+					set {_ng.line} to ""
+					if {_ngtime} is not 0:
+						loop {_ngtime} times:
+							if loop-number-2 is 1:
+								set {_ng.line} to "|"
+							else:
+								set {_ng.line} to "%{_ng.line}%|"
+					send action bar "§e[ §a%{_ok.line}%§8%{_ng.line}% §e]" to {_player}
+					loop 3 times:
+						set {_el} to aroundEffect({_player})
+						spawnParticle(smoke, {_el})
+					wait a tick
+				wait a tick
+				if {Stats.%{_player}%::BotChargeNow} is {_now}:
+					if {Stats.%{_player}%::BotCharge} >= 20:
+						engineerBotGenerator({_player})
+						delete {Stats.%{_player}%::BotChargeNow}
+						set {Stats.%{_player}%::BotCharge} to 0
+					else:
+						delete {Stats.%{_player}%::BotChargeNow}
+						set {Stats.%{_player}%::BotCharge} to 0
+						playSound("block.fire.extinguish", 1, 1, {_player})
+	else:
+		playSound("ui.button.click", 1, 1, {_player}, true)
+		load yml "plugins/skript-yaml/Kit Classes/Engineer.yml" as "bot.%{_player}%"
+		if {Stats.%{_player}%::BotPattern} is "Defence":
+			set {Stats.%{_player}%::BotPattern} to "Attack"
+			kitMsg({_player}, "§6行動パターンを変更しました§a: §4§l襲撃モード")
+			set {_BotHead} to yml value "kititems.Bot Red" from "bot.%{_player}%"
+			loop all skeletons:
+				metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+				set spawned skeleton's helmet to {_BotHead}
 		else:
-			set damage to damage * 0.2
-			kitParticle_GearyCog_Negative(location of attacker, location of victim)
-		kitEffect_GearyCog_Change(attacker)
-	# Geary Cog選択時のダメージ
-	if {Class::%victim%} is "Engineer":
-		kitSelectChecker_Weapon(victim, "Engineer") is 3
-		kitEffect_GearyCog_Change(victim)
+			set {Stats.%{_player}%::BotPattern} to "Defence"
+			kitMsg({_player}, "§6行動パターンを変更しました§a: §1§l防衛モード")
+			set {_BotHead} to yml value "kititems.Bot Blue" from "bot.%{_player}%"
+			loop all skeletons:
+				metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+				set spawned skeleton's helmet to {_BotHead}
+		unload yml "bot.%{_player}%"
 
-function kitEffect_GearyCog_Change(player: player):
-	if {Stats.%{_player}%::GearyCog} is true:
-		set {Stats.%{_player}%::GearyCog} to false
+function kitSub_Engineer_3(player: player):
+	set {_tg} to target block of {_player}
+	if {_player} is sneaking:
+		if {_tg} is set:
+			if distance between {_tg} and {_player} <= 30:
+				set {Stats.%{_player}%::BotAttack} to location of {_tg}
+				playSound("entity.bee.sting", 1, 2, {_player})
+				kitMsg({_player}, "§4襲撃場所§6を指定しました")
+				set {_dis} to round(distance between {_tg} and {_player})
+				set {_bl} to location of {_player}
+				add 1.5 to y-coordinate of {_bl}
+				loop {_dis} times:
+					set {_el} to location loop-number meters in front of {_bl}
+					spawnParticle(end_rod, {_el})
+
+on damage of skeleton:
+	metadata value "Bot Owner" of victim is set
+	if damage cause is not fall or suffocation:
+		set {_player} to metadata value "Bot Owner" of victim parsed as player
+		if kitCheckTeam(attacker, {_player}, true) is true:
+			cancel event
+		else:
+			set {_num} to metadata value "Bot Number" of victim
+			set {_uuid} to metadata value "Bot UUID" of victim
+			subtract 1 from {Stats.%{_player}%::BotNumber}
+			delete {Stats.%{_player}%::BotList_%{_num}%}
+			delete {Stats.%{_player}%::Bot_UUID_%{_uuid}%}
+			delete victim
+			playSound("entity.iron_golem.damage", 1, 2, victim)
+			set {_baseloc} to location of victim
+			loop 5 times:
+				set {_el} to {_baseloc}
+				add a random number between -0.5 and 0.5 to x-coordinate of {_el}
+				add a random number between -0.5 and 0.5 to z-coordinate of {_el}
+				add a random number between 0 and 2 to y-coordinate of {_el}
+				spawnParticle(crit, {_el})
 	else:
-		set {Stats.%{_player}%::GearyCog} to true
-	kitParticle_GearyCog_Change(location of {_player})
+		cancel event
 
-function kitEffect_GearyCog_ActionBar(player: player):
-	if {Stats.%{_player}%::GearyCog} is true:
-		set {_state} to "§a§lPositive"
-	else:
-		set {_state} to "§c§lNegative"
-	send action bar "§6§lGear§7: %{_state}%" to {_player}
-
-# 渦が相手に迫る演出
-function kitParticle_GearyCog_Positive(fromloc: location, toloc: location):
-	playSound("block.respawn_anchor.deplete", 1, 1.5, {_toloc})
-	set {_distance} to distance between {_fromloc} and {_toloc}
-	set {_vector} to setVector({_fromloc}, {_toloc})
-	set yaw of {_fromloc} to yaw of {_vector}
-	set pitch of {_fromloc} to pitch of {_vector}
-	add 1 to y-pos of {_fromloc}
-	set {_rad} to 0
-	loop 5 times:
-		set {_m} to {_distance} / 5 * loop-number
-		set {_centerloc} to location {_m} meters in front of {_fromloc}
-		loop 8 times:
-			set {_tmprad} to {_rad} + (45 * loop-number-2)
-			set {_el} to {_centerloc}
-			set {_mt} to 0
-			loop 10 times:
-				add 0.1 to {_mt}
-				add {_mt} * sin({_tmprad}) to x-coordinate of {_el}
-				add {_mt} * cos({_tmprad}) to z-coordinate of {_el}
-				spawnParticle_Dust(rgb(255, 243, 82), 0.5, {_el})
-				set {_sub} to loop-number-3 * loop-number-3 / 10
-				subtract {_sub} from {_tmprad}
-		add 10 to {_rad}
-		wait a tick
-	
-# 円が相手に迫る演出
-function kitParticle_GearyCog_Negative(fromloc: location, toloc: location):
-	playSound("block.amethyst_block.fall", 1, 2, {_toloc})
-	set {_distance} to distance between {_fromloc} and {_toloc}
-	set {_vector} to setVector({_fromloc}, {_toloc})
-	set yaw of {_fromloc} to yaw of {_vector}
-	set pitch of {_fromloc} to pitch of {_vector}
-	add 1 to y-pos of {_fromloc}
-	set {_rad} to 0
-	loop 5 times:
-		set {_m} to {_distance} / 5 * loop-number
-		set {_centerloc} to location {_m} meters in front of {_fromloc}
-		loop 8 times:
-			set {_tmprad} to {_rad} + (45 * loop-number-2)
-			set {_el} to {_centerloc}
-			add 1 * sin({_tmprad}) to x-coordinate of {_el}
-			add 1 * cos({_tmprad}) to z-coordinate of {_el}
-			spawnParticle_Dust(rgb(90, 68, 152), 0.5, {_el})
-		add 10 to {_rad}
-		wait a tick
-
-# ギアが回るような演出
-function kitParticle_GearyCog_Change(baseloc: location):
-	playSound("item.lodestone_compass.lock", 1, 1, {_baseloc})
-	add 1 to y-pos of {_baseloc}
-	set pitch of {_baseloc} to 0
-	# 円の座標保存
-	set {_rad} to 0
-	loop 60 times:
-		add 6 to {_rad}
-		set {_m.upper} to 0.5 * cos({_rad})
-		set {_loc.upper} to location {_m.upper} meters above {_baseloc}
-		set {_m.right} to 0.5 * sin({_rad})
-		set {_loc.right} to location {_m.right} meters to the right of {_baseloc}
-		set {_el} to {_baseloc}
-		set x-coordinate of {_el} to x-pos of {_loc.upper} + x-pos of {_loc.right} - x-pos of {_el}
-		set y-coordinate of {_el} to y-pos of {_loc.upper} + y-pos of {_loc.right} - y-pos of {_el}
-		set z-coordinate of {_el} to z-pos of {_loc.upper} + z-pos of {_loc.right} - z-pos of {_el}
-		set {_circles::%{_rad}%} to {_el}
-	# 回転中のギア
-	set {_baserad} to 0
-	loop 3 times:
-		# 円
-		loop {_circles::*}:
-			spawnParticle_Dust(rgb(148, 108, 69), 0.5, loop-value-2)
-			# ギア
-			set {_angle} to loop-index parsed as number
-			if mod({_angle} + 60, 60) is {_baserad}:
-				set {_loc.gear} to loop-value-2
-				set {_v} to setVector({_baseloc}, {_loc.gear})
-				set yaw of {_loc.gear} to yaw of {_v}
-				set pitch of {_loc.gear} to pitch of {_v}
-				set {_m} to 0
+function engineerBotAI(player: player):
+	load yml "plugins/skript-yaml/Kit Classes/Engineer.yml" as "botai.%{_player}%"
+	set {_BotRed} to yml value "kititems.Bot Red" from "botai.%{_player}%"
+	set {_BotBlue} to yml value "kititems.Bot Blue" from "botai.%{_player}%"
+	set {_BotInactive} to yml value "kititems.Bot Inactive" from "botai.%{_player}%"
+	unload yml "botai.%{_player}%"
+	while {Class::%{_player}%} is "Engineer":
+		delete {_target}
+		if {Stats.%{_player}%::BotPattern} is "Defence":
+			loop 5 times:
+				delete {_aloc.%loop-number%}
+			loop all entities in radius 5 around {_player}:
+				{_target} is not set
+				loop-entity is not {_player}
+				kitCheckTeam(loop-entity, {_player}, false) is true
+				set {_target} to loop-entity
+			set {_baseloc} to location of {_player}
+			subtract 1 from y-coordinate of {_baseloc}
+			set pitch of {_baseloc} to 0
+			set {_loc1} to location 2 meters in front of {_baseloc}
+			set {_loc2} to location 1 meters in front of {_baseloc}
+			set {_loc2} to location 1 meters to the left of {_loc2}
+			set {_loc3} to location 1 meters in front of {_baseloc}
+			set {_loc3} to location 1 meters to the right of {_loc3}
+			set {_loc4} to location 2 meters to the left of {_baseloc}
+			set {_loc5} to location 2 meters to the right of {_baseloc}
+			if {_target} is set:
+				set {_to} to vector of location 1 meters above {_target}
 				loop 5 times:
-					add 0.1 to {_m}
-					set {_el} to location {_m} meters in front of {_loc.gear}
-					spawnParticle_Dust(rgb(148, 108, 69), 0.5, {_el})
-		add 20 to {_baserad}
+					set {_from} to vector of location 1.5 meters above {_loc%loop-number%}
+					set {_vector} to {_to} -- {_from}
+					set {_vector} to normalized {_vector}
+					set {_yaw} to yaw of {_vector}
+					set {_pitch} to pitch of {_vector}
+					set yaw of {_loc%loop-number%} to {_yaw}
+					set pitch of {_loc%loop-number%} to {_pitch}
+					chance of 10%:
+						delete {_ok}
+						loop all skeletons:
+							metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+							metadata value "Bot Number" of loop-skeleton is loop-number-1
+							set {_ok} to true
+						{_ok} is true
+						engineerBotBeam({_player}, location 1.5 meters above {_loc%loop-number%}, false)
+			loop all skeletons:
+				metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+				set loop-skeleton's helmet to {_BotBlue}
+				set {_num} to metadata value "Bot Number" of loop-skeleton
+				teleport loop-skeleton to {_loc%{_num}%}
+		else:
+			if {Stats.%{_player}%::BotAttack} is set:
+				if distance between {_player} and {Stats.%{_player}%::BotAttack} <= 30:
+					loop 5 times:
+						if {_aloc.%loop-number%} is not set:
+							loop all skeletons:
+								metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+								metadata value "Bot Number" of loop-skeleton is loop-number-1
+								set {_to} to vector of location 3 meters above {Stats.%{_player}%::BotAttack}
+								set {_from} to vector of location 1.5 meters above loop-skeleton
+								set {_vector} to {_to} -- {_from}
+								set {_vector} to normalized {_vector}
+								set {_yaw} to yaw of {_vector}
+								set {_pitch} to pitch of {_vector}
+								set {_aloc.%loop-number-1%} to location of loop-skeleton
+								set yaw of {_aloc.%loop-number-1%} to {_yaw}
+								set pitch of {_aloc.%loop-number-1%} to {_pitch}
+					loop all entities in radius 10 around {Stats.%{_player}%::BotAttack}:
+						{_target} is not set
+						loop-entity is not {_player}
+						kitCheckTeam(loop-entity, {_player}, false) is true
+						set {_target} to loop-entity
+					loop 5 times:
+						if distance between {Stats.%{_player}%::BotAttack} and {_aloc.%loop-number%} > 8:
+							set {_to} to vector of location 3 meters above {Stats.%{_player}%::BotAttack}
+							set {_from} to vector of {_aloc.%loop-number%}
+							set {_vector} to {_to} -- {_from}
+							set {_vector} to normalized {_vector}
+							set {_yaw} to yaw of {_vector}
+							set {_pitch} to pitch of {_vector}
+							set yaw of {_aloc.%loop-number%} to {_yaw}
+							set pitch of {_aloc.%loop-number%} to {_pitch}
+							set {_aloc.%loop-number%} to location 0.1 meters in front of {_aloc.%loop-number%}
+							loop all skeletons:
+								metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+								metadata value "Bot Number" of loop-skeleton is loop-number-1
+								if loop-skeleton's helmet is not {_BotRed}:
+									set loop-skeleton's helmet to {_BotRed}
+								teleport loop-skeleton to {_aloc.%loop-number-1%}
+						else:
+							if {_target} is set:
+								set {_to} to vector of location 1 meters above {_target}
+								loop all skeletons:
+									metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+									metadata value "Bot Number" of loop-skeleton is loop-number-1
+									set loop-skeleton's helmet to {_BotRed}
+									set {_from} to vector of location of loop-skeleton's head
+									set {_vector} to {_to} -- {_from}
+									set {_vector} to normalized {_vector}
+									set {_yaw} to yaw of {_vector}
+									set {_pitch} to pitch of {_vector}
+									set {_loc} to location of loop-skeleton
+									set yaw of {_loc} to {_yaw}
+									set pitch of {_loc} to {_pitch}
+									teleport loop-skeleton to {_loc}
+									chance of 10%:
+										engineerBotBeam({_player}, location 1.5 meters above {_loc}, true)
+							else:
+								delete {_ng}
+								if distance between {_aloc.%loop-number%} and {Stats.%{_player}%::BotAttack} >= 8:
+									set {_ng} to true
+								if block at {_aloc.%loop-number%} is not passable:
+									set {_ng} to true
+								chance of 5%:
+									set {_ng} to false
+								if {_ng} is true:
+									set {_to} to vector of location 3 meters above {Stats.%{_player}%::BotAttack}
+									set {_from} to vector of {_aloc.%loop-number%}
+									set {_vector} to {_to} -- {_from}
+									set {_vector} to normalized {_vector}
+									set {_yaw} to yaw of {_vector}
+									set {_pitch} to pitch of {_vector}
+									set yaw of {_aloc.%loop-number-1%} to {_yaw}
+									set pitch of {_aloc.%loop-number-1%} to {_pitch}
+								else if {_ng} is false:
+									set yaw of {_aloc.%loop-number%} to a random integer between 1 and 359
+									set pitch of {_aloc.%loop-number%} to a random integer between -90 and 90
+								set {_aloc.%loop-number%} to location 0.1 meters in front of {_aloc.%loop-number%}
+								loop all skeletons:
+									metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+									metadata value "Bot Number" of loop-skeleton is loop-number-1
+									set loop-skeleton's helmet to {_BotRed}
+									teleport loop-skeleton to {_aloc.%loop-number-1%}
+				else:
+					loop all skeletons:
+						metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+						loop-skeleton's helmet is not {_BotInactive}
+						set loop-skeleton's helmet to {_BotInactive}
+						set {_tl} to location of loop-skeleton
+						set pitch of {_tl} to 75
+						teleport loop-skeleton to {_tl}
+						playSound("block.beacon.deactivate", 1, 2, loop-skeleton)
+			else:
+				loop all skeletons:
+					metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+					loop-skeleton's helmet is not {_BotInactive}
+					set loop-skeleton's helmet to {_BotInactive}
+					set {_tl} to location of loop-skeleton
+					set pitch of {_tl} to 75
+					teleport loop-skeleton to {_tl}
+					playSound("block.beacon.deactivate", 1, 2, loop-skeleton)
 		wait a tick
-	playSound("item.lodestone_compass.lock", 1, 0.5, {_baseloc})
-	# 回転後のギア
-	set {_baserad} to 0
-	loop 3 times:
-		# 円
-		loop {_circles::*}:
-			spawnParticle_Dust(rgb(148, 108, 69), 0.5, loop-value-2)
-			# ギア
-			set {_angle} to loop-index parsed as number
-			if mod({_angle} + 60, 60) is {_baserad}:
-				set {_loc.gear} to loop-value-2
-				set {_v} to setVector({_baseloc}, {_loc.gear})
-				set yaw of {_loc.gear} to yaw of {_v}
-				set pitch of {_loc.gear} to pitch of {_v}
-				set {_m} to 0
-				loop 5 times:
-					add 0.1 to {_m}
-					set {_el} to location {_m} meters in front of {_loc.gear}
-					spawnParticle_Dust(rgb(148, 108, 69), 0.5, {_el})
-		wait a tick
+	loop all skeletons:
+		metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+		delete loop-skeleton
+
+function engineerBotBeam(player: player, loc: location, attack: boolean):
+	playSound("item.trident.return", 1, 2, {_loc})
+	loop 20 times:
+		if {_ng} is not set:
+			add 0.5 to {_fr}
+			set {_el} to location {_fr} meters in front of {_loc}
+			if block at {_el} is passable:
+				if {_attack} is false:
+					spawnParticle_Dust(rgb(44, 169, 225), 1, {_el})
+				else:
+					spawnParticle_Dust(rgb(211, 56, 28), 1, {_el})
+				loop all entities in radius 1 around {_el}:
+					kitCheckTeam(loop-entity, {_player}, false) is true
+					metadata value "Bot Owner" of loop-entity is not set
+					if {_attack} is false:
+						set {_dm} to 1
+					else:
+						set {_dm} to 3
+					kitDamage({_player}, loop-entity, {_dm})
+				wait a tick
+			else:
+				set {_ng} to true
+
+function engineerBotGenerator(player: player):
+	if {Stats.%{_player}%::BotNumber} < 5:
+		if checkFuel({_player}, 5, "Weapon.main") is true:
+			add 1 to {Stats.%{_player}%::BotNumber}
+			loop 8 times:
+				set {_num} to a random integer between 0 and 9
+				set {_n.%loop-number%} to {_num}
+			set {_uuid} to "%{_n.1}%%{_n.2}%%{_n.3}%%{_n.4}%%{_n.5}%%{_n.6}%%{_n.7}%%{_n.8}%"
+			loop 5 times:
+				{_ok} is not set
+				if {Stats.%{_player}%::BotList_%loop-number%} is not set:
+					set {_ok} to true
+					set {Stats.%{_player}%::BotList_%loop-number%} to {_uuid}
+					set {Stats.%{_player}%::Bot_UUID_%{_uuid}%} to loop-number
+					set {_number} to loop-number
+			spawn a skeleton at {_player} with nbt compound from "{NoGravity:1b,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F],CanPickUpLoot:0b,NoAI:1,Silent:1,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:72000,ShowParticles:false}]}"
+			set spawned skeleton's display name to "%{_player}%"
+			set metadata value "gametype" of spawned skeleton to "Kit"
+			set metadata value "Bot Owner" of spawned skeleton to "%{_player}%"
+			set metadata value "Bot UUID" of spawned skeleton to {_uuid}
+			set metadata value "Bot Number" of spawned skeleton to {_number}
+			load yml "plugins/skript-yaml/Kit Classes/Engineer.yml" as "botgen.%{_player}%"
+			set {_BotBlue} to yml value "kititems.Bot Blue" from "botgen.%{_player}%"
+			unload yml "botgen.%{_player}%"
+			set spawned skeleton's helmet to {_BotBlue}
