@@ -1,11 +1,63 @@
-# Magic Wand
+# Moon Staff
 
 function kitWeapon_Wizard_3(player: player):
-	set {_mana} to kitManaCalc({_player}, 5)
-	if {Kit-Mana::%{_player}%} >= {_mana}:
-		toolCT({_player}, "Wizard", 3, "Weapon.main")
-		subtract {_mana} from {Kit-Mana::%{_player}%}
-		playSound("entity.arrow.shoot", 1, 2, {_player})
-		shoot a thrown potion of harming from {_player} at speed 0.8
-	else:
-		send action bar "§4§lマナが足りません!" to {_player}
+	set {_num} to 0
+	wait a tick
+	set {_true} to true
+	while {_true} is true:
+		set {_tool} to {_player}'s tool
+		set {_mana} to kitManaCalc({_player}, 3)
+		if {_player} is not sneaking:
+			set {_true} to false
+		else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 4) is false:
+			set {_true} to false
+		else if {Kit-Mana::%{_player}%} < {_mana}:
+			set {_true} to false
+			send action bar "§4§lマナが足りません!" to {_player}
+		if {_true} is true:
+			add 1 to {_num}
+			# --- パーティクル演出 ---
+			kitEffect_MoonRod({_player}, {_num})
+			# ----------------------
+			if {_num} >= 20:
+				set {_num} to 0
+				subtract {_mana} from {Kit-Mana::%{_player}%}
+				# --- 音の演出 ---
+				playSound("block.beacon.ambient", 1, 2, {_player})
+				# ---------------
+			loop all players in radius 8 around {_player}:
+				kitCheckTeam({_player}, loop-player, false) is true
+				{Kit-Sleep::%loop-player%} is not set
+				if {_mooners::%loop-player%} is not set:
+					set {_mooners::%loop-player%} to 0
+					message formatted "§8§lなんだか眠気を誘われる..." to loop-player
+					# --- 眠気が始まる際の音の演出 ---
+					playSound("entity.wolf.growl", 0.5, 0.75, loop-player)
+					# ----------------------------
+				add 1 to {_mooners::%loop-player%}
+				if {_mooners::%loop-player%} >= 60:
+					delete {_mooners::%loop-player%}
+					kitSleep(loop-player, 3 seconds)
+					# --- 寝てしまった際のパーティクル演出 ---
+					set {_pb} to location 1 meters above loop-player
+					loop 15 times:
+						set {_rv} to randomVector({_pb})
+						spawnParticle_Vector(sculk_charge_pop, {_rv}, 1, {_pb})
+					# -------------------------------------
+			wait a tick
+
+function kitEffect_MoonRod(player: player, period: number):
+	{_period} <= 15
+	set {_startrad} to 0 + (315 * ({_period} - 1))
+	set {_startheight} to 16 - {_period}
+	set {_startmeter} to 0.53 * ({_period} - 1)
+	set {_baseloc} to location of {_player}
+	loop 15 times:
+		set {_el} to {_baseloc}
+		add {_startheight} to y-coordinate of {_el}
+		add {_startmeter} * sin({_startrad}) to x-coordinate of {_el}
+		add {_startmeter} * cos({_startrad}) to z-coordinate of {_el}
+		spawnParticle(end_rod, {_el})
+		add 21 to {_startrad}
+		subtract 0.066 from {_startheight}
+		add 0.035 to {_startmeter}

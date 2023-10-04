@@ -12,16 +12,10 @@ on damage of player:
 		set {_mana} to 5
 	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 2) is true:
 		set {_ok} to true
-		set {_mana} to 3
+		set {_mana} to 1
 	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 3) is true:
 		set {_ok} to true
-		set {_mana} to 2
-	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 4) is true:
-		set {_ok} to true
 		set {_mana} to 3
-	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is true:
-		set {_ok} to true
-		set {_mana} to 4
 	if {_ok} is true:
 		add {_mana} to {Kit-Mana::%attacker%}
 		kitMsg(attacker, "§bマナ §9§l%{_mana}% §7ゲット!")
@@ -45,25 +39,12 @@ on damage of player:
 			add 3 to {Kit-Mana::%attacker%}
 			kitMsg(attacker, "§bマナ §9§l3 §7ゲット!")
 
-on sneak toggle:
-	{Class::%player%} is "Wizard"
-	player is not sneaking
-	set {_tool} to player's tool
-	if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 4) is true:
-		kitWeapon_Wizard_4(player)
-	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is true:
-		kitWeaponSub_Wizard_5(player)
-
 function kitWeaponWizard(player: player):
 	set {_tool} to {_player}'s tool
 	set {_item.num} to kitItemNumberChecker({_tool})
 	checkCT({_player}, name of {_tool}) is true
 	if {_item.num} is 2:
 		kitWeapon_Wizard_2({_player})
-	else if {_item.num} is 3:
-		kitWeapon_Wizard_3({_player})
-	else if {_item.num} is 5:
-		kitWeapon_Wizard_5({_player})
 
 # Skills
 function kitSkillWizard(player: player) :: boolean:
