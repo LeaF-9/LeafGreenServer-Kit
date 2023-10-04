@@ -313,8 +313,11 @@ on death of player:
 
 function kitManaCalc(player: player, mana: number) :: number:
 	set {_mc} to {_mana}
-	if {Stats.%{_player}%::FairyWand} is true:
-		set {_mc} to round({_mc} * 0.5)
+	if {Stats.%{_player}%::FairyWand} is set:
+		set {_mc} to {_mc} - {Stats.%{_player}%::FairyWand}
+		delete {Stats.%{_player}%::FairyWand}
+		if {_mc} < 0:
+			set {_mc} to 0
 	if {Stats.%{_player}%::UltWizard} is true:
 		set {_mc} to 0
 	return {_mc}

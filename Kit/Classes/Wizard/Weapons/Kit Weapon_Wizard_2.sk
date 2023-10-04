@@ -1,11 +1,55 @@
 # Fairy Wand
+options:
+	radius: 7
 
-function kitWeapon_Wizard_2(player: player):
-	toolCT({_player}, "Wizard", 2, "Weapon.main")
-	set {Stats.%{_player}%::FairyWand} to true
-	playSound("entity.player.levelup", 1, 2, {_player})
-	kitMsg({_player}, "<##e95464>妖精が<##0075c2>マナ<##e95464>を分け与えてくれるみたいです!")
+on sneak toggle:
+	{Class::%player%} is "Wizard"
+	player is not sneaking
+	set {_tool} to player's tool
+	if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 2) is false:
+		stop
+	kitEffect_FairyWand(player)
+
+function kitEffect_FairyWand(player: player):
+	kitParticle_FairyWand_Start({_player})
+	wait a tick
+	set {_true} to true
+	while {_true} is true:
+		set {_tool} to tool of {_player}
+		if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 2) is false:
+			set {_true} to false
+			continue
+		if {_player} is not sneaking:
+			set {_true} to false
+			continue
+		set {_enemies.before::*} to {_enemies::*}
+		delete {_enemies::*}
+		set {_enemies::*} to kitEffect_FairyWand_Poison({_player})
+		kitParticle_FairyWand_Area({_player})
+		loop {_enemies.before::*}:
+			if {_enemies::*} does not contain loop-value:
+				remove poison from loop-value
+		loop {_enemies::*}:
+			add 1 to {_enemy.points::%loop-value%}
+			if mod({_enemy.points::%loop-value%}, 20) is 0:
+				add 1 to {Stats.%{_player}%::FairyWand}
+				kitParticle_FairyWand_Charge({_player}, loop-value)
+		wait a tick
+
+function kitEffect_FairyWand_Poison(player: player) :: players:
 	set {_baseloc} to location of {_player}
+	loop all entities in radius {@radius} around {_baseloc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		loop-entity does not have poison
+		applyEffect(poison, 1, loop-entity, 10 seconds)
+		kitParticle_FairyWand_Hit(loop-entity)
+		if "%type of loop-entity%" is "player":
+			add loop-entity to {_results::*}
+	return {_results::*}
+
+
+
+
 	loop 3 times:
 		set {_loc.%loop-number%} to location of {_player}
 		add a random number between -1 and 1 to x-coordinate of {_loc.%loop-number%}
@@ -48,3 +92,69 @@ function kitWeapon_Wizard_2(player: player):
 		wait a tick
 	delete {Stats.%{_player}%::FairyWand}
 	kitMsg({_player}, "<##f19ca7>妖精は去ってしまった...")
+
+# 6体(色は3色)の妖精が外側に広がっていく演出
+function kitParticle_FairyWand_Start(player: player):
+	playSound("entity.player.levelup", 1, 2, {_player})
+	set {_baseloc} to location of {_player}
+	add 1 to y-pos of {_baseloc}
+	set {_m} to 0
+	loop 10 times:
+		add {@radius} / 10 to {_m}
+		set {_rad} to 0
+		loop 6 times:
+			add 60 to {_rad}
+			set {_el} to {_baseloc}
+			add {_m} * sin({_rad}) to x-pos of {_el}
+			add {_m} * cos({_rad}) to z-pos of {_el}
+			set {_modnum} to mod({_rad} / 60, 3)
+			if {_modnum} is 1:
+				set {_color} to rgb(234, 97, 142)
+			else if {_modnum} is 2:
+				set {_color} to rgb(250, 197, 89)
+			else:
+				set {_color} to rgb(60, 179, 122)
+			spawnParticle_DustTransition({_color}, rgb(247, 246, 251), 1.5, {_el})
+		wait a tick
+
+# 円形にパーティクルを配置する
+function kitParticle_FairyWand_Area(player: player):
+	playSound("block.amethyst_block.chime", 0.75, a random number between 1.5 and 2, {_player})
+	set {_baseloc} to location of {_player}
+	add 1 to y-pos of {_baseloc}
+	loop 30 times:
+		add 12 to {_rad}
+		set {_el} to {_baseloc}
+		add {@radius} * sin({_rad}) to x-pos of {_el}
+		add {@radius} * cos({_rad}) to z-pos of {_el}
+		set {_r} to a random integer between 155 and 255
+		set {_g} to a random integer between 155 and 255
+		spawnParticle_Dust(rgb({_r}, {_g}, 0), 0.75, {_el})
+
+function kitParticle_FairyWand_Charge(player: player, target: player):
+	playSound("block.amethyst_block.resonate", 1, 1.2, {_player})
+	set {_from} to location 1 meter above {_target}
+	set {_to} to location 1 meter above {_player}
+	set {_v} to setVector({_from}, {_to})
+	set {_baseloc} to setDirToVec({_from}, {_v})
+	set {_dis} to distance between {_from} and {_to}
+	loop 10 times:
+		set {_el} to location {_dis} / (11 - loop-number) meters in front of {_baseloc}
+		spawnParticle(scrape, {_el})
+
+function kitParticle_FairyWand_Hit(entity: entity):
+	chance of 50%:
+		playSound("block.amethyst_block.break", 0.8, 2, {_entity})
+	set {_baseloc} to location of {_entity}
+	loop 3 times:
+		if loop-number is 1:
+			set {_color} to rgb(234, 97, 142)
+		else if loop-number is 2:
+			set {_color} to rgb(250, 197, 89)
+		else:
+			set {_color} to rgb(60, 179, 122)
+		set {_el} to {_baseloc}
+		add a random number between -1 and 1 to x-pos of {_el}
+		add a random number between -1 and 1 to z-pos of {_el}
+		add a random number between 0 and 2.5 to y-pos of {_el}
+		spawnParticle_Dust({_color}, 0.9, {_el})
