@@ -1,0 +1,31 @@
+# Circle
+function generateLocation_Circle(baseloc: location, count: number, radius: number) :: locations:
+	set {_count} to floor({_count})
+	loop {_count} times:
+		set {_el} to {_baseloc}
+		add 360 / {_count} to {_rad}
+		add {_radius} * sin({_rad}) to x-pos of {_el}
+		add {_radius} * cos({_rad}) to z-pos of {_el}
+		add {_el} to {_returnlocs::*}
+	return {_returnlocs::*}
+
+# Sphere
+function generateLocatoin_Sphere(baseloc: location, count: number, radius: number) :: locations:
+	set {_count} to floor({_count})
+	loop {_count} + 1 time:
+		set {_countdouble} to {_count} * 2
+		loop {_countdouble} time:
+			set {_el} to {_baseloc}
+			set {_x} to x-pos of {_el}
+			set {_y} to y-pos of {_el}
+			set {_z} to z-pos of {_el}
+			set x-pos of {_el} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
+			set y-pos of {_el} to {_y} + ( 5 * cos({_s}) )
+			set z-pos of {_el} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
+			add {_el} to {_returnlocs::*}
+			add 360 / {_countdouble} to {_t}
+		add 360 / {_countdouble} to {_s}
+	return {_returnlocs::*}
+
+# Spiral
+function generateLocation_Spiral(baseloc: location, count: number, density: number, radius: number, height: number, clockwize: boolean = true) :: locations:
