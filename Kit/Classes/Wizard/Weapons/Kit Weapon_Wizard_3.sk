@@ -61,52 +61,78 @@ function kitEffect_MagicMissile_Timer(player: player):
 		wait a tick
 
 function kitWeapon_Wizard_3(player: player):
-	set {_num} to 0
-	wait a tick
-	set {_true} to true
-	while {_true} is true:
-		set {_tool} to {_player}'s tool
-		set {_mana} to kitManaCalc({_player}, 3)
-		if {_player} is not sneaking:
-			set {_true} to false
-		else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 4) is false:
-			set {_true} to false
-		else if {Kit-Mana::%{_player}%} < {_mana}:
-			set {_true} to false
-			send action bar "§4§lマナが足りません!" to {_player}
-		if {_true} is true:
-			add 1 to {_num}
-			# --- パーティクル演出 ---
-			kitEffect_MoonRod({_player}, {_num})
-			# ----------------------
-			if {_num} >= 20:
-				set {_num} to 0
-				subtract {_mana} from {Kit-Mana::%{_player}%}
-				# --- 音の演出 ---
-				playSound("block.beacon.ambient", 1, 2, {_player})
-				# ---------------
-			loop all players in radius 8 around {_player}:
-				kitCheckTeam({_player}, loop-player, false) is true
-				{Kit-Sleep::%loop-player%} is not set
-				if {_mooners::%loop-player%} is not set:
-					set {_mooners::%loop-player%} to 0
-					message formatted "§8§lなんだか眠気を誘われる..." to loop-player
-					# --- 眠気が始まる際の音の演出 ---
-					playSound("entity.wolf.growl", 0.5, 0.75, loop-player)
-					# ----------------------------
-				add 1 to {_mooners::%loop-player%}
-				if {_mooners::%loop-player%} >= 60:
-					delete {_mooners::%loop-player%}
-					kitSleep(loop-player, 3 seconds)
-					# --- 寝てしまった際のパーティクル演出 ---
-					set {_pb} to location 1 meters above loop-player
-					loop 15 times:
-						set {_rv} to randomVector({_pb})
-						spawnParticle_Vector(sculk_charge_pop, {_rv}, 1, {_pb})
-					# -------------------------------------
-			wait a tick
+	if {Kit-Stats.%{_player}%::MagicMissile} is not set:
+		set {Kit-Stats.%{_player}%::MagicMissile} to 0
+	if {Kit-Stats.%{_player}%::MagicMissile} is 0:
+		stop
+	kitParticle_MagicMissile_Launch({_player})
+	set {_id} to {Kit-Stats.%{_player}%::MagicMissile}
+	subtract 1 from {Kit-Stats.%{_player}%::MagicMissile}
+	set {_m} to 0
+	set {_baseloc} to location 1 meter above {_player}
+	set {_blast} to false
+	loop 100 times:
+		if {_blast} is true:
+			continue
+		add 0.5 to {_m}
+		set {_tool} to tool of {_player}
+		else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 3) is false:  # 持っているアイテムがスキルのものでは無い場合の挙動
+			set {_blast} to true
+			continue
+		set {_locnow} to location 1 meter above {_player}
+		set {_base} to {_baseloc}
+		set yaw of {_base} to yaw of {_locnow}
+		set pitch of {_base} to pitch of {_locnow}
+		set {_block} to location 1 meter in front of {_base}
+		set {_baseloc} to {_block}
+		if block at {_block} is not passable:  # ブロックと衝突した際の挙動
+			set {_blast} to true
+			continue
+		loop all players in radius 2.5 around {_block}:
+			kitCheckTeam(loop-player, {_player}, false) is true
+			{_hit} is not set
+			set {_hit} to loop-player
+		if {_hit} is set:
+			set {_blast} to true
+			continue
+		kitParticle_MagicMissile_Trail({_block})
+		wait a tick
+	kitParticle_MagicMissile_Blast({_baseloc})
+	if {_hit} is set:
+		kitParticle_MagicMissile_Hit({_player}, {_hit})
+		kitDamage({_player}, {_hit}, 2)
+		set {_mana} to 5
+		add {_mana} to {Kit-Mana::%{_player}%}
+		kitMsg({_player}, "§bマナ §9§l%{_mana}% §7ゲット!")
 
-# チャージ中演出 青い光？
+# チャージ中演出 小さな青い光がキラキラ
 function kitParticle_MagicMissile_Prepare(player: player):
+	set {_baseloc} to location of {_player}
+	loop 5 times:
+		set {_el} to {_baseloc}
+		add a random number between -0.5 and 0.5 to x-pos of {_el}
+		add a random number between -0.5 and 0.5 to z-pos of {_el}
+		add a random number between 0.5 and 1.5 to y-pos of {_el}
+		spawnParticle_DustTransition(rgb(0, 161, 233), rgb(160, 216, 239), 0.4, {_el})
 
+# 魔法弾召喚時 ぽわわわーん
 function kitParticle_MagicMissile_Summon(player: player):
+	set {_baseloc} to location of {_player}
+	set {_y} to 0
+	loop 5 times:
+		set {_el} to {_baseloc}
+		add {_y} to y-pos of {_el}
+		spawnParticle_Color(entity_effect, 0, 172, 240, {_el})
+		add 0.5 to {_y}
+
+# 発射時の演出
+function kitParticle_MagicMissile_Launch(player: player):
+
+# 魔法弾の周囲にVertical円
+function kitParticle_MagicMissile_Trail(loc: location):
+
+# 柔らかい破裂
+function kitParticle_MagicMissile_Blast(loc: location):
+
+# 明るい音 直線の青緑色の光
+function kitParticle_MagicMissile_Hit(player: player, target: player):
