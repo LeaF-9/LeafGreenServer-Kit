@@ -1,0 +1,82 @@
+# Circle
+function particleLocation_Circle(baseloc: location, count: number, radius: number) :: locations:
+	set {_count} to floor({_count})
+	set {_rad} to 0
+	loop {_count} times:
+		set {_el} to {_baseloc}
+		add {_radius} * sin({_rad}) to x-pos of {_el}
+		add {_radius} * cos({_rad}) to z-pos of {_el}
+		add {_el} to {_returnlocs::*}
+		add 360 / {_count} to {_rad}
+	return {_returnlocs::*}
+
+# Sphere
+function particleLocatoin_Sphere(baseloc: location, count: number, radius: number) :: locations:
+	set {_count} to floor({_count})
+	set {_s} to 0
+	set {_t} to 0
+	loop {_count} + 1 time:
+		set {_countdouble} to {_count} * 2
+		loop {_countdouble} time:
+			set {_el} to {_baseloc}
+			set {_x} to x-pos of {_el}
+			set {_y} to y-pos of {_el}
+			set {_z} to z-pos of {_el}
+			set x-pos of {_el} to {_x} + ( {_radius} * sin({_s}) * cos({_t}) )
+			set y-pos of {_el} to {_y} + ( {_radius} * cos({_s}) )
+			set z-pos of {_el} to {_z} + ( {_radius} * sin({_s}) * sin({_t}) )
+			add {_el} to {_returnlocs::*}
+			add 360 / {_countdouble} to {_t}
+		add 360 / {_countdouble} to {_s}
+	return {_returnlocs::*}
+
+# Spiral
+# count: 一周におけるパーティクル量
+# density: 一周する際に上がる距離(m)
+# height: 最高高度(m)
+# arad: 初期値(option)
+function particleLocation_Spiral(baseloc: location, count: number, density: number, radius: number, height: number, arad: number = 0, clockwize: boolean = true) :: locations:
+	if {_density} <= 0:
+		log "Densityの値が不正です"
+		stop
+	set {_count} to floor({_count})
+	set {_rad} to {_arad}
+	set {_addrad} to 360 / {_count}
+	if {_clockwize} is false:
+		set {_addrad} to {_addrad} * -1
+	set {_el} to {_baseloc}
+	set {_addy} to {_density} / {_count}
+	set {_basey} to y-pos of {_baseloc}
+	while y-pos of {_baseloc} - {_basey} <= {_height}:
+		# 円
+		loop {_count} times:
+			if y-pos of {_baseloc} - {_basey} > {_height}:
+				continue
+			set {_el} to {_baseloc}
+			add {_radius} * sin({_rad}) to x-pos of {_el}
+			add {_radius} * cos({_rad}) to z-pos of {_el}
+			add {_el} to {_returnlocs::*}
+			add {_addy} to y-pos of {_baseloc}
+			add {_addrad} to {_rad}
+	return {_returnlocs::*}
+
+# vertical circle
+function particleLocation_CircleV(baseloc: location, count: number, radius: number) :: locations:
+	set {_count} to floor({_count})
+	set {_rad} to 0
+	loop {_count} times:
+		set {_el} to {_baseloc}
+		set {_m1} to {_el}
+		set pitch of {_m1} to pitch of {_m1} - 90
+		set {_test1} to {_radius} * cos({_rad})
+		set {_t1} to location {_test1} meters in front of {_m1}
+		set {_m2} to {_el}
+		set pitch of {_m2} to 0
+		set {_test2} to {_radius} * sin({_rad})
+		set {_t2} to location {_test2} meters to the right of {_m2}
+		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
+		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
+		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+		add {_el} to {_returnlocs::*}
+		add 360 / {_count} to {_rad}
+	return {_ returnlocs::*}
