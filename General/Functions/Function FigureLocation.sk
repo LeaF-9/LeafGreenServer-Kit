@@ -80,3 +80,39 @@ function particleLocation_CircleV(baseloc: location, count: number, radius: numb
 		add {_el} to {_returnlocs::*}
 		add 360 / {_count} to {_rad}
 	return {_ returnlocs::*}
+
+# vertical spiral
+function particleLocation_SpiralV(baseloc: location, count: number, density: number, radius: number, front: number, arad: number = 0, clockwize: boolean = true) :: locations:
+	if {_density} <= 0:
+		log "Densityの値が不正です"
+		stop
+	set {_count} to floor({_count})
+	set {_rad} to {_arad}
+	set {_addrad} to 360 / {_count}
+	if {_clockwize} is false:
+		set {_addrad} to {_addrad} * -1
+	set {_el} to {_baseloc}
+	set {_addf} to {_density} / {_count}
+	set {_basef} to {_baseloc}
+	set {_m} to 0
+	while {_m} <= {_front}:
+		# 円
+		loop {_count} times:
+			if {_m} > {_front}:
+				continue
+			set {_el} to location {_m} meters in front of {_baseloc}
+			set {_m1} to {_el}
+			set pitch of {_m1} to pitch of {_m1} - 90
+			set {_test1} to {_radius} * cos({_rad})
+			set {_t1} to location {_test1} meters in front of {_m1}
+			set {_m2} to {_el}
+			set pitch of {_m2} to 0
+			set {_test2} to {_radius} * sin({_rad})
+			set {_t2} to location {_test2} meters to the right of {_m2}
+			set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
+			set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
+			set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+			add {_el} to {_returnlocs::*}
+			add {_addf} to {_m}
+			add {_addrad} to {_rad}
+	return {_returnlocs::*}
