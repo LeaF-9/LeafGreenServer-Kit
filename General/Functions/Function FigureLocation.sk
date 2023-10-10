@@ -60,6 +60,36 @@ function particleLocation_Spiral(baseloc: location, count: number, density: numb
 			add {_addrad} to {_rad}
 	return {_returnlocs::*}
 
+# Tornado
+# count: 一周におけるパーティクル量
+# density: 一周する際に上がる距離(m)
+# addradius: 半径増加率
+# height: 最高高度(m)
+# arad: 初期値(option)
+function particleLocation_Spiral(baseloc: location, count: number, density: number, radius: number, height: number, arad: number = 0, clockwize: boolean = true) :: locations:
+	if {_density} <= 0:
+		log "Densityの値が不正です"
+		stop
+	set {_count} to floor({_count})
+	set {_rad} to {_arad}
+	if {_clockwize} is false:
+		set {_addradius} to {_addradius} * -1
+	set {_el} to {_baseloc}
+	set {_addy} to {_density} / {_count}
+	set {_basey} to y-pos of {_baseloc}
+	while y-pos of {_baseloc} - {_basey} <= {_height}:
+		# 円
+		loop {_count} times:
+			if y-pos of {_baseloc} - {_basey} > {_height}:
+				continue
+			set {_el} to {_baseloc}
+			add {_radius} * sin({_rad}) to x-pos of {_el}
+			add {_radius} * cos({_rad}) to z-pos of {_el}
+			add {_el} to {_returnlocs::*}
+			add {_addy} to y-pos of {_baseloc}
+			add {_addrad} to {_rad}
+	return {_returnlocs::*}
+
 # vertical circle
 function particleLocation_CircleV(baseloc: location, count: number, radius: number) :: locations:
 	set {_count} to floor({_count})
