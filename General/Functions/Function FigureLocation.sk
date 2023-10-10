@@ -1,17 +1,20 @@
 # Circle
-function generateLocation_Circle(baseloc: location, count: number, radius: number) :: locations:
+function particleLocation_Circle(baseloc: location, count: number, radius: number) :: locations:
 	set {_count} to floor({_count})
+	set {_rad} to 0
 	loop {_count} times:
 		set {_el} to {_baseloc}
-		add 360 / {_count} to {_rad}
 		add {_radius} * sin({_rad}) to x-pos of {_el}
 		add {_radius} * cos({_rad}) to z-pos of {_el}
 		add {_el} to {_returnlocs::*}
+		add 360 / {_count} to {_rad}
 	return {_returnlocs::*}
 
 # Sphere
-function generateLocatoin_Sphere(baseloc: location, count: number, radius: number) :: locations:
+function particleLocatoin_Sphere(baseloc: location, count: number, radius: number) :: locations:
 	set {_count} to floor({_count})
+	set {_s} to 0
+	set {_t} to 0
 	loop {_count} + 1 time:
 		set {_countdouble} to {_count} * 2
 		loop {_countdouble} time:
@@ -19,13 +22,40 @@ function generateLocatoin_Sphere(baseloc: location, count: number, radius: numbe
 			set {_x} to x-pos of {_el}
 			set {_y} to y-pos of {_el}
 			set {_z} to z-pos of {_el}
-			set x-pos of {_el} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
-			set y-pos of {_el} to {_y} + ( 5 * cos({_s}) )
-			set z-pos of {_el} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
+			set x-pos of {_el} to {_x} + ( {_radius} * sin({_s}) * cos({_t}) )
+			set y-pos of {_el} to {_y} + ( {_radius} * cos({_s}) )
+			set z-pos of {_el} to {_z} + ( {_radius} * sin({_s}) * sin({_t}) )
 			add {_el} to {_returnlocs::*}
 			add 360 / {_countdouble} to {_t}
 		add 360 / {_countdouble} to {_s}
 	return {_returnlocs::*}
 
 # Spiral
-function generateLocation_Spiral(baseloc: location, count: number, density: number, radius: number, height: number, clockwize: boolean = true) :: locations:
+# count: 一周におけるパーティクル量
+# density: 一周する際に上がる距離(m)
+# height: 最高高度(m)
+# arad: 初期値(option)
+function particleLocation_Spiral(baseloc: location, count: number, density: number, radius: number, height: number, arad: number = 0, clockwize: boolean = true) :: locations:
+	if {_density} <= 0:
+		log "Densityの値が不正です"
+		stop
+	set {_count} to floor({_count})
+	set {_rad} to {_arad}
+	set {_addrad} to 360 / {_count}
+	if {_clockwize} is false:
+		set {_addrad} to {_addrad} * -1
+	set {_el} to {_baseloc}
+	set {_addy} to {_density} / {_count}
+	set {_basey} to y-pos of {_baseloc}
+	while y-pos of {_baseloc} - {_basey} <= {_height}:
+		# 円
+		loop {_count} times:
+			if y-pos of {_baseloc} - {_basey} > {_height}:
+				continue
+			set {_el} to {_baseloc}
+			add {_radius} * sin({_rad}) to x-pos of {_el}
+			add {_radius} * cos({_rad}) to z-pos of {_el}
+			add {_el} to {_returnlocs::*}
+			add {_addy} to y-pos of {_baseloc}
+			add {_addrad} to {_rad}
+	return {_returnlocs::*}
