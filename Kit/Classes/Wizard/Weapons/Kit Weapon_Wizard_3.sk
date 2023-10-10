@@ -26,6 +26,10 @@ function kitEffect_MagicMissile(player: player):
 			continue
 		kitParticle_MagicMissile_Prepare({_player})
 		add 1 to {_num.charge}
+		set {_barmax} to {_num.charge}
+		while {_barmax} > 20:
+			subtract 20 from {_barmax}
+		chargeActionBar({_player}, {_barmax} * 2, 40)
 		if mod({_num.charge}, 20) is 0:
 			kitEffect_MagicMissile_Summon({_player})
 		wait a tick
@@ -33,9 +37,28 @@ function kitEffect_MagicMissile(player: player):
 function kitEffect_MagicMissile_Summon(player: player):
 	kitParticle_MagicMissile_Summon({_player})
 	add 1 to {Kit-Stats.%{_player}%::MagicMissile}
+	set {_mmentity} to kitSpawnMob_NBT({_player}, armor stand, location of {_player}, "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Small:1b,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;-110805139,1605126504,-1314409618,-754615504],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWYxNzhhM2U3MDU4YTEzYWFjNTBkMTkyOWE1NGQ0ODRkYmRmZmMwMzg1MzI0YzE5YjE4ZGZlMzQ0MWI0Yzc5ZSJ9fX0=""}]}}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}")
+	set metadata value "magicmissile" of {_mmentity} to {Kit-Stats.%{_player}%::MagicMissile}
 	kitEffect_MagicMissile_Timer({_player})
 
+
 function kitEffect_MagicMissile_Timer(player: player):
+	if {Kit-Stats.%{_player}%::MagicMissile-Timer} is set:
+		stop
+	set {Kit-Stats.%{_player}%::MagicMissile-Timer} to true
+	while {Class::%{_player}%} is "Wizard":
+		if {Kit-Stats.%{_player}%::MagicMissile-Timer} is not set:
+			stop
+		set {_locs::*} to particleLocation_CircleV(location of head of {_player}, 60, 1)
+		add 1 to {_timer}
+		if {_timer} >= 61:
+			set {_timer} to 1
+		loop all entities:
+			metadata value "magicmissile" of loop-entity is set
+			set {_id} to metarada value "magicmissile" of loop-entity
+			set {_locid} to 20 * ({_id} - 1) + {_timer}
+			teleport loop-entity to {_locs::%{_locid}%}
+		wait a tick
 
 function kitWeapon_Wizard_3(player: player):
 	set {_num} to 0
