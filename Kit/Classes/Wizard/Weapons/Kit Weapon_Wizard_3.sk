@@ -107,6 +107,7 @@ function kitWeapon_Wizard_3(player: player):
 
 # チャージ中演出 小さな青い光がキラキラ
 function kitParticle_MagicMissile_Prepare(player: player):
+	playSound("entity.experience_orb.pickup", 0.5, 2, {_player})
 	set {_baseloc} to location of {_player}
 	loop 5 times:
 		set {_el} to {_baseloc}
@@ -117,6 +118,7 @@ function kitParticle_MagicMissile_Prepare(player: player):
 
 # 魔法弾召喚時 ぽわわわーん
 function kitParticle_MagicMissile_Summon(player: player):
+	playSound("block.conduit.attack.target", 1, 1.5, {_player})
 	set {_baseloc} to location of {_player}
 	set {_y} to 0
 	loop 5 times:
@@ -125,14 +127,39 @@ function kitParticle_MagicMissile_Summon(player: player):
 		spawnParticle_Color(entity_effect, 0, 172, 240, {_el})
 		add 0.5 to {_y}
 
-# 発射時の演出
+# 発射時の演出 渦と共にちょっと爆発
 function kitParticle_MagicMissile_Launch(player: player):
+	playSound("block.conduit.activate", 1, 2, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 20 times:
+		spawnParticle_Vector(scrape, randomVector({_baseloc}), 0.75, {_baseloc})
+	set {_tornados::*} to particleLocation_TornadoV({_baseloc}, 10, 1.5, 1.5, 3)
+	loop 20 times:
+		set {_el} to {_tornados::%loop-number%}
+		spawnParticle(bubble_pop, {_el})
+		wait a tick
 
 # 魔法弾の周囲にVertical円
 function kitParticle_MagicMissile_Trail(loc: location):
+	set {_circles::*} to particleLocation_CircleV({_loc}, 10, 0.5)
+	loop {_circles::*}:
+		spawnParticle_Dust(rgb(37, 183, 192), 0.5, loop-value)
 
 # 柔らかい破裂
 function kitParticle_MagicMissile_Blast(loc: location):
+	playSound("block.respawn_anchor.charge", 1, 1.5, {_loc})
+	loop 30 times:
+		spawnParticle_Vector(sculk_charge_pop, randomVector({_loc}), 0.5, {_loc})
 
 # 明るい音 直線の青緑色の光
 function kitParticle_MagicMissile_Hit(player: player, target: player):
+	set {_loct} to location 1 meter above {_target}
+	set {_baseloc} to location 1 meter above {_player}
+	playSound("block.amethyst_block.chime", 1.5, 2, {_baseloc})
+	set {_dis} to distance between {_loct} and {_baseloc}
+	set {_maxm} to round({_dis})
+	set {_v} to setVector({_baseloc}, {_loct})
+	set {_baseloc} to setDirToVec({_baseloc}, {_v})
+	set {_spirals::*} to particleLocation_SpiralV({_baseloc}, 10, 10, 0.35, {_maxm})
+	loop {_spirals::*}:
+		spawnParticle_DustTransition(rgb(0, 115, 168), rgb(250, 253, 255), 0.5, {_loop-value})
