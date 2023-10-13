@@ -1,0 +1,44 @@
+# Weapon-Name: Hammer
+
+on leftclick:
+	{Class::%player%} is "Defender"
+	player is sneaking
+	set {_tool} to tool of player
+	kitItemAllChecker({_tool}, "Defender", "Weapon.main", 3) is true
+	checkCT(player, name of {_tool}) is true
+	kitEffect_Hammer(player)
+
+function kitEffect_Hammer(player: player):
+	toolCT({_player}, "Defender", 3, "Weapon.main")
+	set {_baseloc} to location of head of {_player}
+	set pitch of {_baseloc} to 0
+	loop 5 times:
+		set {_baseel} to location loop-number meters in front of {_baseloc}
+		set {_um} to 0
+		loop 3 times:
+			add 1 to {_um}
+			set {_el} to location {_um} meters below {_baseel}
+			if {_el} is not passable:
+				exit a loop
+		kitParticle_Hammer({_el})
+		loop all entities in radius 1.5 around {_el}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			kitParticle_Hammer_Hit(loop-entity)
+			kitDamage({_player}, loop-entity, 2)
+			set {_v} to vector(0, 1.5, 0)
+			set velocity of loop-entity to {_v}
+
+function kitParticle_Hammer(loc: location):
+	playSound("block.gravel.break", 0.8, 0.5, {_loc})
+	loop all blocks in radius 1.5 around {_loc}:
+		y-pos of location of loop-block > y-pos of {_loc}
+		loop-block is passable
+		block below loop-block is not passable
+		set {_blockdata} to type of block below loop-block
+		spawnParticle_Block({_blockdata}, location of loop-block)
+
+function kitParticle_Hammer_Hit(entity: entity):
+	playSound("entity.dragon_fireball.explode", 1, 2, {_entity})
+	loop 10 times:
+		set {_v} to randomVector(0.5)
+		spawnParticle_Vector(cloud, {_v}, 0.75, location 1 meter above {_entity})
