@@ -11,6 +11,13 @@ on damage:
 		else:
 			set damage to 0.1
 
+function kitWeaponMercenary(player: player):
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	checkCT({_player}, name of {_tool}) is true
+	if {_item.num} is 2:
+		kitWeapon_Mercenary_2({_player})
+
 # Skills
 function kitSkillMercenary(player: player) :: boolean:
 	set {_tool} to {_player}'s tool
@@ -37,14 +44,6 @@ function kitSkillMercenary(player: player) :: boolean:
 # Timer
 function kitTimerMercenary(player: player):
 	while {Class::%{_player}%} is "Mercenary":
-		set {_tool} to {_player}'s tool
-		set {_item.kit} to kitItemKitChecker({_tool})
-		set {_item.type} to kitItemTypeChecker({_tool})
-		set {_item.num} to kitItemNumberChecker({_tool})
-		if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 3) is true:
-			kitWeapon_Mercenary_3({_player})
-		else if kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 5) is true:
-			kitWeapon_Javelinter_ActionBar({_player})
 		loop all players:
 			kitCheckTeam({_player}, loop-player, false) is true
 			{Kit-Blood::%loop-player%} is set
