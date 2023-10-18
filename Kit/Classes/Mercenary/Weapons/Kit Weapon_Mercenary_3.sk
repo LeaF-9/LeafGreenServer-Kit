@@ -1,0 +1,58 @@
+# Weapon-Name: Javelit
+
+on leftclick:
+	{Class::%player%} is "Mercenary"
+	player is sneaking
+	set {_tool} to tool of player
+	kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 3) is true
+	checkCT(player, name of {_tool}) is true
+	kitEffect_Javelit(player)
+
+local function kitEffect_Javelit(player: player):
+	set {_baseloc} to location of head of {_player}
+	set {_baseloc.left} to location 0.5 meter to the left of {_baseloc}
+	set {_baseloc.right} to location 0.5 meter to the right of {_basleoc}
+	loop 100 times:
+		set {_effloc} to location loop-number * 0.1 meters in front of {_baseloc}
+		kitEffect_Javelit_Hit({_player}, {_effloc})
+		if mod (loop-number, 10) is 0:
+			set {_baseeffloc} to location loop-number * 0.1 - 0.5 meters in front of {_baseloc.left}
+			set {_v} to setVector({_baseeffloc}, {_effloc})
+			set {_baseeffloc} to setDirToLoc({_baseeffloc}, {_v})
+			set {_em} to 0
+			loop 5 times:
+				set {_el} to location {_m} meters in front of {_baseeffloc}
+				kitEffect_Javelit_Hit({_player}, {_el})
+				add 0.1 to {_m}
+			set {_baseeffloc} to location loop-number * 0.1 - 0.5 meters in front of {_baseloc.right}
+			set {_v} to setVector({_baseeffloc}, {_effloc})
+			set {_baseeffloc} to setDirToLoc({_baseeffloc}, {_v})
+			set {_em} to 0
+			loop 5 times:
+				set {_el} to location {_m} meters in front of {_baseeffloc}
+				kitEffect_Javelit_Hit({_player}, {_el})
+				add 0.1 to {_m}
+			wait a tick
+
+local function kitEffect_Javelit_Hit(player: player, loc: location):
+	kitParticle_Javelit({_loc})
+	set {_entities::*} to checkHitEntities({_loc})
+	loop {_entities::*}:
+		if kitCheckTeam({_player}, loop-value, false) is true:
+			kitParticle_Javelit_Hit(loop-value)
+			kitDamage({_player}, loop-value, 2)
+			if checkEntityType(loop-value, "player") is true:
+				set {_c} to kitPercentDuel({_player}, loop-value, 50)
+				chance of {_c}%:
+					kitBlood(loop-value)
+
+local function kitParticle_Javelit(loc: location):
+	playSound("block.chain.place", 0.5, 2, {_loc})
+	spawnParticle(wax_off, {_loc})
+
+local function kitParticle_Javelit_Hit(entity: entity):
+	playSound("entity.guardian.ambient_land", 1, 2, {_entity})
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 10 times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(crit, {_v}, 0.3, {_baseloc})

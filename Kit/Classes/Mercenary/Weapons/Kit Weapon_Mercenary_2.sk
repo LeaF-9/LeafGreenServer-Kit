@@ -1,104 +1,41 @@
-# Toxicle
+# Weapon-Name: Vander
 
 on damage:
 	metadata value "gametype" of attacker is "Kit"
 	{Class::%attacker%} is "Mercenary"
 	damage was caused by attack
+	attacker is sneaking
 	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 2) is true
 	{Kit-Blood::%victim%} is set
-	apply poison 3 to victim for 3 
+	set damage to damage + 2
+	kitEffect_Vander(attacker, victim)
 
-function kitWeapon_Mercenary_2(player: player):
-	set {_tool} to tool of {_player}
-	set {_offhand} to offhand tool of {_player}
-	if kitItemAllChecker({_offhand}, "Mercenary", "Weapon.sub", 2) is false:
-		stop
-	if checkCT(player, name of {_offhand}) is false:
-		stop
-	detectCT({_player}, {_tool})
-	set {Stats.%{_player}%::Toxicle} to true
-	set offhand tool of {_player} to air
-	set {_baseloc} to location of {_player}
-	set pitch of {_baseloc} to 0
-	set {_entity} to kitSpawnMob_NBT({_player}, armor stand, {_baseloc}, "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Pose:{RightArm:[350f,0f,270f]}}")
-	set metadata value "toxicle" of {_entity} to "%{_player}%"
-	set tool of {_entity} to {_offhand}
-	playSound("entity.arrow.shoot", 1, 0.8, {_player})
-	set {_yaw} to yaw of {_baseloc}
-	
-	
+local function kitEffect_Vander(player: player, target: player):
+	kitParticle_Vander_Edge({_player}, {_target})
+	delete {Kit-Blood::%{_target}%}
+	message formatted "§4傷口から吸血された..." to {_target}
+	kitParticle_Vander_Heal({_player}, {_target})
 
-	set {_yaw} to yaw of {_baseloc}
-	loop 20 times:
-		add 0.5 to {_front}
-		add 54 to {_yaw}
-		if {_yaw} >= 360:
-			subtract 360 from {_yaw}
-			playSound("block.chain.break", 1, 1, {_loc})
-		set {_loc} to location {_front} meters in front of {_player}
-		set yaw of {_loc} to {_yaw}
-		set pitch of {_loc} to 0
-		loop all entities:
-			type of loop-entity is an armor stand
-			metadata value "kusarigama" of loop-entity is "%{_player}%"
-			teleport loop-entity to {_loc}
-		set {_num} to 0
-		set {_effront} to 0
-		loop loop-number times:
-			add 1 to {_num}
-			add 0.5 to {_effront}
-			set {_effloc} to location {_effront} meters in front of {_player}
-			add 1 to y-coordinate of {_effloc}
-			spawnParticle_Dust(rgb(123, 124, 125), 1, {_effloc})
-		loop all entities in radius 2 around {_loc}:
-			kitCheckTeam(loop-entity, {_player}, false) is true
-			{_hit.%id of loop-entity%} is not set
-			set {_hit.%id of loop-entity%} to true
-			make {_player} damage loop-entity by 6
+local function kitParticle_Vander_Edge(attacker: player, victim: player):
+	playSound("entity.fox.bite", 1, 1, {_victim})
+	set {_atkloc} to location of {_attacker}
+	set {_vcmloc} to location of {_victim}
+	set {_dism} to distance between {_atkloc} and {_vcmloc}
+	set {_v} to setVector({_atkloc}, {_vcmloc})
+	set {_atkloc} to setDirToLoc({_atkloc}, {_v})
+	set {_calcyaw} to -20 
+	loop 11 times:
+		set {_baseel} to {_atkloc}
+		add {_calcyaw} to yaw of {_baseel}
+		set {_el} to location {_dism} meters in front of {_baseel}
+		spawnParticle_Dust(rgb(220, 20, 60), 3, {_el})
+		add 4 to {_calcyaw}
 		wait a tick
-	set {_baseloc} to {_loc}
-	loop 20 times:
-		set {_met} to loop-number
-		add 54 to {_yaw}
-		if {_yaw} >= 360:
-			subtract 360 from {_yaw}
-			playSound("block.chain.break", 1, 1, {_loc})
-		set {_d} to distance between {_baseloc} and {_player}
-		set {_dd} to {_d} / 20
-		set {_dc} to {_d} / 20 * {_met}
-		set {_from} to vector of {_player}
-		set {_to} to vector of {_baseloc}
-		set {_vector} to {_from} -- {_to}
-		set {_vector} to normalized {_vector}
-		set {_baseyaw} to yaw of {_vector}
-		set {_basepitch} to pitch of {_vector}
-		set {_armloc} to {_baseloc}
-		set yaw of {_armloc} to {_baseyaw}
-		set pitch of {_armloc} to {_basepitch}
-		set {_loc} to location {_dc} meters in front of {_armloc}
-		set yaw of {_loc} to {_yaw}
-		loop all entities:
-			type of loop-entity is an armor stand
-			metadata value "kusarigama" of loop-entity is "%{_player}%"
-			teleport loop-entity to {_loc}
-		set {_dc} to round({_dc})
-		set {_effront} to 0
-		loop 20 times:
-			add {_dd} to {_effront}
-			if {_effront} > {_dc}:
-				set {_effloc} to location {_effront} meters in front of {_armloc}
-				add 1 to y-coordinate of {_effloc}
-				spawnParticle_Dust(rgb(123, 124, 125), 1, {_effloc})
-		loop all entities in radius 2 around {_loc}:
-			kitCheckTeam(loop-entity, {_player}, false) is true
-			{_hit.%id of loop-entity%} is not set
-			set {_hit.%id of loop-entity%} to true
-			make {_player} damage loop-entity by 6
-		wait a tick
-	loop all entities:
-		type of loop-entity is an armor stand
-		metadata value "kusarigama" of loop-entity is "%{_player}%"
-		delete loop-entity
-	{Stats.%{_player}%::Kusarigama} is true
-	set slot 0 of {_player} to {_tool}
+
+local function kitParticle_Vander_Heal(player: player, target: player):
+	playSound("entity.player.burp", 1, 0.65, {_player})
+	set {_dism} to round(distance between {_player} and {_target})
+	set {_locs::*} particleLocation_TornadoV(location of {_player}, 10, 0.5, 0.1, {_dism})
+	loop {_locs::*}:
+		spawnParticle_Dust(rgb(199, 21, 133), 0.45, loop-value)
