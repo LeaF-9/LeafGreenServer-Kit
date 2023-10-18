@@ -1,0 +1,26 @@
+function checkHitEntities(loc: location) :: entities:
+	loop all entities in radius 3 around {_loc}:
+		checkHitting(loop-entity, {_loc}) is true
+		add loop-entity to {_entities::*}
+	return {_entities::*}
+
+function checkHitting(entity: entity, loc: location) :: boolean:
+	set {_bool} to false
+	set {_baseloc} to location of {_entity}
+	# player
+	if checkEntityType({_entity}, "player") is true:
+		set {_width} to 0.6
+		if {_entity} is sneaking:
+			set {_height} to 1.5
+		else:
+			set {_height} to 1.8
+	set {_loc.min} to {_baseloc}
+	subtract {_width} * 0.5 from x-pos of {_loc.min}
+	subtract {_width} * 0.5  from z-pos of {_loc.min}
+	set {_loc.max} to {_baseloc}
+	add {_height} to y-pos of {_loc.max}
+	add {_width} * 0.5 to x-pos of {_loc.max}
+	add {_width} * 0.5  to z-pos of {_loc.max}
+	if {_loc} is within {_loc.min} and {_loc.max}:
+		return true
+	return {_bool}
