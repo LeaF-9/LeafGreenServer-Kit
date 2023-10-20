@@ -21,21 +21,23 @@ local function kitEffect_Javelit(player: player):
 		kitEffect_Javelit_Hit({_player}, {_effloc})
 		if mod(loop-number, 10) is 0:
 			set {_baseeffloc} to location loop-number * 0.1 - 0.5 meters in front of {_baseloc.left}
+			spawnParticle_Dust(rgb(0, 0, 0), 3, {_baseeffloc})
 			set {_v} to setVector({_baseeffloc}, {_effloc})
 			set {_baseeffloc} to setDirToVec({_baseeffloc}, {_v})
 			set {_em} to 0
 			loop 5 times:
+				add 0.1 to {_em}
 				set {_el} to location {_em} meters in front of {_baseeffloc}
 				kitEffect_Javelit_Hit({_player}, {_el})
-				add 0.1 to {_em}
 			set {_baseeffloc} to location loop-number * 0.1 - 0.5 meters in front of {_baseloc.right}
+			spawnParticle_Dust(rgb(0, 0, 0), 3, {_baseeffloc})
 			set {_v} to setVector({_baseeffloc}, {_effloc})
 			set {_baseeffloc} to setDirToVec({_baseeffloc}, {_v})
 			set {_em} to 0
 			loop 5 times:
+				add 0.1 to {_em}
 				set {_el} to location {_em} meters in front of {_baseeffloc}
 				kitEffect_Javelit_Hit({_player}, {_el})
-				add 0.1 to {_em}
 			wait a tick
 
 local function kitEffect_Javelit_Hit(player: player, loc: location):
@@ -45,7 +47,7 @@ local function kitEffect_Javelit_Hit(player: player, loc: location):
 		if kitCheckTeam({_player}, loop-value, false) is true:
 			kitParticle_Javelit_Hit(loop-value)
 			kitDamage({_player}, loop-value, 2)
-			if checkEntityType(loop-value, "player") is true:
+			if checkEntityType(loop-value, player) is true:
 				set {_c} to kitPercentDuel({_player}, loop-value, 50)
 				chance of {_c}%:
 					kitBlood(loop-value)
@@ -59,4 +61,4 @@ local function kitParticle_Javelit_Hit(entity: entity):
 	set {_baseloc} to location 1 meter above {_entity}
 	loop 10 times:
 		set {_v} to randomVector()
-		spawnParticle_Vector(crit, {_v}, 0.3, {_baseloc})
+		spawnParticle_Vector(enchanted_hit, {_v}, 0.3, {_baseloc})
