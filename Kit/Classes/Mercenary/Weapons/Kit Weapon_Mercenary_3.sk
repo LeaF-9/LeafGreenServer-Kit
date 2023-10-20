@@ -10,8 +10,12 @@ on leftclick:
 
 local function kitEffect_Javelit(player: player):
 	set {_baseloc} to location of head of {_player}
-	set {_baseloc.left} to location 0.5 meter to the left of {_baseloc}
-	set {_baseloc.right} to location 0.5 meter to the right of {_basleoc}
+	set {_bl} to {_baseloc}
+	set pitch of {_bl} to 0
+	set {_baseloc.left} to location 0.5 meter to the left of {_bl}
+	set pitch of {_baseloc.left} to pitch of {_baseloc}
+	set {_baseloc.right} to location 0.5 meter to the right of {_bl}
+	set pitch of {_baseloc.right} to pitch of {_baseloc}
 	loop 100 times:
 		set {_effloc} to location loop-number * 0.1 meters in front of {_baseloc}
 		kitEffect_Javelit_Hit({_player}, {_effloc})
