@@ -15,6 +15,7 @@ local function kitEffect_Vander(player: player, target: player):
 	kitParticle_Vander_Edge({_player}, {_target})
 	delete {Kit-Blood::%{_target}%}
 	message formatted "§4傷口から吸血された..." to {_target}
+	kitHeal({_player}, 2)
 	kitParticle_Vander_Heal({_player}, {_target})
 
 local function kitParticle_Vander_Edge(attacker: player, victim: player):
@@ -24,18 +25,19 @@ local function kitParticle_Vander_Edge(attacker: player, victim: player):
 	set {_dism} to distance between {_atkloc} and {_vcmloc}
 	set {_v} to setVector({_atkloc}, {_vcmloc})
 	set {_atkloc} to setDirToVec({_atkloc}, {_v})
+	add 1 to y-pos of {_atkloc}
 	set {_calcyaw} to -20 
 	loop 11 times:
 		set {_baseel} to {_atkloc}
 		add {_calcyaw} to yaw of {_baseel}
 		set {_el} to location {_dism} meters in front of {_baseel}
-		spawnParticle_Dust(rgb(220, 20, 60), 3, {_el})
+		spawnParticle_Dust(rgb(220, 20, 60), 2, {_el})
 		add 4 to {_calcyaw}
 		wait a tick
 
 local function kitParticle_Vander_Heal(player: player, target: player):
 	playSound("entity.player.burp", 1, 0.65, {_player})
 	set {_dism} to round(distance between {_player} and {_target})
-	set {_locs::*} to particleLocation_TornadoV(location of {_player}, 10, 0.5, 0.1, {_dism})
+	set {_locs::*} to particleLocation_TornadoV(location of head of {_player}, 10, 0.1, 0.3, {_dism})
 	loop {_locs::*}:
-		spawnParticle_Dust(rgb(199, 21, 133), 0.45, loop-value)
+		spawnParticle_Dust(rgb(199, 21, 133), 0.5, loop-value)
