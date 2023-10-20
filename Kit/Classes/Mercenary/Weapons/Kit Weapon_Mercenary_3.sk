@@ -17,7 +17,11 @@ local function kitEffect_Javelit(player: player):
 	set {_baseloc.right} to location 0.5 meter to the right of {_bl}
 	set pitch of {_baseloc.right} to pitch of {_baseloc}
 	loop 100 times:
+		delete {_allhit::*}
 		set {_effloc} to location loop-number * 0.1 meters in front of {_baseloc}
+		kitParticle_Javelit({_effloc})
+		set {_hit::*} to checkHitEntities({_effloc})
+		add {_hit::*} to {_allhit::*}
 		kitEffect_Javelit_Hit({_player}, {_effloc})
 		if mod(loop-number, 10) is 0:
 			set {_baseeffloc} to location loop-number * 0.1 - 0.5 meters in front of {_baseloc.left}
@@ -28,7 +32,9 @@ local function kitEffect_Javelit(player: player):
 			loop 5 times:
 				add 0.1 to {_em}
 				set {_el} to location {_em} meters in front of {_baseeffloc}
-				kitEffect_Javelit_Hit({_player}, {_el})
+				kitParticle_Javelit({_el})
+				set {_hit::*} to checkHitEntities({_el})
+				add {_hit::*} to {_allhit::*}
 			set {_baseeffloc} to location loop-number * 0.1 - 0.5 meters in front of {_baseloc.right}
 			spawnParticle_Dust(rgb(0, 0, 0), 3, {_baseeffloc})
 			set {_v} to setVector({_baseeffloc}, {_effloc})
@@ -37,7 +43,9 @@ local function kitEffect_Javelit(player: player):
 			loop 5 times:
 				add 0.1 to {_em}
 				set {_el} to location {_em} meters in front of {_baseeffloc}
-				kitEffect_Javelit_Hit({_player}, {_el})
+				kitParticle_Javelit({_el})
+				set {_hit::*} to checkHitEntities({_el})
+				add {_hit::*} to {_allhit::*}
 			wait a tick
 
 local function kitEffect_Javelit_Hit(player: player, loc: location):
