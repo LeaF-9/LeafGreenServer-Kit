@@ -55,7 +55,7 @@ function kitEffect_MagicMissile_Timer(player: player):
 			set {_timer} to 1
 		loop all entities:
 			metadata value "magicmissile" of loop-entity is set
-			set {_id} to metarada value "magicmissile" of loop-entity
+			set {_id} to metadata value "magicmissile" of loop-entity
 			set {_locid} to 20 * ({_id} - 1) + {_timer}
 			teleport loop-entity to {_locs::%{_locid}%}
 		wait a tick
@@ -76,7 +76,7 @@ function kitWeapon_Wizard_3(player: player):
 			continue
 		add 0.5 to {_m}
 		set {_tool} to tool of {_player}
-		else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 3) is false:  # 持っているアイテムがスキルのものでは無い場合の挙動
+		if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 3) is false:  # 持っているアイテムがスキルのものでは無い場合の挙動
 			set {_blast} to true
 			continue
 		set {_locnow} to location 1 meter above {_player}
