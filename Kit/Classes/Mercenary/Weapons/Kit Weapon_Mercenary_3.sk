@@ -9,6 +9,7 @@ on leftclick:
 	kitEffect_Javelit(player)
 
 local function kitEffect_Javelit(player: player):
+	toolCT({_player}, "Mercenary", 3, "Weapon.main")
 	set {_baseloc} to location of head of {_player}
 	set {_bl} to {_baseloc}
 	set pitch of {_bl} to 0
@@ -24,7 +25,6 @@ local function kitEffect_Javelit(player: player):
 		kitEffect_Javelit_Hit({_player}, {_effloc})
 		if mod(loop-number, 10) is 0:
 			set {_baseeffloc} to location loop-number * 0.1 - 0.5 meters in front of {_baseloc.left}
-			spawnParticle_Dust(rgb(0, 0, 0), 3, {_baseeffloc})
 			set {_v} to setVector({_baseeffloc}, {_effloc})
 			set {_baseeffloc} to setDirToVec({_baseeffloc}, {_v})
 			set {_em} to 0
@@ -35,7 +35,6 @@ local function kitEffect_Javelit(player: player):
 				set {_hit::*} to kitEffect_Javelit_Check({_player}, {_el}, {_allhit::*})
 				add {_hit::*} to {_allhit::*}
 			set {_baseeffloc} to location loop-number * 0.1 - 0.5 meters in front of {_baseloc.right}
-			spawnParticle_Dust(rgb(0, 0, 0), 3, {_baseeffloc})
 			set {_v} to setVector({_baseeffloc}, {_effloc})
 			set {_baseeffloc} to setDirToVec({_baseeffloc}, {_v})
 			set {_em} to 0
