@@ -17,10 +17,9 @@ local function kitEffect_Javelit(player: player):
 	set {_baseloc.right} to location 0.5 meter to the right of {_bl}
 	set pitch of {_baseloc.right} to pitch of {_baseloc}
 	loop 100 times:
-		delete {_allhit::*}
 		set {_effloc} to location loop-number * 0.1 meters in front of {_baseloc}
 		kitParticle_Javelit({_effloc})
-		set {_hit::*} to checkHitEntities({_effloc})
+		set {_hit::*} to kitEffect_Javelit_Check({_player}, {_effloc}, {_allhit::*})
 		add {_hit::*} to {_allhit::*}
 		kitEffect_Javelit_Hit({_player}, {_effloc})
 		if mod(loop-number, 10) is 0:
@@ -33,7 +32,7 @@ local function kitEffect_Javelit(player: player):
 				add 0.1 to {_em}
 				set {_el} to location {_em} meters in front of {_baseeffloc}
 				kitParticle_Javelit({_el})
-				set {_hit::*} to checkHitEntities({_el})
+				set {_hit::*} to kitEffect_Javelit_Check({_player}, {_el}, {_allhit::*})
 				add {_hit::*} to {_allhit::*}
 			set {_baseeffloc} to location loop-number * 0.1 - 0.5 meters in front of {_baseloc.right}
 			spawnParticle_Dust(rgb(0, 0, 0), 3, {_baseeffloc})
@@ -44,21 +43,27 @@ local function kitEffect_Javelit(player: player):
 				add 0.1 to {_em}
 				set {_el} to location {_em} meters in front of {_baseeffloc}
 				kitParticle_Javelit({_el})
-				set {_hit::*} to checkHitEntities({_el})
+				set {_hit::*} to kitEffect_Javelit_Check({_player}, {_el}, {_allhit::*})
 				add {_hit::*} to {_allhit::*}
 			wait a tick
 
-local function kitEffect_Javelit_Hit(player: player, loc: location):
+local function kitEffect_Javelit_Check(player: player, loc: location, hit: entities) :: entities:
 	kitParticle_Javelit({_loc})
 	set {_entities::*} to checkHitEntities({_loc})
 	loop {_entities::*}:
-		if kitCheckTeam({_player}, loop-value, false) is true:
-			kitParticle_Javelit_Hit(loop-value)
-			kitDamage({_player}, loop-value, 2)
-			if checkEntityType(loop-value, player) is true:
-				set {_c} to kitPercentDuel({_player}, loop-value, 50)
-				chance of {_c}%:
-					kitBlood(loop-value)
+		{_hit::*} does not contain loop-value
+		kitCheckTeam({_player}, loop-value, false) is true
+		kitParticle_Javelit_Hit(loop-value)
+		kitEffect_Javelit_Hit(loop-value)
+		add loop-value to {_hitting::*}
+	return {_hitting::*}
+
+local function kitEffect_Javelit_Hit(player: player, hit: entity):
+	kitDamage({_player}, {_hit}, 2)
+	if checkEntityType({_hit}, player) is true:
+		set {_c} to kitPercentDuel({_player}, {_hit}, 50)
+		chance of {_c}%:
+			kitBlood({_hit})
 
 local function kitParticle_Javelit(loc: location):
 	playSound("block.chain.place", 0.5, 2, {_loc})
