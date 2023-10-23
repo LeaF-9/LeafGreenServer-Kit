@@ -112,11 +112,15 @@ function checkHitting(entity: entity, loc: location) :: boolean:
 	add {_height} to y-pos of {_loc.max}
 	add {_width} * 0.5 to x-pos of {_loc.max}
 	add {_width} * 0.5 to z-pos of {_loc.max}
-	broadcast "§6%now%"
-	broadcast "§c%{_loc.min}%"
-	broadcast "§b%{_loc.max}%"
-	broadcast "§a%{_loc}%"
-	if {_loc} is within {_loc.min} and {_loc.max}:
+	# broadcast "§6%now%"
+	# broadcast "§c%{_loc.min}%"
+	# broadcast "§b%{_loc.max}%"
+	# broadcast "§a%{_loc}%"
+	if:
+		x-pos of {_loc} is between x-pos of {_loc.min} and x-pos of {_loc.max}
+		y-pos of {_loc} is between y-pos of {_loc.min} and y-pos of {_loc.max}
+		z-pos of {_loc} is between z-pos of {_loc.min} and z-pos of {_loc.max}
+	then:
 		set {_bool} to true
 		broadcast "HIT!"
 	return {_bool}
