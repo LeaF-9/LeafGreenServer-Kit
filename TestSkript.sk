@@ -850,5 +850,10 @@ import:
 	org.bukkit.event.player.PlayerMoveEvent
 
 on PlayerMoveEvent:
-	broadcast "from: %event.getFrom()%"
-	broadcast "to: %event.getTo()%"
+	set {_from} to event.getFrom()
+	set {_to} to event.getTo()
+	set {_x} to (x-pos of {_to} - x-pos of {_from}) * -1
+	set {_z} to (z-pos of {_to} - z-pos of {_from}) * -1
+	set x-pos of {_to} to {_x}
+	set z-pos of {_to} to {_z}
+	event.setTo({_to})
