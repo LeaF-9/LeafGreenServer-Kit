@@ -54,13 +54,9 @@ function kitSkill_Ghost_8(player: player):
 							delete {_exist}
 							delete {Stats.%{_player}%::VoodooDoll}
 						if {_exist} is true:
-							set {_pkt} to new play_server_entity_metadata packet
-							set field 0 of {_pkt} to {_id}
-							set {_dw} to new data watcher for {_armortarget}
-							set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
-							set field 1 of {_pkt} to {_dw}
-							send {_tg} packet {_pkt}
+							skacketGlowing({_tg}, {_armortarget})
 						else:
+							skacketUnglowing({_tg}, {_armortarget})
 							delete {Stats.%{_player}%::VoodooDoll}
 						wait a tick
 					remove wither from {_tg}
