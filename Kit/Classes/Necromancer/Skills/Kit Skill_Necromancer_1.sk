@@ -12,15 +12,29 @@ function kitSkill_Necromancer_1(player: player):
 	kitMsg({_player}, "§1%{_tg}% §8に§5§l彷徨う魂§8を取り憑かせた...")
 	message "§5なんだか憑かれている気がする..." to {_tg}
 	playSound("entity.zombie_villager.converted", 1.2, 0.5, {_tg})
-	loop 5 times:
-		kitSpawn_Necromancer_Wander({_player}, location 1 meter above {_player}, {_tg})
+	kitEffect_SpiritHaunted_Summon({_player}, {_tg})
 
-function kitSpawn_Necromancer_Wander(player: player, loc: location, target: player):
+local function kitEffect_SpiritHaunted_Summon(player: player, target: player):
+	set {_baseloc} to location of {_player}
+	set pitch of {_baseloc} to 0
+	set {_baseloc} to location 1 meter behind {_baseloc}
+	set {_locs::*} to particleLocation_CircleV({_baseloc}, 5, 1)
+	loop 5 times:
+		kitSpawn_Necromancer_Wander({_player}, {_locs::%loop-number%}, {_target})
+
+local function kitSpawn_Necromancer_Wander(player: player, loc: location, target: player):
 	set {_nbt.text} to "{Silent:1,IsBaby:1,NoAI:1,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;-1158257574,-1119401897,-1510799436,-1210463917],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvM2RiZWIxZDg5NWY0YWM2NmIwOGQyYWRiNDU3ZmYwOWMyOGQwZjU0MTNmYzIwNjFkZDg2YWY1MzE3M2VhOWUyMCJ9fX0=""}]}}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}]}"
 	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt.text})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-wandersoul" of {_mob} to true
-	while {_mob} exists:
+	set {_exists} to true
+	while {_exists} is true:
+		if {_mob} is dead:
+			set {_exist} to false
+			continue
+		if {_mob} does not exist:
+			set {_exist} to false
+			continue
 		set {_v} to setVector(location of {_mob}, location of {_target})
 		set {_baseloc} to location of {_mob}
 		set yaw of {_baseloc} to yaw of {_v}
@@ -29,14 +43,18 @@ function kitSpawn_Necromancer_Wander(player: player, loc: location, target: play
 		teleport {_mob} to {_tploc}
 		spawnParticle(soul_fire_flame, {_tploc})
 		if distance between {_target} and {_mob} <= 1:
+			loop all entities:
+				loop-entity is {_mob}
+				delete loop-entity
 			set {_elbase} to location of {_mob}
-			delete {_mob}
+			set {_exist} to false
 			kitDamage({_player}, {_target}, 1, true)
 			kitFear({_target}, 3 seconds)
 			playSound("entity.evoker.cast_spell", 1, 0.9, {_target})
 			loop 5 times:
 				set {_v} to randomVector({_elbase})
 				spawnParticle_Vector(sculk_soul, {_v}, 0.3, location 0.5 meters above {_elbase})
+			continue
 		wait a tick
 
 on damage of zombie:
@@ -50,7 +68,7 @@ on damage of zombie:
 	kitAddNecromance({_attacker}, 1)
 	kitParticle_WanderSoul_Death({_baseloc})
 
-function kitParticle_WanderSoul_Death(baseloc: location):
+local function kitParticle_WanderSoul_Death(baseloc: location):
 	playSound("entity.vex.hurt", 1, 0.5, {_baseloc})
 	set {_el} to location 0.5 meters above {_baseloc}
 	loop 10 times:
