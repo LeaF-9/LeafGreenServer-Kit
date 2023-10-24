@@ -25,13 +25,12 @@ function kitEffect_Hammer(player: player):
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			kitParticle_Hammer_Hit(loop-entity)
 			kitDamage({_player}, loop-entity, 2)
-			set {_v} to vector(0, 1.5, 0)
+			set {_v} to vector(0, 0.75, 0)
 			set velocity of loop-entity to {_v}
 
 function kitParticle_Hammer(loc: location):
 	playSound("block.gravel.break", 0.8, 0.5, {_loc})
 	loop all blocks in radius 1.5 around {_loc}:
-		y-pos of location of loop-block > y-pos of {_loc}
 		loop-block is passable
 		block below loop-block is not passable
 		set {_blockdata} to type of block below loop-block
