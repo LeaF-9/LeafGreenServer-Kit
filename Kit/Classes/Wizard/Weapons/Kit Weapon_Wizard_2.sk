@@ -26,20 +26,13 @@ local function kitEffect_FairyWand(player: player):
 		delete {_enemies::*}
 		set {_enemies::*} to kitEffect_FairyWand_Poison({_player})
 		kitParticle_FairyWand_Area({_player})
-		broadcast "§6§lテストメッセージ"
-		broadcast "%{_enemies.before::*}%"
 		loop {_enemies.before::*}:
 			if {_enemies::*} does not contain loop-value:
-				broadcast "%loop-value%"
 				set {_enemy} to loop-value parsed as player
-				broadcast "%{_enemy}%"
 				remove poison from {_enemy}
-		broadcast "%{_enemies::*}%"
 		loop {_enemies::*}:
 			add 1 to {_enemy.points::%loop-value%}
-			broadcast "%{_enemy.points::%loop-value%}%"
 			if mod({_enemy.points::%loop-value%}, 20) is 0:
-				broadcast "hey"
 				add 1 to {Stats.%{_player}%::FairyWand}
 				kitParticle_FairyWand_Charge({_player}, loop-value)
 		wait a tick
@@ -48,8 +41,8 @@ local function kitEffect_FairyWand_Poison(player: player) :: players:
 	set {_baseloc} to location of {_player}
 	loop all entities in radius {@radius} around {_baseloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
-		loop-entity does not have poison
-		applyEffect(loop-entity, poison, 1, 10 seconds)
+		if loop-entity does not have poison:
+			applyEffect(loop-entity, poison, 1, 10 seconds)
 		kitParticle_FairyWand_Hit(loop-entity)
 		if checkEntityType(loop-entity, player):
 			add loop-entity to {_results::*}
