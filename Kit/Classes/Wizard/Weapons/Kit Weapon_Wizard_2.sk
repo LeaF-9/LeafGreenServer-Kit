@@ -26,13 +26,20 @@ local function kitEffect_FairyWand(player: player):
 		delete {_enemies::*}
 		set {_enemies::*} to kitEffect_FairyWand_Poison({_player})
 		kitParticle_FairyWand_Area({_player})
+		broadcast "§6§lテストメッセージ"
+		broadcast "%{_enemies.before::*}%"
 		loop {_enemies.before::*}:
 			if {_enemies::*} does not contain loop-value:
+				broadcast "%loop-value%"
 				set {_enemy} to loop-value parsed as player
+				broadcast "%{_enemy}%"
 				remove poison from {_enemy}
+		broadcast "%{_enemies::*}%"
 		loop {_enemies::*}:
 			add 1 to {_enemy.points::%loop-value%}
+			broadcast "%{_enemy.points::%loop-value%}%"
 			if mod({_enemy.points::%loop-value%}, 20) is 0:
+				broadcast "hey"
 				add 1 to {Stats.%{_player}%::FairyWand}
 				kitParticle_FairyWand_Charge({_player}, loop-value)
 		wait a tick
@@ -44,12 +51,12 @@ local function kitEffect_FairyWand_Poison(player: player) :: players:
 		loop-entity does not have poison
 		applyEffect(loop-entity, poison, 1, 10 seconds)
 		kitParticle_FairyWand_Hit(loop-entity)
-		if "%type of loop-entity%" is "player":
+		if checkEntityType(loop-entity, player):
 			add loop-entity to {_results::*}
 	return {_results::*}
 
 # 6体(色は3色)の妖精が外側に広がっていく演出
-function kitParticle_FairyWand_Start(player: player):
+local function kitParticle_FairyWand_Start(player: player):
 	playSound("entity.player.levelup", 1, 2, {_player})
 	set {_baseloc} to location of {_player}
 	add 1 to y-pos of {_baseloc}
@@ -73,7 +80,7 @@ function kitParticle_FairyWand_Start(player: player):
 		wait a tick
 
 # 円形にパーティクルを配置する
-function kitParticle_FairyWand_Area(player: player):
+local function kitParticle_FairyWand_Area(player: player):
 	playSound("block.amethyst_block.chime", 0.75, a random number between 1.5 and 2, {_player})
 	set {_baseloc} to location of {_player}
 	add 1 to y-pos of {_baseloc}
@@ -86,7 +93,7 @@ function kitParticle_FairyWand_Area(player: player):
 		set {_g} to a random integer between 155 and 255
 		spawnParticle_Dust(rgb({_r}, {_g}, 0), 0.75, {_el})
 
-function kitParticle_FairyWand_Charge(player: player, target: player):
+local function kitParticle_FairyWand_Charge(player: player, target: player):
 	playSound("block.amethyst_block.resonate", 1, 1.2, {_player})
 	set {_from} to location 1 meter above {_target}
 	set {_to} to location 1 meter above {_player}
@@ -97,7 +104,7 @@ function kitParticle_FairyWand_Charge(player: player, target: player):
 		set {_el} to location {_dis} / (11 - loop-number) meters in front of {_baseloc}
 		spawnParticle(scrape, {_el})
 
-function kitParticle_FairyWand_Hit(entity: entity):
+local function kitParticle_FairyWand_Hit(entity: entity):
 	chance of 50%:
 		playSound("block.amethyst_block.break", 0.8, 2, {_entity})
 	set {_baseloc} to location of {_entity}
