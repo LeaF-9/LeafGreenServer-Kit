@@ -65,7 +65,9 @@ local function kitSpawn_Necromancer_Wander(player: player, loc: location, target
 on damage of zombie:
 	# Conditions
 	metadata value "necromancer-entity-wandersoul" of victim is set
-	attacker is set
+	if attacker is not set:
+		cancel event
+		stop
 	# Effects
 	set {_baseloc} to location of victim
 	set {_attacker} to metadata value "necromancer-entity" of victim
