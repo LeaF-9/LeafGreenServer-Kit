@@ -23,7 +23,7 @@ local function kitEffect_SpiritHaunted_Summon(player: player, target: player):
 		kitSpawn_Necromancer_Wander({_player}, {_locs::%loop-number%}, {_target})
 
 local function kitSpawn_Necromancer_Wander(player: player, loc: location, target: player):
-	set {_nbt.text} to "{Silent:1,IsBaby:1,NoAI:1,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;-1158257574,-1119401897,-1510799436,-1210463917],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvM2RiZWIxZDg5NWY0YWM2NmIwOGQyYWRiNDU3ZmYwOWMyOGQwZjU0MTNmYzIwNjFkZDg2YWY1MzE3M2VhOWUyMCJ9fX0=""}]}}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}]}"
+	set {_nbt.text} to "{Silent:1,IsBaby:1,NoAI:1,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;-1158257574,-1119401897,-1510799436,-1210463917],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvM2RiZWIxZDg5NWY0YWM2NmIwOGQyYWRiNDU3ZmYwOWMyOGQwZjU0MTNmYzIwNjFkZDg2YWY1MzE3M2VhOWUyMCJ9fX0=""}]}}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ActiveEffects:[{Id:14,Amplifier:0,Duration:999999,show_particles:0b}]}"
 	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt.text})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-wandersoul" of {_mob} to true
@@ -43,9 +43,10 @@ local function kitSpawn_Necromancer_Wander(player: player, loc: location, target
 		set {_baseloc} to location of {_mob}
 		set yaw of {_baseloc} to yaw of {_v}
 		set pitch of {_baseloc} to pitch of {_v}
-		set {_tploc} to location 0.1 meters in front of {_baseloc}
+		set {_fm} to a random number between 0.05 and 0.3
+		set {_tploc} to location {_fm} meters in front of {_baseloc}
 		teleport {_mob} to {_tploc}
-		spawnParticle(soul_fire_flame, {_tploc})
+		spawnParticle(soul_fire_flame, location 1 meter above {_tploc})
 		if distance between {_target} and {_mob} <= 1:
 			set {_elbase} to location of {_mob}
 			loop all entities:
@@ -57,7 +58,7 @@ local function kitSpawn_Necromancer_Wander(player: player, loc: location, target
 			playSound("entity.evoker.cast_spell", 1, 0.9, {_target})
 			loop 5 times:
 				set {_v} to randomVector({_elbase})
-				spawnParticle_Vector(sculk_soul, {_v}, 0.3, location 0.5 meters above {_elbase})
+				spawnParticle_Vector(sculk_soul, {_v}, 1, location 0.5 meters above {_elbase})
 			continue
 		wait a tick
 
@@ -77,4 +78,4 @@ local function kitParticle_WanderSoul_Death(baseloc: location):
 	set {_el} to location 0.5 meters above {_baseloc}
 	loop 10 times:
 		set {_v} to randomVector({_el})
-		spawnParticle_Vector(sculk_charge_pop, {_v}, 0.3, {_el})
+		spawnParticle_Vector(sculk_charge_pop, {_v}, 1, {_el})
