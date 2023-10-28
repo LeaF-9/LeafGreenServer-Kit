@@ -23,4 +23,18 @@ function resetEffect(player: player):
 			set {_effect} to potionChanger("%loop-key%")
 			set {_level} to yml value "%loop-node%" from "EffectCheck.%{_player}%"
 			# set {_level} to {_level} parsed as number
-			apply {_effect} {_level} without particles to {_player} for 10000000000 seconds
+			apply infinite {_effect} {_level} without particles to {_player}
+
+function checkEffects(player: player) :: potion effect types:
+	set {_eff.player::*} to all potion effects of player
+	loop {_eff.player::*}:
+		"%loop-value%" contains "infinity"
+		add type of loop-value to {_returnElements::*}
+	# 仕様が変わった際のメモ
+	# if {Class::%{_player}%} is not set:
+	# 	stop
+	# load yml "plugins/skript-yaml/General Classes/Kit-%{Class::%{_player}%}%.yml" as "EffectCheck.%{_player}%"
+	# loop yaml node keys "effects" from "EffectCheck.%{_player}%":
+	# 	set {_effect} to potionChanger("%loop-key%")
+	# 	add {_effect} to {_returnElements::*}
+	return {_returnElements::*}
