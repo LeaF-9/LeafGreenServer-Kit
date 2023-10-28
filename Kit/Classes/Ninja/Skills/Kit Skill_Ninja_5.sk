@@ -291,30 +291,35 @@ function kitParticle_Ninjutsu_MOKU(loc: location):
 function kitNinjutsu_MIZU(player: player, l: location):
 	set {_y} to y-coordinate of block at {_l}
 	# --- 座標の追加 ---
-	loop 36 times:
-		set {_pl} to {_l}
-		add 10 to {_rad}
-		add 5 * sin({_rad}) to x-coordinate of {_pl}
-		add 5 * cos({_rad}) to z-coordinate of {_pl}
-		loop 7 times:
-			if block at {_pl} is air:
-				if {_locations::*} does not contain {_pl}:
-					add {_pl} to {_locations::*}
-			add 1 to y-coordinate of {_pl}
-		loop round(3 * sin({_rad})) times:
-			if block at {_pl} is air:
-				if {_locations::*} does not contain {_pl}:
-					add {_pl} to {_locations::*}
-			add 1 to y-coordinate of {_pl}
+	set {_y} to y-coordinate of block at {_player}
+	loop all blocks in radius 5 around {_l}:
+		distance between location of block at {_l} and location of loop-block >= 4
+		y-coordinate of loop-block is {_y}
+		add location of loop-block to {_base::*}
 	# ----------------
 	# --- 水のベール展開 ---
 	playSound("entity.generic.splash", 1, 1.5, {_l})
+	# nmは高さ
+	# chは1のときは継続して高くする それ以外はストップ
+	set {_nm} to 0
 	loop 10 times:
-		add 1 to {_checky}
-		loop {_locations::*}:
-			y-coordinate of loop-value-2 <= y-coordinate of {_l} + {_checky}
-			spawnParticle_Color(entity_effect, 0, 0, 200, loop-value-2)
-			make all players see block at loop-value-2 as water
+		loop {_base::*}:
+			set {_sub} to abs(x-pos of {_bl} - z-pos of {_bl}) * 3
+			set {_bl} to loop-value-2
+			if {_nm} is between 0 and (4 + {_sub}):
+				set {_ch} to 1
+			else:
+				set {_ch} to 0
+			if {_ch} is 1:
+				set {_ck} to location of block {_nm} meters above {_bl}
+				block at {_ck} is air
+				make all players see block at {_ck} as water
+				add {_ck} to {_locations::*}
+				playSound("block.grass.break", 0.5, 1.5, {_ck})
+				spawnParticle_Color(entity_effect, 0, 0, 200, loop-value-2)
+			else:
+				remove loop-value-2 from {_ci::*}
+		add 1 to {_nm}
 		wait a tick
 	# --------------------
 	# --- 展開中の処理 ---
