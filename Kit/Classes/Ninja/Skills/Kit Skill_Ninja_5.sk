@@ -418,6 +418,7 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 		kitCheckTeam({_player}, loop-player, false) is true
 		kitFreeze(loop-player, 2 seconds)
 	loop 100 times:
+		delete {_jb::*}
 		loop all players in radius 5 around {_loc}:
 			kitCheckTeam(loop-player, {_player}, false) is true
 			if {Kit-Freeze::%loop-player%} is not set:
@@ -425,18 +426,20 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 				if {_eg::%loop-player%} >= 20:
 					set {_eg::%loop-player%} to 0
 					kitFreeze(loop-player, 0.25 seconds)
-			if {_jb::%loop-player%} is not set:
-				set {_jb::%id of loop-entity%} to true
+			set {_jb::%loop-player%} to true
 		loop all players:
 			metadata value "gametype" of loop-player is "Kit"
 			{_eg::%loop-player%} is set
 			if {_jb::%loop-player%} is true:
-				applyEffect(loop-player, slowness, 1, 0.2 seconds)
+				applyEffect(loop-player, slowness, 1, 0.2 seconds, true)
 				kitParticle_Ninjutsu_HYOU_3(loop-player)
 			else:
 				if {_eg::%loop-player%} > 0:
 					subtract 1 from {_eg::%loop-player%}
 		wait a tick
+	loop all players:
+		{_eg::%loop-player%} is set
+		resetEffect(loop-player)
 
 function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出 1秒間
 	add 1 to y-pos of {_loc}
