@@ -24,101 +24,74 @@ function kitWraithTimer(player: player, wraith: entity):
 	set {_true} to true
 	set {_num} to 0
 	loop 30 times:
-		add 1 to {_num}
 		delete {_ok}
 		if {_wraith} is alive:
 			set {_ok} to true
-		if {_ok} is true:
-			# --- クールタイム設定 ---
-			loop {_ct::*}:
-				subtract 1 from {_ct::%loop-index%}
-				if {_ct::%loop-index%} <= 0:
-					delete {_ct::%loop-index%}
-			# ---------------------
-			# --- ターゲット設定 ---
-			delete {_target}
-			set {_target} to target of {_wraith}
-			if {_target} is not set:
-				delete {_target::*}
-				loop all players in radius 50 around {_wraith}:
-					kitCheckTeam({_player}, loop-player, false) is true
-					add loop-player to {_targets::*}
-				set {_t} to a random player out of {_targets::*}
-				set target of {_wraith} to {_t}
-			# --------------------	
-			{_target} is set
-			set {_dis} to distance between {_target} and {_wraith}
-			# --- 10m効果 ---
-			if {_dis} <= 10:
-				# --- 突進攻撃 ---
-				if {_ct::charge} is not set:
-					if {_mod::charge} is not set:
-						set {_mod::charge} to a random integer between 1 and 5
-					if mod({_num}, {_mod::charge}) is 0:
-						kitWraith_Charge({_player}, {_wraith})
-						set {_ct::charge} to 3
-						set {_mod::charge} to a random integer between 1 and 5
-				# ---------------
-				# --- 暗闇攻撃 ---
-				if {_ct::dark} is not set:
-					if {_mod::dark} is not set:
-						set {_mod::dark} to a random integer between 5 and 8
-					if mod({_num}, {_mod::dark}) is 0:
-						kitWraith_Dark({_player}, {_wraith})
-						set {_ct::dark} to 3
-						set {_mod::dark} to a random integer between 5 and 8
-				# ---------------
-				# --- 前方広範囲攻撃 ---
-				if {_ct::wave} is not set:
-					if {_mod::wave} is not set:
-						set {_mod::wave} to a random integer between 8 and 12
-					if mod({_num}, {_mod::wave}) is 0:
-						kitWraith_Wave({_num}, {_wraith})
-						set {_ct::wave} to 5
-						set {_mod::wave} to a random integer between 8 and 12
-				# --------------------
-			# --------------
-			# --- 30m効果 ---
-			else if {_dis} <= 30:
-				apply slowness 10 to {_wraith} for a second
-				# --- 落雷攻撃 ---
-				if {_ct::thunder} is not set:
-					if {_mod::thunder} is not set:
-						set {_mod::thunder} to a random integer between 5 and 8
-					if mod({_num}, {_mod::thunder}) is 0:
-						kitWraith_Thunder({_player}, {_wraith})
-						set {_ct::thunder} to 5
-						set {_mod::thunder} to a random integer between 5 and 8
-				# ---------------
-				# --- 召喚攻撃 ---
-				if {_ct::summon} is not set:
-					if {_mod::summon} is not set:
-						set {_mod::summon} to a random integer between 10 and 15
-					if mod({_num}, {_mod::summon}) is 0:
-						kitWraith_Summon({_player}, {_wraith})
-						set {_ct::summon} to 10
-						set {_mod::summon} to a random integer between 10 and 15
-				# ---------------
-			# --------------
-			# --- 50m効果 ---
-			else if {_dis} <= 50:
-				apply slowness 10 to {_wraith} for a second
-				# --- 波動砲攻撃 ---
-				if {_ct::beam} is not set:
-					if {_mod::beam} is not set:
-						set {_mod::beam} to a random integer between 5 and 10
-					if mod({_num}, {_mod::beam}) is 0:
-						kitWraith_Beam({_player}, {_wraith})
-						set {_ct::beam} to 10
-						set {_mod::beam} to a random integer between 5 and 10
-				# ----------------
-			# --------------
-			# --- 静止効果 ---
-			else:
-				apply slowness 10 to {_wraith} for a second
-			# ---------------
+		if {_ok} is not set:
+			continue
+		add 1 to {_num}
+		if mod({_num}, 3) is not 0:
 			wait a second
-	delete {_wraith}
+			continue
+		# --- ターゲット設定 ---
+		delete {_target}
+		set {_target} to target of {_wraith}
+		if {_target} is not set:
+			delete {_target::*}
+			loop all players in radius 50 around {_wraith}:
+				kitCheckTeam({_player}, loop-player, false) is true
+				add loop-player to {_targets::*}
+			set {_target} to a random player out of {_targets::*}
+			set target of {_wraith} to {_target}
+		# --------------------	
+		if {_target} is not set:
+			wait a second
+			continue
+		set {_dis} to distance between {_target} and {_wraith}
+		# --- 10m効果 ---
+		if {_dis} <= 10:
+			set {_chance} to a random integer between 1 and 3
+			# --- 突進攻撃 ---
+			if {_chance} is 1:
+				kitWraith_Charge({_player}, {_wraith})
+			# ---------------
+			# --- 暗闇攻撃 ---
+			else if {_chance} is 2:
+				kitWraith_Dark({_player}, {_wraith})
+			# ---------------
+			# --- 前方広範囲攻撃 ---
+			else if {_ct::wave} is 3:
+				kitWraith_Wave({_wraith})
+			# --------------------
+		# --------------
+		# --- 30m効果 ---
+		else if {_dis} <= 30:
+			set {_chance} to a random integer between 1 and 2
+			apply slowness 10 to {_wraith} for a second
+			# --- 落雷攻撃 ---
+			if {_chance} is 1:
+				kitWraith_Thunder({_player}, {_wraith})
+			# ---------------
+			# --- 召喚攻撃 ---
+			else if {_chance} is 2:
+				kitWraith_Summon({_player}, {_wraith})
+			# ---------------
+		# --------------
+		# --- 50m効果 ---
+		else if {_dis} <= 50:
+			apply slowness 10 to {_wraith} for a second
+			# --- 波動砲攻撃 ---
+			kitWraith_Beam({_player}, {_wraith})
+			# ----------------
+		# --------------
+		# --- 静止効果 ---
+		else:
+			apply slowness 10 to {_wraith} for a second
+		# ---------------
+		wait a second
+	loop all entities:
+		loo-entity is {_wraith}
+		delete loop-entity
 
 function kitWraith_Charge(player: player, wraith: entity):
 	set {_target} to target of {_wraith}
@@ -222,9 +195,9 @@ function kitWraith_Wave(player: player, wraith: entity):
 	loop 5 times:
 		add 2 to {_m}
 		set {_el.front} to location {_m} meters in front of {_leftbase}
+		set {_el.front} to location 3 meters above {_el.front}
 		set {_el.back} to location {_m} - 2 meters in front of {_rightbase}
-		loop all entities:
-			location of loop-entity is within {_el.front} and {_el.back}
+		loop all entities within {_el.front} and {_el.base}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			{_hit.%id of loop-entity%} is not set
 			set {_hit.%id of loop-entity%} to true
