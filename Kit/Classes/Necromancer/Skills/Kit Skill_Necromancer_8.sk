@@ -90,7 +90,11 @@ function kitWraithTimer(player: player, wraith: entity):
 		# ---------------
 		wait a second
 	loop all entities:
-		loop-entity is {_wraith}
+		if loop-entity is {_wraith}:
+			delete loop-entity
+			continue
+		metadata value "necromancer-entity" of loop-entity is {_player}
+		metadata value "necromancer-entity-wraith" of loop-entity is true
 		delete loop-entity
 
 function kitWraith_Charge(player: player, wraith: entity):
@@ -321,7 +325,7 @@ function kitWraith_Beam(player: player, wraith: entity):
 			kitDamage({_player}, loop-entity, 4, true)
 		# -----------
 		# --- 音の演出 ---
-		playSound("entity.zombie.break_wooden_door", 0.3, 0.5, {_baseel})
+		playSound("entity.zombie.break_wooden_door", 0.5, 0.5, {_baseel})
 		# ---------------
 		# --- パーティクル演出 ---
 		kitWraith_Beam_Particle_2({_baseel})
