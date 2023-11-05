@@ -63,7 +63,7 @@ on respawn:
 			if {Kit-Spawning::%player%} <= 0:
 				delete {Kit-Spawning::%player%}
 			else if {Kit-DeadPlayer::%player%} is true:
-				set {_time} to {_Kit-Spawning} / 20
+				set {_time} to {Kit-Spawning::%player%} / 20
 				send title "§c§l死んでしまった!" with subtitle "§3§l%{_time}% §b秒後に復活します..." to player for 1 ticks with fadein 0 second and fadeout 0 second
 				apply blindness 1 to player for 1.5 seconds replacing existing effect
 				subtract 1 from {Kit-Spawning::%player%}
@@ -76,6 +76,10 @@ on respawn:
 			delete loop-entity
 		if {Kit-DeadPlayer::%player%} is true:
 			delete {Kit-DeadPlayer::%player%}
+			if "%world of victim%" is "Kit-SkillCheck":
+				teleport player to {Kit-TestWorld}
+				set player's gamemode to survival
+				stop
 			set {_tp} to a random location out of {Kit-GameStageRespawns.%{TrueTeam::%player%}%::*}
 			teleport player to {_tp}
 			set player's gamemode to survival
