@@ -10,9 +10,8 @@ function kitSkill_Engineer_3(player: player, loc: location):
 		{_metadata} contains "Machine-Jump Beacon"
 		metadata value {_metadata} of loop-entity is "%{_player}%"
 		add 1 to {_allnum}
-	broadcast "%{_allnum}%"
 	if {_allnum} >= 3:
-		set {_toptime} to 0	
+		set {_toptime} to 0
 		loop {Stats.%{_player}%::*}:
 			loop-index contains "JumpBeacon-Time"
 			set {_value} to loop-value
@@ -30,7 +29,6 @@ function kitSkill_Engineer_3(player: player, loc: location):
 	set {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} to {_now}
 	kitMsg({_player}, "<##E8383D>Jump Beacon§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
-	broadcast "%{Stats.%{_player}%::JumpBeacon-Time-%{_num}%}% / %{_now}%"
 	while {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} is {_now}:
 		wait a tick
 		loop all players:
@@ -44,7 +42,7 @@ function kitSkill_Engineer_3(player: player, loc: location):
 				metadata value "Machine-Jump Beacon-%{_num}%" of loop-entity is "%{_player}%"
 				set {_exist} to true
 			if {_fallingblock} is not set:
-				checkEntityType(loop-entity, falling block)
+				type of loop-entity is falling block
 				metadata value "kit-block" of loop-entity is "%{_player}%"
 				loop-entity is riding
 				metadata value "kit-armor" of vehicle of loop-entity is "Machine-Jump Beacon-%{_num}%"
