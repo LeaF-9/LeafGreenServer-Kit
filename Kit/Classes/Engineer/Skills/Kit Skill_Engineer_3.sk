@@ -41,14 +41,15 @@ function kitSkill_Engineer_3(player: player, loc: location):
 				metadata value "kit-armor" of loop-entity is "Machine-Jump Beacon-%{_num}%"
 				metadata value "Machine-Jump Beacon-%{_num}%" of loop-entity is "%{_player}%"
 				set {_exist} to true
-			if {_fallingblock} is not set:
-				checkEntityType(loop-entity, falling block) is true
-				metadata value "kit-block" of loop-entity is "%{_player}%"
-				loop-entity is riding
-				metadata value "kit-armor" of vehicle of loop-entity is "Machine-Jump Beacon-%{_num}%"
-				set {_fallingblock} to loop-entity
 		if {_exist} is true:
 			kitFakeReload({_player}, "Machine-Jump Beacon-%{_num}%")
+			if {_fallingblock} is not set:
+				loop all falling blocks:
+					metadata value "kit-block" of loop-falling block is "%{_player}%"
+					loop-falling block is riding
+					metadata value "kit-armor" of vehicle of loop-falling block is "Machine-Jump Beacon-%{_num}%"
+					metadata value "Machine-Jump Beacon-%{_num}%" of vehicle of loop-falling block is "%{_player}%"
+					set {_falling block} to loop-falling block
 			loop all players:
 				kitCheckTeam(loop-player, {_player}, true) is true
 				if tool of loop-player is a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします":
