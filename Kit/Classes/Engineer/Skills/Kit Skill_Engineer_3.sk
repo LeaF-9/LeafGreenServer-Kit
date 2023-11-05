@@ -10,6 +10,7 @@ function kitSkill_Engineer_3(player: player, loc: location):
 		{_metadata} contains "Machine-Jump Beacon"
 		metadata value {_metadata} of loop-entity is "%{_player}%"
 		add 1 to {_allnum}
+	broadcast "%{_allnum}%"
 	if {_allnum} >= 3:
 		set {_toptime} to 0	
 		loop {Stats.%{_player}%::*}:
@@ -29,6 +30,7 @@ function kitSkill_Engineer_3(player: player, loc: location):
 	set {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} to {_now}
 	kitMsg({_player}, "<##E8383D>Jump Beacon§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
+	broadcast "%{Stats.%{_player}%::JumpBeacon-Time-%{_num}%}% / %{_now}%"
 	while {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} is {_now}:
 		wait a tick
 		loop all players:
@@ -37,7 +39,7 @@ function kitSkill_Engineer_3(player: player, loc: location):
 			give a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします" to loop-player
 		delete {_exist}
 		loop all entities:
-			if entity type of loop-entity is armor stand:
+			if type of loop-entity is armor stand:
 				metadata value "kit-armor" of loop-entity is "Machine-Jump Beacon-%{_num}%"
 				metadata value "Machine-Jump Beacon-%{_num}%" of loop-entity is "%{_player}%"
 				set {_exist} to true
@@ -76,7 +78,7 @@ function kitEffect_JumpBeacon_Select(player: player):
 		set {_loc} to location loop-number meters in front of {_baseloc}
 		loop all entities in radius 3 around {_loc}:
 			{_target} is not set
-			entity type of loop-entity is armor stand
+			type of loop-entity is armor stand
 			set {_metadata} to metadata value "kit-armor" of loop-entity
 			{_metadata} contains "Machine-Jump Beacon"
 			set {_holder} to metadata value {_metadata} of loop-entity parsed as offline player
