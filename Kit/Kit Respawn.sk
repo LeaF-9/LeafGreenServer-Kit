@@ -64,7 +64,12 @@ on respawn:
 				delete {Kit-Spawning::%player%}
 			else if {Kit-DeadPlayer::%player%} is true:
 				set {_time} to {Kit-Spawning::%player%} / 20
-				send title "§c§l死んでしまった!" with subtitle "§3§l%{_time}% §b秒後に復活します..." to player for 3 ticks with fadein 0 second and fadeout 0 second
+				set {_timetext} to "%{_time}%"
+				if length of {_timetext} is 1:
+					set {_timetext} to "%{_timetext}%.00"
+				else if length of {_timetext} is 3:
+					set {_timetext} to "%{_timetext}%0"
+				send title "§c§l死んでしまった!" with subtitle "§3§l%{_timetext}% §b秒後に復活します..." to player for 3 ticks with fadein 0 second and fadeout 0 second
 				apply blindness 1 to player for 1.5 seconds replacing existing effect
 				subtract 1 from {Kit-Spawning::%player%}
 				wait a tick
