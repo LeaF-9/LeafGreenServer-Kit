@@ -10,7 +10,7 @@ function kitSkill_Necromancer_8(player: player):
 		kitSpawn_Necromancer_Wraith({_player}, location of {_player})
 		set {_spawnedentity} to spawned entity
 		loop 60 times:
-			spawnParticle_Color(effect_entity, 0, 0, 0, location of {_spawnedentity})
+			spawnParticle_Color(entity_effect, 0, 0, 0, location of {_spawnedentity})
 			wait a tick
 
 function kitSpawn_Necromancer_Wraith(player: player, loc: location):
@@ -61,7 +61,7 @@ function kitWraithTimer(player: player, wraith: entity):
 			# ---------------
 			# --- 前方広範囲攻撃 ---
 			else if {_ct::wave} is 3:
-				kitWraith_Wave({_wraith})
+				kitWraith_Wave({_player}, {_wraith})
 			# --------------------
 		# --------------
 		# --- 30m効果 ---
@@ -90,7 +90,7 @@ function kitWraithTimer(player: player, wraith: entity):
 		# ---------------
 		wait a second
 	loop all entities:
-		loo-entity is {_wraith}
+		loop-entity is {_wraith}
 		delete loop-entity
 
 function kitWraith_Charge(player: player, wraith: entity):
