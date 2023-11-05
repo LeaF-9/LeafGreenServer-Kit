@@ -44,6 +44,7 @@ function kitSkill_Engineer_3(player: player, loc: location):
 		if {_exist} is true:
 			kitFakeReload({_player}, "Machine-Jump Beacon-%{_num}%")
 			if {_fallingblock} is not set:
+				broadcast "hey"
 				loop all falling blocks:
 					metadata value "kit-block" of loop-falling block is "%{_player}%"
 					loop-falling block is riding
@@ -55,6 +56,7 @@ function kitSkill_Engineer_3(player: player, loc: location):
 				if tool of loop-player is a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします":
 					packetGlowing(loop-player, {_fallingblock})
 				else:
+					broadcast "%loop-player% does not have"
 					packetUnglowing(loop-player, {_fallingblock})
 		else:
 			delete {Stats.%{_player}%::JumpBeacon-Time-%{_num}%}
