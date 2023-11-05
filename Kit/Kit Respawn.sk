@@ -64,12 +64,13 @@ on respawn:
 				delete {Kit-Spawning::%player%}
 			else if {Kit-DeadPlayer::%player%} is true:
 				set {_time} to {Kit-Spawning::%player%} / 20
-				send title "§c§l死んでしまった!" with subtitle "§3§l%{_time}% §b秒後に復活します..." to player for 1 ticks with fadein 0 second and fadeout 0 second
+				send title "§c§l死んでしまった!" with subtitle "§3§l%{_time}% §b秒後に復活します..." to player for 3 ticks with fadein 0 second and fadeout 0 second
 				apply blindness 1 to player for 1.5 seconds replacing existing effect
 				subtract 1 from {Kit-Spawning::%player%}
 				wait a tick
 			else:
 				delete {Kit-Spawning::%player%}
+		reset title of player
 		loop all entities:
 			type of loop-entity is armor stand
 			metadata value "deadplayer" of loop-entity is "%player%"
