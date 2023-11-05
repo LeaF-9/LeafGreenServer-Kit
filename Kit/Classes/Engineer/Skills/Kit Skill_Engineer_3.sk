@@ -91,12 +91,12 @@ function kitEffect_JumpBeacon_Select(player: player):
 	kitEffect_JumpBeacon_Jump({_player}, {_target})
 
 function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
-	set {Stats.%{_player}%::JumpBeacon-Using} to true
+	set {Stats.%{_jumper}%::JumpBeacon-Using} to true
 	set {_loc} to location of {_jumper}
 	set {_time} to 3
 	loop 60 times:
-		if {_target} does not exist:
-			delete {Stats.%{_player}%::JumpBeacon-Using}
+		if {_target} is alive:
+			delete {Stats.%{_jumper}%::JumpBeacon-Using}
 			message formatted "§cビーコン消滅によりジャンプが中断されました" to {_jumper}
 			stop
 		teleport {_jumper} to {_loc}
@@ -105,7 +105,7 @@ function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
 			playSound("ui.button.click", 1, 2, {_loc})
 		subtract 0.05 from {_time}
 		wait a tick
-	delete {Stats.%{_player}%::JumpBeacon-Using}
+	delete {Stats.%{_jumper}%::JumpBeacon-Using}
 	set {_metadata} to metadata value "kit-armor" of {_target}
 	set {_goaler} to metadata value {_metadata} of {_target} parsed as offline player
 	if checkFuel({_goaler}, 3) is false:
