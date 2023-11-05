@@ -44,7 +44,6 @@ function kitSkill_Engineer_3(player: player, loc: location):
 		if {_exist} is true:
 			kitFakeReload({_player}, "Machine-Jump Beacon-%{_num}%")
 			if {_fallingblock} is not set:
-				broadcast "hey"
 				loop all falling blocks:
 					metadata value "kit-block" of loop-falling block is "%{_player}%"
 					loop-falling block is riding
@@ -95,7 +94,11 @@ function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
 	set {_loc} to location of {_jumper}
 	set {_time} to 3
 	loop 60 times:
-		if {_target} is alive:
+		delete {_alive}
+		loop all entities:
+			loop-entity is {_target}
+			set {_alive} to true
+		if {_alive} is not set:
 			delete {Stats.%{_jumper}%::JumpBeacon-Using}
 			message formatted "§cビーコン消滅によりジャンプが中断されました" to {_jumper}
 			stop
