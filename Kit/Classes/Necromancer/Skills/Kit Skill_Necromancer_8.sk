@@ -60,7 +60,7 @@ local function kitWraithTimer(player: player, wraith: entity):
 				kitWraith_Dark({_player}, {_wraith})
 			# ---------------
 			# --- 前方広範囲攻撃 ---
-			else if {_ct::wave} is 3:
+			else if {_chance} is 3:
 				kitWraith_Barrier({_player}, {_wraith})
 			# --------------------
 		# --------------
@@ -217,8 +217,8 @@ local function kitWraith_Thunder(player: player, wraith: entity):
 	loop 10 times:
 		set {_rad} to 0
 		loop {_locs::*}:
-			set {_el} to {_locs::%loop-index%}
 			loop 10 times:
+				set {_el} to {_locs::%loop-index%}
 				add 36 to {_rad}
 				add 1.5 * sin({_rad}) to x-coordinate of {_el}
 				add 1.5 * cos({_rad}) to z-coordinate of {_el}
@@ -324,6 +324,7 @@ local function kitWraith_Beam_Particle_1(baseloc: location):
 				set {_el} to {_els::%{_loop-radnum}%}
 				spawnParticle_DustTransition(rgb(122, 65, 113), rgb(79, 69, 92), 1, {_el})
 			playSound("block.nether_wood_button.click_on", 0.5, 0.5 + (0.15 * (loop-number-1 - 1)), {_baseel})
+			add 1 to {_m}
 		add 36 to {_rad}
 		wait a tick
 	loop 10 times:
