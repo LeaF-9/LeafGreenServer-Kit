@@ -24,7 +24,7 @@ on rightclick holding a netherite hoe:
 		loop {_dis} times:
 			add 1 to {_n}
 			set {_el} to location {_n} meters in front of {_pb}
-			drawDot count 1, particle "endrod", center {_el}, visibleRange 30
+			spawnParticle(end_rod, {_el})
 #	魔法陣の展開
 		set {_tick} to 20
 		set {_n.k} to 0
@@ -33,14 +33,13 @@ on rightclick holding a netherite hoe:
 		set pitch of {_effbaseloc} to 0
 		playSound("block.respawn_anchor.set_spawn", 1.9, 1, {_base})
 		loop 20 times:
-			set {_time} to "%{_tick}% ticks" parsed as time span
 #		弧を描く
 			loop 3 times:
 				set {_effbaseloc} to {_base}
 				add 10 * sin({_n.k}) to x-coordinate of {_effbaseloc}
 				add 10 * cos({_n.k}) to z-coordinate of {_effbaseloc}
 				add {_effbaseloc} to {_effloc::*}
-				drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_effbaseloc}, visibleRange 100, keepFor {_time}
+				kitParticle_MagicalConfusion_Dust({_effbaseloc}, {_tick})
 				add 6 to {_n.k}
 #		弦を描く
 			if loop-number is between 1 and 6:
@@ -79,11 +78,11 @@ on rightclick holding a netherite hoe:
 #				A-B
 					set {_loc.g} to location {_n.g} meters in front of {_l.A}
 					add {_loc.g} to {_effloc::*}
-					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
 #				D-E
 					set {_loc.g} to location {_n.g} meters in front of {_l.D}
 					add {_loc.g} to {_effloc::*}
-					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
 			else if loop-number is between 7 and 12:
 				if {_n.g} > 15:
 					set {_n.g} to 0
@@ -92,11 +91,11 @@ on rightclick holding a netherite hoe:
 #				B-C
 					set {_loc.g} to location {_n.g} meters in front of {_l.B}
 					add {_loc.g} to {_effloc::*}
-					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
 #				E-F
 					set {_loc.g} to location {_n.g} meters in front of {_l.E}
 					add {_loc.g} to {_effloc::*}
-					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
 			else if loop-number is between 13 and 18:
 				if {_n.g} > 15:
 					set {_n.g} to 0
@@ -105,17 +104,17 @@ on rightclick holding a netherite hoe:
 #				C-A
 					set {_loc.g} to location {_n.g} meters in front of {_l.C}
 					add {_loc.g} to {_effloc::*}
-					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
 #				F-D
 					set {_loc.g} to location {_n.g} meters in front of {_l.F}
 					add {_loc.g} to {_effloc::*}
-					drawDot count 1, particle "redstone", RGB 0, 123, 187, center {_loc.g}, visibleRange 100, keepFor {_time}
+					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
 			subtract 1 from {_tick}
 			add 1 to {_n.e}
 			loop all blocks in radius 10 around {_base}:
 				loop-block is air
 				chance of ({_n.e} / 10)%:
-					drawDot count 1, particle "mobspell", RGB 0, 123, 187, center location of loop-block, visibleRange 100
+					spawnParticle_Color(entity_effect, 0, 123, 187, location of loop-block)
 			wait a tick
 		playSound("block.respawn_anchor.deplete", 1.9, 0.5, {_base})
 		loop all players in radius 10 around {_base}:
@@ -126,22 +125,32 @@ on rightclick holding a netherite hoe:
 			add 10 to {Kit-Mana::%player%}
 			loop 5 times:
 				set {_el} to aroundEffect(loop-player)
-				drawDot count 1, particle "mobspell", RGB 226, 4, 27, center {_el}, visibleRange 30
+				spawnParticle_Color(entity_effect, 226, 4, 27, {_el})
 		loop all blocks in radius 10 around {_base}:
 			loop-block is air
 			chance of 10%:
-				drawDot count 1, particle "blockcrack", material blue ice block, center location of loop-block, visibleRange 100
-		loop {_effloc::*}:
-			drawDot count 1, particle "redstone", RGB 226, 4, 27, center loop-value, visibleRange 100, keepFor 9 seconds
+				spawnParticle_Block(blue ice block, location of loop-block)
+		kitParticle_MagicalConfusion_Dust2({_effloc::*})
 		loop 180 times:
 			if distance between player and {_base} <= 10:
 				set {Stats.%player%::UltWizard} to true
 				loop 3 times:
 					set {_el} to aroundEffect(player)
-					drawDot count 1, particle "redstone", RGB 226, 4, 27, center {_el}, visibleRange 30
+					spawnParticle_Dust(rgb(226, 4, 27), 1, {_el})
 			else:
 				delete {Stats.%player%::UltWizard}
 			wait a tick
 		delete {Stats.%player%::UltWizard}
 	else:
 		send action bar "§c§l目先にブロックがありません" to player
+
+local function kitParticle_MagicalConfusion_Dust(loc: location, tick: number):
+	loop {_tick} times:
+		spawnParticle_Dust(rgb(0, 123, 187), 1, {_loc})
+		wait a tick
+
+local function kitParticle_MagicalConfusion_Dust2(locs: locations):
+	loop 180 times:
+		loop {_locs::*}:
+			spawnParticle_Dust(rgb(226, 4, 27), 1, loop-value-2)
+		wait a tick
