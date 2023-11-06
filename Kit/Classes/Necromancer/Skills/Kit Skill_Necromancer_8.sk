@@ -205,30 +205,36 @@ local function kitWraith_Thunder(player: player, wraith: entity):
 	set {_rad} to 0
 	loop 10 times:
 		add 36 to {_rad}
-		loop {_locs::*}:
-			set {_el} to {_locs::%loop-index%}
-			add 1.5 * sin({_rad}) to x-coordinate of {_el}
-			add 1.5 * cos({_rad}) to z-coordinate of {_el}
-			add {_el} to {_els::*}
-		loop {_els::*}:
-			set {_el} to {_els::%loop-index%}
-			spawnParticle_Dust(rgb(106, 93, 33), 0.5, {_el})
+		set {_lr} to 0
+		loop {_rad} / 36 times:
+			add 1 to {_lr}
+			loop {_locs::*}:
+				set {_el} to {_locs::%loop-index%}
+				add 1.5 * sin(36 * {_lr}) to x-coordinate of {_el}
+				add 1.5 * cos(36 * {_lr}) to z-coordinate of {_el}
+				spawnParticle_Dust(rgb(106, 93, 33), 2, {_el})
 		wait a tick
 	loop 10 times:
-		loop {_els::*}:
-			set {_el} to {_els::%loop-index%}
-			spawnParticle_Dust(rgb(255, 223, 79), 0.5, {_el})
+		set {_rad} to 0
+		loop {_locs::*}:
+			set {_el} to {_locs::%loop-index%}
+			loop 10 times:
+				add 36 to {_rad}
+				add 1.5 * sin({_rad}) to x-coordinate of {_el}
+				add 1.5 * cos({_rad}) to z-coordinate of {_el}
+				spawnParticle_Dust(rgb(255, 223, 79), 2, {_el})
 		wait a tick
 	loop 2 times:
 		loop {_locs::*}:
 			set {_loc} to {_locs::%loop-index%}
 			chance of 50%:
 				subtract {_loc} from {_locs::*}
-				playSound("entity.zombie_villager.cure", 0.8, 2, {_loc})
+				playSound("entity.zombie_villager.cure", 0.75, 2, {_loc})
 				loop all players in radius 1.6 around {_loc}:
 					kitCheckTeam(loop-player, {_player}, false) is true
 					kitDamage({_player}, loop-player, 3, true)
 					kitPalsy(loop-player, 5 seconds)
+					applyEffect(loop-player, glowing, 1, 3 seconds)
 				set {_m} to 0
 				loop 30 times:
 					add 1 to {_m}
@@ -243,6 +249,7 @@ local function kitWraith_Thunder(player: player, wraith: entity):
 			kitCheckTeam(loop-player, {_player}, false) is true
 			kitDamage({_player}, loop-player, 3, true)
 			kitPalsy(loop-player, 5 seconds)
+			applyEffect(loop-player, glowing, 1, 3 seconds)
 		set {_m} to 0
 		loop 30 times:
 			add 1 to {_m}
