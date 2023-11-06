@@ -9,24 +9,12 @@ function kitSkill_Necromancer_7(player: player):
 		playSound("entity.wither.spawn", 1, 0.5, {_player})
 		loop 30 times:
 			spawnParticle_Vector(witch, randomVector(), 0.3, location of {_player})
-		set {_jewel} to saveJewels({_player})
-		set {_gem} to saveGems({_player})
-		set {_wool} to saveWools({_player})
-		set {_spwool} to saveSpecialWool({_player})
 		execute console command "/cclass %{_player}% Kit-Lich"
 		set {Stats.%{_player}%::Lich} to true
-		giveEmJItems({_player}, {_jewel}, {_gem})
-		giveStWItems({_player}, {_wool}, {_spwool})
 		wait 10 seconds
 		if {Stats.%{_player}%::Lich} is true:
 			delete {Stats.%{_player}%::Lich}
-			set {_jewel} to saveJewels({_player})
-			set {_gem} to saveGems({_player})
-			set {_wool} to saveWools({_player})
-			set {_spwool} to saveSpecialWool({_player})
 			execute console command "/class Necromancer %{_player}% false"
-			giveEmJItems({_player}, {_jewel}, {_gem})
-			giveStWItems({_player}, {_wool}, {_spwool})
 
 on damage of player:
 	{Class::%victim%} is "Necromancer"

@@ -21,32 +21,20 @@ function kitUltThief(player: player):
 			else:
 				set {_class} to {Class::%loop-player%}
 			set {Stats.%loop-player%::ThiefUlt} to {_class}
-			set {_jewel} to saveJewels(loop-player)
-			set {_gem} to saveGems(loop-player)
-			set {_wool} to saveWools(loop-player)
-			set {_spwool} to saveSpecialWool(loop-player)
 			set {_th} to loop-player's health
 			execute console command "/skclass %loop-player% Kit-Needy"
 			set loop-player's health to {_th}
-			giveEmJItems(loop-player, {_jewel}, {_gem})
-			giveStWItems(loop-player, {_wool}, {_spwool})
 			kitDamage({_player}, loop-player, 2, true)
 			heal {_player} by 1 heart
 	wait 10 seconds
 	loop {_hit::*}:
 		{Stats.%loop-value%::ThiefUlt} is set
-		set {_jewel} to saveJewels(loop-value)
-		set {_gem} to saveGems(loop-value)
-		set {_wool} to saveWools(loop-value)
-		set {_spwool} to saveSpecialWool(loop-value)
 		set {_th} to loop-value's health
 		execute console command "/class %{Stats.%loop-value%::ThiefUlt}% %loop-value% false"
 		set loop-value's health to {_th}
-		giveEmJItems(loop-value, {_jewel}, {_gem})
-		giveStWItems(loop-value, {_wool}, {_spwool})
 		delete {Stats.%loop-value%::ThiefUlt}
 
 function kitParticle_HeinousLarceny_Hit(player: player):
 	loop 100 times:
-		spawnParticle_Block(dirt, location of {_player}
+		spawnParticle_Block(dirt, location of {_player})
 		wait a tick
