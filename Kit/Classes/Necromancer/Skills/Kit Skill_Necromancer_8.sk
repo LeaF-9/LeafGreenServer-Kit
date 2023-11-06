@@ -317,34 +317,24 @@ local function kitWraith_Beam_Particle_1(baseloc: location):
 		set {_m} to 0
 		loop {_distance} - 1 times:
 			set {_baseel} to location {_m} + 0.5 meters in front of {_baseloc}
-			set {_el} to {_baseel}
-			set {_m1} to {_el}
-			set pitch of {_m1} to pitch of {_m1} - 90
-			set {_test1} to 1 * cos({_rad})
-			set {_t1} to location {_test1} meters in front of {_m1}
-			set {_m2} to {_el}
-			set pitch of {_m2} to 0
-			set {_test2} to 1 * sin({_rad})
-			set {_t2} to location {_test2} meters to the right of {_m2}
-			set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
-			set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
-			set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
-			add {_el} to {_efflocs::*}
-			playSound("block.nether_wood_button.click_on", 0.75, 0.5 + (0.15 * (loop-number-1 -1)), {_baseel})
-			add 1 to {_m}
-		loop {_efflocs::*}:
-			set {_el} to loop-value-2
-			spawnParticle_DustTransition(rgb(122, 65, 113), rgb(79, 69, 92), 1, {_el})
+			set {_els::*} to particleLocation_CircleV({_baseel}, 10, 1)
+			set {_loopradnum} to 0
+			loop {_rad} / 36 times:
+				add 1 to {_loopradnum}
+				set {_el} to {_els::%{_loop-radnum}%}
+				spawnParticle_DustTransition(rgb(122, 65, 113), rgb(79, 69, 92), 1, {_el})
+			playSound("block.nether_wood_button.click_on", 0.5, 0.5 + (0.15 * (loop-number-1 - 1)), {_baseel})
 		add 36 to {_rad}
 		wait a tick
 	loop 10 times:
 		set {_m} to 0
 		loop {_distance} - 1 times:
 			set {_baseel} to location {_m} + 0.5 meters in front of {_baseloc}
-			playSound("block.nether_wood_button.click_on", 0.75, 0.5 + (0.15 * (loop-number-1 -1)), {_baseel})
-		loop {_efflocs::*}:
-			set {_el} to loop-value-2
-			spawnParticle_DustTransition(rgb(122, 65, 113), rgb(79, 69, 92), 1, {_el})
+			set {_els::*} to particleLocation_CircleV({_baseel}, 10, 1)
+			playSound("block.nether_wood_button.click_on", 0.5, 2, {_baseel})
+			loop {_els::*}:
+				set {_el} to loop-value-3
+				spawnParticle_DustTransition(rgb(85, 41, 91), rgb(70, 14, 68), 1.5, {_el})
 		wait a tick
 
 local function kitWraith_Beam_Particle_2(baseloc: location):
