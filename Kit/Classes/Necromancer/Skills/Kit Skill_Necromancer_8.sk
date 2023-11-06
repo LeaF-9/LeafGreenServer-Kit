@@ -317,11 +317,12 @@ local function kitWraith_Beam_Particle_1(baseloc: location):
 		set {_m} to 0
 		loop {_distance} - 1 times:
 			set {_baseel} to location {_m} + 0.5 meters in front of {_baseloc}
+			delete {_els::*}
 			set {_els::*} to particleLocation_CircleV({_baseel}, 10, 1)
 			set {_loopradnum} to 0
 			loop {_rad} / 36 times:
 				add 1 to {_loopradnum}
-				set {_el} to {_els::%{_loop-radnum}%}
+				set {_el} to {_els::%{_loopradnum}%}
 				spawnParticle_DustTransition(rgb(122, 65, 113), rgb(79, 69, 92), 1, {_el})
 			playSound("block.nether_wood_button.click_on", 0.5, 0.5 + (0.15 * (loop-number-1 - 1)), {_baseel})
 			add 1 to {_m}
@@ -331,11 +332,13 @@ local function kitWraith_Beam_Particle_1(baseloc: location):
 		set {_m} to 0
 		loop {_distance} - 1 times:
 			set {_baseel} to location {_m} + 0.5 meters in front of {_baseloc}
+			delete {_els::*}
 			set {_els::*} to particleLocation_CircleV({_baseel}, 10, 1)
 			playSound("block.nether_wood_button.click_on", 0.5, 2, {_baseel})
 			loop {_els::*}:
 				set {_el} to loop-value-3
 				spawnParticle_DustTransition(rgb(85, 41, 91), rgb(70, 14, 68), 1.5, {_el})
+			add 1 to {_m}
 		wait a tick
 
 local function kitWraith_Beam_Particle_2(baseloc: location):
