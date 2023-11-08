@@ -32,7 +32,6 @@ import:
 	com.comphenix.protocol.wrappers.WrappedDataWatcher
 	com.comphenix.protocol.wrappers.WrappedWatchableObject
 	com.google.common.collect.Lists
-	org.junit.jupiter.api.Assertions.assertEquals
 
 expression watchable collection %number% of %object%:
 	set:
@@ -40,7 +39,7 @@ expression watchable collection %number% of %object%:
 	get:
 		return expr-2.getWatchableCollectionModifier().read(expr-1)
 	add:
-		assertEquals(expr-1, expr-2.getWatchableCollectionModifier().read(expr-1).size())
+		set {_list} to expr-2.getDataValueCollectionModifier().read(expr-1)
 		set {_values} to Lists.newArrayList(change value)
 		expr-2.getDataValueCollectionModifier().write(expr-1, {_values})
 
@@ -50,7 +49,21 @@ function new_watchable_object(index: number, value: object) :: object:
 function reflectGlowing(player: player, target: entity):
 	set {_p} to ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA)
 	{_p}.getIntegers().write(0, id of {_target})
-	add new_watchable_object(0, 64.byteValue()) to watchable collection 0 of {_p}
+
+	set {_dw} to WrappedDataWatcher.getEntityWatcher({_target}).deepClone()
+	set {_value} to new_watchable_object(0, 64.byteValue())
+	{_dw}.setObject(0, {_value})
+
+	set {_list} to Lists.newArrayList()
+
+	set {_watchableobjects::*} to {_dw}.getWatchableObjects()
+
+	loop {_watchableobjects::*}:
+		set {_wo} to loop-value.getWatcherObject()
+		{_list}.add(new WrappedDataValue({_wo}.getIndex(), {_wo}.getSerializer(), loop-value.getRawValue()))
+		wrappedDataValueList.add(new WrappedDataValue(watcherObject.getIndex(),watcherObject.getSerializer(),entry.getRawValue() ))
+
+	{_p}.getDataValueCollectionModifier().write(0, {_list})
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
 
 function reflectUnglowing(player: player, target: entity):
