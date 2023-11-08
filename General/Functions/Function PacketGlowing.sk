@@ -78,6 +78,9 @@ function reflectUnglowing(player: player, target: entity):
 	set {_watchableobjects::*} to {_dw}.getWatchableObjects()
 
 	loop {_watchableobjects::*}:
+		if loop-value is null:
+			continue
+
 		set {_wo} to loop-value.getWatcherObject()
 		{_list}.add(new WrappedDataValue({_wo}.getIndex(), {_wo}.getSerializer(), loop-value.getRawValue()))
 
