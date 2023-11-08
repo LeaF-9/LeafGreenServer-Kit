@@ -68,7 +68,20 @@ function reflectGlowing(player: player, target: entity):
 function reflectUnglowing(player: player, target: entity):
 	set {_p} to ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA)
 	{_p}.getIntegers().write(0, id of {_target})
-	add new_watchable_object(0, 0.byteValue()) to watchable collection 0 of {_p}
+
+	set {_dw} to WrappedDataWatcher.getEntityWatcher({_target}).deepClone()
+	set {_value} to new_watchable_object(0, 0.byteValue())
+	{_dw}.setObject(0, {_value})
+
+	set {_list} to Lists.newArrayList()
+
+	set {_watchableobjects::*} to {_dw}.getWatchableObjects()
+
+	loop {_watchableobjects::*}:
+		set {_wo} to loop-value.getWatcherObject()
+		{_list}.add(new WrappedDataValue({_wo}.getIndex(), {_wo}.getSerializer(), loop-value.getRawValue()))
+
+	{_p}.getDataValueCollectionModifier().write(0, {_list})
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
 
 function skacketGlowing(player: player, target: entity):
