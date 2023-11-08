@@ -59,11 +59,13 @@ function reflectGlowing(player: player, target: entity):
 	set {_watchableobjects::*} to {_dw}.getWatchableObjects()
 
 	loop {_watchableobjects::*}:
-		if loop-value is null:
+		set {_obj} to loop-value
+
+		if {_obj} is null:
 			continue
 
-		set {_wo} to loop-value.getWatcherObject()
-		{_list}.add(new WrappedDataValue({_wo}.getIndex(), {_wo}.getSerializer(), loop-value.getRawValue()))
+		set {_wo} to {_obj}.getWatcherObject()
+		{_list}.add(new WrappedDataValue({_wo}.getIndex(), {_wo}.getSerializer(), {_obj}.getRawValue()))
 
 	{_p}.getDataValueCollectionModifier().write(0, {_list})
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
@@ -81,11 +83,13 @@ function reflectUnglowing(player: player, target: entity):
 	set {_watchableobjects::*} to {_dw}.getWatchableObjects()
 
 	loop {_watchableobjects::*}:
-		if loop-value is null:
+		set {_obj} to loop-value
+
+		if {_obj} is null:
 			continue
 
-		set {_wo} to loop-value.getWatcherObject()
-		{_list}.add(new WrappedDataValue({_wo}.getIndex(), {_wo}.getSerializer(), loop-value.getRawValue()))
+		set {_wo} to {_obj}.getWatcherObject()
+		{_list}.add(new WrappedDataValue({_wo}.getIndex(), {_wo}.getSerializer(), {_obj}.getRawValue()))
 
 	{_p}.getDataValueCollectionModifier().write(0, {_list})
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
