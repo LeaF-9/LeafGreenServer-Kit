@@ -31,6 +31,7 @@ import:
 	com.comphenix.protocol.wrappers.WrappedDataValue
 	com.comphenix.protocol.wrappers.WrappedDataWatcher
 	com.comphenix.protocol.wrappers.WrappedWatchableObject
+	com.google.common.collect.Lists
 
 expression watchable collection %number% of %object%:
 	set:
@@ -38,8 +39,8 @@ expression watchable collection %number% of %object%:
 	get:
 		return expr-2.getWatchableCollectionModifier().read(expr-1)
 	add:
-		set {_list} to new ArrayList<>()
-        {_list}.add(change value)
+		set {_list} to Lists.newArrayList()
+		{_list}.add(change value)
 		expr-2.getDataValueCollectionModifier().write(expr-1, {_list})
 
 function new_watchable_object(index: number, value: object) :: object:
