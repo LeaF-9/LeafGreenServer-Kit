@@ -52,20 +52,8 @@ function reflectGlowing(player: player, target: entity):
 function reflectUnglowing(player: player, target: entity):
 	set {_p} to ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA)
 	{_p}.getIntegers().write(0, id of {_target})
-	set {_dw} to new WrappedDataWatcher()
-	set {_serializer} to Registry.get(Byte.class)
-	set {_object} to new WrappedDataWatcherObject(0, {_serializer})
-	{_dw}.setObject({_object}, (64 as byte))
-	{_p}.getDataWatcherModifier().write(0, {_dw})
+	add new_watchable_object(0, 0.byteValue()) to watchable collection 0 of {_p}
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
-
-command /test1:
- trigger:
-  set {_packet} to new packet "ENTITY_METADATA"
-  
-  set int 0 of {_packet} to id of target entity
-  add new_watchable_object(0, 64.byteValue()) to watchable collection 0 of {_packet}
-  send packet {_packet} to player
 
 function skacketGlowing(player: player, target: entity):
 	set client glowing of {_target} to true for {_player}
