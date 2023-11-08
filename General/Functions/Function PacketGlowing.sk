@@ -31,8 +31,9 @@ function reflectGlowing(player: player, target: entity):
 	set {_p} to ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA)
 	{_p}.getIntegers().write(0, id of {_target})
 	set {_dw} to new WrappedDataWatcher()
-	{_dw}.setObject(0, (64 as byte))
-	# {_dw}.setObject(new WrappedDataWatcherObject(0, WrappedDataWatcher.Registry.get(Byte.class)), (64 as byte))
+	set {_serializer} to Registry.get(Byte.class)
+	set {_object} to new WrappedDataWatcherObject(0, {_serializer})
+	{_dw}.setObject({_object}, (64 as byte))
 	{_p}.getDataWatcherModifier().write(0, {_dw})
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
 
@@ -40,8 +41,9 @@ function reflectUnglowing(player: player, target: entity):
 	set {_p} to ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA)
 	{_p}.getIntegers().write(0, id of {_target})
 	set {_dw} to new WrappedDataWatcher()
-	{_dw}.setObject(0, (0 as byte))
-	# {_dw}.setObject(new WrappedDataWatcherObject(0, WrappedDataWatcher.Registry.get(Byte.class)), (0 as byte))
+	set {_serializer} to Registry.get(Byte.class)
+	set {_object} to new WrappedDataWatcherObject(0, {_serializer})
+	{_dw}.setObject({_object}, (64 as byte))
 	{_p}.getDataWatcherModifier().write(0, {_dw})
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
 
