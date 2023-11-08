@@ -32,6 +32,7 @@ import:
 	com.comphenix.protocol.wrappers.WrappedDataWatcher
 	com.comphenix.protocol.wrappers.WrappedWatchableObject
 	com.google.common.collect.Lists
+	org.junit.jupiter.api.Assertions.assertEquals
 
 expression watchable collection %number% of %object%:
 	set:
@@ -39,6 +40,7 @@ expression watchable collection %number% of %object%:
 	get:
 		return expr-2.getWatchableCollectionModifier().read(expr-1)
 	add:
+		assertEquals(expr-1, expr-2.getWatchableCollectionModifier().read(expr-1).size())
 		set {_values} to Lists.newArrayList(change value)
 		expr-2.getDataValueCollectionModifier().write(expr-1, {_values})
 
