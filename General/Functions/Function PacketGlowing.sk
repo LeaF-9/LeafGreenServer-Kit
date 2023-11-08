@@ -33,15 +33,15 @@ import:
 	com.comphenix.protocol.wrappers.WrappedWatchableObject
 	com.google.common.collect.Lists
 
-expression watchable collection %number% of %object%:
-	set:
-		expr-2.getWatchableCollectionModifier().write(expr-1, change value)
-	get:
-		return expr-2.getWatchableCollectionModifier().read(expr-1)
-	add:
-		set {_list} to expr-2.getDataValueCollectionModifier().read(expr-1)
-		set {_values} to Lists.newArrayList(change value)
-		expr-2.getDataValueCollectionModifier().write(expr-1, {_values})
+# expression watchable collection %number% of %object%:
+# 	set:
+# 		expr-2.getWatchableCollectionModifier().write(expr-1, change value)
+# 	get:
+# 		return expr-2.getWatchableCollectionModifier().read(expr-1)
+# 	add:
+# 		set {_list} to expr-2.getDataValueCollectionModifier().read(expr-1)
+# 		set {_values} to Lists.newArrayList(change value)
+# 		expr-2.getDataValueCollectionModifier().write(expr-1, {_values})
 
 function new_watchable_object(index: number, value: object) :: object:
 	return new WrappedDataValue({_index}, WrappedDataWatcher.Registry.get(class of {_value}), {_value})
@@ -61,7 +61,6 @@ function reflectGlowing(player: player, target: entity):
 	loop {_watchableobjects::*}:
 		set {_wo} to loop-value.getWatcherObject()
 		{_list}.add(new WrappedDataValue({_wo}.getIndex(), {_wo}.getSerializer(), loop-value.getRawValue()))
-		wrappedDataValueList.add(new WrappedDataValue(watcherObject.getIndex(),watcherObject.getSerializer(),entry.getRawValue() ))
 
 	{_p}.getDataValueCollectionModifier().write(0, {_list})
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
