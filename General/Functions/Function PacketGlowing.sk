@@ -39,9 +39,8 @@ expression watchable collection %number% of %object%:
 	get:
 		return expr-2.getWatchableCollectionModifier().read(expr-1)
 	add:
-		set {_list} to Lists.newArrayList()
-		{_list}.add(change value)
-		expr-2.getDataValueCollectionModifier().write(expr-1, {_list})
+		set {_values} to Lists.newArrayList(change value)
+		expr-2.getDataValueCollectionModifier().write(expr-1, {_values})
 
 function new_watchable_object(index: number, value: object) :: object:
 	return new WrappedDataValue({_index}, WrappedDataWatcher.Registry.get(class of {_value}), {_value})
