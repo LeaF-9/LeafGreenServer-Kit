@@ -21,12 +21,14 @@ function packetUnglowing(player: player, target: entity):
 	reflectUnglowing({_player}, {_target})
 
 import:
+	java.util.ArrayList
 	com.comphenix.protocol.ProtocolLibrary
 	com.comphenix.protocol.PacketType
 	com.comphenix.protocol.events.ListeningWhitelist
 	com.comphenix.protocol.events.PacketContainer
 	com.comphenix.protocol.events.PacketListener
 	com.comphenix.protocol.utility.MinecraftReflection
+	com.comphenix.protocol.wrappers.WrappedDataValue
 	com.comphenix.protocol.wrappers.WrappedDataWatcher
 	com.comphenix.protocol.wrappers.WrappedWatchableObject
 
@@ -36,12 +38,17 @@ expression watchable collection %number% of %object%:
 	get:
 		return expr-2.getWatchableCollectionModifier().read(expr-1)
 	add:
-		set {_list} to expr-2.getWatchableCollectionModifier().read(expr-1)
+		set {_list} to expr-2.getDataValueCollectionModifier().read(expr-1)
 		{_list}.add(change value)
-		expr-2.getWatchableCollectionModifier().write(expr-1, {_list})
+		expr-2.getDataValueCollectionModifier().write(expr-1, {_list})
+		
+		# List<WrappedWatchableObject> metadata = new ArrayList<>();
+        # metadata.add(change value)
+		# expr-2.getDataValueCollectionModifier().write(expr-1, metadata)
+
 
 function new_watchable_object(index: number, value: object) :: object:
-	return new WrappedWatchableObject(new WrappedDataWatcher.WrappedDataWatcherObject({_index}, WrappedDataWatcher.Registry.get(class of {_value})), {_value})
+	return new WrappedDataValue({_index}, WrappedDataWatcher.Registry.get(class of {_value}), {_value})
 
 function reflectGlowing(player: player, target: entity):
 	set {_p} to ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA)
