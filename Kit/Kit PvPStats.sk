@@ -3,9 +3,9 @@ options:
 
 on death of player:
 	{LastKiller::%victim%} is set
-	kitDeathEvent(victim, {LastKiller::%victim%})
+	kitDeathEvent(victim, {LastKiller::%victim%}, damage cause)
 
-function kitDeathEvent(victim: player, attacker: player):
+function kitDeathEvent(victim: player, attacker: player, damagecause: damage cause):
 # 自殺であるかどうかの確認
 	{_attacker} is not {_victim}
 # 試合進行中、試合参加中であるかどうかの確認
@@ -17,7 +17,7 @@ function kitDeathEvent(victim: player, attacker: player):
 # Ultのチャージ
 	if {Ulting::%{_attacker}%} is not set:
 		add 5 to {Ultimate::%{_attacker}%}
-	set {_killid} to kitSaveKillInfo({_victim}, damage cause)
+	set {_killid} to kitSaveKillInfo({_victim}, {_damagecause})
 	message "{@prefix} §e%{_victim}% §dをキルしました" to {_attacker}
 # データ保存
 	set {_attacker.UUID} to uuid of {_attacker}
