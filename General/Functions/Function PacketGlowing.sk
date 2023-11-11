@@ -44,17 +44,26 @@ import:
 # 		expr-2.getDataValueCollectionModifier().write(expr-1, {_values})
 
 function new_watchable_object(index: number, value: object) :: object:
-	return new WrappedDataValue({_index}, WrappedDataWatcher.Registry.get(class of {_value}), {_value})
+	return new WrappedDataWatcher({_index}, WrappedDataWatcher.Registry.get(class of {_value}), {_value})
 
 function reflectGlowing(player: player, target: entity):
 	set {_p} to ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA)
 	{_p}.getIntegers().write(0, id of {_target})
+	set {_dw} to new WrappedDataWatcher()
+	set {_serializer} to Registry.get(Byte.class)
+	{_dw}.setEntity({_player})
+	{_dw}.setObject(0, {_serializer}, 64.byteValue)
+
+	set {_wos::*} to {_dw}.getWatchableObjects()
 
 	set {_list} to Lists.newArrayList()
 
-	set {_value} to new_watchable_object(0, 64.byteValue())
-
-	{_list}.add({_value})
+	loop {_wos::*}:
+		if loop-value is null:
+			continue
+		
+		set {_dwo} to loop-value.getWatcherObject()
+		{_list}.add(new WrappedDataValue({_dwo}.getIndex(), {_dwo}.getSerializer(), loop-value.getRawValue()))
 
 	{_p}.getDataValueCollectionModifier().write(0, {_list})
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
