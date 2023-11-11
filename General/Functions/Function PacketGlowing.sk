@@ -50,22 +50,11 @@ function reflectGlowing(player: player, target: entity):
 	set {_p} to new PacketContainer(PacketType.Play.Server.ENTITY_METADATA)
 	{_p}.getIntegers().write(0, id of {_target})
 
-	set {_dw} to WrappedDataWatcher.getEntityWatcher({_target}).deepClone()
-	set {_value} to new_watchable_object(0, 64.byteValue())
-	{_dw}.setObject(0, {_value})
-
 	set {_list} to Lists.newArrayList()
 
-	set {_watchableobjects::*} to {_dw}.getWatchableObjects()
+	set {_value} to new_watchable_object(0, 64.byteValue())
 
-	loop {_watchableobjects::*}:
-		set {_obj} to loop-value
-
-		if {_obj} is null:
-			continue
-
-		set {_wo} to {_obj}.getWatcherObject()
-		{_list}.add(new WrappedDataValue({_wo}.getIndex(), {_wo}.getSerializer(), {_obj}.getRawValue()))
+	{_list}.add({_value})
 
 	{_p}.getDataValueCollectionModifier().write(0, {_list})
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
