@@ -47,7 +47,7 @@ function new_watchable_object(index: number, value: object) :: object:
 	return new WrappedDataValue({_index}, WrappedDataWatcher.Registry.get(class of {_value}), {_value})
 
 function reflectGlowing(player: player, target: entity):
-	set {_p} to new PacketContainer(PacketType.Play.Server.ENTITY_METADATA)
+	set {_p} to ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA)
 	{_p}.getIntegers().write(0, id of {_target})
 
 	set {_list} to Lists.newArrayList()
@@ -60,7 +60,7 @@ function reflectGlowing(player: player, target: entity):
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
 
 function reflectUnglowing(player: player, target: entity):
-	set {_p} to new PacketContainer(PacketType.Play.Server.ENTITY_METADATA)
+	set {_p} to ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.ENTITY_METADATA)
 	{_p}.getIntegers().write(0, id of {_target})
 
 	set {_list} to Lists.newArrayList()
