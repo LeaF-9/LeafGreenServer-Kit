@@ -14,14 +14,17 @@ function kitSetHologram_CP(stage: text):
 			set {_color} to "§6"
 		else if {_type} is "Diamond":
 			set {_color} to "§b"
-		spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-white""}"
+		set {_nbt} to nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-white""}"
+		spawn a magma cube at {_loc} with nbt {_nbt}
 		set metadata value "gametype" of spawned magma cube to "Kit"
 		set metadata value "kit-areaname" of spawned magma cube to "%loop-index%"
-		spawn an armor stand at {_nameloc} with nbt "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
+		set {_nbt} to nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
+		spawn an armor stand at {_nameloc} with nbt {_nbt}
 		set spawned armor stand's display name to "§f§l%loop-index%"
 		set metadata value "gametype" of spawned armor stand to "Kit"
 		set metadata value "paname" of spawned armor stand to "%loop-index%"
-		spawn an armor stand at {_typeloc} with nbt "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
+		set {_nbt} to nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
+		spawn an armor stand at {_typeloc} with nbt {_nbt}
 		set spawned armor stand's display name to "%{_color}%%{_type}% Area"
 		set metadata value "gametype" of spawned armor stand to "Kit"
 
@@ -36,7 +39,8 @@ function kitChangeHologram_CP(team: text, area: text):
 		delete loop-magma cube
 	set {_loc} to {Kit-GameStageAreas::%{_area}%}
 	add -0.25 to y-coordinate of {_loc}
-	spawn a magma cube at {_loc} with nbt "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-%{_team}%""}"
+	set {_nbt} to nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:700,ShowParticles:0b}],Team:""kit-%{_team}%""}"
+	spawn a magma cube at {_loc} with nbt {_nbt}
 	set metadata value "gametype" of spawned magma cube to "Kit"
 	set metadata value "kit-areaname" of spawned magma cube to "%{_area}%"
 
@@ -158,8 +162,7 @@ function kitExecuteArea_CP(team: text, pa: text):
 				delete {Kit-AreaRelease::%{_pa}%}
 			# 占領解除がなお自チームのものである場合
 			if {Kit-AreaRelease::%{_pa}%} is {_team}:
-				set block at loop-value to setBlockPA(block at loop-value, "white")
-				# 順位によって解除速度の変更
+				set block at loop-value to kitSetColorBlock_CP(block at loop-value, "white")
 				set {_dif} to {Kit-PRank::%{Kit-AreaSecure::%{_pa}%}%} - {Kit-PRank::%{Kit-AreaRelease::%{_pa}%}%}
 				if {_dif} > 0:
 					add 1 to {_dif}
@@ -173,7 +176,7 @@ function kitExecuteArea_CP(team: text, pa: text):
 		delete {Kit-AreaSecure::%{_pa}%}
 		delete {Kit-AreaRelease::%{_pa}%}
 		gameMsg("Kit", "§e§l!§6§l!§c§l! %{_typecolor}%§l%{_pa}% §5の占領が解除されました! §e§l!§6§l!§c§l!")
-		kitCPAChangeHolo("white", {_pa})
+		kitChangeHologram_CP("white", {_pa})
 		loop all players in radius {_range} around {_loc}:
 			{TrueTeam::%loop-player%} is {_team}
 			# execute console command "/givecoin %loop-player% 3 占領解除"
@@ -216,7 +219,7 @@ function kitExecuteArea_CP(team: text, pa: text):
 			delete {Kit-AreaOccupy::%{_pa}%}
 		# 占領中がなお自チームであるかどうか
 		if {Kit-AreaOccupy::%{_pa}%} is {_team}:
-			set block at loop-value to kitSetColorBlock_CP(loop-block, {_team})
+			set block at loop-value to kitSetColorBlock_CP(block at loop-value, {_team})
 			set {_preotick} to {Kit-GameStageTime::%{_pa}%}
 			set {_mf} to false
 			loop all players:

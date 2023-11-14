@@ -108,12 +108,12 @@ function kitCheckAvailable_SH(player: player, sheep: entity):
 		if {_count} < 1:
 			kitTakingSheep_SH({_player}, {_sheep})
 		else:
-			send subtitle "§e⚠️ §c§l既に羊の最大所持数を超えています! §e⚠️" to loop-player for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
+			send subtitle "§e⚠️ §c§l既に羊の最大所持数を超えています! §e⚠️" to {_player} for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
 	else if metadata value "sh-age" of {_sheep} is "baby":
 		if {_count} < 3:
 			kitTakingSheep_SH({_player}, {_sheep}, {_count})
 		else:
-			send subtitle "§e⚠️ §c§l既に羊の最大所持数を超えています! §e⚠️" to loop-player for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
+			send subtitle "§e⚠️ §c§l既に羊の最大所持数を超えています! §e⚠️" to {_player} for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
 
 # Sheepをいくつ持っているかのチェック
 function kitCheckHolding_SH(player: player) :: number:
@@ -156,7 +156,9 @@ function kitTakingSheep_SH(player: player, sheep: entity, hadnum: number = 0):
 			set {_ok} to true
 			set {_get} to true
 			continue
-		add 1 to metadata value "sh-taking" of {_sheep}
+		set {_sh-taking} to metadata value "sh-taking" of {_sheep}
+		add 1 to {_sh-taking}
+		set metadata value "sh-taking" of {_sheep} to {_sh-taking}
 		set {_barcount} to metadata value "sh-taking" of {_sheep} / ({_count} / 50)
 		set {_bar} to ""
 		loop 50 times:
@@ -171,7 +173,7 @@ function kitTakingSheep_SH(player: player, sheep: entity, hadnum: number = 0):
 		playSound("block.note_block.chime", 1, 2, {_player}, true)
 		set metadata value "sh-holder" of {_sheep} to {_player}
 		set metadata value "sh-getlocation" of {_sheep} to location of {_sheep}
-		send title "§f§l羊 §bを獲得しました!" with subtitle "§e陣地の§6§l獲得エリア§eまで持ち帰ろう!" for 5 seconds with fadein 0.5 seconds and fadeout 0.5 seconds
+		send title "§f§l羊 §bを獲得しました!" with subtitle "§e陣地の§6§l獲得エリア§eまで持ち帰ろう!" to {_player} for 5 seconds with fadein 0.5 seconds and fadeout 0.5 seconds
 	else:
 		playSound("block.note_block.chime", 1, 0.5, {_player}, true)
 
@@ -290,7 +292,7 @@ function kitTimer_SH():
 					if "%{_color.after}%" is {TrueTeam::%{_holder}%}:
 						delete metadata value "sh-holder" of loop-sheep
 						add 1 to {Kit-Carry.personal::%{_holder}%}
-						kitGetSheep_SH({_holder}, loop-sheep, {_color.after})
+						kitGetSheepEffects_SH({_holder}, loop-sheep, {_color.after})
 			else:
 				if {_color.after} is white:
 					kitLostSheepEffects_SH({_color.before})
