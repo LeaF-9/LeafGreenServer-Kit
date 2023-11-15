@@ -1,156 +1,122 @@
+# # 統一項目
+# # Rankingのエンティティデータ保存地点:
+# # - plugins/skript-yaml/General Options/Rankings.yml
+# # ランキングのベース(armor stand)につけるTag:
+# # - Ranking.type
+# # - Ranking.period
+# # ランキングのディスプレイエンティティにつけるTag:
+# # - Ranking.type
+# # - Ranking.line
+
 options:
 	prefix: §a[§bRanking§a]
 
-#command /setranking <text> <text> <text> <number>:
-#	permission: sk.admin
-#	usage: /setranking <sign or head> <Kill..etc> <Class...etc> <number>
-#	trigger:
-#		if arg 1 is "sign":
-#			if target block is sign:
-#				set {Ranking-%arg 1%.%arg 2%_%arg 3%::%arg 4%} to location of target block
-#				message "{@prefix} §e目先のブロックを§b%arg 2%:§c%arg 3% §a%arg 4%位§eに設定しました"
-#			else:
-#				message "{@prefix} §c目先のブロックが看板ではありません"
+on rightclick on armor stand:
+	set {_nbt} to nbt compound of clicked entity
+	tag "Ranking.type" of {_nbt} is set
+	set {_type} to tag "Ranking.type" of {_nbt}
+	kitChangeRankingPeriod({_type})
 
-#command /deleteranking:
-#	permission: sk.admin
-#	trigger:
-#		loop 6 times:
-#			if loop-number-1 is 1:
-#				set {_type} to "Kill"
-#			else if loop-number-1 is 2:
-#				set {_type} to "KD"
-#			else if loop-number-1 is 3:
-#				set {_type} to "Win"
-#			else if loop-number-1 is 4:
-#				set {_type} to "Death"
-#			else if loop-number-1 is 5:
-#				set {_type} to "Assist"
-#			else if loop-number-1 is 6:
-#				set {_type} to "Count"
-#			delete {Ranking-sign.%{_type}%_week::*}
-#			delete {Ranking-sign.%{_type}%_all::*}
-#		loop {Classes::*}:
-#			loop 6 times:
-#				if loop-number-1 is 1:
-#					set {_type} to "Kill"
-#				else if loop-number-1 is 2:
-#					set {_type} to "KD"
-#				else if loop-number-1 is 3:
-#					set {_type} to "Win"
-#				else if loop-number-1 is 4:
-#					set {_type} to "Death"
-#				else if loop-number-1 is 5:
-#					set {_type} to "Assist"
-#				else if loop-number-1 is 6:
-#					set {_type} to "Count"
-#				delete {Ranking-sign.%{_type}%_%loop-value-1%::*}
-
-command /changekitranking <text>:
+# 指定したタイプランキングのベース位置を設定するコマンド
+command /setranking-position <text>:
+	aliases: /setrank-pos
 	permission: sk.admin
+	usage: /setrank-pos <type>
 	trigger:
-		if {Classes::%arg 1%} is set:
-			if {TypeKitRanking::%arg 1%} is not set:
-				set {TypeKitRanking::%arg 1%} to "Assist"
-			if {TypeKitRanking::%arg 1%} is "Assist":
-				set {TypeKitRanking::%arg 1%} to "Kill"
-				execute console command "/hd setline r_%arg 1% 7 &4&lKill &7Ranking"
-				execute console command "/updatekitrank %arg 1% Kill"
-			else if {TypeKitRanking::%arg 1%} is "Kill":
-				set {TypeKitRanking::%arg 1%} to "KD"
-				execute console command "/hd setline r_%arg 1% 7 &6&lK/D &7Ranking"
-				execute console command "/updatekitrank %arg 1% KD"
-			else if {TypeKitRanking::%arg 1%} is "KD":
-				set {TypeKitRanking::%arg 1%} to "Count"
-				execute console command "/hd setline r_%arg 1% 7 &2&lCount &7Ranking"
-				execute console command "/updatekitrank %arg 1% Count"
-			else if {TypeKitRanking::%arg 1%} is "Count":
-				set {TypeKitRanking::%arg 1%} to "Death"
-				execute console command "/hd setline r_%arg 1% 7 &1&lDeath &7Ranking"
-				execute console command "/updatekitrank %arg 1% Death"
-			else if {TypeKitRanking::%arg 1%} is "Death":
-				set {TypeKitRanking::%arg 1%} to "Assist"
-				execute console command "/hd setline r_%arg 1% 7 &5&lAssist &7Ranking"
-				execute console command "/updatekitrank %arg 1% Assist"
+		set {_loc} to location of player
+		set yaw of {_loc} to 0
+		set pitch of {_loc} to 0
+		load yml "plugins/skript-yaml/General Options/Rankings.yml" as "ranking.position"
+		set yml value "%arg 1%.position.x" from "ranking.position" to x-pos of {_loc}
+		set yml value "%arg 1%.position.y" from "ranking.position" to y-pos of {_loc}
+		set yml value "%arg 1%.position.z" from "ranking.position" to z-pos of {_loc}
+		set yml value "%arg 1%.position.yaw" from "ranking.position" to 0
+		set yml value "%arg 1%.position.pitch" from "ranking.position" to 0
+		set yml value "%arg 1%.position.world" from "ranking.position" to "%world of {_loc}%"
+		loop all entities:
+			checkEntityType(loop-entity, armor stand) is true
+			set {_nbt} to nbt compound of loop-entity
+			tag "Ranking.type" of {_nbt} is arg 1
+			set {_exist} to true
+		{_exist} is not set
+		set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b}"
+		spawn an armor stand at {_loc} with nbt {_nbt}
+		set {_spawnedmob} to spawned armor stand
+		set {_nbt} to nbt compound of {_spawnedmob}
+		set tag "Ranking.type" of {_nbt} to arg 1
+		set tag "Ranking.period" of {_nbt} to "all"
 
-command /updatekitrank <text> <text>:
-	permission: sk.admin
-	trigger:
-		set {_type} to arg 2
-		set {_conf} to arg 1
-		loop {Kit-%{_type}%.%{_conf}%::*}:
-			{BAN::%loop-index%} is not set
-			if {_type} is "KD":
-				if {Kit-Death.%{_conf}%::%loop-index%} >= 10:
-					set {_list::%loop-index%} to loop-value
-			else:
-				set {_list::%loop-index%} to loop-value
-		set {_high} to 0
-		loop 5 times:
-			set {_num} to loop-number
-			set {_hdnum} to {_num} + 1
-			loop {_list::*}:
-				loop-value-2 > {_high}
-				{UUID::%loop-index%} is set
-				set {_high} to loop-value-2
-				set {_highplayer} to loop-index
-			if {_high} is 0:
-				delete {_high}
-			execute console command "/hd setline r_%{_conf}% %{_hdnum}% &a%{_num}%&e. &f&l%{UUID::%{_highplayer}%}% &7 - &b%{_high}%"
-			set {_high} to 0
-			delete {_list::%{_highplayer}%}
-			delete {_highplayer}
-			wait 5 ticks
+# 指定したランキングのベースエンティティを返す関数
+function kitGetRankingBase(type: text) :: entity:
+	loop all entities:
+		checkEntityType(loop-entity, armor stand) is true
+		set {_nbt} to nbt compound of loop-entity
+		tag "Ranking.type" of {_nbt} is {_type}
+		set {_rankingentity} to loop-entity
+	if {_rankingentity} is not set:
+		load yml "plugins/skript-yaml/General Options/Rankings.yml" as "ranking.position.get"
+		set {_loc} to invertLocation("%{_type}%.position", "ranking.position.get")
+		unload yml "ranking.position.get"
+		set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b}"
+		spawn an armor stand at {_loc} with nbt {_nbt}
+		set {_rankingentity} to spawned armor stand
+		set {_nbt} to nbt compound of {_rankingentity}
+		set tag "Ranking.type" of {_nbt} to {_type}
+		set tag "Ranking.period" of {_nbt} to "all"
+	return {_rankingentity}
 
-function rankingChange(game: text, stats: text):
-	if {_game} is "Kit":
-		if {_stats} is "kill":
-			set {_dis} to "&4&lKill"
-		else if {_stats} is "death":
-			set {_dis} to "&1&lDeath"
-		else if {_stats} is "kd":
-			set {_dis} to "&6&lK/D"
-		else if {_stats} is "win":
-			set {_dis} to "&2&lWin"
-		else if {_stats} is "assist":
-			set {_dis} to "&5&lAssist"
-		if {Kit-TypeRanking::%{_stats}%} is not set:
-			set {Kit-TypeRanking::%{_stats}%} to "lifetime"
-		if {Kit-TypeRanking::%{_stats}%} is "lifetime":
-			set {Kit-TypeRanking::%{_stats}%} to "weekly"
-			execute console command "/hd setline kit-ranking-%{_stats}% 1 &bWeekly %{_dis}% &eTop 10"
-			execute console command "/hd setline kit-ranking-%{_stats}% 12 &6&lWeekly &b- &8Monthly &b- &8Lifetime"
-			rankingUpdate("Kit", {_stats}, "weekly")
-		else if {Kit-TypeRanking::%{_stats}%} is "weekly":
-			set {Kit-TypeRanking::%{_stats}%} to "monthly"
-			execute console command "/hd setline kit-ranking-%{_stats}% 1 &aMonthly %{_dis}% &eTop 10"
-			execute console command "/hd setline kit-ranking-%{_stats}% 12 &8Weekly &b- &6&lMonthly &b- &8Lifetime"
-			rankingUpdate("Kit", {_stats}, "monthly")
-		else if {Kit-TypeRanking::%{_stats}%} is "monthly":
-			set {Kit-TypeRanking::%{_stats}%} to "lifetime"
-			execute console command "/hd setline kit-ranking-%{_stats}% 1 &dLifetime %{_dis}% &eTop 10"
-			execute console command "/hd setline kit-ranking-%{_stats}% 12 &8Weekly &b- &8Monthly &b- &6&lLifeTime"
-			rankingUpdate("Kit", {_stats}, "lifetime")
+# 指定したステータスランキングの期間を変更
+function kitChangeRankingPeriod(stats: text):
+	set {_rankingentity} to kitGetRankingBase({_stats})
+	set {_nbt} to nbt compound of {_rankingentity}
+	set {_period} to tag "Ranking.period" of {_nbt}
+	if {_period} is "all":
+		set {_period} to "week"
+	else if {_period} is "week":
+		set {_period} to "month"
+	else if {_period} is "month":
+		set {_period} to "all"
+	set tag "Ranking.period" of {_nbt} to {_period}
+	kitRankingUpdate({_stats}, {_period})
 
-function rankingUpdate(game: text, stats: text, conf: text):
-	deleteRankingDisplay({_stats})
-	if {_conf} is "weekly":
-		set {_time} to "week"
-	if {_conf} is "monthly":
-		set {_time} to "month"
-	if {_conf} is "lifetime":
-		set {_time} to "all"
-	loop {%{_game}%-%{_stats}%.%{_time}%::*}:
+# 指定した期間内の指定したステータスランキングのアップデート
+function kitRankingUpdate(stats: text, period: text):
+	# stats display
+	if {_stats} is "kill":
+		set {_dis.stats} to "§4§lKill"
+	else if {_stats} is "death":
+		set {_dis.stats} to "§1§lDeath"
+	else if {_stats} is "kd":
+		set {_dis.stats} to "§6§lK/D"
+	else if {_stats} is "win":
+		set {_dis.stats} to "§2§lWin"
+	else if {_stats} is "assist":
+		set {_dis.stats} to "§5§lAssist"
+	# period display
+	if {_period} is "all":
+		set {_dis.period} to "§dLifetime"
+		set {_dis.underbar} to "§8Weekly §b- §8Monthly &b- §6§lLifetime"
+	else if {_period} is "month":
+		set {_dis.period} to "§aMonthly"
+		set {_dis.underbar} to "§8Weekly §b- §6§lMonthly &b- §8Lifetime"
+	else if {_period} is "week":
+		set {_dis.period} to "§bWeekly"
+		set {_dis.underbar} to "§6§lWeekly §b- §8Monthly &b- §8Lifetime"
+	# line-1 display
+	set {_display::1} to "%{_dis.period}% %{_dis.stats}% §eTop 10"
+	# line-12 display
+	set {_display::12} to {_dis.underbar}
+	loop {Kit-%{_stats}%.%{_period}%::*}:
 		{BAN::%loop-index%} is not set
 		if {_stats} is "KD":
-			if {_time} is "all":
-				if {%{_game}%-Death.%{_time}%::%loop-index%} >= 100:
+			if {_period} is "all":
+				if {Kit-Death.%{_period}%::%loop-index%} >= 100:
 					set {_list::%loop-index%} to loop-value
-			else if {_time} is "month":
-				if {%{_game}%-Death.%{_time}%::%loop-index%} >= 50:
+			else if {_period} is "month":
+				if {Kit-Death.%{_period}%::%loop-index%} >= 50:
 					set {_list::%loop-index%} to loop-value
 			else:
-				if {%{_game}%-Death.%{_time}%::%loop-index%} >= 10:
+				if {Kit-Death.%{_period}%::%loop-index%} >= 10:
 					set {_list::%loop-index%} to loop-value
 		else:
 			set {_list::%loop-index%} to loop-value
@@ -165,42 +131,62 @@ function rankingUpdate(game: text, stats: text, conf: text):
 			set {_highplayer} to loop-index
 		if {_high} is 0:
 			delete {_high}
-		setRankingDisplay({_stats}, {_num})
-		execute console command "/hd setline kit-ranking-%{_stats}% %{_hdnum}% &a%{_num}%&e. &f&l%{UUID::%{_highplayer}%}% &7 - &b%{_high}%"
+		set {_display::%{_hdnum}%} to "§a%{_num}%§e. §f§l%{UUID::%{_highplayer}%}% §7 - §b%{_high}%"
 		set {_high} to 0
 		delete {_list::%{_highplayer}%}
 		delete {_highplayer}
-		wait 5 ticks
+	kitChangeRankingDisplay({_stats}, {_display::*})
 
-function setRankingDisplay(stats: text, rank: number, display: text):
+# 指定したステータスの指定したランクをDisplayに変更
+function kitChangeRankingDisplay(stats: text, displays: texts):
+	set {_num} to 0
 	loop all entities:
-		type of loop-entity os armor stand
+		checkEntityType(loop-entity, text display) is true
 		set {_nbt} to nbt compound of loop-entity
-		tag "RankingDisplay" of {_nbt} is {_stats}
-		tag "RankingDisplay-Rank" of {_nbt} is {_rank}
-		set {_disent} to loop-entity
-	if {_disent} is not set:
-		
+		tag "Ranking.type" of {_nbt} is {_stats}
+		set {_line} to tag "Ranking.line" of {_nbt}
+		set {_rankingentities::%{_line}%} to loop-entity
+	loop 12 times:
+		add 1 to {_num}
+		delete {_entity}
+		set {_entity} to {_rankingentities::%{_num}%}
+		if {_entity} is not set:
+			set {_baseentity} to kitGetRankingBase({_stats})
+			set {_addy} to 0.5 + (0.2 * (12 - {_num}))
+			set {_displayspawnloc} to location of {_baseentity}
+			add {_addy} to y-pos of {_displayspawnloc}
+			spawn a text display at {_displayspawnloc}:
+				set {_nbt} to nbt compound of text display
+				set tag "Ranking.type" of {_nbt} to {_stats}
+				set tag "Ranking.line" of {_nbt} to {_num}
+				set {_entity} to text display
+		set display name of {_entity} to {_displays::%{_num}%}
 
-function deleteRankingDisplay(stats: text):
+# 着手中(後回し)
+# ランキングディスプレイを削除する関数
+function kitDeleteRankingDisplay(stats: text):
 	loop all entities:
 		type of loop-entity is armor stand
 		set {_nbt} to nbt compound of loop-entity
 		tag "RankingDisplay" of {_nbt} is {_stats}
 		delete loop-entity
 
+# 着手中
+# いらなそう
 function checkRankingDisplay(tag: text):
 	loop all entities:
 		type of loop-entity is armor StageRandomize
 		set {_tnt.nbt} to nbt compound of loop-entity
 		set tag "Fuse" of {_tnt.nbt} to {_tick}
 
-command /ranking <text> <text> <text>:
-	usage: /ranking <arg> <game> <stats>
+# 着手中
+# ランキング関係のコマンド
+command /ranking <text> <text>:
+	usage: /ranking <arg> <type>
 	permission: sk.admin
 	trigger:
 		if arg 1 is "change":
-			rankingChange(arg 2, arg 3)
+			kitChangeRankingPeriod(arg 3)
 
 #command /updaterankop <text> <text> <text>:
 #	usage: /updateranktop <kill/death> <time/type> <game>
@@ -226,6 +212,9 @@ command /ranking <text> <text> <text>:
 #			delete {_list::%{_highplayer}%}
 #			delete {_highplayer}
 
+# # ここからは日付の指定
+
+# ベース時間を設定するコマンド
 command /setBaseDate <text> <number> <number> <number>:
 	usage: /setBaseDate <weekly/monthly> <year-num> <month-num> <day-num>
 	permission: sk.admin
@@ -236,7 +225,8 @@ command /setBaseDate <text> <number> <number> <number>:
 		set yml value "%arg 1%.day" from "date.baseranking" to arg 4
 		save yml "date.baseranking"
 
-function updateBaseDate():
+# ベースとなる日付の更新
+local function updateBaseDate():
 	set {_now} to now
 	load yml "plugins/skript-yaml/General Options/Ranking Dates.sk" as "date.ranking"
 	set {_date-month.year} to yml value "monthly.year" from "date.ranking"
@@ -254,21 +244,21 @@ function updateBaseDate():
 # Week 更新
 	set {_week.checker} to false
 	set {_new.week} to {_base.week}
-	while {_week.checker} is false:
+	while {_week.checker} is false:  # 一週間の差があるまでループ
 		set {_unix.week} to unix timestamp of {_new.week}
 		set {_dif.week} to difference between {_unix.week} and {_unix.now}
-		if {_dif.week} > 604800:
+		if {_dif.week} > 604800:  # 一週間の差があれば一週間分プラス
 			add 1 week to {_new.week}
 		else:
 			set {_week.checker} to true
 	# 更新時の処理
-	if {_new.week} is not {_base.week}:
+	if {_new.week} is not {_base.week}:  # プラスされた経緯があれば更新
 		set {_weekupdate.checker} to false
 		set {_daychecker} to {_date-week.day}
 		set {_monthchecker} to {_date-week.month}
 		set {_yearchecker} to {_date-week.year}
 		while {_weekupdate.checker} is false:
-			set {_monthday} to getMonthDays({_monthchecker}, {_yearchecker})
+			set {_monthday} to getMonthDays({_monthchecker}, {_yearchecker})  # その月と年から日の最大値を取得
 			add 1 to {_daychecker}
 			if {_daychecker} > {_monthday}:
 				set {_daychecker} to 1
@@ -293,7 +283,7 @@ function updateBaseDate():
 		set {_monthday} to getMonthDays({_monthchecker}, {_yearchecker})
 		set {_unix.month} to unix timestamp of {_new.month}
 		set {_dif.month} to difference between {_unix.month} and {_unix.now}
-		if {_dif.month} > 86400 * {_monthday}:
+		if {_dif.month} > 86400 * {_monthday}:  # 1日 * 最大日数より多い場合、月を増やす
 			add 1 to {_monthchecker}
 			if {_monthchecker} > 12:
 				set {_monthchecker} to 1
@@ -307,7 +297,7 @@ function updateBaseDate():
 		set yml value "monthly.month" from "month.update" to {_monthchecker}
 		save yml "month.update"
 
-function checkWeeking(time: date, week: date) :: boolean:
+local function checkWeeking(time: date, week: date) :: boolean:
 	set {_unix.time} to unix timestamp of {_time}
 	set {_unix.base} to unix timestamp of {_week}
 	set {_dif} to difference between {_unix.base} and {_unix.time}
@@ -316,7 +306,7 @@ function checkWeeking(time: date, week: date) :: boolean:
 	else:
 		return false
 
-function checkMonthing(time: date, month: number, year: number) :: boolean:
+local function checkMonthing(time: date, month: number, year: number) :: boolean:
 	set {_monthdate} to date({_year}, {_month}, 1)
 	set {_monthday} to getMonthDays({_month}, {_year})
 	set {_unix.time} to unix timestamp of {_time}
@@ -327,6 +317,7 @@ function checkMonthing(time: date, month: number, year: number) :: boolean:
 	else:
 		return false
 
+# その月の最大日数を返す関数
 function getMonthDays(month: number, year: number) :: number:
 	if {_month} is 1, 3, 5, 7, 8, 10 or 12:
 		set {_day} to 31
@@ -344,10 +335,11 @@ function getMonthDays(month: number, year: number) :: number:
 			set {_day} to 29
 	return {_day}
 
+# 試合終了時に変数更新&ランキングを更新する関数
 function rankingEnding():
 	updateBaseDate()
 	kitClearStats()
-	load yml "plugins/skript-yaml/General Options/Ranking Dates.sk" as "date.ranking"
+	load yml "plugins/skript-yaml/General Options/Rankings.sk" as "date.ranking"
 	set {_date-month.year} to yml value "monthly.year" from "date.ranking"
 	set {_date-month.month} to yml value "monthly.month" from "date.ranking"
 	set {_date-month.day} to yml value "monthly.day" from "date.ranking"
@@ -406,7 +398,7 @@ function rankingEnding():
 			set {_kd.%{_kit}%} to {Kit-Kill.%{_kit}%::%{_uuid}%} / {Kit-Death.%{_kit}%::%{_uuid}%}
 			set {Kit-KD.%{_kit}%::%{_uuid}%} to {_kd.%{_kit}%} if {_kd.%{_kit}%} is set
 	# Assists
-	load yml "plugins/skript-yaml/General Database/Assists.yml" as "updatestats.assist"
+	load yml "plugins/skript-yaml/General Databases/Assists.yml" as "updatestats.assist"
 	load yml "plugins/skript-yaml/General Databases/Kills.yml" as "updatestats.assisttime"
 	loop yaml nodes "" from "updatestats.assist":
 		set {_id} to loop-key
@@ -466,23 +458,10 @@ function rankingEnding():
 			set {_type} to "Death"
 		else if loop-number-1 is 5:
 			set {_type} to "Assist"
-		rankingUpdate("Kit", {_type}, {Kit-TypeRanking::%{_type}%})
-
-command /gameendupdate <text>:
-	permission: sk.admin
-	trigger:
-		loop 5 times:
-			if loop-number-1 is 1:
-				set {_type} to "Kill"
-			else if loop-number-1 is 2:
-				set {_type} to "KD"
-			else if loop-number-1 is 3:
-				set {_type} to "Win"
-			else if loop-number-1 is 4:
-				set {_type} to "Death"
-			else if loop-number-1 is 5:
-				set {_type} to "Assist"
-			execute console command "/updaterank %{_type}% %{%arg 1%-TypeRanking::%{_type}%}% %arg 1%"
+		set {_baseentity} to kitGetRankingBase({_type})
+		set {_nbt} to nbt compound of {_baseentity}
+		set {_period} to tag "Ranking.period" of {_nbt}
+		kitRankingUpdate({_type}, {_period})
 
 #command /updateranking <text>:
 #	usage: /updateranking <Class...etc(kit)>
