@@ -1,6 +1,35 @@
 options:
 	prefix: §a[§bRanking§a]
 
+command /setranking-position <text> <text>:
+	aliases: /setrank-pos
+	permission: sk.admin
+	usage: /setrank-pos <index> <period>
+	trigger:
+		set {_loc} to location of player
+		set yaw of {_loc} to 0
+		set pitch of {_loc} to 0
+		load yml "plugins/skript-yaml/Kit Options/Rankings.yml" as "ranking.position"
+		set yml value "%arg 1%.%arg 2%.position.x" from "ranking.position" to x-pos of {_loc}
+		set yml value "%arg 1%.%arg 2%.position.y" from "ranking.position" to y-pos of {_loc}
+		set yml value "%arg 1%.%arg 2%.position.z" from "ranking.position" to z-pos of {_loc}
+		set yml value "%arg 1%.%arg 2%.position.yaw" from "ranking.position" to 0
+		set yml value "%arg 1%.%arg 2%.position.pitch" from "ranking.position" to 0
+		set yml value "%arg 1%.%arg 2%.position.world" from "ranking.position" to "%world of {_loc}%"
+		loop all entities:
+			checkEntityType(loop-entity, armor stand) is true
+			set {_nbt} to nbt compound of loop-entity
+			tag "Ranking.index" of {_nbt} is arg 1
+			tag "Ranking.period" of {_nbt} is arg 2
+			set {_exist} to true
+		{_exist} is not set
+		set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b}"
+		spawn an armor stand at {_loc} with nbt {_nbt}
+		set {_spawnedmob} to spawned armor stand
+		set {_nbt} to nbt compound of {_spawnedmob}
+		set tag "Ranking.index" of {_nbt} to arg 1
+		set tag "Ranking.period" of {_nbt} to arg 2
+
 #command /setranking <text> <text> <text> <number>:
 #	permission: sk.admin
 #	usage: /setranking <sign or head> <Kill..etc> <Class...etc> <number>
