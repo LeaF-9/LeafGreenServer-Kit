@@ -12,17 +12,20 @@ on death of player:
 # Banditでないかどうかの確認
 	{TrueTeam::%victim%} is not "purple"
 	{TrueTeam::%{LastKiller::%victim%}%} is not "purple"
+	kitDeathEvent({LastKiller::%victim%}, victim, damage cause)
+
+
+function kitDeathEvent(attacker: player, victim: player, damagecause: damage cause):
 # Ultのチャージ
-	if {Ulting::%{LastKiller::%victim%}%} is not set:
-		add 5 to {Ultimate::%{LastKiller::%victim%}%}
+	if {Ulting::%{_attacker}%} is not set:
+		add 5 to {Ultimate::%{_attacker}%}
 # UUIDやKitなど変数の保存
-	set {_attacker.name} to {LastKiller::%victim%}
-	set {_attacker.UUID} to {LastKiller::%victim%}'s UUID
-	set {_victim.name} to victim
-	set {_victim.UUID} to victim's UUID
-	set {_attacker.kit} to {Class::%{LastKiller::%victim%}%}
-	set {_victim.kit} to {Class::%victim%}
-	set {_damagecause} to damage cause
+	set {_attacker.name} to {_attacker}
+	set {_attacker.UUID} to UUID of {_attacker}
+	set {_victim.name} to {_victim}
+	set {_victim.UUID} to UUID of {_victim}
+	set {_attacker.kit} to {Class::%{_attacker}%}
+	set {_victim.kit} to {Class::%{_victim}%}
 	set {_now} to now
 # yaml動作 ######################################
 #
@@ -44,18 +47,18 @@ on death of player:
 #
 # ###############################################
 # message送信
-	message "{@prefix} §e%victim% §dをキルしました" to {LastKiller::%victim%}
+	message "{@prefix} §e%{_victim}% §dをキルしました" to {_attacker}
 # Soulの贈与
 	add 2 to {Kit-Soul::%{_attacker.UUID}%}
 # Assist Check ##################################
 #
 # 自身をAssist候補から省く
-	set {_true.%{LastKiller::%victim%}%} to true
+	set {_true.%{_attacker}%} to true
 #
 # victimに攻撃を与えた者をループ
-	loop {damager.%victim%::*}:
-		loop-value is not {LastKiller::%victim%}  # アシスト者とキラーが同一人物でないかどうか
-		{TrueTeam::%loop-value%} is {TrueTeam::%{LastKiller::%victim%}%}  # チームが同一であるかどうか
+	loop {damager.%{_victim}%::*}:
+		loop-value is not {_attacker}  # アシスト者とキラーが同一人物でないかどうか
+		{TrueTeam::%loop-value%} is {TrueTeam::%{_attacker}%}  # チームが同一であるかどうか
 		{_true.%loop-value%} is not set  # 既にアシストとして換算済でないかどうか
 		add loop-value to {_supporters::*}  # サポート者の保存
 		set {_assist.UUID} to loop-value's UUID  # UUIDの保存
@@ -76,13 +79,13 @@ on death of player:
 		save yml "assist.%{_id.assist}%"
 #
 		set {_true.%loop-value%} to true  # 換算済として設定
-		message "{@prefix} §e%victim% §aのキルアシストをしました" to loop-value  # メッセージ送信
+		message "{@prefix} §e%{_victim}% §aのキルアシストをしました" to loop-value  # メッセージ送信
 		add 1 to {Kit-Soul::%loop-value's UUID%}  # Soulの贈与
 #
 # Killerにアシストした者をループ
-	loop {supporter.%{LastKiller::%victim%}%::*}:
-		loop-value is not {LastKiller::%victim%}  # アシスト者とキラーが同一人物でないかどうか
-		{TrueTeam::%loop-value%} is {TrueTeam::%{LastKiller::%victim%}%}  # チームが同一であるかどうか
+	loop {supporter.%{_attacker}%::*}:
+		loop-value is not {_attacker}  # アシスト者とキラーが同一人物でないかどうか
+		{TrueTeam::%loop-value%} is {TrueTeam::%{_attacker}%}  # チームが同一であるかどうか
 		{_true.%loop-value%} is not set  # 既にアシストとして換算済でないかどうか
 		add loop-value to {_supporters::*}  # サポート者の保存
 		set {_assist.UUID} to loop-value's UUID  # UUIDの保存
@@ -103,16 +106,16 @@ on death of player:
 		save yml "assist.%{_id.assist}%"
 #
 		set {_true.%loop-value%} to true  # 換算済として設定
-		message "{@prefix} §e%victim% §aのキルアシストをしました" to loop-value  # メッセージ送信
+		message "{@prefix} §e%{_victim}% §aのキルアシストをしました" to loop-value  # メッセージ送信
 		add 1 to {Kit-Soul::%loop-value's UUID%}  # Soulの贈与
 # 進行中のゲームに対して情報を送信する
 	kitRuleDeathEvent({_attacker.name}, {_victim.name}, {_supporters::*})
 #
 	wait 5 ticks
-	delete {damager.%victim%::*}
-	delete {supporter.%victim%::*}
-	delete {supporter.%{LastKiller::%victim%}%::*}
-	delete {LastKiller::%victim%}
+	delete {damager.%{_victim}%::*}
+	delete {supporter.%{_victim}%::*}
+	delete {supporter.%{_attacker}%::*}
+	delete {LastKiller::%{_victim}%}
 
 #command /topstatslist <text>:
 #	permission: sk.admin
