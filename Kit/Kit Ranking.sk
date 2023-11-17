@@ -173,11 +173,11 @@ function kitDeleteRankingDisplay(stats: text):
 
 # 着手中
 # いらなそう
-function checkRankingDisplay(tag: text):
-	loop all entities:
-		type of loop-entity is armor StageRandomize
-		set {_tnt.nbt} to nbt compound of loop-entity
-		set tag "Fuse" of {_tnt.nbt} to {_tick}
+# function checkRankingDisplay(tag: text):
+# 	loop all entities:
+# 		type of loop-entity is armor StageRandomize
+# 		set {_tnt.nbt} to nbt compound of loop-entity
+# 		set tag "Fuse" of {_tnt.nbt} to {_tick}
 
 # 着手中
 # ランキング関係のコマンド
@@ -186,7 +186,7 @@ command /ranking <text> <text>:
 	permission: sk.admin
 	trigger:
 		if arg 1 is "change":
-			kitChangeRankingPeriod(arg 3)
+			kitChangeRankingPeriod(arg 2)
 
 #command /updaterankop <text> <text> <text>:
 #	usage: /updateranktop <kill/death> <time/type> <game>
@@ -351,7 +351,7 @@ function rankingEnding():
 	# Kills / Deaths
 	load yml "plugins/skript-yaml/General Database/Kills.yml" as "updatestats.kill"
 	loop yaml nodes "" from "updatestats.kill":
-		set {_id} to loop-key
+		set {_id} to loop-node
 		set {_uuid.killer} to yml value "%{_id}%.killer-player" from "updatestats.kill"
 		set {_kit.killer} to yml value "%{_id}%.killer-kit" from "updatestats.kill"
 		set {_uuid.victim} to yml value "%{_id}%.victim-player" from "updatestats.kill"
@@ -401,7 +401,7 @@ function rankingEnding():
 	load yml "plugins/skript-yaml/General Databases/Assists.yml" as "updatestats.assist"
 	load yml "plugins/skript-yaml/General Databases/Kills.yml" as "updatestats.assisttime"
 	loop yaml nodes "" from "updatestats.assist":
-		set {_id} to loop-key
+		set {_id} to loop-node
 		set {_killid.assist} to yml value "%{_id}%.kill-id" from "updatestats.assist"
 		set {_uuid.assist} to yml value "%{_id}%.assist-player" from "updatestats.assist"
 		set {_kit.assist} to yml value "%{_id}%.assist-kit" from "updatestats.assist"
@@ -420,7 +420,7 @@ function rankingEnding():
 	# Wins
 	load yml "plugins/skript-yaml/General Database/Games.yml" as "updatestats.game"
 	loop yaml nodes "" from "updatestats.game":
-		set {_id} to loop-key
+		set {_id} to loop-node
 		set {_map} to yml value "%{_id}%.map" from "updatestats.game"
 		set {_rule} to yml value "%{_id}%.rule" from "updatestats.game"
 		set {_winteam::*} to yml list "%{_id}%.win-team" from "updatestats.game"
@@ -428,7 +428,7 @@ function rankingEnding():
 		set {_duration} to yml value "%{_id}%.duration" from "updatestats.game"
 		set {_minPlay} to {_duration} / 2
 		loop yaml nodes "%{_id}%.players" from "updatestats.game":
-			set {_uuid} to loop-key-2
+			set {_uuid} to loop-node-2
 			set {_team} to yml value "%{_id}%.players.%{_uuid}%.team" from "updatestats.game"
 			set {_playtime} to yml value "%{_id}%.players.%{_uuid}%.team" from "updatestats.game"
 			if {_winteam::*} does not contain {_team}:
