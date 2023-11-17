@@ -350,7 +350,7 @@ function rankingEnding():
 	set {_date.week} to date({_date-week.year}, {_date-week.month}, {_date-week.day})
 	# Kills / Deaths
 	load yml "plugins/skript-yaml/General Database/Kills.yml" as "updatestats.kill"
-	loop yaml nodes "" from "updatestats.kill":
+	loop yaml node keys "" from "updatestats.kill":
 		set {_id} to loop-node
 		set {_uuid.killer} to yml value "%{_id}%.killer-player" from "updatestats.kill"
 		set {_kit.killer} to yml value "%{_id}%.killer-kit" from "updatestats.kill"
@@ -400,7 +400,7 @@ function rankingEnding():
 	# Assists
 	load yml "plugins/skript-yaml/General Databases/Assists.yml" as "updatestats.assist"
 	load yml "plugins/skript-yaml/General Databases/Kills.yml" as "updatestats.assisttime"
-	loop yaml nodes "" from "updatestats.assist":
+	loop yaml node keys "" from "updatestats.assist":
 		set {_id} to loop-node
 		set {_killid.assist} to yml value "%{_id}%.kill-id" from "updatestats.assist"
 		set {_uuid.assist} to yml value "%{_id}%.assist-player" from "updatestats.assist"
@@ -419,7 +419,7 @@ function rankingEnding():
 	unload yml "updatestats.assisttime"
 	# Wins
 	load yml "plugins/skript-yaml/General Database/Games.yml" as "updatestats.game"
-	loop yaml nodes "" from "updatestats.game":
+	loop yaml node keys "" from "updatestats.game":
 		set {_id} to loop-node
 		set {_map} to yml value "%{_id}%.map" from "updatestats.game"
 		set {_rule} to yml value "%{_id}%.rule" from "updatestats.game"
@@ -427,7 +427,7 @@ function rankingEnding():
 		set {_time} to yml value "%{_id}%.time" from "updatestats.game"
 		set {_duration} to yml value "%{_id}%.duration" from "updatestats.game"
 		set {_minPlay} to {_duration} / 2
-		loop yaml nodes "%{_id}%.players" from "updatestats.game":
+		loop yaml node keys "%{_id}%.players" from "updatestats.game":
 			set {_uuid} to loop-node-2
 			set {_team} to yml value "%{_id}%.players.%{_uuid}%.team" from "updatestats.game"
 			set {_playtime} to yml value "%{_id}%.players.%{_uuid}%.team" from "updatestats.game"
