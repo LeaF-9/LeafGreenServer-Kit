@@ -116,38 +116,8 @@ function kitTeleportPreparing():
 		set gamemode of loop-player to spectator
 
 function kitGameInsert():
-	set {_id.game} to {Kit-GameID}
-	set {_time.game} to {Kit-GameTimestamp}
-	set {_duration.game} to {Kit-GameTime}
-	delete {Kit-GameID}
-	delete {Kit-GameTimestamp}
-	load yml "plugins/skript-yaml/Kit Games/%{_id.game}%.yml" as "game.%{_id.game}%"
-	set yml value "map" from "game.%{_id.game}%" to {Kit-GameStage::name}
-	set yml list "win-team" from "game.%{_id.game}%" to {Kit-WinTeam::*}
-	set yml value "time" from "game.%{_id.game}%" to {_time.game}
-	set yml value "duration" from "game.%{_id.game}%" to {_duration.game}
-	save yml "game.%{_id.game}%"
-	load yml "plugins/skript-yaml/Kit Player_Match/%{_id.game}%.yml" as "play_match.%{_id.game}%"
-	loop {Kit-GameplayTime::*}:
-		set {_uuid} to loop-index
-		add {_uuid} to {_uuids::*}
-		set {_player} to {UUID::%{_uuid}%}
-		set {_team} to {TrueTeam::%{_player}%}
-		if {Kit-GameStage::rule} is "DTC":
-			set {_action-1} to {Kit-Break.personal::%{_player}%}
-		else if {Kit-GameStage::rule} is "CTF":
-			set {_action-1} to {Kit-Hold.personal::%{_player}%}
-		else if {Kit-GameStage::rule} is "SH":
-			set {_action-1} to {Kit-Carry.personal::%{_player}%}
-		if {_action-1} is not set:
-			set {_action-1} to 0
-		set {_playtime} to loop-value
-		set yml value "%{_uuid}%.team" from "play_match.%{_id.game}%" to {_team}
-		set yml value "%{_uuid}%.action-1" from "play_match.%{_id.game}%" to {_action-1}
-		set yml value "%{_uuid}%.playtime" from "play_match.%{_id.game}%" to {_playtime}
-	set yml list "players" from "play_match.%{_id.game}%" to {_uuids::*}
-	save yml "play_match.%{_id.game}%"
-
+	kitStoreKillLogs()
+	kitStoreGameLogs()
 
 command /kjclear:
 	description: KitJoinの引数を削除します

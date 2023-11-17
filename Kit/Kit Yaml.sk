@@ -1,0 +1,214 @@
+function kitSaveKillInfo(victim: player, damagecause: damage cause) :: text:
+	set {_attacker.name} to {LastKiller::%{_victim}%}
+	set {_attacker.UUID} to {LastKiller::%{_victim}%}'s UUID
+	set {_victim.name} to {_victim}
+	set {_victim.UUID} to UUID of {_victim}
+	set {_attacker.kit} to {Class::%{LastKiller::%{_victim}%}%}
+	set {_victim.kit} to {Class::%{_victim}%}
+	set {_damagecause} to damage cause
+	set {_now} to now
+	set {_killid} to a random UUID
+	add {_killid} to {Kit-GameInfo.Kills::*}
+	set {Kit-GameInfo.killer-player::%{_killid}%} to {_attacker.UUID}
+	set {Kit-GameInfo.killer-kit::%{_killid}%} to {_attacker.kit}
+	set {Kit-GameInfo.victim-player::%{_killid}%} to {_victim.UUID}
+	set {Kit-GameInfo.victim-kit::%{_killid}%} to {_victim.kit}
+	set {Kit-GameInfo.cause::%{_killid}%} to {_damagecause}
+	set {Kit-GameInfo.time::%{_killid}%} to {_now}
+	return {_killid}
+
+function kitSaveAssistInfo(player: player, killid: number):
+	set {_assistid} to a random UUID
+	add {_assistid} to {Kit-GameInfo.Assists::*}
+	set {_assist.UUID} to uuid of {_player}
+	set {_assist.kit} to {Class::%{_player}%}
+	set {Kit-GameInfo.assist-killid::%{_assistid}%} to {_killid}
+	set {Kit-GameInfo.assist-player::%{_assistid}%} to {_assist.UUID}
+	set {Kit-GameInfo.assist-kit::%{_assistid}%} to {_assist.kit}
+
+function kitStoreKillLogs():
+	# Kills
+	load yml "plugins/skript-yaml/Kit Databases/Kills.yml" as "database.storekill"
+	loop {Kit-GameInfo.Kills::*}:
+		set {_id.kill} to loop-value
+		set yml value "%{_id.kill}%.game" from "database.storekill" to {Kit-GameID}
+		set yml value "%{_id.kill}%.killer-player" from "database.storekill" to {Kit-GameInfo.killer-player::%{_id.kill}%}
+		set yml value "%{_id.kill}%.killer-kit" from "database.storekill" to {Kit-GameInfo.killer-kit::%{_id.kill}%}
+		set yml value "%{_id.kill}%.victim-player" from "database.storekill" to {Kit-GameInfo.victim-player::%{_id.kill}%}
+		set yml value "%{_id.kill}%.victim-kit" from "database.storekill" to {Kit-GameInfo.victim-kit::%{_id.kill}%}
+		set yml value "%{_id.kill}%.cause" from "database.storekill" to {Kit-GameInfo.cause::%{_id.kill}%}
+		set yml value "%{_id.kill}%.time" from "database.storekill" to {Kit-GameInfo.time::%{_id.kill}%}
+	save yml "database.storekill"
+	delete {Kit-GameInfo.Kills::*}
+	delete {Kit-GameInfo.killer-player::*}
+	delete {Kit-GameInfo.killer-kit::*}
+	delete {Kit-GameInfo.victim-player::*}
+	delete {Kit-GameInfo.victim-kit::*}
+	delete {Kit-GameInfo.cause::*}
+	delete {Kit-GameInfo.time::*}
+	# Assists
+	load yml "plugins/skript-yaml/Kit Databases/Assists.yml" as "database.storeassist"
+	loop {Kit-GameInfo.Assists::*}:
+		set {_id.assist} to loop-value
+		set yml value "%{_id.assist}%.kill-id" from "database.storeassist" to {Kit-GameInfo.assist-killid::%{_id.assist}%}
+		set yml value "%{_id.assist}%.assist-player" from "database.storeassist" to {Kit-GameInfo.assist-player::%{_id.assist}%}
+		set yml value "%{_id.assist}%.assist-kit" from "database.storeassist" to {Kit-GameInfo.assist-kit::%{_id.assist}%}
+	save yml "database.storeassist"
+	delete {Kit-GameInfo.Assists::*}
+	delete {Kit-GameInfo.assist-killid::*}
+	delete {Kit-GameInfo.assist-player::*}
+	delete {Kit-GameInfo.assist-kit::*}
+
+function kitStoreGameLogs():
+	set {_id.game} to {Kit-GameID}
+	set {_time.game} to {Kit-GameTimestamp}
+	set {_duration.game} to {Kit-GameTime}
+	delete {Kit-GameID}
+	delete {Kit-GameTimestamp}
+	load yml "plugins/skript-yaml/Kit Databases/Games.yml" as "database.storegame"
+	set yml value "%{_id.game}%.map" from "database.storegame" to {Kit-GameStage::name}
+	set yml list "%{_id.game}%.win-team" from "database.storegame" to {Kit-WinTeam::*}
+	set yml value "%{_id.game}%.time" from "database.storegame" to {_time.game}
+	set yml value "%{_id.game}%.duration" from "database.storegame" to {_duration.game}
+	loop {Kit-GamePlayTime::*}:
+		set {_uuid} to loop-index
+		set {_player} to {UUID::%{_uuid}%}
+		set {_team} to {TrueTeam::%{_player}%}
+		if {Kit-GameStage::rule} is "DTC":
+			set {_action-1} to {Kit-Break.personal::%{_player}%}
+		else if {Kit-GameStage::rule} is "CTF":
+			set {_action-1} to {Kit-Hold.personal::%{_player}%}
+		else if {Kit-GameStage::rule} is "SH":
+			set {_action-1} to {Kit-Carry.personal::%{_player}%}
+		if {_action-1} is not set:
+			set {_action-1} to 0
+		set {_playtime} to loop-value
+		set yml value "%{_id.game}%.players.%{_uuid}%.team" from "database.storegame" to {_team}
+		set yml value "%{_id.game}%.players.%{_uuid}%.action-1" from "database.storegame" to {_action-1}
+		set yml value "%{_id.game}%.players.%{_uuid}%.playtime" from "database.storegame" to {_playtime}
+	save yml "database.storegame"
+
+# # test
+#
+# # データ移行
+# # !!!!! WARNING !!!!!
+# # データ移行後はKit Databases内のデータが正常に移行されたかどうか確認
+# # 正常に確認できた際は以下のファイルを削除
+# # - Kit Assists
+# # - Kit Games
+# # - Kit Kills
+# # - Kit Player_Match
+# #
+# # 移動が完了したので無効化
+# #
+# command /testyaml-transport:
+# 	permission: sk.admin
+# 	trigger:
+# 		log "§bデータ移行中..."
+# 		# Games / Player_Match
+# 		log "§eGame / Player_Matchデータの移行開始"
+# 		load yml "plugins/skript-yaml/Kit Databases/Games.yml" as "database.transportgame"
+# 		delete {_files::*}
+# 		set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Games"
+# 		set {_ln} to 0
+# 		loop {_files::*}:
+# 			add 1 to {_ln}
+# 			set {_id} to a random uuid
+# 			set {_gameid::%{_ln}%} to {_id}
+# 			load yml "plugins/skript-yaml/Kit Games/%{_ln}%.yml" as "data.game"
+# 			set yml value "%{_id}%.map" from "database.transportgame" to yml value "map" from "data.game"
+# 			set yml list "%{_id}%.win-team" from "database.transportgame" to yml list "win-team" from "data.game"
+# 			set yml value "%{_id}%.time" from "database.transportgame" to yml value "time" from "data.game"
+# 			set yml value "%{_id}%.duration" from "database.transportgame" to yml value "duration" from "data.game"
+# 			unload yml "data.game"
+# 			load yml "plugins/skript-yaml/Kit Player_Match/%{_ln}%.yml" as "data.playermatch"
+# 			set {_players::*} to yml list "players" from "data.playermatch"
+# 			loop {_players::*}:
+# 				set {_playeruuid} to loop-value-2
+# 				set yml value "%{_id}%.players.%{_playeruuid}%.team" from "database.transportgame" to yml value "%{_playeruuid}%.team" from "data.playermatch"
+# 				set yml value "%{_id}%.players.%{_playeruuid}%.action-1" from "database.transportgame" to yml value "%{_playeruuid}%.action-1" from "data.playermatch"
+# 				set yml value "%{_id}%.players.%{_playeruuid}%.playtime" from "database.transportgame" to yml value "%{_playeruuid}%.playtime" from "data.playermatch"
+# 			unload yml "data.playermatch"
+# 		save yml "database.transportgame"
+# 		log "§aGame / Player_Matchデータの移行完了"
+# 		# Kills
+# 		log "§eKillデータの移行開始"
+# 		set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Kills"
+# 		set {_ln} to 0
+# 		load yml "plugins/skript-yaml/Kit Databases/Kills.yml" as "database.transportkill"
+# 		loop {_files::*}:
+# 			add 1 to {_ln}
+# 			set {_id} to a random uuid
+# 			set {_killid::%{_ln}%} to {_id}
+# 			load yml "plugins/skript-yaml/Kit Kills/%{_ln}%.yml" as "data.kill"
+# 			set {_gid} to yml value "game" from "data.kill"
+# 			set yml value "%{_id}%.game" from "database.transportkill" to {_gameid::%{_gid}%}
+# 			set yml value "%{_id}%.killer-player" from "database.transportkill" to yml value "killer-player" from "data.kill"
+# 			set yml value "%{_id}%.killer-kit" from "database.transportkill" to yml value "killer-kit" from "data.kill"
+# 			set yml value "%{_id}%.victim-player" from "database.transportkill" to yml value "victim-player" from "data.kill"
+# 			set yml value "%{_id}%.victim-kit" from "database.transportkill" to yml value "victim-kit" from "data.kill"
+# 			set yml value "%{_id}%.cause" from "database.transportkill" to yml value "cause" from "data.kill"
+# 			set yml value "%{_id}%.time" from "database.transportkill" to yml value "time" from "data.kill"
+# 			unload yml "data.kill"
+# 		save yml "database.transportkill"
+# 		log "§aKillデータの移行完了"
+# 		# Assists
+# 		log "§eAssistデータの移行開始"
+# 		delete {_files::*}
+# 		set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Assists"
+# 		set {_ln} to 0
+# 		load yml "plugins/skript-yaml/Kit Databases/Assists.yml" as "database.transportassist"
+# 		loop {_files::*}:
+# 			add 1 to {_ln}
+# 			set {_id} to a random uuid
+# 			load yml "plugins/skript-yaml/Kit Assists/%{_ln}%.yml" as "data.assist"
+# 			set {_kid} to yml value "kill-id" from "data.assist"
+# 			set yml value "%{_id}%.kill-id" from "database.transportassist" to {_killid::%{_kid}%}
+# 			set yml value "%{_id}%.assist-player" from "database.transportassist" to yml value "assist-player" from "data.assist"
+# 			set yml value "%{_id}%.assist-kit" from "database.transportassist" to yml value "assist-kit" from "data.assist"
+# 			unload yml "data.assist"
+# 		save yml "database.transportassist"
+# 		log "§aAssistデータの移行完了"
+# 		log "§b全てのデータ移行が完了しました"
+
+#
+# # 読み込みスピードテスト
+# command /testyaml-preparing:
+# 	permission: sk.admin
+# 	trigger:
+# 		loop 10000 times:
+# 			load yml "plugins/skript-yaml/Test Files/File/%loop-number%.yml" as "test"
+# 			set yml value "kill" from "test" to a random UUID
+# 			save yml "test"
+# 		load yml "plugins/skript-yaml/Test Files/Yaml/test.yml" as "test"
+# 		loop 10000 times:
+# 			set yml value "%loop-number%.kill" from "test" to a random UUID
+# 		save yml "test"
+
+# command /testyaml-execute:
+# 	permission: sk.admin
+# 	trigger:
+# 		log "§a実行方法①: §b多数のymlに分けて読み込む方法"
+# 		set {_old} to now
+# 		log "§9実行開始..."
+# 		set {_total} to 0
+# 		loop 10000 times:
+# 			load yml "plugins/skript-yaml/Test Files/File/%loop-number%.yml" as "test"
+# 			set {_v} to yml value "kill" from "test"
+# 			add 1 to {_total}
+# 			unload yml "test"
+# 		set {_now} to now
+# 		log "§9実行完了! §b%difference between {_old} and {_now}%"
+# 		delete {_results::*}
+# 		log "§a実行方法②: §b単一のymlに詰めて読み込む方法"
+# 		set {_old} to now
+# 		log "§9実行開始..."
+# 		set {_total} to 0
+# 		load yml "plugins/skript-yaml/Test Files/Yaml/test.yml" as "test"
+# 		loop 10000 times:
+# 			set {_v} to yml value "%loop-number%.kill" from "test"
+# 			add 1 to {_total}
+# 		unload yml "test"
+# 		set {_now} to now
+# 		log "§9実行完了! §b%difference between {_old} and {_now}%"
+			
