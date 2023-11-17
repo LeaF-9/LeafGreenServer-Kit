@@ -2,13 +2,6 @@ options:
 	baseslot: 18
 	invname: "§bAdmin Tools"
 
-on inventory click:
-	type of event-inventory is chest inventory
-	if inventory name of event-inventory is {@invname}:
-		cancel event
-		set {_slot} to "%clicked slot%" parsed as number
-		executeAdminTool_Kit(player, clicked item, {_slot})
-
 function openAdminTool_Check(player: player):
 	if {Server} is "Kit":
 		openAdminTool_Kit({_player})
@@ -27,8 +20,8 @@ function executeAdminTool_Check(player: player, item: item, slot: number):
 function executeAdminTool_Kit(player: player, item: item, slot: number):
 	close {_player}'s inventory
 	if name of {_item} contains "/joinset":
-		make {_player} execute command "/joinset"
+		make {_player} execute command "/joinset 4"
 	else if name of {_item} contains "/gamestart":
 		make {_player} execute command "/gamestart"
-	else if {_slot} is 26:
+	else if name of {_item} contains "Detail Settings":
 		openAdminTool_KitDetail({_player})
