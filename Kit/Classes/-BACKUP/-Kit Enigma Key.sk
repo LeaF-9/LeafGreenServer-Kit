@@ -1,0 +1,16 @@
+# Weapon-Name: Enigma Key
+
+on damage:
+	{Class::%attacker%} is "Thief"
+	attacker is sneaking
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Thief", "Weapon.main", 2) is true
+	cancel event
+	kitDamage(attacker, victim, 2, true)
+	kitParticle_EnigmaKey(victim)
+
+function kitParticle_EnigmaKey(entity: entity):
+	playSound("item.shield.break", 1, 0.6, {_entity})
+	loop 10 times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle_Block(iron block, {_el})

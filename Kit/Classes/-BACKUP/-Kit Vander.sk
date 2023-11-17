@@ -1,0 +1,26 @@
+# Vander
+
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	{Class::%attacker%} is "Mercenary"
+	damage was caused by attack
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 3) is true
+	{Kit-Blood::%victim%} is set
+	set {_c} to kitPercentDuel(attacker, victim, 10)
+	chance of {_c}%:
+		heal attacker by 1 heart
+
+function kitWeapon_Mercenary_3(player: player):
+	loop all players in radius 7 around {_player}:
+		kitCheckTeam({_player}, loop-player, false) is true
+		{Kit-Blood::%loop-player%} is set
+		set {_exist} to true
+	if {_exist} is true:
+		if {_player} does not have speed:
+			apply speed 1 to {_player} for a tick
+		if {_player}'s tool is not enchanted:
+			enchant {_player}'s tool with sharpness 1
+	else:
+		if {_player}'s tool is enchanted:
+			disenchant {_player}'s tool

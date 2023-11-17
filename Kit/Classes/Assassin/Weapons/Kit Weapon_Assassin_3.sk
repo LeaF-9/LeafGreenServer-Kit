@@ -1,34 +1,47 @@
-# Soul Breaker
+# Phantom Dagger
 
-on death of player:
-	damage was caused by attack
-	if {Join::%victim%} is set:
-		{LastKiller::%victim%} is set
-		set {_attacker} to {LastKiller::%victim%}
-	else:
-		attacker exists
-		set {_attacker} to attacker
-	{_attacker} is set
-	{Class::%{_attacker}%} is "Assassin"
-	set {_tool} to {_attacker}'s tool
+on sneak toggle:
+	metadata value "gametype" of player is "Kit"
+	{Class::%player%} is "Assassin"
+	player is not sneaking
+	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 3) is true
-	kitCheckAlive({_attacker}) is true
-	set {Kit-NoCorpse::%victim%} to true
-	set {_heal} to 1
-	set {_dis} to distance between attacker and victim
-	if {_dis} <= 1.5:
-		add 2 to {_heal}
-	else if victim's facing is {_attacker}'s facing:
-		add 2 to {_heal}
-	kitHeal({_attacker}, {_heal})
-	playSound("block.sculk_catalyst.bloom", 1, 1, victim)
-	healEffect({_attacker})
-	loop {_heal} * 3 times:
-		set {_el} to location of victim
-		add 1 to y-coordinate of {_el}
-		set {_baseloc} to {_el}
-		add a random number between -0.1 and 0.1 to x-coordinate of {_el}
-		add a random number between -0.1 and 0.1 to y-coordinate of {_el}
-		add a random number between -0.1 and 0.1 to z-coordinate of {_el}
-		set {_v} to setVector({_baseloc}, {_el})
-		spawnParticle_Vector(sculk_soul, {_v}, 0.1, {_el})
+	playSound("entity.phantom.flap", 1, 1.25, player)
+	wait a tick
+	set {_true} to true
+	while {_true} is true:
+		set {_tool} to player's tool
+		if kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 3) is false:
+			delete {_true}
+		if player is not sneaking:
+			delete {_true}
+		delete {_exist}
+		delete {_cansee}
+		loop all players in radius 10 around player:
+			kitCheckTeam(loop-player, player, false) is true
+			set {_exist} to true
+			if playerCanSee(loop-player, player) is true:
+				set {_cansee} to true
+		if {_exist} is not set:
+			delete {_true}
+		if {_cansee} is true:
+			delete {_true}
+		if {_true} is true:
+			kitInvisible(player, 0.1 seconds)
+			wait a tick
+	playSound("entity.phantom.hurt", 1, 2, player)
+	loop 10 times:
+		set {_rv} to randomVector()
+		spawnParticle_Vector(glow, {_rv}, 1, location of player)
+
+on damage:
+	metadata value "gametype" of attacker is "Kit"
+	{Class::%attacker%} is "Assassin"
+	{Kit-Invisible::%attacker%} is set
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 3) is true
+	applyEffect(victim, wither, 3, 1.5 seconds, true)
+	playSound("entity.phantom.ambient", 1, 2, victim)
+	loop 10 times:
+		set {_el} to aroundEffect(victim)
+		spawnParticle(falling_obsidian_tear, {_el})

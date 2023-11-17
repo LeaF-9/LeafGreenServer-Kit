@@ -1,0 +1,81 @@
+# Curse Staff
+
+function kitWeapon_Necromancer_2(player: player, loc: location):
+	loop all entities in radius 5 around {_loc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		if type of loop-entity is a player:
+			LastKiller(loop-entity, {_player})
+		apply wither 2 to loop-entity for 5 seconds
+		apply blindness 1 to loop-entity for 5 seconds
+	playSound("entity.illusioner.prepare_mirror", 1, 1.5, {_loc})
+	set {_point} to {_loc}
+#	弧を描く
+	set {_n.k} to 0
+	loop 60 times:
+		set {_effbaseloc} to {_point}
+		add 5 * sin({_n.k}) to x-coordinate of {_effbaseloc}
+		add 5 * cos({_n.k}) to z-coordinate of {_effbaseloc}
+		kitParticle_CurseStaff_Magic({_effbaseloc})
+		add 6 to {_n.k}
+#	弦を描く
+	if {_l.A} is not set:
+		set {_l.A} to {_point}
+		set yaw of {_l.A} to 120
+		set pitch of {_l.A} to 0
+		add 5 * sin(90) to x-coordinate of {_l.A}
+		add 5 * cos(90) to z-coordinate of {_l.A}
+	if {_l.B} is not set:
+		set {_l.B} to {_point}
+		set yaw of {_l.B} to 0
+		set pitch of {_l.B} to 0
+		add 5 * sin(210) to x-coordinate of {_l.B}
+		add 5 * cos(210) to z-coordinate of {_l.B}
+	if {_l.C} is not set:
+		set {_l.C} to {_point}
+		set yaw of {_l.C} to 240
+		set pitch of {_l.C} to 0
+		add 5 * sin(330) to x-coordinate of {_l.C}
+		add 5 * cos(330) to z-coordinate of {_l.C}
+	if {_l.D} is not set:
+		set {_l.D} to {_point}
+		set yaw of {_l.D} to 180
+		set pitch of {_l.D} to 0
+		add 5 * sin(30) to x-coordinate of {_l.D}
+		add 5 * cos(30) to z-coordinate of {_l.D}
+	if {_l.E} is not set:
+		set {_l.E} to {_point}
+		set yaw of {_l.E} to 60
+		set pitch of {_l.E} to 0
+		add 5 * sin(150) to x-coordinate of {_l.E}
+		add 5 * cos(150) to z-coordinate of {_l.E}
+	if {_l.F} is not set:
+		set {_l.F} to {_point}
+		set yaw of {_l.F} to 300
+		set pitch of {_l.F} to 0
+		add 5 * sin(270) to x-coordinate of {_l.F}
+		add 5 * cos(270) to z-coordinate of {_l.F}
+	loop 10 times:
+		add sqrt(3) / 2 to {_n.g}
+#		A-B
+		set {_loc.g} to location {_n.g} meters in front of {_l.A}
+		kitParticle_CurseStaff_Magic({_loc.g})
+#		D-E
+		set {_loc.g} to location {_n.g} meters in front of {_l.D}
+		kitParticle_CurseStaff_Magic({_loc.g})
+#		B-C
+		set {_loc.g} to location {_n.g} meters in front of {_l.B}
+		kitParticle_CurseStaff_Magic({_loc.g})
+#		E-F
+		set {_loc.g} to location {_n.g} meters in front of {_l.E}
+		kitParticle_CurseStaff_Magic({_loc.g})
+#		C-A
+		set {_loc.g} to location {_n.g} meters in front of {_l.C}
+		kitParticle_CurseStaff_Magic({_loc.g})
+#		F-D
+		set {_loc.g} to location {_n.g} meters in front of {_l.F}
+		kitParticle_CurseStaff_Magic({_loc.g})
+
+function kitParticle_CurseStaff_Magic(loc: location):
+	loop 20 times:
+		spawnParticle_Dust(rgb(71, 38, 110), 1, {_loc})
+		wait a tick

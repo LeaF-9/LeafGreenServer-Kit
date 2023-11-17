@@ -1,101 +1,138 @@
-# Jump Beacon
+# Skill-Name: Jump Beacon
 
 function kitSkill_Engineer_3(player: player, loc: location):
 	toolCT({_player}, "Engineer", 3)
 	set {_now} to now
-	set {Stats.%{_player}%::JumpBeacon-Time} to {_now}
-	kitFakeDeleteData({_player}, "Machine-Jump Beacon")
-	set {_loc.jump} to {_loc}
-	set {Stats.%{_player}%::JumpBeacon} to {_loc.jump}
-	kitFakeBlock({_player}, {_loc.jump}, "minecraft:redstone_torch", "Machine-Jump Beacon")
+	# 装置数の確認
+	loop all entities:
+		type of loop-entity is armor stand
+		set {_metadata} to metadata value "kit-armor" of loop-entity
+		{_metadata} contains "Machine-Jump Beacon"
+		metadata value {_metadata} of loop-entity is "%{_player}%"
+		add 1 to {_allnum}
+	if {_allnum} >= 3:
+		set {_toptime} to 0
+		loop {Stats.%{_player}%::*}:
+			loop-index contains "JumpBeacon-Time"
+			set {_value} to loop-value
+			set {_ditime} to "%difference between {_value} and {_now}%"
+			set {_diftime} to timeNumber({_ditime})
+			if {_diftime} > {_toptime}:
+				set {_toptime} to {_diftime}
+				set {_index} to loop-index
+		replace "JumpBeacon-Time-" with "" in {_index}
+		kitFakeDeleteData({_player}, "Machine-Jump Beacon-%{_index}%")
+		delete {Stats.%{_player}%::JumpBeacon-Time-%{_index}%}
+	add 1 to {Stats.%{_player}%::JumpBeacon-Number}
+	set {_num} to {Stats.%{_player}%::JumpBeacon-Number}
+	kitFakeBlock({_player}, {_loc}, "minecraft:redstone_torch", "Machine-Jump Beacon-%{_num}%")
+	set {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} to {_now}
 	kitMsg({_player}, "<##E8383D>Jump Beacon§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
-	while {Stats.%{_player}%::JumpBeacon-Time} is {_now}:
+	while {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} is {_now}:
 		wait a tick
 		loop all players:
-			{team::%loop-player%} is {team::%{_player}%}
-			{Stats.%loop-player%::NoSupport} is not set
+			kitCheckTeam({_player}, loop-player, true) is true
 			loop-player does not have a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします"
 			give a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします" to loop-player
 		delete {_exist}
 		loop all entities:
-			type of loop-entity is armor stand
-			metadata value "kit-armor" of loop-entity is "Machine-Jump Beacon"
-			metadata value "Machine-Jump Beacon" of loop-entity is "%{_player}%"
-			set {_exist} to true
+			if type of loop-entity is armor stand:
+				metadata value "kit-armor" of loop-entity is "Machine-Jump Beacon-%{_num}%"
+				metadata value "Machine-Jump Beacon-%{_num}%" of loop-entity is "%{_player}%"
+				set {_exist} to true
 		if {_exist} is true:
-			kitFakeReload({_player}, "Machine-Jump Beacon")
+			kitFakeReload({_player}, "Machine-Jump Beacon-%{_num}%")
+			if {_fallingblock} is not set:
+				loop all falling blocks:
+					metadata value "kit-block" of loop-falling block is "%{_player}%"
+					loop-falling block is riding
+					metadata value "kit-armor" of vehicle of loop-falling block is "Machine-Jump Beacon-%{_num}%"
+					metadata value "Machine-Jump Beacon-%{_num}%" of vehicle of loop-falling block is "%{_player}%"
+					set {_fallingblock} to loop-falling block
+			loop all players:
+				kitCheckTeam(loop-player, {_player}, true) is true
+				if tool of loop-player is a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします":
+					packetGlowing(loop-player, {_fallingblock})
+				else:
+					packetUnglowing(loop-player, {_fallingblock})
 		else:
-			delete {Stats.%{_player}%::JumpBeacon-Time}
-			delete {Stats.%{_player}%::JumpBeacon}
-	if {Stats.%{_player}%::JumpBeacon-Time} is not set:
+			delete {Stats.%{_player}%::JumpBeacon-Time-%{_num}%}
+	if {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} is not set:
 		loop all players:
-			{team::%loop-player%} is {team::%{_player}%}
-			{Stats.%loop-player%::NoSupport} is not set
+			kitCheckTeam({_player}, loop-player, true) is true
 			loop-player has a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします"
 			remove a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします" from loop-player
 
 on rightclick holding a redstone item:
 	name of player's tool is "§cJump to Beacon"
 	cancel event
-	loop all players:
-		{Stats.%loop-player%::JumpBeacon} is set
-		{team::%loop-player%} is {team::%player%}
-		set {_bl::%loop-player%} to {Stats.%loop-player%::JumpBeacon}
-	open chest with 1 row named "§cBeacon list" to player
-	wait 1 tick
-	set {_ln} to 0
-	loop {_bl::*}:
-		set slot {_ln} of player's current inventory to redstone torch named "§d%loop-index%§c's Beacon" with lore "§6Location: %x-coordinate of loop-value%, %y-coordinate of loop-value%, %z-coordinate of loop-value%"
-		add 1 to {_ln}
+	{Stats.%player%::JumpBeacon-Using} is not set
+	kitEffect_JumpBeacon_Select(player)
 
-on inventory click:
-	type of event-inventory is chest inventory
-	if inventory name of event-inventory is "§cBeacon list":
-		cancel event
-		set {_name} to name of clicked item
-		replace "§d" with "" in {_name}
-		replace "§c's Beacon" with "" in {_name}
-		loop all players:
-			"%loop-player%" is {_name}
-			set {_target} to loop-player
-		kitEffect_JumpBeacon(player, {_target})
+function kitEffect_JumpBeacon_Select(player: player):
+	set {_baseloc} to location of head of {_player}
+	loop 100 times:
+		{_ng} is not set
+		{_target} is not set
+		set {_loc} to location loop-number meters in front of {_baseloc}
+		loop all entities in radius 3 around {_loc}:
+			{_target} is not set
+			type of loop-entity is armor stand
+			set {_metadata} to metadata value "kit-armor" of loop-entity
+			{_metadata} contains "Machine-Jump Beacon"
+			set {_holder} to metadata value {_metadata} of loop-entity parsed as offline player
+			kitCheckTeam({_player}, {_holder}, true) is true
+			set {_target} to loop-entity
+	if {_target} is not set:
+		send action bar "§c§l目先にBeaconがありません" to {_player}
+		stop
+	kitEffect_JumpBeacon_Jump({_player}, {_target})
 
-function kitEffect_JumpBeacon(jumper: player, goaler: player):
-	if {Stats.%{_goaler}%::JumpBeacon} is set:
-		set {_loc} to location of {_jumper}
-		set {_time} to 3
-		loop 60 times:
-			if {Stats.%{_goaler}%::JumpBeacon} is set:
-				teleport {_jumper} to {_loc}
-				if {_time} is 3, 2 or 1:
-					message formatted "§c%{_time}%..." to {_jumper}
-					playSound("ui.button.click", 1, 2, {_loc})
-				subtract 0.05 from {_time}
-				wait 1 tick
-			else:
-				message "§cビーコン消滅によりジャンプが中断されました" to {_jumper}
-				stop
-		if checkFuel({_goaler}, 3) is true:
-			teleport {_jumper} to {Stats.%{_goaler}%::JumpBeacon}
-			set {_baseloc} to {Stats.%{_goaler}%::JumpBeacon}
-			delete {Stats.%{_goaler}%::JumpBeacon}
-			kitFakeDeleteData({_goaler}, "Machine-Jump Beacon")
-			message "§aジャンプに成功しました!" to {_jumper}
-			playSound("entity.wither.shoot", 1, 2, {_jumper})
-			set {_up} to -0.5
-			loop 5 times:
-				set {_el} to {_baseloc}
-				add 0.5 to {_up}
-				add {_up} to y-coordinate of {_el}
-				set {_rad} to 0
-				loop 10 times:
-					add 36 to {_rad}
-					add 0.5 * sin({_rad}) to x-coordinate of {_el}
-					add 0.5 * cos({_rad}) to z-coordinate of {_el}
-					spawnParticle_Color(entity_effect, 255, 0, 255, {_el})
-				wait a tick
-		else:
-			message formatted "§4燃料不足でジャンプが中断されました..." to {_jumper}
-	else:
-		message "§cそのビーコンはすでに存在しません!" to {_jumper}
+function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
+	set {Stats.%{_jumper}%::JumpBeacon-Using} to true
+	set {_loc} to location of {_jumper}
+	set {_time} to 3
+	loop 60 times:
+		delete {_alive}
+		loop all entities:
+			loop-entity is {_target}
+			set {_alive} to true
+		if {_alive} is not set:
+			delete {Stats.%{_jumper}%::JumpBeacon-Using}
+			message formatted "§cビーコン消滅によりジャンプが中断されました" to {_jumper}
+			stop
+		teleport {_jumper} to {_loc}
+		if {_time} is 3, 2 or 1:
+			message formatted "§c%{_time}%..." to {_jumper}
+			playSound("ui.button.click", 1, 2, {_loc})
+		subtract 0.05 from {_time}
+		wait a tick
+	delete {Stats.%{_jumper}%::JumpBeacon-Using}
+	set {_metadata} to metadata value "kit-armor" of {_target}
+	set {_goaler} to metadata value {_metadata} of {_target} parsed as offline player
+	if checkFuel({_goaler}, 3) is false:
+		message formatted "§4燃料不足によりジャンプが中断されました" to {_jumper}
+		stop
+	kitParticle_JumpBeacon_Jumped(location of {_target})
+	teleport {_jumper} to location of {_target}
+	message formatted "§aジャンプに成功しました!" to {_jumper}
+	kitFakeDeleteData({_goaler}, {_metadata})
+	set {_num} to {_metadata}
+	replace "Machine-Jump Beacon-" with "" in {_metadata}
+	delete {Stats.%{_player}%::JumpBeacon-Time-%{_num}%}
+
+function kitParticle_JumpBeacon_Jumped(baseloc: location):
+	playSound("entity.wither.shoot", 1, 2, {_baseloc})
+	set {_up} to -0.5
+	loop 5 times:
+		set {_el} to {_baseloc}
+		add 0.5 to {_up}
+		add {_up} to y-coordinate of {_el}
+		set {_rad} to 0
+		loop 10 times:
+			add 36 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			spawnParticle_Color(entity_effect, 255, 0, 255, {_el})
+		wait a tick

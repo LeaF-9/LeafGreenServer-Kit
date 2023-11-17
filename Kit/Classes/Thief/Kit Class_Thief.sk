@@ -5,10 +5,8 @@ function kitWeaponThief(player: player):
 	set {_tool} to {_player}'s tool
 	set {_item.num} to kitItemNumberChecker({_tool})
 	checkCT({_player}, name of {_tool}) is true
-	if {_item.num} is 3:
-		kitWeapon_Thief_3({_player})
-	else if {_item.num} is 4:
-		kitWeapon_Thief_4({_player})
+	if {_item.num} is 2:
+		kitWeapon_Thief_2({_player})
 
 # Skills
 function kitSkillThief(player: player) :: boolean:
@@ -43,7 +41,7 @@ function kitSkillThief(player: player) :: boolean:
 on drop:
 	{Class::%player%} is "Thief"
 	set {_item} to event-item
-	set {_nbt} to nbt item compound of {_item}
+	set {_nbt} to nbt compound of {_item}
 	set {_tag} to tag "stolen" of {_nbt}
 	if {_tag} is not set:
 		stop
@@ -147,18 +145,12 @@ on damage of player:
 # Timer
 function kitTimerThief(player: player):
 	set {_wn} to kitSelectChecker_Weapon({_player}, "Thief")
-	if {_wn} is 1, 2 or 5:
+	if {_wn} is not 2:
 		stop
-	if {_wn} is 4:
-		set {Stats.%{_player}%::GemStinger} to 0
-		create bossbar titled "&a&lGem Bullets&e: &2&l%{Stats.%{_player}%::GemStinger}%" and id "%{_player}%-GemStinger" for {_player} with progress {Stats.%{_player}%::GemStinger} with colors green with style segmented 10
+	set {Stats.%{_player}%::GemStinger} to 0
+	create bossbar titled "&a&lGem Bullets&e: &2&l%{Stats.%{_player}%::GemStinger}%" and id "%{_player}%-GemStinger" for {_player} with progress {Stats.%{_player}%::GemStinger} with colors green with style segmented 10
 	while {Class::%{_player}%} is "Thief":
-		if {_wn} is 3:
-			add 1 to {_timer}
-			kitEffect_MysticCard_Restore({_player}, {_timer})
-		else if {_wn} is 4:
-			set bossbar "%{_player}%-GemStinger" title to "&a&lGem Bullets&e: &2&l%{Stats.%{_player}%::GemStinger}%"
-			set bossbar "%{_player}%-GemStinger" value to {Stats.%{_player}%::GemStinger}
+		set bossbar "%{_player}%-GemStinger" title to "&a&lGem Bullets&e: &2&l%{Stats.%{_player}%::GemStinger}%"
+		set bossbar "%{_player}%-GemStinger" value to {Stats.%{_player}%::GemStinger}
 		wait a second
-	if {_wn} is 4:
-		remove bossbar "%{_player}%-GemStinger"
+	remove bossbar "%{_player}%-GemStinger"

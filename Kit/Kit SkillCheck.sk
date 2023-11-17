@@ -80,10 +80,21 @@ on rightclick on a sign:
 
 on death of player:
 	if "%world of victim%" is "Kit-SkillCheck":
+		set {_loc} to location of victim
+		if y-coordinate of {_loc} <= -10:
+			set {Kit-Respawn::%victim%} to {Kit-TestWorld}
+		else:
+			set {Kit-Respawn::%victim%} to {_loc}
+		if {Stats.%victim%::SpawnTime} is set:
+			set {Kit-SpawnTime::%victim%} to {Stats.%victim%::SpawnTime}
+		if {Stats.%victim%::Resurrection} is true:
+			set {_class} to {Class::%victim%}
+			set {Kit-Resurrect::%victim%} to true
 		wait a tick
 		force victim to respawn
 		wait a tick
-		teleport victim to {Kit-TestWorld}
+		if {_class} is set:
+			execute console command "/class %{_class}% %victim% false"
 
 on quit:
 	if {Kit-Testing::%player%} is true:

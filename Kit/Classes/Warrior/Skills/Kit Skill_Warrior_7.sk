@@ -79,18 +79,21 @@ function kitEffect_BruteCharge_1(player: player):
 						set x-coordinate of {_vector} to {_x} + {_c} * {_ax} * 3 ^ 0.5
 						set y-coordinate of {_vector} to {_y} + cos({_t}) + 1
 						set z-coordinate of {_vector} to {_z} + {_c} * {_az} * 3 ^ 0.5
-						set {_second} to "%{_u}% seconds" parsed as time span
-						drawDot count 1, particle "redstone", RGB 128, 255, 255, center {_vector}, visibleRange 100, keepFor {_second}
+						kitParticle_BruteCharge_Dust({_vector}, {_u})
 					else:
 						set x-coordinate of {_vector} to {_x} + 0.5 * {_ax} * 3 ^ 0.5
 						set y-coordinate of {_vector} to {_y} + cos({_t}) + 1
 						set z-coordinate of {_vector} to {_z} + 0.5 * {_az} * 3 ^ 0.5
-						set {_second} to "%{_u}% seconds" parsed as time span
-						drawDot count 1, particle "redstone", RGB 128, 255, 255, center {_vector}, visibleRange 100, keepFor {_second}
+						kitParticle_BruteCharge_Dust({_vector}, {_u})
 					add 18 to {_t}
 				add 120 to {_s}
 			add -1 to {_u}
 			wait 20 ticks
+
+local function kitParticle_BruteCharge_Dust(loc: location, sec: number):
+	loop {_sec} * 20 times:
+		spawnParticle_Dust(rgb(128, 255, 255), 1, {_loc})
+		wait a tick
 
 function kitEffect_BruteCharge_2(player: player):
 	set {_loc} to location of {_player}
@@ -130,7 +133,7 @@ function kitEffect_BruteCharge_2(player: player):
 					set {_color.B} to 160 * (1 + {_t})
 					if {_color.B} > 255:
 						set {_color.B} to 255
-					drawDot count 1, particle "redstone", RGB {_color.R}, {_color.G}, {_color.B}, center {_vector}, visibleRange 100, keepFor 0.5 seconds
+					spawnParticle_Dust(rgb({_color.R}, {_color.G}, {_color.B}), 1.5, {_vector})
 					add 0.07 to {_t}
 					add 11 to {_u}
 				set {_s} to -1 * {_s}
@@ -163,7 +166,7 @@ function kitEffect_BruteCharge_3(player: player):
 			set x-coordinate of {_vector} to {_x} + {_ax} * (30 ^ 0.5 - (30 - {_t}) ^ 0.5) ^ 1.5
 			set y-coordinate of {_vector} to {_y} + {_t}
 			set z-coordinate of {_vector} to {_z} + {_az} * (30 ^ 0.5 - (30 - {_t}) ^ 0.5) ^ 1.5
-			drawDot count 1, particle "redstone", RGB 0, 16, 32, center {_vector}, visibleRange 100, keepFor 0.5 seconds
+			spawnParticle_Dust(rgb(0, 16, 32), 1.5, {_vector})
 			add 57 to {_s}
 			if {_s} > 360:
 				add -360 to {_s}

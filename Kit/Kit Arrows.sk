@@ -1,0 +1,23 @@
+on damage:
+	damage was caused by projectile
+	projectile is an arrow
+	if metadata value "arrowdamage" of projectile is set:
+		set {_damage} to metadata value "arrowdamage" of projectile
+		set damage to {_damage}
+	else if metadata value "arromultiple" of projectile is set:
+		set {_multiple} to metadata value "arrowmultiple" of projectile
+		set damage to damage * {_multiple}
+
+on shoot:
+	projectile is an arrow
+	set {_tool} to tool of shooter
+	type of {_tool} is bow or crossbow
+	kitItemTypeChecker({_tool}) is "Weapon.main"
+	set {_lores::*} to lore of {_tool}
+	loop {_lores::*}:
+		loop-value contains "§9威力§7: §ex"
+		set {_pow} to loop-value
+		replace "§9威力§7: §ex" with "" in {_pow}
+		set {_pow} to {_pow} parsed as number
+	if {_pow} is set:
+		set metadata value "arrowmultiple" of projectile to {_pow}

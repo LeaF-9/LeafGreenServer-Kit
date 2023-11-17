@@ -71,12 +71,12 @@ function kitSkill_Archer_7(player: player):
 			wait a tick
 		playSound("entity.phantom.death", 1, 0.8, {_bloc})
 		loop 100 times:
-			spawnParticle_Vector(end_rod, randomVector(1), {_bloc})
+			spawnParticle_Vector(end_rod, randomVector(1), 0.5, {_bloc})
 		loop all entities in radius 8 around {_bloc}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			make {_player} damage loop-entity by 6
 			apply glowing 1 to loop-entity for 3 seconds
-			if type of loop-entity is player:
+			if checkEntityType(loop-entity, player) is true:
 				message formatted "§e鷹の閃光§6がヒットした!" to loop-entity
 	# ------------------
 

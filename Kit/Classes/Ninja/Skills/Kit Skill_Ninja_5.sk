@@ -253,7 +253,7 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 				remove loop-value-2 from {_entered::*}
 				if kitCheckTeam(loop-value-2, {_player}, true) is true:
 					resetEffect(loop-value-2)
-					if {Kit-Invisible::%loop-value-2%} is true:
+					if {Kit-Invisible::%loop-value-2%} is set:
 						reveal loop-value-2 from all players
 						delete {Kit-Invisible::%loop-value-2%}
 						send action bar "§b§l透明化が解除されました!" to loop-value-2
@@ -265,7 +265,7 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 	loop {_entered::*}:
 		if kitCheckTeam(loop-value, {_player}, true) is true:
 			resetEffect(loop-value)
-			if {Kit-Invisible::%loop-value%} is true:
+			if {Kit-Invisible::%loop-value%} is set:
 				reveal loop-value from all players
 				delete {Kit-Invisible::%loop-value%}
 				send action bar "§b§l透明化が解除されました!" to loop-value
@@ -291,30 +291,35 @@ function kitParticle_Ninjutsu_MOKU(loc: location):
 function kitNinjutsu_MIZU(player: player, l: location):
 	set {_y} to y-coordinate of block at {_l}
 	# --- 座標の追加 ---
-	loop 36 times:
-		set {_pl} to {_l}
-		add 10 to {_rad}
-		add 5 * sin({_rad}) to x-coordinate of {_pl}
-		add 5 * cos({_rad}) to z-coordinate of {_pl}
-		loop 7 times:
-			if block at {_pl} is air:
-				if {_locations::*} does not contain {_pl}:
-					add {_pl} to {_locations::*}
-			add 1 to y-coordinate of {_pl}
-		loop round(3 * sin({_rad})) times:
-			if block at {_pl} is air:
-				if {_locations::*} does not contain {_pl}:
-					add {_pl} to {_locations::*}
-			add 1 to y-coordinate of {_pl}
+	set {_y} to y-coordinate of block at {_player}
+	loop all blocks in radius 5 around {_l}:
+		distance between location of block at {_l} and location of loop-block >= 4
+		y-coordinate of loop-block is {_y}
+		add location of loop-block to {_base::*}
 	# ----------------
 	# --- 水のベール展開 ---
 	playSound("entity.generic.splash", 1, 1.5, {_l})
+	# nmは高さ
+	# chは1のときは継続して高くする それ以外はストップ
+	set {_nm} to 0
 	loop 10 times:
-		add 1 to {_checky}
-		loop {_locations::*}:
-			y-coordinate of loop-value-2 <= y-coordinate of {_l} + {_checky}
-			spawnParticle_Color(entity_effect, 0, 0, 200, loop-value-2)
-			make all players see block at loop-value-2 as water
+		loop {_base::*}:
+			set {_bl} to loop-value-2
+			set {_s} to abs(x-pos of {_bl} - x-pos of location of block at {_l}) / 5
+			if {_nm} is between 0 and (4 + {_s} * 3):
+				set {_ch} to 1
+			else:
+				set {_ch} to 0
+			if {_ch} is 1:
+				set {_ck} to location of block {_nm} meters above {_bl}
+				block at {_ck} is air
+				make all players see block at {_ck} as water
+				add {_ck} to {_locations::*}
+				playSound("block.grass.break", 0.5, 1.5, {_ck})
+				spawnParticle_Color(entity_effect, 0, 0, 200, loop-value-2)
+			else:
+				remove loop-value-2 from {_ci::*}
+		add 1 to {_nm}
 		wait a tick
 	# --------------------
 	# --- 展開中の処理 ---
@@ -356,7 +361,7 @@ function kitNinjutsu_HONO(player: player, loc: location):
 	loop 100 times:
 		loop all entities in radius 5 around {_loc}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
-			if loop-entity is not burning:
+			if loop-entity is not ignited:
 				playSound("block.campfire.crackle", 1, 1, loop-entity)
 				ignite loop-entity for 5 seconds
 			kitParticle_Ninjutsu_HONO_2(location of loop-entity)
@@ -413,6 +418,7 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 		kitCheckTeam({_player}, loop-player, false) is true
 		kitFreeze(loop-player, 2 seconds)
 	loop 100 times:
+		delete {_jb::*}
 		loop all players in radius 5 around {_loc}:
 			kitCheckTeam(loop-player, {_player}, false) is true
 			if {Kit-Freeze::%loop-player%} is not set:
@@ -420,18 +426,21 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 				if {_eg::%loop-player%} >= 20:
 					set {_eg::%loop-player%} to 0
 					kitFreeze(loop-player, 0.25 seconds)
-			if {_jb::%loop-player%} is not set:
-				set {_jb::%id of loop-entity%} to true
+					playSound("block.glass.break", 1, 2, loop-player)
+			set {_jb::%loop-player%} to true
 		loop all players:
 			metadata value "gametype" of loop-player is "Kit"
 			{_eg::%loop-player%} is set
 			if {_jb::%loop-player%} is true:
-				applyEffect(loop-player, slowness, 1, 0.2 seconds)
+				applyEffect(loop-player, slowness, 1, 0.2 seconds, true)
 				kitParticle_Ninjutsu_HYOU_3(loop-player)
 			else:
 				if {_eg::%loop-player%} > 0:
 					subtract 1 from {_eg::%loop-player%}
 		wait a tick
+	loop all players:
+		{_eg::%loop-player%} is set
+		resetEffect(loop-player)
 
 function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出 1秒間
 	add 1 to y-pos of {_loc}

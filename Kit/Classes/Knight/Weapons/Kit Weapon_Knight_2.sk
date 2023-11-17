@@ -46,3 +46,16 @@ on leftclick:
 		if {Stats.%player%::Cutlass} is true:
 			set player's offhand tool to {_tool}
 		delete {Stats.%player%::Cutlass}
+
+on rightclick:
+	{Class::%player%} is "Knight"
+	kitSelectChecker_Weapon(player, "Knight") is 2
+	if name of tool of player is "§3Cutlass":
+		set {_tool} to tool of player
+		set tool of player to air
+		set offhand tool of player to {_tool}
+	else if name of offhand tool of player is "§3Cutlass":
+		if tool of player is air:
+			set {_tool} to offhand tool of player
+			set offhand tool of player to air
+			set tool of player to {_tool}

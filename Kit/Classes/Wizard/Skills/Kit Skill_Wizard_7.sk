@@ -1,42 +1,114 @@
-# Blizzard Magic
+# Skill-Name: Blizzard Magic
 
 function kitSkill_Wizard_7(player: player):
 	set {_mana} to kitManaCalc({_player}, 20)
-	if {Kit-Mana::%{_player}%} >= {_mana}:
-		toolCT({_player}, "Wizard", 7)
-		set {_baseloc} to location of head of {_player}
-		set {_front} to 0
-		loop 20 times:
-			if {_ok} is not set:
-				loop 5 times:
-					{_ok} is not set
-					add 1 to {_front}
-					set {_loc} to location {_front} meters in front of {_baseloc}
-					drawDot count 1, particle "witchspell", center {_loc}, visibleRange 100
-					if block at {_loc} is not passable:
-						set {_ok} to true
-				wait a tick
-		{_ok} is true
-		subtract {_mana} from {Kit-Mana::%{_player}%}
-		kitMsg({_player}, "<##00ced1>ブリザード<##5f9ea0>を召喚します...")
-		kitFreeze({_player}, 1 seconds, false)
-		set {_bn} to 0
-		while {_blockok} is not set:
-			add 0.1 to {_bn}
-			set {_bl} to location {_bn} meters above {_loc}
-			if block at {_bl} is passable:
-				set {_blockok} to true
-				set {_point} to {_bl}
-		playSound("entity.evoker.prepare_summon", 1.5, 2, {_point})
-#	弧を描く
+	if {Kit-Mana::%{_player}%} < {_mana}:
+		send action bar "§4§lマナが足りません!" to {_player}
+		stop
+	toolCT({_player}, "Wizard", 7)
+	set {_baseloc} to location of head of {_player}
+	set {_front} to 0
+	loop 20 times:
+		if {_ok} is not set:
+			loop 5 times:
+				{_ok} is not set
+				add 1 to {_front}
+				set {_loc} to location {_front} meters in front of {_baseloc}
+				spawnParticle(witch, {_loc})
+				if block at {_loc} is not passable:
+					set {_ok} to true
+			wait a tick
+	{_ok} is true
+	subtract {_mana} from {Kit-Mana::%{_player}%}
+	kitMsg({_player}, "<##00ced1>ブリザード<##5f9ea0>を召喚します...")
+	kitFreeze({_player}, 1 seconds, false)
+	set {_bn} to 0
+	while {_blockok} is not set:
+		add 0.1 to {_bn}
+		set {_bl} to location {_bn} meters above {_loc}
+		if block at {_bl} is passable:
+			set {_blockok} to true
+			set {_point} to {_bl}
+	kitParticle_BlizzardMagic({_point})
+	set {_el} to location of {_player}
+	loop 30 times:
+		spawnParticle_Vector(witch, randomVector(), 0.3, {_el})
+	wait a second
+	playSound("entity.illusioner.prepare_mirror", 1.5, 0.8, {_point})
+	shoot a falling blue ice block from {_point} at speed 0.5 upward
+	set metadata value "blizzard" of shot entity to "%{_player}%"
+	kitParticle_BlizzardMagic_Summon(shot entity)
+	set {_ran} to 0
+	loop 4 times:
+		add 2 to {_ran}
+		loop all blocks in radius {_ran} around {_point}:
+			block below loop-block is not air
+			loop-block is air
+			distance between {_point} and loop-block is between {_ran} - 1 and {_ran}
+			spawnParticle_Color(entity_effect, 0, 206, 209, location of loop-block)
+		wait a tick
+	wait 6 ticks
+	loop all blocks in radius 8 around {_point}:
+		loop-block is air
+		block below loop-block is not air
+		add location of loop-block to {_rb::*}
+	loop all falling blue ice blocks:
+		metadata value "blizzard" of loop-falling blue ice is "%{_player}%"
+		set {_fl} to location of loop-falling blue ice
+		delete loop-falling blue ice
+	loop 12 times:
+		set {_pitch} to a random number between 0.5 and 2
+		playSound("block.glass.break", 1, {_pitch}, {_point})
+		loop 3 times:
+			shoot a snowball from {_fl} at speed 0.1 upwards
+			kitParticle_BlizzardMagic_Fragment(shot snowball)
+			push shot snowball north at speed random number from -0.5 to 0.5
+			push shot snowball east at speed random number from -0.5 to 0.5
+		loop 10 times:
+			set {_rp} to a random location out of {_rb::*}
+			set {_rp} to location of block above {_rp}
+			set {_rn} to a random integer between 1 and 5
+			if {_rn} is 1:
+				spawnParticle_Block(ice, {_rp})
+			else if {_rn} is 2:
+				spawnParticle_Block(packed ice, {_rp})
+			else if {_rn} is 3:
+				spawnParticle_Block(blue ice, {_rp})
+			else if {_rn} is 4:
+				spawnParticle_Block(snow block, {_rp})
+		# --- Entity込のFreeze ---
+		loop all entities in radius 8 around {_point}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			kitDamage({_player}, loop-entity, 1)
+			if checkEntityType(loop-entity, player):
+				if {Kit-Freeze::%loop-entity%} is not set:
+					add loop-entity to {_fp::*}
+					set {_wk} to walk speed of loop-entity
+					subtract 0.025 from {_wk}
+					if {_wk} <= 0:
+						set walk speed of loop-entity to 0.2
+						kitFreeze(loop-entity, 2 seconds)
+						playSound("entity.player.levelup", 1, 2, loop-entity)
+					else:
+						set walk speed of loop-entity to {_wk}
+		# ------------------------
+		wait 5 ticks
+	wait a second
+	loop {_fp::*}:
+		set walk speed of loop-value to 0.2
+
+function kitParticle_BlizzardMagic(point: location):
+	playSound("entity.evoker.prepare_summon", 1.5, 2, {_point})
+	loop 20 times:
+	#	弧を描く
 		set {_n.k} to 0
 		loop 60 times:
 			set {_effbaseloc} to {_point}
 			add 8 * sin({_n.k}) to x-coordinate of {_effbaseloc}
 			add 8 * cos({_n.k}) to z-coordinate of {_effbaseloc}
-			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_effbaseloc}, visibleRange 100, keepFor 1 second
+			spawnParticle_Dust(rgb(0, 206, 209), 1, {_effbaseloc})
 			add 6 to {_n.k}
-#	弦を描く
+	#	弦を描く
 		if {_l.A} is not set:
 			set {_l.A} to {_point}
 			set yaw of {_l.A} to 120
@@ -73,91 +145,35 @@ function kitSkill_Wizard_7(player: player):
 			set pitch of {_l.F} to 0
 			add 8 * sin(270) to x-coordinate of {_l.F}
 			add 8 * cos(270) to z-coordinate of {_l.F}
+		set {_n.g} to 0
 		loop 16 times:
 			add sqrt(3) / 2 to {_n.g}
-#		A-B
+	#		A-B
 			set {_loc.g} to location {_n.g} meters in front of {_l.A}
-			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		D-E
+			spawnParticle_Dust(rgb(0, 206, 209), 1, {_loc.g})
+	#		D-E
 			set {_loc.g} to location {_n.g} meters in front of {_l.D}
-			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		B-C
+			spawnParticle_Dust(rgb(0, 206, 209), 1, {_loc.g})
+	#		B-C
 			set {_loc.g} to location {_n.g} meters in front of {_l.B}
-			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		E-F
+			spawnParticle_Dust(rgb(0, 206, 209), 1, {_loc.g})
+	#		E-F
 			set {_loc.g} to location {_n.g} meters in front of {_l.E}
-			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		C-A
+			spawnParticle_Dust(rgb(0, 206, 209), 1, {_loc.g})
+	#		C-A
 			set {_loc.g} to location {_n.g} meters in front of {_l.C}
-			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
-#		F-D
+			spawnParticle_Dust(rgb(0, 206, 209), 1, {_loc.g})
+	#		F-D
 			set {_loc.g} to location {_n.g} meters in front of {_l.F}
-			drawDot count 1, particle "redstone", RGB 0, 206, 209, center {_loc.g}, visibleRange 100, keepFor 1 second
-		set {_el} to location of {_player}
-		loop 30 times:
-			draw 1 witchspell particle at {_el} with direction randomVector({_el}) and speed 0.3, keepFor 1 tick
-		wait a second
-		playSound("entity.illusioner.prepare_mirror", 1.5, 0.8, {_point})
-		shoot a falling blue ice block from {_point} at speed 0.5 upward
-		set metadata value "blizzard" of shot entity to "%{_player}%"
-		drawDot count 5, particle "snowball", center shot entity, visibleRange 30, keepFor 0.5 seconds
-		set {_ran} to 0
-		loop 4 times:
-			add 2 to {_ran}
-			loop all blocks in radius {_ran} around {_point}:
-				block below loop-block is not air
-				loop-block is air
-				distance between {_point} and loop-block is between {_ran} - 1 and {_ran}
-				drawDot count 1, particle "mobspell", RGB 0, 206, 209, center location of loop-block, visibleRange 32, keepFor 2 ticks
-			wait a tick
-		wait 6 ticks
-		loop all blocks in radius 8 around {_point}:
-			loop-block is air
-			block below loop-block is not air
-			add location of loop-block to {_rb::*}
-		loop all falling blue ice blocks:
-			metadata value "blizzard" of loop-falling blue ice is "%{_player}%"
-			set {_fl} to location of loop-falling blue ice
-			delete loop-falling blue ice
-		loop 12 times:
-			set {_pitch} to a random number between 0.5 and 2
-			playSound("block.glass.break", 1, {_pitch}, {_point})
-			loop 3 times:
-				shoot a snowball from {_fl} at speed 0.1 upwards
-				drawDot count 1, particle "redstone", RGB 100, 255, 255, center shot entity, visibleRange 30, keepFor 1 second
-				push shot snowball north at speed random number from -0.5 to 0.5
-				push shot snowball east at speed random number from -0.5 to 0.5
-			loop 10 times:
-				set {_rp} to a random location out of {_rb::*}
-				set {_rp} to location of block above {_rp}
-				set {_rn} to a random integer between 1 and 5
-				if {_rn} is 1:
-					drawDot count 1, particle "blockcrack", material ice block, center {_rp}, visibleRange 32
-				else if {_rn} is 2:
-					drawDot count 1, particle "blockcrack", material packed ice block, center {_rp}, visibleRange 32
-				else if {_rn} is 3:
-					drawDot count 1, particle "blockcrack", material blue ice block, center {_rp}, visibleRange 32
-				else if {_rn} is 4:
-					drawDot count 1, particle "blockcrack", material snow block, center {_rp}, visibleRange 32
-			# --- Entity込のFreeze ---
-			loop all entities in radius 8 around {_point}:
-				kitCheckTeam(loop-entity, {_player}, false) is true
-				kitDamage({_player}, loop-entity, 1)
-				if type of loop-entity is player:
-					if {Kit-Freeze::%loop-entity%} is not set:
-						add loop-entity to {_fp::*}
-						set {_wk} to walk speed of loop-entity
-						subtract 0.025 from {_wk}
-						if {_wk} <= 0:
-							set walk speed of loop-entity to 0.2
-							kitFreeze(loop-entity, 2 seconds)
-							playSound("entity.player.levelup", 1, 2, loop-entity)
-						else:
-							set walk speed of loop-entity to {_wk}
-			# ------------------------
-			wait 5 ticks
-		wait a second
-		loop {_fp::*}:
-			set walk speed of loop-value to 0.2
-	else:
-		send action bar "§4§lマナが足りません!" to {_player}
+			spawnParticle_Dust(rgb(0, 206, 209), 1, {_loc.g})
+		wait a tick
+
+function kitParticle_BlizzardMagic_Summon(entity: entity):
+	loop 10 times:
+		spawnParticle(item_snowball, location of {_entity})
+		wait a tick
+
+function kitParticle_BlizzardMagic_Fragment(proj: projectile):
+	loop 20 times:
+		spawnParticle_Dust(rgb(100, 255, 255), 1, location of {_proj})
+		wait a tick

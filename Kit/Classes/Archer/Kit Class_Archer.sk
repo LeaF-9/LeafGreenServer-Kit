@@ -5,8 +5,8 @@ function kitWeaponArcher(player: player):
 	set {_tool} to {_player}'s tool
 	set {_item.num} to kitItemNumberChecker({_tool})
 	checkCT({_player}, name of {_tool}) is true
-	if {_item.num} is 5:
-		kitWeapon_Archer_5({_player})
+	if {_item.num} is 3:
+		kitWeapon_Archer_3({_player})
 
 # Skills
 function kitSkillArcher(player: player) :: boolean:
@@ -35,10 +35,3 @@ function kitSkillArcher(player: player) :: boolean:
 on death of player:
 	{Class::%{LastKiller::%victim%}%} is "Archer"
 	give 16 arrows to {LastKiller::%victim%}
-
-on damage:
-	damage was caused by projectile
-	projectile is an arrow
-	if metadata value "arrowdamage" of projectile is set:
-		set {_damage} to metadata value "arrowdamage" of projectile
-		set damage to {_damage}

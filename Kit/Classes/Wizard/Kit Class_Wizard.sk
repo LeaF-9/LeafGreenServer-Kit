@@ -15,13 +15,7 @@ on damage of player:
 		set {_mana} to 3
 	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 3) is true:
 		set {_ok} to true
-		set {_mana} to 2
-	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 4) is true:
-		set {_ok} to true
-		set {_mana} to 3
-	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is true:
-		set {_ok} to true
-		set {_mana} to 4
+		set {_mana} to 1
 	if {_ok} is true:
 		add {_mana} to {Kit-Mana::%attacker%}
 		kitMsg(attacker, "§bマナ §9§l%{_mana}% §7ゲット!")
@@ -45,25 +39,12 @@ on damage of player:
 			add 3 to {Kit-Mana::%attacker%}
 			kitMsg(attacker, "§bマナ §9§l3 §7ゲット!")
 
-on sneak toggle:
-	{Class::%player%} is "Wizard"
-	player is not sneaking
-	set {_tool} to player's tool
-	if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 4) is true:
-		kitWeapon_Wizard_4(player)
-	else if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is true:
-		kitWeaponSub_Wizard_5(player)
-
 function kitWeaponWizard(player: player):
 	set {_tool} to {_player}'s tool
 	set {_item.num} to kitItemNumberChecker({_tool})
 	checkCT({_player}, name of {_tool}) is true
-	if {_item.num} is 2:
-		kitWeapon_Wizard_2({_player})
-	else if {_item.num} is 3:
+	if {_item.num} is 3:
 		kitWeapon_Wizard_3({_player})
-	else if {_item.num} is 5:
-		kitWeapon_Wizard_5({_player})
 
 # Skills
 function kitSkillWizard(player: player) :: boolean:
@@ -88,236 +69,46 @@ function kitSkillWizard(player: player) :: boolean:
 			kitSkill_Wizard_8({_player})
 	return true
 
+function kitParticle_Wizard_Magic(proj: projectile, R: number, G: number, B: number):
+	loop 30 times:
+		spawnParticle_Color(entity_effect, {_R}, {_G}, {_B}, {_proj})
+		wait a tick
+
+function kitParticle_Wizard_Circle(baseloc: location, color: color):
+	loop 20 times:
+		loop 72 times:
+			add 5 to {_rad}
+			set {_el} to {_baseloc}
+			add 5 * sin({_rad}) to x-pos of {_el}
+			add 5 * cos({_rad}) to z-pos of {_el}
+			spawnParticle_Dust({_color}, 1.5, {_el})
+		wait a tick
+
 on projectile hit:
 	projectile is a snowball
 	if metadata value "magic" of projectile is set:
 		set {_l} to location of block at projectile
 		if metadata value "magic" of projectile is "blood":
 			playSound("entity.husk.converted_to_zombie", 1, 1, {_l})
-			loop 72 times:
-				add 5 to {_rad}
-				set {_el} to {_l}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 255, 0, 0, center {_el}, visibleRange 30, keepFor 1 second
-			loop all entities in radius 5 around projectile:
-				kitCheckTeam(loop-entity, shooter, false) is true
-				delete {_frcan}
-				if {Stats.%{_name}%::FreezeMagic} is true:
-					set {_per} to kitPercent({_name}, 50, false)
-					chance of {_per}%:
-						set {_frcan} to true
-				{_frcan} is not set
-				kitDamage(shooter, loop-entity, 3)
-				if type of loop-entity is player:
-					set {_per} to kitPercent(loop-entity, 30, false)
-					chance of {_per}%:
-						kitBlood(loop-entity)
-				message "§4出血魔法を受けた!" to loop-entity
-				kitMsg(shooter, "§5%loop-entity% §dに§4出血魔法§dを付与した!")
-				add loop-entity to {_sp::*}
-			loop 5 times:
-				add 0.4 to {_h}
-				loop {_sp::*}:
-					set {_rad} to 0
-					loop 10 times:
-						set {_el} to location of loop-value-2
-						add 36 to {_rad}
-						add 0.5 * sin({_rad}) to x-coordinate of {_el}
-						add 0.5 * cos({_rad}) to z-coordinate of {_el}
-						add {_h} to y-coordinate of {_el}
-						drawDot count 1, particle "mobspell", RGB 100, 0, 0, center {_el}, visibleRange 30
-				wait a tick
+			kitParticle_Wizard_Circle({_l}, rgb(255, 0, 0))
+			kitEffect_BloodMagic(shooter, {_l})
 		else if metadata value "magic" of projectile is "dark":
 			playSound("entity.phantom.bite", 1, 1, {_l})
-			loop 72 times:
-				add 5 to {_rad}
-				set {_el} to {_l}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 0, 0, 0, center {_el}, visibleRange 30, keepFor 1 second
-			loop all entities in radius 5 around projectile:
-				kitCheckTeam(loop-entity, shooter, false) is true
-				delete {_frcan}
-				if {Stats.%{_name}%::FreezeMagic} is true:
-					set {_per} to kitPercent({_name}, 50, false)
-					chance of {_per}%:
-						set {_frcan} to true
-				{_frcan} is not set
-				if type of loop-entity is player:
-					LastKiller(loop-entity, shooter)
-				apply blindness 1 to loop-entity for 5 seconds
-				apply wither 2 to loop-entity for 5 seconds
-				message "§0暗闇魔法を受けた!" to loop-entity
-				kitMsg(shooter, "§5%loop-entity% §dに§0暗闇魔法§dを付与した!")
-				add loop-entity to {_sp::*}
-			loop 5 times:
-				add 0.4 to {_h}
-				loop {_sp::*}:
-					set {_rad} to 0
-					loop 10 times:
-						set {_el} to location of loop-value-2
-						add 36 to {_rad}
-						add 0.5 * sin({_rad}) to x-coordinate of {_el}
-						add 0.5 * cos({_rad}) to z-coordinate of {_el}
-						add {_h} to y-coordinate of {_el}
-						drawDot count 1, particle "mobspell", RGB 0, 0, 0, center {_el}, visibleRange 30
-				wait a tick
+			kitParticle_Wizard_Circle({_l}, rgb(0, 0, 0))
+			kitEffect_DarkMagic(shooter, {_l})
 		else if metadata value "magic" of projectile is "freeze":
 			playSound("entity.vex.death", 1, 1, {_l})
-			loop 72 times:
-				add 5 to {_rad}
-				set {_el} to {_l}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 0, 0, 255, center {_el}, visibleRange 30, keepFor 1 second
-			loop all players in radius 5 around projectile:
-				{team::%loop-player%} is not {team::%shooter%}
-				LastKiller(loop-player, shooter)
-				set {_pl} to location of block at loop-player
-				# 0
-				if block below {_pl} is air:
-					set {_loc} to location of block below {_pl}
-					add {_loc} to {_lb::*}
-					make all players see block at {_loc} as ice
-				# 1
-				if block 1 meters north of {_pl} is air:
-					set {_loc} to location of block 1 meters north of {_pl}
-					add {_loc} to {_lb::*}
-					make all players see block at {_loc} as ice
-				if block 1 meters east of {_pl} is air:
-					set {_loc} to location of block 1 meters east of {_pl}
-					add {_loc} to {_lb::*}
-					make all players see block at {_loc} as ice
-				if block 1 meters south of {_pl} is air:
-					set {_loc} to location of block 1 meters south of {_pl}
-					add {_loc} to {_lb::*}
-					make all players see block at {_loc} as ice
-				if block 1 meters west of {_pl} is air:
-					set {_loc} to location of block 1 meters west of {_pl}
-					add {_loc} to {_lb::*}
-					make all players see block at {_loc} as ice
-				# 2
-				set {_plu} to location of block above {_pl}
-				if block 1 meters north of {_plu} is air:
-					set {_loc} to location of block 1 meters north of {_plu}
-					add {_loc} to {_lb::*}
-					make all players see block at {_loc} as ice
-				if block 1 meters east of {_plu} is air:
-					set {_loc} to location of block 1 meters east of {_plu}
-					add {_loc} to {_lb::*}
-					make all players see block at {_loc} as ice
-				if block 1 meters south of {_plu} is air:
-					set {_loc} to location of block 1 meters south of {_plu}
-					add {_loc} to {_lb::*}
-					make all players see block at {_loc} as ice
-				if block 1 meters west of {_plu} is air:
-					set {_loc} to location of block 1 meters west of {_plu}
-					add {_loc} to {_lb::*}
-					make all players see block at {_loc} as ice
-				# 3
-				if block above {_plu} is air:
-					set {_loc} to location of block above {_plu}
-					add {_loc} to {_lb::*}
-					make all players see block at {_loc} as ice
-				teleport loop-player to {_pl}
-				set {Stats.%loop-player%::FreezeMagic} to true
-				message "§1凍結魔法を受けた!" to loop-player
-				kitMsg(shooter, "§5%loop-player% §dに§1凍結魔法§dを付与した!")
-				add loop-player to {_sp::*}
-			loop 5 times:
-				loop {_lb::*}:
-					make all players see block at loop-value-2 as ice
-				add 0.4 to {_h}
-				loop {_sp::*}:
-					set {_rad} to 0
-					loop 10 times:
-						set {_el} to location of loop-value-2
-						add 36 to {_rad}
-						add 0.5 * sin({_rad}) to x-coordinate of {_el}
-						add 0.5 * cos({_rad}) to z-coordinate of {_el}
-						add {_h} to y-coordinate of {_el}
-						drawDot count 1, particle "mobspell", RGB 0, 0, 100, center {_el}, visibleRange 30
-				wait a tick
-			loop 35 times:
-				loop {_lb::*}:
-					make all players see block at loop-value-2 as ice
-				wait a tick
-			loop {_lb::*}:
-				make all players see block at loop-value as air
-				drawDot count 1, particle "blockcrack", material packed ice, center location of loop-value, visibleRange 30
-			loop {_sp::*}:
-				delete {Stats.%loop-value%::FreezeMagic}
-				playSound("block.glass.break", 1, 1, loop-value)
+			kitParticle_Wizard_Circle({_l}, rgb(0, 0, 255))
+			kitEffect_FreezeMagic(shooter, {_l})
 		else if metadata value "magic" of projectile is "electro":
 			loop 3 times:
 				strike lightning effect at {_l}
-			loop 72 times:
-				add 5 to {_rad}
-				set {_el} to {_l}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 255, 255, 0, center {_el}, visibleRange 30, keepFor 1 second
-			loop all entities in radius 5 around projectile:
-				kitCheckTeam(loop-entity, shooter, false) is true
-				delete {_frcan}
-				if {Stats.%{_name}%::FreezeMagic} is true:
-					set {_per} to kitPercent({_name}, 50, false)
-					chance of {_per}%:
-						set {_frcan} to true
-				{_frcan} is not set
-				kitDamage(shooter, loop-entity, 2, true)
-				strike lightning effect at loop-entity
-				message "§e電撃魔法を受けた!" to loop-entity
-				kitMsg(shooter, "§5%loop-entity% §dに§e電撃魔法§dを付与した!")
-				if type of loop-entity is player:
-					kitPalsy(loop-entity, 10 seconds)
-				add loop-entity to {_sp::*}
-			loop 5 times:
-				add 0.4 to {_h}
-				loop {_sp::*}:
-					set {_rad} to 0
-					loop 10 times:
-						set {_el} to location of loop-value-2
-						add 36 to {_rad}
-						add 0.5 * sin({_rad}) to x-coordinate of {_el}
-						add 0.5 * cos({_rad}) to z-coordinate of {_el}
-						add {_h} to y-coordinate of {_el}
-						drawDot count 1, particle "mobspell", RGB 100, 100, 0, center {_el}, visibleRange 30
-				wait a tick
+			kitParticle_Wizard_Circle({_l}, rgb(255, 255, 0))
+			kitEffect_ElectroMagic(shooter, {_l})
 		else if metadata value "magic" of projectile is "drain":
 			playSound("block.bubble_column.upwards_inside", 1, 1, {_l})
-			loop 72 times:
-				add 5 to {_rad}
-				set {_el} to {_l}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				drawDot count 1, particle "redstone", RGB 0, 255, 0, center {_el}, visibleRange 30, keepFor 1 second
-			loop all players in radius 5 around projectile:
-				{team::%loop-player%} is not {team::%shooter%}
-				delete {_frcan}
-				if {Stats.%loop-player%::FreezeMagic} is true:
-					set {_per} to kitPercent(loop-player, 50, false)
-					chance of {_per}%:
-						set {_frcan} to true
-				{_frcan} is not set
-				LastKiller(loop-player, shooter)
-				kitDrain(loop-player, 5 seconds)
-				message "§2吸収魔法を受けた!" to loop-player
-				kitMsg(shooter, "§5%loop-player% §dに§2吸収魔法§dを付与した!")
-				add loop-player to {_sp::*}
-			loop 5 times:
-				add 0.4 to {_h}
-				loop {_sp::*}:
-					set {_rad} to 0
-					loop 10 times:
-						set {_el} to location of loop-value-2
-						add 36 to {_rad}
-						add 0.5 * sin({_rad}) to x-coordinate of {_el}
-						add 0.5 * cos({_rad}) to z-coordinate of {_el}
-						add {_h} to y-coordinate of {_el}
-						drawDot count 1, particle "mobspell", RGB 0, 100, 0, center {_el}, visibleRange 30
-				wait a tick
+			kitParticle_Wizard_Circle({_l}, rgb(0, 255, 0))
+			kitEffect_DrainMagic(shooter, {_l})
 
 # Abilities
 on death of player:
@@ -332,8 +123,11 @@ on death of player:
 
 function kitManaCalc(player: player, mana: number) :: number:
 	set {_mc} to {_mana}
-	if {Stats.%{_player}%::FairyWand} is true:
-		set {_mc} to round({_mc} * 0.5)
+	if {Stats.%{_player}%::FairyWand} is set:
+		set {_mc} to {_mc} - {Stats.%{_player}%::FairyWand}
+		delete {Stats.%{_player}%::FairyWand}
+		if {_mc} < 0:
+			set {_mc} to 0
 	if {Stats.%{_player}%::UltWizard} is true:
 		set {_mc} to 0
 	return {_mc}

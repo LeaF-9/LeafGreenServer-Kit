@@ -1,0 +1,18 @@
+# Wind Dagger
+
+on damage of player:
+	{Class::%victim%} is "Assassin"
+	victim is sneaking
+	attacker is set
+	set {_tool} to victim's tool
+	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 2) is true
+	set {_per} to kitPercent(victim, 50, true)
+	chance of {_per}%:
+		cancel event
+		playSound("entity.wither.shoot", 0.8, 2, victim)
+		spawnParticle_Color(entity_effect, 135, 206, 250, victim)
+		set {_v} to setVector(location of attacker, location of victim, 2)
+		set velocity of victim to {_v}
+		loop 10 times:
+			set {_ev} to randomVector(0.5)
+			spawnParticle_Vector(glow_squid_ink, {_ev}, 1, location 1 meters above victim)

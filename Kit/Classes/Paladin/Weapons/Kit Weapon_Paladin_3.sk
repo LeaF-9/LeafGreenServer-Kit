@@ -2,7 +2,7 @@
 
 on damage:
 	{Class::%attacker%} is "Paladin"
-	set {_tool} to attacker's toloc
+	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Paladin", "Weapon.main", 3) is true
 	if {Stats.%attacker%::HolyLance-Charged} is set:
 		playSound("entity.zombie_villager.cure", 1, 2, victim)
@@ -25,7 +25,7 @@ on damage:
 	{Stats.%attacker%::HolyLance-Charged} is {_now}
 	delete {Stats.%attacker%::HolyLance-Charged}
 
-function kitParticle_HolyLance_Damage(player: player):
+local function kitParticle_HolyLance_Damage(player: player):
 	set {_baseloc} to location 1 meter above {_player}
 	loop 15 times:
 		set {_v} to randomVector({_baseloc})
@@ -33,14 +33,14 @@ function kitParticle_HolyLance_Damage(player: player):
 		set {_v} to randomVector({_baseloc})
 		spawnParticle_Vector(end_rod, {_v}, 0.2, {_baseloc})
 
-function kitParticle_HolyLance_Charged(player: player):
+local function kitParticle_HolyLance_Charged(player: player):
 	set {_baseloc} to aroundEffect({_player})
 	loop 10 times:
 		set {_el} to location loop-number * 0.1 meters above {_baseloc}
 		spawnParticle(end_rod, {_el})
 		wait a tick
 
-function kitWeapon_HolyLance_UndeadList():
+local function kitWeapon_HolyLance_UndeadList() :: texts:
 	add "zombie" to {_list::*}
 	add "skeleton" to {_list::*}
 	add "zombified piglin" to {_list::*}
