@@ -351,7 +351,8 @@ function rankingEnding():
 	# Kills / Deaths
 	load yml "plugins/skript-yaml/General Database/Kills.yml" as "updatestats.kill"
 	loop yaml node keys "" from "updatestats.kill":
-		set {_id} to loop-node
+		set {_ids::*} to loop-key
+		set {_id} to {_ids::1}
 		set {_uuid.killer} to yml value "%{_id}%.killer-player" from "updatestats.kill"
 		set {_kit.killer} to yml value "%{_id}%.killer-kit" from "updatestats.kill"
 		set {_uuid.victim} to yml value "%{_id}%.victim-player" from "updatestats.kill"
@@ -401,7 +402,8 @@ function rankingEnding():
 	load yml "plugins/skript-yaml/General Databases/Assists.yml" as "updatestats.assist"
 	load yml "plugins/skript-yaml/General Databases/Kills.yml" as "updatestats.assisttime"
 	loop yaml node keys "" from "updatestats.assist":
-		set {_id} to loop-node
+		set {_ids::*} to loop-key
+		set {_id} to {_ids::1}
 		set {_killid.assist} to yml value "%{_id}%.kill-id" from "updatestats.assist"
 		set {_uuid.assist} to yml value "%{_id}%.assist-player" from "updatestats.assist"
 		set {_kit.assist} to yml value "%{_id}%.assist-kit" from "updatestats.assist"
@@ -420,7 +422,8 @@ function rankingEnding():
 	# Wins
 	load yml "plugins/skript-yaml/General Database/Games.yml" as "updatestats.game"
 	loop yaml node keys "" from "updatestats.game":
-		set {_id} to loop-node
+		set {_ids::*} to loop-key
+		set {_id} to {_ids::1}
 		set {_map} to yml value "%{_id}%.map" from "updatestats.game"
 		set {_rule} to yml value "%{_id}%.rule" from "updatestats.game"
 		set {_winteam::*} to yml list "%{_id}%.win-team" from "updatestats.game"
@@ -428,7 +431,8 @@ function rankingEnding():
 		set {_duration} to yml value "%{_id}%.duration" from "updatestats.game"
 		set {_minPlay} to {_duration} / 2
 		loop yaml node keys "%{_id}%.players" from "updatestats.game":
-			set {_uuid} to loop-node-2
+			set {_uuids::*} to loop-key-2
+			set {_uuid} to {_uuids::1}
 			set {_team} to yml value "%{_id}%.players.%{_uuid}%.team" from "updatestats.game"
 			set {_playtime} to yml value "%{_id}%.players.%{_uuid}%.team" from "updatestats.game"
 			if {_winteam::*} does not contain {_team}:
