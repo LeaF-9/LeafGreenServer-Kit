@@ -75,6 +75,13 @@ on damage of zombie:
 	kitAddNecromance({_attacker}, 1)
 	kitParticle_WanderSoul_Death({_baseloc})
 
+on death of player:
+	{Class::%victim%} is "Necromancer"
+	loop all zombies:
+		metadata value "necromancer-entity" of loop-zombie is victim
+		metadata value "necromancer-entity-wandersoul" of loop-zombie is set
+		delete loop-zombie
+
 local function kitParticle_WanderSoul_Death(baseloc: location):
 	playSound("entity.vex.hurt", 1, 0.5, {_baseloc})
 	set {_el} to location 0.5 meters above {_baseloc}
