@@ -35,7 +35,8 @@ function startTimer(prop: text, timersec: number, title: text, color: BossBarCol
 		set {_timer.value} to {_time} / {_timersec} * 100
 		set bossbar {_prop} title to {_timer.title}
 		set bossbar {_prop} value to {_timer.value}
-		add all players to boss bar {_prop}
+		loop all players:
+			set bossbar {_prop} for loop-player
 	remove bossbar "%{_prop}%"
 	if {BossBarTimer::%{_prop}%} is true:
 		stopTimer({_prop})
