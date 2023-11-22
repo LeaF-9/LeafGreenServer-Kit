@@ -77,13 +77,13 @@ function kitSpawnSheep_SH(loc: location):
 		set {_special} to true
 	# --- 大羊召喚 ---
 	if {_special} is true:
-		set {_nbt} to nbt compound from "{Color:0,NoAI:1b,PersistenceRequired:1b,Team:noCollision,Attributes:[{Name:""generic.knockback_resistance"",Base:1f}]}"
+		set {_nbt} to nbt compound from "{Color:0,PersistenceRequired:1b,Team:noCollision,Attributes:[{Name:""generic.knockback_resistance"",Base:1f}, {Name:""generic.movement_speed"",Base:0f}]}"
 		strike lightning effect at {_loc}
 		set {_age} to "adult"
 	# ---------------
 	# --- 子羊召喚 ---
 	else:
-		set {_nbt} to nbt compound from "{Color:0,NoAI:1b,PersistenceRequired:1b,Team:noCollision,Age:-1,ForcedAge:-1,Attributes:[{Name:""generic.knockback_resistance"",Base:1f}]}"
+		set {_nbt} to nbt compound from "{Color:0,PersistenceRequired:1b,Team:noCollision,Age:-15000,ForcedAge:-15000,Attributes:[{Name:""generic.knockback_resistance"",Base:1f}, {Name:""generic.movement_speed"",Base:0f}]}"
 		set {_age} to "baby"
 	# -------------
 	spawn a sheep at {_loc} with {_nbt}
@@ -230,9 +230,9 @@ function kitTimer_SH():
 				set {_leasher} to leash holder of loop-sheep
 				if {_leasher} is not {_holder}:
 					unleash {_leasher}
-					leash {_holder} to loop-sheep
+					leash loop-sheep to {_holder}
 				else if {_leasher} is not set:
-					leash {_holder} to loop-sheep
+					leash loop-sheep to {_holder}
 				# ---------------------
 				if distance between {_holder} and loop-sheep > 3:
 					set {_vector} to setVector(location of loop-sheep, location of {_holder})
