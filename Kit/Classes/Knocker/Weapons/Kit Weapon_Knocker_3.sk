@@ -44,6 +44,8 @@ function kitEffect_CycloneBow_Cyclone(player: player, proj: projectile):
 		stop
 	loop 2 times:
 		remove an arrow from {_player}
+	set {_pow} to getBowDrawTime({_player}) / 24
+	set {_dmg} to 2 * {_pow}
 	set metadata value "cyclone-bow" of {_proj} to true
 	kitParticle_CycloneBow_Cyclone({_player}, {_proj})
 	loop 100 times:
@@ -51,7 +53,7 @@ function kitEffect_CycloneBow_Cyclone(player: player, proj: projectile):
 			continue
 		loop all entities in radius 3 around {_proj}:
 			kitCheckTeam({_player}, loop-entity, false) is true
-			kitDamage({_player}, loop-entity, 2)
+			kitDamage({_player}, loop-entity, {_dmg})
 			set {_vector} to setVector(location of {_proj}, location of loop-entity)
 			set velocity of loop-entity to {_vector}
 		wait a tick
