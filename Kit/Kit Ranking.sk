@@ -92,6 +92,9 @@ function kitRankingUpdate(stats: text, period: text):
 		set {_dis.stats} to "§2§lWin"
 	else if {_stats} is "assist":
 		set {_dis.stats} to "§5§lAssist"
+	else:
+		log "statsが正しくありません (kitRankingUpdate(%{_stats}%, %{_period}%))"
+		stop
 	# period display
 	if {_period} is "all":
 		set {_dis.period} to "§dLifetime"
@@ -102,6 +105,9 @@ function kitRankingUpdate(stats: text, period: text):
 	else if {_period} is "week":
 		set {_dis.period} to "§bWeekly"
 		set {_dis.underbar} to "§6§lWeekly §b- §8Monthly &b- §8Lifetime"
+	else:
+		log "periodが正しくありません (kitRankingUpdate(%{_stats}%, %{_period}%))"
+		stop
 	# line-1 display
 	set {_display::1} to "%{_dis.period}% %{_dis.stats}% §eTop 10"
 	# line-12 display
