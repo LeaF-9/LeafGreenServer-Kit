@@ -120,8 +120,8 @@ function kitExecuteArea_CP(team: text, pa: text):
 # 占領が自チームであるかどうかのチェック
 		if {Kit-AreaSecure::%{_pa}%} is {_team}:
 			stop
-# 占領解除が自チームであるかどうかのチェック
-		if {Kit-AreaRelease::%{_pa}%} is {_team}:
+# 占領解除中であるかどうかのチェック
+		if {Kit-AreaRelease::%{_pa}%} is set:
 			stop
 #	占領が自チームでなければ占領解除
 		set {Kit-AreaRelease::%{_pa}%} to {_team}
@@ -376,6 +376,7 @@ function kitTimer_CP():
 				add loop-index to {Kit-WinTeam::*}
 				gameMsg("Kit", "§c§l試合終了!")
 				stopTimer("Kit-CP")
+				stop
 		# Scoreboard更新
 		add 1 to {_sc}
 		if {_sc} > 10:
