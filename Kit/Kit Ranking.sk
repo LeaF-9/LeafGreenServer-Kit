@@ -244,12 +244,11 @@ local function updateBaseDate():
 	set {_date-week.month} to yml value "weekly.month" from "date.ranking"
 	set {_date-week.day} to yml value "weekly.day" from "date.ranking"
 	unload yml "date.ranking"
-	set {_base.week} to date({_date-month.year}, {_date-month.month}, {_date-month.day})
-	set {_base.month} to date({_date-week.year}, {_date-week.month}, {_date-week.day})
+	set {_base.month} to date({_date-month.year}, {_date-month.month}, {_date-month.day})
+	set {_base.week} to date({_date-week.year}, {_date-week.month}, {_date-week.day})
 	set {_unix.now} to unix timestamp of {_now}
 	set {_unix.week} to unix timestamp of {_base.week}
 	set {_unix.month} to unix timestamp of {_base.month}
-	log "§e%{_unix.now}% / %{_unix.week}% / %{_unix.month}%"
 # Week 更新
 	set {_week.checker} to false
 	set {_new.week} to {_base.week}
@@ -260,8 +259,6 @@ local function updateBaseDate():
 			add 1 week to {_new.week}
 		else:
 			set {_week.checker} to true
-		log "§e%{_unix.week}% / %{_dif.week}% / %{_new.week}%"
-		wait a tick
 	# 更新時の処理
 	if {_new.week} is not {_base.week}:  # プラスされた経緯があれば更新
 		set {_weekupdate.checker} to false
@@ -278,6 +275,9 @@ local function updateBaseDate():
 				set {_monthchecker} to 1
 				add 1 to {_yearchecker}
 			set {_check.week} to date({_yearchecker}, {_monthchecker}, {_daychecker})
+			log "§e%{_yearchecker}% / %{_monthchecker}% / %{_daychecker}%"
+			log "§6%{_check.week}% / %{_new.week}%"
+			wait a tick
 			if {_check.week} is {_new.week}:
 				set {_weekupdate.checker} to true
 		load yml "plugins/skript-yaml/General Options/Ranking.yml" as "week.update"
@@ -368,8 +368,6 @@ function rankingEnding():
 	loop yaml node keys "" from "updatestats.kill":
 		set {_ids::*} to loop-key
 		set {_id} to {_ids::1}
-		log "§eKill-ID: %{_id}%"
-		wait a tick
 		set {_uuid.killer} to yml value "%{_id}%.killer-player" from "updatestats.kill"
 		set {_kit.killer} to yml value "%{_id}%.killer-kit" from "updatestats.kill"
 		set {_uuid.victim} to yml value "%{_id}%.victim-player" from "updatestats.kill"
@@ -423,8 +421,6 @@ function rankingEnding():
 	loop yaml node keys "" from "updatestats.assist":
 		set {_ids::*} to loop-key
 		set {_id} to {_ids::1}
-		log "§eAssist-ID: %{_id}%"
-		wait a tick
 		set {_killid.assist} to yml value "%{_id}%.kill-id" from "updatestats.assist"
 		set {_uuid.assist} to yml value "%{_id}%.assist-player" from "updatestats.assist"
 		set {_kit.assist} to yml value "%{_id}%.assist-kit" from "updatestats.assist"
@@ -447,8 +443,6 @@ function rankingEnding():
 	loop yaml node keys "" from "updatestats.game":
 		set {_ids::*} to loop-key
 		set {_id} to {_ids::1}
-		log "§eGame-ID: %{_id}%"
-		wait a tick
 		set {_map} to yml value "%{_id}%.map" from "updatestats.game"
 		set {_rule} to yml value "%{_id}%.rule" from "updatestats.game"
 		set {_winteam::*} to yml list "%{_id}%.win-team" from "updatestats.game"
