@@ -6,6 +6,8 @@ on shoot:
 	set {_tool} to shooter's tool
 	kitItemAllChecker({_tool}, "Archer", "Weapon.main", 2) is true
 	shooter is sneaking
+	set {_pow} to getBowDrawTime(shooter)
+	{_pow} >= 24
 	set {_arrow} to amount of arrow in shooter's inventory
 	{_arrow} >= 5
 	loop 5 times:
@@ -122,13 +124,13 @@ function kitEffect_HolyBow_Hit(target: entity):
 			add {_met} * cos({_rad} + 90) to z-coordinate of {_targetloc}
 			set {_v} to setVector({_frontloc}, {_targetloc})
 			set yaw of {_frontloc} to yaw of {_v}
-			set pitch of {_frontloc} to yaw of {_v}
+			set pitch of {_frontloc} to pitch of {_v}
 			set {_dis} to distance between {_frontloc} and {_targetloc}
 			set {_dis} to {_dis} / 5
 			set {_dnum} to 0
 			loop 5 times:  # 線を引く処理
 				set {_el} to location {_dis} * {_dnum} meters in front of {_frontloc}
-				spawnParticle_DustTransition(rgb(255, 255, 0), rgb(255, 255, 255), 0.1, {_el})
+				spawnParticle_DustTransition(rgb(255, 255, 0), rgb(255, 255, 255), 0.5, {_el})
 				add 1 to {_dnum}
 			add 90 to {_rad}
 		add 0.25 to {_pitch}

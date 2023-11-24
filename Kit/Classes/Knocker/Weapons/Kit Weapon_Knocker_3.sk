@@ -38,14 +38,17 @@ function kitEffect_CycloneBow_Blast(player: player, proj: projectile):
 		wait a tick
 
 function kitEffect_CycloneBow_Cyclone(player: player, proj: projectile):
+	# フルチャージ確認
+	set {_pow} to getBowDrawTime({_player})
+	if {_pow} < 24:
+		stop
 	# 矢の数確認
 	set {_arrow} to amount of arrow in {_player}'s inventory
 	if {_arrow} < 2:
 		stop
 	loop 2 times:
 		remove an arrow from {_player}
-	set {_pow} to getBowDrawTime({_player}) / 24
-	set {_dmg} to 2 * {_pow}
+	set {_dmg} to 2
 	set metadata value "cyclone-bow" of {_proj} to true
 	kitParticle_CycloneBow_Cyclone({_player}, {_proj})
 	loop 100 times:
