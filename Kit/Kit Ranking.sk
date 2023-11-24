@@ -225,7 +225,7 @@ command /setBaseDate <text> <number> <number> <number>:
 	usage: /setBaseDate <weekly/monthly> <year-num> <month-num> <day-num>
 	permission: sk.admin
 	trigger:
-		load yml "plugins/skript-yaml/General Options/Ranking Dates.sk" as "date.baseranking"
+		load yml "plugins/skript-yaml/General Options/Ranking Dates.yml" as "date.baseranking"
 		set yml value "%arg 1%.year" from "date.baseranking" to arg 2
 		set yml value "%arg 1%.month" from "date.baseranking" to arg 3
 		set yml value "%arg 1%.day" from "date.baseranking" to arg 4
@@ -234,7 +234,7 @@ command /setBaseDate <text> <number> <number> <number>:
 # ベースとなる日付の更新
 local function updateBaseDate():
 	set {_now} to now
-	load yml "plugins/skript-yaml/General Options/Ranking Dates.sk" as "date.ranking"
+	load yml "plugins/skript-yaml/General Options/Ranking Dates.yml" as "date.ranking"
 	set {_date-month.year} to yml value "monthly.year" from "date.ranking"
 	set {_date-month.month} to yml value "monthly.month" from "date.ranking"
 	set {_date-month.day} to yml value "monthly.day" from "date.ranking"
@@ -275,7 +275,7 @@ local function updateBaseDate():
 			set {_check.week} to date({_yearchecker}, {_monthchecker}, {_daychecker})
 			if {_check.week} is {_new.week}:
 				set {_weekupdate.checker} to true
-		load yml "plugins/skript-yaml/General Options/Ranking Dates.sk" as "week.update"
+		load yml "plugins/skript-yaml/General Options/Ranking.yml" as "week.update"
 		set yml value "weekly.year" from "week.update" to {_yearchecker}
 		set yml value "weekly.month" from "week.update" to {_monthchecker}
 		set yml value "weekly.day" from "week.update" to {_daychecker}
@@ -298,7 +298,7 @@ local function updateBaseDate():
 			set {_month.checker} to true
 	# 更新時の処理
 	if {_new.month} is not {_base.month}:
-		load yml "plugins/skript-yaml/General Options/Ranking Dates.sk" as "month.update"
+		load yml "plugins/skript-yaml/General Options/Ranking Dates.yml" as "month.update"
 		set yml value "monthly.year" from "month.update" to {_yearchecker}
 		set yml value "monthly.month" from "month.update" to {_monthchecker}
 		save yml "month.update"
@@ -345,7 +345,7 @@ function getMonthDays(month: number, year: number) :: number:
 function rankingEnding():
 	updateBaseDate()
 	kitClearStats()
-	load yml "plugins/skript-yaml/General Options/Rankings.sk" as "date.ranking"
+	load yml "plugins/skript-yaml/General Options/Ranking Dates.yml" as "date.ranking"
 	set {_date-month.year} to yml value "monthly.year" from "date.ranking"
 	set {_date-month.month} to yml value "monthly.month" from "date.ranking"
 	set {_date-month.day} to yml value "monthly.day" from "date.ranking"
