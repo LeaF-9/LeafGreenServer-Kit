@@ -1,0 +1,58 @@
+# Skill-Name: Invert Bomb
+
+on projectile hit:
+	projectile is a snowball
+	metadata value "invertbomb" of projectile is true
+	kitEffect_InvertBomb_Explode(shooter, location of projectile)
+
+function kitSkill_Reflector_3(player: player):
+	toolCT({_player}, "Reflector", 3)
+	kitEffect_InvertBomb({_player})
+
+
+
+local function kitEffect_InvertBomb(player: player):
+	kitMsg({_player}, "§3敵の方向感覚を狂わせる§6混乱爆弾§bを投擲します!")
+	kitEffect_InvertBomb_Shoot({_player})
+
+local function kitEffect_InvertBomb_Shoot(player: player):
+	shoot a snowball fron {_player} at speed 1
+	set {_proj} to shot snowball
+	set metadata value "invertbomb" of {_proj} to true
+	set item of {_proj} to firework star
+	kitParticle_InvertBomb_Projectile({_player}, {_proj})
+
+local function kitEffect_InvertBomb_Explode(player: player, loc: location):
+	kitParticle_InvertBomb_Explode({_loc})
+	loop all entities in radius 5 around {_loc}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		if checkEntityType(loop-entity, player) is true:
+			add loop-entity to {_hitted::*}
+		applyEffect(loop-entity, slowness, 3, 3 seconds)
+		applyEffect(loop-entity, blindness, 1, 2 seconds)
+		kitEffect_InvertBomb_Teleport(loop-entity)
+		message formatted "§e方向感覚が狂ってしまった!" to loop-entity
+		kitParticle_InvertBomb_Hit(loop-entity)
+	wait 3 seconds
+	loop {_hitted::*}:
+		resetEffect(loop-value)
+
+local function kitEffect_InvertBomb_Teleport(entity: entity):
+	set {_l} to location of {_entity}
+	add 180 to yaw of {_l}
+	teleport {_entity} to {_l}
+
+
+
+local function kitParticle_InvertBomb_Projectile(player: player, proj: projectile):
+	playSound("block.large_amethyst_bud.break", 1, 0.65, {_player})
+	# drawDot count 5, particle "witchspell", center shot snowball, visibleRange 30, keepFor 1 seconds
+
+local function kitParticle_InvertBomb_Explode(loc: location):
+	playSound("block.end_portal_frame.fill", 1, 0.65, {_loc})
+	play raw sound "random.levelup" at projectile with pitch 0.5 volume 1
+	# drawSphere style 1, particle "redstone", RGB 255, 255, 255, center location of projectile, id "%shooter%", radius 5, density 100, visibleRange 30
+
+local function kitParticle_InvertBomb_Hit(entity: entity):
+	playSound("item.lodestone_compass.lock", 1, 0.8, {_entity})
+	# drawDot count 5, particle "mobspell", RGB 255, 255, 255, center loop-player, visibleRange 30, keepFor 5 seconds
