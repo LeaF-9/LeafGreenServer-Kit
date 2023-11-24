@@ -45,8 +45,7 @@ every 20 ticks:
 					if {team::%loop-player%} is not {team::%{_tg}%}:
 						add 1 to {Stats.%loop-player%::Fatigue}
 						if {Stats.%loop-player%::Fatigue} is more than 10:
-							if loop-player has blindness:
-							else:
+							if loop-player does not have blindness:
 								apply blindness 1 to loop-player for 6 seconds
 								message "§5目が疲れてしまった...!" to loop-player
 						play raw sound "mob.bat.hurt" at loop-player with pitch 1 volume 0.3
@@ -74,7 +73,7 @@ every 20 ticks:
 								message "§5目が見えなくなってしまった...!" to {_tg}
 							else if {Stats.%loop-player%::EyeSkill} is "Nervous":
 								if {_tg} has nausea:
-								stop
+									stop
 								if {_tg} has mining fatigue:
 									stop
 								apply nausea 1 to {_tg} for 10 seconds
