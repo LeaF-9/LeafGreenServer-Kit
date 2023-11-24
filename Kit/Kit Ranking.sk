@@ -234,6 +234,7 @@ command /setBaseDate <text> <number> <number> <number>:
 
 # ベースとなる日付の更新
 local function updateBaseDate():
+	log "§bupdateBaseDate() 読込開始"
 	set {_now} to now
 	load yml "plugins/skript-yaml/General Options/Ranking Dates.yml" as "date.ranking"
 	set {_date-month.year} to yml value "monthly.year" from "date.ranking"
@@ -303,6 +304,7 @@ local function updateBaseDate():
 		set yml value "monthly.year" from "month.update" to {_yearchecker}
 		set yml value "monthly.month" from "month.update" to {_monthchecker}
 		save yml "month.update"
+	log "§bupdateBaseDate() 読込終了"
 
 local function checkWeeking(time: date, week: date) :: boolean:
 	set {_unix.time} to unix timestamp of {_time}
@@ -356,10 +358,13 @@ function rankingEnding():
 	unload yml "date.ranking"
 	set {_date.week} to date({_date-week.year}, {_date-week.month}, {_date-week.day})
 	# Kills / Deaths
+	log "§bKills Deaths 読込開始"
 	load yml "plugins/skript-yaml/Kit Databases/Kills.yml" as "updatestats.kill"
 	loop yaml node keys "" from "updatestats.kill":
 		set {_ids::*} to loop-key
 		set {_id} to {_ids::1}
+		log "§eKill-ID: %{_id}%"
+		wait a tick
 		set {_uuid.killer} to yml value "%{_id}%.killer-player" from "updatestats.kill"
 		set {_kit.killer} to yml value "%{_id}%.killer-kit" from "updatestats.kill"
 		set {_uuid.victim} to yml value "%{_id}%.victim-player" from "updatestats.kill"
@@ -379,6 +384,7 @@ function rankingEnding():
 			add 1 to {Kit-Kill.week::%{_uuid.killer}%}
 			add 1 to {Kit-Death.week::%{_uuid.victim}%}
 	unload yml "updatestats.kill"
+	log "§aKills Deaths 読込終了"
 	# KDs
 	load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "classes"
 	set {_kits::*} to yml list "Classes" from "classes"
@@ -406,11 +412,14 @@ function rankingEnding():
 			set {_kd.%{_kit}%} to {Kit-Kill.%{_kit}%::%{_uuid}%} / {Kit-Death.%{_kit}%::%{_uuid}%}
 			set {Kit-KD.%{_kit}%::%{_uuid}%} to {_kd.%{_kit}%} if {_kd.%{_kit}%} is set
 	# Assists
+	log "§bAssists 読込開始"
 	load yml "plugins/skript-yaml/Kit Databases/Assists.yml" as "updatestats.assist"
 	load yml "plugins/skript-yaml/Kit Databases/Kills.yml" as "updatestats.assisttime"
 	loop yaml node keys "" from "updatestats.assist":
 		set {_ids::*} to loop-key
 		set {_id} to {_ids::1}
+		log "§eAssist-ID: %{_id}%"
+		wait a tick
 		set {_killid.assist} to yml value "%{_id}%.kill-id" from "updatestats.assist"
 		set {_uuid.assist} to yml value "%{_id}%.assist-player" from "updatestats.assist"
 		set {_kit.assist} to yml value "%{_id}%.assist-kit" from "updatestats.assist"
@@ -426,11 +435,15 @@ function rankingEnding():
 			add 1 to {Kit-Assist.week::%{_uuid.killer}%}
 	unload yml "updatestats.assist"
 	unload yml "updatestats.assisttime"
+	log "§aAssists 読込終了"
 	# Wins
+	log "§bWins 読込開始"
 	load yml "plugins/skript-yaml/Kit Databases/Games.yml" as "updatestats.game"
 	loop yaml node keys "" from "updatestats.game":
 		set {_ids::*} to loop-key
 		set {_id} to {_ids::1}
+		log "§eGame-ID: %{_id}%"
+		wait a tick
 		set {_map} to yml value "%{_id}%.map" from "updatestats.game"
 		set {_rule} to yml value "%{_id}%.rule" from "updatestats.game"
 		set {_winteam::*} to yml list "%{_id}%.win-team" from "updatestats.game"
@@ -457,6 +470,7 @@ function rankingEnding():
 			if checkWeeking({_time}, {_date.week}) is true:
 				add 1 to {Kit-Win.week::%{_uuid}%}
 	unload yml "updatestats.game"
+	log "§aWins 読込終了"
 	# Update Rankings
 	loop 5 times:
 		if loop-number-1 is 1:
