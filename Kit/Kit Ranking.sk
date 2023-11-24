@@ -249,6 +249,7 @@ local function updateBaseDate():
 	set {_unix.now} to unix timestamp of {_now}
 	set {_unix.week} to unix timestamp of {_base.week}
 	set {_unix.month} to unix timestamp of {_base.month}
+	log "§e%{_unix.now}% / %{_unix.week}% / %{_unix.month}%"
 # Week 更新
 	set {_week.checker} to false
 	set {_new.week} to {_base.week}
@@ -259,6 +260,8 @@ local function updateBaseDate():
 			add 1 week to {_new.week}
 		else:
 			set {_week.checker} to true
+		log "§e%{_unix.week}% / %{_dif.week}% / %{_new.week}%"
+		wait a tick
 	# 更新時の処理
 	if {_new.week} is not {_base.week}:  # プラスされた経緯があれば更新
 		set {_weekupdate.checker} to false
@@ -298,6 +301,8 @@ local function updateBaseDate():
 				add 1 to {_yearchecker}
 		else:
 			set {_month.checker} to true
+		log "§e%{_unix.month}% / %{_dif.month}% / %{_new.month}%"
+		wait a tick
 	# 更新時の処理
 	if {_new.month} is not {_base.month}:
 		load yml "plugins/skript-yaml/General Options/Ranking Dates.yml" as "month.update"
