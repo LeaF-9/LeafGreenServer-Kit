@@ -1,0 +1,611 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+
+# Farmerのスキル Ver1.0.0
+on rightclick holding a stone hoe:
+	name of player's tool is "§6Farmer Hoe"
+	cancel event
+	set {_tb} to target block
+	distance between player and {_tb} is less than 5
+	player has a melon seeds named "§8Seeds"
+	set {_l} to location of block above target block
+	block at {_l} is air
+	block below {_l} is not air, crops, carrot plant or potato plant
+	remove a melon seeds named "§8Seeds" from player
+	play raw sound "dig.gravel" at {_l} with pitch 1 volume 1
+	loop all blocks in radius 1 around {_l}:
+		loop-block is air
+		block below loop-block is not air, crops, carrot plant or potato plant
+		add location of loop-block to {Block.%player%::*}
+		add location of loop-block to {_crops::*}
+	set {_ct} to {Stats.%player%::CropType}
+	loop {_crops::*}:
+		if {Ult.%player%::Farmer} is true:
+			if {_ct} is "wheat":
+				set block at loop-value to crops:7
+			else if {_ct} is "potato":
+				set block at loop-value to potato plant:7
+			else if {_ct} is "carrot":
+				set block at loop-value to carrot plant:7
+			drawDot count 1, particle "happyvillager", center loop-value, visibleRange 30, keepFor 20 ticks
+		else:
+			if {_ct} is "wheat":
+				set block at loop-value to crops:1
+			else if {_ct} is "potato":
+				set block at loop-value to potato plant:1
+			else if {_ct} is "carrot":
+				set block at loop-value to carrot plant:1
+			drawDot count 1, particle "happyvillager", center loop-value, visibleRange 30, keepFor 20 ticks
+	if {Ult.%player%::Farmer} is true:
+		stop
+	set {_n} to 1
+	set {_np} to 3
+	loop 3 times:
+		wait 3 seconds
+		loop {_crops::*}:
+			if {_ct} is "wheat":
+				if block at loop-value-2 is crops:
+					if data value of block at loop-value-2 is {_n}:
+						set data value of block at loop-value-2 to {_np}
+						drawDot count 1, particle "happyvillager", center loop-value-2, visibleRange 30, keepFor 20 ticks
+			else if {_ct} is "potato":
+				if block at loop-value-2 is potato plant:
+					if data value of block at loop-value-2 is {_n}:
+						set data value of block at loop-value-2 to {_np}
+						drawDot count 1, particle "happyvillager", center loop-value-2, visibleRange 30, keepFor 20 ticks
+			else if {_ct} is "carrot":
+				if block at loop-value-2 is carrot plant:
+					if data value of block at loop-value-2 is {_n}:
+						set data value of block at loop-value-2 to {_np}
+						drawDot count 1, particle "happyvillager", center loop-value-2, visibleRange 30, keepFor 20 ticks
+		add 2 to {_n}
+		add 2 to {_np}
+
+on rightclick:
+	name of player's tool contains "§6Crop Type"
+	{CLS::%player%} is "FAM"
+	cancel event
+	if name of player's tool contains "Wheat":
+		remove a wheat item named "§6Crop Type §9[§aWheat§9]" from player
+		add a potato named "§6Crop Type §9[§cPotato§9]" to player
+		set {Stats.%player%::CropType} to "potato"
+	else if name of player's tool contains "Potato":
+		remove a potato named "§6Crop Type §9[§cPotato§9]" from player
+		add a carrot named "§6Crop Type §9[§eCarrot§9]" to player
+		set {Stats.%player%::CropType} to "carrot"
+	else if name of player's tool contains "Carrot":
+		remove a carrot named "§6Crop Type §9[§eCarrot§9]" from player
+		add a wheat item named "§6Crop Type §9[§aWheat§9]" to player
+		set {Stats.%player%::CropType} to "wheat"
+	play raw sound "random.click" at the player with pitch 2 volume 0.2
+
+on rightclick holding a wheat seeds:
+	name of player's tool is "§aBumper Crop"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 40
+		set {_b} to location of block at player
+		loop all blocks in radius 8 around {_b}:
+			loop-block is air
+			block below loop-block is not air, crops, carrot plant or potato plant
+			add location of loop-block to {_random::*}
+		loop 10 times:
+			set {_r} to a random location out of {_random::*}
+			remove {_r} from {_random::*}
+			loop all blocks in radius 1 around {_r}:
+				loop-block is air
+				block below loop-block is not air, crops, carrot plant or potato plant
+				add location of loop-block to {Block.%player%::*}
+				add location of loop-block to {_crops::*}
+		message "{@prefix} §aおおっ! 豊作だ!"
+		play raw sound "random.levelup" at {_b} with pitch 2 volume 1
+		set {_ct} to {Stats.%player%::CropType}
+		loop {_crops::*}:
+			if {Ult.%player%::Farmer} is true:
+				if {_ct} is "wheat":
+					set block at loop-value to crops:7
+				else if {_ct} is "potato":
+					set block at loop-value to potato plant:7
+				else if {_ct} is "carrot":
+					set block at loop-value to carrot plant:7
+				drawDot count 1, particle "happyvillager", center loop-value, visibleRange 30, keepFor 20 ticks
+			else:
+				if {_ct} is "wheat":
+					set block at loop-value to crops:1
+				else if {_ct} is "potato":
+					set block at loop-value to potato plant:1
+				else if {_ct} is "carrot":
+					set block at loop-value to carrot plant:1
+				drawDot count 1, particle "happyvillager", center loop-value, visibleRange 30, keepFor 20 ticks
+		if {Ult.%player%::Farmer} is true:
+			stop
+		set {_n} to 1
+		set {_np} to 3
+		loop 3 times:
+			wait 3 seconds
+			loop {_crops::*}:
+				if {_ct} is "wheat":
+					if block at loop-value-2 is crops:
+						if data value of block at loop-value-2 is {_n}:
+							set data value of block at loop-value-2 to {_np}
+							drawDot count 1, particle "happyvillager", center loop-value-2, visibleRange 30, keepFor 20 ticks
+				else if {_ct} is "potato":
+					if block at loop-value-2 is potato plant:
+						if data value of block at loop-value-2 is {_n}:
+							set data value of block at loop-value-2 to {_np}
+							drawDot count 1, particle "happyvillager", center loop-value-2, visibleRange 30, keepFor 20 ticks
+				else if {_ct} is "carrot":
+					if block at loop-value-2 is carrot plant:
+						if data value of block at loop-value-2 is {_n}:
+							set data value of block at loop-value-2 to {_np}
+							drawDot count 1, particle "happyvillager", center loop-value-2, visibleRange 30, keepFor 20 ticks
+			add 2 to {_n}
+			add 2 to {_np}
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on break of crops:
+	set {_l} to location of event-block
+	loop all players:
+		loop {Block.%loop-player%::*}:
+			loop-value-2 is {_l}
+			set {_ok} to true
+		{_ok} is true
+		remove {_l} from {Block.%loop-player%::*}
+		if data value of block at {_l} is 7:
+			drop a wheat item named "%loop-player%" at {_l}
+			loop all dropped items in radius 1.5 around location of {_l}:
+				metadata value "delete" of loop-dropped item is not set
+				set metadata value "delete" of loop-dropped item to "%loop-player%"
+		set block at {_l} to air
+
+on break of potato plant:
+	set {_l} to location of event-block
+	loop all players:
+		loop {Block.%loop-player%::*}:
+			loop-value-2 is {_l}
+			set {_ok} to true
+		{_ok} is true
+		remove {_l} from {Block.%loop-player%::*}
+		if data value of block at {_l} is 7:
+			set {_r} to a random integer between 0 and 19
+			if {_r} is 0:
+				drop a baked potato named "%loop-player%" at {_l}
+			else if {_r} is 1:
+				drop a poisonous potato named "%loop-player%" at {_l}
+			else:
+				drop a potato named "%loop-player%" at {_l}
+			loop all dropped items in radius 1.5 around location of {_l}:
+				metadata value "delete" of loop-dropped item is not set
+				set metadata value "delete" of loop-dropped item to "%loop-player%"
+		set block at {_l} to air
+
+on break of carrot plant:
+	set {_l} to location of event-block
+	loop all players:
+		loop {Block.%loop-player%::*}:
+			loop-value-2 is {_l}
+			set {_ok} to true
+		{_ok} is true
+		remove {_l} from {Block.%loop-player%::*}
+		if data value of block at {_l} is 7:
+			set {_r} to a random integer between 0 and 9
+			if {_r} is 0:
+				drop a golden carrot named "%loop-player%" at {_l}
+			else:
+				drop a carrot named "%loop-player%" at {_l}
+			loop all dropped items in radius 1.5 around location of {_l}:
+				metadata value "delete" of loop-dropped item is not set
+				set metadata value "delete" of loop-dropped item to "%loop-player%"
+		set block at {_l} to air
+
+on rightclick holding a normal sapling:
+	name of player's tool is "§2Natural Creation"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_base} to location of block at player
+		loop all blocks in radius 10 around {_base}:
+			loop-block is air
+			block below loop-block is not air, crops, carrot plant or potato plant
+			add location of loop-block to {_tree::*}
+			add 1 to {_num}
+		if {_num} is more than 15:
+			set {CT.%player%::%name of player's tool%} to 50
+			message "{@prefix} §a周辺に森を作ります..."
+			play raw sound "dig.grass" at {_base} with pitch 1 volume 1
+			loop 5 times:
+				set {_ran} to a random location out of {_tree::*}
+				loop all blocks in radius 1 around {_ran}:
+					remove location of loop-block from {_tree::*}
+				add {_ran} to {_br::*}
+				add {_ran} to {Block.%player%::*}
+				set block at {_ran} to normal sapling
+				drawDot count 1, particle "happyvillager", center {_ran}, visibleRange 30, keepFor 20 ticks
+			if {Ult.%player%::Farmer} is not set:
+				wait 10 seconds
+			loop {_br::*}:
+				block at loop-value is normal sapling
+				remove loop-value from {Block.%player%::*}
+				set block at loop-value to air
+				set {_rum} to a random integer between 1 and 10
+				set {_ram} to location of block at loop-value
+				loop {_rum} times:
+					if block at {_ram} is air:
+						set {_lb::%{_ram}%} to {_ram}
+						set block at {_ram} to log:0
+						set {_ram} to location of block above {_ram}
+				set {_leaf} to location of block below {_ram}
+				set {_leafa} to location of block above {_leaf}
+				set {_leafn} to location of block north of {_leaf}
+				set {_leafe} to location of block east of {_leaf}
+				set {_leafs} to location of block south of {_leaf}
+				set {_leafw} to location of block west of {_leaf}
+				if block at {_leafa} is air:
+					set {_lb::%{_leafa}%} to {_leafa}
+					set block at {_leafa} to leaves:0
+				if block at {_leafn} is air:
+					set {_lb::%{_leafn}%} to {_leafn}
+					set block at {_leafn} to leaves:0
+				if block at {_leafe} is air:
+					set {_lb::%{_leafe}%} to {_leafe}
+					set block at {_leafe} to leaves:0
+				if block at {_leafs} is air:
+					set {_lb::%{_leafs}%} to {_leafs}
+					set block at {_leafs} to leaves:0
+				if block at {_leafw} is air:
+					set {_lb::%{_leafw}%} to {_leafw}
+					set block at {_leafw} to leaves:0
+				loop all blocks in radius 3 around {_leaf}:
+					loop-block is air
+					add location of loop-block to {_apple::*}
+			play raw sound "dig.wood" at {_base} with pitch 1 volume 1
+			loop 5 times:
+				loop {_apple::*}:
+					chance of 0.1%:
+						set {_r} to a random integer between 0 and 19
+						if {_r} is 0:
+							drop a golden apple named "%player%" at loop-value-2
+						else:
+							drop a apple named "%player%" at loop-value-2
+				wait a seconds
+			loop {_lb::*}:
+				set block at loop-value to air
+			play raw sound "dig.grass" at {_base} with pitch 2 volume 1
+		else:
+			set action bar of player to "§c§l木を育てる場所がありません!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on break of normal sapling:
+	set {_l} to location of event-block
+	loop all players:
+		loop {Block.%loop-player%::*}:
+			loop-value-2 is {_l}
+			set {_ok} to true
+		{_ok} is true
+		{team::%loop-player%} is not {team::%player%}
+		remove {_l} from {Block.%loop-player%::*}
+		set block at {_l} to air
+
+on rightclick holding a bonemeal:
+	name of player's tool is "§bRapid Growth"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 30
+		message "{@prefix} §a周辺の作物を急成長させます!"
+		set {_b} to location of block at player
+		loop all blocks in radius 5 around {_b}:
+			loop-block is crops, carrot plant or potato plant
+			delete {_ok}
+			loop {Block.%player%::*}:
+				location of loop-block is loop-value-2
+				set {_ok} to true
+			{_ok} is true
+			data value of loop-block is not 7
+			set data value of loop-block to 7
+			drawDot count 1, particle "itemcrack", material bonemeal, center location of loop-block, visibleRange 30, keepFor 20 ticks
+		play raw sound "random.orb" at player with pitch 1 volume 1
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a flint:
+	name of player's tool is "§6Abundant Harvest"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 40
+		message "{@prefix} §e収穫の時期です!"
+		play raw sound "random.splash" at player with pitch 1.5 volume 1
+		set {_b} to location of block at player
+		loop all blocks in radius 5 around {_b}:
+			loop-block is crops, carrot plant or potato plant
+			delete {_ok}
+			loop {Block.%player%::*}:
+				location of loop-block is loop-value-2
+				set {_ok} to true
+			{_ok} is true
+			if data value of loop-block is 7:
+				if loop-block is crops:
+					drop a wheat item named "%player%" at loop-block
+				else if loop-block is carrot plant:
+					set {_r} to a random integer between 0 and 9
+					if {_r} is 0:
+						drop a golden carrot named "%player%" at loop-block
+					else:
+						drop a carrots item named "%player%" at loop-block
+				else if loop-block is potato plant:
+					set {_r} to a random integer between 0 and 19
+					if {_r} is 0:
+						drop a baked potato named "%player%" at loop-block
+					else if {_r} is 1:
+						drop a poisonous potato named "%player%" at loop-block
+					else:
+						drop a potato named "%player%" at loop-block
+				loop all dropped items in radius 1.5 around location of loop-block:
+					metadata value "delete" of loop-dropped item is not set
+					set metadata value "delete" of loop-dropped item to "%player%"
+			drawDot count 1, particle "explosionlarge", center location of loop-block, visibleRange 30
+			chance of 30%:
+				set {_30ok} to true
+			if {_30ok} is true:
+				set data value of loop-block to 1
+				add location of loop-block to {_crops::*}
+			else:
+				remove location of loop-block from {Block.%player%::*}
+				set loop-block to air
+			delete {_30ok}
+		set {_n} to 1
+		set {_np} to 3
+		loop 3 times:
+			wait 3 seconds
+			loop {_crops::*}:
+				if block at loop-value-2 is crops, potato plant or carrot plant:
+					if data value of block at loop-value-2 is {_n}:
+						set data value of block at loop-value-2 to {_np}
+						drawDot count 1, particle "happyvillager", center loop-value-2, visibleRange 30, keepFor 20 ticks
+			add 2 to {_n}
+			add 2 to {_np}
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a cactus green:
+	name of player's tool is "§2Cactus Wall"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if target block is set:
+			set {_loc} to location of target block
+			if block above {_loc} is air:
+				if distance between player and {_loc} <= 15:
+					set {CT.%player%::%name of player's tool%} to 30
+					message "{@prefix} §2サボテンの壁を作ります!"
+					set {_dir} to false
+					set {_yaw} to yaw of player
+					if {_yaw} is between 225 and 315:
+						set {_dir} to true
+					if {_yaw} is between 45 and 135:
+						set {_dir} to true
+					play raw sound "dig.sand" at {_loc} with pitch 1 volume 1
+					set {_loc1} to location of block above {_loc}
+					set {_loc2} to location of block 2 above {_loc}
+					set {_loc3} to location of block 3 above {_loc}
+					set {_loc4} to location of block 4 above {_loc}
+					set {_loc5} to location of block 5 above {_loc}
+					if block at {_loc1} is air:
+						set {_lb::%{_loc1}%} to {_loc1}
+						set block at {_loc1} to cactus
+					if block at {_loc2} is air:
+						set {_lb::%{_loc2}%} to {_loc2}
+						set block at {_loc2} to cactus
+					if block at {_loc3} is air:
+						set {_lb::%{_loc3}%} to {_loc3}
+						set block at {_loc3} to cactus
+					if block at {_loc4} is air:
+						set {_lb::%{_loc4}%} to {_loc4}
+						set block at {_loc4} to cactus
+					if block at {_loc5} is air:
+						set {_lb::%{_loc5}%} to {_loc5}
+						set block at {_loc5} to cactus
+					wait a tick
+					loop 5 times:
+						play raw sound "dig.sand" at {_loc} with pitch 1 volume 1
+						set {_num} to loop-number
+						if {_dir} is true:
+							set {_loco} to location of block {_num} north of {_loc}
+						else:
+							set {_loco} to location of block {_num} east of {_loc}
+						set {_loc1} to location of block above {_loco}
+						set {_loc2} to location of block 2 above {_loco}
+						set {_loc3} to location of block 3 above {_loco}
+						set {_loc4} to location of block 4 above {_loco}
+						set {_loc5} to location of block 5 above {_loco}
+						if block at {_loc1} is air:
+							set {_lb::%{_loc1}%} to {_loc1}
+							set block at {_loc1} to cactus
+						if block at {_loc2} is air:
+							set {_lb::%{_loc2}%} to {_loc2}
+							set block at {_loc2} to cactus
+						if block at {_loc3} is air:
+							set {_lb::%{_loc3}%} to {_loc3}
+							set block at {_loc3} to cactus
+						if block at {_loc4} is air:
+							set {_lb::%{_loc4}%} to {_loc4}
+							set block at {_loc4} to cactus
+						if block at {_loc5} is air:
+							set {_lb::%{_loc5}%} to {_loc5}
+							set block at {_loc5} to cactus
+						if {_dir} is true:
+							set {_loco} to location of block {_num} south of {_loc}
+						else:
+							set {_loco} to location of block {_num} west of {_loc}
+						set {_loc1} to location of block above {_loco}
+						set {_loc2} to location of block 2 above {_loco}
+						set {_loc3} to location of block 3 above {_loco}
+						set {_loc4} to location of block 4 above {_loco}
+						set {_loc5} to location of block 5 above {_loco}
+						if block at {_loc1} is air:
+							set {_lb::%{_loc1}%} to {_loc1}
+							set block at {_loc1} to cactus
+						if block at {_loc2} is air:
+							set {_lb::%{_loc2}%} to {_loc2}
+							set block at {_loc2} to cactus
+						if block at {_loc3} is air:
+							set {_lb::%{_loc3}%} to {_loc3}
+							set block at {_loc3} to cactus
+						if block at {_loc4} is air:
+							set {_lb::%{_loc4}%} to {_loc4}
+							set block at {_loc4} to cactus
+						if block at {_loc5} is air:
+							set {_lb::%{_loc5}%} to {_loc5}
+							set block at {_loc5} to cactus
+						wait a tick
+					loop {_lb::*}:
+						add loop-value to {Block.%player%::*}
+					wait 10 seconds
+					loop {_lb::*}:
+						set block at loop-value to air
+						remove loop-value from {Block.%player%::*}
+					play raw sound "dig.snow" at {_loc} with pitch 1.5 volume 1
+				else:
+					set action bar of player to "§c§l距離が遠すぎます!"
+			else:
+				set action bar of player to "§c§lその場所に壁は作れません!"
+		else:
+			set action bar of player to "§c§l目標とするブロックがありません!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on death of player:
+	{CLS::%{LastKiller::%victim%}%} is "FAM"
+	set {_a} to 0
+	loop all items in {LastKiller::%victim%}'s inventory:
+		loop-item is melon seeds
+		add 1 to {_a}
+	set {_fa} to 10 - {_a}
+	loop {_fa} times:
+		give a melon seeds named "§8Seeds" to {LastKiller::%victim%}
+
+on pick up wheat item:
+	if name of item is name of player:
+		cancel event
+		stop
+	if {team::%name of item%} is {team::%player%}:
+		loop all players:
+			name of loop-player is name of item
+			add loop-player to {supporter.%player%::*}
+		play raw sound "dig.grass" at player with pitch 2 volume 0.5
+		apply speed 1 to player for 3 seconds
+		wait a tick
+		remove all wheat item named "%name of item%" from the player
+	else:
+		apply slowness 1 to the player for 5 seconds
+		play raw sound "random.burp" at player with pitch 2 volume 0.5
+		wait a tick
+		remove all wheat named "%name of item%" from the player
+
+on pick up potato:
+	if name of item is name of player:
+		cancel event
+		stop
+	if {team::%name of item%} is not {team::%player%}:
+		loop all players:
+			name of loop-player is name of item
+			add loop-player to {damager.%player%::*}
+			set {_p} to loop-player
+		play raw sound "random.explode" at player with pitch 2 volume 0.5
+		make {_p} damage player by 1
+		wait a tick
+		remove all potato named "%name of item%" from the player
+	else:
+		cancel event
+
+on pick up baked potato:
+	if name of item is name of player:
+		cancel event
+		stop
+	if {team::%name of item%} is not {team::%player%}:
+		loop all players:
+			name of loop-player is name of item
+			add loop-player to {damager.%player%::*}
+			set {_p} to loop-player
+		make a fake explosion at player
+		push player upwards at speed 0.5
+		make {_p} damage player by 2
+		wait a tick
+		remove all baked potato named "%name of item%" from the player
+	else:
+		cancel event
+
+on pick up poisonous potato:
+	if name of item is name of player:
+		cancel event
+		stop
+	if {team::%name of item%} is not {team::%player%}:
+		loop all players:
+			name of loop-player is name of item
+			set {LastKiller::%player%} to loop-player
+			add loop-player to {damager.%player%::*}
+			set {_p} to loop-player
+		play raw sound "random.splash" at player with pitch 2 volume 0.5
+		apply poison 1 to player for 5 seconds
+		wait a tick
+		remove all poisonous potato named "%name of item%" from the player
+	else:
+		cancel event
+
+on pick up carrot:
+	if name of item is name of player:
+		cancel event
+		stop
+	if {team::%name of item%} is {team::%player%}:
+		loop all players:
+			name of loop-player is name of item
+			add loop-player to {supporter.%player%::*}
+		play raw sound "random.eat" at player with pitch 2 volume 0.5
+		apply regeneration 1 to player for 3 seconds
+		wait a tick
+		remove all carrot named "%name of item%" from the player
+	else:
+		cancel event
+
+on pick up golden carrot:
+	if name of item is name of player:
+		cancel event
+		stop
+	if {team::%name of item%} is {team::%player%}:
+		loop all players:
+			name of loop-player is name of item
+			add loop-player to {supporter.%player%::*}
+		play raw sound "random.eat" at player with pitch 1 volume 0.5
+		apply regeneration 1 to player for 5 seconds
+		heal player by 1 hearts
+		wait a tick
+		remove all golden carrot named "%name of item%" from the player
+	else:
+		cancel event
+
+on pick up apple:
+	if {team::%name of item%} is {team::%player%}:
+		loop all players:
+			name of loop-player is name of item
+			add loop-player to {supporter.%player%::*}
+		play raw sound "random.levelup" at player with pitch 2 volume 0.5
+		heal player by 3 hearts
+		wait a tick
+		remove all apple named "%name of item%" from the player
+	else:
+		cancel event
+
+on pick up golden apple:
+	if {team::%name of item%} is {team::%player%}:
+		loop all players:
+			name of loop-player is name of item
+			add loop-player to {supporter.%player%::*}
+		play raw sound "random.levelup" at player with pitch 1 volume 0.5
+		heal player by 10 hearts
+		apply regeneration 1 to player for 60 seconds
+		apply absorption 1 to player for 60 seconds
+		wait a tick
+		remove all golden apple named "%name of item%" from the player
+	else:
+		cancel event

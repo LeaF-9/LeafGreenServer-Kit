@@ -1,0 +1,350 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+	lore2: 左クリックで効果を変更できます
+	godlore1: 発動3秒後,右クリックした周辺5mに効果を発動します
+	godlore2: 左クリックで効果を変更できます
+
+# Bomberのスキル Ver1.0.0
+on click holding a 381:
+	name of player's tool is "§0Curse Eye"
+	cancel event
+
+on leftclick holding a 362:
+	name of player's tool contains "§3Eye Skill"
+	if name of player's tool contains "§8Nervous":
+		set name of player's tool to "§3Eye Skill§b: §8Blind"
+		set lore of player's tool to "[盲目]を付与します||{@lore2}"
+		play raw sound "random.click" at player with pitch 1.5 volume 0.3
+	else if name of player's tool contains "§8Blind":
+		set name of player's tool to "§3Eye Skill§b: §8Feeble"
+		set lore of player's tool to "[弱体化 I]と[移動速度低下 I]を付与します||{@lore2}"
+		play raw sound "random.click" at player with pitch 1.5 volume 0.3
+	else if name of player's tool contains "§8Feeble":
+		set name of player's tool to "§3Eye Skill§b: §8Nervous"
+		set lore of player's tool to "[吐き気]と[採掘速度低下 I]を付与します||{@lore2}"
+		play raw sound "random.click" at player with pitch 1.5 volume 0.3
+
+every 20 ticks:
+	loop all players:
+		delete {_tg}
+		{CLS::%loop-player%} is "SHA"
+		name of loop-player's tool is "§0Curse Eye"
+		set {_tg} to loop-player's target player
+		if {_tg} is set:
+			{_tg} is alive
+			if distance between loop-player and {_tg} is less than 100:
+				set {_tb} to loop-player's target block
+				if {_tb} is set:
+					if distance between loop-player and {_tb} is more than distance between loop-player and {_tg}:
+						set {_true} to true
+				else:
+					set {_true} to true
+				if {_true} is true:
+					if {team::%loop-player%} is not {team::%{_tg}%}:
+						add 1 to {Stats.%loop-player%::Fatigue}
+						if {Stats.%loop-player%::Fatigue} is more than 10:
+							if loop-player has blindness:
+							else:
+								apply blindness 1 to loop-player for 6 seconds
+								message "§5目が疲れてしまった...!" to loop-player
+						play raw sound "mob.bat.hurt" at loop-player with pitch 1 volume 0.3
+						drawDot count 1, particle "redstone", RGB 10, 10, 10, center location of block 2 above {_tg}, visibleRange 30, pulseDelay 0, keepFor 20 ticks
+						set {LastKiller::%{_tg}%} to loop-player
+						add loop-player to {damager.%{_tg}%::*}
+						if {Stats.%loop-player%::Intensification} is true:
+							subtract 2 from health of {_tg}
+							apply wither 1 to {_tg} for 3 seconds
+						else:
+							subtract 1 from health of {_tg}
+						if {Stats.%loop-player%::EyeSkill} is set:
+							if {Stats.%loop-player%::EyeSkill} is "Feeble":
+								if {_tg} has slowness:
+									stop
+								if {_tg} has weakness:
+									stop
+								apply slowness 1 to {_tg} for 10 seconds
+								apply weakness 1 to {_tg} for 10 seconds
+								message "§5恐怖を感じる...!" to {_tg}
+							else if {Stats.%loop-player%::EyeSkill} is "Blind":
+								if {_tg} has blindness:
+									stop
+								apply blindness 1 to {_tg} for 5 seconds
+								message "§5目が見えなくなってしまった...!" to {_tg}
+							else if {Stats.%loop-player%::EyeSkill} is "Nervous":
+								if {_tg} has nausea:
+								stop
+								if {_tg} has mining fatigue:
+									stop
+								apply nausea 1 to {_tg} for 10 seconds
+								apply mining fatigue 1 to {_tg} for 10 seconds
+								message "§5とても緊張している...!" to {_tg}
+					else:
+						{Stats.%loop-player%::Fatigue} is more than 0
+						subtract 1 from {Stats.%loop-player%::Fatigue}
+				else:
+					{Stats.%loop-player%::Fatigue} is more than 0
+					subtract 1 from {Stats.%loop-player%::Fatigue}
+			else:
+				{Stats.%loop-player%::Fatigue} is more than 0
+				subtract 1 from {Stats.%loop-player%::Fatigue}
+		else:
+			{Stats.%loop-player%::Fatigue} is more than 0
+			subtract 1 from {Stats.%loop-player%::Fatigue}
+
+on rightclick holding a 377:
+	name of player's tool is "§5Intensification"
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 40
+		set {Stats.%player%::Intensification} to true
+		message "{@prefix} §5目の攻撃力を上げます..."
+		play raw sound "mob.wither.spawn" at player with pitch 1.5 volume 0.5
+		drawComplexSpiral particle "redstone", RGB 150, 0, 150, center player, id "%player%", clockwise true, scan true, radius 1, density 50, height 6, effectMod .05, start 0, visibleRange 30
+		wait 10 seconds
+		delete {Stats.%player%::Intensification}
+		stopEffect "%player%"
+		message "{@prefix} §d効果が切れました"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a 362:
+	name of player's tool contains "§3Eye Skill"
+	cancel event
+	if {CT.%player%::Eye Skill} is not set:
+		set {CT.%player%::Eye Skill} to 20
+		if name of player's tool contains "§8Nervous":
+			set {Stats.%player%::EyeSkill} to "Nervous"
+			set {_type} to "Nervous"
+			message "{@prefix} §0§l緊張 §5の効果を付与します..."
+			play raw sound "mob.blaze.hit" at player with pitch 3 volume 1
+		else if name of player's tool contains "§8Blind":
+			set {Stats.%player%::EyeSkill} to "Blind"
+			set {_type} to "Blind"
+			message "{@prefix} §0§l盲目 §5の効果を付与します..."
+			play raw sound "mob.blaze.hit" at player with pitch 3 volume 1
+		else if name of player's tool contains "§8Feeble":
+			set {Stats.%player%::EyeSkill} to "Feeble"
+			set {_type} to "Feeble"
+			message "{@prefix} §0§l恐怖 §5の効果を付与します..."
+			play raw sound "mob.blaze.hit" at player with pitch 3 volume 1
+		wait 10 seconds
+		if {Stats.%player%::EyeSkill} is "%{_type}%":
+			delete {Stats.%player%::EyeSkill}
+			message "{@prefix} §d効果が切れました"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a 370:
+	name of player's tool is "§7Self Vanish"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 40
+		message "{@prefix} §7透明化を自身に付与します..."
+		play raw sound "mob.wither.shoot" at the player with pitch 0.5 volume 0.5
+		apply mining fatigue 1 to player for 10 seconds
+		set {Invisible::%player%} to true
+		loop all players:
+			{CLS::%loop-player%} is not "THI"
+			hide player from loop-player
+		wait 10 seconds
+		if {Invisible::%player%} is true:
+			reveal player from all players
+			delete {Invisible::%player%}
+			message "{@prefix} §8透明化が解除されました"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on leftclick holding a 399:
+	name of player's tool contains "§5God Inspect"
+	if name of player's tool contains "Zeus":
+		set name of player's tool to "§5God Inspect §8[§2§lHera§8]"
+		set lore of player's tool to "{@godlore1}||{@godlore2}|| ||効果: 味方に復活能力を30秒付与|| ||§bCoolTime§7: §a60"
+		play raw sound "random.orb" at player with pitch 2 volume 0.3
+	else if name of player's tool contains "Hera":
+		set name of player's tool to "§5God Inspect §8[§5§lAthena§8]"
+		set lore of player's tool to "{@godlore1}||{@godlore2}|| ||効果: 味方に攻撃力上昇 I,耐性 Iを10秒付与|| ||§bCoolTime§7: §a60"
+		play raw sound "random.orb" at player with pitch 2 volume 0.3
+	else if name of player's tool contains "Athena":
+		set name of player's tool to "§5God Inspect §8[§4§lApollon§8]"
+		set lore of player's tool to "{@godlore1}||{@godlore2}|| ||効果: 敵に4ダメージ+10秒間炎上|| ||§bCoolTime§7: §a60"
+		play raw sound "random.orb" at player with pitch 2 volume 0.3
+	else if name of player's tool contains "Apollon":
+		set name of player's tool to "§5God Inspect §8[§1§lPoseidon§8]"
+		set lore of player's tool to "{@godlore1}||{@godlore2}|| ||効果: 敵に5ダメージ,弱体化 II 10秒付与+吹き飛ばし|| ||§bCoolTime§7: §a60"
+		play raw sound "random.orb" at player with pitch 2 volume 0.3
+	else if name of player's tool contains "Poseidon":
+		set name of player's tool to "§5God Inspect §8[§6§lZeus§8]"
+		set lore of player's tool to "{@godlore1}||{@godlore2}|| ||効果: 敵に固定4ダメージ+80%%で[麻痺]8秒付与|| ||§bCoolTime§7: §a60"
+		play raw sound "random.orb" at player with pitch 2 volume 0.3
+
+on rightclick holding a 399:
+	name of player's tool contains "§5God Inspect"
+	cancel event
+	if {CT.%player%::§5God Inspect} is not set:
+		set {_tg} to target block
+		if {_tg} is set:
+			add 1 to y-coordinate of {_tg}
+			if distance between player and {_tg} <= 75:
+				set {CT.%player%::§5God Inspect} to 60
+				message "{@prefix} §5§l神が目覚める...!"
+				set {_name} to name of player's tool
+				loop 3 times:
+					play raw sound "random.orb" at location of {_tg} with pitch 0.5 volume 1.1
+					drawDot count 1, particle "witchspell", center location of {_tg}, visibleRange 30, keepFor 20 ticks
+					wait a second
+				if {_name} contains "Zeus":
+					message "{@prefix} §6§lゼウス §eが舞い降りた!"
+					play raw sound "ambient.weather.thunder" at location of {_tg} with pitch 0.5 volume 1
+					strike fake fake lightning at location of {_tg}
+					loop all players in radius 5 around location of {_tg}:
+						{team::%loop-player%} is not {team::%player%}
+						play raw sound "ambient.weather.thunder" at loop-player with pitch 1 volume 0.6
+						strike fake fake lightning at loop-player
+						set {LastKiller::%loop-player%} to player
+						add player to {damager.%loop-player%::*}
+						subtract 4 from loop-player's health
+						chance of 80%:
+							execute console command "/palsy %loop-player% 8 seconds"
+				else if {_name} contains "Hera":
+					message "{@prefix} §2§lヘラ §eが舞い降りた!"
+					set {_now} to now
+					drawDot count 1, particle "happyvillager", center location of {_tg}, visibleRange 30, keepFor 20 ticks
+					play raw sound "random.levelup" at location of {_tg} with pitch 0.5 volume 1
+					loop all players in radius 5 around location of {_tg}:
+						{team::%loop-player%} is {team::%player%}
+						{CLS::%loop-player%} is not "BSK"
+						add player to {supporter.%loop-player%::*}
+						add loop-player to {_hera::*}
+						set {Stats.%loop-player%::HeraResurrect} to {_now}
+						set {Resurrection::%loop-player%} to true
+						message "§2§lヘラ §aの復活の加護を受けた!" to loop-player
+						drawDot count 1, particle "witchspell", center loop-player, visibleRange 30, keepFor 20 ticks
+						play raw sound "portal.trigger" at loop-player with pitch 2 volume 0.3
+					wait 30 seconds
+					loop {_hera::*}:
+						{Stats.%loop-value%::HeraResurrect} is {_now}
+						delete {Stats.%loop-value%::HeraResurrect}
+						delete {Resurrection::%loop-value%}
+						message "§2§lヘラ §c加護は消えてしまった..." to loop-value
+				else if {_name} contains "Athena":
+					message "{@prefix} §5§lアテナ §eが舞い降りた!"
+					loop all blocks in radius 5 around location of {_tg}:
+						y-coordinate of loop-block is y-coordinate of location of {_tg}
+						loop-block is air
+						drawDot count 1, particle "mobspell", RGB 255, 0, 0, center location of loop-block, visibleRange 30, keepFor 20 ticks
+					play raw sound "mob.ghast.scream" at location of {_tg} with pitch 0.5 volume 1
+					loop all players in radius 5 around location of {_tg}:
+						{team::%loop-player%} is {team::%player%}
+						{CLS::%loop-player%} is not "BSK"
+						add player to {supporter.%loop-player%::*}
+						apply strength 1 to loop-player for 10 seconds
+						apply resistance 1 to loop-player for 10 seconds
+						message "§2§lアテナ §aの戦闘の加護を受けた!" to loop-player
+						make a fake explosion at loop-player
+				else if {_name} contains "Apollon":
+					message "{@prefix} §4§lアポロン §eが舞い降りた!"
+					play raw sound "mob.ghast.fireball" at location of {_tg} with pitch 0.3 volume 1
+					drawWarpRings style 0, particle "flame", center location of {_tg}, id "%player%", scan true, height 20, radius 5, ringCount 20, ringDensity 30, visibleRange 32
+					loop all players in radius 5 around location of {_tg}:
+						{team::%loop-player%} is not {team::%player%}
+						play raw sound "mob.zombie.wood" at loop-player with pitch 2 volume 0.5
+						make player damage loop-player by 8
+						ignite loop-player for 10 seconds
+						drawDot count 1, particle "lava", center location of block 2 above loop-player, visibleRange 30
+					wait 5 ticks
+					stopEffect "%player%"
+				else if {_name} contains "Poseidon":
+					message "{@prefix} §1§lポセイドン §eが舞い降りた!"
+					set {_to} to location of {_tg} to vector
+					play raw sound "mob.wither.spawn" at location of {_tg} with pitch 0.6 volume 1
+					drawSphere style 1, particle "redstone", RGB 0, 0, 120, center location of {_tg}, id "%player%", radius 5, density 30, visibleRange 30
+					loop all players in radius 5 around location of {_tg}:
+						{team::%loop-player%} is not {team::%player%}
+						play raw sound "mob.ghast.hurt" at loop-player with pitch 1.5 volume 0.5
+						make player damage loop-player by 10
+						apply weakness 2 to loop-player for 10 seconds
+						drawDot count 1, particle "mobspell", RGB 0, 0, 150, center loop-player, visibleRange 30, keepFor 1 seconds
+						push loop-player upwards at speed 0.9
+						set {_from} to location of loop-player to vector
+						set {_vector} to vector {_from} - {_to}
+						set {_vector} to vector {_vector} normalized * 0.9
+						set velocity of loop-player to {_vector}
+					wait 10 ticks
+					stopEffect "%player%"
+			else:
+				set action bar of player to "§c§l発動地点が遠すぎます!"
+		else:
+			set action bar of player to "§c§l発動地点を指定してください!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a 406:
+	name of player's tool is "§5Fairy Charm"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 50
+		message "{@prefix} §5妖魔を召喚します..."
+		play raw sound "mob.zombie.say" at the player with pitch 0.5 volume 1
+		loop 3 times:
+			spawn a zombie at player
+			set metadata value "fairycharm" of spawned zombie to "true"
+			set spawned zombie's display name to "%player%"
+			equip the spawned zombie with zombie head
+			equip the spawned zombie with leather tunic
+			dye the spawned zombie's chestplate (0, 0, 0)
+			drawWings style 1, particle1 "redstone", RGB 0, 0, 0, particle2 "redstone", RGB2 128, 0, 0, particle3 "redstone", RGB3 200, 0, 0, center spawned zombie, id "%player%-%loop-number%", angle 110, height 0, space 0.2, visibleRange 30, tps 0, second 3
+			apply resistance 10 to spawned zombie for 10 seconds
+			apply slowness 10 to spawned zombie for 10 seconds
+			apply invisibility 1 to spawned zombie for 10 seconds
+			push spawned zombie upwards at speed 1
+			push spawned zombie north at speed random number from -1 to 1
+			push spawned zombie east at speed random number from -1 to 1
+		loop 10 times:
+			loop all zombies:
+				loop-zombie's display name is "%player%"
+				metadata value "fairycharm" of loop-zombie is "true"
+				delete {_tg}
+				set {_tg} to target of loop-zombie
+				if {_tg} is set:
+					set {LastKiller::%{_tg}%} to player
+					add player to {damager.%{_tg}%::*}
+					subtract 0.5 from {_tg}'s health
+					if {_tg} does not have nausea:
+						apply nausea 1 to {_tg} for 10 seconds
+			wait a second
+		loop 3 times:
+			stopEffect "%player%-%loop-number%"
+		loop all zombies:
+			loop-zombie's display name is "%player%"
+			metadata value "fairycharm" of loop-zombie is "true"
+			delete loop-zombie
+		message "{@prefix} §3呼び出した妖魔は消滅した..."
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a 337:
+	name of player's tool is "§8Fixed Artillery"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 30
+		message "{@prefix} §8自身を固定砲台化します!"
+		play raw sound "random.click" at the player with pitch 0.9 volume 1.2
+		apply slowness 10 to player for 5 seconds
+		apply jump boost -10 to player for 5 seconds
+		loop 20 times:
+			shoot a snowball from player at speed 5
+			set metadata value "fixedshaman" of shot entity to "true"
+			drawDot count 1, particle "witchspell", center shot entity, visibleRange 30, keepFor 40 ticks
+			play raw sound "mob.wither.shoot" at player with pitch 2 volume 0.7
+			wait 5 ticks
+		apply slowness 1 to player for 10000000000 seconds
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage:
+	damage was caused by projectile
+	projectile is a snowball
+	metadata value "fixedshaman" of projectile is "true"
+	set damage to 1
+	apply wither 1 to victim for 3 seconds

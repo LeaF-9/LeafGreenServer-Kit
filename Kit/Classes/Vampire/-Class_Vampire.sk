@@ -1,0 +1,413 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	loop-prefix: §2[%{CLS::%loop-player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+
+# Vampireのスキル Ver1.0.0
+on heal:
+	{CLS::%player%} is "VAM"
+	cancel event
+
+on damage:
+	name of attacker's tool is "§5Vampire Sickle"
+	{Stats.%attacker%::BatMode} is true
+	victim is not bat
+	ignite the victim for 3 seconds
+
+on rightclick holding a nether wart item:
+	name of player's tool is "§4Hematophagia"
+	cancel the event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_target} to target player
+		if {_target} is set:
+			if {team::%{_target}%} is not {team::%player%}:
+				set {CT.%player%::%name of player's tool%} to 20
+				add player to {damager.%{_target}%::*}
+				set {_thp} to target player's health
+				set {_shp} to {_thp} / 4
+				add {_shp} to player's health
+				subtract {_shp} from {_target}'s health
+				message "{@prefix} §5%{_target}% §8から§dHealth§8を§4%{_shp}% §8吸い取った！"
+				message "§8血を吸われてしまった..." to {_target}
+				play raw sound "random.drink" at player with pitch 1 volume 1
+			else:
+				set action bar of player to "§c§l味方プレイヤーには発動できません!"
+		else:
+			set action bar of player to "§c§l対象のプレイヤーがいません!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a fermented spider eye:
+	name of player's tool is "§dHealth Control"
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_tp} to the target player
+		if {_tp} is set:
+			if {team::%player%} is {team::%target player%}:
+				set {_hp} to target player's health
+				set {_hps} to 10 - {_hp}
+				if {_tp}'s health is max health of {_tp}:
+					set action bar of player to "§d§lこのプレイヤーは回復する必要がありません！"
+					stop
+				else:
+					if player's health is more than {_hps}:
+						add player to {supporter.%target player%::*}
+						damage the player by {_hps} hearts
+						heal {_tp} by {_hps} hearts
+						message "{@prefix} §4自分の体力を削って§c%target player%§4の体力を§d全回復しました！"
+						send "§d%player% §eに体力を分け与えてもらいました" to {_tp}
+					else:
+						set action bar of player to "§4§l体力が足りません！"
+						stop
+			else:
+				set {_ph} to player's health
+				set {_th} to target player's health
+				set player's health to {_th}
+				set target player's health to {_ph}
+				play raw sound "random.drink" at the player with pitch 1 volume 1
+				message "{@prefix} §4%{_tp}% §7と体力を入れ替えました"
+				send "§4%player% §7と体力を入れ替えました" to {_tp}
+			set {CT.%player%::%name of player's tool%} to 30
+		else:
+			set action bar of player to "§c§l対象のプレイヤーがいません!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a magma cream:
+	name of player's tool is "§5Dearly Damage"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if player's health is more than 3:
+			set {CT.%player%::%name of player's tool%} to 30
+			if {Stats.%player%::RiskyInjury} is true:
+				damage player by 1 heart
+			else:
+				damage player by 3 hearts
+			message "{@prefix} §5体力を削って周辺プレイヤーにダメージを与えます"
+			play raw sound "mob.zombie.woodbreak" at the player with pitch 1.5 volume 1
+			loop all players in radius 10 around player:
+				{team::%loop-player%} is not {team::%player%}
+				make player damage loop-player by 6
+				message "§5犠牲によるダメージを喰らった!" to loop-player
+				drawDot count 3, particle "angryvillager", center location of block above loop-player, visibleRange 30, keepFor 20 ticks
+			drawWarpRings style 0, particle "redstone", RGB 100, 0, 100, center player, id "%player%", scan true, height 10, radius 10, ringCount 20, ringDensity 100, visibleRange 32
+			wait 5 ticks
+			stopEffect "%player%"
+		else:
+			set action bar of player to "§c§l体力が不足しています!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a flint:
+	name of player's tool is "§0Risky Injury"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if max health of player is more than 5:
+			set {CT.%player%::%name of player's tool%} to 40
+			subtract 5 from max health of player
+			message "{@prefix} §5最大体力を削ってダメージをカットするシールドを張ります..."
+			set {Stats.%player%::RiskyInjury} to true
+			play raw sound "mob.bat.death" at the player with pitch 0.5 volume 1
+			drawComplexSpiral particle "redstone", RGB 0, 0, 0, center player, id "%player%", clockwise true, scan true, radius 0.5, density 50, height 5, effectMod .05, start 0, visibleRange 30
+			wait 10 seconds
+			if {Stats.%player%::RiskyInjury} is true:
+				add 5 to max health of player
+				delete {Stats.%player%::RiskyInjury}
+				stopEffect "%player%"
+		else:
+			set action bar of player to "§c§l最大体力が不足しています!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage of player:
+	{Stats.%victim%::RiskyInjury} is true
+	set damage to 1
+
+every a second:
+	loop all players:
+		{CLS::%loop-player%} is "VAM"
+		set {_hp} to loop-player's health
+		if {Stagerule::%{KitPvP_Stage}%} is "EmJ":
+			set {_amount} to amount of emerald named "§aJewel" in loop-player's inventory
+			set {_amogem} to amount of diamond named "§bGem" in loop-player's inventory
+		if {Stagerule::%{KitPvP_Stage}%} is "StW":
+			loop-player's inventory contains sheep spawn egg named "§7Wool"
+			set {_wool} to true
+		if {Stats.%loop-player%::BatMode} is true:
+			if {_hp} <= 3:
+				loop all bats:
+					loop-bat's display name is "%loop-player%'s Bat Shield"
+					drawDot count 3, particle "mobspell", RGB 100, 0, 100, center loop-bat, visibleRange 30, keepFor 20 ticks
+					if distance between loop-player and loop-bat is more than 10:
+						teleport loop-bat to loop-player
+					else:
+						set {_to} to location of loop-player to vector
+						set {_from} to location of loop-bat to vector
+						set {_vector} to vector {_to} - {_from}
+						set {_vector} to vector {_vector} normalized * 2
+						set velocity of loop-bat to {_vector}
+			else:
+				delete {Stats.%loop-player%::BatMode}
+				execute console command "/class Vampire %loop-player% false"
+				set loop-player's health to {_hp}
+				loop {_amount} times:
+					give a emerald named "§aJewel" to loop-player
+				loop {_amogem} times:
+					give a diamond named "§bGem" to loop-player
+				if {_wool} is true:
+					give a sheep spawn egg named "§7Wool" to loop-player
+				set action bar of loop-player to "§4Bat Mode§cが無効になりました"
+				loop all bats:
+					loop-bat's display name is "%loop-player%'s Bat Shield"
+					delete loop-bat
+		else:
+			if {_hp} <= 3:
+				{Stats.%loop-player%::RiskyInjury} is not set
+				set {Stats.%loop-player%::BatMode} to true
+				execute console command "/class Vampire_Bat %loop-player% false"
+				set loop-player's health to {_hp}
+				loop {_amount} times:
+					give a emerald named "§aJewel" to loop-player
+				loop {_amogem} times:
+					give a diamond named "§bGem" to loop-player
+				if {_wool} is true:
+					give a sheep spawn egg named "§7Wool" to loop-player
+				set action bar of loop-player to "§4Bat Mode§aが有効になりました"
+				loop 3 times:
+					spawn a bat at loop-player
+					set spawned bat's display name to "%loop-player%'s Bat Shield"
+
+on rightclick holding a feather:
+	name of player's tool is "§0§lVampire Wing"
+	cancel event
+	if {Stats.%player%::VampireWing} is true:
+		play raw sound "mob.enderdragon.wings" at player with pitch 1 volume 0.5
+		push player upwards at speed 0.5
+		push the player forward at speed 0.5
+		stop
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 20
+		set {Stats.%player%::VampireWing} to true
+		play raw sound "mob.enderdragon.wings" at player with pitch 0.5 volume 10
+		drawWings style 12, particle1 "redstone", RGB 0, 0, 0, particle2 "redstone", RGB2 128, 0, 0, particle3 "redstone", RGB3 200, 0, 0, center player, id "%player%", angle 110, height 0, space 0.2, visibleRange 30, tps 0, second 3
+		if {Ult.%player%::Vampire} is true:
+			message "{@prefix} §010秒間§5翼を授かった..."
+			wait 10 seconds
+		else:
+			message "{@prefix} §05秒間§5翼を授かった..."
+			wait 5 seconds
+		delete {Stats.%player%::VampireWing}
+		stopEffect "%player%"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a 263:
+	name of player's tool is "§0§lSummon Death Bat"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 20
+		message "{@prefix} §4死のコウモリを解き放った！"
+		if {Ult.%player%::Vampire} is true:
+			set {_a} to 10
+		else:
+			set {_a} to 5
+		loop {_a} times:
+			spawn a bat at the player
+			set spawned bat's display name to "%player%"
+			drawDot count 5, particle "redstone", RGB 0, 0, 0, center spawned bat, visibleRange 30, keepFor 20 ticks
+		play raw sound "mob.enderdragon.wings" at the player with pitch 2 volume 1
+		loop 5 times:
+			loop all bats:
+				push loop-bat in direction of player at speed 0.8
+			wait 4 ticks
+		loop all bats:
+			loop-bat's display name is "%player%"
+			loop all players:
+				{team::%loop-player%} is not {team::%player%}
+				the distance between loop-player and loop-bat is less than 5
+				set {_damagetrue.%loop-player%} to true
+				add 1 to {_damageamount.%loop-player%}
+		loop all players:
+			{_damagetrue.%loop-player%} is true
+			set {LastKiller::%loop-player%} to player
+			add player to {damager.%loop-player%::*}
+			subtract {_damageamount.%loop-player%} from loop-player's health
+		loop all bats:
+			loop-bat's display name is "%player%"
+			drawDot count 5, particle "explosion", center loop-bat, visibleRange 30, keepFor 5 ticks
+			delete loop-bat
+			play raw sound "mob.bat.death" at loop-bat with pitch 1.5 volume 0.1
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a nether star:
+	name of player's tool is "§0§lProtect Health"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 40
+		play raw sound "portal.travel" at the player with pitch 0.5 volume 1
+		set {Stats.%player%::ProtectHealth} to true
+		drawWarpRings style 0, particle "mobspell", RGB 50, 0, 50, center player, id "%player%", scan true, height 2, radius 0.5, ringCount 20, ringDensity 5, visibleRange 32
+		if {Ult.%player%::Vampire} is true:
+			message "{@prefix} §65秒間§c敵にダメージを跳ね返すことが出来ます!"
+			wait 5 seconds
+		else:
+			message "{@prefix} §62秒間§c敵にダメージを跳ね返すことが出来ます!"
+			wait 2 seconds
+		stopEffect "%player%"
+		delete {Stats.%player%::ProtectHealth}
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage of player:
+	if {Stats.%victim%::ProtectHealth} is true:
+		set {LastKiller::%attacker%} to victim
+		add victim to {damager.%attacker%::*}
+		set {_dp} to damage
+		cancel event
+		damage attacker by {_dp} hearts
+		send "§c痛い！ §4ダメージが自分に跳ね返る！" to the attacker
+	else:
+		if damage was caused by fall:
+			stop
+		{Ult.%victim%::Vampire} is not set
+		attacker exists
+		loop all bats:
+			loop-bat's display name is "%victim%'s Bat Shield"
+			set {_true} to true
+		{_true} is true
+#		set {_dm} to damage * 2
+		cancel event
+		loop all bats:
+			loop-bat's display name is "%victim%'s Bat Shield"
+			loop-bat is alive
+			kill loop-bat
+#			if attacker exists:
+#				make attacker damage loop-bat by {_dm}
+#			else:
+#				set {_dm} to {_dm} / 2
+#				damage loop-bat by {_dm}
+			stop
+
+on rightclick holding a redstone:
+	name of player's tool is "§cBlood Absorb"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 30
+		play raw sound "mob.bat.death" at the player with pitch 0.5 volume 1
+		drawComplexSpiral particle "mobspell", RGB 100, 0, 0, center player, id "%player%", clockwise true, scan true, radius 1, density 50, height 6, effectMod .05, start 0, visibleRange 30
+		message "{@prefix} §47秒間,攻撃時に回復する能力を付与します!"
+		set {Stats.%player%::BloodAbsorb} to true
+		wait 7 seconds
+		stopEffect "%player%"
+		delete {Stats.%player%::BloodAbsorb}
+		message "{@prefix} §c効果が切れました"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a nether quartz item:
+	name of player's tool is "§0§lDark Confuse"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 30
+		if time is night:
+			set {Invisible::%player%} to true
+			loop all players:
+				{CLS::%loop-player%} is not "THI"
+				hide player from loop-player
+			play raw sound "mob.bat.death" at player with pitch 0.1 volume 0.5
+			message "{@prefix} §0暗闇の中に身を潜めた..."
+			if {Ult.%player%::Vampire} is true:
+				wait 15 seconds
+			else:
+				wait 10 second
+			if {Invisible::%player%} is true:
+				delete {Invisible::%player%}
+				reveal player from all players
+				message "{@prefix} §5透明化は解除された!"
+		else:
+			set {Invisible::%player%} to true
+			loop all players:
+				{CLS::%loop-player%} is not "THI"
+				hide player from loop-player
+			play raw sound "mob.bat.death" at player with pitch 0.5 volume 0.5
+			message "{@prefix} §5身を潜めた..."
+			wait 5 seconds
+			if {Invisible::%player%} is true:
+				delete {Invisible::%player%}
+				reveal player from all players
+				message "{@prefix} §5透明化は解除された!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a fire charge:
+	name of player's tool is "§0§lHateful Sunlight"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_tg} to target player
+		if {_tg} is set:
+			if {team::%{_tg}%} is not {team::%player%}:
+				set {CT.%player%::%name of player's tool%} to 30
+				play raw sound "mob.zombie.wood" at {_tg} with pitch 0.5 volume 1
+				message "{@prefix} §5%{_tg}% §0に太陽嫌悪の効果を付与した..."
+				message "§4§l太陽が憎い..." to {_tg}
+				set {Stats.%player%::HateSun} to {_tg}
+			else:
+				set action bar of player to "§c§l同じチームのプレイヤーには発動できません!"
+		else:
+			set action bar of player to "§c§l対象のプレイヤーがいません!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+every 10 seconds:
+	loop all players:
+		{Stats.%loop-player%::HateSun} is set
+		set {_t} to {Stats.%loop-player%::HateSun}
+		if light level of {_t} > 10:
+			if {Ult.%loop-player%::Vampire} is true:
+				ignite {_t} for 10 seconds
+			else:
+				ignite {_t} for 5 seconds
+			message "§4§l光が眩しくて燃えてしまった!" to {_t}
+			play raw sound "mob.ghast.scream" at {_t} with pitch 0.5 volume 0.7
+			drawDot count 3, particle "mobspell", RGB 50, 0, 0, center {_t}, visibleRange 30, keepFor 3 seconds
+		else if light level of {_t} < 5:
+			if {Ult.%loop-player%::Vampire} is true:
+				apply blindness 1 to {_t} for 10 seconds
+			else:
+				apply blindness 1 to {_t} for 5 seconds
+			message "§5§l暗くて目が見えない..." to {_t}
+			play raw sound "mob.wither.spawn" at {_t} with pitch 0.5 volume 0.7
+			drawDot count 3, particle "mobspell", RGB 0, 0, 0, center {_t}, visibleRange 30, keepFor 3 seconds
+
+on damage of player:
+	{Stats.%attacker%::BloodAbsorb} is true
+	attacker is alive
+	set {_dmg} to damage * 0.5
+	heal attacker by {_dmg}
+
+on damage:
+	damage was caused by fall
+	{CLS::%victim%} is "VAM"
+	cancel event
+
+every 5 seconds:
+	loop all players:
+		{CLS::%loop-player%} is "VAM"
+		if time is night:
+			apply speed 1 to loop-player for 5 seconds
+			apply jump boost 1 to loop-player for 5 seconds
+
+on death of player:
+	loop all bats:
+		loop-bat's display name is "%victim%'s Bat Shield"
+		delete loop-bat
+	{CLS::%{LastKiller::%victim%}%} is "VAM"
+	{Stats.%{LastKiller::%victim%}%::BatMode} is true
+	spawn a bat at {LastKiller::%victim%}
+	set spawned bat's display name to "%{LastKiller::%victim%}%'s Bat Shield"
+
+on damage of bat:
+	if victim's display name contains "%attacker%":
+		cancel event
+		stop

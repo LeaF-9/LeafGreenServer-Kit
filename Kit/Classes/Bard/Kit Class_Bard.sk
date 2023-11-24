@@ -1,0 +1,259 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+
+# Bardのスキル Ver1.0.0
+on damage:
+	name of attacker's tool is "§8Drum Stick"
+	loop 3 times:
+		play raw sound "note.bd" at the victim with pitch 1 volume 10
+		wait 2 ticks
+
+every 5 seconds:
+	loop all players:
+		if {CLS::%loop-player-1%} is "BAR":
+			{Ult.%loop-player-1%::Bard} is not set
+			loop all players in radius 10 around loop-player-1:
+#				if {Stats.%loop-player-1%::RelaxMusical} is true:
+#					{team::%loop-player-2%} is {team::%loop-player-1%}
+#					{CLS::%loop-player-2%} is not "BSK"
+#					add loop-player-1 to {supporter.%loop-player-2%::*}
+#					if {Stats.%loop-player-1%::Fortissimo} is true:
+#						apply regeneration 2 to loop-player-2 for 5 seconds
+#					else:
+#						apply regeneration 1 to loop-player-2 for 5 seconds
+#					drawDot count 1, particle "mobspell", XYZ 255, 105, 180, center loop-player-2, visibleRange 30, keepFor 100 ticks
+				if {Stats.%loop-player-1%::BardMusic} is "heal" or "resis" or "speed":
+					{team::%loop-player-2%} is {team::%loop-player-1%}
+					loop-player-2 is not loop-player-1
+#					distance between loop-player-1 and loop-player-2 <= 5
+					{CLS::%loop-player-2%} is not "BSK"
+					add loop-player-1 to {supporter.%loop-player-2%::*}
+					if {Stats.%loop-player-1%::BardMusic} is "heal":
+						if {Stats.%loop-player-1%::Fortissimo} is true:
+							apply regeneration 2 to loop-player-2 for 5 seconds
+						else:
+							apply regeneration 1 to loop-player-2 for 5 seconds
+						drawDot count 1, particle "note", XYZ 6, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
+					else if {Stats.%loop-player-1%::BardMusic} is "resis":
+						if {Stats.%loop-player-1%::Fortissimo} is true:
+							apply resistance 3 to loop-player-2 for 5 seconds
+						else:
+							apply resistance 1 to loop-player-2 for 5 seconds
+						drawDot count 1, particle "note", XYZ 7, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
+					else if {Stats.%loop-player-1%::BardMusic} is "speed":
+						if {Stats.%loop-player-1%::Fortissimo} is true:
+							apply speed 2 to loop-player-2 for 5 seconds
+						else:
+							apply speed 1 to loop-player-2 for 5 seconds
+						drawDot count 1, particle "note", XYZ 13, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
+				else if {Stats.%loop-player-1%::BardMusic} is "poison" or "weak" or "slow":
+					{team::%loop-player-2%} is not {team::%loop-player-1%}
+					if {Stats.%loop-player-1%::BardMusic} is "poison":
+						if {Stats.%loop-player-1%::Fortissimo} is true:
+							apply poison 2 to loop-player-2 for 5 seconds
+						else:
+							apply poison 1 to loop-player-2 for 5 seconds
+						drawDot count 1, particle "note", XYZ 15, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
+					else if {Stats.%loop-player-1%::BardMusic} is "weak":
+						if {Stats.%loop-player-1%::Fortissimo} is true:
+							apply weakness 2 to loop-player-2 for 5 seconds
+						else:
+							apply weakness 1 to loop-player-2 for 5 seconds
+						drawDot count 1, particle "note", XYZ 1, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
+					else if {Stats.%loop-player-1%::BardMusic} is "slow":
+						if {Stats.%loop-player-1%::Fortissimo} is true:
+							apply slowness 2 to loop-player-2 for 5 seconds
+						else:
+							apply slowness 1 to loop-player-2 for 5 seconds
+						drawDot count 1, particle "note", XYZ 9, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
+
+on rightclick holding a gold music disc:
+	name of player's tool is "§6Grant Melody"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_tp} to target player
+		if {_tp} is set:
+			if {team::%{_tp}%} is {team::%player%}:
+				if {CLS::%{_tp}%} is not "BSK":
+					add player to {supporter.%{_tp}%::*}
+					message "{@prefix} §6%{_tp}%§aにファンファーレを送りました！"
+					message "§b%player% §aがファンファーレを送ってくれました！" to {_tp}
+					if {Stats.%player%::Fortissimo} is true:
+						message "{@prefix} §aFortissimo発動中！ §e効果が増大します！"
+						play raw sound "random.levelup" at {_tp} with pitch 1 volume 1
+						apply regeneration 2 to {_tp} for 5 seconds
+						apply resistance 2 to {_tp} for 5 seconds
+						apply speed 2 to {_tp} for 5 seconds
+					else:
+						play raw sound "random.levelup" at {_tp} with pitch 2 volume 1
+						apply regeneration 1 to {_tp} for 5 seconds
+						apply resistance 1 to {_tp} for 5 seconds
+						apply speed 1 to {_tp} for 5 seconds
+					drawDot count 1, particle "happyvillager", center {_tp}, visibleRange 30, keepFor 100 ticks
+				else:
+					message "{@prefix} §cこのプレイヤーを支援したくありません"
+			else:
+				add player to {damager.%{_tp}%::*}
+				message "{@prefix} §6%{_tp}%§cにエンディングを送りました"
+				message "§b%player% §cにエンディングを告げられた！" to {_tp}
+				if {Stats.%player%::Fortissimo} is true:
+					message "{@prefix} §aFortissimo発動中！ §e効果が増大します！"
+					play raw sound "random.levelup" at {_tp} with pitch 1 volume 1
+					remove slowness from {_tp}
+					apply weakness 2 to {_tp} for 5 seconds
+					apply poison 2 to {_tp} for 5 seconds
+					apply slowness 2 to {_tp} for 5 seconds
+				else:
+					play raw sound "random.levelup" at {_tp} with pitch 2 volume 1
+					apply weakness 1 to {_tp} for 5 seconds
+					apply poison 1 to {_tp} for 5 seconds
+					apply slowness 1 to {_tp} for 5 seconds
+				drawDot count 1, particle "angryvillager", center {_tp}, visibleRange 30, keepFor 100 ticks
+			set {CT.%player%::%name of player's tool%} to 30
+		else:
+			set action bar of player to "§c§l目先にプレイヤーはいません"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on click holding a green music disc:
+	name of player's tool is "§aFortissimo"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {Stats.%player%::Fortissimo} to true
+		drawDot count 1, particle "note", center player, visibleRange 30, pulseDelay 0, keepFor 10 seconds
+		set {CT.%player%::%name of player's tool%} to 60
+		message "{@prefix} §cFortissimo§aを発動しました! §6付与する効果を大幅に強化します!"
+		play raw sound "random.orb" at player with pitch 0.5 volume 0.5
+		wait 5 ticks
+		play raw sound "random.orb" at player with pitch 1 volume 1
+		wait 5 ticks
+		play raw sound "random.orb" at player with pitch 2 volume 2
+		wait 10 seconds
+		delete {Stats.%player%::Fortissimo}
+		stopEffect "%player%"
+		message "{@prefix} §eFortissimoの効果が切れました"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+	
+on click holding a note block:
+	name of player's tool is "§cMark Sound"
+	cancel the event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_target} to the target player
+		if {_target} is set:
+			if {team::%{_target}%} is not {team::%player%}:
+				set {CT.%player%::%name of player's tool%} to 60
+				set {Stats.%{_target}%::BardMark} to {team::%player%}
+				loop all players:
+					{team::%loop-player%} is {team::%player%}
+					send "§c%target player% §eがマークされました！" to loop-player
+				message "{@prefix} §2%target player% §aをマークしました！"
+				send "§cあなたは §6%player% §cによってマークされました！" to {_target}
+				set {Stats.%player%::MarkSound} to true
+				set {Stats.%{_target}%::MS} to 16
+				while {Stats.%{_target}%::MS} is set:
+					subtract 1 from {Stats.%{_target}%::MS}
+					play raw sound "note.harp" at {_target} with pitch 60 volume 10
+					drawDot count 1, particle "note", center location of block above {_target}, visibleRange 30
+					if {Stats.%{_target}%::MS} is less than 0:
+						delete {Stats.%{_target}%::BardMark}
+						delete {Stats.%{_target}%::MS}
+					wait 10 ticks
+				loop all players:
+					{team::%loop-player%} is {team::%player%}
+					send "§8マークが解除されました" to loop-player
+				message "{@prefix} §eマークが切れました"
+				send "§aマーク状態が解除されました！" to {_target}
+				delete {Stats.%{_target}%::BardMark}
+				delete {Stats.%{_target}%::MS}
+				delete {Stats.%player%::MarkSound}
+			else:
+				set action bar of player to "§c§l味方プレイヤーには発動できません"
+		else:
+			set action bar of player to "§c§l目先にプレイヤーはいません"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage:
+	{Stats.%victim%::BardMark} is {team::%attacker%}
+	if {CLS::%attacker%} is not "BAR":
+		set damage to 100
+
+on click holding a jukebox:
+	name of player's tool is "§eBuff Music"
+	cancel event
+	open chest with 1 row named "§aMusic Selection" to player
+	wait 1 tick
+	format slot 3 of player with chirp music disc named "§aHeal" with lore "効果||§a再生能力 1||§cFortissimo: 再生能力 2" to close then run "buffmusic %player% heal"
+	format slot 1 of player with gold music disc named "§aResistance" with lore "効果||§a耐性 1||§cFortissimo: 耐性 2" to close then run "buffmusic %player% resis"
+	format slot 2 of player with wait music disc named "§aSpeed" with lore "効果||§a移動速度上昇 1||§cFortissimo: 移動速度上昇 2" to close then run "buffmusic %player% speed"
+	format slot 7 of player with mall music disc named "§cPoison" with lore "効果||§a毒 1||§cFortissimo: 毒 2" to close then run "buffmusic %player% poison"
+	format slot 5 of player with 11-disc named "§cWeakness" with lore "効果||§a弱体化 1||§cFortissimo: 弱体化 2" to close then run "buffmusic %player% weak"
+	format slot 6 of player with ward music disc named "§cSlow" with lore "効果||§a移動速度低下 1||§cFortissimo: 移動速度低下 2" to close then run "buffmusic %player% slow"
+
+command /buffmusic <player> <text>:
+	trigger:
+		set {Stats.%arg 1%::BardMusic} to arg 2
+		message "§2[%{CLS::%arg 1%}%] §eBuffMusic§7を§a%arg 2%§7にセットしました" to arg 1
+
+on rightclick holding a blocks music disc:
+	name of player's tool is "§dRelax Musical"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_tp} to the target player
+		if {_tp} is set:
+			if {team::%{_tp}%} is {team::%player%}:
+				set {CT.%player%::%name of player's tool%} to 40
+				add player to {supporter.%{_tp}%::*}
+				play raw sound "fireworks.twinkle" at {_tp} with pitch 1.5 volume 1
+				if {Stats.%player%::Fortissimo} is true:
+					message "{@prefix} §aFortissimo発動中! §d効果が増大します!"
+					heal {_tp} by 4 hearts
+					apply regeneration 2 to {_tp} for 10 seconds
+				else:
+					heal {_tp} by 2 hearts
+					apply regeneration 1 to {_tp} for 10 seconds
+				message "{@prefix} §a%{_tp}% §eに§dリラクゼーションミュージック§eを奏でました!"
+				message "§d音楽によるリラクゼーション効果を受けた!" to {_tp}
+				drawDot count 1, particle "note", XYZ 5, 0, 0, center {_tp}, visibleRange 30, keepFor 200 ticks
+			else:
+				set action bar of player to "§c§l敵プレイヤーには発動できません"
+		else:
+			set action bar of player to "§c§l目先にプレイヤーはいません"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a paper:
+	name of player's tool is "§5Ancient Song"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 50
+		message "{@prefix} §5古の歌を奏でます..."
+		loop all players in radius 10 around player:
+			if {team::%loop-player%} is {team::%player%}:
+				loop-player is not player
+				{CLS::%loop-player%} is not "BSK"
+				add player to {supporter.%loop-player%::*}
+				if {Stats.%player%::Fortissimo} is true:
+					apply resistance 3 to loop-player for 3 seconds
+				set {_h} to loop-player's health
+				if {_h} <= 2:
+					apply absorption 5 to loop-player for 8 seconds
+				else if {_h} <= 4:
+					apply absorption 4 to loop-player for 8 seconds
+				else if {_h} <= 6:
+					apply absorption 3 to loop-player for 8 seconds
+				else if {_h} <= 8:
+					apply absorption 2 to loop-player for 8 seconds
+				else:
+					apply absorption 1 to loop-player for 8 seconds
+				drawDot count 1, particle "happyvillager", center loop-player, visibleRange 30, keepFor 8 seconds
+		set {_p} to 1
+		loop 5 times:
+			play raw sound "random.orb" at player with pitch {_p} volume 1
+			add 0.2 to {_p}
+			wait 4 ticks
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"

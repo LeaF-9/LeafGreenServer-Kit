@@ -1,0 +1,183 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+
+# Berserkerのスキル Ver1.0.0
+on damage of player:
+	{CLS::%attacker%} is "BSK"
+	{Ult.%attacker%::Berserker} is not set
+	if {Stats.%attacker%::Berserk} is true:
+		loop all players in radius 7 around attacker:
+			loop-player is not victim
+			loop-player is not attacker
+			if {team::%loop-player%} is not {team::%attacker%}:
+				set {LastKiller::%loop-player%} to attacker
+				add attacker to {damager.%loop-player%::*}
+			damage loop-player by 1 hearts
+			ignite loop-player for 2 seconds
+			drawDot count 1, particle "angryvillager", center location of block 2 above loop-player, visibleRange 30
+		set damage to damage + 1
+	else:
+		loop all players in radius 5 around attacker:
+			loop-player is not victim
+			loop-player is not attacker
+			if {team::%loop-player%} is not {team::%attacker%}:
+				set {LastKiller::%loop-player%} to attacker
+				add attacker to {damager.%loop-player%::*}
+			damage loop-player by 0.5 heart
+			drawDot count 1, particle "angryvillager", center location of block 2 above loop-player, visibleRange 30
+
+on damage of player:
+	damage was caused by attack
+	if {Stats.%victim%::Berserk} is true:
+		set damage to damage + 1
+		loop all players in radius 9 around victim:
+			loop-player is not victim
+			loop-player is alive
+			chance of 50%:
+				heal loop-player by 1 hearts
+				drawDot count 1, particle "heart", center location of block 2 above loop-player, visibleRange 30
+
+every a second:
+	{tochu} is true
+	loop all players:
+		{join::%loop-player%} is set
+		{Class::%loop-player%} is "Berserker"
+		set {_num} to 0
+		loop all players in radius 8 around loop-player:
+			loop-player-2 is not loop-player-1
+			{join::%loop-player-2%} is set
+			{Class::%loop-player-2%} is set
+			add 1 to {_num}
+		if {_num} is 0:
+			apply weakness 4 to loop-player for a second
+		else if {_num} is 1:
+			apply weakness 3 to loop-player for a second
+		else if {_num} is 2:
+			apply weakness 2 to loop-player for a second
+		else if {_num} is 3:
+			apply weakness 1 to loop-player for a second
+		else:
+			drawDot count 1, particle "mobspell", RGB 100, 50, 0, center loop-player, visibleRange 30, keepFor a second
+
+on rightclick holding a rose red:
+	name of player's tool is "§4Berserk Time"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 40
+		set {Stats.%player%::Berserk} to true
+		remove speed from player
+		apply speed 1 to the player for 10 seconds
+		message "{@prefix} §4§lBerserkTimeに入った..."
+		play raw sound "mob.blaze.breathe" at the player with pitch 1 volume 1
+		drawComplexSpiral particle "flame", center player, id "%player%", clockwise true, scan true, radius 1, density 50, height 6, effectMod .05, start 0, visibleRange 30
+		wait 10 seconds
+		delete {Stats.%player%::Berserk}
+		stopEffect "%player%"
+		message "{@prefix} §1BerserkTimeが終わった..."
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a blaze powder:
+	name of player's tool is "§4Rush Attack"
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 50
+		message "{@prefix} §4§lRushAttack §cを発動します！"
+		message "{@prefix} §c5秒間に10回、自分の回りにいるプレイヤーに1ダメージを与えます！"
+		drawDot count 1, particle "lava", center player, visibleRange 30, pulseDelay 0, keepFor 100 ticks
+		play raw sound "mob.blaze.breathe" at the player with pitch 0.5 volume 1
+		remove speed from player
+		apply speed 2 to the player for 5 seconds
+		loop 10 times:
+			player is alive
+			loop all players in radius 4 around player:
+				loop-player is not player
+				if {team::%loop-player%} is not {team::%player%}:
+					set {LastKiller::%loop-player%} to player
+					add player to {damager.%loop-player%::*}
+				damage loop-player by 1 hearts
+				drawDot count 1, particle "angryvillager", center location of block 2 above loop-player, visibleRange 30
+			wait 10 ticks
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a fermented spider eye:
+	name of player's tool is "§4Health Suction"
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {Stats.%player%::HealthSuction} to true
+		message "{@prefix} §510秒間、§4ダメージを与えると体力が回復します!"
+		play raw sound "mob.ghast.scream" at player with pitch 0.5 volume 1
+		drawComplexSpiral particle "heart", center player, id "%player%", clockwise true, scan true, radius 1, density 50, height 6, effectMod .05, start 0, visibleRange 30
+		set {CT.%player%::%name of player's tool%} to 60
+		wait 10 seconds
+		delete {Stats.%player%::HealthSuction}
+		message "{@prefix} §c効果が切れました"
+		stopEffect "%player%"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage of player:
+	{Stats.%attacker%::HealthSuction} is true
+	chance of 50%:
+		set {_hp} to attacker's health
+		if {_hp} = max health of attacker:
+			add 1 to max health of attacker
+		else:
+			heal attacker by 1 heart
+		drawDot count 1, particle "heart", center location of block 2 above attacker, visibleRange 30
+
+on rightclick holding a nether wart item:
+	name of player's tool is "§0Devil Mercy"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 40
+		if player's health >= 5:
+			subtract 5 from player's health
+		else:
+			subtract 3 from max health of player
+		apply strength 1 to the player for 6 seconds
+		message "{@prefix} §5悪魔に命を捧げて力を貰った..."
+		play raw sound "mob.wither.spawn" at the player with pitch 1.5 volume 1
+		drawDot count 5, particle "witchspell", center player, visibleRange 30, keepFor 8 seconds
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a dandelion yellow:
+	name of player's tool is "§6Rampage"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 45
+		set {Stats.%player%::Rampage} to true
+		message "{@prefix} §e15秒間キル時に5秒のコンボタイムが発生します..."
+		play raw sound "mob.blaze.hit" at the player with pitch 0.5 volume 1
+		drawDot count 5, particle "mobspell", RGB 100, 0, 0, center player, visibleRange 30, keepFor 15 seconds
+		wait 15 seconds
+		delete {Stats.%player%::Rampage}
+		delete {Stats.%player%::RampageTime}
+		delete {Stats.%player%::RampageCombo}
+		message "{@prefix} §cコンボタイムが終了しました"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on death of player:
+	{Stats.%attacker%::Rampage} is set
+	set {_now} to now
+	set {Stats.%attacker%::RampageTime} to {_now}
+	if {Stats.%attacker%::RampageCombo} is not set:
+		set {Stats.%attacker%::RampageCombo} to 1
+	add 1 to {Stats.%attacker%::RampageCombo}
+	play raw sound "mob.blaze.death" at attacker with pitch 1 volume 1
+	message "{@attackprefix} §6コンボ§e: §c§l%{Stats.%attacker%::RampageCombo}%" to attacker
+	loop 100 times:
+		drawDot count 5, particle "angryvillager", center location of block 2 above attacker, visibleRange 30
+		wait a tick
+	if {Stats.%attacker%::RampageTime} is {_now}:
+		delete {Stats.%attacker%::RampageTime}
+		delete {Stats.%attacker%::RampageCombo}
+
+on damage of player:
+	{Stats.%attacker%::Rampage} is set
+	set damage to damage + {Stats.%attacker%::RampageCombo}
+	if {Stats.%attacker%::RampageCombo} is set:
+		play raw sound "mob.blaze.hit" at victim with pitch 1 volume 1

@@ -1,0 +1,269 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+
+# Icemanのスキル Ver1.0.0
+on damage:
+	damage was caused by attack
+	name of attacker's tool is "§fIce Stick"
+	apply slowness 1 to the victim for 1 seconds
+
+on rightclick holding a diamond pickaxe:
+	name of player's tool is "§fIce Stick"
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_n} to 0
+		loop 3 times:
+			shoot a snowball from player at speed 3
+			drawDot count 5, particle "redstone", RGB 0, 200, 255, center shot projectile, visibleRange 30, keepFor 1.5 seconds
+			add 1 to {_n}
+			if {_n} is 1:
+				push shot projectile to the left at speed 1
+			if {_n} is 2:
+				push shot projectile to the right at speed 1
+		play raw sound "random.bow" at the player with pitch 1 volume 1
+		set {CT.%player%::%name of player's tool%} to 10
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a diamond hoe:
+	name of player's tool is "§3Ice Burst"
+	if {CT.%player%::%name of player's tool%} is not set:
+		shoot an arrow from player at speed 3
+		set metadata value "ice" of shot arrow to "true"
+		drawDot count 5, particle "mobspell", RGB 0, 200, 255, center shot projectile, visibleRange 30, keepFor 3 seconds
+		play raw sound "fireworks.launch" at player with pitch 5 volume 1
+		set {CT.%player%::%name of player's tool%} to 40
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage:
+	damage was caused by projectile
+	projectile is an arrow
+	metadata value "ice" of projectile is "true"
+	cancel event
+
+on projectile hit:
+	projectile is an arrow
+	metadata value "ice" of projectile is "true"
+	set {_pl} to location of block at projectile
+	loop all blocks in radius 3 around location of {_pl}:
+		loop-block is air
+		if y-coordinate of loop-block is y-coordinate of {_pl}:
+			add location of loop-block to {_pready::*}
+		else if y-coordinate of loop-block < y-coordinate of {_pl}:
+			add location of loop-block to {_ice::*}
+			add location of loop-block to {Block.%shooter%::*}
+			set loop-block to ice
+	loop all players in radius 3 around location of {_pl}:
+		{team::%loop-player%} is not {team::%shooter%}
+		set {LastKiller::%loop-player%} to shooter
+		add shooter to {damager.%loop-player%::*}
+		execute console command "/freeze %loop-player% 3 seconds"
+	set {_height} to -1
+	loop 10 times:
+		play raw sound "dig.snow" at location of {_pl} with pitch 1 volume 0.5
+		add 1 to {_height}
+		loop {_pready::*}:
+			delete {_tb}
+			if {_height} <= 3:
+				chance of 10%:
+					set {_tb} to location of block {_height} blocks above loop-value-2
+					if block at {_tb} is air:
+						add {_tb} to {_packice::*}
+						add {_tb} to {Block.%shooter%::*}
+						set block at {_tb} to packed ice
+						drawDot count 1, particle "mobspell", XYZ 255, 255, 255, center location of {_tb}, visibleRange 32
+				if {_tb} is not set:
+					set {_tb} to location of block {_height} blocks above loop-value-2
+					if block at {_tb} is air:
+						add {_tb} to {_ice::*}
+						add {_tb} to {Block.%shooter%::*}
+						set block at {_tb} to ice
+						drawDot count 1, particle "mobspell", XYZ 0, 255, 255, center location of {_tb}, visibleRange 32
+			else:
+				chance of 50%:
+					chance of 10%:
+						set {_tb} to location of block {_height} blocks above loop-value-2
+						if block at {_tb} is air:
+							add {_tb} to {_packice::*}
+							add {_tb} to {Block.%shooter%::*}
+							set block at {_tb} to packed ice
+							drawDot count 1, particle "mobspell", XYZ 255, 255, 255, center location of {_tb}, visibleRange 32
+					if {_tb} is not set:
+						set {_tb} to location of block {_height} blocks above loop-value-2
+						if block at {_tb} is air:
+							add {_tb} to {_ice::*}
+							add {_tb} to {Block.%shooter%::*}
+							set block at {_tb} to ice
+							drawDot count 1, particle "mobspell", XYZ 0, 255, 255, center location of {_tb}, visibleRange 32
+				if {_tb} is not set:
+					remove loop-value-2 from {_pready::*}
+		wait a tick
+	wait 10 ticks
+	loop 4 times:
+		play raw sound "dig.glass" at projectile with pitch 1 volume 0.7
+		loop 20 times:
+			set {_rp} to a random location out of {_ice::*}
+			remove {_rp} from {_ice::*}
+			remove {_rp} from {Block.%shooter%::*}
+			set block at {_rp} to air
+			drawDot count 1, particle "blockcrack", material ice, center location of {_rp}, visibleRange 30
+		wait 5 ticks
+	play raw sound "dig.glass" at projectile with pitch 0.8 volume 0.8
+	loop {_ice::*}:
+		remove loop-value from {Block.%shooter%::*}
+		set block at loop-value to air
+		drawDot count 1, particle "blockcrack", material ice, center location of loop-value, visibleRange 30
+	wait 10 ticks
+	play raw sound "dig.glass" at projectile with pitch 0.5 volume 1
+	loop {_packice::*}:
+		remove loop-value from {Block.%shooter%::*}
+		set block at loop-value to air
+		drawDot count 1, particle "blockcrack", material packed ice, center location of loop-value, visibleRange 30
+
+on damage:
+	damage was caused by projectile
+	{CLS::%attacker%} is "ICE"
+	projectile is snowball
+	metadata value "freezedry" of projectile is not set
+	extinguish the victim
+	{team::%victim%} is not {team::%attacker%}
+	apply slowness 1 to the victim for 3 seconds
+	set damage to 1
+
+on rightclick holding a diamond shovel:
+	name of player's tool is "§bIce Freeze"
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 30
+		message "{@prefix} §b冷気を貯めます..."
+		apply slowness 1 to player for 3 seconds
+		set {_r} to 255
+		loop 3 times:
+			play raw sound "random.orb" at player with pitch 0.5 volume 1
+			loop all blocks in radius 5 around player:
+				loop-block is air
+				block below loop-block is not air
+				drawDot count 1, particle "mobspell", RGB {_r}, 255, 255, center location of loop-block, visibleRange 32
+			subtract 100 from {_r}
+			wait a second
+		loop all players in radius 5 around player:
+			{team::%loop-player%} is not {team::%player%}
+			{CLS::%loop-player%} is not "PYR"
+			loop-player is not burning
+			execute console command "/freeze %loop-player% 1.5 seconds"
+			message "§b凍ってしまった！" to loop-player
+		message "{@prefix} §9周辺のプレイヤーを§b凍らせました!"
+		drawSphere style 1, particle "redstone", RGB 0, 255, 255, center location of block at player, id "%player%", radius 5, density 50, visibleRange 30
+		play raw sound "random.levelup" at player with pitch 5 volume 1
+		wait 1 second
+		stopEffect "%player%"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+every 10 ticks:
+	loop all players:
+		{CLS::%loop-player%} is "ICE"
+		set {_pl.%loop-player%} to location of loop-player
+		loop all blocks in radius 5 around location at {_pl.%loop-player%}:
+			loop-block is water:0
+			set {_lb.%loop-player%::%loop-block's location%} to location of loop-block
+			set the loop-block to ice
+			play raw sound "dig.snow" at the loop-block with pitch 1 volume 1
+	wait 5 seconds
+	loop all players:
+		loop {_lb.%loop-player%::*}:
+			block at loop-value-2 is ice
+			set block at loop-value-2 to 9:0
+			play raw sound "dig.glass" at the loop-value-2 with pitch 1 volume 1
+
+on rightclick holding a packed ice:
+	name of player's tool is "§1Ice Guard"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {Stats.%player%::IceGuard} to true
+		message "{@prefix} §35秒間ダメージを半減して、攻撃者を1秒間§1凍らせます！"
+		play raw sound "random.orb" at player with pitch 5 volume 1
+		drawComplexSpiral particle "redstone", RGB 100, 100, 255, center player, id "%player%", clockwise true, scan true, radius 1, density 50, height 6, effectMod .05, start 0, visibleRange 30
+		apply slowness 3 to player for 5 seconds
+		set {CT.%player%::%name of player's tool%} to 30
+		wait 5 seconds
+		delete {Stats.%player%::IceGuard}
+		message "{@prefix} §1効果が切れました"
+		stopEffect "%player%"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage of player:
+	{Stats.%victim%::IceGuard} is true
+	{CLS::%attacker%} is not "PYR"
+	set damage to damage * 0.5
+	attacker is not burning
+	execute console command "/freeze %attacker% 1 seconds"
+
+on damage of player:
+	name of attacker's tool is "§cIce Breaker"
+	if {Freeze::%victim%} is set:
+		if {CT.%attacker%::%name of attacker's tool%} is not set:
+			set {CT.%attacker%::%name of attacker's tool%} to 30
+			delete {Freeze::%victim%}
+			set damage to 8
+			play raw sound "dig.glass" at victim with pitch 0.5 volume 1
+			message "{@attackprefix} §c氷を破壊して大ダメージを与えました!" to attacker
+		else:
+			cancel event
+			set action bar of attacker to "§c§lクールタイムが終わっていません!"
+	else:
+		cancel event
+		set action bar of attacker to "§c§l凍っていない相手には攻撃できません!"
+
+every 10 ticks:
+	loop all players:
+		{Stats.%loop-player%::FreezeDry} is set
+		{Stats.%loop-player%::FreezeDry} < 30
+		add 1 to {Stats.%loop-player%::FreezeDry}
+		if name of loop-player's tool is "§9Freeze Dry":
+			set action bar of loop-player to "§9Remains§b: §a%{Stats.%loop-player%::FreezeDry}%"
+
+on rightclick holding a diamond sword:
+	name of player's tool is "§9Freeze Dry"
+	wait a tick
+	if {Stats.%player%::FreezeDry} is not set:
+		set {Stats.%player%::FreezeDry} to 30
+	loop 30 times:
+		{Stats.%player%::FreezeDry} > 0
+		if player is blocking:
+			subtract 1 from {Stats.%player%::FreezeDry}
+			set action bar of player to "§9Remains§b: §a%{Stats.%player%::FreezeDry}%"
+			shoot a snowball from player at speed 0.8
+			set metadata value "freezedry" of shot entity to "true"
+			push shot entity to the left at speed random number from -0.3 to 0.3
+			push shot entity upwards at speed random number from -0.3 to 0.3
+			drawDot count 1, particle "redstone", RGB 200, 255, 255, center shot entity, visibleRange 32, keepFor 1 second
+			play raw sound "dig.snow" at player with pitch 2 volume 1
+			wait a tick
+
+on damage of player:
+	victim is alive
+	damage was caused by projectile
+	projectile is a snowball
+	metadata value "freezedry" of projectile is "true"
+	cancel event
+	set {_now} to now
+	set {Stats.%victim%::FreezeHit} to {_now}
+	if walk speed of victim > 0:
+		set {_walk} to walk speed of victim
+		subtract 0.01 from {_walk}
+		set walk speed of victim to {_walk}
+		if {_walk} is 0:
+			execute console command "/freeze %victim% 1 seconds"
+		else:
+			wait 3 seconds
+			if {Stats.%victim%::FreezeHit} is {_now}:
+				set walk speed of victim to 0.2
+
+on damage:
+	name of attacker's tool is "§9Freeze Dry"
+	damage was caused by attack
+	cancel event
+	set action bar of attacker to "§c§lこれは攻撃ができる剣ではありません!"
