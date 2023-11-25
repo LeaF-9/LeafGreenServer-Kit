@@ -44,15 +44,15 @@ command /setranking-position <text>:
 		spawn an armor stand at {_loc} with nbt {_nbt}
 		set {_spawnedmob} to spawned armor stand
 		set {_nbt} to nbt compound of {_spawnedmob}
-		set tag "Ranking.type" of {_nbt} to arg 1
-		set tag "Ranking.period" of {_nbt} to "all"
+		set tag "Ranking;type" of {_nbt} to arg 1
+		set tag "Ranking;period" of {_nbt} to "all"
 
 # 指定したランキングのベースエンティティを返す関数
 function kitGetRankingBase(type: text) :: entity:
 	loop all entities:
 		checkEntityType(loop-entity, armor stand) is true
 		set {_nbt} to nbt compound of loop-entity
-		tag "Ranking.type" of {_nbt} is {_type}
+		tag "Ranking;type" of {_nbt} is {_type}
 		set {_rankingentity} to loop-entity
 	if {_rankingentity} is not set:
 		load yml "plugins/skript-yaml/General Options/Rankings.yml" as "ranking.position.get"
@@ -62,8 +62,8 @@ function kitGetRankingBase(type: text) :: entity:
 		spawn an armor stand at {_loc} with nbt {_nbt}
 		set {_rankingentity} to spawned armor stand
 		set {_nbt} to nbt compound of {_rankingentity}
-		set tag "Ranking.type" of {_nbt} to {_type}
-		set tag "Ranking.period" of {_nbt} to "all"
+		set tag "Ranking;type" of {_nbt} to {_type}
+		set tag "Ranking;period" of {_nbt} to "all"
 	return {_rankingentity}
 
 # 指定したステータスランキングの期間を変更
@@ -150,8 +150,8 @@ function kitChangeRankingDisplay(stats: text, displays: texts):
 	loop all entities:
 		checkEntityType(loop-entity, text display) is true
 		set {_nbt} to nbt compound of loop-entity
-		tag "Ranking.type" of {_nbt} is {_stats}
-		set {_line} to tag "Ranking.line" of {_nbt}
+		tag "Ranking;type" of {_nbt} is {_stats}
+		set {_line} to tag "Ranking;line" of {_nbt}
 		set {_rankingentities::%{_line}%} to loop-entity
 	loop 12 times:
 		add 1 to {_num}
@@ -164,8 +164,8 @@ function kitChangeRankingDisplay(stats: text, displays: texts):
 			add {_addy} to y-pos of {_displayspawnloc}
 			spawn a text display at {_displayspawnloc}:
 				set {_nbt} to nbt compound of text display
-				set tag "Ranking.type" of {_nbt} to {_stats}
-				set tag "Ranking.line" of {_nbt} to {_num}
+				set tag "Ranking;type" of {_nbt} to {_stats}
+				set tag "Ranking;line" of {_nbt} to {_num}
 				set {_entity} to text display
 		set display name of {_entity} to {_displays::%{_num}%}
 
@@ -298,8 +298,6 @@ local function updateBaseDate():
 				add 1 to {_yearchecker}
 		else:
 			set {_month.checker} to true
-		log "§e%{_unix.month}% / %{_dif.month}% / %{_new.month}%"
-		wait a tick
 	# 更新時の処理
 	if {_new.month} is not {_base.month}:
 		load yml "plugins/skript-yaml/General Options/Ranking Dates.yml" as "month.update"
