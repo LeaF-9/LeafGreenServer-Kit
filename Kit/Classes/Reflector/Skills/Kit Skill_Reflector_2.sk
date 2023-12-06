@@ -35,9 +35,11 @@ local function kitEffect_DamageAbsorption(player: player):
 		message formatted "§c反撃ダメージを喰らった!" to loop-entity
 		kitParticle_DamageAbsorption_Hit(loop-entity)
 
+# 我慢中にダメージを受ける時のパーティクル
 local function kitParticle_DamageAbsorption_Charge(player: player):
 	playSound("entity.iron_golem.repair", 1, 2, {_player})
-	# drawDot count 1, particle "angryvillager", center location of block 2 above victim, visibleRange 30, keepFor 10 ticks
+	loop 10 times:
+		spawnParticle_Vector(smoke, randomVector(), 0.3, location 1 meter above {_player})
 
 local function kitParticle_DamageAbsorption_Launch(player: player):
 	playSound("entity.iron_golem.hurt", 1, 0.5, {_player})
