@@ -1,6 +1,6 @@
 # Skill-Name: Damage Absorption
 
-on damage:
+on damage of player:
 	if {Stats.%attacker%::DamageAbsorption} is true:
 		cancel event
 		set action bar of attacker to "§c§l我慢中は攻撃できません!"
@@ -21,32 +21,120 @@ local function kitEffect_DamageAbsorption(player: player):
 	set {Stats.%{_player}%::DamageAbsorption} to true
 	applyEffect({_player}, mining fatigue, 2, 3 seconds)
 	kitParticle_DamageAbsorption_Launch({_player})
-	wait 3 seconds
+	wait 54 ticks
+	kitParticle_DamageAbsorption_Explode({_player})
+	wait 6 ticks
 	delete {Stats.%{_player}%::DamageAbsorption}
 	if {Stats.%{_player}%::DamageAbsorption-Point} > 5:
 		set {Stats.%{_player}%::DamageAbsorption-Point} to 5
 	set {_dmg} to {Stats.%{_player}%::DamageAbsorption-Point}
 	delete {Stats.%{_player}%::DamageAbsorption-Point}
 	kitMsg({_player}, "§6溜めたダメージを爆発させます!")
-	kitParticle_DamageAbsorption_Explode({_player})
 	loop all entities in radius 5 around {_player}:
 		kitCheckTeam({_player}, loop-entity, false) is true
 		kitDamage({_player}, loop-entity, {_dmg})
 		message formatted "§c反撃ダメージを喰らった!" to loop-entity
-		kitParticle_DamageAbsorption_Hit(loop-entity)
+		kitParticle_DamageAbsorption_Hit({_player}, loop-entity)
 
 # 我慢中にダメージを受ける時のパーティクル
 local function kitParticle_DamageAbsorption_Charge(player: player):
 	playSound("entity.iron_golem.repair", 1, 2, {_player})
 	loop 10 times:
-		spawnParticle_Vector(smoke, randomVector(), 0.3, location 1 meter above {_player})
+		spawnParticle_Vector(smoke, vector(0, 1, 0), 0.5, aroundEffect({_player}))
 
+# 我慢を始める際のパーティクル
 local function kitParticle_DamageAbsorption_Launch(player: player):
-	playSound("entity.iron_golem.hurt", 1, 0.5, {_player})
+	kitSound_DamageAbsorption_Launch({_player})
+	set {_baseloc} to location of {_player}
+	set {_part.1::*} to particleLocation_Spiral({_baseloc}, 10, 1, 0.5, 2, 0)
+	set {_part.2::*} to particleLocation_Spiral({_baseloc}, 10, 1, 0.5, 2, 90)
+	set {_part.3::*} to particleLocation_Spiral({_baseloc}, 10, 1, 0.5, 2, 180)
+	set {_part.4::*} to particleLocation_Spiral({_baseloc}, 10, 1, 0.5, 2, 270)
+	set {_ln} to 0
+	loop 10 times:
+		set {_playerloc} to location of {_player}
+		set {_dif.x} to x-pos of {_playerloc} - x-pos of {_baseloc}
+		set {_dif.y} to y-pos of {_playerloc} - y-pos of {_baseloc}
+		set {_dif.z} to z-pos of {_playerloc} - z-pos of {_baseloc}
+		loop 4 times:
+			set {_el} to {_part.%loop-number-2%::%{_ln}%}
+			add {_dif.x} to x-pos of {_el}
+			add {_dif.y} to y-pos of {_el}
+			add {_dif.z} to z-pos of {_el}
+			spawnParticle(cloud, {_el})
+		add 1 to {_ln}
+		wait a tick
+	loop 10 times:
+		spawnParticle_Vector(totem_of_undying, randomVector(), 0.5, location 1 meter above {_player})
+	kitParticle_DamageAbsorption_Absorbing({_player})
+
+local function kitSound_DamageAbsorption_Launch(player: player):
+	set {_pitch} to 1
+	loop 10 times:
+		playSound("entity.iron_golem.hurt", 1, {_pitch}, {_player})
+		add 0.1 to {_pitch}
+		wait a tick
+	playSound("entity.iron_golem.death", 1, 2, {_player})
+
+# 我慢中のパーティクル 怒ってそうなパーティクルが周囲を舞う
+local function kitParticle_DamageAbsorption_Absorbing(player: player):
+	set {_index} to 1
+	loop 50 times:
+		set {_circle::*} to function particleLocation_Circle(location 2 meters above {_player}, 10, 0.5)
+		loop 2 times:
+			set {_el} to {_circle::%{_index}%}
+			spawnParticle(angry_villager, {_el})
+			add 1 to {_index}
+			if {_index} > 10:
+				set {_index} to 1
+		wait a tick
 
 local function kitParticle_DamageAbsorption_Explode(player: player):
-	playSound("entity.iron_golem.death", 1, 0.5, {_player})
-	# drawWarpRings style 0, particle "happyvillager", center player, id "%player%", scan true, height 10, radius 5, ringCount 20, ringDensity 50, visibleRange 32
+	kitSound_DamageAbsorption_Explode({_player})
+	set {_ln} to 0
+	loop 3 times:
+		add 1 to {_ln}
+		set {_circle::*} to particleLocation_Circle(location of {_player}, 15, 5)
+		loop {_circle::*}:
+			chance of (30 * {_ln})%:
+				spawnParticle(wax_off, loop-value-2)
+		wait 2 ticks
+	loop 30 times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(scrape, {_v}, 1, location of {_player})
+		chance of 30%:
+			set {_elbase} to location of {_player}
+			set {_elbase} to setDirToVec({_elbase}, {_v})
+			set {_rm} to a random number between 0 and 5
+			set {_el} to location {_rm} meters in front of {_elbase}
+			spawnParticle_BlockData(falling_dust, emerald block, {_el})
 
-local function kitParticle_DamageAbsorption_Hit(player: player):
-	# make a fake explosion at loop-player
+local function kitSound_DamageAbsorption_Explode(player: player):
+	set {_pitch} to 1
+	loop 4 times:
+		playSound("entity.iron_golem.death", 1, {_pitch}, {_player})
+		subtract 0.1 from {_pitch}
+		wait 2 ticks
+
+# ダメージをエンティティに与える演出 即着弾ビームで繋いで爆発演出
+local function kitParticle_DamageAbsorption_Hit(player: player, target: entity):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_toloc} to location 1 meter above {_target}
+	set {_v} to setVector({_baseloc}, {_toloc})
+	set {_baseloc} to setDirToVec({_baseloc}, {_v})
+	set {_circlev::*} to particleLocation_CircleV({_baseloc}, 6, 0.5)
+	loop {_circlev::*}:
+		set yaw of {_circlev::%loop-index%} to yaw of {_baseloc}
+		set pitch of {_circlev::%loop-index%} to pitch of {_baseloc}
+	set {_dis} to round(distance between {_baseloc} and {_toloc})
+	set {_m} to 0
+	loop {_dis} * 2 times:
+		add 0.5 to {_m}
+		set {_el} to location {_m} meters in front of {_basleoc}
+		spawnParticle_DustTransition(rgb(214, 233, 202), rgb(118, 145, 100), 2, {_el})
+		if mod({_m}, 1) is 0:
+			loop {_circlev::*}:
+				set {_el} to location {_m} meters in front of loop-value-2
+				spawnParticle(composter, {_el})
+	loop 10 times:
+		spawnParticle_Vector(cloud, randomVector(1), 0.5, {_toloc})
