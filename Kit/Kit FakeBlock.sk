@@ -105,12 +105,12 @@ on arm swing:
 	if "%{_hand}%" is not "HAND":
 		stop
 	set {_tg} to target entity of player
-	if type of {_tg} is block display:
+	if checkEntityType({_tg}, block display) is true:
 		if metadata value "kit-block" of {_tg} is not set:
 			stop
 		set {_metadata} to metadata value "kit-block" of {_tg}
 		set {_target} to metadata value {_metadata} of {_tg}
-	else if type of {_tg} is item display:
+	else if checkEntityType({_tg}, item display) is true:
 		if metadata value "kit-item" of {_tg} is not set:
 			stop
 		set {_metadata} to metadata value "kit-item" of {_tg}
@@ -131,12 +131,12 @@ on projectile hit:
 	loop all entities in radius 3 around projectile:
 		delete {_target}
 		delete {_metadata}
-		if type of loop-entity is block display:
+		if checkEntityType(loop-entity, block display) is true:
 			if metadata value "kit-block" of loop-entity is not set:
 				stop
 			set {_metadata} to metadata value "kit-block" of loop-entity
 			set {_target} to metadata value {_metadata} of loop-entity
-		else if type of loop-entity is item display:
+		else if checkEntityType(loop-entity, item display) is true:
 			if metadata value "kit-item" of loop-entity is not set:
 				stop
 			set {_metadata} to metadata value "kit-item" of loop-entity
