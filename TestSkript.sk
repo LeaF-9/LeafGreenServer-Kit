@@ -860,9 +860,13 @@ command /test-yaml:
 
 # Block Displayのテスト
 # 成功 yawとpitchに影響される
+# command /testblockdisplay:
+# 	permission: sk.admin
+# 	trigger:
+# 		set {_nbt} to nbt compound from "{transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[-0.5f,0f,-0.5f],scale:[64f,16f,0.05f]},block_state:{Name:""minecraft:sea_lantern""}}"
+# 		spawn a block display at location of player with nbt {_nbt}
 
-command /testblockdisplay:
-	permission: sk.admin
-	trigger:
-		set {_nbt} to nbt compound from "{transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[-0.5f,0f,-0.5f],scale:[64f,16f,0.05f]},block_state:{Name:""minecraft:sea_lantern""}}"
-		spawn a block display at location of player with nbt {_nbt}
+# getHand()のテスト
+on arm swing:
+	set {_hand} to event.getHand()
+	broadcast "%{_hand}%"
