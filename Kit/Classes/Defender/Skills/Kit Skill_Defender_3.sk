@@ -7,32 +7,39 @@ function kitSkill_Defender_3(player: player):
 		set {Stats.%{_player}%::DefenseMatrix-Time} to {_now}
 		kitFakeDeleteData({_player}, "Defense Matrix")
 		set {_loc} to {Stats.%{_player}%::SkillLocation}
-		kitFakeBlock({_player}, {_loc}, "minecraft:beacon", "Defense Matrix")
+		set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+		kitFakeBlock({_player}, {_loc}, "minecraft:cyan_stained_glass", {_transformation}, "Defense Matrix")
+		set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0.5f,0f]", "[1f,1f,1f]")
+		kitFakeItem({_player}, {_loc}, "minecraft:diamond", {_transformation}, "Defense Matrix")
 		kitMsg({_player}, "§9Defense Matrix§bを設置しました!")
 		playSound("block.anvil.land", 1, 0.5, {_loc})
+		set {_yaw} to 0
 		while {Stats.%{_player}%::DefenseMatrix-Time} is {_now}:
-			wait a second
-			delete {_exist}
-			loop all entities:
-				type of loop-entity is armor stand
-				metadata value "kit-armor" of loop-entity is "Defense Matrix"
-				metadata value "Defense Matrix" of loop-entity is "%{_player}%"
-				set {_exist} to true
-			if {_exist} is true:
-				kitFakeReload({_player}, "Defense Matrix")
-			else:
+			wait a tick
+			set {_exist} to kitFakeCheck({_player}, "Defense Matrix")
+			if {_exist} is false:
 				delete {Stats.%{_player}%::DefenseMatrix-Time}
+				continue
+			add 10 to {_yaw}
+			if {_yaw} >= 360:
+				set {_yaw} to 0
+			set yaw of {_loc} to {_yaw}
+			if {_itemdisplay} is not set:
+				loop all item displays:
+					metadata value "kit-item" of loop-item display is "Defense Matrix"
+					metadata value "Defense Matrix" of loop-item display is "%{_player}%"
+					set {_itemdisplay}
+			teleport {_itemdisplay} to {_loc}
 	else:
 		send action bar "§c§l発動地点が有効ではありません!" to {_player}
 
 on damage:
 	{Stats.%victim%::NoSupport} is not set
 	metadata value "gametype" of victim is "Kit"
-	loop all entities in radius 5 around victim:
+	loop all block displays in radius 5 around victim:
 		{_a} is not set
-		type of loop-entity is armor stand
-		metadata value "kit-armor" of loop-entity is "Defense Matrix"
-		set {_player} to metadata value "Defense Matrix" of loop-entity parsed as player
+		metadata value "kit-block" of loop-block display is "Defense Matrix"
+		set {_player} to metadata value "Defense Matrix" of loop-block display parsed as player
 		kitCheckTeam({_player}, victim, true) is true
 		if {_player} is not victim:
 			if checkEntityType(victim, player) is true:
@@ -41,4 +48,4 @@ on damage:
 		set damage to damage * 0.5
 		playSound("entity.zombie.attack_wooden_door", 1, 2, victim)
 		loop 10 times:
-			spawnParticle_Vector(crit, randomVector(), 0.5, location 0.5 meters above loop-entity)
+			spawnParticle_Vector(enchanted_hit, randomVector(), 0.5, location 0.5 meters above loop-block display)
