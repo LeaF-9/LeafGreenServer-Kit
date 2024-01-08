@@ -1,30 +1,60 @@
-function kitFakeBlock(player: player, location: location, block: text, metadata: text):
-	set {_x} to x-coordinate of {_location}
-	set {_y} to y-coordinate of {_location}
-	set {_z} to z-coordinate of {_location}
-	execute console command "/execute at %{_player}% run summon minecraft:armor_stand %{_x}% %{_y}% %{_z}% {NoGravity:1b,Marker:1b,Invisible:1,Invulnerable:1,NoBasePlate:1,Passengers:[{id:""falling_block"",BlockState:{Name:""%{_block}%""},NoGravity:1,Time:1,DropItem:0}]}"
-	set {_dis} to 100
-	loop all entities in radius 1 around {_location}:
-		type of loop-entity is armor stand
-		metadata value "kit-armor" of loop-entity is not set
-		set {_d} to distance between {_location} and loop-entity
-		if {_d} < {_dis}:
-			set {_dis} to {_d}
-			set {_entity} to loop-entity
-	set metadata value "gametype" of {_entity} to "Kit"
-	set metadata value "kit-armor" of {_entity} to {_metadata}
-	set metadata value {_metadata} of {_entity} to "%{_player}%"
-	set metadata value "gametype" of passenger of {_entity} to "Kit"
-	set metadata value "kit-block" of passenger of {_entity} to "%{_player}%"
+function kitFakeBlock(player: player, location: location, block: text, transformation: text, metadata: text):
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to a spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value {_metadata} of {_blockdisplay} to "%{_player}%"
 
-function kitFakeReload(player: offline player, metadata: text):
-	loop all falling blocks:
-		metadata value "kit-block" of loop-falling block is "%{_player}%"
-		loop-falling block is riding
-		metadata value "kit-armor" of vehicle of loop-falling block is {_metadata}
-		metadata value {_metadata} of vehicle of loop-falling block is "%{_player}%"
-		set {_nbt} to nbt compound of loop-falling block
-		set tag "Time" of {_nbt} to 1
+function kitFakeItem(player: player, location: location, item: text, transformation: text, metadata: text):
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_block}%"",Count:1b}}"
+	spawn an item display at {_location} with nbt {_nbt}
+	set {_itemdisplay} to a spawned item display
+	set metadata value "gametype" of {_itemdisplay} to "Kit"
+	set metadata value {_metadata} of {_itemdisplay} to "%{_player}%"
+
+function kitTransformation(left_rotation: text, right_rotation: text, translation: text, scale: text) :: text:
+	set {_transformation} to "{left_rotation:%{_left_rotation}%,right_rotation:%{_right_rotation}%,translation:%{_translation}%,scale:%{_scale}%}"
+	return {_transformation}
+
+command /kit-createdisplaytest <text> <text> <text> <text> <text> <text>:
+	aliases: /kit-cdt
+	usage: /kit-displaytest <block/item> <object> <left> <right> <translation> <scale>
+	executable by: player
+	permission: sk.admin
+	trigger:
+		set {_arg} to arg 1
+		set {_object} to arg 2
+		set {_left_rotation} to arg 3
+		set {_right_rotation} to arg 4
+		set {_translation} to arg 5
+		set {_scale} to arg 6
+		set {_transformation} to kitTransformation({_left_rotation}, {_right_rotation}, {_translation}, {_scale})
+		if {_arg} is "block":
+			kitFakeBlock(player, location of player, {_object}, {_transformation}, "display-test")
+		else if {_arg} is "item":
+			kitFakeItem(player, location of player, {_object}, {_transformation}, "display-test")
+		else:
+			message formatted "§b§lBlock§9/§b§lItem§cのいずれかを選択してください" to player
+			stop
+
+command /kit-deletedisplaytest:
+	aliases: /kit-ddt
+	permission: sk.admin
+	trigger:
+		set {_display.block} to 0
+		loop all block displays:
+			metadata value "display-test" of loop-block display is "%player%"
+			add 1 to {_display.block}
+			delete loop-block display
+		set {_display.item} to 0
+		loop all item displays:
+			metadata value "display-test" of loop-item display is "%player%"
+			add 1 to {_display.item}
+			delete loop-item display
+		set {_display.all} to {_display.block} + {_display.item}
+		message formatted "§6§l%{_display.all}% §aの§eテストディスプレイ§aを削除しました§b:" to player
+		message formatted "§9Block§b: §e§l%{_display.block}%" to player
+		message formatted "§9Item§b: §e§l%{_display.item}%" to player
 
 function kitFakeDelete(player: offline player):
 	loop all falling blocks:
