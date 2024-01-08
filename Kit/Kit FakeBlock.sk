@@ -103,19 +103,23 @@ function kitFakeDeleteAll():
 on arm swing:
 	set {_hand} to event.getHand()
 	if "%{_hand}%" is not "HAND":
+		broadcast "ng: NOT HAND | %{_hand}%"
 		stop
 	set {_tg} to target entity of player
 	if checkEntityType({_tg}, block display) is true:
 		if metadata value "kit-block" of {_tg} is not set:
+			broadcast "ng: NOT kit-block | %metadata value "kit-block" of {_tg}%"
 			stop
 		set {_metadata} to metadata value "kit-block" of {_tg}
 		set {_target} to metadata value {_metadata} of {_tg}
 	else if checkEntityType({_tg}, item display) is true:
 		if metadata value "kit-item" of {_tg} is not set:
+			broadcast "ng: NOT kit-item | %metadata value "kit-item" of {_tg}%"
 			stop
 		set {_metadata} to metadata value "kit-item" of {_tg}
 		set {_target} to metadata value {_metadata} of {_tg}
 	else:
+		broadcast "ng: NOT FAKE | %{_tg}%"
 		stop
 	distance between player and {_tg} <= 3
 	set {_target} to {_target} parsed as offline player
