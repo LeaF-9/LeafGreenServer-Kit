@@ -9,8 +9,18 @@ function kitSkill_Reflector_4(player: player):
 local function kitEffect_MirrorBall(player: player):
 	kitMsg({_player}, "§f§lミラーステージ§7を展開します!")
 	set {_loc} to location of {_player}
+	kitParticle_MirrorBall_Launch({_loc})
 	loop 100 times:
-		
+		delete {_entrying::*}
 		loop all players in radius 10 around {_loc}:
-			
+			set {_entrying::%loop-player%} to {_player}
+			set {_entried::%loop-player%} to {_player}
+			set {Stats.%loop-player%::MirrorBall} to {_player}
+		loop {_entried::*}:
+			if {_entrying::%loop-value-2%} is not {_player}:
+				delete {_entried::%loop-value-2%}
 		wait a tick
+
+
+
+local function kitParticle_MirrorBall_Launch(loc: location):
