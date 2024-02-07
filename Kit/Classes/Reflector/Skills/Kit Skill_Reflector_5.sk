@@ -1,0 +1,69 @@
+# skill-name: Speculum Shield
+
+options:
+	distance: 0.6
+
+function kitSkill_Reflector_5(player: player):
+	toolCT({_player}, "Reflector", 5)
+	kitEffect_SpeculumShield({_player})
+
+local function kitEffect_SpeculumShield(player: player):
+	set {_l} to location of {_player}
+	set pitch of {_l} to 0
+	set {_height} to {@distance} * cos({_pitch})
+	set {_width} to {@distance} * sin({_pitch})
+	set {_l1} to location 1 meters in front of {_l}
+	set pitch of {_l1} to 0
+	set {_l2} to location {_height} meters below {_l1}
+	set {_l3} to location {_height} * 2 meters below {_l1}
+	set {_l4} to location {@distance} meters to the left of {_l1}
+	set {_l5} to location {_height} meters below {_l4}
+	set {_l6} to location {_height} * 2 meters below {_l4}
+	set {_l7} to location {@distance} meters to the right of {_l1}
+	set {_l8} to location {_height} meters below {_l7}
+	set {_l9} to location {_height} * 2 meters below {_l7}
+	set {_l10} to location {@distance} * 2 meters to the left of {_l1}
+	set {_l11} to location {_height} meters below {_l10}
+	set {_l12} to location {_height} * 2 meters below {_l10}
+	set {_l13} to location {@distance} * 2 meters to the right of {_l1}
+	set {_l14} to location {_height} meters below {_l13}
+	set {_l15} to location {_height} * 2 meters below {_l13}
+	set {_l16} to location {@distance} * 3 meters to the left of {_l1}
+	set {_l17} to location {_height} meters below {_l16}
+	set {_l18} to location {_height} * 2 meters below {_l16}
+	set {_l19} to location {@distance} * 3 meters to the right of {_l1}
+	set {_l20} to location {_height} meters below {_l19}
+	set {_l21} to location {_height} * 2 meters below {_l19}
+	loop 21 times:
+		set {_nbt} to nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Pose:{Head:[0f,0f,0f]},HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}"
+		spawn an armor stand at {_l%loop-number%} with nbt {_nbt}
+		set metadata value "speculum-shield" of spawned armor stand to "%{_player}%"
+		set metadata value "ss-number" of spawned armor stand to "%loop-number%"
+		set metadata value "gametype" of spawned armor stand to "Kit"
+		set helmet of spawned armor stand to light gray glass pane
+		set {_sl} to {_l%loop-number%}
+		add 2 to y-coordinate of {_sl}
+		spawn a slime at {_sl} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
+		set metadata value "speculum-shield" of spawned slime to "%{_player}%"
+		set metadata value "ss-number" of spawned slime to "%loop-number%"
+		set metadata value "gametype" of spawned slime to "Kit"
+		set spawned slime's display name to "%{_player}%"
+	wait 10 seconds
+	loop all entities:
+		if type of loop-entity is an armor stand:
+			metadata value "speculum-shield" of loop-entity is "%{_player}%"
+			delete loop-entity
+		else if type of loop-entity is a slime:
+			metadata value "speculum-shield" of loop-entity is "%{_player}%"
+			delete loop-entity
+
+on damage of slime:
+	set {_name} to victim's display name parsed as player
+	metadata value "speculum-shield" of victim is set
+	if kitCheckTeam({_name}, attacker, false) is false:
+		stop
+	if damage was caused by attack, projectile or void:
+		set {_dmg} to damage / 2
+		kitDamage({_name}, attacker, {_dmg})
+	else:
+		cancel event
