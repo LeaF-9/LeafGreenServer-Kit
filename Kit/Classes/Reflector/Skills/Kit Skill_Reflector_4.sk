@@ -6,6 +6,38 @@ function kitSkill_Reflector_4(player: player):
 
 
 
+on damage of player:
+	{Stats.%victim%::MirrorBall} is set
+	set {_damage.origin} to damage
+	set {_victim} to victim
+	if attacker is not set:
+		# デバッグ用
+		# log "[MirrorBall] attackerが存在しない"
+		stop
+	if checkEntityType(attacker, player) is false:
+		# デバッグ用
+		# log "[MirrorBall] attackerがplayerでない"
+		stop
+	set {_attacker} to attacker
+	cancel event
+	set {_mirror} to {Stats.%victim%::MirrorBall}
+	set {_member} to 0
+	loop all players:
+		{Stats.%loop-player%::MirrorBall} is {_mirror}
+		add loop-player to {_damaged::*}
+		add 1 to {_member}
+	if {_member} <= 0:
+		stop
+	set {_damage.separate} to {_damage.origin} / {_member}
+	loop {_damaged::*}:
+		if kitCheckTeam(loop-value, {_attacker}, false) is true:
+			set {_attacker.true} to {_attacker}
+		else:
+			set {_attacker.true} to {_mirror}
+		kitDamage({_attacker.true}, loop-value, {_damage.separate}, true)
+	
+
+# 同時に発動された際の処理がわからない
 local function kitEffect_MirrorBall(player: player):
 	kitMsg({_player}, "§f§lミラーステージ§7を展開します!")
 	set {_loc} to location of {_player}
@@ -20,6 +52,10 @@ local function kitEffect_MirrorBall(player: player):
 			if {_entrying::%loop-value-2%} is not {_player}:
 				delete {_entried::%loop-value-2%}
 		wait a tick
+	kitMsg({_player}, "§7ミラーボールは弾けて消え去った...")
+	loop {_entried::*}:
+		{Stats.%loop-value%::MirrorBall} is {_player}
+		delete {Stats.%loop-value%::MirrorBall}
 
 
 
