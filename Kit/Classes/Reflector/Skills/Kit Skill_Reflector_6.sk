@@ -1,0 +1,20 @@
+# skill-name: Virtual Figuring
+
+function kitSkill_Reflector_6(player: player):
+	if {Stats.%{_player}%::SkillTarget} is not set:
+		send action bar "§c§l対象を指定してください" to {_player}
+		stop
+	toolCT({_player}, "Reflector", 6)
+	set {_target} to {Stats.%{_player}%::SkillTarget}
+	kitEffect_VirtualFiguring({_player}, {_target})
+
+local function kitEffect_VirtualFiguring(player: player, target: player):
+	kitMsg({_player}, "§b%{_target}% §fの姿を映し描いた...")
+	message formatted "§b§l%{_player}% §9によって姿を隠してもらった!" to {_target}
+	# 味方を透明化させる効果
+	setSupporter({_target}, {_player})
+	kitInvisible({_target}, 5 seconds)
+	# 自分の姿を対象のものとする効果
+	execute console command "/disguiseplayer %{_player}% Player %{_target}%"
+	wait 10 seconds
+	execute console command "/undisplayer %{_player}%"
