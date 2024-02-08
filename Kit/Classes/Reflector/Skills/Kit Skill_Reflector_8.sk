@@ -1,0 +1,47 @@
+# skill-name: Alienation Dome
+
+function kitSkill_Reflector_8(player: player):
+	toolCT({_player}, "Reflector", 8)
+	kitEffect_AlienationDome({_player})
+
+
+
+local function kitEffect_AlienationDome(player: player):
+	kitMsg({_player}, "§7視覚を隔離するドームを展開します...")
+	loop 200 times:
+		if kitCheckAlive({_player}) is false:
+			continue
+		delete {_targets::*}
+		delete {_others::*}
+		delete {_allplayers::*}
+		delete {_not.target::*}
+		delete {_not.other::*}
+		set {_baseloc} to location of {_player}
+		loop all players:
+			loop-player is not {_player}
+			metadata value "gametype" of loop-player is "Kit"
+			if distance between {_baseloc} and loop-player <= 10:
+				add loop-player to {_targets::*}
+			else:
+				add loop-player to {_others::*}
+			if {Kit-Invisible::%loop-player%} is not set:
+				add loop-player to {_allplayers::*}
+		# reveal list
+		loop {_allplayers::*}:
+			if {_targets::*} does not contain loop-value-2:
+				add loop-value-2 to {_not.target::*}
+			if {_others::*} does not contain loop-value-2:
+				add loop-value-2 to {_not.other::*}
+		# reveal
+		reveal {_not.target::*} from {_others::*}
+		reveal {_not.other::*} from {_targets::*}
+		# hide
+		hide {_others::*} from {_targets::*}
+		hide {_targets::*} from {_others::*}
+		wait a tick
+	delete {_allplayers::*}
+	loop all players:
+		loop-player is not {_player}
+		if {Kit-Invisible::%loop-player%} is not set:
+			add loop-player to {_allplayers::*}
+	reveal {_allplayers::*} from all players
