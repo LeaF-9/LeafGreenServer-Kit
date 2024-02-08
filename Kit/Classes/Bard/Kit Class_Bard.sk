@@ -1,14 +1,52 @@
-options:
-	prefix: §2[%{CLS::%player%}%]
-	attackprefix: §2[%{CLS::%attacker%}%]
-	victimprefix: §2[%{CLS::%victim%}%]
-
 # Bardのスキル Ver1.0.0
-on damage:
-	name of attacker's tool is "§8Drum Stick"
-	loop 3 times:
-		play raw sound "note.bd" at the victim with pitch 1 volume 10
-		wait 2 ticks
+
+# Skills
+
+function kitSkillBard(player: player) :: boolean:
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if checkCT({_player}, name of {_tool}) is true:
+		if {_item.num} is 1:
+			kitSkill_Bard_1({_player})
+		else if {_item.num} is 2:
+			kitSkill_Bard_2({_player})
+		else if {_item.num} is 3:
+			kitSkill_Bard_3({_player})
+		else if {_item.num} is 4:
+			kitSkill_Bard_4({_player})
+		else if {_item.num} is 5:
+			kitSkill_Bard_5({_player})
+		else if {_item.num} is 6:
+			kitSkill_Bard_6({_player})
+		else if {_item.num} is 7:
+			kitSkill_Bard_7({_player})
+		else if {_item.num} is 8:
+			kitSkill_Bard_8({_player})
+	return true
+
+on rightclick holding a jukebox:
+	name of player's tool is "§eMelody Effect"
+	cancel event
+	open chest with 1 row named "§b§lSelect a Melody" to player
+	wait 1 tick
+	set slot 1 of player's current inventory to chirp music disc named "§aHEALING" with lore "§f[§d§l効果§f]", "§8- §a§l再生能力"
+	set slot 2 of player's current inventory to gold music disc named "§aRESISTANCE" with lore "§f[§d§l効果§f]", "§8- §a§l耐性"
+	set slot 3 of player's current inventory to wait music disc named "§aSPEED" with lore "§f[§d§l効果§f]", "§8- §a§l移動速度上昇"
+	set slot 4 of player's current inventory to mall music disc named "§cPOISON" with lore "§f[§d§l効果§f]", "§8- §c§l毒"
+	set slot 5 of player's current inventory to gold music disc named "§cGLOWING" with lore "§f[§d§l効果§f]", "§8- §c§l発光"
+	set slot 6 of player's current inventory to ward music disc named "§cSLOWNESS" with lore "§f[§d§l効果§f]", "§8- §c§l移動速度低下"
+
+command /buffmusic <player> <text>:
+	trigger:
+		set {Stats.%arg 1%::BardMusic} to arg 2
+		message "§2[%{CLS::%arg 1%}%] §eBuffMusic§7を§a%arg 2%§7にセットしました" to arg 1
+
+# Timer
+function kitTimerBard(player: player):
+	while {Class::%{_player}%} is "Bard":
+		loop all players in radius 10 around {_player}:
+
+		wait a second
 
 every 5 seconds:
 	loop all players:
@@ -180,23 +218,6 @@ on damage:
 	{Stats.%victim%::BardMark} is {team::%attacker%}
 	if {CLS::%attacker%} is not "BAR":
 		set damage to 100
-
-on click holding a jukebox:
-	name of player's tool is "§eBuff Music"
-	cancel event
-	open chest with 1 row named "§aMusic Selection" to player
-	wait 1 tick
-	format slot 3 of player with chirp music disc named "§aHeal" with lore "効果||§a再生能力 1||§cFortissimo: 再生能力 2" to close then run "buffmusic %player% heal"
-	format slot 1 of player with gold music disc named "§aResistance" with lore "効果||§a耐性 1||§cFortissimo: 耐性 2" to close then run "buffmusic %player% resis"
-	format slot 2 of player with wait music disc named "§aSpeed" with lore "効果||§a移動速度上昇 1||§cFortissimo: 移動速度上昇 2" to close then run "buffmusic %player% speed"
-	format slot 7 of player with mall music disc named "§cPoison" with lore "効果||§a毒 1||§cFortissimo: 毒 2" to close then run "buffmusic %player% poison"
-	format slot 5 of player with 11-disc named "§cWeakness" with lore "効果||§a弱体化 1||§cFortissimo: 弱体化 2" to close then run "buffmusic %player% weak"
-	format slot 6 of player with ward music disc named "§cSlow" with lore "効果||§a移動速度低下 1||§cFortissimo: 移動速度低下 2" to close then run "buffmusic %player% slow"
-
-command /buffmusic <player> <text>:
-	trigger:
-		set {Stats.%arg 1%::BardMusic} to arg 2
-		message "§2[%{CLS::%arg 1%}%] §eBuffMusic§7を§a%arg 2%§7にセットしました" to arg 1
 
 on rightclick holding a blocks music disc:
 	name of player's tool is "§dRelax Musical"
