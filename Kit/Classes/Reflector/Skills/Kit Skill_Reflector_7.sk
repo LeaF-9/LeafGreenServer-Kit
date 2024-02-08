@@ -1,0 +1,48 @@
+# skill-name: Missile Repulsion
+
+function kitSkill_Reflector_7(player: player):
+	toolCT({_player}, "Reflector", 7)
+	kitEffect_MissileRepulsion({_player})
+
+
+
+local function kitEffect_MissileRepulsion(player: player):
+	kitMsg({_player}, "§e投擲物を消滅させる光線§5を発射します...")
+	set {_loc} to location of head of {_player}
+	set {_ok} to true
+	set {_m} to 0
+	while {_ok} is true:
+		add 1 to {_m}
+		if {_m} > 15:
+			set {_ok} to false
+			continue
+		set {_effloc} to location {_m} meters in front of {_loc}
+		loop all projectiles in radius 1.5 around {_effloc}:
+			{_target} is not set
+			set {_shooter} to shooter of loop-projectile
+			kitCheckTeam({_shooter}, {_player}, false) is true
+			set {_target} to {_shooter}
+			set {_projectile} to location of loop-projectile
+			delete loop-projectile
+		if {_target} is set:
+			set {_ok} to false
+			continue
+	if {_target} is not set:
+		stop
+	wait a tick
+	kitEffect_MissileRepulsion_Hit({_player}, {_target}, {_projectile})
+
+local function kitEffect_MissileRepulsion_Hit(player: player, target: entity, loc.proj: location):
+	kitMsg({_player}, "")
+	message formatted "" to {_target}
+	set {_loc.tar} to location of {_target}
+	set {_dis} to round(distance between {_loc.tar} and {_loc.proj})
+	set {_m} to 0
+	loop {_dis} times:
+		add 1 to {_m}
+		if mod({_m}, 10) is 0:
+			wait a tick
+	loop all entities in radius 7 around {_loc.tar}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		kitDamage({_player}, loop-entity, 3)
+
