@@ -1,0 +1,43 @@
+# skill-name: Mark Requiem
+
+function kitSkill_Bard_5(player: player):
+	toolCT({_player}, "Bard", 5)
+	kitEffect_MarkRequiem({_player})
+
+
+
+on damage of player:
+	metadata value "gametype" of victim is "Kit"
+	{Stats.%victim%::MarkRequiem} is set
+	set damage to damage * 2
+
+local function kitEffect_MarkRequiem(player: player):
+	kitMsg({_player}, "§5鎮魂歌を送ります...")
+	set {_baseloc} to location of head of {_player}
+	loop 20 times:
+		if {_hit} is set:
+			convertTimeNumber
+		set {_effloc} to location loop-number * 0.5 meters
+		loop all players in radius 1.5 around {_effloc}:
+			{_hit} is not set
+			kitCheckTeam({_player}, loop-player, false) is true
+			set {_hit} to loop-player
+		wait a tick
+	if {_hit} is not set:
+		stop
+	kitEffect_FanfareRhapsody_Hit({_player}, {_hit})
+
+local function kitEffect_FanfareRhapsody_Hit(player: player, target: player):
+	set {_time} to 4 seconds
+	if {Stats.%{_player}%::Fortissimo} is true:
+		set {_time} to 8 seconds
+	set {Stats.%{_target}%::MarkRequiem} to {_player}
+	message formatted "§4§lマークされた! §cマーク中§6ダメージが増大してしまう!" to {_target}
+	loop all players:
+		kitCheckTeam({_player}, loop-player, true) is true
+		message formatted "§6§l%{_target}% §eがマークされた! §aダメージが増大する!" to loop-player
+	wait {_time}
+	if {Stats.%{_target}%::MarkRequiem} is {_player}:
+		kitMsg({_player}, "§d%{_target}% §6へのマークが終了しました")
+		message formatted "§a§lマークが外された!" to {_target}
+	
