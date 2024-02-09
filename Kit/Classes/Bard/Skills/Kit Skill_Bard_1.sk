@@ -20,6 +20,10 @@ local function kitEffect_SweetSerenade(player: player, target: target):
 	setSupporter({_target}, {_player})
 	set {_timer} to 0
 	while {Stats.%{_player}%::SweetSerenade} is {_target}:
+		set {_distance} to distance between {_target} and {_player}
+		if {_distance} > 10:
+			delete {Stats.%{_player}%::SweetSerenade}
+			continue
 		add 1 to {_timer}
 		if {_target} does not have absorption:
 			set {_tier} to 1
@@ -30,3 +34,5 @@ local function kitEffect_SweetSerenade(player: player, target: target):
 			set {_timer} to 0
 			kitHeal({_target}, 0.5, 1)
 		wait a tick
+	kitMsg({_player}, "§9%{_target}% §5への小夜曲は途切れた...")
+	message formatted "§7小夜曲が聴こえなくなりました" to {_target}
