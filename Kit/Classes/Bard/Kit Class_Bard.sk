@@ -60,68 +60,46 @@ on inventory click:
 # Timer
 function kitTimerBard(player: player):
 	while {Class::%{_player}%} is "Bard":
+		set {_potiontype} to {Stats.%{_player}%::MelodyEffect}
+		if {_potiontype} is regeneration:
+			set {_ally} to true
+			set {_color} to "red"
+		else if {_potiontype} is resistance:
+			set {_ally} to true
+			set {_color} to "yellow"
+		else if {_potiontype} is speed:
+			set {_ally} to true
+			set {_color} to "lightblue"
+		else if {_potiontype} is poison:
+			set {_ally} to false
+			set {_color} to "green"
+		else if {_potiontype} is mining fatigue:
+			set {_ally} to false
+			set {_color} to "purple"
+		else if {_potiontype} is slowness:
+			set {_ally} to false
+			set {_color} to "blue"
+		set {_tier} to 1
+		if {Stats.%{_player}%::Fortissimo} is true:
+			set {_tier} to 2
 		loop all players in radius 10 around {_player}:
-
+			kitCheckTeam(loop-player, {_player}, {_ally}) is true
+			loop-player does not have {_potiontype}
+			applyEffect(loop-player, {_potiontype}, {_tier}, 5 seconds, false, "none")
+			kitParticle_MelodyEffect(loop-player, {_color})
 		wait a second
 
-every 5 seconds:
-	loop all players:
-		if {CLS::%loop-player-1%} is "BAR":
-			{Ult.%loop-player-1%::Bard} is not set
-			loop all players in radius 10 around loop-player-1:
-#				if {Stats.%loop-player-1%::RelaxMusical} is true:
-#					{team::%loop-player-2%} is {team::%loop-player-1%}
-#					{CLS::%loop-player-2%} is not "BSK"
-#					add loop-player-1 to {supporter.%loop-player-2%::*}
-#					if {Stats.%loop-player-1%::Fortissimo} is true:
-#						apply regeneration 2 to loop-player-2 for 5 seconds
-#					else:
-#						apply regeneration 1 to loop-player-2 for 5 seconds
-#					drawDot count 1, particle "mobspell", XYZ 255, 105, 180, center loop-player-2, visibleRange 30, keepFor 100 ticks
-				if {Stats.%loop-player-1%::BardMusic} is "heal" or "resis" or "speed":
-					{team::%loop-player-2%} is {team::%loop-player-1%}
-					loop-player-2 is not loop-player-1
-#					distance between loop-player-1 and loop-player-2 <= 5
-					{CLS::%loop-player-2%} is not "BSK"
-					add loop-player-1 to {supporter.%loop-player-2%::*}
-					if {Stats.%loop-player-1%::BardMusic} is "heal":
-						if {Stats.%loop-player-1%::Fortissimo} is true:
-							apply regeneration 2 to loop-player-2 for 5 seconds
-						else:
-							apply regeneration 1 to loop-player-2 for 5 seconds
-						drawDot count 1, particle "note", XYZ 6, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
-					else if {Stats.%loop-player-1%::BardMusic} is "resis":
-						if {Stats.%loop-player-1%::Fortissimo} is true:
-							apply resistance 3 to loop-player-2 for 5 seconds
-						else:
-							apply resistance 1 to loop-player-2 for 5 seconds
-						drawDot count 1, particle "note", XYZ 7, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
-					else if {Stats.%loop-player-1%::BardMusic} is "speed":
-						if {Stats.%loop-player-1%::Fortissimo} is true:
-							apply speed 2 to loop-player-2 for 5 seconds
-						else:
-							apply speed 1 to loop-player-2 for 5 seconds
-						drawDot count 1, particle "note", XYZ 13, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
-				else if {Stats.%loop-player-1%::BardMusic} is "poison" or "weak" or "slow":
-					{team::%loop-player-2%} is not {team::%loop-player-1%}
-					if {Stats.%loop-player-1%::BardMusic} is "poison":
-						if {Stats.%loop-player-1%::Fortissimo} is true:
-							apply poison 2 to loop-player-2 for 5 seconds
-						else:
-							apply poison 1 to loop-player-2 for 5 seconds
-						drawDot count 1, particle "note", XYZ 15, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
-					else if {Stats.%loop-player-1%::BardMusic} is "weak":
-						if {Stats.%loop-player-1%::Fortissimo} is true:
-							apply weakness 2 to loop-player-2 for 5 seconds
-						else:
-							apply weakness 1 to loop-player-2 for 5 seconds
-						drawDot count 1, particle "note", XYZ 1, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
-					else if {Stats.%loop-player-1%::BardMusic} is "slow":
-						if {Stats.%loop-player-1%::Fortissimo} is true:
-							apply slowness 2 to loop-player-2 for 5 seconds
-						else:
-							apply slowness 1 to loop-player-2 for 5 seconds
-						drawDot count 1, particle "note", XYZ 9, 0, 0, center loop-player-2, visibleRange 30, keepFor 100 ticks
+local function kitParticle_MelodyEffect(player: player, color: text):
+	if {Kit-Invisible::%{_player}%} is set:
+		stop
+	set {_baseloc} to location of {_player}
+	add 1 to y-pos of {_baseloc}
+	loop 6 times:
+		set {_effloc} to {_baseloc}
+		set {_rad} to 60 * loop-number
+		add 0.5 * sin({_rad}) to x-pos of {_effloc}
+		add 0.5 * cos({_rad}) to z-pos of {_effloc}
+		spawnParticle_Note({_color}, {_effloc})
 
 on rightclick holding a gold music disc:
 	name of player's tool is "§6Grant Melody"
