@@ -65,8 +65,10 @@ local function kitEffect_HarmonyNotes(player: player):
 			set {_tier} to 2
 		loop all players in radius 3 around {_loc.notes}:
 			if kitCheckTeam(loop-player, {_player}, true) is true:
+				setSupporter(loop-player, {_player})
 				set {_potiontype} to regeneration
 			else if kitCheckTeam(loop-player, {_player}, false) is true:
+				add {_player} to {damager.%loop-player%::*}
 				set {_potiontype} to poison
 			applyEffect(loop-player, {_potiontype}, {_tier}, 0.3 seconds)
 		wait a tick
