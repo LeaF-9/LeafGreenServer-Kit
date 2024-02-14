@@ -604,35 +604,9 @@ on rightclick holding a nether star:
 	else if {Class::%player%} is "Engineer":
 		kitUltMessage(player, "Transport Lift", "二点を繋げる時空間装置")
 		kitUltEngineer(player)
-#	else if {Class::%player%} is "Bard":
-#		loop all players:
-#			set {_ok} to true
-#			if {_silent} is true:
-#				if loop-player is not player:
-#					delete {_ok}
-#			{_ok} is true
-#			send loop-player title "<%{TrueTeam::%player%}%>§l§oCheerful Music" with subtitle "§bー 皆を勇気付ける快い音楽 ー" for 3 seconds
-#		message "§c自身と周辺の味方に攻撃力増加,耐性 IIIを付与します!"
-#		message "§c付与した味方の最大体力を一時的にブーストさせます!"
-#		set {Ult.%player%::Bard} to true
-#		drawWarpRings style 0, particle "redstone", RGB 255, 255, 150, center player, id "%player%", scan true, height 50, radius 10, ringCount 80, ringDensity 150, visibleRange 32
-#		loop all players in radius 10 around player:
-#			{TrueTeam::%loop-player%} is {TrueTeam::%player%}
-#			{CLS::%loop-player%} is not "BSK"
-#			add player to {supporter.%loop-player%::*}
-#			apply resistance 1 to loop-player for 10 seconds
-#			add 10 to max health of loop-player
-#			heal loop-player by 10 hearts
-#			add loop-player to {_hb::*}
-#			set {Stats.%loop-player%::Bard's Ult} to true
-#		loop 10 times:
-#			wait a second
-#			loop {_hb::*}:
-#				{Stats.%loop-value-2%::Bard's Ult} is true
-#				subtract 1 from max health of loop-value-2
-#			if loop-number is 1:
-#				stopEffect "%player%"
-#		delete {Ult.%player%::Bard}
+	else if {Class::%player%} is "Bard":
+		kitUltMessage(player, "Finale Symphony", "皆を鼓舞する最後の交響曲")
+		kitUltBard(player)
 #	else if {Class::%player%} is "Farmer":
 #		loop all players:
 #			set {_ok} to true

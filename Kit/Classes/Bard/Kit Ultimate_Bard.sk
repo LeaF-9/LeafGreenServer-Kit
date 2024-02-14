@@ -1,1 +1,22 @@
 # Finale Symphony
+
+function kitUltBard(player: player):
+	message formatted "§c周辺10mの味方の体力と最大体力を+❤10します!" to {_player}
+	message formatted "§cブーストした最大体力は10秒後に元の数値まで減少します!" to {_player}
+	loop all players in radius 10 around {_player}:
+		kitCheckTeam(loop-player, {_player}, true, true) is true
+		set {Stats.%loop-player%::FinaleSymphony} to {_player}
+		add loop-player to {_boosters::*}
+		setSupporter(loop-player, {_player})
+		add 10 to max health of loop-player
+		kitHeal(loop-player, 10)
+	loop 100 times:
+		wait 2 ticks
+		loop {_boosters::*}:
+			if {Stats.%loop-value-2%::FinaleSymphony} is not {_player}:
+				remove loop-value-2 from {_boosters::*}
+				continue
+			if {Stats.%loop-value-2%::FinaleSymphony} is not set:
+				remove loop-value-2 from {_boosters::*}
+				continue
+			subtract 0.1 from max-health of loop-value-2
