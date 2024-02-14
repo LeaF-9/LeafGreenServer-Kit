@@ -16,18 +16,7 @@ function kitSkill_Warrior_6(player: player):
 			set metadata value "legendary-aura" of spawned entity to "%{_player}%"
 			set spawned entity's tool to {_weapon}
 			loop 5 times:
-				playSound("entity.ender_dragon.hurt", 1, 0.75, {_loc})
-				loop all blocks in radius 10 around {_loc}:
-					loop-block is air
-					block below loop-block is not air
-					set {_lloc} to location of loop-block
-					subtract 0.4 from y-coordinate of {_lloc}
-					spawnParticle_Color(entity_effect, 73, 55, 89, {_lloc})
-				loop all entities in radius 10 around {_loc}:
-					kitCheckTeam(loop-entity, {_player}, false) is true
-					make {_player} damage loop-entity by 2
-					loop 30 times:
-						spawnParticle_Vector(enchanted_hit, randomVector(), 2.5, location of loop-entity)
+				kitEffect_LegendaryAura_Wave({_player}, {_loc})
 				wait a second
 			loop all entities:
 				type of loop-entity is an armor stand
@@ -40,3 +29,41 @@ function kitSkill_Warrior_6(player: player):
 			send action bar "§c§l地に足をつけて発動してください" to {_player}
 	else:
 		send action bar "§c§lWeaponがありません" to {_player}
+
+local function kitEffect_LegendaryAura_Wave(player: player, loc: location):
+	playSound("entity.ender_dragon.hurt", 1, 0.75, {_loc})
+	set {_m} to 0
+	loop 10 times:
+		add 1 to {_m}
+		set {_m.min} to {_m} - 0.5
+		set {_m.max} to {_m} + 0.5
+		kitParticle_LegendaryAura_Wave({_loc}, {_m})
+		loop all entities in radius 11 around {_loc}:
+			{_hit.%id of loop-entity%} is not set
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			block 0.1 meters below loop-entity is not passable
+			set {_dis} to distance between loop-entity and {_player}
+			if {_dis} >= {_m.min}:
+				if {_dis} <= {_m.max}:
+					set {_hit.%id of loop-entity%} to true
+					kitDamage({_player}, loop-entity, 2.3)
+					kitParticle_LegendaryAura_Hit(loop-entity)
+		if mod(loop-number, 2) is 0:
+			wait a tick
+
+
+
+local function kitParticle_LegendaryAura_Wave(baseloc: location, meter: number):
+	set {_ln} to 6 * {_meter}
+	set {_addrad} to 360 / {_ln}
+	loop {_ln} times:
+		set {_el} to {_baseloc}
+		add {_addrad} to {_rad}
+		add {_meter} * sin({_rad}) to x-pos of {_el}
+		add {_meter} * cos({_rad}) to z-pos of {_el}
+		spawnParticle_Color(entity_effect, 73, 55, 89, {_el})
+
+local function kitParticle_LegendaryAura_Hit(entity: entity):
+	playSound("entity.shulker.hurt_closed", 1, 0.65, {_entity})
+	loop 20 times:
+		spawnParticle_Vector(enchanted_hit, randomVector(), 2.5, location 1 meters above loop-entity)
