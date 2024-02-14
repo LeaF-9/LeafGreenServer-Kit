@@ -19,11 +19,15 @@ local function kitEffect_BeatClapper(player: player, loc: location):
 	set {_now} to now
 	set {Stats.%{_player}%::BeatClapper-Time} to {_now}
 	kitFakeDeleteData({_player}, "Beat Clapper")
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,0.5f,1f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:note_block", {_transformation}, "Beat Clapper")
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0f,-0.25f]", "[0.5f,1f,0.5f]")
 	kitFakeBlock({_player}, {_loc}, "minecraft:spruce_fence", {_transformation}, "Beat Clapper")
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,1f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:spruce_pressure_plate", {_transformation}, "Beat Clapper")
+	loop all block displays:
+		metadata value "kit-block" of loop-block display is "Beat Clapper"
+		metadata value "Beat Clapper" of loop-block display is "%{_player}%"
+		set metadata value "Beat Clapper-Lever" of loop-block display to "%{_player}%"
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,0.5f,1f]")
 	kitFakeBlock({_player}, {_loc}, "minecraft:note_block", {_transformation}, "Beat Clapper")
 	kitMsg({_player}, "§6§l音波を発する装置§eを設置しました!")
 	set {_timer} to 0
@@ -87,4 +91,5 @@ local function kitEffect_BeatClapper_Lever(player: player, loc: location, y: num
 	loop all block displays:
 		metadata value "kit-block" of loop-block display is "Beat Clapper"
 		metadata value "Beat Clapper" of loop-block display is "%{_player}%"
+		metadata value "Beat Clapper-Lever" of loop-block display is "%{_player}%"
 		teleport loop-block display to {_tploc}
