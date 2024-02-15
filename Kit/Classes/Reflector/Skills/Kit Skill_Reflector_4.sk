@@ -58,6 +58,7 @@ local function kitEffect_MirrorBall(player: player):
 			if {_entrying::%loop-value-2%} is not {_player}:
 				delete {_entried::%loop-value-2%}
 		wait a tick
+	kitParticle_MirrorBall_Break({_player})
 	kitMsg({_player}, "§7ミラーボールは弾けて消え去った...")
 	loop {_entried::*}:
 		{Stats.%loop-value%::MirrorBall} is {_player}
@@ -145,3 +146,18 @@ local function kitParticle_MirrorBall_Damage(player: player, damaged: players):
 			add 1 to {_ln}
 			set {_el} to location {_m} * {_ln} meters in front of {_baseel}
 			spawnParticle(scrape, {_el})
+
+local function kitParticle_MirrorBall_Break(player: player):
+	loop all block displays:
+		metadata value "Mirror Ball" of loop-block display is "%{_player}%"
+		set {_location} to metadata value "Mirror Ball - Location" of loop-block display
+		delete loop-block display
+	# 壊れる音
+	playSound("block.amethyst_block.break", 1, 0.5, {_location})
+	# 壊れる演出
+	loop 5 times:
+		set {_el} to {_location}
+		add a random number between -0.5 and 0.5 to x-pos of {_el}
+		add a random number between -0.5 and 0.5 to y-pos of {_el}
+		add a random number between -0.5 and 0.5 to z-pos of {_el}
+		spawnParticle_Block(glass, {_el})
