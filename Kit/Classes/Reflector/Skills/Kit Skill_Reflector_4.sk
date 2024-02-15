@@ -28,6 +28,7 @@ on damage of player:
 		add 1 to {_member}
 	if {_member} <= 0:
 		stop
+	kitParticle_MirrorBall_Damage({_mirror}, {_damaged::*})
 	set {_damage.separate} to {_damage.origin} / {_member}
 	loop {_damaged::*}:
 		if kitCheckTeam(loop-value, {_attacker}, false) is true:
@@ -41,11 +42,16 @@ on damage of player:
 local function kitEffect_MirrorBall(player: player):
 	kitMsg({_player}, "§f§lミラーステージ§7を展開します!")
 	set {_loc} to location of {_player}
-	kitParticle_MirrorBall_Launch({_loc})
+	kitParticle_MirrorBall_Launch({_player}, {_loc})
+	wait 10 ticks  # 演出時間
+	kitParticle_MirrorBall_Move({_player})
 	loop 100 times:
+		kitParticle_MirrorBall_Field({_loc})
 		delete {_entrying::*}
 		loop all players in radius 10 around {_loc}:
 			set {_entrying::%loop-player%} to {_player}
+			if {_entried::%loop-player%} is not set:
+				kitParticle_MirrorBall_Entry(loop-player)
 			set {_entried::%loop-player%} to {_player}
 			set {Stats.%loop-player%::MirrorBall} to {_player}
 		loop {_entried::*}:
@@ -59,4 +65,83 @@ local function kitEffect_MirrorBall(player: player):
 
 
 
-local function kitParticle_MirrorBall_Launch(loc: location):
+local function kitParticle_MirrorBall_Launch(player: player, location: location):
+	playSound("entity.shulker.open", 1, 0.7, {_location})
+	set pitch of {_location} to 0
+	set {_block} to "minecraft:glass"
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.75f,0f,-0.75f]", "[1.5f,1.5f,1.5f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Mirror Ball" of {_blockdisplay} to "%{_player}%"
+	set metadata value "Mirror Ball - Location" of {_blockdisplay} to {_location}
+	loop 10 times:
+		add 0.5 to y-pos of {_location}
+		add 72 to yaw of {_location}
+		teleport {_blockdisplay} to {_location}
+		set metadata value "Mirror Ball - Location" of {_blockdisplay} to {_location}
+		wait a tick
+	playSound("block.amethyst_block.chime", 1, 1.3, {_location})
+	loop 30 times:
+		spawnParticle_Vector(wax_off, randomVector(), 0.5, {_location})
+
+local function kitParticle_MirrorBall_Move(player: player):
+	set {_up} to true
+	loop all block displays:
+		metadata value "Mirror Ball" of loop-block display is "%{_player}%"
+		set {_blockdisplay} to loop-block display
+	set {_location} to location of {_blockdisplay}
+	set {_basey} to y-pos of {_location}
+	loop 100 times:
+		if {_up} is true:
+			add 0.05 to y-pos of {_location}
+		else:
+			subtract 0.05 from y-pos of {_location}
+		add 10 to yaw of {_location}
+		teleport {_blockdisplay} to {_location}
+		set metadata value "Mirror Ball - Location" of {_blockdisplay} to {_location}
+		if y-pos of {_location} - {_basey} >= 0.5:
+			set {_up} to false
+		if {_basey} - y-pos of {_location} >= 0.5:
+			set {_up} to true
+		set {_el} to {_location}
+		add a random number between -1 and 1 to x-pos of {_el}
+		add a random number between -1 and 1 to y-pos of {_el}
+		add a random number between -1 and 1 to z-pos of {_el}
+		spawnParticle_Vector(wax_off, randomVector(), 0.1, {_el})
+		wait a tick
+
+local function kitParticle_MirrorBall_Field(location: location):
+	set {_els::*} to particleLocation_Circle({_location}, 36, 5)
+	loop 100 times:
+		loop {_els::*}:
+			spawnParticle_Dust(rgb(240, 248, 255), 1, loop-value-2)
+		wait a tick
+
+local function kitParticle_MirrorBall_Entry(player: player):
+	playSound("block.amethyst_block.resonate", 1, 1.75, {_player})
+	set {_el} to location 1 meter above {_player}
+	loop 10 times:
+		spawnParticle_Vector(scrape, randomVector(), 0.3, {_el})
+
+local function kitParticle_MirrorBall_Damage(player: player, damaged: players):
+	loop all block displays:
+		metadata value "Mirror Ball" of loop-block display is "%{_player}%"
+		set {_loc.mirror} to metadata value "Mirror Ball - Location" of loop-block display
+	if {_loc.mirror} is not set:
+		# デバッグ用
+		# log "[MirroBall] Mirror Ballが検出できていない"
+		stop
+	playSound("block.glass.break", 1, 0.65, {_loc.mirror})
+	loop {_damaged::*}:
+		set {_vector} to setVector({_loc.mirror}, loop-value)
+		set {_baseel} to {_loc.mirror}
+		set {_baseel} to setDirToVec({_baseel}, {_vector})
+		set {_dis} to distance between {_loc.mirror} and loop-value
+		set {_m} to {_dis} / 10
+		set {_ln} to 0
+		loop 10 times:
+			add 1 to {_ln}
+			set {_el} to location {_m} * {_ln} meters in front of {_baseel}
+			spawnParticle(scrape, {_el})
