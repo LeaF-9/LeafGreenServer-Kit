@@ -8,6 +8,7 @@ function kitSkill_Reflector_7(player: player):
 
 local function kitEffect_MissileRepulsion(player: player):
 	kitMsg({_player}, "§e投擲物を消滅させる光線§5を発射します...")
+	kitParticle_MissileRepulsion_LaunchSound({_player})
 	set {_loc} to location of head of {_player}
 	set {_ok} to true
 	set {_m} to 0
@@ -47,3 +48,7 @@ local function kitEffect_MissileRepulsion_Hit(player: player, target: entity, lo
 		kitDamage({_player}, loop-entity, 3)
 		if checkEntityType(loop-entity, player) is true:
 			kitPalsy(loop-entity, 5 seconds)
+
+
+local function kitParticle_MissileRepulsion_LaunchSound(player: player):
+	playSound("entity.enderman.ambient", 1, 0.7, {_player})
