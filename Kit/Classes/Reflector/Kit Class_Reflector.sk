@@ -23,13 +23,20 @@ function kitSkillReflector(player: player) :: boolean:
 			kitSkill_Reflector_8({_player})
 	return true
 
+# Ability
 on damage of player:
-	else if {Stats.%victim%::DamageAbsorption} is not set:
-		if {CLS::%victim%} is "REF":
-			{Stats.%victim%::DamageAbsorption} is not set
-			chance of 20%:
-				set {_dm} to damage / 4
-				set {LastKiller::%attacker%} to victim
-				add victim to {damager.%attacker%::*}
-				damage attacker by {_dm}
-				play raw sound "random.orb" at attacker with pitch 5 volume 1
+	{Class::%victim%} is "Reflector"
+	attacker exists
+	kitReflector_DamageChecker(victim) is "none"
+	set {_c} to kitPercentDuel(victim, attacker, 20)
+	chance of {_c}%:
+		set {_dm} to damage / 4
+		kitDamage(victim, attacker, {_dm}, true)
+		playSound("entity.experience_orb.pickup", 1, 1.5, victim)
+
+function kitReflector_DamageChecker(victim: player) :: text:
+	if {Stats.%{_victim}%::DamageAbsorption} is true:
+		return "Damage Absorption"
+	if {Stats.%{_victim}%::PerfectReflection} is true:
+		return "Perfect Reflection"
+	return "none"

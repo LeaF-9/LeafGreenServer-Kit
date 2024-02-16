@@ -6,7 +6,7 @@ function kitSkill_Reflector_1(player: player):
 
 on damage of player:
 	attacker exists
-	{Stats.%victim%::PerfectReflection} is true
+	kitReflector_DamageChecker(victim) is "Perfect Reflection"
 	set {_dm} to damage / 2
 	kitDamage(victim, attacker, {_dm}, true)
 	kitParticle_PerfectReflection_Reflect(victim, attacker)
@@ -18,14 +18,14 @@ local function kitEffect_PerfectReflection(player: player):
 	kitMsg({_player}, "§f全てのダメージを5秒間跳ね返します!")
 	loop 100 times:
 		{Stats.%{_player}%::PerfectReflection} is {_now}
-		kitParticle_PerfectReflection_Armor
+		kitParticle_PerfectReflection_Armor({_player})
 		wait a tick
 	{Stats.%{_player}%::PerfectReflection} is {_now}
 	delete {Stats.%{_player}%::PerfectReflection}
 	kitMsg({_player}, "§f§lPerfect Reflection§cの効果が切れました")
 
 # 発動時の演出
-local functioin kitParticle_PerfectReflection_Launch(player: player):
+local function kitParticle_PerfectReflection_Launch(player: player):
 	playSound("entity.player,levelup", 1, 0.8, {_player})
 	loop 15 times:
 		spawnParticle_Vector(wax_off, randomVector(), 0.5, location 1 meter above {_player})

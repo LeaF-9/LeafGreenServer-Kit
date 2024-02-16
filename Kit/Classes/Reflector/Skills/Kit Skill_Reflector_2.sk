@@ -4,7 +4,7 @@ on damage of player:
 	if {Stats.%attacker%::DamageAbsorption} is true:
 		cancel event
 		set action bar of attacker to "§c§l我慢中は攻撃できません!"
-	if {Stats.%victim%::DamageAbsorption} is true:
+	if kitReflector_DamageChecker(victim) is "Damage Absorption":
 		cancel event
 		add 1 to {Stats.%victim%::DamageAbsorption-Point}
 		kitParticle_DamageAbsorption_Charge(victim)
@@ -80,7 +80,7 @@ local function kitSound_DamageAbsorption_Launch(player: player):
 local function kitParticle_DamageAbsorption_Absorbing(player: player):
 	set {_index} to 1
 	loop 50 times:
-		set {_circle::*} to function particleLocation_Circle(location 2 meters above {_player}, 10, 0.5)
+		set {_circle::*} to particleLocation_Circle(location 2 meters above {_player}, 10, 0.5)
 		loop 2 times:
 			set {_el} to {_circle::%{_index}%}
 			spawnParticle(angry_villager, {_el})
