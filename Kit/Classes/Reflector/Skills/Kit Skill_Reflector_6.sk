@@ -24,8 +24,8 @@ local function kitEffect_VirtualFiguring(player: player, target: player):
 
 
 local function kitParticle_VirtualFiguring_Figure(player: player, target: player):
-	playSound("block.large_amethyst_bud.break" 0.75, 0.9, {_player})
-	playSound("block.large_amethyst_bud.break" 0.75, 0.9, {_target})
+	playSound("block.large_amethyst_bud.break", 0.75, 0.9, {_player})
+	playSound("block.large_amethyst_bud.break", 0.75, 0.9, {_target})
 	# 自分に円
 	set {_baseloc} to location 1 meter above {_player}
 	set {_count} to 10
@@ -43,7 +43,7 @@ local function kitParticle_VirtualFiguring_Figure(player: player, target: player
 		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
 		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
 		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
-		spawnParticle_DustTransition(rgb(255, 255, 255), rgb(221, 160, 221), 0.75, {_el})
+		spawnParticle_DustTransition(rgb(255, 255, 255), rgb(221, 160, 221), 1.5, {_el})
 		add 360 / {_count} to {_rad}
 	# 対象に円
 	set {_baseloc} to location 1 meter above {_target}
@@ -61,7 +61,7 @@ local function kitParticle_VirtualFiguring_Figure(player: player, target: player
 		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
 		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
 		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
-		spawnParticle_DustTransition(rgb(255, 255, 255), rgb(221, 160, 221), 0.75, {_el})
+		spawnParticle_DustTransition(rgb(255, 255, 255), rgb(221, 160, 221), 1.5, {_el})
 		add 360 / {_count} to {_rad}
 	# 線分
 	set {_vector} to setVector(location of {_player}, location of {_target})
@@ -70,7 +70,7 @@ local function kitParticle_VirtualFiguring_Figure(player: player, target: player
 	set {_dis} to distance between {_player} and {_target}
 	set {_addm} to {_dis} / 10
 	loop 10 times:
-		set {_el} to location {_m} * loop-number meters in front of {_baseloc}
+		set {_el} to location {_addm} * loop-number meters in front of {_baseloc}
 		spawnParticle(scrape, {_el})
 	# 自分にキラキラ
 	loop 15 times:
