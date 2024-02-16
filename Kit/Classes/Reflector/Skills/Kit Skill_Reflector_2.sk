@@ -94,16 +94,18 @@ local function kitParticle_DamageAbsorption_Explode(player: player):
 	set {_ln} to 0
 	loop 3 times:
 		add 1 to {_ln}
-		set {_circle::*} to particleLocation_Circle(location of {_player}, 15, 5)
+		set {_circle::*} to particleLocation_Circle(location 1 meter above {_player}, 15, 5)
 		loop {_circle::*}:
 			chance of (30 * {_ln})%:
-				spawnParticle(wax_off, loop-value-2)
+				set {_el} to loop-value-2
+				add {_ln} - 1 to y-pos of {_el}
+				spawnParticle(wax_off, {_el})
 		wait 2 ticks
 	loop 30 times:
 		set {_v} to randomVector()
-		spawnParticle_Vector(scrape, {_v}, 1, location of {_player})
-		chance of 30%:
-			set {_elbase} to location of {_player}
+		spawnParticle_Vector(scrape, {_v}, 30, location 1 meter above {_player})
+		chance of 50%:
+			set {_elbase} to location 1 meter above {_player}
 			set {_elbase} to setDirToVec({_elbase}, {_v})
 			set {_rm} to a random number between 0 and 5
 			set {_el} to location {_rm} meters in front of {_elbase}
@@ -130,11 +132,11 @@ local function kitParticle_DamageAbsorption_Hit(player: player, target: entity):
 	set {_m} to 0
 	loop {_dis} * 2 times:
 		add 0.5 to {_m}
-		set {_el} to location {_m} meters in front of {_basleoc}
+		set {_el} to location {_m} meters in front of {_baseloc}
 		spawnParticle_DustTransition(rgb(214, 233, 202), rgb(118, 145, 100), 2, {_el})
 		if mod({_m}, 1) is 0:
 			loop {_circlev::*}:
 				set {_el} to location {_m} meters in front of loop-value-2
-				spawnParticle(composter, {_el})
+				spawnParticle(happy_villager, {_el})
 	loop 10 times:
-		spawnParticle_Vector(cloud, randomVector(1), 0.5, {_toloc})
+		spawnParticle_Vector(cloud, randomVector(1), 0.3, {_toloc})
