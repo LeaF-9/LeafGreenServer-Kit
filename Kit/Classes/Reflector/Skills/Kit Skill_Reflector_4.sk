@@ -19,7 +19,7 @@ on damage of player:
 		# log "[MirrorBall] attackerがplayerでない"
 		stop
 	set {_attacker} to attacker
-	cancel event
+	set damage to 0.01
 	set {_mirror} to {Stats.%victim%::MirrorBall}
 	set {_member} to 0
 	loop all players:
@@ -45,8 +45,8 @@ local function kitEffect_MirrorBall(player: player):
 	kitParticle_MirrorBall_Launch({_player}, {_loc})
 	wait 10 ticks  # 演出時間
 	kitParticle_MirrorBall_Move({_player})
+	kitParticle_MirrorBall_Field({_loc})
 	loop 100 times:
-		kitParticle_MirrorBall_Field({_loc})
 		delete {_entrying::*}
 		loop all players in radius 10 around {_loc}:
 			set {_entrying::%loop-player%} to {_player}
@@ -114,7 +114,7 @@ local function kitParticle_MirrorBall_Move(player: player):
 		wait a tick
 
 local function kitParticle_MirrorBall_Field(location: location):
-	set {_els::*} to particleLocation_Circle({_location}, 36, 5)
+	set {_els::*} to particleLocation_Circle({_location}, 72, 10)
 	loop 100 times:
 		loop {_els::*}:
 			spawnParticle_Dust(rgb(240, 248, 255), 1, loop-value-2)
@@ -124,7 +124,7 @@ local function kitParticle_MirrorBall_Entry(player: player):
 	playSound("block.amethyst_block.resonate", 1, 1.75, {_player})
 	set {_el} to location 1 meter above {_player}
 	loop 10 times:
-		spawnParticle_Vector(scrape, randomVector(), 0.3, {_el})
+		spawnParticle_Vector(scrape, randomVector(), 10, {_el})
 
 local function kitParticle_MirrorBall_Damage(player: player, damaged: players):
 	loop all block displays:
