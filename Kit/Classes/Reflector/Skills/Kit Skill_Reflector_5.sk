@@ -13,6 +13,7 @@ local function kitEffect_SpeculumShield(player: player):
 	set {_baseloc} to location of head of {_player}
 	set pitch of {_baseloc} to 0
 	set {_loc.shield} to location 1.5 meter in front of {_baseloc}
+	kitSound_SpeculumShield_Launch({_loc.shield})
 	set {_now} to now
 	# 見た目
 	set {_item} to "minecraft:light_gray_stained_glass_pane"
@@ -33,6 +34,7 @@ local function kitEffect_SpeculumShield(player: player):
 		set {_w} to 0
 		loop {@width} * 2 times:
 			set {_loc.slime} to location {_w} meters to the right of {_loc.hit.height}
+			kitParticle_SpeculumShield_Launch({_loc.slime})
 			spawn a slime at {_loc.slime} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
 			set {_slime} to spawned slime
 			set metadata value "gametype" of {_slime} to "Kit"
@@ -43,9 +45,11 @@ local function kitEffect_SpeculumShield(player: player):
 		add 0.5 to {_h}
 	wait 10 seconds
 	kitMsg({_player}, "§f鏡面シールド§8は消滅した...")
+	kitSound_SpeculumShield_Break({_loc.shield})
 	loop all entities:
 		metadata value "Speculum Shield" of loop-entity is "%{_player}%"
 		metadata value "Speculum Shield - Time" of loop-entity is {_now}
+		kitParticle_SpeculumShield_Break(location of loop-entity)
 		delete loop-entity
 
 on damage of slime:
@@ -57,5 +61,28 @@ on damage of slime:
 	if damage was caused by attack, projectile or potion:
 		set {_dmg} to damage / 2
 		kitDamage({_name}, attacker, {_dmg})
+		kitParticle_SpeculumShield_Damage(location of victim)
 	else:
 		cancel event
+
+
+
+local function kitSound_SpeculumShield_Launch(loc: location):
+	playSound("entity.player.levelup", 1, 0.65, {_loc})
+
+local function kitSound_SpeculumShield_Break(loc: location):
+	playSound("block.glass.break", 1, 0.6, {_loc})
+
+local function kitParticle_SpeculumShield_Launch(loc: location):
+	loop 3 times:
+		spawnParticle_Vector(wax_off, randomVector(), 1, {_loc})
+
+local function kitParticle_SpeculumShield_Break(loc: location):
+	set {_ln} to a random integer between 1 and 3
+	loop {_ln} times:
+		spawnParticle_Block(light_gray_stained_glass, {_loc})
+
+local function kitParticle_SpeculumShield_Damage(loc: location):
+	playSound("block.amethyst_block.break", 1.2, 2, {_loc})
+	loop 5 times:
+		spawnParticle_Vector(scrape, randomVector(), 1.5, {_loc})
