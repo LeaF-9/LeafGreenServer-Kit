@@ -3,31 +3,124 @@
 function kitUltReflector(player: player):
 	message formatted "§c世界を分断する巨大な壁を展開します!" to {_player}
 	message formatted "§cこの壁を跨いだプレイヤーを認識することが不可能になります!" to {_player}
-	set {_baseloc} to location 5 meters in front of head of {_player}
+	set {_baseloc} to location of head of {_player}
 	set pitch of {_baseloc} to 0
+	set yaw of {_baseloc} to 45 * (round(yaw of {_baseloc} / 45))
+	set {_baseloc} to location 5 meters in front of {_baseloc}
 	set {_walldirection} to {_baseloc}
 	add 90 to yaw of {_walldirection}
 	# middle
 	set {_block} to "minecraft:sea_lantern"
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-25f,-50f]", "[0.1f,50f,100f]")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-50f]", "[0.1f,100f,100f]")
 	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
 	set {_location} to {_walldirection}
 	spawn a block display at {_location} with nbt {_nbt}
 	set {_blockdisplay} to spawned block display
 	set metadata value "gametype" of {_blockdisplay} to "Kit"
 	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
-	# front
+	# (left)
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,50f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# (right)
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-150f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# front - 50
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-100f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	set {_location} to location 50 meters in front of {_walldirection}
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# (left)
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,0f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# (right)
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-200f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# front - 100
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-50f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
 	set {_location} to location 100 meters in front of {_walldirection}
 	spawn a block display at {_location} with nbt {_nbt}
 	set {_blockdisplay} to spawned block display
 	set metadata value "gametype" of {_blockdisplay} to "Kit"
 	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
-	# behind
+	# (right1)
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-150f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# (right2)
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-250f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# behind - 50
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,0f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	set {_location} to location 50 meters behind {_walldirection}
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# (left)
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,100f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# (right)
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-100f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# behind - 100
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-50f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
 	set {_location} to location 100 meters behind {_walldirection}
 	spawn a block display at {_location} with nbt {_nbt}
 	set {_blockdisplay} to spawned block display
 	set metadata value "gametype" of {_blockdisplay} to "Kit"
 	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# (left1)
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,50f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# (left2)
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,150f]", "[0.1f,100f,100f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_location} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	# END
 	set {_now} to now
 	set {Ult.%{_player}%::UniversalDivision} to {_walldirection}
 	kitEffect_UniversalDivision_Timer()
