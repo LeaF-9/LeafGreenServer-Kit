@@ -8,12 +8,13 @@ function kitSkill_Reflector_7(player: player):
 
 local function kitEffect_MissileRepulsion(player: player):
 	kitMsg({_player}, "§e投擲物を消滅させる光線§5を発射します...")
-	kitParticle_MissileRepulsion_LaunchSound({_player})
+	kitSound_MissileRepulsion_Launch({_player})
 	set {_loc} to location of head of {_player}
 	set {_ok} to true
 	set {_m} to 0
 	while {_ok} is true:
 		add 1 to {_m}
+		kitParticle_MissileRepulsion_Beam({_loc}, {_m})
 		if {_m} > 15:
 			set {_ok} to false
 			continue
@@ -30,6 +31,7 @@ local function kitEffect_MissileRepulsion(player: player):
 			continue
 	if {_target} is not set:
 		stop
+	kitParticle_MissileRepulsion_Hit({_projectile})
 	wait a tick
 	kitEffect_MissileRepulsion_Hit({_player}, {_target}, {_projectile})
 
@@ -41,8 +43,11 @@ local function kitEffect_MissileRepulsion_Hit(player: player, target: entity, lo
 	set {_m} to 0
 	loop {_dis} times:
 		add 1 to {_m}
+		kitParticle_MissileRepulsion_Charge({_loc.proj}, {_loc.tar}, {_m})
 		if mod({_m}, 10) is 0:
 			wait a tick
+	kitParticle_MissileRepulsion_Explode({_loc.tar})
+	wait 10 ticks
 	loop all entities in radius 7 around {_loc.tar}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		kitDamage({_player}, loop-entity, 3)
@@ -50,5 +55,70 @@ local function kitEffect_MissileRepulsion_Hit(player: player, target: entity, lo
 			kitPalsy(loop-entity, 5 seconds)
 
 
-local function kitParticle_MissileRepulsion_LaunchSound(player: player):
+
+local function kitParticle_MissileRepulsion_Beam(baseloc: location, meter: number):
+	set {_effloc} to location {_meter} meters in front of {_baseloc}
+	set {_arad} to 72 * {_meter}
+	loop 15 times:
+		set {_rad} to {_arad} + 24 * loop-number
+		set {_el} to {_effloc}
+		set {_m1} to {_el}
+		set pitch of {_m1} to pitch of {_m1} - 90
+		set {_test1} to 1.5 * cos({_rad})
+		set {_t1} to location {_test1} meters in front of {_m1}
+		set {_m2} to {_el}
+		set pitch of {_m2} to 0
+		set {_test2} to 1.5 * sin({_rad})
+		set {_t2} to location {_test2} meters to the right of {_m2}
+		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
+		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
+		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+		spawnParticle_DustTransition(rgb(77, 67, 152), rgb(0, 0, 0), 1.5, {_el})
+
+local function kitParticle_MissileRepulsion_Hit(loc: location):
+	playSound("entity.ender_eye.death", 1, 1.5, {_loc})
+	loop 30 times:
+		spawnParticle_Vector(end_rod, randomVector(3), 1, {_loc})
+
+local function kitParticle_MissileRepulsion_Charge(from: location, to: location, meter: number):
+	set {_vector} to setVector({_from}, {_to})
+	set {_baseloc} to setDirToVec({_from}, {_vector})
+	set {_effbaseloc} to location {_meter} meters in front of {_baseloc}
+	playSound("entity.ender_dragon.growl", 0.7, 2, {_effbaseloc})
+	set {_rad} to 0
+	loop 20 times:
+		add 18 to {_rad}
+		set {_el} to {_effbaseloc}
+		set {_m1} to {_el}
+		set pitch of {_m1} to pitch of {_m1} - 90
+		set {_test1} to 3 * cos({_rad})
+		set {_t1} to location {_test1} meters in front of {_m1}
+		set {_m2} to {_el}
+		set pitch of {_m2} to 0
+		set {_test2} to 3 * sin({_rad})
+		set {_t2} to location {_test2} meters to the right of {_m2}
+		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
+		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
+		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+		spawnParticle(witch, {_el})
+
+local function kitParticle_MissileRepulsion_Explode(loc: location):
+	playSound("entity.ender_dragon.flap", 1, 1.15, {_loc})
+	set {_efflocs::*} to particleLocatoin_Sphere({_loc}, 10, 7)
+	loop {_efflocs::*}:
+		set {_el} to loop-value
+		set {_vector} to setVector({_loc}, {_el})
+		spawnParticle_Vector(wax_off, {_vector}, 0.75, {_loc})
+	wait 10 ticks
+	playSound("entity.enderman.hurt", 1, 0.5, {_loc})
+	loop all blocks in radius 7 around {_loc}:
+		loop-block is passable
+		chance of 10%:
+			set {_num} to a random integer between 3 and 5
+			loop {_num} times:
+				spawnParticle_Vector(wax_on, randomVector(), 1.5, location of loop-block)
+
+
+
+local function kitSound_MissileRepulsion_Launch(player: player):
 	playSound("entity.enderman.ambient", 1, 0.7, {_player})
