@@ -33,6 +33,30 @@ function kitDamage(attacker: player, victim: entity, damage: number, pierce: boo
 	else:
 		damage {_victim} by {_damage} hearts
 
+function kitDamageInstant(attacker: player, victim: entity, damage: number):
+	if type of {_victim} is a player:
+		LastKiller({_victim}, {_attacker})
+	{Stats.%{_victim}%::Invincible} is not set
+	if {Kit-Shield::%{_victim}%} is set:
+		set {_shield} to {Kit-Shield::%{_victim}%}
+		subtract {_damage} from {_shield}
+		send action bar "§9§lシールドがダメージを無効化した!" to {_victim}
+		send action bar "§c§lシールドが攻撃を阻害した!" to {_attacker}
+		if {_shield} > 0:
+			set {Kit-Shield::%{_victim}%} to {_shield}
+			playSound("block.anvil.land", 0.7, 2, {_victim})
+		else:
+			delete {Kit-Shield::%{_victim}%}
+			delete {Kit-ShieldTime::%{_victim}%}
+			message formatted "§3§lシールドが崩壊した!" to {_victim}
+			playSound("entity.item.break", 0.7, 1, {_victim})
+	else:
+		set {_health} to health of {_victim}
+		subtract {_damage} from {_health}
+		playSound("entity.generic.hurt", 1, 1, {_victim})
+		set health of {_victim} to {_health}
+		play hurt animation on {_victim}
+
 on damage of player:
 	{Stats.%victim%::Invincible} is true
 	cancel event
