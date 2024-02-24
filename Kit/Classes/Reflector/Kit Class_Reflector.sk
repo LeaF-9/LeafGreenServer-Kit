@@ -1,8 +1,13 @@
 # Reflectorのスキル Ver1.0.0
 
-# Weapon
+# Weapons
 function kitWeaponReflector(player: player):
-	log "まだだよ"
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	checkCT({_player}, name of {_tool}) is true
+	checkItemCT({_player}, {_tool}) is true
+	if {_item.num} is 3:
+		kitWeapon_Reflector_3({_player})
 
 # Skills
 function kitSkillReflector(player: player) :: boolean:
@@ -44,3 +49,16 @@ function kitReflector_DamageChecker(victim: player) :: text:
 	if {Stats.%{_victim}%::PerfectReflection} is set:
 		return "Perfect Reflection"
 	return "none"
+
+# Timer
+function kitTimerReflector(player: player):
+	set {_wn} to kitSelectChecker_Weapon({_player}, "Reflector")
+	if {_wn} is not 3:
+		stop
+	set {Stats.%{_player}%::TolleStone} to 0
+	create bossbar titled "&5&lDamage Hoard&b: &d&l%{Stats.%{_player}%::TolleStone}%" and id "%{_player}%-TolleStone" for {_player} with progress {Stats.%{_player}%::TolleStone} with colors purple with style segmented 10
+	while {Class::%{_player}%} is "Reflector":
+		set bossbar "%{_player}%-TolleStone" title to "&5&lDamage Hoard&b: &d&l%{Stats.%{_player}%::TolleStone}%"
+		set bossbar "%{_player}%-TolleStone" value to {Stats.%{_player}%::TolleStone} * 10
+		wait a second
+	remove bossbar "%{_player}%-TolleStone"

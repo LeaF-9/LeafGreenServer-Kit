@@ -1,0 +1,77 @@
+# weapon-name: Mirror Blade
+
+on leftclick:
+	player is sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Reflector", "Weapon.main", 2) is true
+	kitEffect_MirrorBlade(player)
+
+
+
+local function kitEffect_MirrorBlade(player: player):
+	kitParticle_MirrorBlade_Launch({_player})
+	loop all projectiles in radius 5 around {_player}:
+		kitCheckTeam(shooter of loop-projectile, {_player}, false) is true
+		kitEffect_MirrorBlade_Vanish({_player}, location of loop-projectile)
+		delete loop-projectile
+
+local function kitEffect_MirrorBlade_Vanish(player: player, loc: location):
+	set {_dis} to 10000
+	loop all players:
+		kitCheckTeam(loop-player, {_player}, false) is true
+		set {_d} to distance between loop-player and {_player}
+		if {_dis} > {_d}:
+			set {_dis} to {_d}
+			set {_target} to loop-player
+	if {_target} is not set:
+		stop
+	set {_loc.target} to location 1 meter above {_target}
+	kitParticle_MirrorBlade_Reflect({_loc}, {_loc.target})
+	kitEffect_MirrorBlade_Beam({_player}, {_loc}, {_loc.target})
+
+local function kitEffect_MirrorBlade_Beam(player: player, from: location, to: location):
+	set {_baseloc} to {_from}
+	set {_vector} to setVector({_from}, {_to})
+	set {_baseloc} to setDirToVec({_baseloc}, {_vector})
+	set {_distance} to (round(distance between {_from} and {_to}) + 5) * 2
+	set {_m} to 0
+	loop {_distance} time:
+		add 0.5 to {_m}
+		set {_effloc} to location {_m} meters in front of {_baseloc}
+		kitParticle_MirrorBlade_Beam({_effloc})
+		set {_hits::*} to checkHitEntities({_effloc})
+		loop {_hits::*}:
+			{_hit.%id of loop-value-2%} is not set
+			kitCheckTeam(loop-value-2, {_player}, false) is true
+			set {_hit.%id of loop-value-2%} to true
+			kitDamageInstant({_player}, loop-value-2, 1)
+		if mod({_m}, 1) is 0:
+			wait a tick
+
+
+
+
+local function kitParticle_MirrorBlade_Launch(player: player):
+	playSound("item.armor.equip_chain", 0.75, 1.1, {_player})
+	loop 10 times:
+		spawnParticle_Vector(cloud, randomVector(), 0.9, location 1 meter above {_player})
+
+local function kitParticle_MirrorBlade_Reflect(from: location, to: location):
+	set {_baseloc} to {_from}
+	set {_vector} to setVector({_from}, {_to})
+	set {_baseloc} to setDirToVec({_baseloc}, {_vector})
+	playSound("block.bell.resonate", 0.9, 2, {_baseloc})
+	set {_now} to now
+	set {_item} to "minecraft:white_stained_glass_pane"
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[1f,1f,1f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b}}"
+	spawn an item display at {_baseloc} with nbt {_nbt}
+	set {_itemdisplay} to spawned item display
+	set metadata value "gametype" of {_itemdisplay} to "Kit"
+	wait a second
+	loop all entities:
+		loop-entity is {_itemdisplay}
+		delete loop-entity
+
+local function kitParticle_MirrorBlade_Beam(loc: location):
+	spawnParticle_DustTransition(rgb(255, 255, 255), rgb(188, 226, 232), 0.7, {_loc})

@@ -1,0 +1,84 @@
+# weapon-name: Tolle Stone
+
+on damage of player:
+	{Class::%victim%} is "Reflector"
+	victim is sneaking
+	attacker is set
+	set {_tool} to victim's tool
+	kitItemAllChecker({_tool}, "Reflector", "Weapon.main", 3) is true
+	set damage to damage - 1
+	kitMsg(victim, "§cダメージ§5をチャージした!")
+	add 1 to {Stats.%victim%::TolleStone}
+	kitParticle_TolleStone_Charge(victim)
+
+function kitWeapon_Reflector_3(player: player):
+	toolItemCT({_player}, "Reflector", 3)
+	kitEffect_TolleStone({_player})
+
+
+
+local function kitEffect_TolleStone(player: player):
+	set {_dmg} to 2
+	if {Stats.%{_player}%::TolleStone} is set:
+		if {Stats.%{_player}%::TolleStone} <= 3:
+			set {_adddmg} to {Stats.%{_player}%::TolleStone}
+			set {Stats.%{_player}%::TolleStone} to 0
+		else:
+			set {_adddmg} to 3
+			subtract 3 from {Stats.%{_player}%::TolleStone}
+	if {_adddmg} is set:
+		set {_dmg} to {_dmg} + {_adddmg}
+	set {_baseloc} to location of head of {_player}
+	kitParticle_TolleStone_Launch({_baseloc}, {_dmg})
+	set {_m} to 0
+	loop 20 times:
+		add 0.5 to {_m}
+		set {_effloc} to location {_m} meters in front of {_baseloc}
+		kitParticle_TolleStone_Beam({_effloc})
+		set {_hits::*} to checkHitEntities({_effloc})
+		loop {_hits::*}:
+			{_hit.%id of loop-value-2%} is not set
+			kitCheckTeam(loop-value-2, {_player}, false) is true
+			set {_hit.%id of loop-value-2%} to true
+			kitDamage({_player}, loop-value-2, {_dmg})
+			
+
+
+local function kitParticle_TolleStone_Charge(player: player):
+	playSound("block.amethyst_block.break", 1, 1.1, {_player})
+	loop 10 times:
+		set {_loc} to aroundEffect({_player})
+		spawnParticle_Block(amethyst block, {_loc})
+
+local function kitParticle_TolleStone_Launch(loc: location, count: number):
+	playSound("entity.illusioner.mirror_move", 0.9, 1.7, {_loc})
+	loop {_count} times:
+		kitParticle_TolleStone_Circle({_loc})
+		wait a tick
+
+local function kitParticle_TolleStone_Circle(loc: location):
+	set {_m} to 0
+	set {_count} to 10
+	loop 5 times:
+		add 0.2 to {_m}
+		add 5 to {_count}
+		set {_rad} to 0
+		loop {_count} times:
+			add 360 / {_count} to {_rad}
+			set {_el} to {_loc}
+			set {_m1} to {_el}
+			set pitch of {_m1} to pitch of {_m1} - 90
+			set {_test1} to {_m} * cos({_rad})
+			set {_t1} to location {_test1} meters in front of {_m1}
+			set {_m2} to {_el}
+			set pitch of {_m2} to 0
+			set {_test2} to {_m} * sin({_rad})
+			set {_t2} to location {_test2} meters to the right of {_m2}
+			set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
+			set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
+			set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+			spawnParticle_Dust(rgb(77, 90, 175), 0.5, {_el})
+		wait a tick
+
+local function kitParticle_TolleStone_Beam(loc: location):
+	spawnParticle(witch, {_loc})
