@@ -83,10 +83,14 @@ function reflectUnglowing(player: player, target: entity):
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
 
 function skacketGlowing(player: player, target: entity):
-	set client glowing of {_target} to true for {_player}
+	if metadata value "glowing-%id of {_target}%" of {_player} is not set:
+		set metadata value "glowing-%id of {_target}%" of {_player} to true
+		set client glowing of {_target} to true for {_player}
 
 function skacketUnglowing(player: player, target: entity):
-	set client glowing of {_target} to false for {_player}
+	if metadata value "glowing-%id of {_target}%" of {_player} is set:
+		delete metadata value "glowing-%id of {_target}%" of {_player}
+		set client glowing of {_target} to false for {_player}
 
 # clientside particles
 function targetParticles(player: player, target: entity, color: color):

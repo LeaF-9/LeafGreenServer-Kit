@@ -1,0 +1,74 @@
+# skill-name: Harmony Notes
+
+function kitSkill_Bard_2(player: player):
+	toolCT({_player}, "Bard", 2)
+	kitEffect_HarmonyNotes({_player})
+
+
+
+local function kitEffect_HarmonyNotes(player: player):
+	kitMsg({_player}, "§d調和を保つ音符を発射します...")
+	set {_playerloc} to location of head of player
+	set {_targetloc} to location 10 meters in front of {_playerloc}
+	set {_vector.notes} to setVector({_playerloc}, {_targetloc})
+	set {_loc.notes} to {_playerloc}
+	loop 200 times:
+		# vector adjusting
+		set {_loc.temp} to location 0.1 meters in front of {_loc.notes}
+		delete {_direction::*}
+		# ceil
+		if block at location 0.5 meters above {_loc.temp} is not passable:
+			set {_direction::ceil} to true
+		# floor
+		if block at location 0.5 meters below {_loc.temp} is not passable:
+			set {_direction::floor} to true
+		# north
+		if block at location 0.5 meters north of {_loc.temp} is not passable:
+			set {_direction::north} to true
+		# south
+		if block at location 0.5 meters south of {_loc.temp} is not passable:
+			set {_direction::south} to true
+		# east
+		if block at location 0.5 meters east of {_loc.temp} is not passable:
+			set {_direction::east} to true
+		# west
+		if block at location 0.5 meters west of {_loc.temp} is not passable:
+			set {_direction::west} to true
+		# ceil-floor (y)
+		if {_direction::ceil} is true:
+			set y of {_vector.notes} to y of {_vector.notes} * -1
+			if {_direction::floor} is true:
+				set y of {_vector.notes} to 0
+		else if {_direction::floor} is true:
+			set y of {_vector.notes} to y of {_vector.notes} * -1
+		# north-south (z)
+		if {_direction::north} is true:
+			set z of {_vector.notes} to z of {_vector.notes} * -1
+			if {_direction::south} is true:
+				set z of {_vector.notes} to 0
+		else if {_direction::south} is true:
+			set z of {_vector.notes} to z of {_vector.notes} * -1
+		# east-west (x)
+		if {_direction::east} is true:
+			set x of {_vector.notes} to x of {_vector.notes} * -1
+			if {_direction::west} is true:
+				set x of {_vector.notes} to 0
+		if {_direction::west} is true:
+			set x of {_vector.notes} to x of {_vector.notes} * -1
+		# direction deciding
+		set {_loc.notes} to setDirToVec({_loc.notes}, {_vector.notes})
+		# location deciding
+		set {_loc.notes} to location 0.1 meters in front of {_loc.notes}
+		# effects
+		set {_tier} to 1
+		if {Stats.%{_player}%::Fortissimo} is true:
+			set {_tier} to 2
+		loop all players in radius 3 around {_loc.notes}:
+			if kitCheckTeam(loop-player, {_player}, true) is true:
+				setSupporter(loop-player, {_player})
+				set {_potiontype} to regeneration
+			else if kitCheckTeam(loop-player, {_player}, false) is true:
+				add {_player} to {damager.%loop-player%::*}
+				set {_potiontype} to poison
+			applyEffect(loop-player, {_potiontype}, {_tier}, 0.3 seconds)
+		wait a tick

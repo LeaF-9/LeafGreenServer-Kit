@@ -1,0 +1,230 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+
+# Pyroのスキル Ver1.0.0
+on damage:
+	{CLS::%attacker%} is "PYR"
+	chance of 10%:
+		ignite the victim for 10 seconds
+
+on damage:
+	damage was caused by fire
+	loop all players in radius 5 around victim:
+		if {team::%loop-player%} is {team::%victim%}:
+			if {CLS::%loop-player%} is "PYR":
+				cancel event
+
+on rightclick holding a iron hoe:
+	name of player's tool is "§4Fire Rod"
+	if {CT.%player%::%name of player's tool%} is not set:
+		shoot a small fireball at speed 5
+		drawDot count 3, particle "smoke", center shot entity, visibleRange 30, keepFor 20 ticks
+		play raw sound "mob.ghast.fireball" at the player with pitch 3 volume 1
+		set {CT.%player%::%name of player's tool%} to 10
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on projectile hit:
+	{CLS::%shooter%} is "PYR"
+	projectile is an arrow
+	set {_pl} to location of block at projectile
+	set {_pbl} to location of block below projectile
+	block at {_pl} is air
+	block at {_pbl} is not air
+	set block at {_pl} to fire
+	wait 3 seconds
+	set block at {_pl} to air
+
+on damage:
+	damage was caused by projectile
+	projectile is a small fireball
+	{CLS::%attacker%} is "PYR"
+	cancel event
+	ignite the victim for 3 seconds
+
+on rightclick holding a blaze rod:
+	name of player's tool is "§eFire Contagion"
+	if {CT.%player%::%name of player's tool%} is not set:
+		shoot a fireball at speed 3
+		set metadata value "fire" of shot fireball to "true"
+		drawDot count 3, particle "flame", center shot entity, visibleRange 30, keepFor 20 ticks
+		play raw sound "mob.ghast.fireball" at the player with pitch 0.5 volume 1
+		message "{@prefix} §6当たった周辺の敵を燃やす弾を放ちました！"
+		set {CT.%player%::%name of player's tool%} to 40
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on projectile hit:
+	projectile is fireball
+	metadata value "fire" of projectile is "true"
+#	loop all players in radius 3 around projectile:
+#		{team::%loop-player%} is not {team::%shooter%}
+#		set {Stats.%loop-player%::DoubleFire} to true
+#		drawWarpRings style 0, particle "lava", center loop-player, id "%loop-player%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
+#		add loop-player to {_df::*}
+	loop all players in radius 5 around projectile:
+		{team::%loop-player%} is not {team::%shooter%}
+		make shooter damage loop-player by 4
+		ignite loop-player for 5 seconds
+		message "§4熱い！" to loop-player
+		set {_pl} to location of projectile
+	wait 5 ticks
+	loop {_df::*}:
+		stopEffect "%loop-value%"
+
+on damage of player:
+	damage was caused by projectile
+	projectile is fireball
+	metadata value "fire" of projectile is "true"
+	set damage to 3
+
+on rightclick holding a blaze powder:
+	name of player's tool is "§eFire Storm"
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 40
+		drawWarpRings style 0, particle "flame", center player, id "%player%", scan true, height 20, radius 10, ringCount 20, ringDensity 100, visibleRange 32
+		loop all players in radius 10 around player:
+			{team::%loop-player%} is not {team::%player%}
+			set {LastKiller::%loop-player%} to player
+			add player to {damager.%loop-player%::*}
+			ignite loop-player for 10 seconds
+			add loop-player to {_df::*}
+			drawWarpRings style 0, particle "flame", center loop-player, id "%loop-player%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 100, visibleRange 32
+		play raw sound "mob.ghast.fireball" at the player with pitch 1 volume 1
+		message "{@prefix} §4周辺プレイヤーを燃やします!"
+		wait 5 ticks
+		stopEffect "%player%"
+		loop {_df::*}:
+			stopEffect "%loop-value%"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage of player:
+	damage was caused by fire, burning or lava
+	if {CLS::%victim%} is "ICE":
+		set damage to damage * 2
+	if {Stats.%victim%::DoubleFire} is true:
+		set damage to damage * 2
+
+on rightclick holding a magma cream:
+	name of player's tool is "§6Fire Support"
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 60
+		loop all players in radius 10 around player:
+			loop-player is not player
+			{team::%loop-player%} is {team::%player%}
+			{Stats.%loop-player%::FireSupport} is not set
+			add player to {supporter.%loop-player%::*}
+			set {Stats.%loop-player%::FireSupport} to true
+			set {_fs.%loop-player%} to true
+			drawComplexSpiral particle "mobspell", RGB 255, 165, 0, center loop-player, id "%loop-player%", clockwise true, scan true, radius 0.5, density 50, height 5, effectMod 2, start 0, visibleRange 30
+			apply fire resistance 1 to loop-player for 60 seconds
+			message "§6%player% §eに§4炎の加護§eを付与してもらった！" to loop-player
+		play raw sound "mob.blaze.death" at the player with pitch 0.5 volume 1
+		message "{@prefix} §e自分及び周辺の味方プレイヤーに§4炎の加護§eを付与しました！"
+		set {Stats.%player%::FireSupport} to true
+		drawComplexSpiral particle "mobspell", RGB 255, 165, 0, center player, id "%player%", clockwise true, scan true, radius 0.5, density 50, height 5, effectMod 2, start 0, visibleRange 30
+		wait 10 seconds
+		delete {Stats.%player%::FireSupport}
+		stopEffect "%player%"
+		message "§6炎の加護が失われました" to player
+		extinguish player
+		loop all players:
+			loop-player is not player
+			{team::%loop-player%} is {team::%player%}
+			{_fs.%loop-player%} is true
+			stopEffect "%loop-player%"
+			delete {Stats.%loop-player%::FireSupport}
+			message "§6炎の加護が失われました" to loop-player
+			extinguish loop-player
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+every 5 ticks:
+	loop all players:
+		{Stats.%loop-player%::FireSupport} is true
+		set {_fb} to location of block at loop-player
+		block at {_fb} is air
+		set the block at {_fb} to fire
+		drawDot count 1, particle "lava", center {_fb}, visibleRange 30, keepFor 20 ticks
+		wait 10 seconds
+		set block at {_fb} to air
+
+on rightclick holding a gold horse armor:
+	name of player's tool is "§6Flame Thrower"
+	if {Stats.%player%::FlameThrow} is not set:
+		set {Stats.%player%::FlameThrow} to 5
+	if {Stats.%player%::FlameThrow} > 0:
+		subtract 1 from {Stats.%player%::FlameThrow}
+		set action bar of player to "§cRemains§e: §d%{Stats.%player%::FlameThrow}%"
+		shoot an egg from player at speed 1
+		set metadata value "flamethrow" of shot entity to "true"
+		push shot entity to the left at speed random number from -0.1 to 0.1
+		push shot entity upwards at speed random number from -0.1 to 0.1
+		drawDot count 1, particle "flame", center shot entity, visibleRange 32, keepFor 1 second
+		ignite shot entity
+		play raw sound "mob.ghast.fireball" at player with pitch 1.5 volume 1
+	else:
+		set action bar of player to "§c§l弾がありません!"
+
+every 3 seconds:
+	loop all players:
+		{Stats.%loop-player%::FlameThrow} is set
+		{Stats.%loop-player%::FlameThrow} < 5
+		add 1 to {Stats.%loop-player%::FlameThrow}
+		if name of loop-player's tool is "§6Flame Thrower":
+			set action bar of loop-player to "§cRemains§e: §d%{Stats.%loop-player%::FlameThrow}%"
+
+on damage of player:
+	damage was caused by projectile
+	projectile is an egg
+	metadata value "flamethrow" of projectile is "true"
+	set damage to 1
+	ignite victim for 5 seconds
+
+on rightclick holding a flint:
+	name of player's tool is "§4Flare Drive"
+	if {CT.%player%::%name of player's tool%} is not set:
+		if player's health > 2:
+			set {CT.%player%::%name of player's tool%} to 50
+			message "{@prefix} §c炎を纏って突撃します!"
+			damage player by 2 hearts
+			ignite player for 5 seconds
+			play raw sound "mob.ghast.fireball" at the player with pitch 0.1 volume 1
+			loop 20 times:
+				push player forward at speed 0.1
+				spawn a falling fire at player
+				set metadata value "nochange" of spawned falling fire to "true"
+				push spawned falling fire upwards at speed random number from 0.1 to 0.5
+				loop all players in radius 3 around player:
+					{team::%loop-player%} is not {team::%player%}
+					{_ed.%loop-player%} is not set
+					make player damage loop-player by 2
+					ignite loop-player for 5 seconds
+					play raw sound "mob.blaze.hit" at the player with pitch 0.5 volume 1
+					set {_ed.%loop-player%} to true
+				wait a tick
+		else:
+			set action bar of player to "§c§l体力が少なすぎます!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+every 1 second:
+	loop all players:
+		{CLS::%loop-player%} is "PYR"
+		block at loop-player is water
+		damage loop-player by 1 heart
+
+on damage:
+	{Stats.%attacker%::FireSupport} is true
+	if {CLS::%attacker%} is "PYR":
+		ignite victim for 10 seconds
+	else:
+		ignite victim for 5 seconds
+
+on damage:
+	{CLS::%victim%} is "PYR"
+	attacker is burning
+	set damage to damage * 0.75

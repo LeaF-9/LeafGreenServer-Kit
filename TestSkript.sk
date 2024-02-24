@@ -600,59 +600,59 @@ command /test-yaml:
 # 	broadcast "%field 9 of event-packet%"  # Data
 # ----------------------------
 
-# --- Particle関数のテスト ---
+# # --- Particle関数のテスト ---
 
-command /testparticle:
-	trigger:
-		set {_loc} to location of player
-		loop 10 times:
-			spawnParticle(composter, {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			spawnParticle_Block(dirt, {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			spawnParticle_BlockData(block_marker, dirt, {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			spawnParticle_Color(entity_effect, 100, 255, 0, {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			spawnParticle_Dust(dust, 0, 255, 100, 0.5, {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			spawnParticle_DustTransition(dust_color_transition, 0, 0, 0, 255, 255, 255, 2, {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			spawnParticle_Item(diamond, {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			spawnParticle_Note("green", {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			spawnParticle_NoteOption(0.5, {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			spawnParticle_Size(explosion, 10, {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			set {_v} to setVector({_loc}, location 10 meters in front of {_loc})
-			spawnParticle_Vector(end_rod, {_v}, {_loc})
-			wait a tick
-		wait 10 ticks
-		loop 10 times:
-			set {_tl} to location 10 meters in front of {_loc}
-			spawnParticle_Vibration(vibration, {_tl}, 1 second, {_loc})
+# command /testparticle:
+# 	trigger:
+# 		set {_loc} to location of player
+# 		loop 10 times:
+# 			spawnParticle(composter, {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			spawnParticle_Block(dirt, {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			spawnParticle_BlockData(block_marker, dirt, {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			spawnParticle_Color(entity_effect, 100, 255, 0, {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			spawnParticle_Dust(dust, 0, 255, 100, 0.5, {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			spawnParticle_DustTransition(dust_color_transition, 0, 0, 0, 255, 255, 255, 2, {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			spawnParticle_Item(diamond, {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			spawnParticle_Note("green", {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			spawnParticle_NoteOption(0.5, {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			spawnParticle_Size(explosion, 10, {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			set {_v} to setVector({_loc}, location 10 meters in front of {_loc})
+# 			spawnParticle_Vector(end_rod, {_v}, {_loc})
+# 			wait a tick
+# 		wait 10 ticks
+# 		loop 10 times:
+# 			set {_tl} to location 10 meters in front of {_loc}
+# 			spawnParticle_Vibration(vibration, {_tl}, 1 second, {_loc})
 
 
 # ---------------------------
@@ -857,3 +857,17 @@ command /testparticle:
 # 	set x-pos of {_to} to {_x}
 # 	set z-pos of {_to} to {_z}
 # 	event.setTo({_to})
+
+# Block Displayのテスト
+# 成功 yawとpitchに影響される
+# command /testblockdisplay:
+# 	permission: sk.admin
+# 	trigger:
+# 		set {_nbt} to nbt compound from "{transformation:{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],translation:[-0.5f,0f,-0.5f],scale:[64f,16f,0.05f]},block_state:{Name:""minecraft:sea_lantern""}}"
+# 		spawn a block display at location of player with nbt {_nbt}
+
+# getHand()のテスト
+# 利き手: HAND | それ以外: OFF_HAND
+# on arm swing:
+# 	set {_hand} to event.getHand()
+# 	broadcast "%{_hand}%"

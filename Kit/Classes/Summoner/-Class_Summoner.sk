@@ -1,0 +1,432 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+	lore: 右クリックで選択されたMobを召喚します||左クリックで召喚するMobを変更します|| ||§bCoolTime§7: §a10
+	temp: §6Summon Mobs
+
+# Summonerのスキル Ver1.0.0
+on rightclick holding a 290:
+	name of player's tool is "§5Leading Rod"
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_tg} to target block
+		{_tg} is set
+		if distance between player and location of {_tg} <= 30:
+			set {CT.%player%::%name of player's tool%} to 10
+			loop all blocks in radius 5 around location of {_tg}:
+				block below loop-block is not air
+				loop-block is air
+				block above loop-block is air
+				add location of loop-block to {_loc::*}
+			loop all entities in radius 5 around player:
+				loop-entity is not player
+				loop-entity's display name is "%player%"
+				add 1 to {_sum}
+				set {_l} to a random location out of {_loc::*}
+				teleport loop-entity to {_l}
+			play raw sound "mob.endermen.portal" at location of {_tg} with pitch 1.5 volume 1
+			message "{@prefix} §c%{_sum}% §b体のMobをTPさせました!"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+every a second:
+	loop all entities:
+		if loop-entity is a zombie pigman:
+			set {_dp} to loop-entity's display name
+			set {_dis} to 100
+			loop all players in radius 10 around loop-entity:
+				{team::%loop-player%} is not {team::%{_dp}%}
+				set {_d} to distance between loop-player and loop-entity-1
+				{_d} is less than {_dis}
+				set {_dis} to {_d}
+				set {_tg} to loop-player
+			set loop-entity's target to {_tg}
+		else if loop-entity is a wither skeleton:
+			loop-entity is not wearing 397
+			set {_dp} to loop-entity's display name
+			loop all players in radius 5 around loop-entity:
+				{team::%loop-player%} is not {team::%{_dp}%}
+				if loop-entity-1 has slowness:
+					apply wither 1 to loop-player for 1 seconds
+				else:
+					apply wither 2 to loop-player for 1 seconds
+
+on leftclick holding a 383:
+	name of player's tool contains "{@temp}"
+	if data value of player's tool is 57:
+		set slot 1 of player to a 383:60 named "{@temp} §5[§4Magic§5]" with lore "{@lore}"
+	else if data value of player's tool is 60:
+		set slot 1 of player to a 383:61 named "{@temp} §5[§4Shoot§5]" with lore "{@lore}"
+	else if data value of player's tool is 61:
+		set slot 1 of player to a 383:57 named "{@temp} §5[§4Attack§5]" with lore "{@lore}"
+
+on rightclick holding a 383:
+	name of player's tool contains "{@temp}"
+	cancel event
+	if {CT.%player%::{@temp}} is not set:
+		set {_num} to 0
+		loop all entities:
+			type of loop-entity is a zombie pigman, a wither skeleton or a blaze
+			metadata value "deletemob" of loop-entity is "true"
+			loop-entity's display name is "%player%"
+			add 1 to {_num}
+		if {_num} >= 10:
+			set action bar of player to "§c§l場に出ているMobの数が許容範囲を超えています"
+			stop
+		set {CT.%player%::{@temp}} to 10
+		message "{@prefix} §5従者を召喚しました..."
+		play raw sound "mob.wither.spawn" at player with pitch 1 volume 1
+		if data value of player's tool is 57:
+			loop all blocks in radius 5 around player:
+				y-coordinate of loop-block is y-coordinate of block at player
+				add location of block 3 above loop-block to {_ls::*}
+			loop 3 times:
+				set {_l} to a random location out of {_ls::*}
+				spawn a adult zombie pigman at {_l}
+				set metadata value "deletemob" of spawned zombie pigman to "true"
+				set spawned zombie pigman's tool to golden sword
+				set spawned zombie pigman's display name to "%player%"
+				drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned zombie pigman, visibleRange 30, keepFor 20 ticks
+				chance of 10%:
+					set {_l} to a random location out of {_ls::*}
+					spawn a magma cube at {_l}
+					set slime size of spawned magma cube to 1
+					set spawned magma cube's display name to "%player%"
+					set metadata value "deletemob" of spawned magma cube to "true"
+					drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned magma cube, visibleRange 30, keepFor 20 ticks
+		else if data value of player's tool is 60:
+			loop all blocks in radius 5 around player:
+				y-coordinate of loop-block is y-coordinate of block at player
+				add location of block 3 above loop-block to {_ls::*}
+			loop 3 times:
+				set {_l} to a random location out of {_ls::*}
+				spawn a wither skeleton at {_l}
+				set metadata value "deletemob" of spawned wither skeleton to "true"
+				set spawned wither skeleton's tool to bone
+				apply slowness 3 to spawned wither skeleton for 10000000000 seconds
+				set spawned wither skeleton's display name to "%player%"
+				drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned wither skeleton, visibleRange 30, keepFor 20 ticks
+				chance of 10%:
+					set {_l} to a random location out of {_ls::*}
+					spawn a magma cube at {_l}
+					set slime size of spawned magma cube to 1
+					set spawned magma cube's display name to "%player%"
+					set metadata value "deletemob" of spawned magma cube to "true"
+					drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned magma cube, visibleRange 30, keepFor 20 ticks
+		else if data value of player's tool is 61:
+			loop all blocks in radius 5 around player:
+				y-coordinate of loop-block is y-coordinate of block at player
+				add location of block 3 above loop-block to {_ls::*}
+			loop 3 times:
+				set {_l} to a random location out of {_ls::*}
+				spawn a blaze at {_l}
+				set metadata value "deletemob" of spawned blaze to "true"
+				set spawned blaze's display name to "%player%"
+				drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned blaze, visibleRange 30, keepFor 20 ticks
+				chance of 10%:
+					set {_l} to a random location out of {_ls::*}
+					spawn a magma cube at {_l}
+					set slime size of spawned magma cube to 1
+					set spawned magma cube's display name to "%player%"
+					set metadata value "deletemob" of spawned magma cube to "true"
+					drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned magma cube, visibleRange 30, keepFor 20 ticks
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage of player:
+	if attacker is zombie pigman:
+		attacker's helmet is tnt
+		cancel event
+		make a safe explosion of force 2.3 at attacker
+		delete attacker
+	if attacker is magma cube:
+		set damage to 1
+
+on damage:
+	if attacker is not player:
+		set {_at} to attacker's display name
+		set {_vi} to victim's display name
+		if {team::%victim%} is {team::%{_at}%}:
+			cancel event
+			stop
+		else if {team::%{_vi}%} is {team::%{_at}%}:
+			cancel event
+			stop
+	metadata value "deletemob" of victim is "true"
+	set {_d} to victim's display name
+	if {Stats.%{_d}%::Invincibly} is true:
+		cancel event
+	else:
+		if damage was caused by fall:
+			cancel event
+		else:
+			if victim is magma cube:
+				set {_sl} to slime size of victim
+				set {_l} to location of victim
+				if {_sl} is not 1:
+					subtract 1 from {_sl}
+					spawn a magma cube at {_l}
+					set slime size of spawned magma cube to {_sl}
+					set spawned magma cube's display name to "%{_d}%"
+					set metadata value "deletemob" of spawned magma cube to "true"
+			if damage was caused by entity explosion or block explosion:
+				loop all zombie pigmen in radius 3 around victim:
+					loop-zombie pigman's display name is "%{_d}%"
+					loop-zombie pigman's helmet is tnt
+					set {_t} to true
+				if {_t} is true:
+					cancel event
+					stop
+			cancel event
+			make a fake explosion at victim
+			delete victim
+
+on projectile hit:
+	projectile is a small fireball
+	set {_n} to shooter's display name
+	set {_l} to location of block at projectile
+	if shooter is blaze:
+		{_n} is set
+		if shooter has fire resistance:
+			play raw sound "mob.ghast.fireball" at {_l} with pitch 1 volume 1
+			loop all blocks in radius 5 around projectile:
+				y-coordinate of loop-block is y-coordinate of {_l}
+				drawDot count 1, particle "flame", center location of loop-block, visibleRange 32, keepFor 1 second
+			loop all players in radius 5 around projectile:
+				{team::%loop-player%} is not {team::%{_n}%}
+				ignite loop-player for 5 seconds
+	wait a tick
+	loop all blocks in radius 3 around projectile:
+		loop-block-1 is fire
+		loop all blocks in radius 2 around loop-block-1:
+			loop-block-2 is glowstone
+			set {_true} to true
+		{_true} is not set
+		set loop-block-1 to air
+
+on rightclick holding a 381:
+	name of player's tool is "§2Switching Location"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_tg} to target entity
+		if {_tg} is set:
+			if {_tg}'s display name is name of player:
+				set {CT.%player%::%name of player's tool%} to 20
+				message "{@prefix} §1目先の従者と位置を交換します..."
+				set {_pl} to location of player
+				set {_ml} to location of {_tg}
+				drawDot count 5, particle "portal", center player, visibleRange 30, keepFor 20 ticks
+				teleport {_tg} to {_pl}
+				teleport player to {_ml}
+				play raw sound "mob.endermen.portal" at {_pl} with pitch 1 volume 1
+				play raw sound "mob.endermen.portal" at {_ml} with pitch 1 volume 1
+			else:
+				set action bar of player to "§c§lその従者は自分のものではありません"
+		else:
+			set action bar of player to "§c§l目先には何も居ません"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a 399:
+	name of player's tool is "§3Powerful Buff"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 30
+		message "{@prefix} §3周辺のMobにバフを付与します..."
+		play raw sound "portal.trigger" at player with pitch 1 volume 1
+		loop all entities in radius 5 around player:
+			loop-entity's display name is name of player
+			metadata value "deletemob" of loop-entity is "true"
+			drawDot count 3, particle "witchspell", center loop-entity, visibleRange 30, keepFor 100 ticks
+			if loop-entity is a magma cube:
+				add 1 to slime size of loop-entity
+			else if loop-entity is a zombie pigman:
+				set loop-entity's helmet to tnt
+				apply speed 3 to loop-entity for 10000000000 seconds
+			else if loop-entity is a wither skeleton:
+				set loop-entity's tool to stone sword
+				remove slowness from loop-entity
+			else if loop-entity is a blaze:
+				apply fire resistance 1 to loop-entity for 10000000000 seconds
+			else if loop-entity is a silverfish:
+				set {_l} to location of loop-entity
+				delete loop-entity
+				spawn a endermite at {_l}
+				set metadata value "deletemob" of spawned endermite to "true"
+				set spawned endermite's display name to "%player%"
+				apply speed 1 to spawned endermite for 10000000000 seconds
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a 405:
+	name of player's tool is "§1Invincibly Followers"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 30
+		set {Stats.%player%::Invincibly} to true
+		message "{@prefix} §5全ての従者を5秒間無敵化した...!"
+		play raw sound "portal.travel" at player with pitch 1 volume 1
+		loop all entities:
+			loop-entity's display name is name of player
+			drawDot count 5, particle "mobspell", RGB 100, 50, 0, center loop-entity, visibleRange 30, keepFor 100 ticks
+		wait 5 seconds
+		delete {Stats.%player%::Invincibly}
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a 383:60:
+	name of player's tool is "§3Summon Supporters"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {CT.%player%::%name of player's tool%} to 40
+		message "{@prefix} §3援護従者を召喚しました..."
+		play raw sound "mob.wither.spawn" at player with pitch 2 volume 1
+		set {_l} to location of player
+		loop 3 times:
+			spawn a silverfish at {_l}
+			set metadata value "deletemob" of spawned silverfish to "true"
+			set spawned silverfish's display name to "%player%"
+			drawDot count 1, particle "mobspell", RGB 200, 0, 200, center spawned silverfish, visibleRange 30, keepFor 20 ticks
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage of player:
+	if attacker is a silverfish or a endermite:
+		set damage to 0.5
+
+# Option.sk にターゲット時TP記載
+
+every 5 seconds:
+	loop all endermites:
+		metadata value "deletemob" of loop-endermite is "true"
+		loop-endermite's target is set
+		drawDot count 1, particle "portal", center loop-endermite, visibleRange 30, keepFor 20 ticks
+		teleport loop-endermite to location of loop-endermite's target
+		play raw sound "mob.endermen.portal" at loop-endermite with pitch 2 volume 1
+
+on rightclick holding a 406:
+	name of player's tool is "§4Monster Spawner"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		set {_tb} to target block
+		if distance between location of {_tb} and player <= 5:
+			if block above {_tb} is air:
+				set {CT.%player%::%name of player's tool%} to 50
+				if {Stats.%player%::MonsterSpawner} is true:
+					set the block at {Stats.%player%::SpawnerLoc} to air
+					remove {Stats.%player%::SpawnerLoc} from {Block.%player%::*}
+					play raw sound "random.break" at {Stats.%player%::SpawnerLoc} with pitch 1 volume 1
+					message "{@prefix} §6既に設置してあるスポナーを壊しました"
+				if {CLS::%player%} is "SUM":
+					set {_ti} to slot 1 of player
+					if data value of {_ti} is 57:
+						set {_type} to "Zombie Pigman"
+					else if data value of {_ti} is 60:
+						set {_type} to "Wither Skeleton"
+					else if data value of {_ti} is 61:
+						set {_type} to "Blaze"
+					else:
+						set {_type} to "Silver Fish"
+				else:
+					set {_type} to "Silver Fish"
+				message "{@prefix} §5%{_type}% §4のスポナーを設置しました..."
+				set {_tg} to location of block above {_tb}
+				play raw sound "dig.stone" at location of {_tb} with pitch 1 volume 1
+				set {Stats.%player%::MonsterSpawner} to true
+				set {Stats.%player%::SpawnerLoc} to {_tg}
+				set {Stats.%player%::SpawnerType} to {_type}
+				add {_tg} to {Block.%player%::*}
+				set block at {_tg} to 153:0
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on leftclick on 153:0:
+	loop all players:
+		location of target block is {Stats.%loop-player%::SpawnerLoc}
+		if {team::%loop-player%} is not {team::%player%}:
+			set the block at {Stats.%loop-player%::SpawnerLoc} to air
+			remove {Stats.%loop-player%::SpawnerLoc} from {Block.%loop-player%::*}
+			play raw sound "random.break" at {Stats.%loop-player%::SpawnerLoc} with pitch 1 volume 1
+			message "§cスポナーが壊された!" to loop-player
+			message "§bスポナーを壊した!"
+			delete {Stats.%loop-player%::SpawnerLoc}
+			delete {Stats.%loop-player%::MonsterSpawner}
+			delete {Stats.%loop-player%::SpawnerType}
+
+on projectile hit:
+	loop all blocks in radius 3 around projectile:
+		loop-block is 153:0
+		loop all players:
+			location of loop-block is {Stats.%loop-player%::SpawnerLoc}
+			if {team::%loop-player%} is not {team::%shooter%}:
+				set the block at {Stats.%loop-player%::SpawnerLoc} to air
+				remove {Stats.%loop-player%::SpawnerLoc} from {Block.%loop-player%::*}
+				play raw sound "random.break" at {Stats.%loop-player%::Spawnerloc} with pitch 1 volume 1
+				message "§cスポナーが壊された!" to loop-player
+				message "§bスポナーを壊した!" to shooter
+				delete {Stats.%loop-player%::SpawnerLoc}
+				delete {Stats.%loop-player%::MonsterSpawner}
+				delete {Stats.%loop-player%::SpawnerType}
+
+every a second:
+	loop all players:
+		{Stats.%loop-player%::MonsterSpawner} is true
+		loop all blocks in radius 1.5 around location of {Stats.%loop-player%::SpawnerLoc}:
+			loop-block is air
+			chance of 50%:
+				drawDot count 1, particle "flame", center location of loop-block, visibleRange 30
+
+every 10 seconds:
+	loop all players:
+		{Stats.%loop-player%::MonsterSpawner} is true
+		set {_num} to 0
+		loop all entities:
+			type of loop-entity-2 is a zombie pigman, a wither skeleton or a blaze
+			metadata value "deletemob" of loop-entity-2 is "true"
+			loop-entity-2's display name is "%loop-player%"
+			add 1 to {_num}
+		{_num} < 10
+		loop all blocks in radius 3 around location of {Stats.%loop-player%::SpawnerLoc}:
+			y-coordinate of loop-block is y-coordinate of {Stats.%loop-player%::SpawnerLoc}
+			loop-block is air
+			add location of loop-block to {_loc::*}
+		set {_num} to a random integer between 1 and 5
+		loop {_num} times:
+			set {_l} to a random location out of {_loc::*}
+			if {Stats.%loop-player%::SpawnerType} is "Zombie Pigman":
+				spawn a adult zombie pigman at {_l}
+				set metadata value "deletemob" of spawned zombie pigman to "true"
+				set spawned zombie pigman's tool to golden sword
+				set spawned zombie pigman's display name to "%loop-player%"
+				drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned zombie pigman, visibleRange 30, keepFor 20 ticks
+			else if {Stats.%loop-player%::SpawnerType} is "Wither Skeleton":
+				spawn a wither skeleton at {_l}
+				set metadata value "deletemob" of spawned wither skeleton to "true"
+				set spawned wither skeleton's tool to bone
+				apply slowness 3 to spawned wither skeleton for 10000000000 seconds
+				set spawned wither skeleton's display name to "%loop-player%"
+				drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned wither skeleton, visibleRange 30, keepFor 20 ticks
+			else if {Stats.%loop-player%::SpawnerType} is "Blaze":
+				spawn a blaze at {_l}
+				set metadata value "deletemob" of spawned blaze to "true"
+				set spawned blaze's display name to "%loop-player%"
+				drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned blaze, visibleRange 30, keepFor 20 ticks
+			else if {Stats.%loop-player%::SpawnerType} is "Silver Fish":
+				spawn a silverfish at {_l}
+				set metadata value "deletemob" of spawned silverfish to "true"
+				set spawned silverfish's display name to "%loop-player%"
+				drawDot count 1, particle "mobspell", RGB 200, 0, 200, center spawned silverfish, visibleRange 30, keepFor 20 ticks
+
+on damage of player:
+	if attacker is magma cube:
+		metadata value "deletemob" of attacker is "true"
+		set {_dm} to slime size of attacker
+		set damage to {_dm}
+
+on death of player:
+	if attacker is magma cube:
+		add 1 to slime size of attacker
+	loop all entities:
+		loop-entity's display name is "%victim%"
+		metadata value "deletemob" of loop-entity is "true"
+		delete loop-entity

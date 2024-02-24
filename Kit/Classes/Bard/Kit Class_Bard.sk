@@ -1,0 +1,102 @@
+# Bardのスキル Ver1.0.0
+
+# Skills
+
+function kitSkillBard(player: player) :: boolean:
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	if checkCT({_player}, name of {_tool}) is true:
+		if {_item.num} is 1:
+			kitSkill_Bard_1({_player})
+		else if {_item.num} is 2:
+			kitSkill_Bard_2({_player})
+		else if {_item.num} is 3:
+			kitSkill_Bard_3({_player})
+		else if {_item.num} is 4:
+			kitSkill_Bard_4({_player})
+		else if {_item.num} is 5:
+			kitSkill_Bard_5({_player})
+		else if {_item.num} is 6:
+			kitSkill_Bard_6({_player})
+		else if {_item.num} is 7:
+			kitSkill_Bard_7({_player})
+		else if {_item.num} is 8:
+			kitSkill_Bard_8({_player})
+	return true
+
+on rightclick holding a jukebox:
+	name of player's tool is "§eMelody Effect"
+	cancel event
+	open chest with 1 row named "§b§lSelect a Melody" to player
+	wait 1 tick
+	set slot 1 of player's current inventory to record blocks named "§aHEALING" with lore "§f[§d§l効果§f]", "§8- §a§l再生能力"
+	set slot 2 of player's current inventory to record 13 named "§aRESISTANCE" with lore "§f[§d§l効果§f]", "§8- §a§l耐性"
+	set slot 3 of player's current inventory to record wait named "§aSPEED" with lore "§f[§d§l効果§f]", "§8- §a§l移動速度上昇"
+	set slot 4 of player's current inventory to record cat named "§cPOISON" with lore "§f[§d§l効果§f]", "§8- §c§l毒"
+	set slot 5 of player's current inventory to record mall disc named "§cFATIGUE" with lore "§f[§d§l効果§f]", "§8- §c§l採掘速度低下"
+	set slot 6 of player's current inventory to record stal named "§cSLOWNESS" with lore "§f[§d§l効果§f]", "§8- §c§l移動速度低下"
+
+on inventory click:
+	metadata value "gametype" of player is "Kit"
+	type of event-inventory is chest inventory
+	inventory name of event-inventory is "§b§lSelect a Melody"
+	cancel event
+	set {_item} to clicked item
+	if name of {_item} contains "HEALING":
+		set {_potiontype} to regeneration
+	else if name of {_item} contains "RESISTANCE":
+		set {_potiontype} to resistance
+	else if name of {_item} contains "SPEED":
+		set {_potiontype} to speed
+	else if name of {_item} contains "POISON":
+		set {_potiontype} to poison
+	else if name of {_item} contains "FATIGUE":
+		set {_potiontype} to mining fatigue
+	else if name of {_item} contains "SLOWNESS":
+		set {_potiontype} to slowness
+	set {Stats.%player%::MelodyEffect} to {_potiontype}
+	kitMsg(player, "§aMelody Effect§eを %name of {_item}% §eに変更しました")
+
+# Timer
+function kitTimerBard(player: player):
+	while {Class::%{_player}%} is "Bard":
+		set {_potiontype} to {Stats.%{_player}%::MelodyEffect}
+		if {_potiontype} is regeneration:
+			set {_ally} to true
+			set {_color} to "red"
+		else if {_potiontype} is resistance:
+			set {_ally} to true
+			set {_color} to "yellow"
+		else if {_potiontype} is speed:
+			set {_ally} to true
+			set {_color} to "lightblue"
+		else if {_potiontype} is poison:
+			set {_ally} to false
+			set {_color} to "green"
+		else if {_potiontype} is mining fatigue:
+			set {_ally} to false
+			set {_color} to "purple"
+		else if {_potiontype} is slowness:
+			set {_ally} to false
+			set {_color} to "blue"
+		set {_tier} to 1
+		if {Stats.%{_player}%::Fortissimo} is true:
+			set {_tier} to 2
+		loop all players in radius 10 around {_player}:
+			kitCheckTeam(loop-player, {_player}, {_ally}) is true
+			loop-player does not have {_potiontype}
+			applyEffect(loop-player, {_potiontype}, {_tier}, 5 seconds, false, "none")
+			kitParticle_MelodyEffect(loop-player, {_color})
+		wait a second
+
+local function kitParticle_MelodyEffect(player: player, color: text):
+	if {Kit-Invisible::%{_player}%} is set:
+		stop
+	set {_baseloc} to location of {_player}
+	add 1 to y-pos of {_baseloc}
+	loop 6 times:
+		set {_effloc} to {_baseloc}
+		set {_rad} to 60 * loop-number
+		add 0.5 * sin({_rad}) to x-pos of {_effloc}
+		add 0.5 * cos({_rad}) to z-pos of {_effloc}
+		spawnParticle_Note({_color}, {_effloc})

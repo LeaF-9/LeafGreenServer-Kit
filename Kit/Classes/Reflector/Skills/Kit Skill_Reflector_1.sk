@@ -1,0 +1,64 @@
+# Skill-Name: Perfect Reflection
+
+function kitSkill_Reflector_1(player: player):
+	toolCT({_player}, "Reflector", 1)
+	kitEffect_PerfectReflection({_player})
+
+on damage of player:
+	attacker exists
+	kitReflector_DamageChecker(victim) is "Perfect Reflection"
+	set {_dm} to damage / 2
+	kitDamage(victim, attacker, {_dm}, true)
+	kitParticle_PerfectReflection_Reflect(victim, attacker)
+
+local function kitEffect_PerfectReflection(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::PerfectReflection} to {_now}
+	kitParticle_PerfectReflection_Launch({_player})
+	kitMsg({_player}, "§f全てのダメージを5秒間跳ね返します!")
+	loop 100 times:
+		{Stats.%{_player}%::PerfectReflection} is {_now}
+		kitParticle_PerfectReflection_Armor({_player})
+		wait a tick
+	{Stats.%{_player}%::PerfectReflection} is {_now}
+	delete {Stats.%{_player}%::PerfectReflection}
+	kitMsg({_player}, "§f§lPerfect Reflection§cの効果が切れました")
+
+# 発動時の演出
+local function kitParticle_PerfectReflection_Launch(player: player):
+	playSound("entity.player.levelup", 1, 0.8, {_player})
+	loop 15 times:
+		spawnParticle_Vector(wax_off, randomVector(), 0.5, location 1 meter above {_player})
+
+# 四角が囲う感じの演出?
+local function kitParticle_PerfectReflection_Armor(player: player):
+	set {_baseloc} to location of {_player}
+	subtract 0.5 from x-pos of {_baseloc}
+	subtract 0.5 from z-pos of {_baseloc}
+	set yaw of {_baseloc} to 270
+	set pitch of {_baseloc} to 0
+	loop 4 times:
+		set {_ln} to 0
+		loop 5 times:
+			set {_el} to location 0.2 * {_ln} meters in front of {_baseloc}
+			spawnParticle_DustTransition(rgb(187, 226, 241), rgb(255, 255, 255), 0.7, {_el})
+			set {_el} to location 2 meters above {_el}
+			spawnParticle_DustTransition(rgb(187, 226, 241), rgb(255, 255, 255), 0.7, {_el})
+			add 1 to {_ln}
+		loop 10 times:
+			set {_el} to location 0.2 * loop-number-2 meters above {_baseloc}
+			spawnParticle_DustTransition(rgb(187, 226, 241), rgb(255, 255, 255), 0.7, {_el})
+		set {_baseloc} to location 1 meter in front of {_baseloc}
+		add 90 to yaw of {_baseloc}
+
+# キラキラ線が向かう演出
+local function kitParticle_PerfectReflection_Reflect(player: player, target: entity):
+	playSound("entity.experience_orb.pickup", 1, 1, {_player})
+	set {_from} to location of {_player}
+	set {_to} to location of {_target}
+	set {_v} to setVector({_from}, {_to})
+	set {_baseloc} to setDirToVec({_from}, {_v})
+	set {_dis} to round(distance between {_from} and {_to})
+	loop {_dis} times:
+		set {_el} to location loop-number meters in front of {_baseloc}
+		spawnParticle(wax_off, {_el})

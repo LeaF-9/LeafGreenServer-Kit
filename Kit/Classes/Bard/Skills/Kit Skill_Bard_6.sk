@@ -1,0 +1,95 @@
+# skill-name: Beat Clapper
+
+function kitSkill_Bard_6(player: player):
+	if {Stats.%{_player}%::SkillLocation} is not set:
+		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+		stop
+	set {_loc} to {Stats.%{_player}%::SkillLocation}
+	toolCT({_player}, "Bard", 6)
+	kitEffect_BeatClapper({_player}, {_loc})
+
+
+
+on damage:
+	attacker is set
+	{Stats.%attacker%::BeatClapper} is set
+	set damage to damage * 2
+
+local function kitEffect_BeatClapper(player: player, loc: location):
+	set {_now} to now
+	set {Stats.%{_player}%::BeatClapper-Time} to {_now}
+	kitFakeDeleteData({_player}, "Beat Clapper")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0f,-0.25f]", "[0.5f,1f,0.5f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:spruce_fence", {_transformation}, "Beat Clapper")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,1f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:spruce_pressure_plate", {_transformation}, "Beat Clapper")
+	loop all block displays:
+		metadata value "kit-block" of loop-block display is "Beat Clapper"
+		metadata value "Beat Clapper" of loop-block display is "%{_player}%"
+		set metadata value "Beat Clapper-Lever" of loop-block display to "%{_player}%"
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,0.5f,1f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:note_block", {_transformation}, "Beat Clapper")
+	kitMsg({_player}, "§6§l音波を発する装置§eを設置しました!")
+	set {_timer} to 0
+	set {_y} to 0
+	while {Stats.%{_player}%::BeatClapper-Time} is {_now}:
+		wait a tick
+		set {_exist} to kitFakeCheck({_player}, "Beat Clapper")
+		if {_exist} is false:
+			delete {Stats.%{_player}%::BeatClapper-Time}
+			continue
+		set {_goal} to 40
+		if {Stats.%{_player}%::Fortissimo} is true:
+			set {_goal} to 20
+		if {_y} < 0:
+			add 0.05 to {_y}
+		kitEffect_BeatClapper_Lever({_player}, {_loc}, {_y})
+		add 1 to {_timer}
+		if {_timer} < {_goal}:
+			continue
+		set {_timer} to 0
+		set {_y} to -0.5
+		kitEffect_BeatClapper_Clap({_player}, {_loc})
+		kitEffect_BeatClapper_Wave({_player}, {_loc})
+		kitEffect_BeatClapper_Lever({_player}, {_loc}, {_y})
+
+# ダメージ倍増効果
+local function kitEffect_BeatClapper_Clap(player: player, loc: location):
+	loop all players in radius 10 around {_loc}:
+		kitCheckTeam({_player}, loop-player, true) is true
+		add loop-player to {_claps::*}
+		set {Stats.%loop-player%::BeatClapper} to {_player}
+	wait a tick
+	loop {_claps::*}:
+		{Stats.%loop-value%::BeatClapper} is {_player}
+		delete {Stats.%loop-value%::BeatClapper}
+
+# 音波
+local function kitEffect_BeatClapper_Wave(player: player, loc: location):
+	set {_m} to 0
+	loop 20 times:
+		add 0.5 to {_m}
+		set {_min} to {_m} - 0.25
+		set {_max} to {_m} + 0.25
+		loop all entities in radius 12 around {_loc}:
+			{_hit.%id of loop-entity%} is not set
+			block at location 0.1 meters below loop-entity is not passable
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_distance} to distance between loop-entity and {_player}
+			if {_distance} is between {_min} and {_max}:
+				set {_hit.%id of loop-entity%} to true
+				kitDamage({_player}, loop-entity, 2)
+				applyEffect(loop-entity, glowing, 1, 2 seconds)
+		wait a tick
+
+# 機械動作
+local function kitEffect_BeatClapper_Lever(player: player, loc: location, y: number):
+	if {_y} is 0:
+		stop
+	set {_tploc} to {_loc}
+	set y-pos of {_tploc} to y-pos of {_tploc} + {_y}
+	loop all block displays:
+		metadata value "kit-block" of loop-block display is "Beat Clapper"
+		metadata value "Beat Clapper" of loop-block display is "%{_player}%"
+		metadata value "Beat Clapper-Lever" of loop-block display is "%{_player}%"
+		teleport loop-block display to {_tploc}

@@ -1,0 +1,322 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+	lore: 発射1秒後にまだTPが済んでいなければその場にTPします
+
+# Teleporterのスキル Ver1.0.0
+
+on rightclick holding a 368:
+	name of player's tool is "§5Teleport Pearl"
+	if {CT.%player%::Teleport} is not set:
+		if {CT.%player%::%name of player's tool%} is not set:
+			if {Stats.%player%::FlashBack} is not set:
+				set {CT.%player%::Teleport} to 5
+				set {CT.%player%::%name of player's tool%} to 10
+				set {Stats.%player%::TeleportPearl} to true
+			else:
+				cancel event
+				set action bar of player to "§c§lFlash Back使用中はTP出来ません"
+		else:
+			cancel event
+			set action bar of player to "§c§lクールタイムが終わっていません!"
+	else:
+		cancel event
+		set action bar of player to "§5§lTeleportのクールタイムが終わっていません!"
+
+on projectile hit:
+	projectile is an ender pearl
+	{CLS::%shooter%} is "TPR"
+	delete {Stats.%shooter%::TeleportPearl}
+
+on shoot:
+	projectile is an ender pearl
+	{CLS::%shooter%} is "TPR"
+	wait a second
+	{Stats.%shooter%::TeleportPearl} is set
+	set {_l} to location of projectile
+	delete projectile
+	set {_l}'s yaw to shooter's yaw
+	teleport shooter to {_l}
+
+on damage:
+	{CLS::%victim%} is "TPR"
+	if damage was caused by fall:
+		cancel event
+
+on rightclick holding a 293:
+	name of player's tool is "§5Teleport Rod"
+	if {CT.%player%::Teleport} is not set:
+		if {CT.%player%::%name of player's tool%} is not set:
+			if the target block exists:
+				if distance between player and target block is less than 30:
+					if the block above target block is air:
+						if {Stats.%player%::FlashBack} is not set:
+							set {CT.%player%::Teleport} to 5
+							set {CT.%player%::%name of player's tool%} to 15
+							set {_bl} to location of block above target block
+							teleport the player to {_bl}
+							play raw sound "mob.endermen.portal" at the player with pitch 1 volume 1
+						else:
+							set action bar of player to "§c§lFlash Back使用中はTP出来ません"
+					else:
+						set action bar of player to "§c§lその場所にはテレポート出来ません!"
+				else:
+					set action bar of player to "§c§l遠すぎます!"
+			else:
+				set action bar of player to "§c§l目先にブロックがありません!"
+		else:
+			set action bar of player to "§c§lクールタイムが終わっていません!"
+	else:
+		set action bar of player to "§5§lTeleportのクールタイムが終わっていません!"
+
+on rightclick holding a 381:
+	name of player's tool is "§5Overhead Teleport"
+	cancel event
+	if {CT.%player%::Teleport} is not set:
+		if {CT.%player%::%name of player's tool%} is not set:
+			set {_tp} to the target player
+			if {_tp} is set:
+				if distance between player and {_tp} is less than 30:
+					set {_tb} to the target block
+					if {_tb} is set:
+						if distance between player and {_tb} is more than distance between player and {_tp}:
+							set {_true} to true
+					else:
+						set {_true} to true
+					if {_true} is true:
+						if {Stats.%player%::FlashBack} is not set:
+							set {CT.%player%::Teleport} to 5
+							set {CT.%player%::%name of player's tool%} to 30
+							set {_ot} to location of block 3 above {_tp}
+							set {_ot}'s yaw to player's yaw
+							teleport player to {_ot}
+							message "{@prefix} §d%{_tp}% §5の頭上にテレポートしました"
+							play raw sound "mob.endermen.portal" at the player with pitch 1 volume 1
+						else:
+							set action bar of player to "§c§lFlash Back使用中はTP出来ません"
+					else:
+						set action bar of player to "§c§l壁越しのテレポートは出来ません!"
+				else:
+					set action bar of player to "§c§l距離が遠すぎます!"
+			else:
+				set action bar of player to "§c§l対象のプレイヤーが居ません!"
+		else:
+			set action bar of player to "§c§lクールタイムが終わっていません!"
+	else:
+		set action bar of player to "§5§lTeleportのクールタイムが終わっていません!"
+
+on leftclick holding a 348:
+	{CLS::%player%} is "TPR"
+	if name of player's tool is "§eLight Teleport §b[§610§b]":
+		set name of player's tool to "§eLight Teleport §b[§620§b]"
+		play raw sound "random.click" at the player with pitch 1 volume 0.1
+	else if name of player's tool is "§eLight Teleport §b[§620§b]":
+		set name of player's tool to "§eLight Teleport §b[§630§b]"
+		play raw sound "random.click" at the player with pitch 1 volume 0.1
+	else if name of player's tool is "§eLight Teleport §b[§630§b]":
+		set name of player's tool to "§eLight Teleport §b[§610§b]"
+		play raw sound "random.click" at the player with pitch 1 volume 0.1
+
+on rightclick holding a 348:
+	name of player's tool contains "§eLight Teleport"
+	cancel event
+	if {CT.%player%::Teleport} is not set:
+		if {CT.%player%::§eLight Teleport} is not set:
+			if {Stats.%player%::FlashBack} is not set:
+				set {CT.%player%::Teleport} to 5
+				set {_block} to location of player
+				if name of player's tool is "§eLight Teleport §b[§610§b]":
+					set {_num} to 10
+					set {CT.%player%::§eLight Teleport} to 10
+					teleport the player 10 meters in front of player
+					play raw sound "mob.endermen.portal" at the player with pitch 5 volume 1
+					message "{@prefix} §e10m§6先にテレポートしました"
+				else if name of player's tool is "§eLight Teleport §b[§620§b]":
+					set {_num} to 20
+					set {CT.%player%::§eLight Teleport} to 15
+					teleport the player 20 meters in front of player
+					play raw sound "mob.endermen.portal" at the player with pitch 1 volume 1
+					message "{@prefix} §e20m§6先にテレポートしました"
+				else if name of player's tool is "§eLight Teleport §b[§630§b]":
+					set {_num} to 30
+					set {CT.%player%::§eLight Teleport} to 20
+					teleport the player 30 meters in front of player
+					play raw sound "mob.endermen.portal" at the player with pitch 0.7 volume 1
+					message "{@prefix} §e30m§6先にテレポートしました"
+				set {_ln} to 0
+				set {_by} to 1
+				loop {_num} times:
+					add 1 to {_ln}
+					set {_bc} to block {_ln} blocks in front of {_block}
+					if {_bc} is 36:0 or 166:0:
+						set {_x} to true
+				if {_x} is true:
+					delete {CT.%player%::§eLight Teleport}
+					teleport player {_num} meters backwards player
+					message "{@prefix} §c貫通禁止ブロックがあったのでテレポートをキャンセルしました"
+			else:
+				set action bar of player to "§c§lFlash Back使用中はTP出来ません"
+		else:
+			set action bar of player to "§c§lクールタイムが終わっていません!"
+	else:
+		set action bar of player to "§5§lTeleportのクールタイムが終わっていません!"
+
+on rightclick holding a 399:
+	name of player's tool is "§0Flash Back"
+	if {Stats.%player%::FlashBack} is set:
+		delete {Stats.%player%::FlashBack}
+		set {CT.%player%::Teleport} to 5
+		set {CT.%player%::§0Flash Back} to 60
+		teleport player to {Stats.%player%::FlashBackLocation}
+		set player's health to {Stats.%player%::FlashBackHealth}
+		delete {Stats.%player%::FlashBackLocation}
+		delete {Stats.%player%::FlashBackHealth}
+		play raw sound "mob.wither.spawn" at the player with pitch 2 volume 1
+		message "{@prefix} §5時間を遡りました..."
+		stopEffect "%player%"
+		stop
+	if {CT.%player%::Teleport} is not set:
+		if {CT.%player%::%name of player's tool%} is not set:
+			set {Stats.%player%::FlashBack} to true
+			set {Stats.%player%::FlashBackLocation} to location of player
+			set {Stats.%player%::FlashBackHealth} to health of player
+			drawWarpRings style 0, particle "witchspell", center {Stats.%player%::FlashBackLocation}, id "%player%", scan true, height 2, radius 0.5, ringCount 10, ringDensity 10, visibleRange 32
+			message "{@prefix} §e10秒以内に再度クリックでこの時間に戻れます..."
+			play raw sound "random.click" at the player with pitch 0.5 volume 1
+			set {_n} to 10
+			loop 10 times:
+				if {Stats.%player%::FlashBack} is true:
+					set action bar of player to "§5§l%{_n}% ..."
+					subtract 1 from {_n}
+					wait a second
+				else:
+					stop
+			{Stats.%player%::FlashBack} is true
+			delete {Stats.%player%::FlashBack}
+			delete {Stats.%player%::FlashBackLocation}
+			delete {Stats.%player%::FlashBackHealth}
+			set {CT.%player%::§0Flash Back} to 10
+			message "{@prefix} §8時間切れです..."
+			stopEffect "%player%"
+		else:
+			set action bar of player to "§c§lクールタイムが終わっていません!"
+	else:
+		set action bar of player to "§5§lTeleportのクールタイムが終わっていません!"
+
+on rightclick holding a 2260:
+	name of player's tool is "§aAlly Swapper"
+	cancel event
+	if {CT.%player%::Teleport} is not set:
+		if {CT.%player%::%name of player's tool%} is not set:
+			set {_tp} to the target player
+			if {_tp} is set:
+				if {team::%{_tp}%} is {team::%player%}:
+					if {CLS::%{_tp}%} is not "BSK":
+						if distance between player and {_tp} is less than 50:
+							if {Stats.%player%::FlashBack} is not set:
+								if {Stats.%player%::AllySwapper} is not set:
+									set {_loc} to location of player
+									set {Stats.%player%::AllySwapper} to true
+									set {Stats.%{_tp}%::SwapOK} to false
+									play raw sound "random.click" at the player with pitch 0.5 volume 1
+									execute console command "/freeze %player% 10 seconds"
+									message "{@prefix} §a位置交換の要請を§6%{_tp}%§aに送りました..."
+									message "§c[§4§l!§c] §a%player% §bから位置交換の要請が届きました!" to {_tp}
+									message "§c[§4§l!§c] §6§lSneakをしながら左クリック §bで要請を承認します!" to {_tp}
+									message "§6交換要請位置: §e%{_loc}%" to {_tp}
+									set {_beam} to a new beam between player and {_tp}
+									start beam {_beam}
+									set {_true} to false
+									loop 200 times:
+										if {Stats.%{_tp}%::SwapOK} is true:
+											set {_true} to true
+										else:
+											wait a tick
+									stop beam {_beam}
+									delete {Freeze::%player%}
+									if {_true} is true:
+										message "{@prefix} §a位置交換要請が通りました!"
+										set {_tloc} to location of {_tp}
+										teleport player to {_tloc}
+										teleport {_tp} to {_loc}
+										play raw sound "mob.endermen.portal" at {_tp} with pitch 1 volume 1
+										play raw sound "mob.endermen.portal" at the player with pitch 1 volume 1
+										set {CT.%player%::Teleport} to 5
+										set {CT.%player%::§aAlly Swapper} to 40
+									else:
+										message "§5要請を却下しました" to {_tp}
+										message "{@prefix} §c位置交換要請は却下されました..."
+										set {CT.%player%::§aAlly Swapper} to 10
+									delete {Stats.%{_tp}%::SwapOK}
+									delete {Stats.%player%::AllySwapper}
+								else:
+									set action bar of player to "§c§l現在発動中です"
+							else:
+								set action bar of player to "§c§lFlash Back使用中はTP出来ません"
+						else:
+							set action bar of player to "§c§l距離が遠すぎます!"
+					else:
+						set action bar of player to "§c§lこのプレイヤーとは位置交換をしたくありません..."
+				else:
+					set action bar of player to "§c§l敵のプレイヤーとの位置交換はできません!"
+			else:
+				set action bar of player to "§c§l対象のプレイヤーが居ません!"
+		else:
+			set action bar of player to "§c§lクールタイムが終わっていません!"
+	else:
+		set action bar of player to "§5§lTeleportのクールタイムが終わっていません!"
+
+on leftclick:
+	{Stats.%player%::SwapOK} is false
+	player is sneaking
+	set {Stats.%player%::SwapOK} to true
+	message "§2要請を許可しました! §5テレポートします..."
+
+on rightclick holding a 277:
+	name of player's tool is "§5Gravity Gun"
+	cancel event
+	if {Stats.%player%::GravityGun} is true:
+		delete {Stats.%player%::GravityGun}
+		stop
+	if {CT.%player%::%name of player's tool%} is not set:
+		message "{@prefix} §5敵を引きつける弾を発射しました..."
+		play raw sound "mob.endermen.portal" at player with pitch 2 volume 1
+		shoot a snowball from player at speed 1.5
+		set metadata value "gravgun" of shot entity to "true"
+		drawDot count 1, particle "witchspell", center shot snowball, visibleRange 30, keepFor 1 second
+		set {Stats.%player%::GravityGun} to true
+		loop 20 times:
+			if {Stats.%player%::GravityGun} is true:
+				wait a tick
+		if {Stats.%player%::GravGunLoc} is not set:
+			loop all projectiles:
+				loop-projectile is a snowball
+				shooter of loop-projectile is player
+				metadata value "gravgun" of loop-projectile is "true"
+				set {Stats.%player%::GravGunLoc} to location of loop-projectile
+				delete loop-projectile
+		set {CT.%player%::§5Gravity Gun} to 50
+		play raw sound "mob.endermen.portal" at location of {Stats.%player%::GravGunLoc} with pitch 0.8 volume 1
+		drawSphere style 1, particle "redstone", RGB 150, 0, 150, center location of {Stats.%player%::GravGunLoc}, id "%player%", radius 5, density 50, visibleRange 30
+		loop all players in radius 5 around location of {Stats.%player%::GravGunLoc}:
+			{team::%loop-player%} is not {team::%player%}
+			drawDot count 1, particle "mobspell", RGB 150, 0, 150, center loop-player, visibleRange 30, keepFor 1 second
+			teleport loop-player to location of {Stats.%player%::GravGunLoc}
+		delete {Stats.%player%::GravityGun}
+		delete {Stats.%player%::GravGunLoc}
+		wait a second
+		stopEffect "%player%"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on projectile hit:
+	projectile is a snowball
+	metadata value "gravgun" of projectile is "true"
+	set {_sh} to shooter of projectile
+	set {Stats.%{_sh}%::GravGunLoc} to location of projectile
+	delete {Stats.%{_sh}%::GravityGun}
+
+on death of player:
+	{CLS::%{LastKiller::%victim%}%} is "TPR"
+	give 3 368 named "§5Teleport Pearl" with lore "{@lore}" to {LastKiller::%victim%}

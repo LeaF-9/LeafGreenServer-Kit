@@ -1,0 +1,482 @@
+options:
+	prefix: §2[%{CLS::%player%}%]
+	attackprefix: §2[%{CLS::%attacker%}%]
+	victimprefix: §2[%{CLS::%victim%}%]
+
+# Werewolfのスキル Ver1.0.0
+on rightclick holding a wolf spawn egg:
+	Name of player's tool is "§7Tame Wolf"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if {Stats.%player%::Instinct} is not set:
+			set {CT.%player%::%name of player's tool%} to 50
+			set {_num} to 0
+			loop all wolves:
+				loop-wolf's display name is "%player%"
+				add 1 to {_num}
+			if {_num} >= 5:
+				message "{@prefix} §cこれ以上の数のオオカミは召喚できません!"
+				delete {CT.%player%::%name of player's tool%}
+				stop
+			set {_ln} to 5 - {_num}
+			if {_ln} >= 4:
+				set {_ln} to 3
+			loop {_ln} times:
+				spawn a wolf at player
+				tame the spawned wolf to the player
+				set the spawned wolf's display name to "%player%"
+				drawDot count 1, particle "heart", center spawned wolf, visibleRange 30, keepFor 20 ticks
+			message "{@prefix} §7手懐けた狼を召喚しました!"
+			play raw sound "mob.wolf.howl" at player with pitch 1 volume 0.5
+		else:
+			set action bar of player to "§c§l野性解放中は使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage of wolf:
+	if damage was caused by fall:
+		cancel event
+	else:
+		{team::%victim's display name%} is {team::%attacker%}
+		cancel event
+
+on damage:
+	{CLS::%attacker%} is "WLF"
+	if {Stats.%attacker%::Instinct} is true:
+		set damage to damage * {Stats.%attacker%::InstinctPower}
+
+on death of player:
+	loop all wolves:
+		loop-wolf's display name is "%victim%"
+		delete loop-wolf
+
+on quit:
+	loop all wolves:
+		loop-wolf's display name is "%player%"
+		delete loop-wolf
+
+on rightclick on wolf:
+	cancel event
+
+on rightclick holding a bone:
+	name of player's tool is "§8Leading Wolves"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if {Stats.%player%::Instinct} is not set:
+			loop all wolves:
+				loop-wolf's display name is "%player%"
+				set {_vs} to true
+			if {_vs} is true:
+				message "{@prefix} §8狼達を前方へ押し出します!"
+				set {CT.%player%::%name of player's tool%} to 30
+				loop all wolves:
+					loop-wolf's display name is "%player%"
+					teleport loop-wolf to player
+				wait a tick
+				set {_l} to location of block 10 blocks in front of player
+				set {_dis} to 100
+				loop all players:
+					loop-player is not player
+					{team::%loop-player%} is not {team::%player%}
+					set {_d} to distance between loop-player and {_l}
+					{_d} is less than {_dis}
+					set {_dis} to {_d}
+					set {_tg} to loop-player
+				loop all wolves:
+					loop-wolf's display name is "%player%"
+					drawDot count 3, particle "cloud", center loop-wolf, visibleRange 30, keepFor 20 ticks
+					push loop-wolf in direction of player at speed 1.5
+					set loop-wolf's target to {_tg}
+					play raw sound "mob.wolf.bark" at loop-wolf with pitch 1 volume 0.5
+			else:
+				set action bar of player to "§c§l狼がいないと発動できません!"
+		else:
+			set action bar of player to "§c§l野性解放中は使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a raw beef:
+	name of player's tool is "§dWolf Ferocity"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if {Stats.%player%::Instinct} is not set:
+			loop all wolves:
+				loop-wolf's display name is "%player%"
+				set {_vs} to true
+				apply strength 2 to loop-wolf for 5 seconds
+				apply resistance 2 to loop-wolf for 5 seconds
+				apply regeneration 1 to loop-wolf for 5 seconds
+				play raw sound "mob.wolf.growl" at loop-wolf with pitch 1 volume 1
+				drawDot count 1, particle "mobspell", RGB 100, 0, 100, center loop-wolf, visibleRange 30, keepFor 20 ticks
+			if {_vs} is true:
+				message "{@prefix} §8狼達のステータスをアップしました!"
+				set {CT.%player%::§dWolf Ferocity} to 40
+			else:
+				set action bar of player to "§c§l狼がいないと発動できません!"
+		else:
+			set action bar of player to "§c§l野性解放中は使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a egg:
+	name of player's tool is "§7Baby Birth"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if {Stats.%player%::Instinct} is not set:
+			set {CT.%player%::§7Baby Birth} to 50
+			loop 5 times:
+				spawn a baby wolf at player
+				set metadata value "babybirth" of spawned entity to "true"
+				set spawned entity's display name to "%player%"
+				tame the spawned entity to the player
+			message "{@prefix} §6子狼を産み出しました!"
+			play raw sound "mob.wolf.whine" at player with pitch 1.5 volume 1
+			wait 10 seconds
+			loop all wolves:
+				metadata value "babybirth" of loop-wolf is "true"
+				loop-wolf's display name is "%player%"
+				drawDot count 1, particle "cloud", center loop-wolf, visibleRange 30, keepFor 1 second
+				delete loop-wolf
+			message "{@prefix} §7子狼は去っていきました"
+		else:
+			set action bar of player to "§c§l野性解放中は使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding an egg:
+	name of player's tool is "§7Baby Birth"
+	set {_n} to name of player's tool
+	set {_l} to lore of player's tool
+	wait a tick
+	give an egg named "%{_n}%" with lore "%{_l}%" to player
+	wait a tick
+	remove an egg named "%{_n}%" with lore "%{_l}%" from player
+
+on damage:
+	if type of attacker is wolf:
+		if metadata value "babybirth" of attacker is "true":
+			set damage to 1
+		if {Stats.%attacker's display name%::Gorging} is true:
+			heal attacker by 1 heart
+			play raw sound "mob.zombie.wood" at attacker with pitch 1.2 volume 0.5
+			drawDot count 1, particle "heart", center attacker, visibleRange 30
+	else if type of victim is wolf:
+		if metadata value "babybirth" of victim is "true":
+			set damage to 10
+
+on rightclick holding a blaze powder:
+	name of player's tool is "§5Gorging"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if {Stats.%player%::Instinct} is not set:
+			loop all wolves:
+				loop-wolf's display name is "%player%"
+				set {_vs} to true
+			if {_vs} is true:
+				set {CT.%player%::§5Gorging} to 30
+				set {Stats.%player%::Gorging} to true
+				message "{@prefix} §c狼達が獲物めがけて飛びかかります...!"
+				loop 5 times:
+					loop all wolves:
+						loop-wolf's display name is "%player%"
+						set {_tg} to loop-wolf's target
+						if {_tg} is set:
+							set {_to} to location of loop-wolf to vector
+							set {_from} to location of {_tg} to vector
+							set {_vector} to vector {_from} - {_to}
+							set {_vector} to vector {_vector} normalized * 1 
+							set velocity of loop-wolf to {_vector}
+							play raw sound "mob.wolf.howl" at loop-wolf with pitch 1.1 volume 0.2
+							drawDot count 1, particle "flame", center loop-wolf, visibleRange 30, keepFor 1 second
+					wait a second
+				delete {Stats.%player%::Gorging}
+			else:
+				set action bar of player to "§c§l狼がいないと発動できません!"
+		else:
+			set action bar of player to "§c§l野性解放中は使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a redstone:
+	name of player's tool is "§4Instinct Release"
+	cancel event
+	if {CT.%player%::§4Instinct} is not set:
+		if {Stats.%player%::Instinct} is not set:
+			wait a tick
+			set {CT.%player%::§4Instinct} to 10
+			set {Stats.%player%::Instinct} to true
+			message "{@prefix} §4野生解放を行った..."
+			set {_hp} to health of player
+			if {Stagerule::%{KitPvP_Stage}%} is "EmJ":
+				set {_amount} to amount of emerald named "§aJewel" in player's inventory
+				set {_amogem} to amount of diamond named "§bGem" in player's inventory
+			if {Stagerule::%{KitPvP_Stage}%} is "StW":
+				player's inventory contains sheep spawn egg named "§7Wool"
+				set {_wool} to true
+			if {CLS::%player%} is "WLF":
+				execute console command "/class Werewolf_Instinct %player% false"
+			set player's health to {_hp}
+			loop {_amount} times:
+				give a emerald named "§aJewel" to player
+			loop {_amogem} times:
+				give a diamond named "§bGem" to player
+			if {_wool} is true:
+				give a sheep spawn egg named "§7Wool" to player
+			drawDot count 3, particle "mobspell", RGB 100, 0, 0, center player, visibleRange 30, keepFor 60 ticks
+			play raw sound "mob.wolf.growl" at player with pitch 0.5 volume 1
+			set {Stats.%player%::InstinctPower} to 1
+			set {_lim} to 0
+			loop all wolves:
+				loop-wolf's display name is "%player%"
+				if {_lim} < 5:
+					metadata value "babybirth" of loop-wolf is not set
+					add 1 to {_lim}
+					add 0.1 to {Stats.%player%::InstinctPower}
+				delete loop-wolf
+		else:
+			set action bar of player to "§c§l野性解放中は使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a leather:
+	name of player's tool is "§6Feral Pounce"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if {Stats.%player%::Instinct} is true:
+			if {Ult.%player%::Werewolf} is true:
+				set {CT.%player%::%name of player's tool%} to 3
+				message "{@prefix} §4噛み付こうと飛び出した!"
+				play raw sound "mob.wolf.bark" at player with pitch 1 volume 1
+				drawDot count 1, particle "redstone", RGB 100, 0, 0, center player, visibleRange 32, keepFor 0.5 second
+				loop 5 times:
+					push player forward at speed 0.25
+					loop all players in radius 2.5 around player:
+						loop-player is not player
+						{team::%loop-player%} is not {team::%player%}
+						{_ed.%loop-player%} is not set
+						make player damage loop-player by 4
+						heal player by 2 hearts
+						set {_ed.%loop-player%} to true
+					wait a tick
+			else:
+				set {CT.%player%::%name of player's tool%} to 30
+				set {Stats.%player%::Feral Pounce} to true
+				message "{@prefix} §b足の動きが早くなった!"
+				play raw sound "mob.wolf.bark" at player with pitch 2 volume 1
+				drawDot count 1, particle "mobspell", RGB 50, 255, 255, center player, visibleRange 32, keepFor 10 seconds
+				apply speed 1 to player for 10 seconds
+				subtract 0.1 from {Stats.%player%::InstinctPower}
+				wait 10 seconds
+				{Stats.%player%::Feral Pounce} is set
+				add 0.1 to {Stats.%player%::InstinctPower}
+		else:
+			set action bar of player to "§c§l野性解放済でないと使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a bone:
+	name of player's tool is "§4Bestial Wolf"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if {Stats.%player%::Instinct} is true:
+			if {Ult.%player%::Werewolf} is true:
+				set {CT.%player%::%name of player's tool%} to 3
+			else:
+				set {CT.%player%::%name of player's tool%} to 30
+			message "{@prefix} §5凶暴な狼を射出しました..."
+			play raw sound "mob.wolf.bark" at player with pitch 0.8 volume 1
+			shoot a baby wolf at speed 3
+			set metadata value "bestial" of shot entity to "%player%"
+			set shot entity's display name to "%player%"
+			drawDot count 3, particle "cloud", center shot entity, visibleRange 32, keepFor 1 second
+			loop 20 times:
+				if {_t} is not set:
+					loop all baby wolves:
+						loop-baby wolf's display name is "%player%"
+						metadata value "bestial" of loop-baby wolf is "%player%"
+						loop all players in radius 1.5 around loop-baby wolf:
+							{_t} is not set
+							{team::%loop-player%} is not {team::%player%}
+							set {_t} to loop-player
+					wait a tick
+			if {_t} is set:
+				set walk speed of {_t} to 0.05
+				loop all players:
+					loop-player is {_t}
+					make player damage loop-player by 4
+				play raw sound "mob.wolf.growl" at {_t} with pitch 0.8 volume 1
+				drawDot count 10, particle "redstone", RGB 100, 0, 0, center {_t}, visibleRange 32, keepFor 3 second
+				loop 60 times:
+					set {_l} to location of {_t}
+					loop all baby wolves:
+						loop-baby wolf's display name is "%player%"
+						metadata value "bestial" of loop-baby wolf is "%player%"
+						teleport loop-baby wolf to {_l}
+					wait a tick
+				set walk speed of {_t} to 0.2
+				loop all baby wolves:
+					loop-baby wolf's display name is "%player%"
+					metadata value "bestial" of loop-baby wolf is "%player%"
+					delete loop-baby wolf
+			else:
+				loop all baby wolves:
+					loop-baby wolf's display name is "%player%"
+					delete loop-baby wolf
+		else:
+			set action bar of player to "§c§l野性解放済でないと使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on damage of angry baby wolf:
+	metadata value "bestial" of victim is set
+	victim's display name is set
+	cancel event
+
+on rightclick holding a blaze powder:
+	name of player's tool is "§5Fearful Howling"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if {Stats.%player%::Instinct} is true:
+			if {Ult.%player%::Werewolf} is true:
+				set {CT.%player%::%name of player's tool%} to 5
+			else:
+				set {CT.%player%::%name of player's tool%} to 50
+			message "{@prefix} §6遠吠えで士気を上げた!"
+			play raw sound "mob.wolf.howl" at player with pitch 0.5 volume 1
+			apply strength 1 to player for 5 seconds
+			drawWarpRings style 0, particle "redstone", RGB 100, 0, 0, center player, id "%player%", scan true, height 500, radius 5, ringCount 500, ringDensity 50, visibleRange 32
+			loop all players in radius 5 around player:
+				loop-player is not player
+				if {team::%loop-player%} is {team::%player%}:
+					{CLS::%loop-player%} is not "BSK"
+					message "§8%player% §7に§c士気を高めてもらった!" to loop-player
+					message "{@prefix} §b%loop-player% §7は§cなんだか元気そうになった!"
+					apply strength 1 to loop-player for 3 seconds
+					add loop-player to {_l::*}
+					drawWarpRings style 0, particle "mobspell", RGB 150, 0, 0, center loop-player, id "%loop-player%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
+				else:
+					message "§5恐ろしい遠吠えに怯えてしまった..." to loop-player
+					apply weakness 1 to loop-player for 3 seconds
+					drawDot count 3, particle "witchspell", center loop-player, visibleRange 30, keepFor 60 ticks
+			wait 5 ticks
+			stopEffect "%player%"
+			loop {_l::*}:
+				stopEffect "%loop-value%"
+		else:
+			set action bar of player to "§c§l野性解放済でないと使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a fire charge:
+	name of player's tool is "§0Fiercely Bark"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if {Stats.%player%::Instinct} is true:
+			if {Ult.%player%::Werewolf} is true:
+				set {CT.%player%::%name of player's tool%} to 5
+			else:
+				set {CT.%player%::%name of player's tool%} to 50
+			message "{@prefix} §6大きく吠えた!!"
+			play raw sound "mob.wolf.bark" at player with pitch 0.5 volume 1.5
+			set {_fl} to location of block 3 blocks in front of player
+			drawSphere style 1, particle "smoke", center {_fl}, id "%player%", radius 3, density 10, visibleRange 30
+			loop all players in radius 3 around location of {_fl}:
+				{team::%loop-player%} is not {team::%player%}
+				message "§c吠えられて驚いてしまった!" to loop-player
+				make a fake explosion at loop-player
+				make player damage loop-player by 4
+				push loop-player upwards at speed 1
+				push loop-player in direction of player at speed 1
+			wait 5 ticks
+			stopEffect "%player%"
+		else:
+			set action bar of player to "§c§l野性解放済でないと使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+	
+on rightclick holding a bonemeal:
+	name of player's tool is "§6Pack Assault"
+	cancel event
+	if {CT.%player%::%name of player's tool%} is not set:
+		if {Stats.%player%::Instinct} is true:
+			if {Ult.%player%::Werewolf} is true:
+				set {CT.%player%::%name of player's tool%} to 4
+			else:
+				set {CT.%player%::%name of player's tool%} to 40
+			message "{@prefix} §c狼の群れが襲いかかる!"
+			set {_r} to -1.0
+			play raw sound "mob.wolf.growl" at player with pitch 0.9 volume 1
+			loop 3 times:
+				add 1 to {_n}
+				add 0.5 to {_r}
+				shoot a wolf from player at speed 1
+				set metadata value "packassault" of shot wolf to "%player%"
+				set shot wolf's display name to "%player%"
+				push shot wolf to the right at speed {_r}
+				drawDot count 1, particle "angryvillager", center shot wolf, visibleRange 32, keepFor 30 ticks
+			wait 10 ticks
+			loop 2 times:
+				play raw sound "mob.wolf.bark" at player with pitch 0.9 volume 1
+				loop all wolves:
+					loop-wolf's display name is "%player%"
+					metadata value "packassault" of loop-wolf is "%player%"
+					push loop-wolf in direction of loop-wolf at speed 1
+					push loop-wolf upwards at speed 0.3
+				loop 5 times:
+					loop all wolves:
+						loop-wolf's display name is "%player%"
+						metadata value "packassault" of loop-wolf is "%player%"
+						loop all players in radius 2 around loop-wolf:
+							{team::%loop-player%} is not {team::%player%}
+							{_ed::%loop-player%} is not set
+							set {_ed::%loop-player%} to true
+							make player damage loop-player by 6
+							play raw sound "mob.wolf.hurt" at loop-player with pitch 0.9 volume 1
+							chance of 50%:
+								execute console command "/blood %loop-player%"
+					wait 2 ticks
+				delete {_ed::*}
+			loop all wolves:
+				loop-wolf's display name is "%player%"
+				metadata value "packassault" of loop-wolf is "%player%"
+				delete loop-wolf
+		else:
+			set action bar of player to "§c§l野性解放済でないと使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"
+
+on rightclick holding a emerald:
+	name of player's tool is "§2Restore Reason"
+	cancel event
+	if {CT.%player%::§4Instinct} is not set:
+		if {Ult.%player%::Werewolf} is true:
+			message "{@prefix} §c§l必殺技発動中は理性が聞かない!"
+			stop
+		if {Stats.%player%::Instinct} is true:
+			wait a tick
+			set {CT.%player%::§4Instinct} to 10
+			delete {Stats.%player%::Instinct}
+			message "{@prefix} §2理性を取り戻した..."
+			set {_hp} to health of player
+			if {Stagerule::%{KitPvP_Stage}%} is "EmJ":
+				set {_amount} to amount of emerald named "§aJewel" in player's inventory
+				set {_amogem} to amount of diamond named "§bGem" in player's inventory
+			if {Stagerule::%{KitPvP_Stage}%} is "StW":
+				player's inventory contains sheep spawn egg named "§7Wool"
+				set {_wool} to true
+			if {CLS::%player%} is "WLF":
+				execute console command "/class Werewolf %player% false"
+			set player's health to {_hp}
+			loop {_amount} times:
+				give a emerald named "§aJewel" to player
+			loop {_amogem} times:
+				give a diamond named "§bGem" to player
+			if {_wool} is true:
+				give a sheep spawn egg named "§7Wool" to player
+			drawDot count 3, particle "mobspell", RGB 0, 100, 0, center player, visibleRange 30, keepFor 60 ticks
+			play raw sound "mob.wolf.whine" at player with pitch 1.1 volume 1
+			delete {Stats.%player%::InstinctPower}
+		else:
+			set action bar of player to "§c§l野性解放済でないと使用できないSkillです"
+	else:
+		set action bar of player to "§c§lクールタイムが終わっていません!"

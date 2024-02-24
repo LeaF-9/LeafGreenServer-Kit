@@ -1,0 +1,138 @@
+# Skill-Name: Invert Bomb
+
+on projectile hit:
+	projectile is a snowball
+	metadata value "invertbomb" of projectile is true
+	set metadata value "invertbomb" of projectile to false
+	kitEffect_InvertBomb_Explode(shooter, location of projectile)
+
+function kitSkill_Reflector_3(player: player):
+	toolCT({_player}, "Reflector", 3)
+	kitEffect_InvertBomb({_player})
+
+
+
+local function kitEffect_InvertBomb(player: player):
+	kitMsg({_player}, "§3敵の方向感覚を狂わせる§6混乱爆弾§bを投擲します!")
+	kitEffect_InvertBomb_Shoot({_player})
+
+local function kitEffect_InvertBomb_Shoot(player: player):
+	shoot a snowball from {_player} at speed 1
+	set {_proj} to shot snowball
+	set metadata value "invertbomb" of {_proj} to true
+	set item of {_proj} to firework star
+	kitParticle_InvertBomb_Projectile({_player}, {_proj})
+
+local function kitEffect_InvertBomb_Explode(player: player, loc: location):
+	kitParticle_InvertBomb_Explode({_loc})
+	loop all entities in radius 5 around {_loc}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		if checkEntityType(loop-entity, player) is true:
+			add loop-entity to {_hitted::*}
+		applyEffect(loop-entity, slowness, 3, 3 seconds)
+		applyEffect(loop-entity, blindness, 1, 2 seconds)
+		kitEffect_InvertBomb_Teleport(loop-entity)
+		message formatted "§e方向感覚が狂ってしまった!" to loop-entity
+		kitParticle_InvertBomb_Hit(loop-entity)
+	wait 3 seconds
+	loop {_hitted::*}:
+		resetEffect(loop-value)
+
+local function kitEffect_InvertBomb_Teleport(entity: entity):
+	set {_l} to location of {_entity}
+	add 180 to yaw of {_l}
+	teleport {_entity} to {_l}
+
+
+
+local function kitParticle_InvertBomb_Projectile(player: player, proj: projectile):
+	kitSound_InvertBomb_Projectile(location of {_player})
+	loop 100 times:
+		if metadata value "invertbomb" of {_proj} is false:
+			continue
+		set {_el} to location of {_proj}
+		spawnParticle(wax_off, {_el})
+		chance of 30%:
+			add a random number between 0 and 0.3 to x-pos of {_el}
+			add a random number between 0 and 0.3 to y-pos of {_el}
+			add a random number between 0 and 0.3 to z-pos of {_el}
+			spawnParticle(scrape, {_el})
+		wait a tick
+
+local function kitParticle_InvertBomb_Explode(loc: location):
+	kitSound_InvertBomb_Explode({_loc})
+	kitParticle_InvertBomb_Explode_Expand({_loc})
+	kitParticle_InvertBomb_Explode_Cycle({_loc})
+
+local function kitParticle_InvertBomb_Explode_Expand(loc: location):
+	set {_radius} to 0
+	loop 5 times:
+		loop 2 times:
+			add 0.5 to {_radius}
+			set {_count} to a random integer between 30 and 50
+			set {_els::*} to particleLocation_Circle({_loc}, {_count}, {_radius})
+			loop {_els::*}:
+				chance of 30%:
+					set {_el} to loop-value-3
+					set {_color} to kitParticle_InvertBomb_Explode_Expand_Color()
+					spawnParticle_Dust({_color}, 0.9, {_el})
+		wait a tick
+
+local function kitParticle_InvertBomb_Explode_Expand_Color() :: color:
+	set {_chance} to a random integer between 0 and 2
+	set {_color} to rgb(255, 255, 255)
+	if {_chance} is 1:
+		set {_color} to rgb(240, 248, 255)
+	else if {_chance} is 2:
+		set {_color} to rgb(233, 255, 245)
+	return {_color}
+
+local function kitParticle_InvertBomb_Explode_Cycle(loc: location):
+	set {_els::*} to particleLocation_Circle({_loc}, 10, 3)
+	set {_index} to 1
+	loop 20 times:
+		set {_el} to {_els::%{_index}%}
+		spawnParticle(composter, {_el})
+		set {_index.2} to {_index} + 5
+		if {_index.2} > 10:
+			subtract 10 from {_index.2}
+		set {_el} to {_els::%{_index.2}%}
+		spawnParticle(composter, {_el})	
+		add 1 to {_index}
+		if {_index} > 10:
+			set {_index} to 1
+		wait a tick
+
+local function kitParticle_InvertBomb_Hit(entity: entity):
+	kitSound_InvertBomb_Hit({_entity})
+	set {_index} to 1
+	loop 20 times:
+		set {_baseloc} to location 2 meters above {_entity}
+		set {_els::*} to particleLocation_Circle({_baseloc}, 10, 0.5)
+		set {_el} to {_els::%{_index}%}
+		spawnParticle(wax_off, {_el})
+		add 1 to {_index}
+		if {_index} > 10:
+			set {_index} to 1
+		wait a tick
+
+
+
+local function kitSound_InvertBomb_Projectile(loc: location):
+	set {_pitch} to 0.75
+	loop 3 times:
+		playSound("block.large_amethyst_bud.break", 1, {_pitch}, {_loc})
+		add 0.25 to {_pitch}
+		wait a tick
+
+local function kitSound_InvertBomb_Explode(loc: location):
+	set {_pitch} to 1.1
+	loop 5 times:
+		playSound("block.end_portal_frame.fill", 1, {_pitch}, {_loc})
+		subtract 0.15 from {_pitch}
+		wait a tick
+
+local function kitSound_InvertBomb_Hit(entity: entity):
+	loop 3 times:
+		playSound("item.lodestone_compass.lock", 1, 0.8, location of {_entity})
+		wait 10 ticks

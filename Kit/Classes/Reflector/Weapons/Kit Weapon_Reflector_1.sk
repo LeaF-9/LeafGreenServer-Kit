@@ -1,0 +1,38 @@
+# weapon-name: Reflec Tickle
+
+on damage of player:
+	{Class::%victim%} is "Reflector"
+	attacker is set
+	{Stats.%victim%::ReflecTickle} is true
+	set {_dmg} to damage / 2
+	cancel event
+	kitMsg(victim, "§e§lパリィ§f成功!")
+	kitParticle_ReflecTickle_Parry(victim)
+	kitDamage(victim, attacker, {_dmg}, true)
+
+on sneak toggle:
+	{Class::%player%} is "Reflector"
+	player is not sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Reflector", "Weapon.main", 1) is true
+	kitEffect_ReflecTickle(player)
+
+
+
+local function kitEffect_ReflecTickle(player: player):
+	kitParticle_ReflecTickle_Launch({_player})
+	set {Stats.%{_player}%::ReflecTickle} to true
+	wait a tick
+	delete {Stats.%{_player}%::ReflecTickle}
+
+
+
+local function kitParticle_ReflecTickle_Launch(player: player):
+	playSound("entity.zombie.infect", 0.5, 1.9, {_player})
+	set {_baseloc} to location 1 meters above {_player}
+	loop 10 times:
+		spawnParticle_Vector(wax_off, randomVector(), 10, {_baseloc})
+
+local function kitParticle_ReflecTickle_Parry(player: player):
+	loop 20 times:
+		spawnParticle_Vector(totem_of_undying, randomVector(), 1, location 1 meter above {_player})

@@ -1,0 +1,22 @@
+# skill-name: Cheer Encore
+
+function kitSkill_Bard_7(player: player):
+	if {Stats.%{_player}%::SkillTarget} is not set:
+		send action bar "§c§l対象を指定してください" to {_player}
+		stop
+	set {_target} to {Stats.%{_player}%::SkillTarget}
+	toolCT({_player}, "Bard", 7)
+	kitEffect_CheerEncore({_player}, {_target})
+
+local function kitEffect_CheerEncore(player: player, target: player):
+	kitMsg({_player}, "§b%{_target}% §eに§6§lアンコール§eを授けました!")
+	message formatted "§6アンコール§dにより§e§l復活効果§dと§e§lCTリセット§dが授けられました!" to {_target}
+	setSupporter({_target}, {_player})
+	set {Stats.%{_target}%::Resurrection} to true
+	set {CT.%{_target}%::*} to 0
+	set {_sec} to 5 seconds
+	if {Stats.%{_player}%::Fortissimo} is true:
+		set {_sec} to 10 seconds
+	wait {_sec}
+	delete {Stats.%{_target}%::Resurrection}
+	message formatted "§6アンコール§5の効果が切れました" to {_target}
