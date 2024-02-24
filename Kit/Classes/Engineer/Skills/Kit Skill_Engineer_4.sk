@@ -25,7 +25,9 @@ function kitSkill_Engineer_4(player: player, loc: location):
 		delete {Stats.%{_player}%::TrackingSystem-Time-%{_index}%}
 	add 1 to {Stats.%{_player}%::TrackingSystem-Number}
 	set {_num} to {Stats.%{_player}%::TrackingSystem-Number}
-	kitFakeBlock({_player}, {_loc}, "minecraft:soul_lantern", "Machine-Tracking System-%{_num}%")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:soul_lantern", {_transformation}, "Machine-Tracking System-%{_num}%")
+	set {_blockdisplay} to spawned block display
 	set {_baseloc} to {_loc}
 	add 0.5 to y-coordinate of {_baseloc}
 	set {Stats.%{_player}%::TrackingSystem-Time-%{_num}%} to {_now}
@@ -64,26 +66,11 @@ function kitSkill_Engineer_4(player: player, loc: location):
 					set {_met} to {_dis} * loop-number
 					set {_efl} to location {_met} meters in front of {_el}
 					spawnParticle_Dust(rgb(0, 191, 255), 1, {_efl})
-		delete {_exist}
-		loop all entities:
-			type of loop-entity is armor stand
-			metadata value "kit-armor" of loop-entity is "Machine-Tracking System-%{_num}%"
-			metadata value "Machine-Tracking System-%{_num}%" of loop-entity is "%{_player}%"
-			if metadata value "nofuel" of loop-entity is true:
-				set {_nofuel} to true
-			else:
-				delete {_nofuel}
-			set {_exist} to true
+		set {_exist} to kitFakeCheck({_player}, "Defense Matrix")
 		if {_exist} is true:
-			kitFakeReload({_player}, "Machine-Tracking System-%{_num}%")
-			loop all falling blocks:
-				metadata value "kit-block" of loop-falling block is "%{_player}%"
-				loop-falling block is riding
-				metadata value "kit-armor" of vehicle of loop-falling block is "Machine-Tracking System-%{_num}%"
-				metadata value "Machine-Tracking System-%{_num}%" of vehicle of loop-falling block is "%{_player}%"
-				if {_true} is true:
-					set glowing of loop-falling block to true
-				else:
-					set glowing of loop-falling block to false
+			if {_true} is true:
+				set glowing of {_blockdisplay} to true
+			else:
+				set glowing of {_blockdisplay} to false
 		else:
 			delete {Stats.%{_player}%::TrackingSystem-Time-%{_num}%}

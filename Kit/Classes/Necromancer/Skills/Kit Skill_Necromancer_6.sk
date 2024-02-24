@@ -8,27 +8,21 @@ function kitSkill_Necromancer_6(player: player):
 		set {Stats.%{_player}%::DeathDetector-Time} to {_now}
 		kitFakeDeleteData({_player}, "Death Detector")
 		set {_baseloc} to {Stats.%{_player}%::SkillLocation}
+		set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
 		set {_loc1} to {_baseloc}
-		kitFakeBlock({_player}, {_loc1}, "minecraft:blackstone_wall", "Death Detector")
+		kitFakeBlock({_player}, {_loc1}, "minecraft:blackstone_wall", {_transformation}, "Death Detector")
 		set {_loc2} to {_baseloc}
 		add 1 to y-coordinate of {_loc2}
-		kitFakeBlock({_player}, {_loc2}, "minecraft:crying_obsidian", "Death Detector")
+		kitFakeBlock({_player}, {_loc2}, "minecraft:crying_obsidian", {_transformation}, "Death Detector")
 		set {_loc3} to {_baseloc}
 		add 2 to y-coordinate of {_loc3}
-		kitFakeBlock({_player}, {_loc3}, "minecraft:soul_lantern", "Death Detector")
+		kitFakeBlock({_player}, {_loc3}, "minecraft:soul_lantern", {_transformation}, "Death Detector")
 		kitMsg({_player}, "<##8b0000>死を感知して骨を召喚する装置を設置しました...")
 		playSound("block.end_portal_frame.fill", 1, 0.5, {_baseloc})
 		while {Stats.%{_player}%::DeathDetector-Time} is {_now}:
 			wait a second
-			delete {_exist}
-			loop all entities:
-				type of loop-entity is armor stand
-				metadata value "kit-armor" of loop-entity is "Death Detector"
-				metadata value "Death Detector" of loop-entity is "%{_player}%"
-				set {_exist} to true
-			if {_exist} is true:
-				kitFakeReload({_player}, "Death Detector")
-			else:
+			set {_exist} to kitFakeCheck({_player}, "Death Detector")
+			if {_exist} is false:
 				delete {Stats.%{_player}%::DeathDetector-Time}
 		if {Stats.%{_player}%::DeathDetector-Time} is not set:
 			delete {Stats.%{_player}%::DeathDetector}

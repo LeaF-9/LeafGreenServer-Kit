@@ -19,8 +19,9 @@ function kitSkill_Engineer_1(player: player, loc: location):
 	set {_loc.glass} to {_loc}
 	subtract 0.5 from y-coordinate of {_loc.glass}
 	set {_loc.plate} to {_loc}
-	kitFakeBlock({_player}, {_loc.plate}, {_plate}, "Machine-Launch Pad")
-	kitFakeBlock({_player}, {_loc.glass}, {_block}, "Machine-Launch Pad")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc.plate}, {_plate}, {_transformation}, "Machine-Launch Pad")
+	kitFakeBlock({_player}, {_loc.glass}, {_block}, {_transformation}, "Machine-Launch Pad")
 	kitMsg({_player}, "<##D70035>Launch Pad§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
 	while {Stats.%{_player}%::LaunchPad-Time} is {_now}:
@@ -47,20 +48,10 @@ function kitSkill_Engineer_1(player: player, loc: location):
 			loop 10 times:
 				set {_el} to aroundEffect(loop-player)
 				spawnParticle(campfire_cosy_smoke, {_el})
-		delete {_exist}
-		loop all entities:
-			type of loop-entity is armor stand
-			metadata value "kit-armor" of loop-entity is "Machine-Launch Pad"
-			metadata value "Machine-Launch Pad" of loop-entity is "%{_player}%"
-			set {_exist} to true
-			if metadata value "nofuel" of loop-entity is true:
-				set {_nofuel} to true
-			else:
-				delete {_nofuel}
-		if {_exist} is true:
-			kitFakeReload({_player}, "Machine-Launch Pad")
-		else:
+		set {_exist} to kitFakeCheck({_player}, "Machine-Launch Pad")
+		if {_exist} is false:
 			delete {Stats.%{_player}%::LaunchPad-Time}
+			continue
 
 on damage of player:
 	{Stats.%victim%::LaunchPad} is true

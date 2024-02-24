@@ -8,8 +8,9 @@ function kitSkill_Engineer_2(player: player, loc: location):
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
-	kitFakeBlock({_player}, {_loc.base}, "minecraft:oak_fence", "Machine-Restore Faster")
-	kitFakeBlock({_player}, {_loc.core}, "minecraft:glowstone", "Machine-Restore Faster")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:oak_fence", {_transformation}, "Machine-Restore Faster")
+	kitFakeBlock({_player}, {_loc.core}, "minecraft:glowstone", {_transformation}, "Machine-Restore Faster")
 	kitMsg({_player}, "<##FFF352>Restore Faster§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
 	set {_skill} to kitSkillItem("Engineer", 2)
@@ -78,19 +79,8 @@ function kitSkill_Engineer_2(player: player, loc: location):
 					message formatted "§bクールタイム短縮§c効果が切れました" to loop-value
 					kitEffect_RestoreFaster(loop-value, false)
 		# 機械存在のチェック
-		delete {_exist}
-		loop all entities:
-			type of loop-entity is armor stand
-			metadata value "kit-armor" of loop-entity is "Machine-Restore Faster"
-			metadata value "Machine-Restore Faster" of loop-entity is "%{_player}%"
-			set {_exist} to true
-			if metadata value "nofuel" of loop-entity is true:
-				set {_nofuel} to true
-			else:
-				delete {_nofuel}
-		if {_exist} is true:
-			kitFakeReload({_player}, "Machine-Restore Faster")
-		else:
+		set {_exist} to kitFakeCheck({_player}, "Machine-Restore Faster")
+		if {_exist} is false:
 			delete {Stats.%{_player}%::RestoreFaster-Time}
 			loop {_enter.hist::*}:
 				{Stats.%loop-value%::FastCT} is true

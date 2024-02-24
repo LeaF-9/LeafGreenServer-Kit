@@ -9,23 +9,18 @@ function kitSkill_Healer_3(player: player):
 			set {Stats.%{_player}%::FieldHospital-Time} to {_now}
 			kitFakeDeleteData({_player}, "Field Hospital")
 			set {_loc1} to {Stats.%{_player}%::SkillLocation}
-			kitFakeBlock({_player}, {_loc1}, "minecraft:oak_fence", "Field Hospital")
+			set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+			kitFakeBlock({_player}, {_loc1}, "minecraft:oak_fence", {_transformation}, "Field Hospital")
 			set {_loc2} to {Stats.%{_player}%::SkillLocation}
 			add 1 to y-coordinate of {_loc2}
-			kitFakeBlock({_player}, {_loc2}, "minecraft:torch", "Field Hospital")
+			kitFakeBlock({_player}, {_loc2}, "minecraft:torch", {_transformation}, "Field Hospital")
 			kitMsg({_player}, "§d周辺の味方を回復する装置を設置しました...")
 			send action bar "§d現在のオド: §c%{Kit-Odo::%{_player}%}%" to {_player}
 			playSound("block.portal.travel", 0.5, 1.5, {_loc1})
 			while {Stats.%{_player}%::FieldHospital-Time} is {_now}:
 				wait a second
-				delete {_exist}
-				loop all entities:
-					type of loop-entity is armor stand
-					metadata value "kit-armor" of loop-entity is "Field Hospital"
-					metadata value "Field Hospital" of loop-entity is "%{_player}%"
-					set {_exist} to true
+				set {_exist} to kitFakeCheck({_player}, "Field Hospital")
 				if {_exist} is true:
-					kitFakeReload({_player}, "Field Hospital")
 					loop all players in radius 5 around {_loc1}:
 						if {team::%loop-player%} is {team::%{_player}%}:
 							loop-player is not {_player}
@@ -41,7 +36,6 @@ function kitSkill_Healer_3(player: player):
 						add 5 * sin({_rad}) to x-coordinate of {_el}
 						add 5 * cos({_rad}) to z-coordinate of {_el}
 						kitParticle_FieldHospital_Field({_el})
-				else:
 					delete {Stats.%{_player}%::FieldHospital-Time}
 		else:
 			kitMsg({_player}, "§cオドが足りません! 必要オドは §340 §cです!")

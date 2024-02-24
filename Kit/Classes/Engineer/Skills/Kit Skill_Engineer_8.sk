@@ -6,10 +6,10 @@ function kitSkill_Engineer_8(player: player, loc: location):
 	set {Stats.%{_player}%::ShieldCrystal-Time} to {_now}
 	kitFakeDeleteData({_player}, "Machine-Shield Crystal")
 	set {_loc.base} to {_loc}
-	subtract 0.5 from y-coordinate of {_loc.base}
 	set {_loc.core} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
-	kitFakeBlock({_player}, {_loc.base}, "minecraft:diamond_block", "Machine-Shield Crystal")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,-0.5f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:diamond_block", {_transformation}, "Machine-Shield Crystal")
 	spawn end crystal at {_loc.core} with nbt compound from "{ShowBottom:false}"
 	set metadata value "gametype" of spawned end crystal to "Kit"
 	set metadata value "shield crystal" of spawned end crystal to "%{_player}%"
@@ -47,19 +47,8 @@ function kitSkill_Engineer_8(player: player, loc: location):
 #				delete {Kit-ShieldTime::%loop-value%}
 #				delete {Kit-Shield::%loop-value%}
 #				delete {_shield::%loop-value%}
-		delete {_exist}
-		loop all entities:
-			type of loop-entity is armor stand
-			metadata value "kit-armor" of loop-entity is "Machine-Shield Crystal"
-			metadata value "Machine-Shield Crystal" of loop-entity is "%{_player}%"
-			set {_exist} to true
-			if metadata value "nofuel" of loop-entity is true:
-				set {_nofuel} to true
-			else:
-				delete {_nofuel}
-		if {_exist} is true:
-			kitFakeReload({_player}, "Machine-Shield Crystal")
-		else:
+		set {_exist} to kitFakeCheck({_player}, "Machine-Shield Crystal")
+		if {_exist} is false:
 			delete {Stats.%{_player}%::ShieldCrystal-Time}
 #			loop {_pl::*}:
 #				{Kit-Shield::%loop-value%} is set

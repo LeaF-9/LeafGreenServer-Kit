@@ -9,25 +9,15 @@ function kitSkill_Engineer_7(player: player, loc: location):
 	set {_loc.core} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
 	set {Stats.%{_player}%::HackingDevice} to {_loc.core}
-	kitFakeBlock({_player}, {_loc.base}, "minecraft:polished_blackstone_wall", "Machine-Hacking Device")
-	kitFakeBlock({_player}, {_loc.core}, "minecraft:structure_block", "Machine-Hacking Device")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:polished_blackstone_wall", {_transformation}, "Machine-Hacking Device")
+	kitFakeBlock({_player}, {_loc.core}, "minecraft:structure_block", {_transformation}, "Machine-Hacking Device")
 	kitMsg({_player}, "<##E9BC00>Hacking Device§eを設置しました!")
 	playSound("item.trident.return", 1, 1.5, {_loc.base})
 	while {Stats.%{_player}%::HackingDevice-Time} is {_now}:
 		wait a second
-		delete {_exist}
-		loop all entities:
-			type of loop-entity is armor stand
-			metadata value "kit-armor" of loop-entity is "Machine-Hacking Device"
-			metadata value "Machine-Hacking Device" of loop-entity is "%{_player}%"
-			set {_exist} to true
-			if metadata value "nofuel" of loop-entity is true:
-				set {Stats.%{_player}%::HackingDevice-NoFuel} to true
-			else:
-				delete {Stats.%{_player}%::HackingDevice-NoFuel}
-		if {_exist} is true:
-			kitFakeReload({_player}, "Machine-Hacking Device")
-		else:
+		set {_exist} to kitFakeCheck({_player}, "Machine-Hacking Device")
+		if {_exist} is false:
 			delete {Stats.%{_player}%::HackingDevice}
 			delete {Stats.%{_player}%::HackingDevice-Time}
 

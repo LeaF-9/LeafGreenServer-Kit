@@ -8,8 +8,9 @@ function kitSkill_Engineer_5(player: player, loc: location):
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
-	kitFakeBlock({_player}, {_loc.base}, "minecraft:cobblestone_wall", "Machine-Dowsing Machine")
-	kitFakeBlock({_player}, {_loc.core}, "minecraft:sea_lantern", "Machine-Dowsing Machine")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:cobblestone_wall", {_transformation}, "Machine-Dowsing Machine")
+	kitFakeBlock({_player}, {_loc.core}, "minecraft:sea_lantern", {_transformation}, "Machine-Dowsing Machine")
 	kitMsg({_player}, "<##00FFFF>Dowsing Machine§9を設置しました!")
 	playSound("block.conduit.activate", 1, 2, {_loc.base})
 	while {Stats.%{_player}%::DowsingMachine-Time} is {_now}:
@@ -34,19 +35,8 @@ function kitSkill_Engineer_5(player: player, loc: location):
 				add 1 to {_ln}
 				set {_el} to location {_dis} * {_ln} meters in front of {_elbase}
 				kitParticle_DowsingMachine_Beam({_el})
-		delete {_exist}
-		loop all entities:
-			type of loop-entity is armor stand
-			metadata value "kit-armor" of loop-entity is "Machine-Dowsing Machine"
-			metadata value "Machine-Dowsing Machine" of loop-entity is "%{_player}%"
-			set {_exist} to true
-			if metadata value "nofuel" of loop-entity is true:
-				set {_nofuel} to true
-			else:
-				delete {_nofuel}
-		if {_exist} is true:
-			kitFakeReload({_player}, "Machine-Dowsing Machine")
-		else:
+		set {_exist} to kitFakeCheck({_player}, "Machine-Dowsing Machine")
+		if {_exist} is false:
 			delete {Stats.%{_player}%::DowsingMachine-Time}
 
 function kitParticle_DowsingMachine_Beam(loc: location):

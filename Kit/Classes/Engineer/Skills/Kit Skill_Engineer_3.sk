@@ -25,7 +25,9 @@ function kitSkill_Engineer_3(player: player, loc: location):
 		delete {Stats.%{_player}%::JumpBeacon-Time-%{_index}%}
 	add 1 to {Stats.%{_player}%::JumpBeacon-Number}
 	set {_num} to {Stats.%{_player}%::JumpBeacon-Number}
-	kitFakeBlock({_player}, {_loc}, "minecraft:redstone_torch", "Machine-Jump Beacon-%{_num}%")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:redstone_torch", {_transformation}, "Machine-Jump Beacon-%{_num}%")
+	set {_fallingblock} to spawned block display
 	set {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} to {_now}
 	kitMsg({_player}, "<##E8383D>Jump Beacon§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
@@ -35,21 +37,8 @@ function kitSkill_Engineer_3(player: player, loc: location):
 			kitCheckTeam({_player}, loop-player, true) is true
 			loop-player does not have a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします"
 			give a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします" to loop-player
-		delete {_exist}
-		loop all entities:
-			if type of loop-entity is armor stand:
-				metadata value "kit-armor" of loop-entity is "Machine-Jump Beacon-%{_num}%"
-				metadata value "Machine-Jump Beacon-%{_num}%" of loop-entity is "%{_player}%"
-				set {_exist} to true
+		set {_exist} to kitFakeCheck({_player}, "Machine-Jump Beacon-%{_num}%")
 		if {_exist} is true:
-			kitFakeReload({_player}, "Machine-Jump Beacon-%{_num}%")
-			if {_fallingblock} is not set:
-				loop all falling blocks:
-					metadata value "kit-block" of loop-falling block is "%{_player}%"
-					loop-falling block is riding
-					metadata value "kit-armor" of vehicle of loop-falling block is "Machine-Jump Beacon-%{_num}%"
-					metadata value "Machine-Jump Beacon-%{_num}%" of vehicle of loop-falling block is "%{_player}%"
-					set {_fallingblock} to loop-falling block
 			loop all players:
 				kitCheckTeam(loop-player, {_player}, true) is true
 				if tool of loop-player is a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします":
