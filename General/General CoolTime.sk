@@ -41,7 +41,13 @@ function playerCoolTimer(player: player):
 						playSound("entity.player.levelup", 0.5, 1, {_player}, true)
 				else:
 					if name of tool of {_player} contains loop-index:
+						set {_bar} to true
 						barCT({_player}, {CT.%{_player}%::%loop-index%}, {_maxct::%loop-index%})
+		if {_bar} is true:
+			set {_bar} to false
+		else if {_bar} is false:
+			delete {_bar}
+			send action bar " " to {_player}
 		wait a tick
 	delete {CoolTimer::%{_player}%}
 
