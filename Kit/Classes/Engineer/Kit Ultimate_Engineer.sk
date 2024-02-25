@@ -13,7 +13,10 @@ function kitUltEngineer(player: player):
 	set {Ult.%{_player}%::Engineer} to {_now}
 	set {_mecloc} to {_tploc}
 	add 2 to y-coordinate of {_mecloc}
-	kitFakeBlock({_player}, {_mecloc}, "minecraft:crying_obsidian", "Machine-Transport Lift")
+	set yaw of {_mecloc} to 0
+	set pitch of {_mecloc} to 0
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_mecloc}, "minecraft:crying_obsidian", {_transformation}, "Machine-Transport Lift")
 	loop {_fromloc::*}:
 		set {_armloc} to loop-value
 		add 2 to y-coordinate of {_armloc}
@@ -80,16 +83,9 @@ function kitUltEngineer(player: player):
 					add sin({_rad}) * 3 to x-coordinate of {_eff}
 					add cos({_rad}) * 3 to z-coordinate of {_eff}
 					spawnParticle_Dust(rgb(255, 0, 255), 1, {_eff})
-#	存在確認		
-		delete {_exist}
-		loop all entities:
-			type of loop-entity is armor stand
-			metadata value "kit-armor" of loop-entity is "Machine-Transport Lift"
-			metadata value "Machine-Transport Lift" of loop-entity is "%{_player}%"
-			set {_exist} to true
-		if {_exist} is true:
-			kitFakeReload({_player}, "Machine-Transport Lift")
-		else:
+#	存在確認	
+		set {_exist} to kitFakeCheck({_player}, "Machine-Transport Lift")
+		if {_exist} is false:
 			delete {Ult.%{_player}%::Engineer}
 	loop all entities:
 		type of loop-entity is armor stand
