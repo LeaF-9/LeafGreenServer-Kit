@@ -5,7 +5,7 @@ function kitSkill_Knight_2(player: player):
 	toolCT({_player}, "Knight", 2)
 	playSound("block.beacon.activate", 1, 1, {_player})
 	set {_baseloc} to location of head of {_player}
-	loop 15 times:
+	loop 25 times:
 		loop 2 times:
 			{_tg} is not set
 			add 1 to {_front}
@@ -15,6 +15,7 @@ function kitSkill_Knight_2(player: player):
 				{_tg} is not set
 				set {_tg} to loop-player
 			loop 3 times:
+				kitParticle_KnightChanger_Beam({_loc})
 				set {_el} to {_loc}
 				add a random number between -0.5 and 0.5 to x-coordinate of {_el}
 				add a random number between -0.5 and 0.5 to y-coordinate of {_el}
@@ -33,3 +34,18 @@ function kitSkill_Knight_2(player: player):
 		set {_el} to location 1 meter above {_tg}
 		loop 30 times:
 			spawnParticle_Vector(end_rod, randomVector(), 0.3, {_el})
+
+local function kitParticle_KnightChanger_Beam(loc: location):
+	set {_baseloc} to location 0.5 meters behind {_loc}
+	set {_m} to 0
+	loop 5 times:
+		add 0.2 to {_m}
+		set {_rn} to a random integer between 1 and 3
+		if {_rn} is 1:
+			set {_color} to rgb(255, 243, 184)
+		else if {_rn} is 2:
+			set {_color} to rgb(255, 244, 98)
+		else:
+			set {_color} to rgb(255, 255, 249)
+		set {_el} to location {_m} meters in front of {_baseloc}
+		spawnParticle_Dust({_color}, 0.75, {_el})
