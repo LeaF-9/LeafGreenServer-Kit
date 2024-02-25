@@ -73,22 +73,23 @@ command /kitweaponlist <text> <text>:
 				message "§7----------" to player
 			unload yml "class.%arg 2%"
 
-command /kitskilladd <text> <number>:
+command /kitskilladd <text>:
 	permission: sk.admin
 	executable by: player
 	trigger:
-		set {_l} to arg 2
+		set {_l} to 8
 		set {_num} to 0
 		load yml "plugins/skript-yaml/Kit Classes/%arg 1%.yml" as "class.save.%arg 1%"
 		loop {_l} times:
 			set {_item} to slot {_num} of player
 			set {_ymlnum} to {_num} + 1
+			set {_item} to kitItemTagChanger({_item}, arg 1, "Skill", {_ymlnum})
 			set yml value "skill.%{_ymlnum}%" from "class.save.%arg 1%" to {_item}
 			add 1 to {_num}
 		save yml "class.save.%arg 1%"
 		message "§a%arg 1% §bのSkillを再設定しました" to player
 
-command /kitweaponadd <text> <text> <number>:
+command /kitweaponadd <text> <text>:
 	usage: /kitweaponadd <type> <kit> <number>
 	permission: sk.admin
 	executable by: player
@@ -97,16 +98,42 @@ command /kitweaponadd <text> <text> <number>:
 			set {_type} to arg 1
 		else:
 			stop
-		set {_l} to arg 3
+		set {_l} to 3
 		set {_num} to 0
 		load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class.save.%arg 2%"
 		loop {_l} times:
 			set {_item} to slot {_num} of player
 			set {_ymlnum} to {_num} + 1
+			set {_item} to kitItemTagChanger({_item}, arg 2, "Weapon.%{_type}%", {_ymlnum})
 			set yml value "weapon.%{_ymlnum}%.%{_type}%" from "class.save.%arg 2%" to {_item}
 			add 1 to {_num}
 		save yml "class.save.%arg 2%"
 		message "§a%arg 2% §bのWeaponを再設定しました" to player
+
+command /kitskillgive <text>:
+	usage: /kitskillgive <kit>
+	permission: sk.admin
+	executable by: player
+	trigger:
+		set {_skills::*} to kitSkillList(arg 1)
+		remove all items from player's inventory
+		loop {_skills::*}:
+			give loop-value to player
+
+command /kitweapongive <text>:
+	usage: /kitweapongive <kit>
+	permission: sk.admin
+	executable by: player
+	trigger:
+		set {_weapons::*} to kitWeaponList(arg 1, "main")
+		set {_subs::*} to kitWeaponList(arg 1, "sub")
+		remove all items from player's inventory
+		loop {_weapons::*}:
+			give loop-value to player
+		set {_slot} to 27
+		loop {_subs::*}:
+			set slot {_slot} of player to loop-value
+			add 1 to {_slot}
 
 # #####################################################################
 
@@ -141,15 +168,15 @@ command /kitweaponadd <text> <text> <number>:
 # 		message "§a%arg 1% §cのWeapon選択状態をリセットしました" to player
 
 on rightclick on smithing table:
-	world of event-block is "%world of {LobbyLocation::Kit}%" or "Kit-SkillCheck"
+	block below target block is barrier
 	make player execute command "/kitcustom Weapon"
 
 on rightclick on fletching table:
-	world of event-block is "%world of {LobbyLocation::Kit}%" or "Kit-SkillCheck"
+	block below target block is barrier
 	make player execute command "/kitcustom Skill"
 
 on rightclick on cartography table:
-	world of event-block is "%world of {LobbyLocation::Kit}%" or "Kit-SkillCheck"
+	block below target block is barrier
 	make player execute command "/kitcustom Unit"
 
 command /kitcustom <text> <player=%player%>:
@@ -469,7 +496,6 @@ function kitPlayerSkillItem(player: player, kit: text, slot: number) :: item:
 	set {_item} to yml value "skill.%{_num}%" from "class.%{_player}%.kit"
 	unload yml "class.%{_player}%.kit"
 	unload yml "player.%{_player}%.kit"
-	set {_item} to kitItemTagChanger({_item}, {_kit}, "Skill", {_num})
 	return {_item}
 
 function kitPlayerWeaponItem(player: player, kit: text, type: text) :: item:
@@ -480,7 +506,6 @@ function kitPlayerWeaponItem(player: player, kit: text, type: text) :: item:
 	set {_item} to yml value "weapon.%{_num}%.%{_type}%" from "class.%{_player}%.kit"
 	unload yml "class.%{_player}%.kit"
 	unload yml "player.%{_player}%.kit"
-	set {_item} to kitItemTagChanger({_item}, {_kit}, "Weapon.%{_type}%", {_num})
 	return {_item}
 
 #function kitSkillUpdate(kit: text):
