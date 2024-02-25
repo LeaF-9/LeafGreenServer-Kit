@@ -135,6 +135,14 @@ function checkCT(player: player, skill: text, only: boolean = false) :: boolean:
 			send action bar "§c§lクールタイムが終わっていません!" to {_player}
 		return false
 
+command /ctreset <player=%player%>:
+	permission: sk.admin
+	trigger:
+		set {CT.%arg 1%::*} to 0
+		delete {CTStop.%arg 1%::*}
+		loop all items in arg 1's inventory:
+			set item cooldown of loop-item for arg 1 to 0 seconds
+
 # 武器Cooldown
 function setItemCT(player: player, item: item):
 	set {_lore::*} to lore of {_item}
