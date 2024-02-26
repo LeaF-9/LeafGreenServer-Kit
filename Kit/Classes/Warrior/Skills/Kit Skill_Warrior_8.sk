@@ -11,9 +11,11 @@ function kitSkill_Warrior_8(player: player):
 local function kitEffect_BarbaricTorment(player: player):
 	kitMsg({_player}, "§5§l残忍な本性§5を開放します...")
 	set {Stats.%{_player}%::BarbaricTorment} to true
+	kitParticle_BarbaricTorment_Launch({_player})
 	loop 60 times:
 		if {Stats.%{_player}%::BarbaricTorment} is not set:
 			continue
+		kitParticle_BarbaricTorment_Aura({_player})
 		loop all players in radius 50 around {_player}:
 			{_hit.%loop-player%} is not set
 			kitCheckTeam(loop-player, {_player}, false) is true
@@ -40,7 +42,67 @@ local function kitEffect_BarbaricTorment_Sight(player: player, target: player) :
 	if {_ng} is true:
 		return false
 	message formatted "§4§l放たれた残忍性§5に威圧されてしまった..." to {_target}
+	kitMsg({_player}, "§5§l%{_target}% §4が怯んだ!")
+	kitParticle_BarbaricTorment_Hit({_player}, {_target})
 	kitDamage({_player}, {_target}, 3)
 	kitFear({_target}, 5 seconds)
 	kitTrail({_target}, 5 seconds, location of {_player})
 	return true
+
+
+
+local function kitParticle_BarbaricTorment_Launch(player: player):
+	playSound("entity.warden.agitated", 1, 0.7, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 30 times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(witch, {_v}, 1, {_baseloc})
+		set {_el} to {_baseloc}
+		add a random number between -5 and 5 to x-pos of {_el}
+		add a random number between -5 and 5 to y-pos of {_el}
+		add a random number between -5 and 5 to z-pos of {_el}
+		set {_rn} to a random integer between 1 and 3
+		if {_rn} is 1:
+			set {_color} to rgb(103, 69, 152)
+		else if {_rn} is 2:
+			set {_color} to rgb(28, 48, 92)
+		else:
+			set {_color} to rgb(75, 0, 130)
+		spawnParticle_DustTransition({_color}, rgb(0, 0, 0), 3, {_el})
+
+local function kitParticle_BarbaricTorment_Aura(player: player):
+	chance of 70%:
+		stop
+	set {_effloc} to aroundEffect({_player})
+	loop 5 times:
+		set {_el} to location loop-number * 0.2 meters above {_effloc}
+		set {_rn} to a random integer between 1 and 3
+		if {_rn} is 1:
+			set {_color} to rgb(103, 69, 152)
+		else if {_rn} is 2:
+			set {_color} to rgb(28, 48, 92)
+		else:
+			set {_color} to rgb(75, 0, 130)
+		spawnParticle_DustTransition({_color}, rgb(0, 0, 0), 0.5, {_el})
+		wait a tick
+
+local function kitParticle_BarbaricTorment_Hit(player: player, target: player):
+	playSound("entity.warden.heartbeat", 1, 2, {_player}, true)
+	playSound("entity.warden.angry", 1, 1.2, {_target})
+	loop 10 times:
+		set {_el} to aroundEffect({_target})
+		add {_el} to {_locs::*}
+	set {_m} to 0
+	loop 10 times:
+		add 0.2 to {_m}
+		loop {_locs::*}:
+			set {_el} to location {_m} meters below loop-value-2
+			set {_rn} to a random integer between 1 and 3
+			if {_rn} is 1:
+				set {_color} to rgb(103, 69, 152)
+			else if {_rn} is 2:
+				set {_color} to rgb(28, 48, 92)
+			else:
+				set {_color} to rgb(75, 0, 130)
+			spawnParticle_DustTransition({_color}, rgb(0, 0, 0), 0.9, {_el})
+		wait a tick
