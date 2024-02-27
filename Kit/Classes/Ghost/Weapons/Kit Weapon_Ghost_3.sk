@@ -1,72 +1,76 @@
-# Weapon-Name: Anima Massa
+# Weapon-Name: Poltergeist
 
-on sneak toggle:
-	{Class::%player%} is "Ghost"
-	{Stats.%player%::SpareSoul} is not set
-	player is not sneaking
-	set {_tool} to player's tool
-	if kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 2) is false:
+on damage of player:
+	{Class::%attacker%} is "Ghost"
+	damage was caused by attack
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 3) is true
+	kitSound_Poltergeist_Attack(victim)
+	attacker is sneaking
+	kitEffect_Poltergeist(attacker, victim)
+
+function kitEffect_Poltergeist(player: player, tg: player):
+	if kitCheckSpirit({_player}, 3, "Weapon.main") is false:
 		stop
-	set {_num} to 0
-	set {_lore::*} to lore of {_tool}
-	loop {_lore::*}:
-		loop-value contains "§4Spirit§7:"
-		set {_spirit} to loop-value
-	replace every "§4Spirit§7: §5" with "" in {_spirit}
-	set {_spirit} to {_spirit} parsed as number
-	wait a tick
-	set {_true} to false
-	while {_true} is false:
-		set {_tool} to player's tool
-		if player is not sneaking:
-			delete {_true}
-			continue
-		if kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 2) is false:
-			delete {_true}
-			continue
-		if {Kit-Spirits::%player%} < {_spirit}:
-			delete {_true}
-			continue
-		if {Stats.%player%::SpareSoul} is true:
-			delete {_true}
-			continue
-		if {_num} is 200:
-			set {_true} to true
-			continue
-		add 1 to {_num}
-		set {_linenum} to round({_num} / 4)
-		chargeActionBar(player, {_linenum}, 50)
-		# --- チャージ中の演出 ---
-		kitParticle_AnimaMassa_Charge(player, {_num})
-		# ------------------------------------
+	set {_memsg} to kitGhostMessage("§5%{_tg}% §4に音のいたずらを誘発する...")
+	set {_youmsg} to kitGhostMessage("§8不思議な音が鳴り響く...", true)
+	kitMsg({_player}, {_memsg})
+	message formatted {_youmsg} to {_tg}
+	playSound("ambient.cave", 1, 2, {_tg})
+	apply nausea 1 to {_tg} for 8 seconds
+	loop 100 times:
+		if mod(loop-number, 2) is 0:
+			set {_yaw} to 5
+		else:
+			set {_yaw} to -5
+		playerYawRotation({_tg}, {_yaw}, true)
+		chance of 10%:
+			kitSound_Poltergeist_Foot({_tg})
+		set {_el} to aroundEffect({_tg})
+		set y-coordinate of {_el} to y-coordinate of {_tg} + 2
+		set {_n} to a random integer between 0 and 25
+		spawnParticle_NoteOption({_n}, {_el})
 		wait a tick
-	if {_true} is not set:
-		send action bar "§8チャージに失敗しました" to player
-		stop
-	if kitCheckSpirit(player, 2, "Weapon.main") is false:
-		stop
-	set {Stats.%player%::SpareSoul} to true
-	set {Stats.%player%::Resurrection} to true
-	set {_memsg} to kitGhostMessage("§5Spare Soul §8を獲得した...", true)
-	kitMsg(player, {_memsg})
-	kitParticle_AnimaMassa_Complete(player)
 
-function kitParticle_AnimaMassa_Charge(player: player, prog: number):
-	playSound("block.campfire.crackle", 0.5, 2, {_player})
-	set {_baseloc} to location of {_player}
-	set {_y} to {_prog} / 100
-	add {_y} to y-pos of {_baseloc}
-	set {_rad} to 0
-	loop 10 times:
-		add 36 to {_rad}
-		set {_el} to {_baseloc}
-		add 0.5 * sin({_rad}) to x-pos of {_el}
-		add 0.5 * cos({_rad}) to z-pos of {_el}
-		spawnParticle(soul_fire_flame, {_el})
+function kitSound_Poltergeist_Attack(player: player):
+	loop all blocks in radius 3 around {_player}:
+		loop-block is passable
+		add location of loop-block to {_sounds::*}
+	loop 3 times:
+		if loop-number is 1:
+			set {_percent} to 100
+		else:
+			set {_percent} to 30
+		chance of {_percent}%:
+			set {_sound} to a random location out of {_sounds::*}
+			set {_pitch} to a random number between 0.5 and 2
+			playSound("block.glass.break", 0.5, {_pitch}, {_sound})
 
-function kitParticle_AnimaMassa_Complete(player: player):
-	playSound("entity.zombie_villager.converted", 1, 0.5, {_player})
-	set {_baseloc} to location of {_player}
-	add 1 to y-pos of {_baseloc}
-	loop 20 times:
-		spawnParticle_Vector(soul, randomVector(), 0.5, {_baseloc})
+function kitSound_Poltergeist_Foot(player: player):
+	set {_loc} to location of {_player}
+	set {_xnum} to a random number between -5 and 5
+	if {_xnum} >= 0:
+		set {_xnum} to {_xnum} + 5
+	else:
+		set {_xnum} to {_xnum} - 5
+	set {_znum} to a random number between -5 and 5
+	if {_znum} >= 0:
+		set {_znum} to {_znum} + 5
+	else:
+		set {_znum} to {_znum} - 5
+	add {_xnum} to x-coordinate of {_loc}
+	add {_znum} to z-coordinate of {_loc}
+	set {_vector} to setVector({_loc}, location of {_player})
+	set yaw of {_loc} to yaw of {_vector}
+	set pitch of {_loc} to pitch of {_vector}
+	set {_sound} to "block.grass.step"
+	chance of 33%:
+		set {_sound} to "block.stone.step"
+	chance of 33%:
+		set {_sound} to "block.wood.step"
+	set {_frontnum} to 0
+	loop 5 times:
+		set {_soundloc} to location {_frontnum} meters in front of {_loc}
+		play sound {_sound} at {_soundloc} for {_player}
+		add 1.25 to {_frontnum}
+		wait 5 ticks

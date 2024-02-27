@@ -1,17 +1,60 @@
 # Ghost Book
 
 function kitWeapon_Ghost_1(player: player):
-	if {Stats.%{_player}%::SkillTarget} is set:
-		set {_tg} to {Stats.%{_player}%::SkillTarget}
-		toolCT({_player}, "Ghost", 1, "Weapon.main")
-		apply blindness 1 to {_tg} for 3 seconds
-		set {_memsg} to kitGhostMessage("§5%{_tg}% §0に暗黒効果を付与した...")
+	toolItemCT({_player}, "Ghost", 1)
+	kitEffect_GhostBook({_player})
+
+local function kitEffect_GhostBook(player: player):
+	kitSound_GhostBook_Launch({_player})
+	set {_baseloc} to location of head of {_player}
+	set {_m} to 0
+	loop 20 times:
+		add 0.5 to {_m}
+		set {_effloc} to location {_m} meters in front of {_baseloc}
+		kitParticle_GhostBook_Beam({_effloc})
+		set {_hits::*} to checkHitEntities({_effloc})
+		loop {_hits::*}:
+			{_hit.%id of loop-entity%} is not set
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_hit.%id of loop-entity%} to true
+			kitEffect_GhostBook_Hit({_player}, loop-entity)
+		wait a tick
+
+local function kitEffect_GhostBook_Hit(player: player, target: entity):
+	kitParticle_GhostBook_Hit({_target})
+	applyEffect({_target}, blindness, 1, 3 seconds)
+	if checkEntityType({_target}, player) is true:
+		set {_memsg} to kitGhostMessage("§5%{_target}% §0に暗黒効果を付与した...")
 		set {_youmsg} to kitGhostMessage("§0??????????", true)
 		kitMsg({_player}, {_memsg})
 		message formatted {_youmsg} to {_tg}
-		loop 10 times:
-			set {_el} to aroundEffect({_tg})
-			spawnParticle(smoke, {_el})
-		playSound("entity.wither.spawn", 1, 1, {_tg})
+
+
+
+local function kitParticle_GhostBook_Beam(loc: location):
+	set {_rn} to a random integer between 1 and 3
+	if {_rn} is 1:
+		set {_color} to rgb(13, 0, 21)
+	else if {_rn} is 2:
+		set {_color} to rgb(23, 24, 75)
 	else:
-		send action bar "§c§l対象が存在しません!" to {_player}
+		set {_color} to rgb(70, 14, 68)
+	spawnParticle_Dust({_color}, 3, {_loc})
+	loop 3 times:
+		set {_el} to {_loc}
+		add a random number between -1 and 1 to x-pos of {_el}
+		add a random number between -1 and 1 to y-pos of {_el}
+		add a random number between -1 and 1 to z-pos of {_el}
+		spawnParticle_BlockData(falling_dust, black wool, {_el})
+
+
+local function kitParticle_GhostBook_Hit(entity: entity):
+	loop 10 times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle(smoke, {_el})
+	playSound("entity.wither.spawn", 0.9, 1.1, {_entity})
+
+
+
+local function kitSound_GhostBook_Launch(player: player):
+	playSound("entity.wither.shoot", 1, 0.85, {_player})
