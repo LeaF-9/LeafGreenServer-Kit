@@ -1,38 +1,89 @@
 # Weapon-Name: Poltergeist
 
-on damage of player:
-	{Class::%attacker%} is "Ghost"
-	damage was caused by attack
-	set {_tool} to attacker's tool
-	kitItemAllChecker({_tool}, "Ghost", "Weapon.main", 3) is true
-	kitSound_Poltergeist_Attack(victim)
-	attacker is sneaking
-	kitEffect_Poltergeist(attacker, victim)
+function kitWeapon_Ghost_3(player: player):
+	toolItemCT({_player}, "Ghost", 3)
+	kitEffect_Poltergeist({_player})
 
-function kitEffect_Poltergeist(player: player, tg: player):
-	if kitCheckSpirit({_player}, 3, "Weapon.main") is false:
+local function kitEffect_Poltergeist(player: player):
+	set {_baseloc} to location of head of {_player}
+	set {_boost} to false
+	if {_player} is sneaking:
+		if kitCheckSpirit({_player}, 3, "Weapon.main") is true:
+			set {_boost} to true
+	kitParticle_Poltergeist_Beam({_baseloc}, {_boost})
+	set {_m} to 0
+	loop 20 times:
+		add 0.5 to {_m}
+		set {_effloc} to location {_m} meters in front of {_baseloc}
+		set {_hits::*} to checkHitEntities({_effloc})
+		loop {_hits::*}:
+			{_hit.%id of loop-value-2%} is not set
+			kitCheckTeam({_player}, loop-value-2, false, true) is true
+			set {_hit.%id of loop-value-2%} to true
+			kitEffect_Poltergeist_Hit({_player}, loop-value-2, {_boost})
+		if mod({_m}, 1) is 0:
+			wait a tick
+
+local function kitEffect_Poltergeist_Hit(player: player, target: entity, boost: boolean):
+	kitParticle_Poltergeist_Hit({_target})
+	if {_boost} is true:
+		kitDamage({_player}, {_target}, 2.5)
+		applyEffect({_target}, nausea, 1, 8 seconds, true)
+		if checkEntityType({_target}, player) is true:
+			set {_memsg} to kitGhostMessage("§5%{_target}% §4に音のいたずらを誘発する...")
+			set {_youmsg} to kitGhostMessage("§8不思議な音が鳴り響く...", true)
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_target}
+			kitEffect_Poltergeist_Sound({_target})
 		stop
-	set {_memsg} to kitGhostMessage("§5%{_tg}% §4に音のいたずらを誘発する...")
-	set {_youmsg} to kitGhostMessage("§8不思議な音が鳴り響く...", true)
-	kitMsg({_player}, {_memsg})
-	message formatted {_youmsg} to {_tg}
-	playSound("ambient.cave", 1, 2, {_tg})
-	apply nausea 1 to {_tg} for 8 seconds
+	kitDamage({_player}, {_target}, 1.5)
+
+local function kitEffect_Poltergeist_Sound(target: player):
 	loop 100 times:
 		if mod(loop-number, 2) is 0:
 			set {_yaw} to 5
 		else:
 			set {_yaw} to -5
-		playerYawRotation({_tg}, {_yaw}, true)
+		playerYawRotation({_target}, {_yaw}, true)
 		chance of 10%:
-			kitSound_Poltergeist_Foot({_tg})
-		set {_el} to aroundEffect({_tg})
-		set y-coordinate of {_el} to y-coordinate of {_tg} + 2
-		set {_n} to a random integer between 0 and 25
-		spawnParticle_NoteOption({_n}, {_el})
+			kitSound_Poltergeist_Foot({_target})
+		kitParticle_Poltergeist_Confuse({_target})
 		wait a tick
 
-function kitSound_Poltergeist_Attack(player: player):
+
+local function kitParticle_Poltergeist_Beam(baseloc: location, boost: boolean):
+	set {_color} to "lime"
+	if {_boost} is true:
+		set {_color} to "red"
+	set {_m} to 0.5
+	loop 20 times:
+		set {_el} to location {_m} meters in front of {_baseloc}
+		spawnParticle_Note({_color}, {_el})
+		kitSound_Poltergeist_Beam({_el}, loop-number)
+		if mod({_m}, 1) is 0:
+			wait a tick
+
+local function kitParticle_Poltergeist_Hit(entity: entity):
+	playSound("block.glass.break", 1, 0.5, {_entity})
+	loop 10 times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle_Note("purple", {_el})
+	loop 4 times:
+		wait 5 ticks
+		kitSound_Poltergeist_Attack({_entity})
+
+local function kitParticle_Poltergeist_Confuse(entity: entity):
+	set {_el} to aroundEffect({_entity})
+	set y-coordinate of {_el} to y-coordinate of {_entity} + 2
+	set {_n} to a random number between 0 and 1
+	spawnParticle_NoteOption({_n}, {_el})
+
+
+local function kitSound_Poltergeist_Beam(loc: location, num: number):
+	set {_pitch} to {_num} / 20 * 1.5
+	playSound("block.large_amethyst_bud.break", 0.9, {_pitch}, {_loc})
+
+local function kitSound_Poltergeist_Attack(player: player):
 	loop all blocks in radius 3 around {_player}:
 		loop-block is passable
 		add location of loop-block to {_sounds::*}
@@ -44,9 +95,12 @@ function kitSound_Poltergeist_Attack(player: player):
 		chance of {_percent}%:
 			set {_sound} to a random location out of {_sounds::*}
 			set {_pitch} to a random number between 0.5 and 2
-			playSound("block.glass.break", 0.5, {_pitch}, {_sound})
+			playSound("block.glass.break", 0.65, {_pitch}, {_sound})
 
-function kitSound_Poltergeist_Foot(player: player):
+local function kitSound_Poltergeist_Hit(entity: entity):
+	playSound("ambient.cave", 1, 2, {_target})
+
+local function kitSound_Poltergeist_Foot(player: player):
 	set {_loc} to location of {_player}
 	set {_xnum} to a random number between -5 and 5
 	if {_xnum} >= 0:
