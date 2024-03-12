@@ -1,0 +1,178 @@
+# Party変数
+# Parties::uuid = player
+# party.join::player = uuid
+# party.invited::player = uuid
+# party.request::player = uuid
+
+
+options:
+	prefix: §e[§6§lParty§e]§r
+
+command /party <text> <player=%player%>:
+	description: partyに招待したり参加したり抜けたりするコマンド
+	executable by: player
+	trigger:
+		if {Party.join::%player%} is not set:  # どこにも所属していない場合
+			partyCreate(player)
+		if arg 1 is "invite":
+			set {_invite-code} to {Party.join::%player%}
+			partyInviting(player, arg 2, {_invite-code})
+		else if arg 1 is "accept":
+			if arg 2 is player:
+				partyAccept(player)
+			else:
+				# request許可
+		else if arg 1 is "deny":
+			if arg 2 is player:
+				partyDeny(player)
+			else:
+				# request拒否
+		else if arg 1 is "member":
+			message formatted "{@prefix} §6現在のパーティメンバー一覧§a:"
+			set {_leader} to {Parties::%{Party.join::%player%}%}
+			message formatted "{@prefix} §a- §e§l%{_leader}%"
+			loop all players:
+				loop-player is not {_leader}
+				{Party.join::%loop-player%} is {Party.join::%player%}
+				message formatted "{@prefix} §a- §e%loop-player%" to player
+		else if arg 1 is "disband":
+			partyDisband(player)
+		else if arg 1 is "request":
+			partyRequest(player, arg 2)
+		else if arg 1 is "leave":
+		else:
+			partyHelp(player)
+
+# 関数
+local function partyCreate(leader: player):  # パーティを作る関数
+	set {_uuid} to a random uuid
+	set {Parties::%{_uuid}%} to {_leader}
+	set {Party.join::%{_leader}%} to {_uuid}
+
+local function partyInviting(inviter: player, invited: player, code: text):  # パーティに招待する関数
+	if {_invited} is {_inviter}:  # 自分は招待できない
+		message formatted "{@prefix} §4§l⚠ §c自分自身を招待することはできません! §4§l⚠" to {_inviter}
+		stop
+	if {Party.invited::%{_invited}%} is {_code}:  # 既に招待されている
+		message formatted "{@prefix} §4§l⚠ §e現在承認待ちのプレイヤーです §4§l⚠" to {_inviter}
+		stop
+	loop {Party.join::*}:
+		loop-value is {_uuid}
+		add 1 to {_join.num}
+	if {_join.num} >= 3:
+		message formatted  "{@prefix} §4§l⚠ §c既に上限人数に達しています! §4§l⚠" to {_inviter}
+		stop
+	set {Party.Invited::%{_invited}%} to {_code}
+	# メッセージ送信
+	message formatted "{@prefix} §d%{_invited}% §eをPartyに招待しました" to {_inviter}  # 招待者本人
+	loop all players:  # パーティメンバー
+		{Party.join::%loop-player%} is {_code}
+		loop-player is not {_inviter}
+		message formatted "{@prefix} §a%{_inviter}% §eが §d%{_invited}% §eをPartyに招待しました" to loop-player
+	message formatted "{@prefix} §6§l%{Parties::%{_code}%}%§e's Party §dに招待されました" to {_invited}  # 対象者
+	message formatted "{@prefix} <cmd:/party accept>§a§l[承認]<reset> §b|§r <cmd:/party deny>§c§l[拒否]<reset>" to {_invited}
+	# 30秒のタイマー
+	loop 30 times:
+		if {Party.join::%{_invited}%} is {_code}:
+			stop
+		if {Party.invited::%{_invited}%} is not {_code}:
+			loop all players:
+				{Party.join::%loop-player%} is {_code}
+				message formatted "{@prefix} §d%{_invited}% §bの招待が無効化されました" to loop-player
+			stop
+		wait a second
+	# 招待無視の場合
+	if {Party.invited::%{_invited}%} is {_code}:
+		delete {Party.invited::%{_invited}%}
+		# メッセージ送信
+		loop all players:
+			{Party.join::%loop-player%} is {_code}
+			message formatted "{@prefix} §d%{_invited}% §eの招待期限が切れました" to loop-player
+		message formatted "{@prefix} §eParty招待期限が切れました" to {_invited}  # 対象者
+
+local function partyAccept(player: player):
+	if {Party.invited::%{_player}%} is not set:
+		message formatted "{@prefix} §4§l⚠ §c招待されていません §4§l⚠" to {_player}
+		stop
+	loop all players:
+		{Party.join::%loop-player%} is {_code}
+		add 1 to {_join.num}
+	if {_join.num} >= 3:
+		message formatted "{@prefix} §4§l⚠ §c既にパーティが上限に達していた為,参加できません §4§l⚠" to {_player}
+		delete {Party.invited::%{_player}%}
+		stop
+	set {_code} to {Party.invited::%{_player}%}
+	set {Party.join::%{_player}%} to {_code}
+	delete {Party.invited::%{_player}%}
+	message formatted "{@prefix} §6§l%{Parties::%{_code}%}% §aのパーティに参加しました" to {_player}
+	loop all players:
+		{Party.join::%loop-player%} is {_code}
+		loop-player is not {_player}
+		message formatted "{@prefix} §d%{_player}% §eがパーティに参加しました" to loop-player
+
+local function partyDeny(player: player):
+	if {Party.invited::%{_player}%} is not set:
+		message formatted "{@prefix} §4§l⚠ §c招待されていません §4§l⚠" to {_player}
+		stop
+	delete {Party.invited::%{_player}%}
+	message formatted "{@prefix} §9現在の招待を拒否しました" to {_player}
+
+local function partyDisband(player: player):
+	set {_code} to {Party.join::%{_player}%}
+	if {Parties::%{_code}%} is not {_player}:  # パーティリーダーでない場合
+		message formatted "{@prefix} §4§l⚠ §c現在パーティリーダーではありません §4§l⚠" to {_player}
+		stop
+	loop all players:
+		{Party.join::%loop-player%} is {_code}
+		add 1 to {_join.num}
+	if {_join.num} is 1:
+		message formatted "{@prefix} §4§l⚠ §cパーティメンバーがいません §4§l⚠" to {_player}
+		stop
+	delete {Parties::%{_code}%}
+	loop all players:
+		{Party.join::%loop-player%} is {_code}
+		delete {Party.join::%loop-player%}
+		message formatted "{@prefix} §cパーティが解散されました" to loop-player
+
+local function partyRequest(player: player, requested: player):
+	if {_player} is not {_requested}:
+		message formatted "{@prefix} §4§l⚠ §c自分自身に参加申請をすることはできません §4§l⚠" to {_player}
+		stop
+	set {_code} to {Party.join::%{_requested}%}
+	if {_code} is not set:
+		partyCreate({_requested})
+		set {_code} to {Party.join::%{_requested}%}
+	if {Party.join::%{_player}%} is {_code}:
+		message formatted "{@prefix} §4§l⚠ §c既に同じパーティに参加しています §4§l⚠" to {_player}
+		stop
+	loop all players:
+		{Party.join::%loop-player%} is {_code}
+		add 1 to {_join.num}
+	if {_join.num} >= 3:
+		message formatted "{@prefix} §4§l⚠ §c申請先のパーティは満員です §4§l⚠" to {_player}
+		stop
+	set {Party.Request::%{_player}%} to {_code}
+	set {_leader} to {Parties::%{_code}%}
+	# メッセージ送信
+	message formatted "{@prefix} §6§l%{_leader}% §eのパーティに参加申請を送信しました" to {_player}  # 招待者本人
+	message formatted "{@prefix} §d%{_player}% §eから§a§l参加申請§eを受信しました" to {_leader}
+	message formatted "{@prefix} <cmd:/party accept %{_player}%>§a§l[承認]<reset> §b|§r <cmd:/party deny %{_player}%>§c§l[拒否]<reset>" to {_leader}
+	# 30秒のタイマー
+	loop 30 times:
+		if {Party.join::%{_player}%} is {_code}:
+			stop
+		if {Party.request::%{_player}%} is not {_code}:
+			message formatted "{@prefix} §d%{_player}% §bが参加申請を取り消しました" to {_leader}
+			stop
+		wait a second
+	# 申請無視の場合
+	if {Party.request::%{_player}%} is {_code}:
+		delete {Party.request::%{_player}%}
+		# メッセージ送信
+		message formatted "{@prefix} §d%{_player}% §eの申請期限が切れました" to {_leader}
+		message formatted "{@prefix} §eParty参加申請の期限が切れました" to {_player}  # 対象者
+	
+	
+
+# イベント
+on leave:
