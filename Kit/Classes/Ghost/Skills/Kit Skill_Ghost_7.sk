@@ -45,8 +45,10 @@ function kitSkill_Ghost_7(player: player):
 				set {_cl} to location loop-number meters below {_checkloc}
 				if block at {_cl} is not passable:
 					set {_ok} to true
-			if "%block at {_tg}%" contains "lava":
-				delete {_ok}
+			set {_tgloc} to location of {_tg}
+			loop all blocks in radius 3 around {_tgloc}:
+				if "%loop-block%" contains "lava":
+					delete {_ok}
 			if {_ok} is not set:
 				teleport {_tg} to {_targetbaseloc}
 				extinguish {_tg}
