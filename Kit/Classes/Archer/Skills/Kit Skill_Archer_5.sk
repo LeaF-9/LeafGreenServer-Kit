@@ -43,11 +43,12 @@ local function kitEffect_BarrageArrow_Shoot(player: player, time: number):
 		kitEffect_BarrageArrow_Arrow({_player}, {_vector})
 
 local function kitEffect_BarrageArrow_Direction(loc: location, num: number, max: number) :: vector:
+	set {_power} to 5
 	set {_pitch} to pitch of {_loc}
 	set pitch of {_loc} to 0
 	if {_max} is 1:
 		set pitch of {_loc} to {_pitch}
-		set {_v} to setVector({_loc}, location 10 meters in front of {_loc})
+		set {_v} to setVector({_loc}, location 10 meters in front of {_loc}, {_power})
 	else if {_max} is 2:
 		set {_leftm} to 2.5
 		if {_num} is 1:
@@ -56,16 +57,18 @@ local function kitEffect_BarrageArrow_Direction(loc: location, num: number, max:
 			set {_dirloc} to location {_leftm} meters to the right of {_loc}
 		set pitch of {_dirloc} to {_pitch}
 		set {_dirloc} to location 10 meters in front of {_dirloc}
-		set {_v} to setVector({_loc}, {_dirloc})
+		set {_v} to setVector({_loc}, {_dirloc}, {_power})
 	else if {_max} is 3:
 		set {_leftm} to 5
 		if {_num} is 1:
 			set {_dirloc} to location {_leftm} meters to the left of {_loc}
 		else if {_num} is 2:
 			set {_dirloc} to location {_leftm} meters to the right of {_loc}
+		else:
+			set {_dirloc} to {_loc}
 		set pitch of {_dirloc} to {_pitch}
 		set {_dirloc} to location 10 meters in front of {_dirloc}
-		set {_v} to setVector({_loc}, {_dirloc})
+		set {_v} to setVector({_loc}, {_dirloc}, {_power})
 	else if {_max} is 4:
 		set {_leftm} to 5
 		if {_num} is 1:
@@ -78,7 +81,7 @@ local function kitEffect_BarrageArrow_Direction(loc: location, num: number, max:
 			set {_dirloc} to location {_leftm} + 2.5 meters to the right of {_loc}
 		set pitch of {_dirloc} to {_pitch}
 		set {_dirloc} to location 10 meters in front of {_dirloc}
-		set {_v} to setVector({_loc}, {_dirloc})
+		set {_v} to setVector({_loc}, {_dirloc}, {_power})
 	else:
 		set {_leftm} to 5
 		if {_num} is 1:
@@ -89,13 +92,16 @@ local function kitEffect_BarrageArrow_Direction(loc: location, num: number, max:
 			set {_dirloc} to location {_leftm} meters to the right of {_loc}
 		else if {_num} is 4:
 			set {_dirloc} to location {_leftm} * 2 meters to the right of {_loc}
+		else:
+			set {_dirloc} to {_loc}
 		set pitch of {_dirloc} to {_pitch}
 		set {_dirloc} to location 10 meters in front of {_dirloc}
-		set {_v} to setVector({_loc}, {_dirloc}, 3)
+		set {_v} to setVector({_loc}, {_dirloc}, {_power})
 	return {_v}
 
 local function kitEffect_BarrageArrow_Arrow(player: player, vector: vector):
-	shoot an arrow from {_player} at speed 1
+	set {_from} to location of head of {_player}
+	shoot an arrow from {_from} at speed 1
 	set {_shot} to shot arrow
 	set velocity of {_shot} to {_vector}
 	set metadata value "arrowdamage" of {_shot} to 2
@@ -105,13 +111,13 @@ local function kitEffect_BarrageArrow_Arrow(player: player, vector: vector):
 
 local function kitParticle_BarrageArrow_Start(player: player):
 	playSound("block.iron_door.open", 1, 0.65, {_player})
-	loop 20 times:
+	loop 50 times:
 		set {_v} to randomVector(0.5)
 		spawnParticle_Vector(flame, {_v}, 1, location 1 meter above {_player})
-		wait a tick
+		wait 2 ticks
 
 local function kitParticle_BarrageArrow_Arrow(proj: projectile):
-	loop 20 times:
+	loop 10 times:
 		spawnParticle(lava, location of {_proj})
 		wait a tick
 
