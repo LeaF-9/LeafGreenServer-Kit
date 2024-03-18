@@ -1,25 +1,19 @@
 # Gyration Shot
 
 function kitSkill_Archer_6(player: player):
-	if {Stats.%{_player}%::SkillLocation} is set:
-		toolCT({_player}, "Archer", 6)
-		kitMsg({_player}, "<##696969>矢を拡散するオブジェ<##ffa500>を設置します!")
-		set {_baseloc} to {Stats.%{_player}%::SkillLocation}
-		set pitch of {_baseloc} to 0
-		playSound("entity.guardian.attack", 1, 2, {_baseloc})
-		set {_rad} to 0
-		set {_y} to 0
-		loop 20 times:
-			loop 4 times:
-				set {_el} to {_baseloc}
-				set {_tr} to {_rad} + 90 * loop-number-2
-				add 0.5 * sin({_tr}) to x-coordinate of {_el}
-				add 0.5 * cos({_tr}) to z-coordinate of {_el}
-				add {_y} to y-coordinate of {_el}
-				spawnParticle(end_rod, {_el})
-			add 18 to {_rad}
-			add 0.1 to {_y}
-			wait a tick
+	toolCT({_player}, "Archer", 6)
+	kitEffect_GyrationShot({_player})
+
+
+
+local function kitEffect_GyrationShot(player: player):
+	kitMsg({_player}, "§58方向§bに§9§l矢をばら撒きます!")
+	kitParticle_GyrationShot_Prepare({_player})
+	wait a second
+	if metadata value "gametype" of {_player} is not "Kit":
+		stop
+		
+		
 		playSound("entity.elder_guardian.curse", 1, 1, {_baseloc})
 		set yaw of {_baseloc} to 0
 		spawn armor stand at {_baseloc} with nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Marker:1b,ArmorItems:[{},{},{},{id:""skeleton_skull"",Count:1b}],HandItems:[{},{id:""bow"",Count:1b}],Pose:{RightLeg:[10f,30f,0f],LeftArm:[270f,30f,0f],RightArm:[270f,300f,0f]}}"
@@ -50,6 +44,25 @@ function kitSkill_Archer_6(player: player):
 			delete loop-entity
 	else:
 		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+
+
+
+local function kitParticle_GyrationShot_Prepare(player: player):
+	playSound("entity.guardian.attack", 1, 2, {_player})
+	set {_rad} to 0
+	set {_y} to 0
+	loop 20 times:
+		set {_baseloc} to location of {_player}
+		loop 4 times:
+			set {_el} to {_baseloc}
+			set {_tr} to {_rad} + 90 * loop-number-2
+			add 0.5 * sin({_tr}) to x-coordinate of {_el}
+			add 0.5 * cos({_tr}) to z-coordinate of {_el}
+			add {_y} to y-coordinate of {_el}
+			spawnParticle(end_rod, {_el})
+		add 18 to {_rad}
+		add 0.1 to {_y}
+		wait a tick
 
 function kitParticle_ArrowDiffusion_Cloud(entity: entity):
 	loop 10 times:
