@@ -40,10 +40,10 @@ local function kitEffect_BarrageArrow_Shoot(player: player, time: number):
 	set {_baseloc} to location 1 meter above {_player}
 	loop {_count} times:
 		set {_vector} to kitEffect_BarrageArrow_Direction({_baseloc}, loop-number, {_count})
-		kitEffect_BarrageArrow_Arrow({_player}, {_vector})
+		kitEffect_BarrageArrow_Arrow({_player}, {_vector}, {_count})
 
 local function kitEffect_BarrageArrow_Direction(loc: location, num: number, max: number) :: vector:
-	set {_power} to 5
+	set {_power} to 3
 	set {_pitch} to pitch of {_loc}
 	set pitch of {_loc} to 0
 	if {_max} is 1:
@@ -99,12 +99,13 @@ local function kitEffect_BarrageArrow_Direction(loc: location, num: number, max:
 		set {_v} to setVector({_loc}, {_dirloc}, {_power})
 	return {_v}
 
-local function kitEffect_BarrageArrow_Arrow(player: player, vector: vector):
+local function kitEffect_BarrageArrow_Arrow(player: player, vector: vector, count: number):
+	set {_damage} to 1 + 0.5 * ({_count} - 1)
 	set {_from} to location of head of {_player}
 	shoot an arrow from {_from} at speed 1
 	set {_shot} to shot arrow
 	set velocity of {_shot} to {_vector}
-	set metadata value "arrowdamage" of {_shot} to 2
+	set metadata value "arrowdamage" of {_shot} to {_damage}
 	kitParticle_BarrageArrow_Arrow({_shot})
 
 
