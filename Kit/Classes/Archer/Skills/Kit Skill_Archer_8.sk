@@ -2,39 +2,88 @@
 
 function kitSkill_Archer_8(player: player):
 	toolCT({_player}, "Archer", 8)
-	kitMsg({_player}, "<##f8f8ff>矢の護衛<##f0e68c>を展開します!")
-	playSound("item.trident.throw", 1, 0.5, {_player})
-	loop 200 times:
-		{_ok} is not set
-		set {_baseloc} to location of {_player}
-		set {_rad} to 0
-		loop 10 times:
-			set {_el} to {_baseloc}
-			add 3 * sin({_rad}) to x-coordinate of {_el}
-			add 3 * cos({_rad}) to z-coordinate of {_el}
-			add 1 to y-coordinate of {_el}
-			spawnParticle_Dust(rgb(100, 150, 255), 1, {_el})
-			add 36 to {_rad}
-		loop all entities in radius 3 around {_baseloc}:
-			kitCheckTeam(loop-entity, {_player}, false) is true
-			set {_ok} to true
-		wait a tick
-	if {_ok} is true:
-		kitMsg({_player}, "§b矢の護衛§cが発動した!")
-		playSound("item.trident.return", 1, 0.5, {_player})
-		set {_loc} to location of {_player}
-		loop 50 times:
-			set {_pl} to {_loc}
-			add 1 to y-coordinate of {_pl}
-			set yaw of {_pl} to a random number between 0 and 360
-			set pitch of {_pl} to a random number between -20 and 20
-			shoot an arrow from {_pl} at speed 1.5
-			set shooter of shot arrow to {_player}
-			set metadata value "arrowdamage" of shot arrow to 3
-			set {_shotarrow} to shot arrow
-			kitParticle_ArrowGuardian({_shotarrow})
+	kitEffect_LeapGale({_player})
 
-local function kitParticle_ArrowGuardian(entity: entity):
+
+
+local function kitEffect_LeapGale(player: player):
+	kitMsg({_player}, "§b§l突風射撃!")
+	kitEffect_LeapGale_Leap({_player})
+	wait 10 ticks
+	kitEffect_LeapGale_Gale({_player})
+
+local function kitEffect_LeapGale_Leap(player: player):
+	kitParticle_LeapGale_Leap({_player})
+	set {_vector} to vector(0, 3, 0)
+	set {Stats.%{_player}%::LeapGale} to true
+	set velocity of {_player} to {_vector}
+	loop 60 times:
+		{Stats.%{_player}%::LeapGale} is true
+		wait a tick
+	delete {Stats.%{_player}%::LeapGale}
+
+local function kitEffect_LeapGale_Gale(player: player):
+	set {_baseloc} to location of head of {_player}
+	# velocity
+	kitParticle_LeapGale_Gale(location 1 meter above {_player})
+	set {_vector} to setVector(location of {_player}, location 10 meters behind {_player})
+	set velocity of {_player} to {_vector}
+	# arrow
+	loop 10 times:
+		kitEffect_LeapGale_Arrow({_player}, {_baseloc})
+
+local function kitEffect_LeapGale_Arrow(player: player, loc: location):
+	set {_el} to {_loc}
+	set pitch of {_el} to 0
+	set {_leftm} to a random number between -5 and 5
+	set {_el} to location {_leftm} meters to the left of {_el}
+	set pitch of {_el} to pitch of {_loc}
+	set {_el} to location 10 meters in front of {_el}
+	set {_vector} to setVector({_loc}, {_el}, 2.5)
+	shoot an arrow from {_el} at speed 1
+	set {_arrow} to shot arrow
+	set velocity of {_arrow} to {_vector}
+	set shooter of {_arrow} to {_player}
+	set metadata value "arrowdamage" of {_arrow} to 3
+	kitParticle_LeapGale_Arrow({_arrow})
+
+
+
+local function kitParticle_LeapGale_Leap(player: player):
+	playSound("entity.wither.shoot", 1, 1.7, {_player})
+	# 波紋
+	set {_baseloc} to location of {_player}
+	set pitch of {_baseloc} to 0
+	set {_addyaw} to 0
+	loop 36 times:
+		set {_el} to {_baseloc}
+		add {_addyaw} to yaw of {_el}
+		set {_to} to location 10 meters in front of {_el}
+		set {_vector} to setVector({_baseloc}, {_to})
+		kitParticle_Vector(cloud, {_vector}, 0.5, {_baseloc})
+		add 10 to {_addyaw}
+	# 残像
+	loop 5 times:
+		loop 2 times:
+			set {_ae} to aroundEffect({_player})
+			kitParticle_LeapGale_Up({_ae})
+		wait a tick
+
+local function kitParticle_LeapGale_Up(loc: location):
+	loop 5 times:
+		set {_el} to location loop-number - 0.5 meters above {_loc}
+		spawnParticle_Dust(rgb(235, 246, 247), 0.5, {_el})
+		wait a tick
+
+local function kitParticle_LeapGale_Gale(loc: location):
+	playSound("entity.zombie.break_wooden_door", 1, 0.9, {_loc})
+	loop 5 times:
+		set {_els::*} to particleLocation_CircleV({_loc}, 10 + 5 * (loop-number - 1), loop-number * 0.2)
+		loop {_els::*}:
+			spawnParticle_DustTransition(rgb(160, 216, 239), rgb(187, 226, 241), 0.65, loop-value-2)
+		wait a tick
+
+local function kitParticle_LeapGale_Arrow(proj: projectile):
 	loop 20 times:
-		spawnParticle_Color(entity_effect, 100 ,150, 255, {_entity})
+		spawnParticle(glow, location of {_proj})
 		wait a tick
