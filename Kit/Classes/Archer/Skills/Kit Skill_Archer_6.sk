@@ -12,38 +12,24 @@ local function kitEffect_GyrationShot(player: player):
 	wait a second
 	if metadata value "gametype" of {_player} is not "Kit":
 		stop
+	kitEffect_GyrationShot_Shoot({_player})
+
+local function kitEffect_GyrationShot(player: player):
+	set {_yaw} to -45
+	loop 40 times:
+		set {_baseloc} to location of head of {_player}
+		set pitch of {_baseloc} to 0
+		add 45 to {_yaw}
+		if {_yaw} >= 360:
+			set {_yaw} to 0
+		set yaw of {_baseloc} to {_yaw}
+		shoot an arrow from {_baseloc} at speed 5
+		set metadata value "arrowdamage" of shot arrow to 2
+		set shooter of shot arrow to {_player}
+		kitParticle_GyrationShot_Arrow(shot arrow)
+		wait a tick
 		
-		
-		playSound("entity.elder_guardian.curse", 1, 1, {_baseloc})
-		set yaw of {_baseloc} to 0
-		spawn armor stand at {_baseloc} with nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Marker:1b,ArmorItems:[{},{},{},{id:""skeleton_skull"",Count:1b}],HandItems:[{},{id:""bow"",Count:1b}],Pose:{RightLeg:[10f,30f,0f],LeftArm:[270f,30f,0f],RightArm:[270f,300f,0f]}}"
-		set metadata value "arrowdiffusion" of spawned armor stand to "%{_player}%"
-		loop 30 times:
-			spawnParticle_Vector(end_rod, randomVector(), 0.5, {_baseloc})
-		wait 1 second
-		set {_yaw} to -45
-		loop 40 times:
-			add 45 to {_yaw}
-			if {_yaw} >= 360:
-				set {_yaw} to 0
-			set yaw of {_baseloc} to {_yaw}
-			loop all entities:
-				type of loop-entity is armor stand
-				metadata value "arrowdiffusion" of loop-entity is "%{_player}%"
-				teleport loop-entity to {_baseloc}
-			shoot an arrow from location 1.5 meters above {_baseloc} at speed 5
-			set metadata value "arrowdamage" of shot arrow to 2
-			set shooter of shot projectile to {_player}
-			set metadata value "arrowdf" of shot projectile to "true"
-			kitParticle_ArrowDiffusion_Cloud(shot projectile)
-			playSound("entity.arrow.shoot", 1, 2, {_baseloc})
-			wait a tick
-		loop all entities:
-			type of loop-entity is armor stand
-			metadata value "arrowdiffusion" of loop-entity is "%{_player}%"
-			delete loop-entity
-	else:
-		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+
 
 
 
@@ -64,7 +50,8 @@ local function kitParticle_GyrationShot_Prepare(player: player):
 		add 0.1 to {_y}
 		wait a tick
 
-function kitParticle_ArrowDiffusion_Cloud(entity: entity):
-	loop 10 times:
-		spawnParticle(cloud, {_entity})
+function kitParticle_ArrowDiffusion_Arrow(entity: entity):
+	playSound("entity.arrow.shoot", 1, 1.5, {_entity})
+	loop 20 times:
+		spawnParticle(witch, {_entity})
 		wait a tick
