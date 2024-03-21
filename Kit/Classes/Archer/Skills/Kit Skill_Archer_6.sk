@@ -14,10 +14,10 @@ local function kitEffect_GyrationShot(player: player):
 		stop
 	kitEffect_GyrationShot_Shoot({_player})
 
-local function kitEffect_GyrationShot(player: player):
+local function kitEffect_GyrationShot_Shoot(player: player):
 	set {_yaw} to -45
 	loop 40 times:
-		set {_baseloc} to location of head of {_player}
+		set {_baseloc} to location 1 meter above {_player}
 		set pitch of {_baseloc} to 0
 		add 45 to {_yaw}
 		if {_yaw} >= 360:
@@ -50,7 +50,7 @@ local function kitParticle_GyrationShot_Prepare(player: player):
 		add 0.1 to {_y}
 		wait a tick
 
-function kitParticle_ArrowDiffusion_Arrow(entity: entity):
+local function kitParticle_GyrationShot_Arrow(entity: entity):
 	playSound("entity.arrow.shoot", 1, 1.5, {_entity})
 	loop 20 times:
 		spawnParticle(witch, {_entity})

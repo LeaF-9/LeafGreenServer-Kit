@@ -1,5 +1,11 @@
 # Leap Gale
 
+on damage of player:
+	damage was caused by fall
+	{Stats.%victim%::LeapGale} is true
+	cancel event
+	delete {Stats.%victim%::LeapGale}
+
 function kitSkill_Archer_8(player: player):
 	toolCT({_player}, "Archer", 8)
 	kitEffect_LeapGale({_player})
@@ -14,7 +20,7 @@ local function kitEffect_LeapGale(player: player):
 
 local function kitEffect_LeapGale_Leap(player: player):
 	kitParticle_LeapGale_Leap({_player})
-	set {_vector} to vector(0, 3, 0)
+	set {_vector} to vector(0, 1, 0)
 	set {Stats.%{_player}%::LeapGale} to true
 	set velocity of {_player} to {_vector}
 	loop 60 times:
@@ -29,17 +35,18 @@ local function kitEffect_LeapGale_Gale(player: player):
 	set {_vector} to setVector(location of {_player}, location 10 meters behind {_player})
 	set velocity of {_player} to {_vector}
 	# arrow
-	loop 10 times:
+	loop 30 times:
 		kitEffect_LeapGale_Arrow({_player}, {_baseloc})
 
 local function kitEffect_LeapGale_Arrow(player: player, loc: location):
 	set {_el} to {_loc}
 	set pitch of {_el} to 0
-	set {_leftm} to a random number between -5 and 5
+	set {_leftm} to a random number between -3 and 3
 	set {_el} to location {_leftm} meters to the left of {_el}
-	set pitch of {_el} to pitch of {_loc}
+	set {_pitch.random} to a random number between -20 and 20
+	set pitch of {_el} to pitch of {_loc} + {_pitch.random}
 	set {_el} to location 10 meters in front of {_el}
-	set {_vector} to setVector({_loc}, {_el}, 2.5)
+	set {_vector} to setVector({_loc}, {_el}, 1)
 	shoot an arrow from {_el} at speed 1
 	set {_arrow} to shot arrow
 	set velocity of {_arrow} to {_vector}
@@ -60,7 +67,7 @@ local function kitParticle_LeapGale_Leap(player: player):
 		add {_addyaw} to yaw of {_el}
 		set {_to} to location 10 meters in front of {_el}
 		set {_vector} to setVector({_baseloc}, {_to})
-		kitParticle_Vector(cloud, {_vector}, 0.5, {_baseloc})
+		spawnParticle_Vector(cloud, {_vector}, 0.5, {_baseloc})
 		add 10 to {_addyaw}
 	# 残像
 	loop 5 times:
