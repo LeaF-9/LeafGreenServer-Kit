@@ -31,18 +31,25 @@ on damage of player:
 
 function kitExplosion(attacker: player, power: number, loc: location, bool: boolean = false):
 	set {_round} to {_power} * 2
+	playSound("entity.generic.explode", {_power}, 1, {_loc})
 	if {_power} < 2:
 		spawnParticle(explosion, {_loc})
 	else:
 		spawnParticle(explosion_emitter, {_loc})
-	loop all players in radius {_round} around {_loc}:
-		kitCheckTeam(loop-player, {_attacker}, false, {_bool}) is true
+	loop all entities in radius {_round} around {_loc}:
+		kitCheckTeam(loop-entity, {_attacker}, false, {_bool}) is true
+		if checkEntityType(loop-entity, player) is false:
+			set {_distance} to distance between {_loc} and loop-entity
+			set {_impact} to ({_round} - {_distance})
+			set {_damage} to {_impact} + 1
+			kitDamage({_attacker}, loop-entity, {_damage})
+			continue
 		# ダメージ処理
-		set {_distance} to distance between {_loc} and loop-player  # 距離
-		set {_expose} to kitCalcExpose(loop-player, {_loc})
-		set {_impact} to ({_round} - {_distance}) * {_expose}
+		set {_distance} to distance between {_loc} and loop-entity  # 距離
+		set {_expose} to kitCalcExpose(loop-entity, {_loc})
+		set {_impact} to ({_round} - {_distance}) / 2 * {_expose}
 		set {_damage} to {_impact} + 1
-		kitDamage({_attacker}, loop-player, {_damage})
+		kitDamage({_attacker}, loop-entity, {_damage})
 
 local function kitCalcExpose(player: player, center: location) :: number:
 	set {_playerloc} to location of {_player}
@@ -65,7 +72,7 @@ local function kitCalcExpose(player: player, center: location) :: number:
 			add {_loc} to {_checklocs::*}
 			set {_baseloc} to location 1 meter in front of {_baseloc}
 			add 90 to yaw of {_baseloc}
-		set {_blocked} to 0
+		set {_blocked} to size of {_checklocs::*}
 		loop {_checklocs::*}:
 			set {_loc} to loop-value
 			set {_blockfinder} to setDirToVec({_center}, setVector({_center}, {_loc}))
@@ -78,7 +85,7 @@ local function kitCalcExpose(player: player, center: location) :: number:
 				add 1 to {_ln}
 				set {_checkblock} to location {_distance} / {_loopnum} * {_ln} meters in front of {_blockfinder}
 				if block at {_checkblock} is not passable:
-					add 1 to {_blocked}
+					subtract 1 from {_blocked}
 					set {_bl} to true
 		set {_size} to size of {_checklocs::*}
 		set {_expose} to {_blocked} / {_size}
