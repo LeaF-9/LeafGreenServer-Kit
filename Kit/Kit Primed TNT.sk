@@ -15,65 +15,84 @@ on leftclick holding a tnt:
 
 on explode:
 	metadata value "kit-bomber" of event-entity is set
-	set {_force} to metadata value "kit-bomber" of event-entity
-	set {_damage} to {_force} + 3
+	set {_entity} to event-entity
+	set {_loc} to event-location
 	cancel event
-	set {_attacker} to metadata value "attacker" of event-entity parsed as player
-	set {_now} to now
-	loop all players in radius {_damage} around event-location:
-		if {team::%loop-player%} is {team::%{_attacker}%}:
-			set {Stats.%loop-player%::BombCancel} to {_now}
-			add loop-player to {_bc::*}
-		else:
-			if loop-player's gamemode is survival:
-				LastKiller(loop-player, {_attacker})
-	make a safe explosion of force {_force} at event-location
-	wait a tick
-	loop {_bc::*}:
-		if {Stats.%loop-value%::BombCancel} is {_now}:
-			delete {Stats.%loop-value%::BombCancel}
+	set {_attacker} to metadata value "attacker" of {_entity}
+	set {_power} to metadata value "kit-bomber" of {_entity}
+	set {_bool} to metadata value "TrueTeam" of {_entity}
+	if {_bool} is not set:
+		set {_bool} to false
+	kitExplosion({_attacker}, {_power}, {_loc}, {_bool})
 
 on damage of player:
 	if damage was caused by block explosion or entity explosion:
-		if {Stats.%victim%::BombCancel} is set:
-			cancel event
-		else:
-			if attacker is tnt:
-				if metadata value "kit-bomber" of attacker is set:
-					cancel event
-#				else if metadata value "small-2" of attacker is "true":
-#					set damage to damage * 0.2
-#				else if metadata value "bomult" of attacker is "true":
-#					set damage to damage * 1
-#				else:
-#					set damage to damage * 0.5
-			else if checkEntityType(attacker, creeper) is true:
-				if metadata value "kit-bomber" of attacker is set:
-					cancel event
-			else if damage cause is not entity explosion:
-				set damage to damage * 0.5
-			# set {_now} to now
-			# set {Stats.%victim%::BombFall} to {_now}
-			# wait 10 seconds
-			# {Stats.%victim%::BombFall} is {_now}
-			# delete {Stats.%victim%::BombFall}
-	# else if damage was caused by fall:
-	# 	{Stats.%victim%::BombFall} is set
-	# 	cancel event
-	# 	delete {Stats.%victim%::BombFall}
+		cancel event
 
-function kitExplosion(attacker: player, power: number, loc: location):
-	set {_now} to now
-	set {_damage} to {_power} * 2
-	loop all players in radius {_damage} around {_loc}:
-		if {team::%loop-player%} is {team::%{_attacker}%}:
-			set {Stats.%loop-player%::BombCancel} to {_now}
-			add loop-player to {_bc::*}
+function kitExplosion(attacker: player, power: number, loc: location, bool: boolean = false):
+	set {_round} to {_power} * 2
+	if {_power} < 2:
+		spawnParticle(explosion, {_loc})
+	else:
+		spawnParticle(explosion_emitter, {_loc})
+	loop all players in radius {_round} around {_loc}:
+		kitCheckTeam(loop-player, {_attacker}, false, {_bool}) is true
+		# ダメージ処理
+		set {_distance} to distance between {_loc} and loop-player  # 距離
+		set {_expose} to kitCalcExpose(loop-player, {_loc})
+		set {_impact} to ({_round} - {_distance}) * {_expose}
+		set {_damage} to {_impact} + 1
+		kitDamage({_attacker}, loop-player, {_damage})
+
+local function kitCalcExpose(player: player, center: location) :: number:
+	set {_playerloc} to location of {_player}
+	if location of block at {_player} is location of block at {_center}:
+		set {_expose} to 1
+	else:
+		set {_baseloc} to {_playerloc}
+		subtract 0.5 from x-pos of {_baseloc}
+		subtract 0.5 from z-pos of {_baseloc}
+		set yaw of {_baseloc} to 270
+		set pitch of {_baseloc} to 0
+		if {_player} is sneaking:
+			set {_height} to 1.5
 		else:
-			if loop-player's gamemode is survival:
-				LastKiller(loop-player, {_attacker})
-	make a safe explosion of force {_power} at {_loc}
-	wait a tick
-	loop {_bc::*}:
-		if {Stats.%loop-value%::BombCancel} is {_now}:
-			delete {Stats.%loop-value%::BombCancel}
+			set {_height} to 1.8
+		loop 4 times:
+			set {_loc} to {_baseloc}
+			add {_loc} to {_checklocs::*}
+			set {_loc} to location {_height} meters above {_loc}
+			add {_loc} to {_checklocs::*}
+			set {_baseloc} to location 1 meter in front of {_baseloc}
+			add 90 to yaw of {_baseloc}
+		set {_blocked} to 0
+		loop {_checklocs::*}:
+			set {_loc} to loop-value
+			set {_blockfinder} to setDirToVec({_center}, setVector({_center}, {_loc}))
+			set {_distance} to distance between {_loc} and {_center}
+			set {_loopnum} to round({_distance} * 5)
+			set {_ln} to 0
+			delete {_bl}
+			loop {_loopnum} times:
+				{_bl} is not set
+				add 1 to {_ln}
+				set {_checkblock} to location {_distance} / {_loopnum} * {_ln} meters in front of {_blockfinder}
+				if block at {_checkblock} is not passable:
+					add 1 to {_blocked}
+					set {_bl} to true
+		set {_size} to size of {_checklocs::*}
+		set {_expose} to {_blocked} / {_size}
+	# 爆破耐性の確認
+	set {_level} to 0
+	if level of blast protection of helmet of {_player} > {_level}:
+		set {_level} to level of blast protection of helmet of {_player}
+	if level of blast protection of chestplate of {_player} > {_level}:
+		set {_level} to level of blast protection of chestplate of {_player}
+	if level of blast protection of leggings of {_player} > {_level}:
+		set {_level} to level of blast protection of leggings of {_player}
+	if level of blast protection of boots of {_player} > {_level}:
+		set {_level} to level of blast protection of boots of {_player}
+	set {_return} to {_expose} - {_level} * 0.1
+	if {_return} < 0:
+		set {_return} to 0
+	return {_return}
