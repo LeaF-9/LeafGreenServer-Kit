@@ -27,6 +27,8 @@ on explode:
 
 on damage of player:
 	if damage was caused by block explosion or entity explosion:
+		if metadata value "firework" of projectile is true:
+			stop
 		cancel event
 
 function kitExplosion(attacker: player, power: number, loc: location, bool: boolean = false):
@@ -48,7 +50,7 @@ function kitExplosion(attacker: player, power: number, loc: location, bool: bool
 		set {_distance} to distance between {_loc} and loop-entity  # 距離
 		set {_expose} to kitCalcExpose(loop-entity, {_loc})
 		set {_impact} to ({_round} - {_distance}) / 2 * {_expose}
-		set {_damage} to {_impact} + 1
+		set {_damage} to {_impact} + 0.1
 		kitDamage({_attacker}, loop-entity, {_damage})
 
 local function kitCalcExpose(player: player, center: location) :: number:
