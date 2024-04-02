@@ -8,6 +8,7 @@ function kitWeapon_Bomber_3(player: player):
 			remove an arrow from {_player}
 		playSound("entity.firework_rocket.launch", 1, 0.5, {_player})
 		set {_baseloc} to location of head of {_player}
+		push {_player} behind at speed 0.3
 		set {_m} to 0
 		loop 50 times:
 			if {_exloc} is not set:
@@ -21,7 +22,12 @@ function kitWeapon_Bomber_3(player: player):
 						spawnParticle_DustTransition(rgb(100, 0, 0), rgb(0, 0, 0), 1.5, {_loc})
 				wait a tick
 		if {_exloc} is set:
-			kitExplosion({_player}, 4.1, {_exloc})
+			set {_power} to 4.1
+			kitExplosion({_player}, {_power}, {_exloc}, true)
+			set {_distance} to distance between {_exloc} and {_player}
+			set {_selfdam} to {_power} - {_distance}
+			if {_selfdam} > 0:
+				damage {_player} by {_selfdam} hearts
 			loop 10 times:
 				set {_el} to {_exloc}
 				set {_v} to randomVector()
