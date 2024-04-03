@@ -1,14 +1,12 @@
 # weapon-name: Reflec Tickle
 
-on damage of player:
-	{Class::%victim%} is "Reflector"
-	attacker is set
-	{Stats.%victim%::ReflecTickle} is true
-	set {_dmg} to damage / 2
-	cancel event
-	kitMsg(victim, "§e§lパリィ§f成功!")
-	kitParticle_ReflecTickle_Parry(victim)
-	kitDamage(victim, attacker, {_dmg}, true)
+on damage:
+	if {Stats.%attacker%::ReflecTickle} is true:
+		cancel event
+	if {Stats.%victim%::ReflecTickle} is true:
+		cancel event
+		kitDamage(attacker, victim, 1, true)
+		kitParticle_ReflecTickle_Damage(victim)
 
 on sneak toggle:
 	{Class::%player%} is "Reflector"
@@ -20,19 +18,70 @@ on sneak toggle:
 
 
 local function kitEffect_ReflecTickle(player: player):
-	kitParticle_ReflecTickle_Launch({_player})
+	kitParticle_ReflecTickle_Shield({_player})
 	set {Stats.%{_player}%::ReflecTickle} to true
 	wait a tick
+	set {_ok} to true
+	while {_ok} is true:
+		if {_player} is not sneaking:
+			delete {_ok}
+			continue
+		if {Stats.%{_player}%::ReflecTickle} is not set:
+			stop
+		wait a tick
 	delete {Stats.%{_player}%::ReflecTickle}
 
 
 
-local function kitParticle_ReflecTickle_Launch(player: player):
-	playSound("entity.zombie.infect", 0.5, 1.9, {_player})
-	set {_baseloc} to location 1 meters above {_player}
-	loop 10 times:
-		spawnParticle_Vector(wax_off, randomVector(), 10, {_baseloc})
-
-local function kitParticle_ReflecTickle_Parry(player: player):
+local function kitParticle_ReflecTickle_Shield(player: player):
+	playSound("item.trident.return", 1, 2, {_player})
+	set {_baseloc} to location of {_player}
+	set {_effloc} to location 1 meter above {_baseloc}
 	loop 20 times:
-		spawnParticle_Vector(totem_of_undying, randomVector(), 1, location 1 meter above {_player})
+		spawnParticle_Vector(wax_off, randomVector(), 3, {_effloc})
+	set yaw of {_baseloc} to 0
+	set pitch of {_baseloc} to 0
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,1f,0f]", "[1f,1f,1f]")
+	loop 3 times:
+		set {_loc} to {_baseloc}
+		add 120 * loop-number to yaw of {_loc}
+		set {_loc} to location 0.5 meters in front of {_loc}
+		set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""minecraft:white_stained_glass_pane"",Count:1b}}"
+		spawn an item display at {_loc} with nbt {_nbt}
+		set {_itemdisplay} to spawned item display
+		set metadata value "gametype" of {_itemdisplay} to "Kit"
+		set metadata value "reflectickle" of {_itemdisplay} to "%{_player}%"
+		set metadata value "reflectickle-number" of {_itemdisplay} to loop-number
+	wait a tick
+	set {_ok} to true
+	set {_yaw} to 10
+	while {_ok} is true:
+		if {_player} is not sneaking:
+			delete {_ok}
+			continue
+		if {Stats.%{_player}%::ReflecTickle} is not set:
+			delete {_ok}
+			continue
+		set {_baseloc} to location of {_player}
+		set yaw of {_baseloc} to 0
+		set pitch of {_baseloc} to 0
+		loop all item displays:
+			metadata value "reflectickle" of loop-item display is "%{_player}%"
+			set {_num} to metadata value "reflectickle-number" of loop-item display
+			set {_loc} to {_baseloc}
+			add 120 * {_num} + {_yaw} to yaw of {_loc}
+			set {_loc} to location 0.5 meters in front of {_loc}
+			teleport loop-item display to {_loc}
+		add 10 to {_yaw}
+		wait a tick
+	playSound("entity.zombie.infect", 1, 2, {_player})
+	loop all item displays:
+		metadata value "reflectickle" of loop-item display is "%{_player}%"
+		set {_el} to location 1 meter above loop-item display
+		delete loop-item display
+		spawnParticle(cloud, {_el})
+
+local function kitParticle_ReflecTickle_Damage(player: player):
+	playSound("block.glass.break", 1, 1.5, {_player})
+	loop 10 times:
+		spawnParticle_Block(white stained glass, aroundEffect({_player}))
