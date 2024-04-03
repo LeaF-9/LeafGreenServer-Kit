@@ -1,9 +1,16 @@
 # Disguise Team
 
 function kitSkill_Thief_1(player: player):
+	if {Stats.%{_player}%::SkillTarget} is not set:
+		send action bar "§c§l対象が存在しません!" to {_player}
+		stop
+	setCT({_player}, "Disguise Team", 20)
+	set {Stats.%{_player}%::DisguiseTeam} to true
+	set {_tg} to {Stats.%{_player}%::SkillTarget}
+	set {_team} to {team::%{_tg}%}
 	set {_tool} to {_player}'s tool
 	remove {_tool} from {_player}
-	if type of {_tool} is bonemeal:
+	if {_team} is "red":
 		set {_item} to a red dye named "<##FF0000>Disguise Team" with lore lore of {_tool}
 		set {_item} to kitItemTagChanger({_item}, "Thief", "Skill", 1)
 		kitMsg({_player}, "§c赤チーム §7に擬態した!")
@@ -11,9 +18,8 @@ function kitSkill_Thief_1(player: player):
 		dye {_player}'s helmet (255, 0, 0)
 		loop 5 times:
 			spawnParticle_Dust(rgb(255, 0, 0), 2, aroundEffect({_player}))
-		apply invisibility 1 to {_player} for 10 seconds replacing existing effect
 		set {team::%{_player}%} to "red"
-	else if {_tool} is red dye:
+	else if {_team} is "blue":
 		set {_item} to a blue dye named "<##0000FF>Disguise Team" with lore lore of {_tool}
 		set {_item} to kitItemTagChanger({_item}, "Thief", "Skill", 1)
 		kitMsg({_player}, "§9青チーム §7に擬態した!")
@@ -21,9 +27,8 @@ function kitSkill_Thief_1(player: player):
 		dye {_player}'s helmet (0, 0, 255)
 		loop 5 times:
 			spawnParticle_Dust(rgb(0, 0, 255), 2, aroundEffect({_player}))
-		apply invisibility 1 to {_player} for 10 seconds replacing existing effect
 		set {team::%{_player}%} to "blue"
-	else if {_tool} is blue dye:
+	else if {_team} is "yellow":
 		set {_item} to a yellow dye named "<##FFFF00>Disguise Team" with lore lore of {_tool}
 		set {_item} to kitItemTagChanger({_item}, "Thief", "Skill", 1)
 		kitMsg({_player}, "§e黄チーム §7に擬態した!")
@@ -31,9 +36,8 @@ function kitSkill_Thief_1(player: player):
 		dye {_player}'s helmet (255, 255, 0)
 		loop 5 times:
 			spawnParticle_Dust(rgb(255, 255, 0), 2, aroundEffect({_player}))
-		apply invisibility 1 to {_player} for 10 seconds replacing existing effect
 		set {team::%{_player}%} to "yellow"
-	else if {_tool} is yellow dye:
+	else if {_team} is "green":
 		set {_item} to a light green dye named "<##00FF00>Disguise Team" with lore lore of {_tool}
 		set {_item} to kitItemTagChanger({_item}, "Thief", "Skill", 1)
 		kitMsg({_player}, "§a緑チーム §7に擬態した!")
@@ -41,16 +45,20 @@ function kitSkill_Thief_1(player: player):
 		dye {_player}'s helmet (0, 255, 0)
 		loop 5 times:
 			spawnParticle_Dust(rgb(0, 255, 0), 2, aroundEffect({_player}))
-		apply invisibility 1 to {_player} for 10 seconds replacing existing effect
 		set {team::%{_player}%} to "green"
-	else if {_tool} is light green dye:
-		set {_item} to a red dye named "<##FF0000>Disguise Team" with lore lore of {_tool}
-		set {_item} to kitItemTagChanger({_item}, "Thief", "Skill", 1)
-		kitMsg({_player}, "§c赤チーム §7に擬態した!")
-		equip {_player} with leather cap
-		dye {_player}'s helmet (255, 0, 0)
-		loop 5 times:
-			spawnParticle_Dust(rgb(255, 0, 0), 2, aroundEffect({_player}))
-		apply invisibility 1 to {_player} for 10 seconds replacing existing effect
-		set {team::%{_player}%} to "red"
+	playSound("entity.zombie.infect", 1, 1.8, {_player})
+	apply invisibility 1 to {_player} for 3 seconds replacing existing effect
 	give {_item} to {_player}
+	wait 10 seconds
+	if {Stats.%{_player}%::DisguiseTeam} is not set:
+		stop
+	kitMsg({_player}, "§7チーム擬態§fの効果が終了しました")
+	delete {Stats.%{_player}%::DisguiseTeam}
+	remove {_item} from {_player}
+	give {_tool} to {_player}
+	equip {_player} with leather cap
+	dye {_player}'s helmet (255, 255, 255)
+	loop 5 times:
+		spawnParticle_Dust(rgb(255, 255, 255), 2, aroundEffect({_player}))
+	set {team::%{_player}%} to {TrueTeam::%{_player}%}
+	playSound("entity.zombie.infect", 1, 0.85, {_player})
