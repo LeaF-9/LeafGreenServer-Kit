@@ -1,11 +1,5 @@
 # Leap Gale
 
-on damage of player:
-	damage was caused by fall
-	{Stats.%victim%::LeapGale} is true
-	cancel event
-	delete {Stats.%victim%::LeapGale}
-
 function kitSkill_Archer_8(player: player):
 	toolCT({_player}, "Archer", 8)
 	kitEffect_LeapGale({_player})
@@ -20,19 +14,14 @@ local function kitEffect_LeapGale(player: player):
 
 local function kitEffect_LeapGale_Leap(player: player):
 	kitParticle_LeapGale_Leap({_player})
-	set {_vector} to vector(0, 1, 0)
-	set {Stats.%{_player}%::LeapGale} to true
+	set {_vector} to vector(0, 0.8, 0)
 	set velocity of {_player} to {_vector}
-	loop 60 times:
-		{Stats.%{_player}%::LeapGale} is true
-		wait a tick
-	delete {Stats.%{_player}%::LeapGale}
 
 local function kitEffect_LeapGale_Gale(player: player):
 	set {_baseloc} to location of head of {_player}
 	# velocity
 	kitParticle_LeapGale_Gale(location 1 meter above {_player})
-	set {_vector} to setVector(location of {_player}, location 10 meters behind {_player})
+	set {_vector} to setVector(location of {_player}, location 10 meters behind {_player}, 0.9)
 	set velocity of {_player} to {_vector}
 	# arrow
 	loop 30 times:
