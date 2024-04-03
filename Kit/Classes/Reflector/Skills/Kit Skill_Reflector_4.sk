@@ -31,10 +31,18 @@ on damage of player:
 	kitParticle_MirrorBall_Damage({_mirror}, {_damaged::*})
 	set {_damage.separate} to {_damage.origin} / {_member}
 	loop {_damaged::*}:
+		# attackerとチームが異なる場合
+		# この場合はattackerをそのままattackerにする
 		if kitCheckTeam(loop-value, {_attacker}, false) is true:
 			set {_attacker.true} to {_attacker}
-		else:
+		# attackerとチームが同じであり、mirrorとチームが異なる場合
+		# この場合はmirror発動者をattackerにする
+		else if kitCheckTeam({_mirror}, {_attacker}, false) is true:
 			set {_attacker.true} to {_mirror}
+		# attacker,mirrorともにチームが同じである場合
+		# この場合はattackerを存在させない
+		else:
+			delete {_attacker.true}
 		kitDamage({_attacker.true}, loop-value, {_damage.separate}, true)
 	
 
