@@ -35,6 +35,7 @@ function kitSkill_Engineer_4(player: player, loc: location):
 	playSound("block.respawn_anchor.charge", 1, 2, {_loc})
 	while {Stats.%{_player}%::TrackingSystem-Time-%{_num}%} is {_now}:
 		wait a tick
+		delete {_true}
 		loop all entities in radius 5 around {_loc}:
 			kitCheckTeam({_player}, loop-entity, false) is true
 			{Kit-Invisible::%loop-entity%} is not set
@@ -66,7 +67,7 @@ function kitSkill_Engineer_4(player: player, loc: location):
 					set {_met} to {_dis} * loop-number
 					set {_efl} to location {_met} meters in front of {_el}
 					spawnParticle_Dust(rgb(0, 191, 255), 1, {_efl})
-		set {_exist} to kitFakeCheck({_player}, "Defense Matrix")
+		set {_exist} to kitFakeCheck({_player}, "Machine-Tracking System-%{_num}%")
 		if {_exist} is true:
 			if {_true} is true:
 				set glowing of {_blockdisplay} to true
