@@ -57,13 +57,26 @@ on join:
 	set {BlockEnable::%player%} to false
 
 on damage of armor stand:
-	if attacker has permission "sk.armorstand":
-		if attacker's tool is stick:
-			stop
+	if {BlockEnable::%attacker%} is true:
+		stop
 	cancel event
 
 on rightclick on armor stand:
-	if player has permission "sk.armorstand":
-		if player has stick:
-			stop
+	if {BlockEnable::%player%} is true:
+		stop
+	cancel event
+
+on damage of item frame:
+	if {BlockEnable::%attacker%} is true:
+		stop
+	cancel event
+
+on rightclick on item frame:
+	if {BlockEnable::%player%} is true:
+		stop
+	cancel event
+
+on damage of painting:
+	if {BlockEnable::%attacker%} is true:
+		stop
 	cancel event
