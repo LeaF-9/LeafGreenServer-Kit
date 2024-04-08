@@ -1,16 +1,84 @@
 # Plank Barrier
 
 options:
-	height: 0.6
-	distance: 0.6
+	width: 3
+	height: 6
 
 function kitSkill_Paladin_6(player: player):
-	if {_player} is sneaking:
-		toolCT({_player}, "Paladin", 6)
-		kitMsg({_player}, "<##fcc800>妖精のバリアを張りました!")
-		playSound("entity.illusioner.prepare_mirror", 1, 2, {_player})
-		set {Stats.%{_player}%::PlankBarrier} to true
-		kitEffect_PlankBarrier_1({_player}, location of {_player})
+	toolCT({_player}, "Paladin", 6)
+	kitEffect_PlankBarrier({_player})
+
+
+
+local function kitEffect_PlankBarrier(player: player):
+	kitMsg({_player}, "<##fcc800>妖精のバリアを張りました!")
+	set {_baseloc} to location of {_player}
+	set pitch of {_baseloc} to 0
+	set {_loc.shield} to location 1 meter in front of {_baseloc}
+	playSound("entity.illusioner.prepare_mirror", 1, 2, {_loc.shield})
+	set {_now} to now
+	# 見た目
+	set {_item} to "minecraft:yellow_stained_glass_pane"
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,1f,0f]", "[{@width}f,{@height}f,1f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b}}"
+	spawn an item display at {_loc.shield} with nbt {_nbt}
+	set {_itemdisplay} to spawned item display
+	set metadata value "gametype" of {_itemdisplay} to "Kit"
+	set metadata value "Plank Barrier" of {_itemdisplay} to "%{_player}%"
+	set metadata value "Plank Barrier - Time" of {_itemdisplay} to {_now}
+	# 当たり判定 (左上ベース)
+	set {_loc.hit} to {_loc.shield}
+	add {@height} + 1 to y-pos of {_loc.hit}
+	set {_loc.hit} to location {@width} / 2 - 0.25 meters to the left of {_loc.hit}
+	set {_h} to 0
+	loop {@height} * 2 times:
+		set {_loc.hit.height} to location {_h} meters below {_loc.hit}
+		set {_w} to 0
+		loop {@width} * 2 times:
+			set {_loc.slime} to location {_w} meters to the right of {_loc.hit.height}
+			kitParticle_PlankShield_Launch({_loc.slime})
+			spawn a slime at {_loc.slime} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
+			set {_slime} to spawned slime
+			set metadata value "gametype" of {_slime} to "Kit"
+			set metadata value "Plank Barrier" of {_slime} to "%{_player}%"
+			set metadata value "Plank Barrier - Time" of {_slime} to {_now}
+			set metadata value "Plank Barrier - Height" of {_slime} to {_h}
+			set metadata value "Plank Barrier - Width" of {_slime} to {_w}
+			set display name of {_slime} to "%{_player}%"
+			add 0.5 to {_w}
+		add 0.5 to {_h}
+	loop 100 times:
+		set {_loc.move} to location loop-number * 0.1 meters in front of {_loc.shield}
+		kitEffect_PlankBarrier_Move({_player}, {_loc.move}, {_now})
+		wait a tick
+	loop all entities:
+		metadata value "Plank Barrier" of loop-entity is "%{_player}%"
+		metadata value "Plank Barrier - Time" of loop-entity is {_now}
+		delete loop-entity
+
+local function kitEffect_PlankBarrier_Move(player: player, baseloc: location, now: date):
+	# 当たり判定 (左上ベース)
+	set {_loc.hit} to {_loc.shield}
+	add {@height} + 1 to y-pos of {_loc.hit}
+	set {_loc.hit} to location {@width} / 2 - 0.25 meters to the left of {_loc.hit}
+	set {_h} to 0
+	loop {@height} * 2 times:
+		set {_loc.hit.height} to location {_h} meters below {_loc.hit}
+		set {_w} to 0
+		loop {@width} * 2 times:
+			set {_loc.slime} to location {_w} meters to the right of {_loc.hit.height}
+			kitParticle_PlankShield_Launch({_loc.slime})
+			spawn a slime at {_loc.slime} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",ActiveEffects:[{Id:14,Amplifier:0,Duration:12000,ShowParticles:0b}]}"
+			set {_slime} to spawned slime
+			set metadata value "gametype" of {_slime} to "Kit"
+			set metadata value "Plank Barrier" of {_slime} to "%{_player}%"
+			set metadata value "Plank Barrier - Time" of {_slime} to {_now}
+			set display name of {_slime} to "%{_player}%"
+			add 0.5 to {_w}
+		add 0.5 to {_h}
+
+
+
 	else if {Stats.%{_player}%::SkillTarget} is set:
 		set {_target} to {Stats.%{_player}%::SkillTarget}
 		toolCT({_player}, "Paladin", 6)
