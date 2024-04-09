@@ -490,42 +490,40 @@ on damage of player:
 	else:
 		playSound("block.anvil.land", 0.7, 2, victim)
 
-function kitLuck(player: player, pluslvl: number):
+function kitLuck(player: player, pluslvl: number, absolute: boolean = false):
 	addKitOS("Luck")
 	if {_pluslvl} = 0:  # リセット処理
 		delete {Kit-Luck::%{_player}%}
 		message formatted "<##008000>運がリセットされました" to {_player}
 		stop
-	if {_pluslvl} > 0:
-		if {Kit-Luck::%{_player}%} >= 5:
-			message formatted "<##3cb371>既に§l最大幸運<##3cb371>を持っています!" to {_player}
-			stop
+	# 設定値または追加値
+	if {_absolute} is true:
+		set {Kit-Luck::%{_player}%} to {_pluslvl}
+	else:
 		add {_pluslvl} to {Kit-Luck::%{_player}%}
-		if {Kit-Luck::%{_player}%} > 5:
-			set {Kit-Luck::%{_player}%} to 5
+	# 超過確認
+	if {Kit-Luck::%{_player}%} > 5:
+		set {Kit-Luck::%{_player}%} to 5
+	else if {Kit-Luck::%{_player}%} < -5:
+		set {Kit-Luck::%{_player}%} to -5
+	# メッセージとエフェクト
+	remove luck from {_player}
+	remove bad luck from {_player}
+	set {_efflvl} to abs({Kit-Luck::%{_player}%})
+	if {Kit-Luck::%{_player}%} > 0:
+		apply infinite luck {_efflvl} without particles to {_player}
 		message formatted "<##3cb371>§l幸運<##3cb371>だ! 確率が良くなりそうだ! <##ffd700>幸運レベル§7: §e§l%{Kit-Luck::%{_player}%}%" to {_player}
 	else:
-		if {Kit-Luck::%{_player}%} <= -5:
-			message formatted "<##2e8b57>既に§l最大不運<##2e8b57>を持っています..." to {_player}
-			stop
-		add {_pluslvl} to {Kit-Luck::%{_player}%}
-		if {Kit-Luck::%{_player}%} < -5:
-			set {Kit-Luck::%{_player}%} to -5
+		apply infinite bad luck {_efflvl} without particles to {_player}
 		message formatted "<##2e8b57>§l不運<##2e8b57>だ! 確率が悪くなりそうだ... <##ffd700>幸運レベル§7: §e§l%{Kit-Luck::%{_player}%}%" to {_player}
+	# パーティクル
 	loop 10 times:
 		set {_loc} to location of {_player}
 		add a random number between -1 and 1 to x-coordinate of {_loc}
 		add a random number between 0 and 2 to y-coordinate of {_loc}
 		add a random number between -1 and 1 to z-coordinate of {_loc}
 		spawnParticle(totem_of_undying, {_loc})
-	remove luck from {_player}
-	remove bad luck from {_player}
-	set {_efflvl} to abs({Kit-Luck::%{_player}%})
-	if {Kit-Luck::%{_player}%} > 0:
-		apply luck {_efflvl} to {_player} for 10000000000 seconds
-	else if {Kit-Luck::%{_player}%} < 0:
-		apply bad luck {_efflvl} to {_player} for 10000000000 seconds
-	# pitchの設定
+	# サウンド
 	set {_pitchlvl} to {Kit-Luck::%{_player}%}
 	if {_pitchlvl} = 0:
 		set {_pitch} to 1

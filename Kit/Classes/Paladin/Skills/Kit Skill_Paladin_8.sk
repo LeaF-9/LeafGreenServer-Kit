@@ -1,8 +1,26 @@
 # Fortunate Pixie
 
+on damage of player:
+	{Stats.%victim%::FortunatePixie} is set
+	set {_now} to now
+	set {Stats.%victim%::FortunatePixie-Time} to {_now}
+	set {_dmg} to damage
+	kitParticle_FortunatePixie_Damage(victim)
+	wait a seconds
+	{Stats.%victim%::FortunatePixie-Time} is {_now}
+	kitParticle_FortunatePixie_Heal(victim)
+	kitEffect_ForTunatePixie_Healing(victim, {_dmg}, {_now})
+
+
 function kitSkill_Paladin_8(player: player):
 	toolCT({_player}, "Paladin", 8)
+	kitEffect_FortunatePixie({_player})
+
+
+
+local function kitEffect_FortunatePixie(player: player):
 	kitMsg({_player}, "§d幸運の妖精が飛び回ります!")
+	# Particles
 	playSound("entity.player.levelup", 1, 0.5, {_player})
 	set {_baseloc} to location of head of {_player}
 	set {_baserad} to 0
@@ -64,6 +82,7 @@ function kitSkill_Paladin_8(player: player):
 				set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
 				set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
 				spawnParticle_Dust(rgb(255, 192, 203), 1, {_el})
+
 		loop all players in radius 5 around {_baseel}:
 			{_pnum} < 3
 			{_pixie::%loop-player%} is not set
@@ -73,25 +92,18 @@ function kitSkill_Paladin_8(player: player):
 			add 1 to {_pnum}
 			set {_indnum} to 4 - {_pnum}
 			set {_fromloc} to {_pixieloc::%{_indnum}%}
-			kitEffect_FortunatePixie_1({_player}, loop-player, {_fromloc})
+			kitEffect_FortunatePixie_Apply({_player}, loop-player, {_fromloc})
 		add 30 to {_baserad}
 		add 20 to {_rad}
 		wait a tick
-	loop 200 times:
-		loop all players:
-			{Stats.%loop-player%::FortunatePixie} is {_player}
-			set {_al} to location of loop-player
-			add a random number between -1 and 1 to x-coordinate of {_al}
-			add a random number between -1 and 1 to z-coordinate of {_al}
-			add a random number between -0.5 and 2.5 to y-coordinate of {_al}
-			spawnParticle_Color(entity_effect, 255, 153, 170, {_al})
-		wait a tick
+	wait 7 seconds
 	loop all players:
 		{Stats.%loop-player%::FortunatePixie} is {_player}
 		delete {Stats.%loop-player%::FortunatePixie}
 		message formatted "§e幸運の妖精は消え去りました..." to loop-player
 
-function kitEffect_FortunatePixie_1(player: player, target: player, from: location):
+local function kitEffect_FortunatePixie_Apply(player: player, target: player, from: location):
+	# Particles
 	set {_rad} to 0
 	loop 20 times:
 		set {_to} to location of head of {_target}
@@ -128,21 +140,70 @@ function kitEffect_FortunatePixie_1(player: player, target: player, from: locati
 			spawnParticle_Dust(rgb(255, 153, 238), 1, {_el})
 		add 20 to {_rad}
 		wait a tick
+	
 	message formatted "§a幸運の妖精が身を護ってくれます!" to {_target}
 	set {Stats.%{_target}%::FortunatePixie} to {_player}
-	playSound("block.amethyst_cluster.break", 1, 0.5, {_target})
-	kitLuck({_target}, 1)
+	kitParticle_FortunatePixie_Apply({_player}, {_target})
+	kitLuck({_target}, 3, true)
 
-on damage of player:
-	{Stats.%{_target}%::FortunatePixie} is set
-	set {_dmg} to damage
-	cancel event
-	playSound("block.enchantment_table.use", 1, 0.9, victim)
-	kitHeal(victim, {_dmg})
-	message formatted "§d§l妖精が痛みを癒やしに変換してくれた!" to victim
+local function kitEffect_ForTunatePixie_Healing(player: player, damage: number, time: date):
+	set {_healamount} to {_dmg} / 20
+	loop 20 times:
+		if {Stats.%{_player}%::FortunatePixie-Time} is not {_time}:
+			stop
+		kitHeal({_player}, {_healamount}, 1)
+		wait a tick
+	delete {Stats.%{_player}%::FortunatePixie-Time}
+
+
+
+
+
+local function kitParticle_FortunatePixie_Apply(player: player, target: player):
+	playSound("block.amethyst_cluster.break", 1, 0.5, {_player})
+	loop 140 times:
+		{Stats.%{_target}%::FortunatePixie} is {_player}
+		loop 10 times:
+			chance of 10%:
+				set {_el} to aroundEffect({_target})
+				kitParticle_FortunatePixie_Dust({_el})
+		wait a tick
+
+local function kitParticle_FortunatePixie_Dust(loc: location):
+	set {_rn} to a random integer between 1 and 5
+	if {_rn} is 1:
+		spawnParticle_BlockData(falling_dust, pink wool, {_loc})
+	else if {_rn} is 2:
+		spawnParticle_BlockData(falling_dust, red wool, {_loc})
+	else if {_rn} is 3:
+		spawnParticle_DustTransition(rgb(235, 110, 160), rgb(229, 103, 205), 1.5, {_loc})
+	else if {_rn} is 4:
+		spawnParticle_DustTransition(rgb(216, 52, 115), rgb(222, 130, 167), 2, {_loc})
+	else:
+		spawnParticle_Dust(rgb(255, 20, 147), 0.5, {_loc})
+
+local function kitParticle_FortunatePixie_Damage(player: player):
+	playSound("entity.allay.hurt", 1, 1.2, {_player})
+	set {_baseloc} to location 1 meter above {_player}
 	loop 10 times:
-		set {_al} to location of victim
-		add a random number between -1 and 1 to x-coordinate of {_al}
-		add a random number between -1 and 1 to z-coordinate of {_al}
-		add a random number between -0.5 and 2.5 to y-coordinate of {_al}
-		spawnParticle_Color(entity_effect, 255, 0, 213, {_al})
+		spawnParticle_Vector(glow, randomVector(), 5, {_baseloc})
+
+local function kitParticle_FortunatePixie_Heal(player: player):
+	playSound("entity.allay.item_given", 1, 1.5, {_player})
+	set {_baserad} to 0
+	set {_height} to 0
+	loop 20 times:
+		set {_baseloc} to location of {_player}
+		set {_countnum} to 0
+		loop 4 times:
+			add 1 to {_countnum}
+			set {_rad} to {_baserad} + 90 * ({_countnum} - 1)
+			set {_el} to {_baseloc}
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_height} to y-pos of {_el}
+			spawnParticle_Dust(rgb(255, 105, 180), 0.5, {_el})
+		add 10 to {_baserad}
+		add 0.1 to {_height}
+		if mod(loop-number, 4) is 0:
+			wait a tick
