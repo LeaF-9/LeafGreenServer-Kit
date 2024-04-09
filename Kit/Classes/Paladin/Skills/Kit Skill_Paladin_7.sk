@@ -12,9 +12,11 @@ function kitSkill_Paladin_7(player: player):
 			add a random number between -0.5 and 0.5 to y-coordinate of {_el}
 			add a random number between -7 and 7 to z-coordinate of {_el}
 			spawnParticle_Color(entity_effect, 77, 77, 255, {_el})
+		set {_popularity} to 0
 		loop all players in radius 7 around {_player}:
 			loop-player is not {_player}
 			kitCheckTeam(loop-player, {_player}, true) is true
+			add 1 to {_popularity}
 			set {_eg::%id of loop-player%} to true
 			if {_jb::%id of loop-player%} is not set:
 				set {_jb::%id of loop-player%} to true
@@ -25,7 +27,9 @@ function kitSkill_Paladin_7(player: player):
 			{_jb::%id of loop-player%} is true
 			delete {_jb::%id of loop-player%}
 			delete {Stats.%loop-player%::RecipientGenie}
+		set {Stats.%{_player}%::RecipientGenie-Number} to {_popularity} 
 		wait a tick
+	delete {Stats.%{_player}%::RecipientGenie-Number}
 	loop all players:
 		{_eg::%id of loop-player%} is true
 		{_jb::%id of loop-player%} is true
@@ -33,11 +37,14 @@ function kitSkill_Paladin_7(player: player):
 
 on damage of player:
 	{Stats.%victim%::RecipientGenie} is set
-	set {_dmg} to damage * 0.5
+	set {_dmg} to damage
 	cancel event
+	set {_player} to {Stats.%victim%::RecipientGenie}
+	set {_popularity} to {Stats.%{_player}%::RecipientGenie-Number}
+	set {_truedmg} to {_dmg} * (1 / (1 + {_popularity}))
 	playSound("entity.ravager.hurt", 1, 1, victim)
-	kitDamage(attacker, {Stats.%victim%::RecipientGenie}, {_dmg}, true)
-	set {_from} to location of {Stats.%victim%::RecipientGenie}
+	kitDamage(attacker, {_player}, {_truedmg}, true)
+	set {_from} to location of {_player}
 	add 1 to y-coordinate of {_from}
 	set {_baseloc} to location of victim
 	set {_to} to location of victim
