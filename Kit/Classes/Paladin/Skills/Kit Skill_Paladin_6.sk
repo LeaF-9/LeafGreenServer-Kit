@@ -2,10 +2,9 @@
 
 on damage of slime:
 	metadata value "Plank Barrier" of victim is set
+	cancel event
 	set {_player} to metadata value "Plank Barrier" of victim
-	if kitCheckTeam(attacker, {_player}, true) is true:
-		cancel event
-		stop
+	kitCheckTeam(attacker, {_player}, false) is true
 	kitParticle_PlankShield_Damage(location of victim)
 
 
@@ -38,7 +37,7 @@ local function kitEffect_PlankBarrier(player: player):
 	set metadata value "Plank Barrier - Time" of {_itemdisplay} to {_now}
 	# 当たり判定 (左上ベース)
 	set {_loc.hit} to {_loc.shield}
-	add {@height} + 1 to y-pos of {_loc.hit}
+	add {@height} - 2.5 to y-pos of {_loc.hit}
 	set {_loc.hit} to location {@width} / 2 - 0.25 meters to the left of {_loc.hit}
 	set {_h} to 0
 	loop {@height} * 2 times:
@@ -73,7 +72,7 @@ local function kitEffect_PlankBarrier_Move(player: player, baseloc: location, no
 	set {_tplocs::base} to {_baseloc}
 	# 当たり判定 (左上ベース)
 	set {_loc.hit} to {_baseloc}
-	add {@height} + 1 to y-pos of {_loc.hit}
+	add {@height} - 2.5 to y-pos of {_loc.hit}
 	set {_loc.hit} to location {@width} / 2 - 0.25 meters to the left of {_loc.hit}
 	set {_h} to 0
 	loop {@height} * 2 times:
