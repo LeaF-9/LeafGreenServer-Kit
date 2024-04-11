@@ -1,124 +1,119 @@
-# skill-name: Missile Repulsion
+# skill-name: Mistify Haze
 
 function kitSkill_Reflector_7(player: player):
 	toolCT({_player}, "Reflector", 7)
-	kitEffect_MissileRepulsion({_player})
+	kitEffect_MistifyHaze({_player})
 
 
 
-local function kitEffect_MissileRepulsion(player: player):
-	kitMsg({_player}, "§e投擲物を消滅させる光線§5を発射します...")
-	kitSound_MissileRepulsion_Launch({_player})
-	set {_loc} to location of head of {_player}
-	set {_ok} to true
+local function kitEffect_MistifyHaze(player: player):
+	kitMsg({_player}, "§d投擲物を消滅させる霧玉§5を発射します...")
+	kitParticle_MistifyHaze_Launch({_player})
+	set {_baseloc} to location of head of {_player}
 	set {_m} to 0
-	while {_ok} is true:
-		add 1 to {_m}
-		kitParticle_MissileRepulsion_Beam({_loc}, {_m})
-		if {_m} > 15:
-			set {_ok} to false
-			continue
-		set {_effloc} to location {_m} meters in front of {_loc}
-		loop all projectiles in radius 1.5 around {_effloc}:
-			{_target} is not set
+	loop 200 times:
+		add 0.15 to {_m}
+		set {_effloc} to location {_m} meters in front of {_baseloc}
+		kitParticle_MistifyHaze_Bulb({_effloc})
+		loop all projectiles in radius 10 around {_effloc}:
 			set {_shooter} to shooter of loop-projectile
 			kitCheckTeam({_shooter}, {_player}, false) is true
-			set {_target} to {_shooter}
-			set {_projectile} to location of loop-projectile
+			set {_loc.proj} to location of loop-projectile
 			delete loop-projectile
-		if {_target} is set:
-			set {_ok} to false
-			continue
-	if {_target} is not set:
-		stop
-	kitParticle_MissileRepulsion_Hit({_projectile})
-	wait a tick
-	kitEffect_MissileRepulsion_Hit({_player}, {_target}, {_projectile})
+			kitEffect_MistifyHaze_Hit({_player}, {_shooter})
+			kitParticle_MistifyHaze_Beam({_effloc}, {_loc.proj}, location 1 meter above {_shooter})
+		wait a tick
+	kitParticle_MistifyHaze_Vanish({_effloc})
 
-local function kitEffect_MissileRepulsion_Hit(player: player, target: entity, loc.proj: location):
-	kitMsg({_player}, "§f§l鉄槌!")
-	message formatted "§b投擲物§dが消滅した!" to {_target}
-	set {_loc.tar} to location of {_target}
-	set {_dis} to round(distance between {_loc.tar} and {_loc.proj})
-	set {_m} to 0
-	loop {_dis} times:
-		add 1 to {_m}
-		kitParticle_MissileRepulsion_Charge({_loc.proj}, {_loc.tar}, {_m})
-		if mod({_m}, 10) is 0:
-			wait a tick
-	kitParticle_MissileRepulsion_Explode({_loc.tar})
-	wait 10 ticks
-	loop all entities in radius 7 around {_loc.tar}:
-		kitCheckTeam(loop-entity, {_player}, false) is true
-		kitDamage({_player}, loop-entity, 3)
-		if checkEntityType(loop-entity, player) is true:
-			kitPalsy(loop-entity, 5 seconds)
+local function kitEffect_MistifyHaze_Hit(player: player, target: player):
+	send action bar "§d§l神秘の薄霧§eが§b投擲物§eを追跡してきた!" to {_target}
+	kitDamage({_player}, {_target}, 2)
+	kitPalsy({_target}, 5 seconds)
 
 
 
-local function kitParticle_MissileRepulsion_Beam(baseloc: location, meter: number):
-	set {_effloc} to location {_meter} meters in front of {_baseloc}
-	set {_arad} to 72 * {_meter}
+local function kitParticle_MistifyHaze_Launch(player: player):
+	playSound("entity.illusioner.cast_spell", 1, 1.25, {_player})
+	set {_baseloc} to location 1 meter in front of head of {_player}
 	loop 15 times:
-		set {_rad} to {_arad} + 24 * loop-number
-		set {_el} to {_effloc}
-		set {_m1} to {_el}
-		set pitch of {_m1} to pitch of {_m1} - 90
-		set {_test1} to 1.5 * cos({_rad})
-		set {_t1} to location {_test1} meters in front of {_m1}
-		set {_m2} to {_el}
-		set pitch of {_m2} to 0
-		set {_test2} to 1.5 * sin({_rad})
-		set {_t2} to location {_test2} meters to the right of {_m2}
-		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
-		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
-		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
-		spawnParticle_DustTransition(rgb(77, 67, 152), rgb(0, 0, 0), 1.5, {_el})
+		set {_el} to {_baseloc}
+		add a random number between -1.5 and 1.5 to x-pos of {_el}
+		add a random number between -1.5 and 1.5 to y-pos of {_el}
+		add a random number between -1.5 and 1.5 to z-pos of {_el}
+		set {_rn} to a random integer between 1 and 3
+		if {_rn} is 1:
+			spawnParticle_BlockData(falling_dust, purple wool, {_el})
+		else if {_rn} is 2:
+			spawnParticle_DustTransition(rgb(103, 69, 152), rgb(73, 55, 89), 1.5, {_el})
+		else:
+			spawnParticle_Dust(rgb(165, 154, 202), 0.6, {_el})
+	loop 10 times:
+		set {_el} to {_baseloc}
+		spawnParticle_Vector(witch, randomVector(), 0.6, {_el})
 
-local function kitParticle_MissileRepulsion_Hit(loc: location):
-	playSound("entity.ender_eye.death", 1, 1.5, {_loc})
-	loop 30 times:
-		spawnParticle_Vector(end_rod, randomVector(3), 1, {_loc})
-
-local function kitParticle_MissileRepulsion_Charge(from: location, to: location, meter: number):
-	set {_vector} to setVector({_from}, {_to})
-	set {_baseloc} to setDirToVec({_from}, {_vector})
-	set {_effbaseloc} to location {_meter} meters in front of {_baseloc}
-	playSound("entity.ender_dragon.growl", 0.7, 2, {_effbaseloc})
-	set {_rad} to 0
-	loop 20 times:
-		add 18 to {_rad}
-		set {_el} to {_effbaseloc}
-		set {_m1} to {_el}
-		set pitch of {_m1} to pitch of {_m1} - 90
-		set {_test1} to 3 * cos({_rad})
-		set {_t1} to location {_test1} meters in front of {_m1}
-		set {_m2} to {_el}
-		set pitch of {_m2} to 0
-		set {_test2} to 3 * sin({_rad})
-		set {_t2} to location {_test2} meters to the right of {_m2}
-		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
-		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
-		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
-		spawnParticle(witch, {_el})
-
-local function kitParticle_MissileRepulsion_Explode(loc: location):
-	playSound("entity.ender_dragon.flap", 1, 1.15, {_loc})
-	set {_efflocs::*} to particleLocatoin_Sphere({_loc}, 10, 7)
-	loop {_efflocs::*}:
+local function kitParticle_MistifyHaze_Bulb(loc: location):
+	chance of 10%:
+		playSound("block.amethyst_block.chime", 1, a random number between 1.5 and 2, {_loc})
+	spawnParticle(witch, {_loc})
+	set {_bulb::*} to particleLocation_Sphere({_loc}, 5, 1.5, 10)
+	loop {_bulb::*}:
 		set {_el} to loop-value
-		set {_vector} to setVector({_loc}, {_el})
-		spawnParticle_Vector(wax_off, {_vector}, 0.75, {_loc})
-	wait 10 ticks
-	playSound("entity.enderman.hurt", 1, 0.5, {_loc})
-	loop all blocks in radius 7 around {_loc}:
-		loop-block is passable
-		chance of 10%:
-			set {_num} to a random integer between 3 and 5
-			loop {_num} times:
-				spawnParticle_Vector(wax_on, randomVector(), 1.5, location of loop-block)
+		set {_rn} to a random integer between 1 and 3
+		if {_rn} is 1:
+			spawnParticle_Dust(rgb(144, 121, 173), 2, {_el})
+		else if {_rn} is 2:
+			spawnParticle_Dust(rgb(101, 49, 142), 2, {_el})
+		else:
+			spawnParticle_Dust(rgb(116, 83, 153), 2, {_el})
+	loop 3 times:
+		set {_el} to {_loc}
+		set yaw of {_el} to a random number between 0 and 360
+		set pitch of {_el} to a random number between -90 and 90
+		set {_m} to a random number between 0 and 10
+		set {_el} to location {_m} meters in front of {_el}
+		set {_rn} to a random integer between 1 and 2
+		if {_rn} is 1:
+			spawnParticle_BlockData(falling_dust, amethyst block, {_el})
+		else:
+			spawnParticle_BlockData(falling_dust, purple wool, {_el})
 
+local function kitParticle_MistifyHaze_Beam(base: location, proj: location, targ: location):
+	playSound("block.respawn_anchor.charge", 1, 1.85, {_proj})
+	playSound("block.respawn_anchor.deplete", 1, 2, {_targ})
+	# base - proj
+	set {_beam.proj} to setDirToVec({_base}, setVector({_base}, {_proj}))
+	set {_distance} to distance between {_base} and {_proj}
+	set {_loopnum} to round({_distance} * 10)
+	loop {_loopnum} times:
+		set {_el} to location loop-number * 0.1 meters in front of {_beam.proj}
+		spawnParticle(witch, {_el})
+	# proj - targ
+	set {_beam.targ} to setDirToVec({_proj}, setVector({_proj}, {_targ}))
+	set {_distance} to distance between {_proj} and {_targ}
+	set {_loopnum} to round({_distance} * 10)
+	loop {_loopnum} times:
+		set {_el} to location loop-number * 0.1 meters in front of {_beam.targ}
+		spawnParticle(witch, {_el})
+	set {_locs::*} to particleLocation_SpiralV({_beam.targ}, 10, 2.5, 1, {_distance})
+	loop {_locs::*}:
+		set {_el} to loop-value
+		set {_rn} to a random integer between 1 and 5
+		if {_rn} is 1:
+			spawnParticle_Dust(rgb(103, 69, 152), 1.5, {_el})
+		else if {_rn} is 2:
+			spawnParticle_Dust(rgb(112, 88, 163), 1.25, {_el})
+		else if {_rn} is 3:
+			spawnParticle_Dust(rgb(165, 154, 202), 1, {_el})
+		else if {_rn} is 4:
+			spawnParticle_DustTransition(rgb(116, 50, 92), rgb(70, 14, 68), 1.5, {_el})
+		else:
+			spawnParticle_DustTransition(rgb(85, 41, 91), rgb(70, 14, 68), 1.25, {_el})
 
-
-local function kitSound_MissileRepulsion_Launch(player: player):
-	playSound("entity.enderman.ambient", 1, 0.7, {_player})
+local function kitParticle_MistifyHaze_Vanish(loc: location):
+	playSound("entity.zombie.infect", 1, 1.35, {_loc})
+	loop 10 times:
+		set {_el} to {_loc}
+		add a random number between -1 and 1 to x-pos of {_el}
+		add a random number between -1 and 1 to y-pos of {_el}
+		add a random number between -1 and 1 to z-pos of {_el}
+		spawnParticle_BlockData(falling_dust, black wool, {_el})
