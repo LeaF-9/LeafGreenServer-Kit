@@ -1,33 +1,74 @@
 # Moon Luster
 
 function kitSkill_Healer_7(player: player):
-	if {Kit-Odo::%{_player}%} >= 30:
-		toolCT({_player}, "Healer", 7)
-		subtract 30 from {Kit-Odo::%{_player}%}
-		kitMsg({_player}, "<##fcc800>月の光が皆を癒やします...")
-		apply glowing 1 to {_player} for 5 seconds
-		kitFreeze({_player}, 5 seconds, false)
-		loop 5 times:
-			playSound("block.beacon.ambient", 1, 1, {_player})
-			loop all players:
-				metadata value "gametype" of loop-player is "Kit"
-				loop-player is not {_player}
-				{team::%loop-player%} is {team::%{_player}%}
-				{Stats.%loop-player%::NoSupport} is not set
-				setSupporter(loop-player, {_player})
-				kitHeal(loop-player, 1)
-			set {_count} to 20
-			set {_baseloc} to location of {_player}
-			loop 20 times:
-				set {_effcount} to 11 - round({_count} / 2)
-				set {_effwide} to 10 - ({_count} / 2)
-				set {_effwideminus} to {_effwide} * -1
-				loop {_effcount} times:
-					set {_loc} to location {_count} meters above {_baseloc}
-					add a random number between {_effwideminus} and {_effwide} to x-coordinate of {_loc}
-					add a random number between {_effwideminus} and {_effwide} to z-coordinate of {_loc}
-					spawnParticle(end_rod, {_loc})
-				subtract 1 from {_count}
-				wait a tick
-	else:
-		kitMsg({_player}, "§cオドが足りません! 必要オドは §350 §cです!")
+	if {Kit-Odo::%{_player}%} < 30:
+		kitMsg({_player}, "§cオドが足りません! 必要オドは §330 §cです!")
+		stop
+	toolCT({_player}, "Healer", 7)
+	kitEffect_MoonLuster({_player})
+
+
+
+local function kitEffect_MoonLuster(player: player):
+	kitSound_MoonLuster_Launch({_player})
+	subtract 30 from {Kit-Odo::%{_player}%}
+	set {_baseloc} to location of head of {_player}
+	set {_m} to 0
+	set {_running} to true
+	while {_running} is true:
+		add 0.1 to {_m}
+		if {_m} > 100:
+			stop
+		set {_el} to location {_m} meters in front of {_baseloc}
+		kitParticle_MoonLuster_Beam({_el})
+		if block at {_el} is not passable:
+			set {_loc} to location 0.1 meters behind {_el}
+			set {_running} to false
+			continue
+		if mod({_m}, 10) is 0:
+			wait a tick
+	kitEffect_MoonLuster_Moonlight({_player}, {_loc})
+
+local function kitEffect_MoonLuster_Moonlight(player: player, loc: location):
+	kitMsg({_player}, "<##fcc800>月光が傷を癒やします...")
+	loop 200 times:
+		loop all players in radius 10 around {_loc}:
+			loop-player is not {_player}
+			kitCheckTeam(loop-player, {_player}, true) is true
+			kitHeal(loop-player, 0.1, 1)
+			applyEffect(loop-player, glowing, 1, 1 tick)
+		if mod(201 - loop-number, 20) is 0:
+			kitParticle_MoonLuster_Moonlight({_loc})
+		wait a tick
+
+
+
+local function kitParticle_MoonLuster_Beam(loc: location):
+	spawnParticle(end_rod, {_loc})
+	loop 3 times:
+		chance of 10%:
+			set {_el} to {_loc}
+			add a random number between -1 and 1 to x-pos of {_el}
+			add a random number between -1 and 1 to y-pos of {_el}
+			add a random number between -1 and 1 to z-pos of {_el}
+			spawnParticle_BlockData(falling_dust, yellow wool, {_el})
+
+local function kitParticle_MoonLuster_Moonlight(baseloc: location):
+	playSound("block.beacon.ambient", 1.5, 1, {_baseloc})
+	set {_count} to 20
+	loop 20 times:
+		set {_effcount} to 11 - round({_count} / 2)
+		set {_effwide} to 10 - ({_count} / 2)
+		set {_effwideminus} to {_effwide} * -1
+		loop {_effcount} times:
+			set {_loc} to location {_count} meters above {_baseloc}
+			add a random number between {_effwideminus} and {_effwide} to x-coordinate of {_loc}
+			add a random number between {_effwideminus} and {_effwide} to z-coordinate of {_loc}
+			spawnParticle(end_rod, {_loc})
+		subtract 1 from {_count}
+		wait a tick
+
+
+
+local function kitSound_MoonLuster_Launch(player: player):
+	playSound("block.beacon.activate", 1, 2, {_player})
