@@ -1,0 +1,50 @@
+# weapon-name: Flute Rapier
+
+on damage:
+	attacker exists
+	{Class::%attacker%} is "Bard"
+	if attacker is sneaking:
+		kitEffect_FluteRapier(attacker, victim)
+		stop
+	kitSound_FluteRapier_Normal(attacker)
+
+
+
+local function kitEffect_FluteRapier(player: player, target: entity):
+	kitSound_FluteRapier_Full({_player})
+	kitParticle_FluteRapier({_target})
+	applyEffect({_target}, slowness, 1, 3 seconds, true)
+
+
+
+local function kitParticle_FluteRapier(entity: entity):
+	set {_baseloc} to location of {_entity}
+	loop 10 times:
+		set {_el} to {_baseloc}
+		add a random number between -1 and 1 to x-pos of {_el}
+		add a random number between 1.5 and 2 to y-pos of {_el}
+		add a random number between -1 and 1 to z-pos of {_el}
+		spawnParticle_Note("blue", {_el})
+
+
+
+local function kitSound_FluteRapier_Normal(player: player):
+	set {_yaw} to yaw of location of {_player}
+	set {_pitch} to {_yaw} / 24 * 0.1 + 0.5
+	playSound("block.note_block.flute", 1, {_pitch}, {_player})
+
+local function kitSound_FluteRapier_Full(player: player):
+	loop 3 times:
+		if loop-number is 1:
+			set {_pitch.high} to 2
+			set {_pitch.mid} to 1.78
+			set {_pitch.low} to 1.33
+		else if loop-number is 2:
+			set {_pitch.high} to 1.78
+			set {_pitch.mid} to 1.33
+			set {_pitch.low} to 1
+		else:
+			set {_pitch.high} to 1.33
+			set {_pitch.mid} to 1
+			set {_pitch.low} to 0.89
+		wait a tick
