@@ -2,7 +2,11 @@
 
 on damage:
 	attacker exists
+	metadata value "gametype" of attacker is "Kit"
+	damage was caused by attack
 	{Class::%attacker%} is "Bard"
+	set {_tool} to attacker's tool
+	kitItemAllChecker({_tool}, "Bard", "Weapon.main", 1) is true
 	if attacker is sneaking:
 		kitEffect_FluteRapier(attacker, victim)
 		stop
@@ -47,4 +51,7 @@ local function kitSound_FluteRapier_Full(player: player):
 			set {_pitch.high} to 1.33
 			set {_pitch.mid} to 1
 			set {_pitch.low} to 0.89
-		wait a tick
+		playSound("block.note_block.flute", 1, {_pitch.high}, {_player})
+		playSound("block.note_block.flute", 1, {_pitch.mid}, {_player})
+		playSound("block.note_block.flute", 1, {_pitch.low}, {_player})
+		wait 2 ticks
