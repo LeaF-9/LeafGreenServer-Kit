@@ -68,32 +68,64 @@ function kitTimerBard(player: player):
 		if {_potiontype} is regeneration:
 			set {_ally} to true
 			set {_color} to "red"
+			set {_pitch.high} to 1.59
+			set {_pitch.mid} to 1.33
+			set {_pitch.low} to 1.06
 		else if {_potiontype} is resistance:
 			set {_ally} to true
 			set {_color} to "yellow"
+			set {_pitch.high} to 1.78
+			set {_pitch.mid} to 1.41
+			set {_pitch.low} to 1.06
 		else if {_potiontype} is speed:
 			set {_ally} to true
 			set {_color} to "lightblue"
+			set {_pitch.high} to 1.89
+			set {_pitch.mid} to 1.41
+			set {_pitch.low} to 1.19
 		else if {_potiontype} is poison:
 			set {_ally} to false
 			set {_color} to "green"
+			set {_pitch.high} to 2
+			set {_pitch.mid} to 1.5
+			set {_pitch.low} to 1.33
 		else if {_potiontype} is mining fatigue:
 			set {_ally} to false
 			set {_color} to "purple"
+			set {_pitch.high} to 2
+			set {_pitch.mid} to 1.78
+			set {_pitch.low} to 1.33
 		else if {_potiontype} is slowness:
 			set {_ally} to false
 			set {_color} to "blue"
+			set {_pitch.high} to 1.78
+			set {_pitch.mid} to 1.33
+			set {_pitch.low} to 1.19
 		set {_tier} to 1
 		if {Stats.%{_player}%::Fortissimo} is true:
 			set {_tier} to 2
+		kitParticle_MelodyEffect_Range({_player}, {_color})
+		delete {_play}
 		loop all players in radius 10 around {_player}:
 			kitCheckTeam(loop-player, {_player}, {_ally}) is true
 			loop-player does not have potion {_potiontype}
 			applyEffect(loop-player, {_potiontype}, {_tier}, 5 seconds, false, "none")
-			kitParticle_MelodyEffect(loop-player, {_color})
+			kitParticle_MelodyEffect_Player(loop-player, {_color})
+			if {_play} is not set:
+				set {_play} to true
+				kitSound_MelodyEffect({_player}, {_pitch.low}, {_pitch.mid}, {_pitch.high})
 		wait a second
 
-local function kitParticle_MelodyEffect(player: player, color: text):
+local function kitParticle_MelodyEffect_Range(player: player, color: text):
+	set {_baseloc} to location 1 meter above {_player}
+	loop 36 times:
+		set {_effloc} to {_baseloc}
+		set {_rad} to 10 * loop-number
+		add 10 * sin({_rad}) to x-pos of {_effloc}
+		add 10 * cos({_rad}) to z-pos of {_effloc}
+		spawnParticle_Note({_color}, {_effloc}, {_player})
+
+local function kitParticle_MelodyEffect_Player(player: player, color: text):
 	if {Kit-Invisible::%{_player}%} is set:
 		stop
 	set {_baseloc} to location of {_player}
@@ -104,3 +136,8 @@ local function kitParticle_MelodyEffect(player: player, color: text):
 		add 0.5 * sin({_rad}) to x-pos of {_effloc}
 		add 0.5 * cos({_rad}) to z-pos of {_effloc}
 		spawnParticle_Note({_color}, {_effloc})
+
+local function kitSound_MelodyEffect(player: player, pitch.1: number, pitch.2: number, pitch.3: number):
+	loop 3 times:
+		playSound("block.note_block.harp", 1, {_pitch.%loop-number%}, {_player})
+		wait a tick
