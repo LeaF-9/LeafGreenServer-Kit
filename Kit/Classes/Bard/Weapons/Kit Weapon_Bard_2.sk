@@ -1,0 +1,105 @@
+# weapon-name: Arcus Harp
+
+function kitWeapon_Bard_2(player: player):
+	toolItemCT({_player}, "Bard", 2)
+	kitEffect_ArcusHarp({_player})
+
+
+
+local function kitEffect_ArcusHarp(player: player):
+	set {_baseloc} to location of head of {_player}
+	set {_m} to 0
+	set {_gravity} to vector(0, -0.15, 0)
+	set {_ok} to true
+	kitSound_ArcusHarp({_player}, {_baseloc}, 0)
+	while {_ok} is true:
+		if {_m} > 100:
+			delete {_ok}
+			continue
+		if block at {_baseloc} is not passable:
+			delete {_ok}
+			continue
+		set {_vector} to setVector({_baseloc}, location 100 meters in front of {_baseloc}, 100)
+		set {_vector} to {_vector} ++ {_gravity}
+		set {_baseloc} to setDirToVec({_baseloc}, {_vector})
+		set {_el} to location 0.1 meters in front of {_baseloc}
+		set {_baseloc} to {_el}
+		add 0.1 to {_m}
+		loop all entities in radius 3 around {_loc}:
+			kitCheckTeam({_player}, loop-entity, false, true) is true
+			{_hit.%id of loop-entity%} is not set
+			set {_loc.entity} to location 1 meter above loop-entity
+			set {_distance} to distance between {_loc} and {_loc.entity}
+			if {_distance} <= 1:
+				set {_hit.%id of loop-entity%} to true
+				kitDamage({_player}, loop-entity, 2)
+				kitParticle_ArcusHarp_Hit({_player}, loop-entity)
+		if mod({_m}, 1) is 0 or 1:
+			kitParticle_ArcusHarp({_el}, {_m})
+		if mod({_m}, 14) is 0 or 14:
+			add 1 to {_pitch.value}
+			kitSound_ArcusHarp({_player}, {_el}, {_pitch.value})
+		if mod({_m}, 2) is 0 or 2:
+			wait a tick
+
+
+
+local function kitParticle_ArcusHarp(loc: location, value: number):
+	set {_yaw} to yaw of {_loc} / 360
+	set {_truevalue} to {_yaw} + {_value} / 100
+	set {_circles::*} to particleLocation_CircleV({_loc}, 10, 1)
+	loop {_circles::*}:
+		spawnParticle_NoteOption({_truevalue}, loop-value)
+
+local function kitParticle_ArcusHarp_Hit(player: player, entity: entity):
+	playSound("block.note_block.bell", 1, 0.5, {_entity})
+	playSound("block.note_block.bell", 1, 1, {_player}, true)
+	set {_yaw} to yaw of {_entity} / 360
+	loop 10 times:
+		set {_el} to location of {_entity}
+		add a random number between -1 and 1 to x-pos of {_el}
+		add a random number between 1 and 2 to y-pos of {_el}
+		add a random number between -1 and 1 to z-pos of {_el}
+		spawnParticle_NoteOption({_yaw}, {_el})
+
+
+local function kitSound_ArcusHarp(player: player, loc: location, value: number):
+	if {_value} is 0:
+		set {_pitch.high} to 2
+		set {_pitch.mid} to 1.68
+		set {_pitch.low} to 1.33
+	else if {_value} is 1:
+		set {_pitch.high} to 2
+		set {_pitch.mid} to 1.68
+		set {_pitch.low} to 1.33
+	else if {_value} is 2:
+		set {_pitch.high} to 2
+		set {_pitch.mid} to 1.78
+		set {_pitch.low} to 1.33
+	else if {_value} is 3:
+		set {_pitch.high} to 2
+		set {_pitch.mid} to 1.78
+		set {_pitch.low} to 1.33
+	else if {_value} is 4:
+		set {_pitch.high} to 2
+		set {_pitch.mid} to 1.5
+		set {_pitch.low} to 1.33
+	else if {_value} is 5:
+		set {_pitch.high} to 2
+		set {_pitch.mid} to 1.5
+		set {_pitch.low} to 1.33
+	else if {_value} is 6:
+		set {_pitch.high} to 2
+		set {_pitch.mid} to 1.68
+		set {_pitch.low} to 1.33
+	else:
+		set {_pitch.high} to 2
+		set {_pitch.mid} to 1.68
+		set {_pitch.low} to 1.33
+	playSound("block.note_block.harp", 1, {_pitch.high}, {_loc})
+	playSound("block.note_block.harp", 1, {_pitch.mid}, {_loc})
+	playSound("block.note_block.harp", 1, {_pitch.low}, {_loc})
+	playSound("block.note_block.harp", 0.5, {_pitch.high}, {_player}, true)
+	playSound("block.note_block.harp", 0.5, {_pitch.mid}, {_player}, true)
+	playSound("block.note_block.harp", 0.5, {_pitch.low}, {_player}, true)
+
