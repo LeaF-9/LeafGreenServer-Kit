@@ -3,3 +3,90 @@
 function kitWeapon_Bard_3(player: player):
 	toolItemCT({_player}, "Bard", 3)
 	kitEffect_RouladeChime({_player})
+
+local function kitEffect_RouladeChime(player: player):
+	set {_baseloc} to location of head of {_player}
+	kitParticle_RouladeChime_Launch({_baseloc})
+	loop 200 times:
+		set {_el} to location 0.05 * loop-number meters in front of {_baseloc}
+		kitParticle_RouladeChime_Sphere({_el})
+		if mod(200 - loop-number, 20) is 0 or 20:
+			kitEffect_RouladeChime_Beam({_player}, {_el})
+		wait a tick
+
+local function kitEffect_RouladeChime_Beam(player: player, loc: location):
+	set {_dis} to 100
+	loop all players in radius 10 around {_loc}:
+		kitCheckTeam({_player}, loop-player, false) is true
+		set {_playerloc} to location 1 meter above loop-player
+		set {_d} to distance between {_loc} and {_playerloc}
+		if {_d} < {_dis}:
+			set {_dis} to {_d}
+			set {_target} to loop-player
+	if {_target} is not set:
+		stop
+	playSound("block.amethyst_block.chime", 1, 1.5, {_loc})
+	set {_beamloc} to setDirToVec({_loc}, setVector({_loc}, location 1 meter above {_target}))
+	loop 100 times:
+		set {_el} to location 0.1 * loop-number meters in front of {_beamloc}
+		kitParticle_RouladeChime_Beam({_el})
+		set {_hit::*} to checkHitEntities({_el})
+		loop {_hit::*}:
+			set {_t} to loop-value-2
+			{_damaged.%id of {_t}%} is not set
+			set {_damaged.%id of {_t}%} to true
+			kitDamage({_player}, {_t}, 1)
+			kitParticle_RouladeChime_Hit({_t})
+		if mod(loop-number, 5) is 0 or 5:
+			wait a tick
+
+
+
+local function kitParticle_RouladeChime_Launch(loc: location):
+	playSound("block.note_block.chime", 0.75, 1.78, {_loc})
+	playSound("block.note_block.chime", 0.75, 1.41, {_loc})
+	playSound("block.note_block.chime", 0.75, 1.19, {_loc})
+	set {_baseloc} to location 1 meters in front of {_loc}
+	set {_rad} to 0
+	set {_m} to 0
+	set {_count} to 10
+	loop 5 times:
+		add 0.2 to {_m}
+		add 5 to {_count}
+		set {_rad} to 0
+		loop {_count} times:
+			add 360 / {_count} to {_rad}
+			set {_el} to {_baseloc}
+			set {_m1} to {_el}
+			set pitch of {_m1} to pitch of {_m1} - 90
+			set {_test1} to {_m} * cos({_rad})
+			set {_t1} to location {_test1} meters in front of {_m1}
+			set {_m2} to {_el}
+			set pitch of {_m2} to 0
+			set {_test2} to {_m} * sin({_rad})
+			set {_t2} to location {_test2} meters to the right of {_m2}
+			set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
+			set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
+			set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+			spawnParticle_DustTransition(rgb(244, 179, 194), rgb(255, 255, 255), 0.5, {_el})
+		wait a tick
+
+local function kitParticle_RouladeChime_Sphere(loc: location):
+	spawnParticle_Note("pink", {_loc})
+	set {_sphere::*} to particleLocation_Sphere({_loc}, 5, 1, 30)
+	loop {_sphere::*}:
+		set {_el} to loop-value
+		spawnParticle_Dust(rgb(235, 110, 165), 0.75, {_el})
+
+local function kitParticle_RouladeChime_Beam(loc: location):
+	spawnParticle_DustTransition(rgb(245, 177, 170), rgb(233, 82, 149), 1, {_loc})
+
+local function kitParticle_RouladeChime_Hit(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+	playSound("block.note_block.bell", 1, 1.41, {_baseloc})
+	loop 5 times:
+		set {_el} to {_baseloc}
+		add a random number between -1 and 1 to x-pos of {_el}
+		add a random number between -1 and 1 to y-pos of {_el}
+		add a random number between -1 and 1 to z-pos of {_el}
+		spawnParticle_Note("purple", {_el})
