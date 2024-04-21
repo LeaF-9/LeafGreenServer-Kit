@@ -12,6 +12,7 @@ local function kitEffect_HarmonyNotes(player: player):
 	set {_targetloc} to location 10 meters in front of {_playerloc}
 	set {_vector.notes} to setVector({_playerloc}, {_targetloc})
 	set {_loc.notes} to {_playerloc}
+	kitParticle_HarmonyNotes_Launch({_loc.notes})
 	loop 200 times:
 		# vector adjusting
 		set {_loc.temp} to location 0.1 meters in front of {_loc.notes}
@@ -59,6 +60,7 @@ local function kitEffect_HarmonyNotes(player: player):
 		set {_loc.notes} to setDirToVec({_loc.notes}, {_vector.notes})
 		# location deciding
 		set {_loc.notes} to location 0.1 meters in front of {_loc.notes}
+		kitParticle_HarmonyNotes_Sphere({_loc.notes})
 		# effects
 		set {_tier} to 1
 		if {Stats.%{_player}%::Fortissimo} is true:
@@ -71,4 +73,36 @@ local function kitEffect_HarmonyNotes(player: player):
 				add {_player} to {damager.%loop-player%::*}
 				set {_potiontype} to poison
 			applyEffect(loop-player, {_potiontype}, {_tier}, 0.3 seconds)
+		wait a tick
+
+
+
+local function kitParticle_HarmonyNotes_Launch(loc: location):
+	kitSound_HarmonyNotes_Launch({_loc})
+	loop 10 times:
+		set {_el} to {_loc}
+		set {_rn} to dice(3)
+		if {_rn} is 1:
+			spawnParticle_Dust(rgb(248, 229, 140), 1.25, {_el})
+		else if {_rn} is 2:
+			spawnParticle_Dust(rgb(254, 242, 99), 0.75, {_el})
+		else:
+			spawnParticle_DustTransition(rgb(248, 181, 0), rgb(247, 241, 223), 1, {_el})
+	loop 10 times:
+		set {_el} to {_loc}
+		set {_rn} to dice(2)
+		if {_rn} is 1:
+			spawnParticle_BlockData(falling_dust, yellow wool, {_el})
+		else:
+			spawnParticle_BlockData(falling_dust, yellow terracotta, {_el})
+
+local function kitSound_HarmonyNotes_Launch(loc: location):
+	loop 3 times:
+		if loop-number is 1:
+			set {_pitch} to 1.06
+		else if loop-number is 2:
+			set {_pitch} to 1.78
+		else:
+			set {_pitch} to 1.41
+		playSound("block.note_block.chime", 1, {_pitch}, {_loc})
 		wait a tick
