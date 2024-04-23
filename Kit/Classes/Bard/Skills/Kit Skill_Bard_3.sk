@@ -9,6 +9,77 @@ function kitSkill_Bard_3(player: player):
 local function kitEffect_Fortissimo(player: player):
 	kitMsg({_player}, "§a§l音の効果を高めます!")
 	set {Stats.%{_player}%::Fortissimo} to true
+	kitParticle_Fortissimo({_player})
+	kitParticle_Fortissimo_Loop({_player})
 	wait 10 seconds
 	delete {Stats.%{_player}%::Fortissimo}
 	kitMsg({_player}, "§aFortissimo §2の効果が切れました")
+
+
+function kitParticle_Fortissimo(player: player, num: number = 10, sound: boolean = true):
+	if {_sound} is true:
+		kitSound_Fortissimo(location of {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop {_num} times:
+		set {_el} to {_baseloc}
+		add a random number between -1 and 1 to x-pos of {_el}
+		add a random number between -1 and 1 to y-pos of {_el}
+		add a random number between -1 and 1 to z-pos of {_el}
+		spawnParticle_NoteOption(0.78, {_el})
+
+local function kitParticle_Fortissimo_Loop(player: player):
+	set {_rad} to 0
+	loop 200 times:
+		if {Stats.%{_player}%::Fortissimo} is not set:
+			stop
+		set {_baseloc} to location 1 meter above {_player}
+		add 36 to {_rad}
+		set {_el} to {_baseloc}
+		add 0.5 * sin({_rad}) to x-pos of {_el}
+		add 0.5 * cos({_rad}) to z-pos of {_el}
+		spawnParticle_NoteOption(0.78, {_el})
+		wait a tick
+
+
+
+local function kitSound_Fortissimo(loc: location):
+	set {_dice} to dice(7)
+	if {_dice} is 1:  # Aaug7
+		set {_pitch.1} to 1.06
+		set {_pitch.2} to 1.19
+		set {_pitch.3} to 1.5
+		set {_pitch.4} to 1.89
+	else if {_dice} is 2:  # Baug7
+		set {_pitch.1} to 1.06
+		set {_pitch.2} to 1.19
+		set {_pitch.3} to 1.33
+		set {_pitch.4} to 1.68
+	else if {_dice} is 3:  # Caug7
+		set {_pitch.1} to 1.12
+		set {_pitch.2} to 1.26
+		set {_pitch.3} to 1.41
+		set {_pitch.4} to 1.78
+	else if {_dice} is 4:  # Daug7
+		set {_pitch.1} to 1.26
+		set {_pitch.2} to 1.41
+		set {_pitch.3} to 1.59
+		set {_pitch.4} to 2
+	else if {_dice} is 5:  # Eaug7
+		set {_pitch.1} to 1.12
+		set {_pitch.2} to 1.41
+		set {_pitch.3} to 1.59
+		set {_pitch.4} to 1.78
+	else if {_dice} is 6:  # Faug7
+		set {_pitch.1} to 1.19
+		set {_pitch.2} to 1.5
+		set {_pitch.3} to 1.68
+		set {_pitch.4} to 1.89
+	else:  # Gaug7
+		set {_pitch.1} to 1.06
+		set {_pitch.2} to 1.33
+		set {_pitch.3} to 1.68
+		set {_pitch.4} to 1.89
+	playSound("block.note_block.pling", 1, {_pitch.1}, {_loc})
+	playSound("block.note_block.pling", 1, {_pitch.2}, {_loc})
+	playSound("block.note_block.pling", 1, {_pitch.3}, {_loc})
+	playSound("block.note_block.pling", 1, {_pitch.4}, {_loc})
