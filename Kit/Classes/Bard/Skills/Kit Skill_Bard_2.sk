@@ -8,7 +8,7 @@ function kitSkill_Bard_2(player: player):
 
 local function kitEffect_HarmonyNotes(player: player):
 	kitMsg({_player}, "§d調和を保つ音符を発射します...")
-	set {_playerloc} to location of head of player
+	set {_playerloc} to location of head of {_player}
 	set {_targetloc} to location 10 meters in front of {_playerloc}
 	set {_vector.notes} to setVector({_playerloc}, {_targetloc})
 	set {_loc.notes} to {_playerloc}
@@ -40,22 +40,31 @@ local function kitEffect_HarmonyNotes(player: player):
 			set y of {_vector.notes} to y of {_vector.notes} * -1
 			if {_direction::floor} is true:
 				set y of {_vector.notes} to 0
+			else:
+				kitParticle_HarmonyNotes_Wave({_loc.temp}, location 0.5 meters above {_loc.temp})
 		else if {_direction::floor} is true:
 			set y of {_vector.notes} to y of {_vector.notes} * -1
+			kitParticle_HarmonyNotes_Wave({_loc.temp}, location 0.5 meters below {_loc.temp})
 		# north-south (z)
 		if {_direction::north} is true:
 			set z of {_vector.notes} to z of {_vector.notes} * -1
 			if {_direction::south} is true:
 				set z of {_vector.notes} to 0
+			else:
+				kitParticle_HarmonyNotes_Wave({_loc.temp}, location 0.5 meters north of {_loc.temp})
 		else if {_direction::south} is true:
 			set z of {_vector.notes} to z of {_vector.notes} * -1
+			kitParticle_HarmonyNotes_Wave({_loc.temp}, location 0.5 meters south of {_loc.temp})
 		# east-west (x)
 		if {_direction::east} is true:
 			set x of {_vector.notes} to x of {_vector.notes} * -1
 			if {_direction::west} is true:
 				set x of {_vector.notes} to 0
+			else:
+				kitParticle_HarmonyNotes_Wave({_loc.temp}, location 0.5 meters east of {_loc.temp})
 		if {_direction::west} is true:
 			set x of {_vector.notes} to x of {_vector.notes} * -1
+			kitParticle_HarmonyNotes_Wave({_loc.temp}, location 0.5 meters west of {_loc.temp})
 		# direction deciding
 		set {_loc.notes} to setDirToVec({_loc.notes}, {_vector.notes})
 		# location deciding
@@ -65,15 +74,19 @@ local function kitEffect_HarmonyNotes(player: player):
 		set {_tier} to 1
 		if {Stats.%{_player}%::Fortissimo} is true:
 			set {_tier} to 2
-		loop all players in radius 3 around {_loc.notes}:
+		loop all players in radius 5 around {_loc.notes}:
+			set {_loc.player} to location 1 meter above loop-player
 			if kitCheckTeam(loop-player, {_player}, true) is true:
 				setSupporter(loop-player, {_player})
+				kitParticle_HarmonyNotes_Beam({_loc.notes}, {_loc.player}, true)
 				set {_potiontype} to regeneration
 			else if kitCheckTeam(loop-player, {_player}, false) is true:
+				kitParticle_HarmonyNotes_Beam({_loc.notes}, {_loc.player}, false)
 				add {_player} to {damager.%loop-player%::*}
 				set {_potiontype} to poison
-			applyEffect(loop-player, {_potiontype}, {_tier}, 0.3 seconds)
+			applyEffect(loop-player, {_potiontype}, {_tier}, 0.1 seconds)
 		wait a tick
+	kitParticle_HarmonyNotes_Explode({_loc.notes})
 
 
 
@@ -95,6 +108,64 @@ local function kitParticle_HarmonyNotes_Launch(loc: location):
 			spawnParticle_BlockData(falling_dust, yellow wool, {_el})
 		else:
 			spawnParticle_BlockData(falling_dust, yellow terracotta, {_el})
+
+local function kitParticle_HarmonyNotes_Sphere(loc: location):
+	spawnParticle_Note("yellow", {_loc})
+	set {_locs::*} to particleLocation_Sphere({_loc}, 10, 1, 30)
+	loop {_locs::*}:
+		set {_el} to loop-value
+		chance of 1%:
+			spawnParticle_BlockData(falling_dust, yellow wool, {_el})
+		spawnParticle_Dust(rgb(245, 229, 107), 0.65, {_el})
+
+local function kitParticle_HarmonyNotes_Beam(from: location, to: location, ally: boolean):
+	chance of 10%:
+		playSound("block.amethyst_block.chime", 1, 2, {_from})
+	set {_baseloc} to setDirToVec({_from}, setVector({_from}, {_to}))
+	set {_distance} to distance between {_from} and {_to}
+	loop round({_distance} * 10) times:
+		set {_el} to location loop-number * 0.1 meters in front of {_baseloc}
+		if {_ally} is true:
+			set {_color.start} to rgb(245, 229, 107)
+			set {_color.end} to rgb(255, 255, 255)
+		else:
+			set {_color.start} to rgb(82, 47, 96)
+			set {_color.end} to rgb(0, 0, 0)
+		spawnParticle_DustTransition({_color.start}, {_color.end}, 0.5, {_el})
+
+local function kitParticle_HarmonyNotes_Wave(base: location, loc: location):
+	playSound("block.end_portal_frame.fill", 1, 2, {_loc})
+	set {_baseloc} to setDirToVec({_loc}, setVector({_base}, {_loc}))
+	loop 10 times:
+		set {_els::*} to particleLocation_CircleV({_baseloc}, 3 * loop-number, 0.15 * loop-number)
+		loop {_els::*}:
+			set {_el} to loop-value-2
+			spawnParticle_Dust(rgb(255, 219, 79), 0.75, {_el})
+		wait a tick
+
+local function kitParticle_HarmonyNotes_Explode(loc: location):
+	loop 30 times:
+		set {_loc} to setDirToVec({_loc}, randomVector())
+		set {_m} to a random number between 0 and 1.5
+		set {_el} to location {_m} meters in front of {_loc}
+		set {_rn} to dice(3)
+		if {_rn} is 1:
+			spawnParticle_BlockData(falling_dust, yellow wool, {_el})
+		else if {_rn} is 2:
+			spawnParticle_BlockData(falling_dust, orange wool, {_el})
+		else:
+			spawnParticle_BlockData(falling_dust, red wool, {_el})
+	loop 3 times:
+		if loop-number is 1:
+			set {_pitch} to 1.19
+		else if loop-number is 2:
+			set {_pitch} to 0.89
+		else:
+			set {_pitch} to 0.79
+		playSound("block.note_block.flute", 1, {_pitch}, {_loc})
+		wait a tick
+
+
 
 local function kitSound_HarmonyNotes_Launch(loc: location):
 	loop 3 times:
