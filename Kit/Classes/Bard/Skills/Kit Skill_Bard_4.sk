@@ -6,6 +6,7 @@ function kitSkill_Bard_4(player: player):
 
 local function kitEffect_FanfareRhapsody(player: player):
 	kitMsg({_player}, "§4戦闘の士気を上げる§6ファンファーレ§4を送ります!")
+	kitParticle_FanfareRhapsody_Launch({_player})
 	set {_tier} to 1
 	if {Stats.%{_player}%::Fortissimo} is true:
 		set {_tier} to 2
@@ -15,10 +16,52 @@ local function kitEffect_FanfareRhapsody(player: player):
 		kitCheckTeam({_player}, loop-player, true) is true
 		message formatted "§d%{_player}% §4にファンファーレを貰った!" to loop-player
 		setSupporter(loop-player, {_player})
+		kitParticle_FanfareRhapsody_Apply(loop-player)
 		if health of loop-player is max health of loop-player:
 			set {_time} to 5 seconds
 			set health of loop-player to health of loop-player - 3
+			kitParticle_FanfareRhapsody_Explode(loop-player)
 		else:
 			set {_time} to 1 seconds
 		applyEffect(loop-player, strength, {_tier}, {_time})
-		
+
+
+
+local function kitParticle_FanfareRhapsody_Launch(player: player):
+	set {_baseloc} to location of {_player}
+	playSound("entity.blaze.shoot", 1, 0.85, {_baseloc})
+	set {_y} to 0
+	loop 11 times:
+		add 0.5 to {_y}
+		set {_rad} to 0
+		loop 12 times:
+			add 30 to {_rad}
+			set {_el} to {_baseloc}
+			add 6 * sin({_rad}) to x-pos of {_el}
+			add 6 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle(lava, {_el})
+		wait a tick
+
+local function kitParticle_FanfareRhapsody_Apply(player: player):
+	set {_y} to 0
+	set {_baserad} to 0
+	loop 11 times:
+		set {_baseloc} to location of {_player}
+		set {_rad} to {_baserad}
+		loop 4 times:
+			set {_el} to {_baseloc}
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle_DustTransition(rgb(226, 4 , 27), rgb(240, 144, 141), 2, {_el})
+			add 90 to {_rad}
+		add 30 to {_baserad}
+		add 0.2 to {_y}
+		wait a tick
+
+local function kitParticle_FanfareRhapsody_Explode(player: player):
+	playSound("entity.generic.explode", 1, 1.6, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 10 times:
+		spawnParticle_Vector(flame, randomVector(), 0.75, {_baseloc})
