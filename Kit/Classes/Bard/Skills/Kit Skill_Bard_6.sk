@@ -14,10 +14,12 @@ on damage:
 	attacker is set
 	{Stats.%attacker%::BeatClapper} is set
 	set damage to damage * 2
+	kitParticle_BeatClapper_Damage(attacker)
 
 local function kitEffect_BeatClapper(player: player, loc: location):
 	set {_now} to now
 	set {Stats.%{_player}%::BeatClapper-Time} to {_now}
+	kitParticle_BeatClapper_Place({_loc})
 	kitFakeDeleteData({_player}, "Beat Clapper")
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0f,-0.25f]", "[0.5f,1f,0.5f]")
 	kitFakeBlock({_player}, {_loc}, "minecraft:spruce_fence", {_transformation}, "Beat Clapper")
@@ -52,6 +54,7 @@ local function kitEffect_BeatClapper(player: player, loc: location):
 		kitEffect_BeatClapper_Clap({_player}, {_loc})
 		kitEffect_BeatClapper_Wave({_player}, {_loc})
 		kitEffect_BeatClapper_Lever({_player}, {_loc}, {_y})
+		kitParticle_BeatClapper_Lever({_loc})
 
 # ダメージ倍増効果
 local function kitEffect_BeatClapper_Clap(player: player, loc: location):
@@ -59,6 +62,7 @@ local function kitEffect_BeatClapper_Clap(player: player, loc: location):
 		kitCheckTeam({_player}, loop-player, true) is true
 		add loop-player to {_claps::*}
 		set {Stats.%loop-player%::BeatClapper} to {_player}
+		kitParticle_BeatClapper_Clap(loop-player)
 	wait a tick
 	loop {_claps::*}:
 		{Stats.%loop-value%::BeatClapper} is {_player}
@@ -71,6 +75,7 @@ local function kitEffect_BeatClapper_Wave(player: player, loc: location):
 		add 0.5 to {_m}
 		set {_min} to {_m} - 0.25
 		set {_max} to {_m} + 0.25
+		kitParticle_BeatClapper_Wave({_loc}, {_m})
 		loop all entities in radius 12 around {_loc}:
 			{_hit.%id of loop-entity%} is not set
 			block at location 0.1 meters below loop-entity is not passable
@@ -93,3 +98,46 @@ local function kitEffect_BeatClapper_Lever(player: player, loc: location, y: num
 		metadata value "Beat Clapper" of loop-block display is "%{_player}%"
 		metadata value "Beat Clapper-Lever" of loop-block display is "%{_player}%"
 		teleport loop-block display to {_tploc}
+
+
+
+local function kitParticle_BeatClapper_Place(loc: location):
+	playSound("block.wooden_door.open", 1, 0.7, {_loc})
+	kitParticle_BeatClapper_Rhythm({_loc})
+
+local function kitParticle_BeatClapper_Lever(loc: location):
+	playSound("item.lodestone_compass.lock", 1, 0.65, {_loc})
+	kitParticle_BeatClapper_Rhythm({_loc})
+
+local function kitParticle_BeatClapper_Rhythm(loc: location):
+	loop 10 times:
+		set {_el} to {_loc}
+		add a random number between -1 and 1 to x-pos of {_el}
+		add a random number between -1 and 1 to z-pos of {_el}
+		add a random number between 0 and 1.5 to y-pos of {_el}
+		set {_color} to a random number between 0 and 1
+		spawnParticle_NoteOption({_color}, {_el})
+
+local function kitParticle_BeatClapper_Clap(player: player):
+	playSound("block.note_block.snare", 1, 1, {_player}, true)
+	set {_el} to location 2 meters above {_player}
+	spawnParticle_Note("orange", {_el})
+
+local function kitParticle_BeatClapper_Wave(loc: location, meter: number):
+	set {_m} to {_meter} - 0.25
+	loop 11 times:
+		set {_count} to round({_m} + 1) * 10
+		set {_rad} to 0
+		set {_addrad} to 360 / {_count}
+		loop {_count} times:
+			set {_el} to {_loc}
+			add {_m} * sin({_rad}) to x-pos of {_el}
+			add {_m} * cos({_rad}) to z-pos of {_el}
+			spawnParticle_Dust(rgb(243, 152, 29), 0.75, {_el})
+			add {_addrad} to {_rad}
+		add 0.05 to {_m}
+
+local function kitParticle_BeatClapper_Damage(player: player):
+	playSound("block.respawn_anchor.set_spawn", 1, 1.85, {_player})
+	loop 10 times:
+		spawnParticle_Note("red", aroundEffect({_player}))
