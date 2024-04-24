@@ -10,6 +10,7 @@ on damage of player:
 	metadata value "gametype" of victim is "Kit"
 	{Stats.%victim%::MarkRequiem} is set
 	set damage to damage * 2
+	kitParticle_MarkRequiem_Damage(victim)
 
 local function kitEffect_MarkRequiem(player: player):
 	kitMsg({_player}, "§5鎮魂歌を送ります...")
@@ -17,21 +18,30 @@ local function kitEffect_MarkRequiem(player: player):
 	loop 20 times:
 		if {_hit} is set:
 			continue
-		set {_effloc} to location loop-number * 0.5 meters
-		loop all players in radius 1.5 around {_effloc}:
+		set {_effloc} to location loop-number * 0.5 meters in front of {_baseloc}
+		kitParticle_MarkRequiem_Beam({_effloc}, loop-number)
+		if mod(21 - loop-number, 10) is 0 or 10:
+			add 1 to {_code}
+			kitSound_MarkRequiem_Beam({_effloc}, {_code})
+		loop all players in radius 3 around {_effloc}:
 			{_hit} is not set
 			kitCheckTeam({_player}, loop-player, false) is true
+			set {_ploc} to location 1 meter above loop-player
+			distance between {_effloc} and {_ploc} <= 1.5
 			set {_hit} to loop-player
 		wait a tick
 	if {_hit} is not set:
 		stop
-	kitEffect_FanfareRhapsody_Hit({_player}, {_hit})
+	kitEffect_MarkSound_Hit({_player}, {_hit})
 
-local function kitEffect_FanfareRhapsody_Hit(player: player, target: player):
+local function kitEffect_MarkSound_Hit(player: player, target: player):
 	set {_time} to 4 seconds
+	set {_tick} to 80
 	if {Stats.%{_player}%::Fortissimo} is true:
 		set {_time} to 8 seconds
+		set {_tick} to 160
 		kitParticle_Fortissimo({_player})
+	kitParticle_MarkRequiem_Hit({_target}, {_tick})
 	set {Stats.%{_target}%::MarkRequiem} to {_player}
 	message formatted "§4§lマークされた! §cマーク中§6ダメージが増大してしまう!" to {_target}
 	loop all players:
@@ -39,6 +49,96 @@ local function kitEffect_FanfareRhapsody_Hit(player: player, target: player):
 		message formatted "§6§l%{_target}% §eがマークされた! §aダメージが増大する!" to loop-player
 	wait {_time}
 	if {Stats.%{_target}%::MarkRequiem} is {_player}:
+		delete {Stats.%{_target}%::MarkRequiem}
 		kitMsg({_player}, "§d%{_target}% §6へのマークが終了しました")
 		message formatted "§a§lマークが外された!" to {_target}
 	
+
+
+local function kitParticle_MarkRequiem_Beam(loc: location, num: number):
+	set {_rad} to {_num} * 20
+	set {_count} to 4
+	set {_radius} to 1.5
+	loop {_count} times:
+		set {_el} to {_loc}
+		set {_m1} to {_el}
+		set pitch of {_m1} to pitch of {_m1} - 90
+		set {_test1} to {_radius} * cos({_rad})
+		set {_t1} to location {_test1} meters in front of {_m1}
+		set {_m2} to {_el}
+		set pitch of {_m2} to 0
+		set {_test2} to {_radius} * sin({_rad})
+		set {_t2} to location {_test2} meters to the right of {_m2}
+		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
+		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
+		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+		set {_color} to a random number between 0.5 and 0.6
+		spawnParticle_NoteOption({_color}, {_el})
+		add 360 / {_count} to {_rad}
+
+local function kitParticle_MarkRequiem_Hit(player: player, time: number):
+	playSound("block.beacon.deactivate", 1, 1.15, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 10 times:
+		set {_v} to randomVector()
+		if y of {_v} < 0:
+			set {_v} to {_v} ** vector(1, -1, 1)
+		spawnParticle_Vector(soul_fire_flame, {_v}, 0.3, {_baseloc})
+	loop {_time} times:
+		set {_circles::*} to particleLocation_Circle({_baseloc}, 6, 0.6)
+		loop {_circles::*}:
+			set {_el} to loop-value-2
+			spawnParticle_Note("blue", {_el})
+		wait a tick
+
+local function kitParticle_MarkRequiem_Damage(player: player):
+	kitSound_MarkRequiem_Damage({_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 10 times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle_Vector(sculk_soul, setVector({_baseloc}, {_el}), 0.5, {_el})
+		set {_dice} to dice(3)
+		if {_dice} is 1:
+			spawnParticle_BlockData(falling_dust, blue wool, {_el})
+		else if {_dice} is 2:
+			spawnParticle_BlockData(falling_dust, black wool, {_el})
+		else:
+			spawnParticle_BlockData(falling_dust, purple wool, {_el})
+
+
+
+local function kitSound_MarkRequiem_Beam(loc: location, num: number):
+	if {_num} is 1:
+		set {_p.1} to 1.26
+		set {_p.2} to 1
+		set {_p.3} to 0.84
+		set {_p.4} to 0.68
+	else if {_num} is 2:
+		set {_p.1} to  1.06
+		set {_p.2} to 0.89
+		set {_p.3} to 0.75
+		set {_p.4} to 0.59
+	loop 4 times:
+		playSound("block.note_block.didgeridoo", 1, {_p.%loop-number%}, {_loc})
+		wait a tick
+
+local function kitSound_MarkRequiem_Damage(player: player):
+	loop 3 times:
+		if loop-number is 1:
+			set {_pitch} to 0.944
+		else if loop-number is 2:
+			set {_pitch} to 0.749
+		else:
+			set {_pitch} to 0.63
+		playSound("block.note_block.iron_xylophone", 1, {_pitch}, {_player})
+		wait a tick
+	wait 3 ticks
+	loop 3 times:
+		if loop-number is 1:
+			set {_pitch} to 0.891
+		else if loop-number is 2:
+			set {_pitch} to 0.749
+		else:
+			set {_pitch} to 0.561
+		playSound("block.note_block.iron_xylophone", 1, {_pitch}, {_player})
+		wait a tick
