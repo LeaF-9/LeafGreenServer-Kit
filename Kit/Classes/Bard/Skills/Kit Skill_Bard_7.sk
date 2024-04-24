@@ -14,10 +14,64 @@ local function kitEffect_CheerEncore(player: player, target: player):
 	setSupporter({_target}, {_player})
 	set {Stats.%{_target}%::Resurrection} to true
 	set {CT.%{_target}%::*} to 0
-	set {_sec} to 5 seconds
+	set {_sec} to 100
 	if {Stats.%{_player}%::Fortissimo} is true:
-		set {_sec} to 10 seconds
+		set {_sec} to 200
 		kitParticle_Fortissimo({_player})
-	wait {_sec}
+	kitParticle_CheerEncore({_target}, {_sec})
+	loop {_sec} times:
+		if {Stats.%{_target}%::Resurrection} is not set:
+			stop
+		wait a tick
 	delete {Stats.%{_target}%::Resurrection}
 	message formatted "§6アンコール§5の効果が切れました" to {_target}
+	kitParticle_CheerEncore_End({_target})
+
+
+
+local function kitParticle_CheerEncore(player: player, time: number):
+	kitSound_CheerEncore({_player}, {_time} / 20)
+	loop {_time} / 10 times:
+		spawnParticle(composter, aroundEffect({_player}))
+	set {_y} to 0
+	set {_baserad} to 0
+	loop {_time} times:
+		add 0.1 to {_y}
+		if {_y} > 2:
+			set {_y} to {_y} - 2
+		set {_baseloc} to location of {_player}
+		set {_ln} to 0
+		loop 4 times:
+			add 1 to {_ln}
+			set {_rad} to {_baserad} + 90 * {_ln}
+			set {_el} to {_baseloc}
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle(glow, {_el})
+		add 30 to {_baserad}
+		wait a tick
+
+local function kitParticle_CheerEncore_End(player: player):
+	loop 10 times:
+		spawnParticle(glow_squid_ink, aroundEffect({_player}))
+
+
+
+local function kitSound_CheerEncore(player: player, time: number):
+	set {_base.1} to -6
+	set {_base.2} to -2
+	set {_base.3} to 1
+	loop {_time} times:
+		if {Stats.%{_player}%::Resurrection} is not set:
+			stop
+		set {_count} to 3
+		set {_ln} to 0
+		loop {_count} times:
+			add 1 to {_ln}
+			set {_pitch} to 2 ^ ({_base.%{_ln}%} / 12)
+			playSound("block.note_block.xylophone", 1, {_pitch}, {_player})
+			add 1 to {_base.%{_ln}%}
+			wait a tick
+		loop 20 - {_count} times:
+			wait a tick
