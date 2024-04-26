@@ -10,6 +10,8 @@ on sneak toggle:
 	# Fuel Check
 	if checkFuel(player, 2, "Weapon.main") is false:
 		stop
+	if {Stats.%player%::GearyCog} is true:
+		stop
 	# ギアチェンジ
 	kitEffect_GearyCog_Change(player)
 
@@ -22,13 +24,14 @@ on damage:
 		if {Stats.%attacker%::GearyCog} is true:
 			set damage to damage * 2
 			kitParticle_GearyCog_Positive(location of attacker, location of victim)
+			kitEffect_GearyCog_Change(attacker)
 		else:
 			set damage to damage * 0.2
 			kitParticle_GearyCog_Negative(location of attacker, location of victim)
-		kitEffect_GearyCog_Change(attacker)
 	# Geary Cog選択時のダメージ
 	if {Class::%victim%} is "Engineer":
 		kitSelectChecker_Weapon(victim, "Engineer") is 2
+		{Stats.%victim%::GearyCog} is true
 		kitEffect_GearyCog_Change(victim)
 
 function kitEffect_GearyCog_Change(player: player):
