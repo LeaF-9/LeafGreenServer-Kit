@@ -4,11 +4,10 @@ function kitSkill_Engineer_4(player: player, loc: location):
 	toolCT({_player}, "Engineer", 4)
 	set {_now} to now
 # 装置数の確認
-	loop all entities:
-		type of loop-entity is armor stand
-		set {_metadata} to metadata value "kit-armor" of loop-entity
-		{_metadata} contains "Machine-Tracking System"
-		metadata value {_metadata} of loop-entity is "%{_player}%"
+	loop all block displays:
+		metadata value "kit-block" of loop-block display contains "Machine-Tracking System"
+		set {_metadata} to metadata value "kit-block" of loop-block display
+		metadata value {_metadata} of loop-block display is "%{_player}%"
 		add 1 to {_allnum}
 	if {_allnum} >= 5:
 		set {_toptime} to 0	
