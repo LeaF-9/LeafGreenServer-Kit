@@ -3,6 +3,7 @@
 function kitUltBard(player: player):
 	message formatted "§c周辺10mの味方の体力と最大体力を+❤10します!" to {_player}
 	message formatted "§cブーストした最大体力は10秒後に元の数値まで減少します!" to {_player}
+	kitParticle_FinaleSymphony_Wave({_player})
 	loop all players in radius 10 around {_player}:
 		kitCheckTeam(loop-player, {_player}, true, true) is true
 		set {Stats.%loop-player%::FinaleSymphony} to {_player}
@@ -19,4 +20,120 @@ function kitUltBard(player: player):
 			if {Stats.%loop-value-2%::FinaleSymphony} is not set:
 				remove loop-value-2 from {_boosters::*}
 				continue
-			subtract 0.1 from max-health of loop-value-2
+			kitParticle_FinaleSymphony_Apply(loop-value-2, loop-number)
+			subtract 0.1 from max health of loop-value-2
+
+
+
+local function kitParticle_FinaleSymphony_Wave(player: player):
+	kitSound_FinaleSymphony_Launch({_player})
+	set {_no} to 0
+	set {_y} to 0
+	loop 10 times:
+		add 0.1 to {_no}
+		add 0.5 to {_y}
+		set {_rad} to 0
+		set {_baseloc} to location of {_player}
+		add {_y} to y-pos of {_baseloc}
+		set {_els::*} to particleLocation_Circle({_baseloc}, 60, 10)
+		set {_w} to 0
+		loop {_els::*}:
+			add 1 / 60 to {_w}
+			set {_color} to {_no} + {_w}
+			set {_el} to loop-value-2
+			spawnParticle_NoteOption({_color}, {_el})
+		wait a tick
+
+local function kitParticle_FinaleSymphony_Apply(player: player, num: number):
+	if mod({_num}, 10) is 0 or 10:
+		kitSound_FinaleSymphony_Apply({_player}, {_num} / 10)
+	set {_el} to location 1 meter above {_player}
+	set {_rad} to 36 * {_num}
+	set {_color} to {_num} / 50
+	if {_color} > 1:
+		subtract 1 from {_color}
+	add 0.5 * sin({_rad}) to x-pos of {_el}
+	add 0.5 * cos({_rad}) to z-pos of {_el}
+	spawnParticle_NoteOption({_color}, {_el})
+
+
+
+local function kitSound_FinaleSymphony_Launch(player: player):
+	loop 4 times:
+		if loop-number is 1:
+			playSound("block.note_block.bass", 1, scalePitch(23), {_player})
+			playSound("block.note_block.harp", 1, scalePitch(3), {_player})
+			playSound("block.note_block.harp", 1, scalePitch(6), {_player})
+			wait 5 ticks
+			continue
+		if loop-number is 2:
+			set {_pitch.l} to scalePitch(1)
+			set {_pitch.m} to scalePitch(5)
+			set {_pitch.h} to scalePitch(8)
+		else if loop-number is 3:
+			set {_pitch.l} to scalePitch(2)
+			set {_pitch.m} to scalePitch(6)
+			set {_pitch.h} to scalePitch(9)
+		else:
+			set {_pitch.l} to scalePitch(4)
+			set {_pitch.m} to scalePitch(8)
+			set {_pitch.h} to scalePitch(11)
+		playSound("block.note_block.harp", 1, {_pitch.l}, {_player})
+		playSound("block.note_block.harp", 1, {_pitch.m}, {_player})
+		playSound("block.note_block.harp", 1, {_pitch.h}, {_player})
+		wait 5 ticks
+
+local function kitSound_FinaleSymphony_Apply(player: player, num: number):
+	if {_num} is 1:
+		set {_pitch.1} to scalePitch(6)
+		set {_pitch.2} to scalePitch(10)
+		set {_pitch.3} to scalePitch(13)
+		set {_pitch.4} to scalePitch(17)
+	else if {_num} is 2:
+		set {_pitch.1} to scalePitch(15)
+		set {_pitch.2} to scalePitch(17)
+		set {_pitch.3} to scalePitch(20)
+		set {_pitch.4} to scalePitch(23)
+	else if {_num} is 3:
+		set {_pitch.1} to scalePitch(10)
+		set {_pitch.2} to scalePitch(14)
+		set {_pitch.3} to scalePitch(17)
+		set {_pitch.4} to scalePitch(20)
+	else if {_num} is 4:
+		set {_pitch.1} to scalePitch(13)
+		set {_pitch.2} to scalePitch(15)
+		set {_pitch.3} to scalePitch(18)
+		set {_pitch.4} to scalePitch(22)
+	else if {_num} is 5:
+		set {_pitch.1} to scalePitch(13)
+		set {_pitch.2} to scalePitch(16)
+		set {_pitch.3} to scalePitch(20)
+		set {_pitch.4} to scalePitch(23)
+	else if {_num} is 6:
+		set {_pitch.1} to scalePitch(6)
+		set {_pitch.2} to scalePitch(10)
+		set {_pitch.3} to scalePitch(13)
+		set {_pitch.4} to scalePitch(16)
+	else if {_num} is 7:
+		set {_pitch.1} to scalePitch(11)
+		set {_pitch.2} to scalePitch(15)
+		set {_pitch.3} to scalePitch(18)
+		set {_pitch.4} to scalePitch(22)
+	else if {_num} is 8:
+		set {_pitch.1} to scalePitch(13)
+		set {_pitch.2} to scalePitch(17)
+		set {_pitch.3} to scalePitch(20)
+		set {_pitch.4} to scalePitch(23)
+	else if {_num} is 9:
+		set {_pitch.1} to scalePitch(10)
+		set {_pitch.2} to scalePitch(13)
+		set {_pitch.3} to scalePitch(17)
+		set {_pitch.4} to scalePitch(20)
+	else:
+		set {_pitch.1} to scalePitch(13)
+		set {_pitch.2} to scalePitch(15)
+		set {_pitch.3} to scalePitch(18)
+		set {_pitch.4} to scalePitch(22)
+	loop 4 times:
+		playSound("block.note_block.harp", 1, {_pitch.%loop-number%}, {_player})
+		wait 2 ticks
