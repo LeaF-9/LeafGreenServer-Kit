@@ -19,22 +19,28 @@ local function kitEffect_HarmonyNotes(player: player):
 		delete {_direction::*}
 		# ceil
 		if block at location 0.5 meters above {_loc.temp} is not passable:
-			set {_direction::ceil} to true
+			if y of {_vector.notes} > 0:
+				set {_direction::ceil} to true
 		# floor
 		if block at location 0.5 meters below {_loc.temp} is not passable:
-			set {_direction::floor} to true
+			if y of {_vector.notes} < 0:
+				set {_direction::floor} to true
 		# north
 		if block at location 0.5 meters north of {_loc.temp} is not passable:
-			set {_direction::north} to true
+			if z of {_vector.notes} < 0:
+				set {_direction::north} to true
 		# south
 		if block at location 0.5 meters south of {_loc.temp} is not passable:
-			set {_direction::south} to true
+			if z of {_vector.notes} > 0:
+				set {_direction::south} to true
 		# east
 		if block at location 0.5 meters east of {_loc.temp} is not passable:
-			set {_direction::east} to true
+			if x of {_vector.notes} > 0:
+				set {_direction::east} to true
 		# west
 		if block at location 0.5 meters west of {_loc.temp} is not passable:
-			set {_direction::west} to true
+			if x of {_vector.notes} < 0:
+				set {_direction::west} to true
 		# ceil-floor (y)
 		if {_direction::ceil} is true:
 			set y of {_vector.notes} to y of {_vector.notes} * -1
