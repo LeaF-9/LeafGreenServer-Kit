@@ -41,15 +41,11 @@ on death of player:
 
 function kitFlagSpawn_CTF(location: location, color: text = "white"):  # Flagを対象地点にスポーンさせる関数
 	set {_mgloc} to {_location}
-	set y-coordinate of {_location} to y-coordinate of {_location} - 1.8
-	set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""%{_color}%_banner"",Count:1b}],HandItems:[{},{}]}"
-	spawn an armor stand at {_location} with nbt {_nbt}
-	set metadata value "gametype" of spawned armor stand to "Kit"
-	set metadata value "flag-color" of spawned armor stand to {_color}
-	set {_nbt} to nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:15000,ShowParticles:0b}],Team:""kit-%{_color}%""}"
-	spawn a magma cube at {_mgloc} with nbt {_nbt}
-	set metadata value "gametype" of spawned magma cube to "Kit"
-	set metadata value "flag-marker" of spawned magma cube to "true"
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0.5f,0f]", "[1f,1f,1f]")
+	set {_nbt} to nbt compound from "{PersistenceRequired:1,Glowing:1,transformation:%{_transformation}%,item:{id:""%{_color}%_banner"",Count:1b},Team:""kit-%{_color}%""}"
+	spawn an item display at {_location} with nbt {_nbt}
+	set metadata value "gametype" of spawned item display to "Kit"
+	set metadata value "flag-color" of spawned item display to {_color}
 	if {_color} is "white":
 		joinPlayerMsg("Kit", "{@prefix} §f§lFlag §bがスポーンしました!")
 
@@ -136,7 +132,6 @@ function kitTimer_CTF():
 		delete {_flag.color}
 		delete {_flag.player}
 		loop all entities:
-			type of loop-entity is armor stand
 			metadata value "flag-color" of loop-entity is set
 			set {_flag.entity} to loop-entity
 			set {_flag.color} to metadata value "flag-color" of loop-entity
@@ -185,11 +180,8 @@ function kitTimer_CTF():
 					# --------------------------------
 				# -------------------------
 				loop all entities:
-					if type of loop-entity is armor stand:
-						metadata value "flag-color" of loop-entity is set
-						delete loop-entity
-					else if metadata value "flag-marker" of loop-entity is set:
-						delete loop-entity
+					metadata value "flag-color" of loop-entity is set
+					delete loop-entity
 			# ---------------------------
 		# ---------------------------------
 		# ---Flagとその所有者どちらも存在しない場合の処理---
