@@ -39,13 +39,14 @@ on death of player:
 			# --------------------------------------------------------------------------
 # ------------------------------
 
-function kitFlagSpawn_CTF(location: location, color: text = "white"):  # Flagを対象地点にスポーンさせる関数
+function kitFlagSpawn_CTF(location: location, color: text = "white", former: text = "<none>"):  # Flagを対象地点にスポーンさせる関数
 	set {_mgloc} to {_location}
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0.5f,0f]", "[1f,1f,1f]")
 	set {_nbt} to nbt compound from "{PersistenceRequired:1,Glowing:1,transformation:%{_transformation}%,item:{id:""%{_color}%_banner"",Count:1b},Team:""kit-%{_color}%""}"
 	spawn an item display at {_location} with nbt {_nbt}
 	set metadata value "gametype" of spawned item display to "Kit"
 	set metadata value "flag-color" of spawned item display to {_color}
+	set metadata value "flag-former" of spawned item display to {_former}
 	if {_color} is "white":
 		joinPlayerMsg("Kit", "{@prefix} §f§lFlag §bがスポーンしました!")
 
@@ -122,8 +123,32 @@ function kitFlagDrop_CTF(holder: player):  # holderがflagを持っていた際�
 		else if y-coordinate of {_baseloc} < -64:  # 死んだ位置が奈落
 			joinPlayerMsg("Kit", "§6§lFlag所持者§cの死亡地点が不正であった為,§f§lFlag§cの所有権は消滅しました")
 		else:
-			kitFlagSpawn_CTF({_baseloc}, {_team})
+			kitFlagSpawn_CTF({_baseloc}, {_team}, "%{_holder}%")
 		# ---------------------------
+
+# Flagの獲得範囲を示すパーティクル演出
+local function kitFlagParticle_CTF(baseloc: location, color: text):
+	if {_color} is "white":
+		set {_hex} to rgb(255, 255, 255)
+	else if {_color} is "red":
+		set {_hex} to rgb(255, 0, 0)
+	else if {_color} is "blue":
+		set {_hex} to rgb(0, 0, 255)
+	else if {_color} is "yellow":
+		set {_hex} to rgb(255, 255, 0)
+	else if {_color} is "green":
+		set {_hex} to rgb(0, 255, 0)
+	else:
+		set {_hex} to rgb(255, 0, 255)
+	loop 20 times:
+		set {_rad} to 0
+		loop 36 times:
+			set {_el} to {_baseloc}
+			add 10 to {_rad}
+			add 1.5 * sin({_rad}) to x-pos of {_el}
+			add 1.5 * cos({_rad}) to z-pos of {_el}
+			spawnParticle_Dust({_hex}, 0.5, {_el})
+		wait a tick
 
 function kitTimer_CTF():
 	while {Kit-tochu} is true:
@@ -135,16 +160,17 @@ function kitTimer_CTF():
 			metadata value "flag-color" of loop-entity is set
 			set {_flag.entity} to loop-entity
 			set {_flag.color} to metadata value "flag-color" of loop-entity
+			set {_flag.former} to metadata value "flag-former" of loop-entity
 		# --------------------------
 		# ---Flagが存在する場合 獲得の処理---
 		if {_flag.entity} is set:
 			set {_flag.location} to location of {_flag.entity}
-			add 1.8 to y-coordinate of {_flag.location}
 			set {_dis} to 100
 			# ---Flag取得者の確認---
-			loop all players in radius 1 around {_flag.location}:
+			loop all players in radius 1.5 around {_flag.location}:
 				metadata value "gametype" of loop-player is "Kit"
 				gamemode of loop-player is survival
+				{_flag.former} is not "%loop-player%"
 				set {_d} to distance between {_flag.location} and location of loop-player
 				if {_dis} > {_d}:
 					set {_dis} to {_d}
@@ -182,6 +208,8 @@ function kitTimer_CTF():
 				loop all entities:
 					metadata value "flag-color" of loop-entity is set
 					delete loop-entity
+			else:  # 取得者が存在しなかった場合は獲得範囲を表示
+				kitFlagParticle_CTF({_flag.location}, {_flag.color})
 			# ---------------------------
 		# ---------------------------------
 		# ---Flagとその所有者どちらも存在しない場合の処理---
