@@ -113,6 +113,8 @@ function openKitInvGenre(player: player, genre: text):
 				set {_difftext} to "§c§l超難関 §6[§c★★★★★§6]"
 			set {_dt} to "%{_prediff}% %{_difftext}%"
 			add {_dt} to {_description::*}
+			add "§7§m------------------------------" to {_description::*}
+			add "§e§oホイールクリックでKitの詳細を表示します" to {_description::*}
 		set display name of {_item.%loop-value%} to "§6§l%loop-value%"
 		set lore of {_item.%loop-value%} to {_description::*}
 	set {_slot} to 0
@@ -185,7 +187,112 @@ on inventory click:
 		replace "§6§l" with "" in {_kit}
 		if {_classes::*} contains {_kit}:
 			close player's inventory
+			if click type is middle mouse button:
+				openKitDescriptions(player, {_kit})
+				stop
 			make player execute command "/class %{_kit}%"
 		else if name of clicked item is "§4§lBack":
 			close player's inventory
 			openKitInv(player)
+	else if inventory name of event-inventory contains "§6§lKit Descriptions§e: §a§l":
+		cancel event
+		if clicked slot is 53:
+			loadKitGenreInv(player, inventory name of event-inventory)
+
+local function openKitDescriptions(player: player, kit: text):
+	wait a tick
+	open chest with 6 row named "§6§lKit Descriptions§e: §a§l%{_kit}%" to {_player}
+
+on inventory open:
+	wait a tick
+	set {_invname} to player.getOpenInventory().getTitle()
+	if {_invname} does not contain "§6§lKit Descriptions§e: §a§l":
+		stop
+	# Kit yaml loading
+	set {_kit} to {_invname}
+	replace "§6§lKit Descriptions§e: §a§l" with "" in {_kit}
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "kitdesc.%event-player%"
+	set {_icon} to yml value "item" from "kitdesc.%event-player%"
+	set name of {_icon} to "§6§l%{_kit}%"
+	set {_iconlist::*} to yml list "menu.descriptions" from "kitdesc.%event-player%"
+	loop {_iconlist::*}:
+		set {_iconlist::%loop-index%} to "§f%{_iconlist::%loop-index%}%"
+	set lore of {_icon} to {_iconlist::*}
+	set {_pros::*} to yml list "menu.pros" from "kitdesc.%event-player%"
+	loop {_pros::*}:
+		set {_pros::%loop-index%} to "§f%{_pros::%loop-index%}%"
+	set {_cons::*} to yml list "menu.cons" from "kitdesc.%event-player%"
+	loop {_cons::*}:
+		set {_cons::%loop-index%} to "§f%{_cons::%loop-index%}%"
+	set {_weapons.main::*} to kitWeaponList({_kit}, "main")
+	set {_weapons.sub::*} to kitWeaponList({_kit}, "sub")
+	set {_skills::*} to kitSkillList({_kit})
+	set {_passives::*} to loadKitPassives({_kit})
+	set {_ultimate.name} to yml value "ultimate.name" from "kitdesc.%event-player%"
+	set {_ultimate.name} to "§4§l§n%{_ultimate.name}%"
+	set {_ultimate.lore::*} to yml list "ultimate.descriptions" from "kitdesc.%event-player%"
+	# Kit Overview
+	set slot 0 of event-inventory to {_icon}
+	set slot 2 of event-inventory to a red dye named "§c§l利点" with lore {_pros::*}
+	set slot 3 of event-inventory to a cyan dye named "§3§l欠点" with lore {_cons::*}
+	# Weapons
+	set slot 9 of event-inventory to a red concrete named "§4§lWeapons"
+	set slot 11 of event-inventory to a light gray concrete named "§7§lNormal Weapons" with lore "§f最初から所持しているWeaponです"
+	set slot 14 of event-inventory to a yellow concrete named "§6§lHidden Weapons" with lore "§f様々な要素で解放されるWeaponです" and "§7§o※ 現在はβ版の為,全て解放されています"
+	set slot 12 of event-inventory to {_weapons.main::1}
+	set slot 21 of event-inventory to {_weapons.sub::1}
+	set slot 15 of event-inventory to {_weapons.main::2}
+	set slot 24 of event-inventory to {_weapons.sub::2}
+	set slot 16 of event-inventory to {_weapons.main::3}
+	set slot 25 of event-inventory to {_weapons.sub::3}
+	# Skills
+	set slot 27 of event-inventory to a lime concrete named "§2§lSkills"
+	set slot 29 of event-inventory to a light gray concrete named "§7§lNormal Skills" with lore "§f最初から所持しているSkillです"
+	set slot 38 of event-inventory to a yellow concrete named "§6§lHidden Skills" with lore "§f様々な要素で解放されるSkillです" and "§7§o※ 現在はβ版の為,全て解放されています"
+	set {_slot} to 30
+	loop 5 times:
+		set slot {_slot} of event-inventory to {_skills::%loop-number%}
+		add 1 to {_slot}
+	set {_slot} to 39
+	set {_ln} to 6
+	loop 3 times:
+		set slot {_slot} of event-inventory to {_skills::%{_ln}%}
+		add 1 to {_ln}
+		add 1 to {_slot}
+	# Passives
+	set slot 45 of event-inventory to a light blue concrete named "§3§lPassives"
+	if size of {_passives::*} is 0:
+		set slot 47 of event-inventory to a barrier named "§cこのKitにはPassiveがありません"
+	else:
+		set {_slot} to 47
+		loop {_passives::*}:
+			set slot {_slot} of event-inventory to loop-value
+			add 1 to {_slot}
+	# Ultimate
+	set slot 51 of event-inventory to a nether star named {_ultimate.name} with lore {_ultimate.lore::*}
+	# Back
+	set slot 53 of event-inventory to an arrow named "§d§l戻る" with lore "§fKit選択画面に戻ります"
+
+local function loadKitPassives(kit: text) :: items:
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "kitpassives"
+	loop yaml node keys "passive" from "kitpassives":
+		set {_name} to yml value "%loop-node%.name" from "kitpassives"
+		set {_lore::*} to yml list "%loop-node%.descriptions" from "kitpassives"
+		set {_passiveitem} to a paper named "§b§o%{_name}%" with lore {_lore::*}
+		add {_passiveitem} to {_passives::*}
+	unload yml "kitpassives"
+	return {_passives::*}
+
+on inventory close:
+	set {_invname} to player.getOpenInventory().getTitle()
+	if {_invname} does not contain "§6§lKit Descriptions§e: §a§l":
+		stop
+	loadKitGenreInv(event-player, {_invname})
+
+local function loadKitGenreInv(player: player, invname: text):
+	set {_kit} to {_invname}
+	replace "§6§lKit Descriptions§e: §a§l" with "" in {_kit}
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "kit.genrecheck"
+	set {_genre} to yml value "type" from "kit.genrecheck"
+	unload yml "kit.genrecheck"
+	openKitInvGenre({_player}, {_genre})
