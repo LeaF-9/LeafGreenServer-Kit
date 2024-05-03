@@ -132,3 +132,24 @@ command /leave:
 				give a diamond named "§9Admin Tools" to player
 		else:
 			message "§cあなたはゲームに参加していません。" to player
+
+command /spec:
+	executable by: player
+	trigger:
+		if {Kit-tochu} is not true:
+			message formatted "§c§l現在ゲームが開催されていません!" to player
+			stop
+		if {Join::%player%} is set:
+			message formatted "§c§lゲーム参加中は観戦できません!" to player
+			stop
+		if gamemode of player is spectator:
+			message formatted "§eあなたは既に観戦しています" to player
+			message formatted "§e観戦を終了する際は §6§l/lobby §eを実行してください" to player
+			stop
+		if {Kit-GameStage::spec} is not set:
+			message formatted "§c§lこのMapには観戦者スポーンが用意されていません!" to player
+			message formatted "§6不具合である恐れがある為,§a§lスタッフ§6に報告をお願いします" to player
+		set gamemode of player to spectator
+		teleport player to {Kit-GameStage::spec}
+		message "§7あなたは §b§l観戦者 §7になりました"
+		message "§6§l/lobby §7で観戦をやめることが出来ます"
