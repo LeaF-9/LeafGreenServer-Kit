@@ -114,7 +114,7 @@ function openKitInvGenre(player: player, genre: text):
 			set {_dt} to "%{_prediff}% %{_difftext}%"
 			add {_dt} to {_description::*}
 			add "§7§m------------------------------" to {_description::*}
-			add "§e§oホイールクリックでKitの詳細を表示します" to {_description::*}
+			add "§e§oSHIFT+左クリックでKitの詳細を表示します" to {_description::*}
 		set display name of {_item.%loop-value%} to "§6§l%loop-value%"
 		set lore of {_item.%loop-value%} to {_description::*}
 	set {_slot} to 0
@@ -187,7 +187,7 @@ on inventory click:
 		replace "§6§l" with "" in {_kit}
 		if {_classes::*} contains {_kit}:
 			close player's inventory
-			if click type is middle mouse button:
+			if click type is left mouse with shift:
 				openKitDescriptions(player, {_kit})
 				stop
 			make player execute command "/class %{_kit}%"
@@ -230,7 +230,11 @@ on inventory open:
 	set {_passives::*} to loadKitPassives({_kit})
 	set {_ultimate.name} to yml value "ultimate.name" from "kitdesc.%event-player%"
 	set {_ultimate.name} to "§4§l§n%{_ultimate.name}%"
-	set {_ultimate.lore::*} to yml list "ultimate.descriptions" from "kitdesc.%event-player%"
+	set {_ultimate.lore::1} to "§7§oUltimate Skill"
+	set {_ultimate.lore::2} to " "
+	set {_ultlore::*} to yml list "ultimate.descriptions" from "kitdesc.%event-player%"
+	loop {_ultlore::*}:
+		add loop-value to {_ultimate.lore::*}
 	# Kit Overview
 	set slot 0 of event-inventory to {_icon}
 	set slot 2 of event-inventory to a red dye named "§c§l利点" with lore {_pros::*}
