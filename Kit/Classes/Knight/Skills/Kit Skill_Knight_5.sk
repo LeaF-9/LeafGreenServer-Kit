@@ -25,34 +25,39 @@ function kitSkill_Knight_5(player: player):
 
 on damage:
 	if {Stats.%attacker%::JusticePower} is true:
-		cancel event
-		if {Stats.%victim%::JusticeTimer} is not set:
-			set {Stats.%victim%::JusticeTimer} to true
-			kitDamage(attacker, victim, 3, true)
-			playSound("entity.iron_golem.hurt", 1, 2, victim)
-			loop all blocks in radius 2 around victim:
-				chance of 20%:
-					set {_loc} to location of loop-block
-					add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
-					add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
-					add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
-					spawnParticle_Color(entity_effect, 255, 200, 0, {_loc})
-			wait 10 ticks
-			delete {Stats.%victim%::JusticeTimer}
+		if {Stats.%victim%::ReligiousShelter} is true:
+			stop
+		{Stats.%victim%::Invincible} is not set
+		if health of victim > 3:
+			set damage to 0.00001
+			set health of victim to health of victim - 3
+		else:
+			set damage to 10000
+		playSound("entity.iron_golem.hurt", 1, 2, victim)
+		loop all blocks in radius 2 around victim:
+			chance of 20%:
+				set {_loc} to location of loop-block
+				add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
+				add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
+				add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
+				spawnParticle_Color(entity_effect, 255, 200, 0, {_loc})
 	else if checkEntityType(victim, player) is true:
+		if {Stats.%victim%::Invincible} is true:
+			stop
+		if {Stats.%victim%::ReligiousShelter} is true:
+			stop
 		if {Stats.%victim%::JusticePower} is true:
 			if damage cause is not void:
-				cancel event
-				if {Stats.%victim%::JusticeTimer} is not set:
-					set {Stats.%victim%::JusticeTimer} to true
-					kitDamage(attacker, victim, 3, true)
-					playSound("entity.iron_golem.hurt", 1, 2, victim)
-					loop all blocks in radius 2 around victim:
-						chance of 20%:
-							set {_loc} to location of loop-block
-							add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
-							add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
-							add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
-							spawnParticle_Color(entity_effect, 255, 200, 0, {_loc})
-					wait 10 ticks
-					delete {Stats.%victim%::JusticeTimer}
+				if health of victim > 3:
+					set damage to 0.00001
+					set health of victim to health of victim - 3
+				else:
+					set damage to 10000
+				playSound("entity.iron_golem.hurt", 1, 2, victim)
+				loop all blocks in radius 2 around victim:
+					chance of 20%:
+						set {_loc} to location of loop-block
+						add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
+						add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
+						add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
+						spawnParticle_Color(entity_effect, 255, 200, 0, {_loc})
