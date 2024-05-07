@@ -37,14 +37,12 @@ on rightclick holding a nether star:
 	playSound("entity.wither.spawn", 2, 0.5, player)
 	set {_tooling} to player's tool
 	remove {_tooling} from player
+	kitUltMessage(player, {Class::%player%})
 	if {Class::%player%} is "Knight":
-		kitUltMessage(player, "Brave Fighters", "勇敢な戦士達よ 立ち上がれ")
 		kitUltKnight(player)
 	else if {Class::%player%} is "Warrior":
-		kitUltMessage(player, "Overpowered Attack", "圧倒的な力を習得した者")
 		kitUltWarrior(player)
 	else if {Class::%player%} is "Mercenary":
-		kitUltMessage(player, "Sanguinary Murder", "血に飢えた殺人鬼")
 		kitUltMercenary(player)
 #	else if {Class::%player%} is "Berserker":
 #		loop all players:
@@ -199,13 +197,10 @@ on rightclick holding a nether star:
 #				wait a tick
 #			delete {_hit::*}
 	else if {Class::%player%} is "Wizard":
-		kitUltMessage(player, "Magical Confusion", "魔力混乱を引き起こす魔法陣")
 		kitUltWizard(player)
 	else if {Class::%player%} is "Necromancer":
-		kitUltMessage(player, "Immortal Soul", "永遠に朽ちぬ魂")
 		kitUltNecromancer(player)
 	else if {Class::%player%} is "Ghost":
-		kitUltMessage(player, "Hellish Occultism", "呪術より生まれた破壊生物 ")
 		kitUltGhost(player)
 #	else if {Class::%player%} is "Iceman":
 #		loop all players:
@@ -296,13 +291,10 @@ on rightclick holding a nether star:
 #			loop-ghast's display name is "%player%"
 #			delete loop-ghast
 	else if {Class::%player%} is "Archer":
-		kitUltMessage(player, "Impact Shot", "全てを貫く衝撃波の矢")
 		kitUltArcher(player)
 	else if {Class::%player%} is "Bomber":
-		kitUltMessage(player, "Nucleus Explosion", "絶大な威力を誇る破壊兵器")
 		kitUltBomber(player)
 	else if {Class::%player%} is "Knocker":
-		kitUltMessage(player, "Enormous Hurricane", "周辺一帯を薙ぎ払う超巨大竜巻")
 		kitUltKnocker(player)
 #	else if {Class::%player%} is "Hunter":
 #		loop all players:
@@ -411,13 +403,10 @@ on rightclick holding a nether star:
 #			delete {_unum}
 #			delete {_dnum}
 	else if {Class::%player%} is "Assassin":
-		kitUltMessage(player, "Death Blow", "背後から訪れる死の一撃")
 		kitUltAssassin(player)
 	else if {Class::%player%} is "Ninja":
-		kitUltMessage(player, "Acrobatic Aggression", "超機動を極めた忍者")
 		kitUltNinja(player)
 	else if {Class::%player%} is "Thief":
-		kitUltMessage(player, "Heinous Larceny", "何もかも奪い去る極悪盗賊")
 		kitUltThief(player)
 #	else if {Class::%player%} is "Ambush":
 #		loop all players:
@@ -498,13 +487,10 @@ on rightclick holding a nether star:
 #		wait a tick
 #		give a nether quartz item named "§b§lTransport Gate" to player
 	else if {Class::%player%} is "Defender":
-		kitUltMessage(player, "Perfect Barrier", "一切の貫通を許さないバリア")
 		kitUltDefender(player)
 	else if {Class::%player%} is "Paladin":
-		kitUltMessage(player, "Mischievous Fairies", "イタズラ好きな妖精の加護")
 		kitUltPaladin(player)
 	else if {Class::%player%} is "Reflector":
-		kitUltMessage(player, "Universal Division", "世界を分かつ巨大な鏡面")
 		kitUltReflector(player)
 #	else if {Class::%player%} is "Rich":
 #		loop all players:
@@ -599,13 +585,10 @@ on rightclick holding a nether star:
 #					make player damage loop-player by 4
 #					drawDot count 3, particle "blockcrack", material {_ma}, center loop-player, visibleRange 30, keepFor 1 second
 	else if {Class::%player%} is "Healer":
-		kitUltMessage(player, "Angel Healing", "傷つく者を癒やす超回復")
 		kitUltHealer(player)
 	else if {Class::%player%} is "Engineer":
-		kitUltMessage(player, "Transport Lift", "二点を繋げる時空間装置")
 		kitUltEngineer(player)
 	else if {Class::%player%} is "Bard":
-		kitUltMessage(player, "Finale Symphony", "皆を鼓舞する最後の交響曲")
 		kitUltBard(player)
 #	else if {Class::%player%} is "Farmer":
 #		loop all players:
@@ -1012,15 +995,30 @@ function kitUltExp(player: player):
 		subtract 0.01 from {_l}
 		wait 2 ticks
 
-function kitUltMessage(player: player, title: text, sub: text):
+function kitUltMessage(player: player, kit: text):
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "ult.%{_player}%"
+	set {_ultimate.name} to yml value "ultimate.name" from "ult.%{_player}%"
+	set {_ultimate.message} to yml value "ultimate.message" from "ult.%{_player}%"
+	set {_ultimate.lore::1} to "§c§l§m=============§4§l[ §6§l§n%{_ultimate.name}% §4§l]§c§l§m============="
+	set {_ultimate.lore::2} to " "
+	set {_ultlore::*} to yml list "ultimate.descriptions" from "ult.%{_player}%"
+	loop {_ultlore::*}:
+		set {_lore} to "%loop-value%!"
+		add {_lore} to {_ultimate.lore::*}
+	add " " to {_ultimate.lore::*}
+	add "§c§l§m========================================" to {_ultimate.lore::*}
+	unload yml "ult.%{_player}%"
 	loop all players:
 		delete {_ok}
-		if {_player} is in "Kit-SkillCheck":
+		if "%world of {_player}%" contains "SkillCheck":
 			if loop-player is {_player}:
 				set {_ok} to true
 		else if {Join::%loop-player%} is "Kit":
 			set {_ok} to true
 		if {_ok} is true:
 			set {_color} to kitTeamColor({TrueTeam::%{_player}%})
+			send title "%{_color}%§l§o%{_ultimate.name}%" with subtitle "§b─ %{_ultimate.message}% §b─" to loop-player for 3 seconds
 			message formatted "%{_color}%§l%{_player}% §cが §4§lUltimate Skill §cを発動しました!" to loop-player
-			send title "%{_color}%§l§o%{_title}%" with subtitle "§b─ %{_sub}% §b─" to loop-player for 3 seconds
+			loop {_ultimate.lore::*}:
+				set {_lore} to loop-value-2
+				message formatted {_lore} to loop-player
