@@ -1,106 +1,36 @@
 # Fairy Wand
-options:
-	radius: 7
 
-on sneak toggle:
-	{Class::%player%} is "Wizard"
-	player is not sneaking
-	set {_tool} to player's tool
-	if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 2) is false:
-		stop
-	kitEffect_FairyWand(player)
+function kitWeapon_Wizard_2(player: player):
+	toolItemCT({_player}, "Wizard", 2)
+	kitEffect_FairyWand({_player})
 
 local function kitEffect_FairyWand(player: player):
-	kitParticle_FairyWand_Start({_player})
-	wait a tick
-	set {_true} to true
-	while {_true} is true:
-		set {_tool} to tool of {_player}
-		if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 2) is false:
-			set {_true} to false
-			continue
-		if {_player} is not sneaking:
-			set {_true} to false
-			continue
-		set {_enemies.before::*} to {_enemies::*}
-		delete {_enemies::*}
-		set {_enemies::*} to kitEffect_FairyWand_Poison({_player})
-		kitParticle_FairyWand_Area({_player})
-		loop {_enemies.before::*}:
-			if {_enemies::*} does not contain loop-value:
-				set {_enemy} to loop-value parsed as player
-				remove poison from {_enemy}
-		loop {_enemies::*}:
-			add 1 to {_enemy.points::%loop-value%}
-			if mod({_enemy.points::%loop-value%}, 20) is 0:
-				add 1 to {Stats.%{_player}%::FairyWand}
-				kitParticle_FairyWand_Charge({_player}, loop-value)
+	set {_baseloc} to location of head of {_player}
+	kitSound_FairyWand_Launch({_baseloc})
+	loop 20 times:
+		set {_el} to location 0.5 * loop-number meters in front of {_baseloc}
+		kitParticle_FairyWand_Beam({_el}, loop-number)
+		loop all players in radius 3 around {_el}:
+			{_hit.%loop-player%} is not set
+			kitCheckTeam(loop-player, {_player}, false) is true
+			set {_pl} to location 1 meters above loop-player
+			if distance between {_el} and {_pl} <= 1.5:
+				set {_hit.%loop-player%} to true
+				kitEffect_FairyWand_Hit({_player}, loop-player)
 		wait a tick
 
-local function kitEffect_FairyWand_Poison(player: player) :: players:
-	set {_baseloc} to location of {_player}
-	loop all entities in radius {@radius} around {_baseloc}:
-		kitCheckTeam(loop-entity, {_player}, false) is true
-		if loop-entity does not have poison:
-			applyEffect(loop-entity, poison, 1, 10 seconds)
-		kitParticle_FairyWand_Hit(loop-entity)
-		if checkEntityType(loop-entity, player):
-			add loop-entity to {_results::*}
-	return {_results::*}
+local function kitEffect_FairyWand_Hit(player: player, target: player):
+	kitParticle_FairyWand_Hit({_target})
+	kitDamage({_player}, {_target}, 1)
+	applyEffect({_target}, poison, 2, 3 seconds)
+	add 3 to {Stats.%{_player}%::FairyWand}
+	send action bar "§9次のマナ消費量が §b§l%{Stats.%{_player}%::FairyWand}% §9減少します!" to {_player}
 
-# 6体(色は3色)の妖精が外側に広がっていく演出
-local function kitParticle_FairyWand_Start(player: player):
-	playSound("entity.player.levelup", 1, 2, {_player})
-	set {_baseloc} to location of {_player}
-	add 1 to y-pos of {_baseloc}
-	set {_m} to 0
-	loop 10 times:
-		add {@radius} / 10 to {_m}
-		set {_rad} to 0
-		loop 6 times:
-			add 60 to {_rad}
-			set {_el} to {_baseloc}
-			add {_m} * sin({_rad}) to x-pos of {_el}
-			add {_m} * cos({_rad}) to z-pos of {_el}
-			set {_modnum} to mod({_rad} / 60, 3)
-			if {_modnum} is 1:
-				set {_color} to rgb(234, 97, 142)
-			else if {_modnum} is 2:
-				set {_color} to rgb(250, 197, 89)
-			else:
-				set {_color} to rgb(60, 179, 122)
-			spawnParticle_DustTransition({_color}, rgb(247, 246, 251), 1.5, {_el})
-		wait a tick
 
-# 円形にパーティクルを配置する
-local function kitParticle_FairyWand_Area(player: player):
-	playSound("block.amethyst_block.chime", 0.75, a random number between 1.5 and 2, {_player})
-	set {_baseloc} to location of {_player}
-	add 1 to y-pos of {_baseloc}
-	loop 30 times:
-		add 12 to {_rad}
-		set {_el} to {_baseloc}
-		add {@radius} * sin({_rad}) to x-pos of {_el}
-		add {@radius} * cos({_rad}) to z-pos of {_el}
-		set {_r} to a random integer between 155 and 255
-		set {_g} to a random integer between 155 and 255
-		spawnParticle_Dust(rgb({_r}, {_g}, 0), 0.75, {_el})
 
-local function kitParticle_FairyWand_Charge(player: player, target: player):
-	playSound("block.amethyst_block.resonate", 1, 1.2, {_player})
-	set {_from} to location 1 meter above {_target}
-	set {_to} to location 1 meter above {_player}
-	set {_v} to setVector({_from}, {_to})
-	set {_baseloc} to setDirToVec({_from}, {_v})
-	set {_dis} to distance between {_from} and {_to}
-	loop 10 times:
-		set {_el} to location {_dis} / 10 * loop-number meters in front of {_baseloc}
-		spawnParticle(scrape, {_el})
-
-local function kitParticle_FairyWand_Hit(entity: entity):
-	chance of 50%:
-		playSound("block.amethyst_block.break", 0.8, 2, {_entity})
-	set {_baseloc} to location of {_entity}
+local function kitParticle_FairyWand_Beam(loc: location, a: number):
+	playSound("block.amethyst_block.chime", 0.75, 2, {_loc})
+	set {_rad} to {_a} * 20
 	loop 3 times:
 		if loop-number is 1:
 			set {_color} to rgb(234, 97, 142)
@@ -108,8 +38,36 @@ local function kitParticle_FairyWand_Hit(entity: entity):
 			set {_color} to rgb(250, 197, 89)
 		else:
 			set {_color} to rgb(60, 179, 122)
-		set {_el} to {_baseloc}
-		add a random number between -1 and 1 to x-pos of {_el}
-		add a random number between -1 and 1 to z-pos of {_el}
-		add a random number between 0 and 2.5 to y-pos of {_el}
-		spawnParticle_Dust({_color}, 0.9, {_el})
+		set {_el} to {_loc}
+		set {_m1} to {_el}
+		set pitch of {_m1} to pitch of {_m1} - 90
+		set {_test1} to 1 * cos({_rad})
+		set {_t1} to location {_test1} meters in front of {_m1}
+		set {_m2} to {_el}
+		set pitch of {_m2} to 0
+		set {_test2} to 1 * sin({_rad})
+		set {_t2} to location {_test2} meters to the right of {_m2}
+		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
+		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
+		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+		spawnParticle_DustTransition({_color}, rgb(247, 246, 251), 2, {_el})
+		add 120 to {_rad}
+
+local function kitParticle_FairyWand_Hit(player: player):
+	playSound("entity.allay.item_thrown", 1, 0.8, {_player})
+	loop 15 times:
+		set {_dice} to dice(3)
+		if {_dice} is 1:
+			set {_block} to pink wool
+		else if {_dice} is 2:
+			set {_block} to yellow wool
+		else:
+			set {_block} to lime wool
+		set {_el} to aroundEffect({_player})
+		spawnParticle_BlockData(falling_dust, {_block}, {_el})
+
+
+
+
+local function kitSound_FairyWand_Launch(loc: location):
+	playSound("block.end_portal_frame.fill", 1, 1.7, {_loc})
