@@ -1,15 +1,120 @@
-# Magical Confusion
+# Arcane Sorcery
+
+options:
+	itemname: "§5§lArcane Staff"
 
 function kitUltWizard(player: player):
 	wait a tick
-	give a netherite hoe named "§5§lMagical Confusion" to {_player}
+	give a netherite hoe named {@itemname} to {_player}
 
 on rightclick holding a netherite hoe:
-	name of player's tool is "§5§lMagical Confusion"
+	name of player's tool is {@itemname}
 	cancel event
+	remove a netherite hoe named {@itemname} from player
+	kitEffect_ArcaneSorcery(player)
+
+
+
+local function kitEffect_ArcaneSorcery(player: player):
+	set {_baseloc} to location of head of {_player}
+	kitParticle_ArcaneSorcery_Launch({_baseloc})
+	loop 2000 times:
+		if {_hitloc} is set:
+			continue
+		set {_effloc} to location loop-number * 0.1 meters in front of {_baseloc}
+		kitParticle_ArcaneSorcery_Sphere({_effloc})
+		loop all entities in radius 3 around {_effloc}:
+			kitCheckTeam(loop-entity, {_player}, false, true) is true
+			{_hit.%id of loop-entity%} is not set
+			set {_entityloc} to location 1 meter above loop-entity
+			distance between loop-entity and {_effloc} <= 1
+			set {_hit.%id of loop-entity%} to true
+			kitEffect_ArcaneSorcery_HitEntity({_player}, loop-entity)
+		set {_preloc} to location 0.1 meters in front of {_effloc}
+		if block at {_preloc} is not passable:
+			set {_hitloc} to {_effloc}
+			continue
+		wait a tick
+	if {_hitloc} is set:
+		kitEffect_ArcaneSorcery_Ground({_player}, {_hitloc})
+
+local function kitEffect_ArcaneSorcery_HitEntity(player: player, target: entity):
+	kitParticle_ArcaneSorcery_HitEntity({_target})
+	kitDamage({_player}, {_target}, 5)
+	ignite {_target} by 10 seconds
+
+local function kitEffect_ArcaneSorcery_Ground(player: player, loc: location):
+	kitParticle_ArcaneSorcery_Magical({_loc})
+	wait 3 seconds
+	kitParticle_ArcaneSorcery_Beam({_loc})
+	loop 100 times:
+		loop all entities:
+			kitCheckTeam(loop-entity, {_player}, false, true) is true
+			set {_el} to location of loop-entity
+			set y-pos of {_el} to y-pos of {_loc}
+			distance between {_loc} and {_el} <= 10
+			kitParticle_ArcaneSorcery_Burn(loop-entity)
+			kitDamageInstant({_player}, loop-entity, 0.1)
+		wait a tick
+
+
+
+local function kitParticle_ArcaneSorcery_Launch(loc: location):
+	playSound("entity.ghast.warn", 1, 0.7, {_loc})
+	playSound("entity.ghast.shoot", 1, 0.65, {_loc})
+	set {_loc} to location 1 meter in front of {_loc}
+	set {_count} to 60
+	set {_rad} to 0
+	loop {_count} times:
+		set {_el} to {_loc}
+		set {_m1} to {_el}
+		set pitch of {_m1} to pitch of {_m1} - 90
+		set {_test1} to {_radius} * cos({_rad})
+		set {_t1} to location {_test1} meters in front of {_m1}
+		set {_m2} to {_el}
+		set pitch of {_m2} to 0
+		set {_test2} to {_radius} * sin({_rad})
+		set {_t2} to location {_test2} meters to the right of {_m2}
+		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
+		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
+		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+		if mod({_rad}, 60) is 0 or 60:
+			add {_el} to {_triangles::*}
+		spawnParticle_Dust(rgb(162, 32, 65), 0.6, {_el})
+		add 360 / {_count} to {_rad}
+	set {_ln} to 0
+	loop {_triangles::*}:
+		add 1 to {_ln}
+		set {_dot.1} to {_triangles::%{_ln}%}
+		set {_tgn} to {_ln} + 2
+		if {_tgn} > 6:
+			set {_tgn} to {_tgn} - 6
+		set {_dot.2} to {_triangles::%{_tgn}%}
+		set {_disn} to distance between {_dot.1} and {_dot.2} / 30
+		set {_linebase} to setDirToVec({_dot.1}, setVector({_dot.1}, {_dot.2}))
+		set {_m} to 0
+		loop 30 times:
+			add 1 to {_m}
+			set {_el} to location {_disn} * {_m} meters in front of {_linebase}
+			spawnParticle_Dust(rgb(162, 32, 65), 0.6, {_el})
+
+local function kitParticle_ArcaneSorcery_Sphere(loc: location):
+	spawnParticle_Dust(rgb(162, 32, 65), 3, {_loc})
+	set {_locs::*} to particleLocation_Sphere({_loc}, 10, 1, 30)
+	loop {_locs::*}:
+		spawnParticle(flame, loop-value)
+
+local function kitParticle_ArcaneSorcery_HitEntity(entity: entity):
+	
+
+
+
+
+
+
 	set {_tp} to target block
 	if {_tp} is set:
-		remove a netherite hoe named "§5§lMagical Confusion" from player
+		remove a netherite hoe named {@itemname} from player
 		set {_tpl} to location of {_tp}
 		set {_base} to location 0.6 meters above {_tpl}
 #	光線発射で魔法陣展開
