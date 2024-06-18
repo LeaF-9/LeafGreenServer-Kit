@@ -383,13 +383,11 @@ function kitTimer_CP():
 			set {_sc} to 1
 			loop all players:
 				{Join::%loop-player%} is "Kit"
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
+				scoreboard_Wipe(loop-player)
 		else if {_sc} = 6:
 			loop all players:
 				{Join::%loop-player%} is "Kit"
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
+				scoreboard_Wipe(loop-player)
 		if {_sc} <= 5:
 			kitChangeScoreboard_CP("point")
 		else:
@@ -400,22 +398,22 @@ function kitChangeScoreboard_CP(type: text):
 	if {_type} is "point":
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
-				set title of skoreboard loop-player to "§a§lKit PvP"
+				scoreboard_UpdateTitle(loop-player, "§a§lKit PvP")
 				if {Kit-GameStage::team} is "4" or 4:
-					set slot 7 of skoreboard loop-player to "§c赤§7: §6%floor({Kit-TeamPoint::red})%"
-					set slot 6 of skoreboard loop-player to "§9青§7: §6%floor({Kit-TeamPoint::blue})%"
-					set slot 5 of skoreboard loop-player to "§e黄§7: §6%floor({Kit-TeamPoint::yellow})%"
-					set slot 4 of skoreboard loop-player to "§a緑§7: §6%floor({Kit-TeamPoint::green})%"
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §6%floor({Kit-TeamPoint::red})%", 7)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §6%floor({Kit-TeamPoint::blue})%", 6)
+					scoreboard_UpdateLine(loop-player, "§e黄§7: §6%floor({Kit-TeamPoint::yellow})%", 5)
+					scoreboard_UpdateLine(loop-player, "§a緑§7: §6%floor({Kit-TeamPoint::green})%", 4)
 				else:
-					set slot 5 of skoreboard loop-player to "§c赤§7: §6%floor({Kit-TeamPoint::red})%"
-					set slot 4 of skoreboard loop-player to "§9青§7: §6%floor({Kit-TeamPoint::blue})%"
-				set slot 3 of skoreboard loop-player to " "
-				set slot 2 of skoreboard loop-player to "§6あなたの戦績"
-				set slot 1 of skoreboard loop-player to "§4%{Kit-Kill.personal::%loop-player%}% §7/ §1%{Kit-Death.personal::%loop-player%}%"
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §6%floor({Kit-TeamPoint::red})%", 7)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §6%floor({Kit-TeamPoint::blue})%", 6)
+				scoreboard_UpdateLine(loop-player, " ", 3)
+				scoreboard_UpdateLine(loop-player, "§6あなたの戦績", 2)
+				scoreboard_UpdateLine(loop-player, "§4%{Kit-Kill.personal::%loop-player%}% §7/ §1%{Kit-Death.personal::%loop-player%}%", 1)
 	else if {_type} is "area":
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
-				set title of skoreboard loop-player to "§a§lKit PvP"
+				scoreboard_UpdateTitle(loop-player, "§a§lKit PvP")
 				set {_slot} to 16
 				loop {Kit-GameStageAreas::*}:
 					delete {_team}
@@ -432,4 +430,4 @@ function kitChangeScoreboard_CP(type: text):
 						set {_ct} to "6"
 					else if {Kit-GameStageType::%{_pa}%} is "Diamond":
 						set {_ct} to "b"
-					set slot {_slot} of skoreboard loop-player to "§%{_ct}%- %{_color}%%{_pa}%"
+					scoreboard_UpdateLine(loop-player, "§%{_ct}%- %{_color}%%{_pa}%", {_slot})

@@ -3,245 +3,217 @@ function kitScore(game: text):
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
 				set {Sidebar::%loop-player%} to "Kit-%{_game}%"
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
-				set title of skoreboard loop-player to "§a§lKit PvP"
+				scoreboard_Wipe(loop-player)
+				scoreboard_UpdateTitle(loop-player, "§a§lKit PvP")
 				if {Kit-GameStage::team} is "4" or 4:
-					set slot 7 of skoreboard loop-player to "§c赤§7: §60"
-					set slot 6 of skoreboard loop-player to "§9青§7: §60"
-					set slot 5 of skoreboard loop-player to "§e黄§7: §60"
-					set slot 4 of skoreboard loop-player to "§a緑§7: §60"
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §60", 7)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §60", 6)
+					scoreboard_UpdateLine(loop-player, "§e黄§7: §60", 5)
+					scoreboard_UpdateLine(loop-player, "§a緑§7: §60", 4)
 				else:
-					set slot 7 of skoreboard loop-player to "§c赤§7: §60"
-					set slot 6 of skoreboard loop-player to "§9青§7: §60"
-				set slot 3 of skoreboard loop-player to " "
-				set slot 2 of skoreboard loop-player to "§6あなたの戦績"
-				set slot 1 of skoreboard loop-player to "§40 §7/ §10"
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §60", 7)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §60", 6)
+				scoreboard_UpdateLine(loop-player, " ", 3)
+				scoreboard_UpdateLine(loop-player, "§6あなたの戦績", 2)
+				scoreboard_UpdateLine(loop-player, "§40 §7/ §10", 1)
 	else if {_game} is "DTC":
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
 				set {Sidebar::%loop-player%} to "Kit-%{_game}%"
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
-				set title of skoreboard loop-player to "§a§lKit PvP"
+				scoreboard_Wipe(loop-player)
+				scoreboard_UpdateTitle(loop-player, "§a§lKit PvP")
 				if {Kit-GameStage::team} is "4" or 4:
-					set slot 15 of skoreboard loop-player to "§c赤§7:"
+					scoreboard_UpdateLine(loop-player, "§c赤§7:", 15)
 					set {_num} to 15
 					loop {Kit-GameStageCore_red::*}:
 						subtract 1 from {_num}
-						set slot {_num} of skoreboard loop-player to "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%"
-					set slot 12 of skoreboard loop-player to "§9青§7:"
+						scoreboard_UpdateLine(loop-player, "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%", {_num})
+					scoreboard_UpdateLine(loop-player, "§9青§7:", 12)
 					set {_num} to 12
 					loop {Kit-GameStageCore_blue::*}:
 						subtract 1 from {_num}
-						set slot {_num} of skoreboard loop-player to "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%"
-					set slot 9 of skoreboard loop-player to "§e黄§7:"
+						scoreboard_UpdateLine(loop-player, "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%", {_num})
+					scoreboard_UpdateLine(loop-player, "§e黄§7:", 9)
 					set {_num} to 9
 					loop {Kit-GameStageCore_yellow::*}:
 						subtract 1 from {_num}
-						set slot {_num} of skoreboard loop-player to "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%"
-					set slot 6 of skoreboard loop-player to "§a緑§7:"
+						scoreboard_UpdateLine(loop-player, "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%", {_num})
+					scoreboard_UpdateLine(loop-player, "§a緑§7:", 6)
 					set {_num} to 6
 					loop {Kit-GameStageCore_green::*}:
 						subtract 1 from {_num}
-						set slot {_num} of skoreboard loop-player to "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%"
+						scoreboard_UpdateLine(loop-player, "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%", {_num})
 				else:
-					set slot 15 of skoreboard loop-player to "§c赤§7:"
+					scoreboard_UpdateLine(loop-player, "§c赤§7:", 15)
 					set {_num} to 15
 					loop {Kit-GameStageCore_red::*}:
 						subtract 1 from {_num}
-						set slot {_num} of skoreboard loop-player to "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%"
-					set slot 9 of skoreboard loop-player to "§9青§7:"
+						scoreboard_UpdateLine(loop-player, "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%", {_num})
+					scoreboard_UpdateLine(loop-player, "§9青§7:", 9)
 					set {_num} to 9
 					loop {Kit-GameStageCore_blue::*}:
 						subtract 1 from {_num}
-						set slot {_num} of skoreboard loop-player to "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%"
-				set slot 3 of skoreboard loop-player to " "
-				set slot 2 of skoreboard loop-player to "§6あなたの戦績"
-				set slot 1 of skoreboard loop-player to "§40 §7/ §10"
+						scoreboard_UpdateLine(loop-player, "§7- §6%loop-value-2%§7: §b%{Kit-GameStageCoreHP::%loop-value-2%}%", {_num})
+				scoreboard_UpdateLine(loop-player, " ", 3)
+				scoreboard_UpdateLine(loop-player, "§6あなたの戦績", 2)
+				scoreboard_UpdateLine(loop-player, "§40 §7/ §10", 1)
 	else if {_game} is "CTF":
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
 				set {Sidebar::%loop-player%} to "Kit-%{_game}%"
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
-				set title of skoreboard loop-player to "§a§lKit PvP"
+				scoreboard_Wipe(loop-player)
+				scoreboard_UpdateTitle(loop-player, "§a§lKit PvP")
 				if {Kit-GameStage::team} is "4" or 4:
-					set slot 7 of skoreboard loop-player to "§c赤§7: §60"
-					set slot 6 of skoreboard loop-player to "§9青§7: §60"
-					set slot 5 of skoreboard loop-player to "§e黄§7: §60"
-					set slot 4 of skoreboard loop-player to "§a緑§7: §60"
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §60", 7)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §60", 6)
+					scoreboard_UpdateLine(loop-player, "§e黄§7: §60", 5)
+					scoreboard_UpdateLine(loop-player, "§a緑§7: §60", 4)
 				else:
-					set slot 7 of skoreboard loop-player to "§c赤§7: §60"
-					set slot 6 of skoreboard loop-player to "§9青§7: §60"
-				set slot 3 of skoreboard loop-player to " "
-				set slot 2 of skoreboard loop-player to "§6あなたの戦績"
-				set slot 1 of skoreboard loop-player to "§40 §7/ §10"
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §60", 7)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §60", 6)
+				scoreboard_UpdateLine(loop-player, " ", 3)
+				scoreboard_UpdateLine(loop-player, "§6あなたの戦績", 2)
+				scoreboard_UpdateLine(loop-player, "§40 §7/ §10", 1)
 	else if {_game} is "SH":
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
 				set {Sidebar::%loop-player%} to "Kit-%{_game}%"
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
-				set title of skoreboard loop-player to "§a§lKit PvP"
+				scoreboard_Wipe(loop-player)
+				scoreboard_UpdateTitle(loop-player, "§a§lKit PvP")
 				if {Kit-GameStage::team} is "4" or 4:
-					set slot 7 of skoreboard loop-player to "§c赤§7: §60"
-					set slot 6 of skoreboard loop-player to "§9青§7: §60"
-					set slot 5 of skoreboard loop-player to "§e黄§7: §60"
-					set slot 4 of skoreboard loop-player to "§a緑§7: §60"
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §60", 7)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §60", 6)
+					scoreboard_UpdateLine(loop-player, "§e黄§7: §60", 5)
+					scoreboard_UpdateLine(loop-player, "§a緑§7: §60", 4)
 				else:
-					set slot 7 of skoreboard loop-player to "§c赤§7: §60"
-					set slot 6 of skoreboard loop-player to "§9青§7: §60"
-				set slot 3 of skoreboard loop-player to " "
-				set slot 2 of skoreboard loop-player to "§6あなたの戦績"
-				set slot 1 of skoreboard loop-player to "§40 §7/ §10"
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §60", 7)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §60", 6)
+				scoreboard_UpdateLine(loop-player, " ", 3)
+				scoreboard_UpdateLine(loop-player, "§6あなたの戦績", 2)
+				scoreboard_UpdateLine(loop-player, "§40 §7/ §10", 1)
 	else if {_game} is "CP":
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
 				set {Sidebar::%loop-player%} to "Kit-%{_game}%"
-				reset skoreboard of loop-player
-				setup skoreboard of loop-player
-				set title of skoreboard loop-player to "§a§lKit PvP"
+				scoreboard_Wipe(loop-player)
+				scoreboard_UpdateTitle(loop-player, "§a§lKit PvP")
 				if {Kit-GameStage::team} is "4" or 4:
-					set slot 7 of skoreboard loop-player to "§c赤§7: §60"
-					set slot 6 of skoreboard loop-player to "§9青§7: §60"
-					set slot 5 of skoreboard loop-player to "§e黄§7: §60"
-					set slot 4 of skoreboard loop-player to "§a緑§7: §60"
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §60", 7)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §60", 6)
+					scoreboard_UpdateLine(loop-player, "§e黄§7: §60", 5)
+					scoreboard_UpdateLine(loop-player, "§a緑§7: §60", 4)
 				else:
-					set slot 7 of skoreboard loop-player to "§c赤§7: §60"
-					set slot 6 of skoreboard loop-player to "§9青§7: §60"
-				set slot 3 of skoreboard loop-player to " "
-				set slot 2 of skoreboard loop-player to "§6あなたの戦績"
-				set slot 1 of skoreboard loop-player to "§40 §7/ §10"
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §60", 7)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §60", 6)
+				scoreboard_UpdateLine(loop-player, " ", 3)
+				scoreboard_UpdateLine(loop-player, "§6あなたの戦績", 2)
+				scoreboard_UpdateLine(loop-player, "§40 §7/ §10", 1)
 
 function kitScoreJoining(player: player):
 	if {Kit-GameStage::rule} is "TDM":
 		set {Sidebar::%{_player}%} to "Kit-TDM"
-		reset skoreboard of {_player}
-		setup skoreboard of {_player}
-		set title of skoreboard {_player} to "§a§lKit PvP"
+		scoreboard_Wipe({_player})
+		scoreboard_UpdateTitle({_player}, "§a§lKit PvP")
 		if {Kit-GameStage::team} is "4" or 4:
-			set slot 7 of skoreboard {_player} to "§c赤§7: §6%floor({Kit-Kill.team::red})%"
-			set slot 6 of skoreboard {_player} to "§9青§7: §6%floor({Kit-Kill.team::blue})%"
-			set slot 5 of skoreboard {_player} to "§e黄§7: §6%floor({Kit-Kill.team::yellow})%"
-			set slot 4 of skoreboard {_player} to "§a緑§7: §6%floor({Kit-Kill.team::green})%"
+			scoreboard_UpdateLine({_player}, "§c赤§7: §6%floor({Kit-Kill.team::red})%", 7)
+			scoreboard_UpdateLine({_player}, "§9青§7: §6%floor({Kit-Kill.team::blue})%", 6)
+			scoreboard_UpdateLine({_player}, "§e黄§7: §6%floor({Kit-Kill.team::yellow})%", 5)
+			scoreboard_UpdateLine({_player}, "§a緑§7: §6%floor({Kit-Kill.team::green})%", 4)
 		else:
-			set slot 7 of skoreboard {_player} to "§c赤§7: §6%floor({Kit-Kill.team::red})%"
-			set slot 6 of skoreboard {_player} to "§9青§7: §6%floor({Kit-Kill.team::blue})%"
-		set slot 3 of skoreboard {_player} to " "
-		set slot 2 of skoreboard {_player} to "§6あなたの戦績"
-		set slot 1 of skoreboard {_player} to "§4%{Kit-Kill.personal::%{_player}%}% §7/ §1%{Kit-Death.personal::%{_player}%}%"
+			scoreboard_UpdateLine({_player}, "§c赤§7: §6%floor({Kit-Kill.team::red})%", 7)
+			scoreboard_UpdateLine({_player}, "§9青§7: §6%floor({Kit-Kill.team::blue})%", 6)
+		scoreboard_UpdateLine({_player}, " ", 3)
+		scoreboard_UpdateLine({_player}, "§6あなたの戦績", 2)
+		scoreboard_UpdateLine({_player}, "§4%{Kit-Kill.personal::%{_player}%}% §7/ §1%{Kit-Death.personal::%{_player}%}%", 1)
 	else if {Kit-GameStage::rule} is "DTC":
 		set {Sidebar::%{_player}%} to "Kit-DTC"
-		reset skoreboard of {_player}
-		setup skoreboard of {_player}
-		set title of skoreboard {_player} to "§a§lKit PvP"
+		scoreboard_Wipe({_player})
+		scoreboard_UpdateTitle({_player}, "§a§lKit PvP")
 		if {Kit-GameStage::team} is "4" or 4:
-			set slot 15 of skoreboard {_player} to "§c赤§7:"
+			scoreboard_UpdateLine({_player}, "§c赤§7:", 15)
 			set {_num} to 15
 			loop {Kit-GameStageCore_red::*}:
 				subtract 1 from {_num}
-				set slot {_num} of skoreboard {_player} to "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%"
-			set slot 12 of skoreboard {_player} to "§9青§7:"
+				scoreboard_UpdateLine({_player}, "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%", {_num})
+			scoreboard_UpdateLine({_player}, "§9青§7:", 12)
 			set {_num} to 12
 			loop {Kit-GameStageCore_blue::*}:
 				subtract 1 from {_num}
-				set slot {_num} of skoreboard {_player} to "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%"
-			set slot 9 of skoreboard {_player} to "§e黄§7:"
+				scoreboard_UpdateLine({_player}, "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%", {_num})
+			scoreboard_UpdateLine({_player}, "§e黄§7:", 9)
 			set {_num} to 9
 			loop {Kit-GameStageCore_yellow::*}:
 				subtract 1 from {_num}
-				set slot {_num} of skoreboard {_player} to "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%"
-			set slot 6 of skoreboard {_player} to "§a緑§7:"
+				scoreboard_UpdateLine({_player}, "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%", {_num})
+			scoreboard_UpdateLine({_player}, "§a緑§7:", 6)
 			set {_num} to 6
 			loop {Kit-GameStageCore_green::*}:
 				subtract 1 from {_num}
-				set slot {_num} of skoreboard {_player} to "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%"
+				scoreboard_UpdateLine({_player}, "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%", {_num})
 		else:
-			set slot 15 of skoreboard {_player} to "§c赤§7:"
+			scoreboard_UpdateLine({_player}, "§c赤§7:", 15)
 			set {_num} to 15
 			loop {Kit-GameStageCore_red::*}:
 				subtract 1 from {_num}
-				set slot {_num} of skoreboard {_player} to "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%"
-			set slot 9 of skoreboard {_player} to "§9青§7:"
+				scoreboard_UpdateLine({_player}, "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%", {_num})
+			scoreboard_UpdateLine({_player}, "§9青§7:", 9)
 			set {_num} to 9
 			loop {Kit-GameStageCore_blue::*}:
 				subtract 1 from {_num}
-				set slot {_num} of skoreboard {_player} to "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%"
-		set slot 3 of skoreboard {_player} to " "
-		set slot 2 of skoreboard {_player} to "§6あなたの戦績"
-		set slot 1 of skoreboard {_player} to "§4%{Kit-Kill.personal::%{_player}%}% §7/ §1%{Kit-Death.personal::%{_player}%}%"
+				scoreboard_UpdateLine({_player}, "§7- §6%loop-value%§7: §b%ceil({Kit-GameStageCoreHP::%loop-value%})%", {_num})
+		scoreboard_UpdateLine({_player}, " ", 3)
+		scoreboard_UpdateLine({_player}, "§6あなたの戦績", 2)
+		scoreboard_UpdateLine({_player}, "§4%{Kit-Kill.personal::%{_player}%}% §7/ §1%{Kit-Death.personal::%{_player}%}%", 1)
 	else if {Kit-GameStage::rule} is "CTF":
 		set {Sidebar::%{_player}%} to "Kit-CTF"
-		reset skoreboard of {_player}
-		setup skoreboard of {_player}
-		set title of skoreboard {_player} to "§a§lKit PvP"
+		scoreboard_Wipe({_player})
+		scoreboard_UpdateTitle({_player}, "§a§lKit PvP")
 		if {Kit-GameStage::team} is "4" or 4:
-			set slot 7 of skoreboard {_player} to "§c赤§7: §6%floor({Kit-FlagPoint::red})%"
-			set slot 6 of skoreboard {_player} to "§9青§7: §6%floor({Kit-FlagPoint::blue})%"
-			set slot 5 of skoreboard {_player} to "§e黄§7: §6%floor({Kit-FlagPoint::yellow})%"
-			set slot 4 of skoreboard {_player} to "§a緑§7: §6%floor({Kit-FlagPoint::green})%"
+			scoreboard_UpdateLine({_player}, "§c赤§7: §6%floor({Kit-FlagPoint::red})%", 7)
+			scoreboard_UpdateLine({_player}, "§9青§7: §6%floor({Kit-FlagPoint::blue})%", 6)
+			scoreboard_UpdateLine({_player}, "§e黄§7: §6%floor({Kit-FlagPoint::yellow})%", 5)
+			scoreboard_UpdateLine({_player}, "§a緑§7: §6%floor({Kit-FlagPoint::green})%", 4)
 		else:
-			set slot 7 of skoreboard {_player} to "§c赤§7: §6%floor({Kit-FlagPoint::red})%"
-			set slot 6 of skoreboard {_player} to "§9青§7: §6%floor({Kit-FlagPoint::blue})%"
-		set slot 3 of skoreboard {_player} to " "
-		set slot 2 of skoreboard {_player} to "§6あなたの戦績"
-		set slot 1 of skoreboard {_player} to "§4%{Kit-Kill.personal::%{_player}%}% §7/ §1%{Kit-Death.personal::%{_player}%}%"
+			scoreboard_UpdateLine({_player}, "§c赤§7: §6%floor({Kit-FlagPoint::red})%", 7)
+			scoreboard_UpdateLine({_player}, "§9青§7: §6%floor({Kit-FlagPoint::blue})%", 6)
+		scoreboard_UpdateLine({_player}, " ", 3)
+		scoreboard_UpdateLine({_player}, "§6あなたの戦績", 2)
+		scoreboard_UpdateLine({_player}, "§4%{Kit-Kill.personal::%{_player}%}% §7/ §1%{Kit-Death.personal::%{_player}%}%", 1)
 	else if {Kit-GameStage::rule} is "SH":
 		set {Sidebar::%{_player}%} to "Kit-SH"
-		reset skoreboard of {_player}
-		setup skoreboard of {_player}
-		set title of skoreboard {_player} to "§a§lKit PvP"
+		scoreboard_Wipe({_player})
+		scoreboard_UpdateTitle({_player}, "§a§lKit PvP")
 		if {Kit-GameStage::team} is "4" or 4:
-			set slot 7 of skoreboard {_player} to "§c赤§7: §6%floor({Kit-SheepPoint::red})%"
-			set slot 6 of skoreboard {_player} to "§9青§7: §6%floor({Kit-SheepPoint::blue})%"
-			set slot 5 of skoreboard {_player} to "§e黄§7: §6%floor({Kit-SheepPoint::yellow})%"
-			set slot 4 of skoreboard {_player} to "§a緑§7: §6%floor({Kit-SheepPoint::green})%"
+			scoreboard_UpdateLine({_player}, "§c赤§7: §6%floor({Kit-SheepPoint::red})%", 7)
+			scoreboard_UpdateLine({_player}, "§9青§7: §6%floor({Kit-SheepPoint::blue})%", 6)
+			scoreboard_UpdateLine({_player}, "§e黄§7: §6%floor({Kit-SheepPoint::yellow})%", 5)
+			scoreboard_UpdateLine({_player}, "§a緑§7: §6%floor({Kit-SheepPoint::green})%", 4)
 		else:
-			set slot 7 of skoreboard {_player} to "§c赤§7: §6%floor({Kit-SheepPoint::red})%"
-			set slot 6 of skoreboard {_player} to "§9青§7: §6%floor({Kit-SheepPoint::blue})%"
-		set slot 3 of skoreboard {_player} to " "
-		set slot 2 of skoreboard {_player} to "§6あなたの戦績"
-		set slot 1 of skoreboard {_player} to "§4%{Kit-Kill.personal::%{_player}%}% §7/ §1%{Kit-Death.personal::%{_player}%}%"
+			scoreboard_UpdateLine({_player}, "§c赤§7: §6%floor({Kit-SheepPoint::red})%", 7)
+			scoreboard_UpdateLine({_player}, "§9青§7: §6%floor({Kit-SheepPoint::blue})%", 6)
+		scoreboard_UpdateLine({_player}, " ", 3)
+		scoreboard_UpdateLine({_player}, "§6あなたの戦績", 2)
+		scoreboard_UpdateLine({_player}, "§4%{Kit-Kill.personal::%{_player}%}% §7/ §1%{Kit-Death.personal::%{_player}%}%", 1)
 	else if {Kit-GameStage::rule} is "CP":
 		set {Sidebar::%{_player}%} to "Kit-CP"
-		reset skoreboard of {_player}
-		setup skoreboard of {_player}
-		set title of skoreboard {_player} to "§a§lKit PvP"
+		scoreboard_Wipe({_player})
+		scoreboard_UpdateTitle({_player}, "§a§lKit PvP")
 		if {Kit-GameStage::team} is "4" or 4:
-			set slot 7 of skoreboard {_player} to "§c赤§7: §6%floor({Kit-TeamPoint::red})%"
-			set slot 6 of skoreboard {_player} to "§9青§7: §6%floor({Kit-TeamPoint::blue})%"
-			set slot 5 of skoreboard {_player} to "§e黄§7: §6%floor({Kit-TeamPoint::yellow})%"
-			set slot 4 of skoreboard {_player} to "§a緑§7: §6%floor({Kit-TeamPoint::green})%"
+			scoreboard_UpdateLine({_player}, "§c赤§7: §6%floor({Kit-TeamPoint::red})%", 7)
+			scoreboard_UpdateLine({_player}, "§9青§7: §6%floor({Kit-TeamPoint::blue})%", 6)
+			scoreboard_UpdateLine({_player}, "§e黄§7: §6%floor({Kit-TeamPoint::yellow})%", 5)
+			scoreboard_UpdateLine({_player}, "§a緑§7: §6%floor({Kit-TeamPoint::green})%", 4)
 		else:
-			set slot 7 of skoreboard {_player} to "§c赤§7: §6%floor({Kit-TeamPoint::red})%"
-			set slot 6 of skoreboard {_player} to "§9青§7: §6%floor({Kit-TeamPoint::blue})%"
-		set slot 3 of skoreboard {_player} to " "
-		set slot 2 of skoreboard {_player} to "§6あなたの戦績"
-		set slot 1 of skoreboard {_player} to "§4%{Kit-Kill.personal::%{_player}%}% §7/ §1%{Kit-Death.personal::%{_player}%}%"
-
-# Skoreの数字が逆転したので こちらで処理
+			scoreboard_UpdateLine({_player}, "§c赤§7: §6%floor({Kit-TeamPoint::red})%", 7)
+			scoreboard_UpdateLine({_player}, "§9青§7: §6%floor({Kit-TeamPoint::blue})%", 6)
+		scoreboard_UpdateLine({_player}, " ", 3)
+		scoreboard_UpdateLine({_player}, "§6あなたの戦績", 2)
+		scoreboard_UpdateLine({_player}, "§4%{Kit-Kill.personal::%{_player}%}% §7/ §1%{Kit-Death.personal::%{_player}%}%", 1)
 
 function kitScorePersonal(player: player, slot: number, text: text):
-# ##### 調整部分 #####
-	# if {_slot} < 8:
-	# 	set {_adj} to 8 - {_slot}
-	# 	set {_slotnum} to 8 + {_adj}
-	# else if {_slot} > 8:
-	# 	set {_adj} to {_slot} - 8
-	# 	set {_slotnum} to 8 - {_adj}
-# ###################
-	set slot {_slot} of skoreboard {_player} to {_text}
+	scoreboard_UpdateLine({_player}, {_text}, {_slot})
 
 function kitScoreGlobal(slot: number, text: text):
-# ##### 調整部分 #####
-	# if {_slot} < 8:
-	# 	set {_adj} to 8 - {_slot}
-	# 	set {_slotnum} to 8 + {_adj}
-	# else if {_slot} > 8:
-	# 	set {_adj} to {_slot} - 8
-	# 	set {_slotnum} to 8 - {_adj}
-# ###################
 	loop all players:
 		if {Join::%loop-player%} is "Kit":
-			set slot {_slot} of skoreboard loop-player to {_text}
+			scoreboard_UpdateLine(loop-player, {_text}, {_slot})
