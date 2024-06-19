@@ -86,14 +86,14 @@ function kitFreeze(player: player, time: time span, msg: boolean = true):
 				subtract {_prog} from {_value}
 				set bossbar "%{_player}%-Freeze" value to {_value}
 				set {_nbt} to nbt compound of {_player}
-				set tag "TicksFrozen" of {_nbt} to 130
+				set int tag "TicksFrozen" of {_nbt} to 130
 			wait a tick
 	{Kit-Freeze::%{_player}%} is {_now}
 	delete {Kit-Freeze::%{_player}%}
 	if {_msg} is true:
 		remove bossbar "%{_player}%-Freeze"
 		set {_nbt} to nbt compound of {_player}
-		set tag "TicksFrozen" of {_nbt} to 0
+		set int tag "TicksFrozen" of {_nbt} to 0
 
 on damage of player:
 	{Kit-Freeze::%victim%} is set
@@ -323,8 +323,7 @@ function kitFear(player: player, time: time span):
 					spawnParticle(falling_obsidian_tear, {_el})
 			# -----------------------
 			else if mod(loop-number, 20) > 5:
-				set {_pkt} to new play_server_stop_sound packet
-				send {_player} packet {_pkt}
+				stop all sounds for {_player}
 			# --- 効果 ---
 			loop all players:
 				metadata value "gametype" of loop-player is "Kit"

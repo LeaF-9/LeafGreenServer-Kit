@@ -1,9 +1,10 @@
 function setFuseTime(tnt: entity, tick: number):
 	set {_tnt.nbt} to nbt compound of {_tnt}
-	set tag "Fuse" of {_tnt.nbt} to {_tick}
+	set int tag "Fuse" of {_tnt.nbt} to {_tick}
 
-function itemTagChanger(item: item, tag: text, cont: object) :: item:
+function itemTagChanger(item: item, tag: text, type: text, cont: object) :: item:
+	set {_nbttype} to "%{_type}% tag" parsed as nbt type
 	set {_nbt} to nbt compound of {_item}
-	set tag {_tag} of {_nbt} to {_cont}
+	set {_nbttype} {_tag} of {_nbt} to {_cont}
 	set {_newitem} to {_item} with nbt {_nbt}
 	return {_newitem}

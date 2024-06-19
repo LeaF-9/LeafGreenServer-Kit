@@ -1,17 +1,17 @@
 # Item tag Checker
 function kitItemKitChecker(skill: item) :: text:
 	set {_nbt} to nbt compound of {_skill}
-	set {_kit} to tag "kit" of {_nbt}
+	set {_kit} to  string tag "kit" of {_nbt}
 	return {_kit}
 
 function kitItemTypeChecker(skill: item) :: text:
 	set {_nbt} to nbt compound of {_skill}
-	set {_type} to tag "type" of {_nbt}
+	set {_type} to string tag "type" of {_nbt}
 	return {_type}
 
 function kitItemNumberChecker(skill: item) :: number:
 	set {_nbt} to nbt compound of {_skill}
-	set {_num} to tag "number" of {_nbt}
+	set {_num} to int tag "number" of {_nbt}
 	set {_num} to "%{_num}%" parsed as number
 	return {_num}
 
@@ -29,9 +29,9 @@ function kitItemAllChecker(skill: item, kit: text, type: text, num: number) :: b
 
 function kitItemTagChanger(skill: item, kit: text, type: text, num: number) :: item:
 	set {_nbt} to nbt compound of {_skill}
-	set tag "kit" of {_nbt} to {_kit}
-	set tag "type" of {_nbt} to {_type}
-	set tag "number" of {_nbt} to {_num}
+	set string tag "kit" of {_nbt} to {_kit}
+	set string tag "type" of {_nbt} to {_type}
+	set int tag "number" of {_nbt} to {_num}
 	set {_newitem} to {_skill} with nbt {_nbt}
 	return {_newitem}
 
