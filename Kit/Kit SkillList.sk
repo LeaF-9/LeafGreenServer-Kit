@@ -248,6 +248,8 @@ on inventory click:
 						set yml value "custom.%loop-value-1%.weapon" from "player.%player%" to {_index}
 						save yml "player.%player%"
 						message "{@prefix} §a選択したWeaponをセーブしました" to player
+						if {Kit-Testing::%player%} is true:
+							execute console command "/class %loop-value-1% %player% false"
 				loop {_sub-weapon::*}:
 					if loop-value-2 is {_weapon}:
 						message "{@prefix} §cそのアイテムは§aSub Weapon§cです" to player
@@ -403,6 +405,8 @@ command /kitskillsave <text> <player>:
 			if {Kit-tochu} is true:
 				if {Join::%arg 2%} is "Kit":
 					execute console command "/class %arg 1% %arg 2% true"
+			if {Kit-Testing::%arg 2%} is true:
+				execute console command "/class %arg 1% %arg 2% false"
 		else:
 			message "{@prefix} §c選択したアイテムはSkillではありません" to arg 2
 		close arg 2's inventory
