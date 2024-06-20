@@ -8,10 +8,8 @@ function spawnParticle_BlockData(particle: particle, block: block data, loc: loc
 	draw 1 of {_particle} using {_block} at {_loc} with force for {_players::*}
 
 function spawnParticle_Color(particle: particle, R: number, G: number, B: number, loc: location, players: players = all players):
-	set {_R} to (1 / 255) * {_R}
-	set {_G} to (1 / 255) * {_G}
-	set {_B} to (1 / 255) * {_B}
-	draw 0 of {_particle} at {_loc} with offset vector({_R}, {_G}, {_B}) with force for {_players::*}
+	set {_bukkitColor} to bukkitColor(255, {_R}, {_G}, {_B})
+	draw 1 of {_particle} using {_bukkitColor} at {_loc} with force for {_players::*}
 
 function spawnParticle_Dust(color: color, size: number, loc: location, players: players = all players):
 	set {_dustOption} to dustOption({_color}, {_size})
@@ -59,6 +57,9 @@ function noteColorOffset(color: text) :: number:
 
 function spawnParticle_NoteOption(color: number, loc: location, players: players = all players):
 	draw 0 of note at {_loc} with offset vector({_color}, 0, 0) with extra 1 with force for {_players::*}
+
+function spawnParticle_Number(particle: particle, num: number, loc: location, players: players = all players):
+	draw 0 of {_particle} using {_num} at {_loc} with force for {_players::*}
 
 function spawnParticle_Size(particle: particle, size: number, loc: location, players: players = all players):
 	draw 1 of {_particle} at {_loc} with extra {_size} with force for {_players::*}
