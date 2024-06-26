@@ -20,6 +20,7 @@ function kitSkill_Ghost_5(player: player):
 					set {_health} to 10
 					loop 11 times:
 						if {Stats.%{_player}%::DeathCursing} is set:
+							kitParticle_DeathCurse_Targeting({_player}, {_tg})
 							if {_health} is 0:
 								set {_ok} to true
 							set health of {_player} to {_health}
@@ -91,3 +92,18 @@ on damage of player:
 	metadata value "gametype" of victim is "Kit"
 	if {Stats.%victim%::DeathCursing} is true:
 		delete {Stats.%victim%::DeathCursing}
+
+
+
+local function kitParticle_DeathCurse_Targeting(player: player, target: player):
+	loop 20 times:
+		set {_baseloc} to location 1 meter above {_target}
+		set {_baseloc} to setDirToVec({_baseloc}, setVector({_baseloc}, location 1 meter above {_player}))
+		set {_distance} to distance between {_player} and {_target}
+		set {_count} to round({_distance}) * 2
+		set {_meter} to {_distance} / {_count}
+		loop {_count} times:
+			set {_loopnum.2} to loop-number-2
+			set {_el} to location {_loopnum.2} * {_meter} meters in front of {_baseloc}
+			spawnParticle_Dust(rgb(0, 0, 0), 1.5, {_el})
+		wait a tick
