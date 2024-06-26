@@ -21,7 +21,7 @@ local function kitEffect_ArcaneSorcery(player: player):
 	loop 2000 times:
 		if {_hitloc} is set:
 			continue
-		set {_effloc} to location loop-number * 0.1 meters in front of {_baseloc}
+		set {_effloc} to location loop-number * 0.3 meters in front of {_baseloc}
 		kitParticle_ArcaneSorcery_Sphere({_effloc})
 		loop all entities in radius 3 around {_effloc}:
 			kitCheckTeam(loop-entity, {_player}, false, true) is true
@@ -30,7 +30,7 @@ local function kitEffect_ArcaneSorcery(player: player):
 			distance between loop-entity and {_effloc} <= 1
 			set {_hit.%id of loop-entity%} to true
 			kitEffect_ArcaneSorcery_HitEntity({_player}, loop-entity)
-		set {_preloc} to location 0.1 meters in front of {_effloc}
+		set {_preloc} to location 0.3 meters in front of {_effloc}
 		if block at {_preloc} is not passable:
 			set {_hitloc} to {_effloc}
 			continue
@@ -41,14 +41,14 @@ local function kitEffect_ArcaneSorcery(player: player):
 local function kitEffect_ArcaneSorcery_HitEntity(player: player, target: entity):
 	kitParticle_ArcaneSorcery_HitEntity({_target})
 	kitDamage({_player}, {_target}, 5)
-	ignite {_target} by 10 seconds
+	ignite {_target} for 10 seconds
 
 local function kitEffect_ArcaneSorcery_Ground(player: player, loc: location):
 	kitParticle_ArcaneSorcery_Magical({_loc})
 	wait 3 seconds
 	kitParticle_ArcaneSorcery_Beam({_loc})
 	loop 100 times:
-		loop all entities:
+		loop all entities in radius 15 around {_loc}:
 			kitCheckTeam(loop-entity, {_player}, false, true) is true
 			set {_el} to location of loop-entity
 			set y-pos of {_el} to y-pos of {_loc}
@@ -100,158 +100,154 @@ local function kitParticle_ArcaneSorcery_Launch(loc: location):
 
 local function kitParticle_ArcaneSorcery_Sphere(loc: location):
 	spawnParticle_Dust(rgb(162, 32, 65), 3, {_loc})
-	set {_locs::*} to particleLocation_Sphere({_loc}, 10, 1, 30)
+	set {_locs::*} to particleLocation_Sphere({_loc}, 10, 1, 5)
 	loop {_locs::*}:
 		spawnParticle(flame, loop-value)
 
 local function kitParticle_ArcaneSorcery_HitEntity(entity: entity):
-	
+	playSound("entity.blaze.shoot", 1, 0.65, {_entity})
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 20 times:
+		spawnParticle_Vector(flame, randomVector(), 0.4, {_baseloc})
 
+local function kitParticle_ArcaneSorcery_Magical(loc: location):
+	playSound("item.trident.return", 1.5, 0.5, {_loc})
+	kitParticle_ArcaneSorcery_Star({_loc})
+	loop 60 times:
+		set {_loopnum} to loop-number
+		# 円
+		set {_count} to 60
+		set {_rad} to 0
+		set {_radius} to 10
+		loop {_count} times:
+			set {_el} to {_loc}
+			add {_radius} * sin({_rad}) to x-pos of {_el}
+			add {_radius} * cos({_rad}) to z-pos of {_el}
+			if mod({_rad}, 72) is 0 or 72:
+				add {_el} to {_hexagons::*}
+			spawnParticle_Dust(rgb(240, 131, 0), 1.5, {_el})
+			add 360 / {_count} to {_rad}
+		wait a tick
+	loop 100 times:
+		set {_loopnum} to loop-number
+		# 円
+		set {_count} to 60
+		set {_rad} to 0
+		set {_radius} to 10
+		loop {_count} times:
+			set {_el} to {_loc}
+			add {_radius} * sin({_rad}) to x-pos of {_el}
+			add {_radius} * cos({_rad}) to z-pos of {_el}
+			if mod({_rad}, 72) is 0 or 72:
+				add {_el} to {_hexagons::*}
+			spawnParticle_Dust(rgb(201, 23, 30), 1.5, {_el})
+			add 360 / {_count} to {_rad}
+		wait a tick
 
-
-
-
-
-	set {_tp} to target block
-	if {_tp} is set:
-		remove a netherite hoe named {@itemname} from player
-		set {_tpl} to location of {_tp}
-		set {_base} to location 0.6 meters above {_tpl}
-#	光線発射で魔法陣展開
-		set {_pb} to location of player
-		add 1.5 to y-coordinate of {_pb}
-		set {_dis} to round(distance between {_pb} and {_base})
-		set {_n} to 0
-		loop {_dis} times:
-			add 1 to {_n}
-			set {_el} to location {_n} meters in front of {_pb}
-			spawnParticle(end_rod, {_el})
-#	魔法陣の展開
-		set {_tick} to 20
-		set {_n.k} to 0
-		set {_n.g} to 0
-		set {_n.e} to 0
-		set pitch of {_effbaseloc} to 0
-		playSound("block.respawn_anchor.set_spawn", 1.9, 1, {_base})
-		loop 20 times:
-#		弧を描く
-			loop 3 times:
-				set {_effbaseloc} to {_base}
-				add 10 * sin({_n.k}) to x-coordinate of {_effbaseloc}
-				add 10 * cos({_n.k}) to z-coordinate of {_effbaseloc}
-				add {_effbaseloc} to {_effloc::*}
-				kitParticle_MagicalConfusion_Dust({_effbaseloc}, {_tick})
-				add 6 to {_n.k}
-#		弦を描く
-			if loop-number is between 1 and 6:
-				if {_l.A} is not set:
-					set {_l.A} to {_base}
-					set yaw of {_l.A} to 120
-					add 10 * sin(90) to x-coordinate of {_l.A}
-					add 10 * cos(90) to z-coordinate of {_l.A}
-				if {_l.B} is not set:
-					set {_l.B} to {_base}
-					set yaw of {_l.B} to 0
-					add 10 * sin(210) to x-coordinate of {_l.B}
-					add 10 * cos(210) to z-coordinate of {_l.B}
-				if {_l.C} is not set:
-					set {_l.C} to {_base}
-					set yaw of {_l.C} to 240
-					add 10 * sin(330) to x-coordinate of {_l.C}
-					add 10 * cos(330) to z-coordinate of {_l.C}
-				if {_l.D} is not set:
-					set {_l.D} to {_base}
-					set yaw of {_l.D} to 180
-					add 10 * sin(30) to x-coordinate of {_l.D}
-					add 10 * cos(30) to z-coordinate of {_l.D}
-				if {_l.E} is not set:
-					set {_l.E} to {_base}
-					set yaw of {_l.E} to 60
-					add 10 * sin(150) to x-coordinate of {_l.E}
-					add 10 * cos(150) to z-coordinate of {_l.E}
-				if {_l.F} is not set:
-					set {_l.F} to {_base}
-					set yaw of {_l.F} to 300
-					add 10 * sin(270) to x-coordinate of {_l.F}
-					add 10 * cos(270) to z-coordinate of {_l.F}
-				loop 3 times:
-					add sqrt(3) / 2 to {_n.g}
-#				A-B
-					set {_loc.g} to location {_n.g} meters in front of {_l.A}
-					add {_loc.g} to {_effloc::*}
-					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
-#				D-E
-					set {_loc.g} to location {_n.g} meters in front of {_l.D}
-					add {_loc.g} to {_effloc::*}
-					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
-			else if loop-number is between 7 and 12:
-				if {_n.g} > 15:
-					set {_n.g} to 0
-				loop 3 times:
-					add sqrt(3) / 2 to {_n.g}
-#				B-C
-					set {_loc.g} to location {_n.g} meters in front of {_l.B}
-					add {_loc.g} to {_effloc::*}
-					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
-#				E-F
-					set {_loc.g} to location {_n.g} meters in front of {_l.E}
-					add {_loc.g} to {_effloc::*}
-					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
-			else if loop-number is between 13 and 18:
-				if {_n.g} > 15:
-					set {_n.g} to 0
-				loop 3 times:
-					add sqrt(3) / 2 to {_n.g}
-#				C-A
-					set {_loc.g} to location {_n.g} meters in front of {_l.C}
-					add {_loc.g} to {_effloc::*}
-					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
-#				F-D
-					set {_loc.g} to location {_n.g} meters in front of {_l.F}
-					add {_loc.g} to {_effloc::*}
-					kitParticle_MagicalConfusion_Dust({_loc.g}, {_tick})
-			subtract 1 from {_tick}
-			add 1 to {_n.e}
-			loop all blocks in radius 10 around {_base}:
-				loop-block is air
-				chance of ({_n.e} / 10)%:
-					spawnParticle_Color(entity_effect, 0, 123, 187, location of loop-block)
-			wait a tick
-		playSound("block.respawn_anchor.deplete", 1.9, 0.5, {_base})
-		loop all players in radius 10 around {_base}:
-			{TrueTeam::%loop-player%} is not {TrueTeam::%player%}
-			kitDamage(player, loop-player, 5, true)
-			apply wither 3 to loop-player for 5 seconds
-			message "<##e2041b>§l魔力爆発に巻き込まれてしまった!" to loop-player
-			add 10 to {Kit-Mana::%player%}
-			loop 5 times:
-				set {_el} to aroundEffect(loop-player)
-				spawnParticle_Color(entity_effect, 226, 4, 27, {_el})
-		loop all blocks in radius 10 around {_base}:
-			loop-block is air
-			chance of 10%:
-				spawnParticle_Block(blue ice, location of loop-block)
-		kitParticle_MagicalConfusion_Dust2({_effloc::*})
-		loop 180 times:
-			if distance between player and {_base} <= 10:
-				set {Stats.%player%::UltWizard} to true
-				loop 3 times:
-					set {_el} to aroundEffect(player)
-					spawnParticle_Dust(rgb(226, 4, 27), 1, {_el})
+local function kitParticle_ArcaneSorcery_Star(loc: location):
+	# 五角形の頂点決め
+	set {_rad} to 0
+	loop 5 times:
+		set {_loc.decide} to {_loc}
+		add 10 * sin({_rad}) to x-pos of {_loc.decide}
+		add 10 * cos({_rad}) to z-pos of {_loc.decide}
+		set {_locs::%loop-number%} to {_loc.decide}
+		add 72 to {_rad}
+	# 準備描写
+	set {_dis.hex} to distance between {_locs::1} and {_locs::2} / 12 # 1 countに進むmeter(hex)
+	set {_dis.star} to distance between {_locs::1} and {_locs::3} / 12  # 1 countに進むmeter(star)
+	loop 60 times:  # 3秒
+		set {_loopnum.1} to loop-number
+		loop {_loopnum.1} times:
+			set {_loopnum.2} to loop-number-2
+			set {_count} to mod({_loopnum.2}, 12)
+			if {_loopnum.2} < 12:
+				set {_loc.hex} to setDirToVec({_locs::1}, setVector({_locs::1}, {_locs::2}))
+				set {_loc.star} to setDirToVec({_locs::1}, setVector({_locs::1}, {_locs::3}))
+			else if {_loopnum.2} < 24:
+				set {_loc.hex} to setDirToVec({_locs::2}, setVector({_locs::2}, {_locs::3}))
+				set {_loc.star} to setDirToVec({_locs::3}, setVector({_locs::3}, {_locs::5}))
+			else if {_loopnum.2} < 36:
+				set {_loc.hex} to setDirToVec({_locs::3}, setVector({_locs::3}, {_locs::4}))
+				set {_loc.star} to setDirToVec({_locs::5}, setVector({_locs::5}, {_locs::2}))
+			else if {_loopnum.2} < 48:
+				set {_loc.hex} to setDirToVec({_locs::4}, setVector({_locs::4}, {_locs::5}))
+				set {_loc.star} to setDirToVec({_locs::2}, setVector({_locs::2}, {_locs::4}))
 			else:
-				delete {Stats.%player%::UltWizard}
-			wait a tick
-		delete {Stats.%player%::UltWizard}
+				set {_loc.hex} to setDirToVec({_locs::5}, setVector({_locs::5}, {_locs::1}))
+				set {_loc.star} to setDirToVec({_locs::4}, setVector({_locs::4}, {_locs::1}))
+			set {_el.hex} to location {_count} * {_dis.hex} meters in front of {_loc.hex}
+			set {_el.star} to location {_count} * {_dis.star} meters in front of {_loc.star}
+			spawnParticle_Dust(rgb(240, 131, 0), 1.5, {_el.hex})
+			spawnParticle_Dust(rgb(240, 131, 0), 1.5, {_el.star})
+		wait a tick
+	loop 100 times:  # 5秒
+		loop 60 times:
+			set {_loopnum.2} to loop-number-2
+			set {_count} to mod({_loopnum.2}, 12)
+			if {_loopnum.2} < 12:
+				set {_loc.hex} to setDirToVec({_locs::1}, setVector({_locs::1}, {_locs::2}))
+				set {_loc.star} to setDirToVec({_locs::1}, setVector({_locs::1}, {_locs::3}))
+			else if {_loopnum.2} < 24:
+				set {_loc.hex} to setDirToVec({_locs::2}, setVector({_locs::2}, {_locs::3}))
+				set {_loc.star} to setDirToVec({_locs::3}, setVector({_locs::3}, {_locs::5}))
+			else if {_loopnum.2} < 36:
+				set {_loc.hex} to setDirToVec({_locs::3}, setVector({_locs::3}, {_locs::4}))
+				set {_loc.star} to setDirToVec({_locs::5}, setVector({_locs::5}, {_locs::2}))
+			else if {_loopnum.2} < 48:
+				set {_loc.hex} to setDirToVec({_locs::4}, setVector({_locs::4}, {_locs::5}))
+				set {_loc.star} to setDirToVec({_locs::2}, setVector({_locs::2}, {_locs::4}))
+			else:
+				set {_loc.hex} to setDirToVec({_locs::5}, setVector({_locs::5}, {_locs::1}))
+				set {_loc.star} to setDirToVec({_locs::4}, setVector({_locs::4}, {_locs::1}))
+			set {_el.hex} to location {_count} * {_dis.hex} meters in front of {_loc.hex}
+			set {_el.star} to location {_count} * {_dis.star} meters in front of {_loc.star}
+			spawnParticle_Dust(rgb(201, 23, 30), 1.5, {_el.hex})
+			spawnParticle_Dust(rgb(201, 23, 30), 1.5, {_el.star})
+		wait a tick
+
+local function kitParticle_ArcaneSorcery_Beam(loc: location):
+	playSound("item.trident.thunder", 1.5, 0.5, {_loc})
+	set {_baserad} to 0
+	loop 100 times:
+		set {_basey} to 0
+		set {_startrad} to {_baserad}
+		loop 30 times:  # 30m
+			set {_rad} to {_startrad}
+			loop 15 times:  # circles
+				add 24 to {_rad}
+				set {_el} to {_loc}
+				add 10 * sin({_rad}) to x-pos of {_el}
+				add 10 * cos({_rad}) to z-pos of {_el}
+				add {_basey} to y-pos of {_el}
+				set {_color} to kitParticle_ArcaneSorcery_Color()
+				spawnParticle_Dust({_color}, 1.5, {_el})
+			loop 10 times:
+				chance of 50%:
+					set {_el} to {_loc}
+					set {_rrad} to a random number between 0 and 360
+					set {_rmet} to a random number between 0 and 10
+					add {_rmet} * sin({_rrad}) to x-pos of {_el}
+					add {_rmet} * cos({_rrad}) to z-pos of {_el}
+					add {_basey} to y-pos of {_el}
+					spawnParticle_Vector(trial_spawner_detection, vector(0, -1, 0), 0.75, {_el})
+			add 1 to {_basey}
+			add 15 to {_startrad}
+		add 10 to {_baserad}
+		wait a tick
+
+local function kitParticle_ArcaneSorcery_Color() :: color:
+	set {_rn} to dice(3)
+	if {_rn} is 1:
+		set {_color} to rgb(211, 56, 28)
+	else if {_rn} is 2:
+		set {_color} to rgb(167, 56, 54)
 	else:
-		send action bar "§c§l目先にブロックがありません" to player
+		set {_color} to rgb(234, 85, 6)
+	return {_color}
 
-local function kitParticle_MagicalConfusion_Dust(loc: location, tick: number):
-	loop {_tick} times:
-		spawnParticle_Dust(rgb(0, 123, 187), 1, {_loc})
-		wait a tick
-
-local function kitParticle_MagicalConfusion_Dust2(locs: locations):
-	loop 180 times:
-		loop {_locs::*}:
-			spawnParticle_Dust(rgb(226, 4, 27), 1, loop-value-2)
-		wait a tick
+local function kitParticle_ArcaneSorcery_Burn(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+	set {_count} to a random integer between 1 and 5
+	loop {_count} times:
+		spawnParticle_Vector(flame, randomVector(), 1, {_baseloc})
