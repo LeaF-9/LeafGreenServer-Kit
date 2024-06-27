@@ -47,7 +47,7 @@ on shoot:
 		set {_v0z} to z-coordinate of {_vector0}
 		if ({_v0x} - {_x}) ^ 2 + ({_v0y} - {_y}) ^ 2 + ({_v0z} - {_z}) ^ 2 < 10201:
 			kitParticle_ImpactShot({_vector0})
-			playSound("entity.arrow.shoot", 1, 1, {_vector0})
+			playSound("item.trident.return", 1.5, 1.25, {_vector0})
 		set {_s} to 0
 		set {_t} to 0
 		loop 8 time:
@@ -56,7 +56,7 @@ on shoot:
 				set x-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-coordinate of {_vx} - {_x}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-coordinate of {_vy} - {_x}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (x-coordinate of {_vz} - {_x}) + {_x}
 				set y-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-coordinate of {_vx} - {_y}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-coordinate of {_vy} - {_y}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (y-coordinate of {_vz} - {_y}) + {_y}
 				set z-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-coordinate of {_vx} - {_z}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-coordinate of {_vy} - {_z}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (z-coordinate of {_vz} - {_z}) + {_z}
-				spawnParticle_Dust(rgb(255, 255, 32 * {_t}), 1, {_vector1})
+				spawnParticle_Dust(rgb(255, 255, 32 * {_t}), 2, {_vector1})
 				loop all entities in radius 1 around {_vector1}:
 					{_hit::%id of loop-entity%} is not set
 					kitCheckTeam(loop-entity, shooter, false, true) is true
@@ -69,5 +69,5 @@ on shoot:
 
 function kitParticle_ImpactShot(loc: location):
 	loop 20 times:
-		spawnParticle_Dust(rgb(255, 255, 0), 1, {_loc})
+		spawnParticle_Dust(rgb(255, 255, 0), 2, {_loc})
 		wait a tick
