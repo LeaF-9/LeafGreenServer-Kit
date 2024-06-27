@@ -76,8 +76,13 @@ function kitSkill_Archer_7(player: player):
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			make {_player} damage loop-entity by 6
 			apply glowing 1 to loop-entity for 3 seconds
+			playSound("entity.phantom.bite", 0.75, 1, loop-entity)
 			if checkEntityType(loop-entity, player) is true:
 				message formatted "§e鷹の閃光§6がヒットした!" to loop-entity
+			if {_hitsound} is not set:
+				set {_hitsound} to true
+		if {_hitsound} is true:
+			playSound("entity.phantom.bite", 0.75, 1, {_player}, true)
 	# ------------------
 
 function kitParticle_HawkBlast_Trail(loc: location):
