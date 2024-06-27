@@ -3,6 +3,7 @@
 function kitSkill_Archer_2(player: player):
 	toolCT({_player}, "Archer", 2)
 	set {Stats.%{_player}%::ForceSnipe} to true
+	playSound("entity.ender_dragon.flap", 1, 2, {_player})
 	kitMsg({_player}, "§b§lForceSnipe§9を起動しました!")
 	kitMsg({_player}, "§35秒間の間矢の近くにいる敵にダメージを与えます!")
 	set {_time} to 100
@@ -16,23 +17,27 @@ on shoot:
 	{Stats.%shooter%::ForceSnipe} is true
 	projectile is an arrow or a spectral arrow
 	loop 20 times:
-		spawnParticle_Dust(rgb(0, 255, 255), 1, projectile)
+		spawnParticle_Dust(rgb(0, 255, 255), 1.5, projectile)
 		wait a tick
 
 on projectile hit:
 	{Stats.%shooter%::ForceSnipe} is true
 	projectile is an arrow or a spectral arrow
 	playSound("entity.illusioner.cast_spell", 1, 2, location of projectile)
-	loop all entities in radius 3 around projectile:
+	loop all entities in radius 5 around projectile:
 		kitCheckTeam(shooter, loop-entity, false) is true
 		set {_dis} to distance between projectile and loop-entity
-		set {_dis} to {_dis} * 2
-		set {_damage} to 6 - {_dis}
-		make shooter damage loop-entity by {_damage}
+		set {_mul} to (5 - {_dis}) / 5
+		set {_damage} to 3 * {_mul}
+		kitDamage(shooter, loop-entity, {_damage})
+		playSound("entity.phantom.hurt", 1, 2, location of loop-entity)
 		add loop-entity to {_sp::*}
 	set {_loc} to location of projectile
-	loop 10 times:
-		spawnParticle_Vector(enchanted_hit, randomVector(1), 2, {_loc})
+	loop 100 times:
+		spawnParticle_Vector(enchanted_hit, randomVector(1), 5, {_loc})
+	set {_els::*} to particleLocation_Sphere({_loc}, 11, 5, 80)
+	loop {_els::*}:
+		spawnParticle_Dust(rgb(0, 255, 255), 1.5, loop-value)
 	loop 5 times:
 		add 0.4 to {_h}
 		loop {_sp::*}:
