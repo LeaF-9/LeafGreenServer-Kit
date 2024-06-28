@@ -14,11 +14,11 @@ on leftclick holding a tnt:
 		set metadata value "kit-bomber" of shot primed tnt to 4
 
 on explode:
+	cancel event
 	metadata value "kit-bomber" of event-entity is set
 	set {_entity} to event-entity
 	set {_loc} to event-location
-	cancel event
-	set {_attacker} to metadata value "attacker" of {_entity}
+	set {_attacker} to metadata value "attacker" of {_entity} parsed as player
 	set {_power} to metadata value "kit-bomber" of {_entity}
 	set {_bool} to metadata value "TrueTeam" of {_entity}
 	if {_bool} is not set:
@@ -50,30 +50,18 @@ function kitExplosion(attacker: player, power: number, loc: location, bool: bool
 		set {_distance} to distance between {_loc} and loop-entity  # 距離
 		set {_expose} to kitCalcExpose(loop-entity, {_loc})
 		set {_impact} to ({_round} - {_distance}) / 2 * {_expose}
-		set {_damage} to {_impact} + 0.1
+		set {_damage} to {_impact} + 1
 		kitDamage({_attacker}, loop-entity, {_damage})
+		set {_hit} to true
+	if {_hit} is true:
+		playSound("entity.experience_orb.pickup", 1, 2, {_attacker}, true)
 
 local function kitCalcExpose(player: player, center: location) :: number:
 	set {_playerloc} to location of {_player}
 	if location of block at {_player} is location of block at {_center}:
 		set {_expose} to 1
 	else:
-		set {_baseloc} to {_playerloc}
-		subtract 0.5 from x-pos of {_baseloc}
-		subtract 0.5 from z-pos of {_baseloc}
-		set yaw of {_baseloc} to 270
-		set pitch of {_baseloc} to 0
-		if {_player} is sneaking:
-			set {_height} to 1.5
-		else:
-			set {_height} to 1.8
-		loop 4 times:
-			set {_loc} to {_baseloc}
-			add {_loc} to {_checklocs::*}
-			set {_loc} to location {_height} meters above {_loc}
-			add {_loc} to {_checklocs::*}
-			set {_baseloc} to location 1 meter in front of {_baseloc}
-			add 90 to yaw of {_baseloc}
+		set {_checklocs::*} to exposeLocs({_player}, {_playerloc})
 		set {_blocked} to size of {_checklocs::*}
 		loop {_checklocs::*}:
 			set {_loc} to loop-value
@@ -105,3 +93,18 @@ local function kitCalcExpose(player: player, center: location) :: number:
 	if {_return} < 0:
 		set {_return} to 0
 	return {_return}
+
+
+
+local function exposeLocs(player: player, loc: location) :: locations:
+	set {_max.y} to 1.8
+	if {_player} is sneaking:
+		set {_max.y} to 1.5
+	set {_max.x} to 0.5
+	loop 8 times:
+		set {_el} to {_loc}
+		add a random number between 0 and {_max.y} to y-pos of {_el}
+		add a random number between {_max.x} * -1 and {_max.x} to x-pos of {_el}
+		add a random number between {_max.x} * -1 and {_max.x} to z-pos of {_el}
+		add {_el} to {_exposes::*}
+	return {_exposes::*}
