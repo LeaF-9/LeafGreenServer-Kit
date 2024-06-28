@@ -46,8 +46,8 @@ function kitSkill_Knocker_3(player: player):
 					set x-coordinate of {_eb} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_eb}
 					set y-coordinate of {_eb} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_eb}
 					set z-coordinate of {_eb} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_eb}
-					chance of 10%:
-						spawnParticle_Dust(rgb(0, 255, 255), 1, {_eb})
+					chance of 30%:
+						spawnParticle_Dust(rgb(0, 255, 255), 2, {_eb})
 					add 10 to {_rad}
 		delete {_hit::*}
 		set {_m} to 0
@@ -67,8 +67,9 @@ function kitSkill_Knocker_3(player: player):
 				set {_from} to location 1 meters in front of {_dl}
 				set {_vector} to setVector({_from}, {_to})
 				set velocity of loop-entity to {_vector}
-				if type of loop-entity is a player:
+				if checkEntityType(loop-entity, player) is true:
 					set {Stats.%loop-entity%::FallRemove} to {_now}
+					playSound("entity.breeze.shoot", 1, 1.5, loop-entity)
 		subtract 1 from {_time}
 		wait 2 ticks
 	wait 5 seconds

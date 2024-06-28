@@ -11,8 +11,10 @@ function kitSkill_Knocker_2(player: player):
 		loop all entities in radius 10 around {_player}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			LastKiller(loop-entity, {_player})
-			if type of loop-entity is a player:
-				if {Stats.%loop-entity%::SFFallCancel} is not set:
+			if checkEntityType(loop-entity, player) is true:
+				chance of 30%:
+					playSound("entity.breeze.idle_air", 1, 2, loop-entity)
+				if {Stats.%loop-entity%::FallRemove} is not set:
 					set {Stats.%loop-entity%::FallRemove} to {_now}
 			set {_to} to location of loop-entity
 			set {_vector} to setVector({_from}, {_to}, 0.5)
@@ -29,8 +31,8 @@ function kitSkill_Knocker_2(player: player):
 				set x-coordinate of {_v} to {_x} + ( 10 * sin({_s}) * cos({_t}) )
 				set y-coordinate of {_v} to {_y} + ( 10 * cos({_s}) )
 				set z-coordinate of {_v} to {_z} + ( 10 * sin({_s}) * sin({_t}) )
-				chance of 10%:
-					spawnParticle_Dust(rgb(100, 255, 255), 1, {_v})
+				chance of 20%:
+					spawnParticle_Dust(rgb(100, 255, 255), 1.5, {_v})
 				add 10 to {_t}
 			add 10 to {_s}
 		wait a tick
