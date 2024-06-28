@@ -40,7 +40,12 @@ on damage of player:
 
 on entity target:
 	set {_etz} to entity's target player  # ターゲットしたプレイヤーの名前
-	set {_en} to entity's display name  # ターゲットを行なうMobの名前
+	set {_end} to entity's display name  # ターゲットを行なうMobの名前
+	loop all players:
+		name of loop-player is {_end}
+		set {_en} to loop-player
+	if {_en} is not set:
+		stop
 	if the entity's display name is "%{team::%{_etz}%}%":  # Mobの名前がチーム名と一致する場合
 		cancel event
 	else if {team::%{_en}%} is {team::%{_etz}%}:  # Mobを召喚したプレイヤーと同じチームの場合
