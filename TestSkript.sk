@@ -229,11 +229,12 @@
 
 # --- yamlの読み込みテスト ---
 
-command /test-yaml:
-	trigger:
-		load yml "plugins/skript-yaml/Kit Stages/Rome Sky.yml" as "test"
-		loop yaml node keys "respawns.red" from "test":
-			broadcast "%loop-node% | %loop-key% | %loop-subnodekeys%"
+# command /test-yaml:
+# 	permission: sk.admin
+# 	trigger:
+# 		load yml "plugins/skript-yaml/Kit Stages/Rome Sky.yml" as "test"
+# 		loop yaml node keys "respawns.red" from "test":
+# 			broadcast "%loop-node% | %loop-key% | %loop-subnodekeys%"
 			# "respawns.red.1 | 1 | x, y, z, yaw, pitch and world "
 
 # ---------------------------
@@ -879,3 +880,28 @@ command /test-yaml:
 # on damage of player:
 # 	set {_meta} to metadata value "test" of projectile
 # 	broadcast "%{_meta}%"
+
+# エフェクト偽装テスト
+import:
+	org.bukkit.potion.PotionEffectType
+	com.comphenix.protocol.ProtocolLibrary
+	com.comphenix.protocol.PacketType
+
+command /test-fake-effect <player=%player%>:
+	permission: sk.admin
+	trigger:
+		set {_player} to "%arg 1%" parsed as player
+		set {_id} to {_player}.getEntityId()
+		set {_manager} to ProtocolLibrary.getProtocolManager()
+		set {_packet} to {_manager}.createPacket(PacketType.Play.Server.ENTITY_EFFECT)
+		{_packet}.getIntegers().write(0, {_id})
+		{_packet}.getEffectTypes().write(0, strength)  # エフェクト
+		{_packet}.getIntegers().write(1, 0.intValue())  # 強さ
+		{_packet}.getIntegers().write(2, 100.intValue())  # 長さ -1でinfinite
+		{_packet}.getBytes().write(0, 4.byteValue())  # Flag
+		ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_packet})
+		wait 5 seconds
+		set {_packet} to {_manager}.createPacket(PacketType.Play.Server.REMOVE_ENTITY_EFFECT)
+		{_packet}.getIntegers().write(0, {_id})
+		{_packet}.getEffectTypes().write(0, strength)
+		ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_packet})
