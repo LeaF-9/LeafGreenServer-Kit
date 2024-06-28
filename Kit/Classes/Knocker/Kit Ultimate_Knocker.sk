@@ -2,6 +2,7 @@
 
 function kitUltKnocker(player: player):
 	set {_loc} to location of {_player}
+	set {_now} to now
 	loop 200 times:
 		# 竜巻中心点の設定
 		set {_loc} to location 0.15 meters in front of {_loc}
@@ -32,9 +33,19 @@ function kitUltKnocker(player: player):
 			set {_pushvec} to normalized {_pushvec} * vector(0.5, 0.5, 0.5)
 			# 吹き飛ばし
 			set velocity of loop-entity to {_pushvec}
+			# player時の処理
+			if checkEntityType(loop-entity, player) is true:
+				LastKiller(loop-entity, {_player})
+				set {Stats.%loop-entity%::FallTiming} to {_now}
+				set {Stats.%loop-entity%::FallDamage} to 5
 			# ヒット演出
 			kitParticle_EnormousHurricane_Hit(loop-entity, {_pushvec})
 		wait a tick
+	wait 3 seconds
+	loop all players:
+		if {Stats.%loop-player%::FallTiming} is {_now}:
+			delete {Stats.%loop-player%::FallTiming}
+			delete {Stats.%loop-player%::FallDamage}
 
 # 竜巻演出
 function kitParticle_EnormousHurricane_Hurricane(baseloc: location, ln: number):

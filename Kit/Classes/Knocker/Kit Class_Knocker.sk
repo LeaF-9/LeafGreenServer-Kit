@@ -40,8 +40,11 @@ on death of player:
 on damage of player:
 	metadata value "gametype" of victim is "Kit"
 	damage was caused by fall
-	{Stats.%victim%::TornadoWind} is not set
-	if {Stats.%victim%::FallRemove} is set:
+	if {Stats.%victim%::FallTiming} is set:
+		set damage to {Stats.%victim%::FallDamage}
+		delete {Stats.%victim%::FallTiming}
+		delete {Stats.%victim%::FallDamage}
+	else if {Stats.%victim%::FallRemove} is set:
 		set damage to damage * 0.1
 		delete {Stats.%victim%::FallRemove}
 
