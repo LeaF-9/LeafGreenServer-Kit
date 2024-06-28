@@ -2,7 +2,6 @@
 
 function kitSkill_Knocker_6(player: player):
 	subtract 1 from item amount of tool of {_player}
-	kitMsg({_player}, "§1§lShock Grenade §9を投擲!")
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
 	shoot a snowball from {_player} at speed 0.9
 	set metadata value "shockgrenade" of shot projectile to "true"
@@ -17,31 +16,21 @@ on projectile hit:
 	metadata value "shockgrenade" of projectile is "true"
 	set {_now} to now
 	set {_from} to location of projectile 
-	playSound("entity.blaze.ambient", 1, 1.5, shooter)
+	playSound("entity.breeze.jump", 1, 0.75, {_from})
 	loop all entities in radius 5 around {_from}:
 		kitCheckTeam(loop-entity, shooter, false) is true
 		kitDamage(shooter, loop-entity, 1)
 		set {_to} to location of loop-entity
-		set {_vector} to setVector({_from}, {_to}, 3)
+		set {_vector} to setVector({_from}, {_to}, 1.5)
+		if y of {_vector} <= 0:
+			block 0.1 meters below loop-entity is not passable
+			set y of {_vector} to 0.6
 		set velocity of loop-entity to {_vector}
 		if type of loop-entity is a player:
 			set {Stats.%loop-entity%::FallRemove} to {_now}
-	set {_s} to 0
-	set {_t} to 0
-	loop 19 time:
-		loop 36 time:
-			set {_el} to {_from}
-			set {_v} to {_el}
-			set {_x} to x-coordinate of {_el}
-			set {_y} to y-coordinate of {_el}
-			set {_z} to z-coordinate of {_el}
-			set x-coordinate of {_v} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
-			set y-coordinate of {_v} to {_y} + ( 5 * cos({_s}) )
-			set z-coordinate of {_v} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
-			chance of 30%:
-				spawnParticle_Color(entity_effect, 0, 100, 200, {_v})
-			add 10 to {_t}
-		add 10 to {_s}
+	set {_locs::*} to particleLocation_Sphere({_from}, 15, 5, 80)
+	loop {_locs::*}:
+		spawnParticle(enchanted_hit, loop-value)
 	wait 5 seconds
 	loop all players:
 		{Stats.%loop-player%::FallRemove} is {_now}
