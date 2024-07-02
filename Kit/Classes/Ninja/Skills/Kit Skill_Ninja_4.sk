@@ -4,22 +4,43 @@ function kitSkill_Ninja_4(player: player):
 	if {Stats.%{_player}%::Zanzo} is not set:
 		set {_skill} to name of {_player}'s tool
 		setCT({_player}, {_skill}, 10)
-		set {Stats.%{_player}%::Zanzo} to true
+		set {Stats.%{_player}%::Zanzo} to 100
 		kitMsg({_player}, "§0忍法・残像の術!")
 		playSound("entity.bat.takeoff", 1, 1.5, {_player})
 		delete {_player}'s tool
 		kunaiNinjutsu({_player}, "Zanzo")
 		wait 5 seconds
-		delete {Stats.%{_player}%::Zanzo}
-		send action bar "§7§l残像は解除された!" to {_player}
+		if {Stats.%{_player}%::Zanzo} is set:
+			delete {Stats.%{_player}%::Zanzo}
+			send action bar "§7§l残像は解除された!" to {_player}
 	else:
 		send action bar "§c§l現在発動中です" to {_player}
 
 on damage of player:
 	{Stats.%victim%::Zanzo} is set
 	{Kit-Invisible::%victim%} is not set
-	chance of 30%:
+	set {_chance} to {Stats.%victim%::Zanzo}
+	chance of {_chance}%:
 		cancel event
 		kitInvisible(victim, 1 seconds)
 		playSound("entity.zombie_villager.converted", 1, 2, victim)
+		kitParticle_Zanzo_Execute(victim)
 		send action bar "§0§l残像が働いた!" to victim
+		subtract 20 from {Stats.%victim%::Zanzo}
+		if {Stats.%victim%::Zanzo} <= 0:
+			delete {Stats.%victim%::Zanzo}
+			send action bar "§7§l残像は解除された!" to victim
+
+
+
+local function kitParticle_Zanzo_Execute(player: player):
+	set {_baseloc} to location of {_player}
+	loop 15 times:
+		set {_el} to {_baseloc}
+		add a random number between -0.5 and 0.5 to x-pos of {_el}
+		add a random number between -0.5 and 0.5 to z-pos of {_el}
+		add a random number between 0 and 2 to y-pos of {_el}
+		chance of 10%:
+			spawnParticle_BlockData(falling_dust, gray_concrete, {_el})
+			continue
+		spawnParticle_BlockData(falling_dust, black_concrete, {_el})
