@@ -87,6 +87,9 @@ function kitTargetReset(player: player):
 
 function kitTargetTimer(player: player):
 	set {_class} to {Class::%{_player}%}
+	if {_class} is "Thief":
+		kitTargetTimer_Thief({_player})
+		stop
 	set {_ok} to false
 	loop all items in {_player}'s inventory:
 		if kitTargetChecker(loop-item) is not "none":
@@ -113,6 +116,35 @@ function kitTargetTimer(player: player):
 			else:
 				kitTargetReset({_player})
 			wait a tick
+
+local function kitTargetTimer_Thief(player: player):
+	while {Class::%{_player}%} is "Thief":
+		set {_tool} to {_player}'s tool
+		set {_toolname} to display name of {_tool}
+		# Item一覧に含まれていない場合の処理
+		if {_items::*} does not contain {_tool}:
+			set {_items::%{_toolname}%} to {_toolname}
+			set {_type} to kitTargetChecker({_tool})
+			if {_type} is "none":  # 役割を持たないアイテムの場合はnoneに格納
+				set {_item.none::%{_toolname}%} to {_tool}
+			else:  # 役割を持つアイテムはタイプと距離を格納
+				set {_item.role::%{_toolname}%} to {_tool}
+				set {_type::%{_toolname}%} to {_type}
+				set {_meter::%{_toolname}%} to kitMeterChecker({_tool})
+		# 役割のあるアイテムを持っていた際の処理
+		if {_item.role::*} contains {_tool}:
+			if {_type::%{_toolname}%} contains "human":
+				if {_type::%{_toolname}%} is "human-ally":
+					kitTargetPlayer({_player}, {_meter::%{_toolname}%}, true)
+				else:
+					kitTargetPlayer({_player}, {_meter::%{_toolname}%})
+			else if {_type::%{_toolname}%} contains "location":
+				kitTargetReset({_player})
+				kitTargetLocation({_player}, {_meter::%{_toolname}%})
+		# そうではない場合はターゲット処理をリセット
+		else:
+			kitTargetReset({_player})
+		wait a tick
 
 function kitItemTargetTimer(player: player, item: item):
 	set {_ok} to false
