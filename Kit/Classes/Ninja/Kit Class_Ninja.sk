@@ -91,6 +91,7 @@ function kitTimerNinja(player: player):
 			playSound("entity.ghast.shoot", 1, 1, {_player})
 			if {Ult.%{_player}%::Ninja} is not set:
 				setCT({_player}, "Double Jump", 10, false)
+				create bossbar titled "&9&lDouble-Jump &b&lCT&7: &a&l10" and id "%{_player}%-DoubleJump" for {_player} with progress 100 with colors blue with style segmented 10
 #	ダブルジャンプの許可
 		else if {_player} cannot fly:
 #		ダブルジャンプ後,地面に着くまでは許可しない
@@ -100,5 +101,22 @@ function kitTimerNinja(player: player):
 			else:
 				if {CT.%{_player}%::Double Jump} is not set:
 					allow fly for {_player}
+#	ダブルジャンプ CTの記載
+		if {CT.%{_player}%::Double Jump} is set:
+			set {_ct} to {CT.%{_player}%::Double Jump}
+			set {_time} to {_ct}
+			set {_timetexts::*} to "%{_time}%" split at "."
+			if size of {_timetexts::*} is 1:
+				set {_timetext} to "%{_time}%.00"
+			else if length of {_timetexts::2} is 1:
+				set {_timetext} to "%{_time}%0"
+			else:
+				set {_timetext} to "%{_time}%"
+			set {_prog} to ({CT.%{_player}%::Double Jump} / 10) * 100
+			set bossbar "%{_player}%-DoubleJump" title to "&9&lDouble-Jump &b&lCT&7: &a&l%{_timetext}%"
+			set bossbar "%{_player}%-DoubleJump" value to {_prog}
+		else:
+			remove bossbar "%{_player}%-DoubleJump"
 		wait a tick
+	remove bossbar "%{_player}%-DoubleJump"
 	disallow fly for {_player}
