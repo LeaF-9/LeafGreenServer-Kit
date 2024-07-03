@@ -3,16 +3,14 @@
 on damage of player:
 	if {Stats.%victim%::SpriteTalisman} is set:
 		set {_dmg} to damage - {Stats.%victim%::SpriteTalisman}
-		if {_dmg} <= 0.5:
-			kitEffect_SpriteTalisman_Explode(victim, damage)
-			stop
+		if {_dmg} < 0:  # ゼロ以下になった場合はノックバックのみ
+			set {_dmg} to 0.00001
 		set damage to {_dmg}
-		add 0.5 to {Stats.%victim%::SpriteTalisman}
+		send action bar "§4❤%{Stats.%victim%::SpriteTalisman}%§cダメージ §aを§2§l吸収§aしました!" to victim
+		set {Stats.%victim%::SpriteTalisman} to {Stats.%victim%::SpriteTalisman} - 0.5
+		if {Stats.%victim%::SpriteTalisman} <= 0:  # ダメージ減衰の効果終了時
+			kitEffect_SpriteTalisman_Explode(victim)
 		kitParticle_SpriteTalisman_Damage(victim)
-	if {Stats.%attacker%::SpriteTalisman} is set:
-		if {Stats.%attacker%::SpriteTalisman} is not 1:
-			kitParticle_SpriteTalisman_Reset(attacker)
-		set {Stats.%attacker%::SpriteTalisman} to 1
 
 function kitSkill_Paladin_4(player: player):
 	toolCT({_player}, "Paladin", 4)
@@ -21,18 +19,16 @@ function kitSkill_Paladin_4(player: player):
 	loop all players in radius 10 around {_player}:
 		kitCheckTeam(loop-player, {_player}, true) is true
 		setSupporter(loop-player, {_player})
-		message formatted "<##c6ff4a>ダメージを減らす<##98ff4a>守護の妖精<##c6ff4a>が付与された!" to loop-player
-		set {Stats.%loop-player%::SpriteTalisman} to 1
+		message formatted "<##c6ff4a>ダメージを受け持つ<##98ff4a>守護の妖精<##c6ff4a>が付与された!" to loop-player
+		set {Stats.%loop-player%::SpriteTalisman} to 2.5
 		kitParticle_SpriteTalisman_Apply(loop-player)
 		kitParticle_SpriteTalisman_Aura(loop-player)
 
-local function kitEffect_SpriteTalisman_Explode(player: player, damage: number):
+# 効果終了時
+local function kitEffect_SpriteTalisman_Explode(player: player):
 	kitParticle_SpriteTalisman_Explode({_player})
 	delete {Stats.%{_player}%::SpriteTalisman}
-	message formatted "<##005243>守護の妖精がダメージに耐えきれない!" to {_player}
-	loop all entities in radius 5 around {_player}:
-		kitCheckTeam(loop-entity, {_player}, false) is true
-		kitDamage({_player}, loop-entity, {_damage})
+	message formatted "<##005243>守護の妖精は役割を終えました..." to {_player}
 
 local function kitParticle_SpriteTalisman_Explode(player: player):
 	playSound("entity.allay.death", 1, 0.9, {_player})
@@ -98,9 +94,7 @@ local function kitParticle_SpriteTalisman_Apply(player: player):
 			wait a tick
 
 local function kitParticle_SpriteTalisman_Aura(player: player):
-	loop 200 times:
-		if {Stats.%{_player}%::SpriteTalisman} is not set:
-			continue
+	while {Stats.%{_player}%::SpriteTalisman} is set:
 		set {_loc} to location of {_player}
 		set {_vector} to {_loc}
 #		座標の設定　主軸{_loc}{_w}{_vw}
@@ -127,7 +121,6 @@ local function kitParticle_SpriteTalisman_Aura(player: player):
 		set z-coordinate of {_vector} to {_z} + {_az}
 		spawnParticle_Dust(rgb(160, 255, 160), 0.85, {_vector})
 		wait a tick
-	delete {Stats.%{_player}%::SpriteTalisman}
 
 local function kitParticle_SpriteTalisman_Damage(player: player):
 	playSound("entity.allay.hurt", 1, 0.8, {_player})
@@ -146,15 +139,4 @@ local function kitParticle_SpriteTalisman_Damage(player: player):
 			set y-coordinate of {_vector} to {_y} + {_t} * {_p}
 			set z-coordinate of {_vector} to {_z} + {_u} * {_p}
 			spawnParticle_Dust(rgb(192, 255, 192), 0.95, {_vector})
-		wait a tick
-
-local function kitParticle_SpriteTalisman_Reset(player: player):
-	playSound("entity.allay.item_thrown", 1, 0.8, {_player})
-	set {_y} to 0
-	loop 5 times:
-		set {_baseloc} to location {_y} meters above {_player}
-		set {_efflocs::*} to particleLocation_Circle({_baseloc}, 5, 0.5)
-		loop {_efflocs::*}:
-			spawnParticle_Color(entity_effect, 104, 190, 141, loop-value-2)
-		add 0.5 to {_y}
 		wait a tick
