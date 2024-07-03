@@ -102,30 +102,44 @@ function kitFakeDeleteAll():
 
 on arm swing:
 	set {_hand} to event.getHand()
-	if "%{_hand}%" is not "HAND":
+	if "%{_hand}%" is not "hand_slot":
 		stop
-	set {_tg} to target entity of player
-	if checkEntityType({_tg}, block display) is true:
-		if metadata value "kit-block" of {_tg} is not set:
-			stop
-		set {_metadata} to metadata value "kit-block" of {_tg}
-		set {_target} to metadata value {_metadata} of {_tg}
-	else if checkEntityType({_tg}, item display) is true:
-		if metadata value "kit-item" of {_tg} is not set:
-			stop
+	set {_tg} to checkPunchMachine(player)
+	if {_tg} is not set:
+		stop
+	set {_metadata} to metadata value "kit-block" of {_tg}
+	if {_metadata} is not set:
 		set {_metadata} to metadata value "kit-item" of {_tg}
-		set {_target} to metadata value {_metadata} of {_tg}
-	else:
-		stop
-	distance between player and {_tg} <= 3
+	set {_target} to metadata value {_metadata} of {_tg}
 	set {_target} to {_target} parsed as offline player
-	if {team::%player%} is not {team::%{_target}%}:
+	if kitCheckTeam(player, {_target}, false) is true:
 		make a fake explosion at location of {_tg}
 		kitMsg({_target}, "§9§l%{_metadata}% §cが破壊された!")
 		message formatted "§e%{_target}%§aの§9§l%{_metadata}%§aを破壊しました!" to player
 		kitFakeDeleteData({_target}, {_metadata})
 	else:
 		message formatted "§c§l味方の設置物は破壊できません!" to player
+
+local function checkPunchMachine(player: player) :: entity:
+	set {_baseloc} to location of head of {_player}
+	set {_meter} to 0.3
+	set {_meter.max} to 3
+	set {_loopcount} to round({_meter.max} / {_meter})
+	loop {_loopcount} times:
+		if {_returnentity} is set:
+			continue
+		set {_m.current} to {_meter} * loop-number
+		set {_loc} to location {_m.current} meters in front of {_baseloc}
+		if block at {_loc} is not passable:
+			stop
+		loop all entities in radius 1 around {_loc}:
+			if checkEntityType(loop-entity, block display) is true:
+				metadata value "kit-block" of loop-entity is set
+				set {_returnentity} to loop-entity
+			else if checkEntityType(loop-entity, item display) is true:
+				metadata value "kit-item" of loop-entity is set
+				set {_returnentity} to loop-entity
+	return {_returnentity}
 
 on projectile hit:
 	loop all entities in radius 3 around projectile:
