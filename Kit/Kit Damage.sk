@@ -22,7 +22,8 @@ function kitDamage(attacker: player, victim: entity, damage: number, pierce: boo
 			subtract {_damage} from {_health}
 			if {_health} <= 0:
 				damage {_victim} by 10000 hearts
-			set health of {_victim} to {_health}
+			else:
+				set health of {_victim} to {_health}
 			playSound("entity.generic.hurt", 1, 1, {_victim})
 			play hurt animation on {_victim}
 		set {_atktick} to 20  # maximum damage delay of {_victim}
@@ -55,8 +56,11 @@ function kitDamageInstant(attacker: player, victim: entity, damage: number):
 	else:
 		set {_health} to health of {_victim}
 		subtract {_damage} from {_health}
-		playSound("entity.generic.hurt", 1, 1, {_victim})
-		set health of {_victim} to {_health}
+		if {_health} <= 0:
+			damage {_victim} by 10000 hearts
+		else:
+			set health of {_victim} to {_health}
+		playSound("entity.generic.hurt", 1, 1.3, {_victim})
 		play hurt animation on {_victim}
 
 on damage of player:
