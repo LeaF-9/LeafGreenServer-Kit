@@ -2,41 +2,58 @@
 
 function kitSkill_Engineer_6(player: player, loc: location):
 	toolCT({_player}, "Engineer", 6)
+	# 時間設定
 	set {_now} to now
 	set {Stats.%{_player}%::RespawnController-Time} to {_now}
+
+	# 機械削除
 	kitFakeDeleteData({_player}, "Machine-Respawn Controller")
+	# 位置設定
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
 	set {_loc.top} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
 	add 2 to y-coordinate of {_loc.top}
+	# 機械設置
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
 	kitFakeBlock({_player}, {_loc.base}, "minecraft:nether_brick_fence", {_transformation}, "Machine-Respawn Controller")
 	kitFakeBlock({_player}, {_loc.core}, "minecraft:nether_quartz_ore", {_transformation}, "Machine-Respawn Controller")
 	kitFakeBlock({_player}, {_loc.top}, "minecraft:nether_brick_fence", {_transformation}, "Machine-Respawn Controller")
+
+	set {_loc.particle} to {_loc.base}
+	add 1.5 to y-pos of {_loc.particle}
+	set {Stats.%{_player}%::RespawnController-Location} to {_loc.particle}  # 演出の基準となる地点を保存
 	kitMsg({_player}, "<##7F1184>Respawn Controller§cを設置しました!")
 	playSound("entity.evoker.prepare_attack", 1, 1.5, {_loc.base})
 	while {Stats.%{_player}%::RespawnController-Time} is {_now}:
 		wait 5 ticks
 		delete {_tp::*}
+
+		# 範囲内のプレイヤーに効果付与
 		loop all players in radius 10 around {_loc.base}:
 			kitCheckTeam(loop-player, {_player}, false) is true
-			if {Stats.%loop-player%::RespawnController} is not set:
+			if {Stats.%loop-player%::RespawnController} is not set:  # 復活時間延長効果が付与されていない場合
 				set {Stats.%loop-player%::RespawnController} to {_player}
+				# 演出
+				playSound("entity.evoker.cast_spell", 0.9, 1.4, loop-player)
 				set {_el} to location of loop-player
 				add 1 to y-coordinate of {_el}
 				loop 10 times:
 					spawnParticle_Vector(witch, randomVector(), 0.8, {_el})
-				add loop-player to {_pl::*}
-			set {_tp::%loop-player%} to true
+				add loop-player to {_pl::*}  # 範囲内に入ったことがあるかどうか
+			set {_tp::%loop-player%} to true  # 現在範囲内にいるかどうか
+		
+		# 範囲内に入ったプレイヤーかつ現在範囲内にいないプレイヤーを検知
 		loop {_pl::*}:
 			{Stats.%loop-value%::RespawnController} is {_player}
 			{_tp::%loop-value%} is not set
 			delete {Stats.%loop-value%::RespawnController}
 			delete {_pl::%loop-index%}
+
 		set {_exist} to kitFakeCheck({_player}, "Machine-Respawn Controller")
 		if {_exist} is false:
 			delete {Stats.%{_player}%::RespawnController-Time}
+			delete {Stats.%{_player}%::RespawnController-Location}
 			loop {_pl::*}:
 				{Stats.%loop-value%::RespawnController} is {_player}
 				delete {Stats.%loop-value%::RespawnController}
@@ -44,7 +61,59 @@ function kitSkill_Engineer_6(player: player, loc: location):
 on death of player:
 	{Stats.%victim%::RespawnController} is set
 	set {_player} to {Stats.%victim%::RespawnController}
-	if {Stats.%{_player}%::RespawnController-NoFuel} is not set:
-		if checkFuel({_player}, 6) is false:
-			stop
+	if checkFuel({_player}, 6) is false:
+		stop
 	set {Stats.%victim%::SpawnTime} to 15
+	kitParticle_RespawnController_Launch({_player}, victim)
+
+
+
+local function kitParticle_RespawnController_Launch(player: player, target: player):
+	set {_baseloc} to {Stats.%{_player}%::RespawnController-Location}
+
+	# ビームの照射
+	set {_targetloc} to location 1 meter above {_target}
+	kitParticle_RespawnController_Beam({_baseloc}, {_targetloc})
+
+	# 対象に機械の位置を開示
+	kitParticle_RespawnController_Expose({_player}, {_target})
+
+	# 対象にメッセージ
+	message formatted "§5機械により §9§l復活時間が延長 §5されました..." to {_target}
+
+
+
+local function kitParticle_RespawnController_Beam(baseloc: location, targetloc: location):
+	playSound("entity.evoker.prepare_wololo", 1, 1.15, {_targetloc})
+
+	set {_vector} to setVector({_baseloc}, {_targetloc})
+	set {_baseloc} to setDirToVec({_baseloc}, {_vector})
+	
+	set {_distance} to distance between {_baseloc} and {_targetloc}
+	set {_loop} to round({_distance} * 2)
+
+	loop 20 times:
+		loop {_loop} times:
+			set {_ln} to loop-number-2
+			set {_el} to location {_ln} * 0.5 meters in front of {_baseloc}
+			spawnParticle(witch, {_el})
+		wait a tick
+
+
+
+local function kitParticle_RespawnController_Expose(player: player, target: player):
+	# 発光させる機械の保存
+	loop all block displays:
+		metadata value "kit-block" of loop-block display is "Machine-Respawn Controller"
+		metadata value "Machine-Respawn Controller" of loop-block displays is {_player}
+		add loop-block display to {_machines::*}
+	
+	loop 400 times:
+		loop {_machines::*}:
+			set {_machine} to loop-value-2
+			packetGlowing({_target}, {_machine})
+		wait a tick
+	
+	loop {_machines::*}:
+		set {_machine} to loop-value
+		packetUnglowing({_target}, {_machine})
