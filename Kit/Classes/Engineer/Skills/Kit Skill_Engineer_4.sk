@@ -8,7 +8,7 @@ function kitSkill_Engineer_4(player: player, loc: location):
 		metadata value "kit-block" of loop-block display contains "Machine-Tracking System"
 		set {_metadata} to metadata value "kit-block" of loop-block display
 		metadata value {_metadata} of loop-block display is "%{_player}%"
-		add 1 to {_allnum}
+		add 0.2 to {_allnum}
 	if {_allnum} >= 5:
 		set {_toptime} to 0	
 		loop {Stats.%{_player}%::*}:
@@ -24,9 +24,7 @@ function kitSkill_Engineer_4(player: player, loc: location):
 		delete {Stats.%{_player}%::TrackingSystem-Time-%{_index}%}
 	add 1 to {Stats.%{_player}%::TrackingSystem-Number}
 	set {_num} to {Stats.%{_player}%::TrackingSystem-Number}
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:soul_lantern", {_transformation}, "Machine-Tracking System-%{_num}%")
-	set {_blockdisplay} to spawned block display
+	set {_blockdisplay} to kitEffect_TrackingSystem_Machine({_player}, {_num}, {_loc})
 	set {_baseloc} to {_loc}
 	add 0.5 to y-coordinate of {_baseloc}
 	set {Stats.%{_player}%::TrackingSystem-Time-%{_num}%} to {_now}
@@ -70,7 +68,31 @@ function kitSkill_Engineer_4(player: player, loc: location):
 		if {_exist} is true:
 			if {_true} is true:
 				set glowing of {_blockdisplay} to true
+				set {_tploc} to location of {_blockdisplay}
+				add 18 to yaw of {_tploc}
+				teleport {_blockdisplay} to {_tploc}
 			else:
 				set glowing of {_blockdisplay} to false
 		else:
 			delete {Stats.%{_player}%::TrackingSystem-Time-%{_num}%}
+
+local function kitEffect_TrackingSystem_Machine(player: player, num: number, loc: location) :: entity:
+	# foot
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0.2f,0f,0.2f]", "[0.1f,0.2f,0.1f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:white_stained_glass", {_transformation}, "Machine-Tracking System-%{_num}%")
+	
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.3f,0f,0.2f]", "[0.1f,0.2f,0.1f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:white_stained_glass", {_transformation}, "Machine-Tracking System-%{_num}%")
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0.2f,0f,-0.3f]", "[0.1f,0.2f,0.1f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:white_stained_glass", {_transformation}, "Machine-Tracking System-%{_num}%")
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.3f,0f,-0.3f]", "[0.1f,0.2f,0.1f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:white_stained_glass", {_transformation}, "Machine-Tracking System-%{_num}%")
+
+	# head
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0.25f,-0.25f]", "[0.5f,0.5f,0.5f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:beacon", {_transformation}, "Machine-Tracking System-%{_num}%")
+	set {_return} to spawned block display
+
+	return {_return}
