@@ -5,11 +5,11 @@ function kitSkill_Engineer_3(player: player, loc: location):
 	set {_now} to now
 	# 装置数の確認
 	loop all entities:
-		type of loop-entity is armor stand
-		set {_metadata} to metadata value "kit-armor" of loop-entity
+		type of loop-entity is block display
+		set {_metadata} to metadata value "kit-block" of loop-entity
 		{_metadata} contains "Machine-Jump Beacon"
 		metadata value {_metadata} of loop-entity is "%{_player}%"
-		add 1 to {_allnum}
+		add 0.5 to {_allnum}
 	if {_allnum} >= 3:
 		set {_toptime} to 0
 		loop {Stats.%{_player}%::*}:
@@ -25,9 +25,18 @@ function kitSkill_Engineer_3(player: player, loc: location):
 		delete {Stats.%{_player}%::JumpBeacon-Time-%{_index}%}
 	add 1 to {Stats.%{_player}%::JumpBeacon-Number}
 	set {_num} to {Stats.%{_player}%::JumpBeacon-Number}
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:redstone_torch", {_transformation}, "Machine-Jump Beacon-%{_num}%")
-	set {_fallingblock} to spawned block display
+
+	# 機械設置処理
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0f,-0.25f]", "[0.5f,0.5f,0.5f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:spruce_fence", {_transformation}, "Machine-Jump Beacon-%{_num}%")
+	set {_spawned} to spawned block display
+	add {_spawned} to {_jumpbeacons::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.15f,0.5f,-0.15f]", "[0.3f,0.3f,0.3f]")
+	kitFakeBlock({_player}, {_loc}, "minecraft:redstone_block", {_transformation}, "Machine-Jump Beacon-%{_num}%")
+	set {_spawned} to spawned block display
+	add {_spawned} to {_jumpbeacons::*}
+	
 	set {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} to {_now}
 	kitMsg({_player}, "<##E8383D>Jump Beacon§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
@@ -42,9 +51,13 @@ function kitSkill_Engineer_3(player: player, loc: location):
 			loop all players:
 				kitCheckTeam(loop-player, {_player}, true) is true
 				if tool of loop-player is a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします":
-					packetGlowing(loop-player, {_fallingblock})
+					loop all block displays:
+						{_jumpbeacons::*} contains loop-block display
+						packetGlowing(loop-player, loop-block display)
 				else:
-					packetUnglowing(loop-player, {_fallingblock})
+					loop all block displays:
+						{_jumpbeacons::*} contains loop-block display
+						packetUnglowing(loop-player, loop-block display)
 		else:
 			delete {Stats.%{_player}%::JumpBeacon-Time-%{_num}%}
 	if {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} is not set:
@@ -67,8 +80,8 @@ function kitEffect_JumpBeacon_Select(player: player):
 		set {_loc} to location loop-number meters in front of {_baseloc}
 		loop all entities in radius 3 around {_loc}:
 			{_target} is not set
-			type of loop-entity is armor stand
-			set {_metadata} to metadata value "kit-armor" of loop-entity
+			type of loop-entity is block display
+			set {_metadata} to metadata value "kit-block" of loop-entity
 			{_metadata} contains "Machine-Jump Beacon"
 			set {_holder} to metadata value {_metadata} of loop-entity parsed as offline player
 			kitCheckTeam({_player}, {_holder}, true) is true
@@ -95,10 +108,11 @@ function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
 		if {_time} is 3, 2 or 1:
 			message formatted "§c%{_time}%..." to {_jumper}
 			playSound("ui.button.click", 1, 2, {_loc})
+			playSound("ui.button.click", 1, 2, {_target})
 		subtract 0.05 from {_time}
 		wait a tick
 	delete {Stats.%{_jumper}%::JumpBeacon-Using}
-	set {_metadata} to metadata value "kit-armor" of {_target}
+	set {_metadata} to metadata value "kit-block" of {_target}
 	set {_goaler} to metadata value {_metadata} of {_target} parsed as offline player
 	if checkFuel({_goaler}, 3) is false:
 		message formatted "§4燃料不足によりジャンプが中断されました" to {_jumper}
