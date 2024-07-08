@@ -5,16 +5,18 @@ function kitUltEngineer(player: player):
 	if {Kit-tochu} is true:
 		loop {Kit-GameStageRespawns.%{TrueTeam::%{_player}%}%::*}:
 			add loop-value to {_fromloc::*}
-	else:
+	else if "%world of {_player}%" is "Kit-SkillCheck":
 		add {Kit-TestWorld} to {_fromloc::*}
+	else:
+		stop
 	set {_now} to now
 	set {Ult.%{_player}%::Engineer} to {_now}
 	set {_mecloc} to {_tploc}
 	add 2 to y-coordinate of {_mecloc}
 	set yaw of {_mecloc} to 0
-	set pitch of {_mecloc} to 0
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
-	kitFakeBlock({_player}, {_mecloc}, "minecraft:crying_obsidian", {_transformation}, "Machine-Transport Lift")
+	set pitch of {_mecloc} to -180
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,-0.5f,-0.5f]", "[1f,0.5f,1f]")
+	kitFakeBlock({_player}, {_mecloc}, "minecraft:sculk_shrieker", {_transformation}, "Machine-Transport Lift")
 	loop {_fromloc::*}:
 		set {_armloc} to loop-value
 		add 2 to y-coordinate of {_armloc}
@@ -28,12 +30,23 @@ function kitUltEngineer(player: player):
 	set {_fromy} to 0
 	while {Ult.%{_player}%::Engineer} is {_now}:
 		wait a tick
+#	CT確認
+		loop {_ct::*}:
+			set {_ct} to loop-value
+			set {_rect} to {_ct} - 1
+			if {_rect} <= 0:
+				delete {_ct::%loop-index%}
+			else:
+				set {_ct::%loop-index%} to {_rect}
 #	テレポート動作
+		# リスポーンから機械へ
 		loop {_fromloc::*}:
 			set {_temploc} to loop-value
 			loop all players in radius 3 around {_temploc}:
 				kitCheckTeam({_player}, loop-player, true) is true
 				loop-player is sneaking
+				{_ct::%loop-player%} is not set
+				set {_ct::%loop-player%} to 20
 				teleport loop-player to {_tploc}
 				message formatted "§5§lテレポートしました!" to loop-player
 				playSound("entity.enderman.teleport", 1, 0.5, {_tploc})
@@ -41,6 +54,20 @@ function kitUltEngineer(player: player):
 				add 1 to y-coordinate of {_beloc}
 				loop 30 times:
 					spawnParticle_Vector(witch, randomVector(), 1, {_beloc})
+		# 機械からランダムなリスポーンへ
+		loop all players in radius 0.5 around {_tploc}:
+			kitCheckTeam({_player}, loop-player, true) is true
+			loop-player is sneaking
+			{_ct::%loop-player%} is not set
+			set {_ct::%loop-player%} to 20
+			set {_fromtp} to a random location out of {_fromloc::*}
+			teleport loop-player to {_fromtp}
+			message formatted "§5§lテレポートしました!" to loop-player
+			playSound("entity.enderman.teleport", 1, 0.5, {_fromtp})
+			set {_beloc} to {_fromtp}
+			add 1 to y-coordinate of {_beloc}
+			loop 30 times:
+				spawnParticle_Vector(witch, randomVector(), 1, {_beloc})
 #	エフェクト
 		delete {_tpeffs::*}
 		delete {_fromeffs::*}
@@ -61,7 +88,7 @@ function kitUltEngineer(player: player):
 				set {_eff} to {_tpeff}
 				add sin({_rad}) * 0.5 to x-coordinate of {_eff}
 				add cos({_rad}) * 0.5 to z-coordinate of {_eff}
-				spawnParticle_Dust(rgb(255, 0, 255), 1, {_eff})
+				spawnParticle_Dust(rgb(34, 58, 112), 1, {_eff})
 		loop {_fromloc::*}:
 			set {_fromeffbase} to loop-value
 			add 0.01 to {_fromy}
@@ -80,7 +107,7 @@ function kitUltEngineer(player: player):
 					set {_eff} to {_fromeff}
 					add sin({_rad}) * 3 to x-coordinate of {_eff}
 					add cos({_rad}) * 3 to z-coordinate of {_eff}
-					spawnParticle_Dust(rgb(255, 0, 255), 1, {_eff})
+					spawnParticle_Dust(rgb(34, 58, 112), 1, {_eff})
 #	存在確認	
 		set {_exist} to kitFakeCheck({_player}, "Machine-Transport Lift")
 		if {_exist} is false:
