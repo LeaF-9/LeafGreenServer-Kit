@@ -3,176 +3,269 @@
 function kitUltReflector(player: player):
 	set {_baseloc} to location of head of {_player}
 	set pitch of {_baseloc} to 0
-	set yaw of {_baseloc} to 45 * (round(yaw of {_baseloc} / 45))
+	set {_yaw} to yaw of {_baseloc}
+	set {_calc} to {_yaw} / 45
+	set {_round} to round({_calc})
+	set yaw of {_baseloc} to 45 * {_round}
 	set {_baseloc} to location 5 meters in front of {_baseloc}
 	set {_walldirection} to {_baseloc}
 	add 90 to yaw of {_walldirection}
 	# middle
-	set {_block} to "minecraft:sea_lantern"
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-50f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
 	set {_location} to {_walldirection}
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-50f]", "[0.1f,100f,100f]")
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,-50f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# (left)
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,50f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,50f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# (right)
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-150f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,-150f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# front - 50
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-100f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
 	set {_location} to location 50 meters in front of {_walldirection}
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-100f]", "[0.1f,100f,100f]")
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,-100f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# (left)
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,0f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,0f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# (right)
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-200f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,-200f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# front - 100
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-50f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
 	set {_location} to location 100 meters in front of {_walldirection}
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-50f]", "[0.1f,100f,100f]")
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,-50f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# (right1)
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-150f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,-150f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# (right2)
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-250f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,-250f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# behind - 50
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,0f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
 	set {_location} to location 50 meters behind {_walldirection}
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,0f]", "[0.1f,100f,100f]")
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,0f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# (left)
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,100f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,100f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# (right)
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-100f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,-100f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# behind - 100
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-50f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
 	set {_location} to location 100 meters behind {_walldirection}
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,-50f]", "[0.1f,100f,100f]")
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,-50f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# (left1)
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,50f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,50f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# (left2)
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.05f,-50f,150f]", "[0.1f,100f,100f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
-	set {_blockdisplay} to spawned block display
-	set metadata value "gametype" of {_blockdisplay} to "Kit"
-	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set {_wall} to kitEffect_UniversalDivision_Wall({_location}, {_transformation})
+	add {_wall} to {_walls::*}
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.025f,-50f,150f]", "[0.05f,100f,100f]")
+	set {_inv} to kitEffect_UniversalDivision_InvisibleWall({_location}, {_transformation})
+	add {_inv} to {_invisibles::*}
 	# END
 	set {_now} to now
 	set {Ult.%{_player}%::UniversalDivision} to {_walldirection}
 	kitEffect_UniversalDivision_Timer()
-	wait 20 seconds
+	loop 200 times:
+		if {Ult.%{_player}%::UniversalDivision} is not {_walldirection}:
+			continue
+		loop all players:
+			kitCheckTeam({_player}, loop-player, true, true) is true
+			loop all block displays:
+				if {_walls::*} contains loop-block display:
+					kitEffect_UniversalDivision_DestroyWall(loop-player, loop-block display)
+		wait a tick
 	{Ult.%{_player}%::UniversalDivision} is {_walldirection}
 	delete {Ult.%{_player}%::UniversalDivision}
-	loop all block displays:
-		metadata value "Universal Division" of loop-block display is "%{_player}%"
-		delete loop-block display
+	loop all entities:
+		if {_walls::*} contains loop-entity:
+			delete loop-entity
+		if {_invisibles::*} contains loop-entity:
+			delete loop-entity
+
+local function kitEffect_UniversalDivision_Wall(loc: location, transform: text) :: entity:
+	set {_block} to "minecraft:sea_lantern"
+	set {_nbt} to nbt compound from "{transformation:%{_transform}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_loc} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	return {_blockdisplay}
+
+local function kitEffect_UniversalDivision_InvisibleWall(loc: location, transform: text) :: entity:
+	set {_block} to "minecraft:white_stained_glass"
+	set {_nbt} to nbt compound from "{transformation:%{_transform}%,block_state:{Name:""%{_block}%""}}"
+	spawn a block display at {_loc} with nbt {_nbt}
+	set {_blockdisplay} to spawned block display
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "Universal Division" of {_blockdisplay} to "%{_player}%"
+	set metadata value "Universal Division - Invisible" of {_blockdisplay} to true
+	return {_blockdisplay}
+
+import:
+	java.util.ArrayList
+	com.comphenix.protocol.ProtocolLibrary
+	com.comphenix.protocol.PacketType
+	com.google.common.collect.Lists
+
+local function kitEffect_UniversalDivision_DestroyWall(player: player, entity: entity):
+	set {_id} to {_entity}.getEntityId()
+	set {_manager} to ProtocolLibrary.getProtocolManager()
+	set {_packet} to {_manager}.createPacket(PacketType.Play.Server.ENTITY_DESTROY)
+	set {_ids} to Lists.newArrayList({_id})
+	{_packet}.getIntLists().write(0, {_ids})
+	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_packet})
 
 local function kitEffect_UniversalDivision_Timer():
+	# teams setting
+	add "red" to {_teams::*}
+	add "blue" to {_teams::*}
+	add "yellow" to {_teams::*}
+	add "green" to {_teams::*}
+	add "purple" to {_teams::*}
+
 	set {_true} to true
 	while {_true} is true:
+		# delete values
 		delete {_ok}
-		delete {_walls::*}
+		delete {_livingteams::*}
+		delete {_players::*}
+		delete {_targets::*}
+		loop {_teams::*}:
+			delete {_walls.%loop-value%::*}
+		
+		# add wall locations to list
 		loop all players:
 			{Ult.%loop-player%::UniversalDivision} is set
 			set {_ok} to true
-			add {Ult.%loop-player%::UniversalDivision} to {_walls::*}
+			set {_team} to {TrueTeam::%loop-player%}
+			add {_team} to {_livingteams::*}  # save existing teams
+			add {Ult.%loop-player%::UniversalDivision} to {_walls.%{_team}%::*}
+		
+		# if walls dont exist, exit loops
 		if {_ok} is not set:
 			set {_true} to false
 			continue
+		
+		# add players to player-list
 		loop all players:
 			metadata value "gametype" of loop-player is "Kit"
-			add loop-player to {_loop-1::*}
-			add loop-player to {_loop-2::*}
-		loop {_loop-1::*}:
-			remove loop-value from {_loop-2::*}
-			loop {_loop-2::*}:
-				kitEffect_UniversalDivision_Vision(loop-value-1, loop-value-2, {_walls::*})
+			add loop-player to {_players::*}
+
+		# teams loop
+		loop {_livingteams::*}:
+			set {_team} to loop-value
+
+			# players loop
+			loop {_players::*}:
+				set {_player.1} to loop-value-2  # seeing
+				if {TrueTeam::%{_player.1}%} is {_team}:
+					continue
+
+				set {_targets::*} to {_players::*}
+				remove {_player.1} from {_targets::*}  # remove themselves from player-list
+
+				loop {_targets::*}:
+					set {_player.2} to loop-value-3  # seen
+					kitEffect_UniversalDivision_Vision({_player.1}, {_player.2}, {_walls.%{_team}%::*})
 		wait a tick
 	loop all players:
 		{Kit-Invisible::%loop-player%} is not set
 		add loop-player to {_visible::*}
 	reveal {_visible::*} from all players
 
-local function kitEffect_UniversalDivision_Vision(player-1: player, player-2: player, walls: locations):
-	if {Kit-Invisible::%{_player-1}%} is set:
+local function kitEffect_UniversalDivision_Vision(seeing: player, seen: player, walls: locations):
+	if {Kit-Invisible::%{_seen}%} is set:
 		stop
-	if {Kit-Invisible::%{_player-2}%} is set:
-		stop
-	set {_loc-1} to location of {_player-1}
-	set {_loc-2} to location of {_player-2}
+	set {_loc.seeing} to location of {_seeing}
+	set {_loc.seen} to location of {_seen}
 	loop {_walls::*}:
-		set {_loc-3} to location 150 meters in front of loop-value
-		set {_loc-4} to location 150 meters behind loop-value
-		if kitEffect_UniversalDivision_Intersect({_loc-1}, {_loc-2}, {_loc-3}, {_loc-4}) is true:
+		set {_loc.wall.1} to location 150 meters in front of loop-value
+		set {_loc.wall.2} to location 150 meters behind loop-value
+		if kitEffect_UniversalDivision_Intersect({_loc.seeing}, {_loc.seen}, {_loc.wall.1}, {_loc.wall.2}) is true:
 			set {_invisible} to true
 	if {_invisible} is true:
-		hide {_player-1} from {_player-2}
-		hide {_player-2} from {_player-1}
+		hide {_seen} from {_seeing}
 	else:
-		reveal {_player-1} from {_player-2}
-		reveal {_player-2} from {_player-1}
+		reveal {_seen} from {_seeing}
 
 local function kitEffect_UniversalDivision_Intersect(loc-1: location, loc-2: location, loc-3: location, loc-4: location) :: boolean:
 	set {_orien-1} to kitEffect_UniversalDivision_Orientation({_loc-3}, {_loc-4}, {_loc-1})
