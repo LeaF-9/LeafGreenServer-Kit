@@ -1,4 +1,8 @@
 function applyEffect(player: entity, effect: potion effect type, tier: number, time: time span, replace: boolean = false, type: text = "normal"):
+	# strength or weakness のときは個別処理
+	if {_effect} is strength or weakness:
+		applyPacketEffect({_player}, {_effect}, {_tier}, {_time}, {_replace})
+		stop
 	if {_type} is "normal":
 		if {_replace} is true:
 			apply {_effect} {_tier} to {_player} for {_time} replacing existing effect
@@ -38,3 +42,104 @@ function checkEffects(player: player) :: potion effect types:
 	# 	set {_effect} to potionChanger("%loop-key%")
 	# 	add {_effect} to {_returnElements::*}
 	return {_returnElements::*}
+
+
+
+# Strength / Weakness
+local function applyPacketEffect(player: player, effect: potion effect type, tier: number, time: time span, replace: boolean = false):
+	# metadata更新
+	set {_now} to now
+	set {_effecttype} to "%{_effect}%"
+
+	if {_replace} is true:
+		set metadata value "%{_effecttype}% - value" of {_player} to {_tier}
+		set metadata value "%{_effecttype}% - time" of {_player} to {_now}
+	else:
+		set {_value.old} to metadata value "strength - value" of {_player}
+		if {_value.old} > {_tier}:
+			stop
+		set metadata value "%{_effecttype}% - value" of {_player} to {_tier}
+		set metadata value "%{_effecttype}% - time" of {_player} to {_now}
+
+	# 効果時間確認
+	set {_second} to "%{_time}%"
+	replace " seconds" with "" in {_second}
+	replace " second" with "" in {_second}
+	set {_second} to {_second} parsed as number
+	set {_tick} to {_second} * 20
+	set {_tick} to round({_tick})
+
+	# エフェクト効果偽装
+	sendEffectPacket({_player}, {_effect}, {_tier}, {_tick})
+
+	wait {_time}
+
+	# エフェクト効果削除
+	set {_effecttime} to metadata value "%{_effecttype}% - time" of {_player}
+	if {_effecttime} is not {_now}:
+		stop
+	stopEffectPacket({_player}, {_effect})
+	delete metadata value "%{_effecttype}% - value" of {_player}
+	delete metadata value "%{_effecttype}% - time" of {_player}
+
+
+
+import:
+	org.bukkit.potion.PotionEffectType
+	com.comphenix.protocol.ProtocolLibrary
+	com.comphenix.protocol.PacketType
+
+local function sendEffectPacket(player: player, effect: potion effect type, tier: number, time: number):
+	set {_id} to {_player}.getEntityId()
+	set {_manager} to ProtocolLibrary.getProtocolManager()
+	set {_packet} to {_manager}.createPacket(PacketType.Play.Server.ENTITY_EFFECT)
+	{_packet}.getIntegers().write(0, {_id})
+	{_packet}.getEffectTypes().write(0, {_effect})  # エフェクト
+	set {_tier} to {_tier} - 1
+	{_packet}.getIntegers().write(1, {_tier}.intValue())  # 強さ
+	{_packet}.getIntegers().write(2, {_time}.intValue())  # 長さ -1でinfinite
+	{_packet}.getBytes().write(0, 4.byteValue())  # Flag
+	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_packet})
+
+local function stopEffectPacket(player: player, effect: potion effect type):
+	set {_id} to {_player}.getEntityId()
+	set {_manager} to ProtocolLibrary.getProtocolManager()
+	set {_packet} to {_manager}.createPacket(PacketType.Play.Server.REMOVE_ENTITY_EFFECT)
+	{_packet}.getIntegers().write(0, {_id})
+	{_packet}.getEffectTypes().write(0, {_effect})
+	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_packet})
+
+
+
+on damage:
+	if checkEntityType(attacker, player) is false:
+		stop
+	set {_player} to attacker
+
+	set {_strength} to metadata value "strength - value" of {_player}
+	if {_strength} is not set:
+		set {_strength} to 0
+	
+	set {_weakness} to metadata value "weakness - value" of {_player}
+	if {_weakness} is not set:
+		set {_weakness} to 0
+	
+	set {_remain} to {_strength} - {_weakness}
+	if {_remain} is 0:
+		stop
+	
+	if {_remain} > 0:
+		set {_percent} to 1 + 0.2 * {_remain}
+	else:
+		set {_percent} to 1 + 0.1 * {_remain}
+	
+	set {_damage} to damage * {_percent}
+	set damage to {_damage}
+	
+
+
+function checkPacketEffect(player: player, effect: potion effect type) :: boolean:
+	set {_value} to metadata value "%{_effect}% - value" of {_player}
+	if {_value} is not set:
+		return false
+	return true
