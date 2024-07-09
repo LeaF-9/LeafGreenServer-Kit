@@ -43,7 +43,7 @@ on rightclick holding a jukebox:
 	set slot 1 of player's current inventory to record blocks named "§aHEALING" with lore "§f[§d§l効果§f]", "§8- §a§l再生能力"
 	set slot 2 of player's current inventory to record 13 named "§aRESISTANCE" with lore "§f[§d§l効果§f]", "§8- §a§l耐性"
 	set slot 3 of player's current inventory to record wait named "§aSPEED" with lore "§f[§d§l効果§f]", "§8- §a§l移動速度上昇"
-	set slot 4 of player's current inventory to record cat named "§cPOISON" with lore "§f[§d§l効果§f]", "§8- §c§l毒"
+	set slot 4 of player's current inventory to record cat named "§cWEAKNESS" with lore "§f[§d§l効果§f]", "§8- §c§l弱体化"
 	set slot 5 of player's current inventory to record mall named "§cFATIGUE" with lore "§f[§d§l効果§f]", "§8- §c§l採掘速度低下"
 	set slot 6 of player's current inventory to record stal named "§cSLOWNESS" with lore "§f[§d§l効果§f]", "§8- §c§l移動速度低下"
 
@@ -59,8 +59,8 @@ on inventory click:
 		set {_potiontype} to resistance
 	else if name of {_item} contains "SPEED":
 		set {_potiontype} to speed
-	else if name of {_item} contains "POISON":
-		set {_potiontype} to poison
+	else if name of {_item} contains "WEAKNESS":
+		set {_potiontype} to weakness
 	else if name of {_item} contains "FATIGUE":
 		set {_potiontype} to mining fatigue
 	else if name of {_item} contains "SLOWNESS":
@@ -90,7 +90,7 @@ function kitTimerBard(player: player):
 			set {_pitch.high} to 1.89
 			set {_pitch.mid} to 1.41
 			set {_pitch.low} to 1.19
-		else if {_potiontype} is poison:
+		else if {_potiontype} is weakness:
 			set {_ally} to false
 			set {_color} to "green"
 			set {_pitch.high} to 2
@@ -115,7 +115,12 @@ function kitTimerBard(player: player):
 		delete {_play}
 		loop all players in radius 10 around {_player}:
 			kitCheckTeam(loop-player, {_player}, {_ally}) is true
-			loop-player does not have potion {_potiontype}
+			if {_potiontype} is weakness:
+				if checkPacketEffect(loop-player, weakness) is true:
+					continue
+			else:
+				if loop-player has potion {_potiontype}:
+					continue
 			applyEffect(loop-player, {_potiontype}, {_tier}, 5 seconds, false, "none")
 			kitParticle_MelodyEffect_Player(loop-player, {_color})
 			if {_play} is not set:
