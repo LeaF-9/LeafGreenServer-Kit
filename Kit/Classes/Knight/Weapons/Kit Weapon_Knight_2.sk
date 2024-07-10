@@ -55,7 +55,10 @@ on rightclick:
 		set tool of player to air
 		set offhand tool of player to {_tool}
 	else if name of offhand tool of player is "§3Cutlass":
-		if tool of player is air:
-			set {_tool} to offhand tool of player
-			set offhand tool of player to air
-			set tool of player to {_tool}
+		set {_tool} to offhand tool of player
+		set offhand tool of player to air
+		set {_slot} to slot 0 of inventory of player
+		set slot 0 of inventory of player to {_tool}
+		if {_slot} is not air:
+			give {_slot} to player
+		set current hotbar slot of player to 0
