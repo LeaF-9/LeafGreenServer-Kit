@@ -1,8 +1,6 @@
 on damage of player:
 	damage was caused by fall
-	if {Kit-GameStage::name} is "Infection":
-		cancel event
-	else if {Kit-GameStage::name} is "Thin Barometric Pressure":
+	if {Kit-GameStage::name} is "Thin Barometric Pressure":
 		if x-coordinate of victim is between -15 and 15:
 			set {_z} to z-coordinate of victim
 			if {_z} is between -70 and -64:
@@ -13,3 +11,9 @@ on damage of player:
 on walking on barrier:
 	if {Kit-GameStage::name} is "Lab", "Towers", "Bridge" or "Honey Comb":
 		kill player
+
+on rightclick on spruce wood trapdoor:
+	set {_world} to "%world of location of player%"
+	{_world} is "Kit-FloatingUluz"
+	{BlockEnable::%player%} is not true
+	cancel event
