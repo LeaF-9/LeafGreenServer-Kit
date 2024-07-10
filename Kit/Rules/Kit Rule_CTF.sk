@@ -13,14 +13,34 @@ function kitDeathEvent_CTF(attacker: player, victim: player, supporters: players
 	add 1 to {Kit-Kill.personal::%{_attacker}%}
 	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
-	# ---victimがFlagHolderであった場合の処理---
-	kitFlagDrop_CTF({_victim})
-	# ---------------------------------------
+
+# Flag所持者のダメージを変更する処理
+on damage of player:
+	{Kit-FlagHolder} is victim
+	attacker is set
+	set {_calc} to kitFlagDamage_CTF(victim)
+	set damage to damage * {_calc}
+
+# Flag所持者のダメージ倍率を計算する関数
+local function kitFlagDamage_CTF(player: player) :: number:
+	set {_percent} to 1
+
+	set {_team} to {TrueTeam::%{_player}%}
+	set {_point} to {Kit-FlagPoint::%{_team}%}
+	set {_average} to average({Kit-FlagPoint::*})
+	set {_percent} to {_point} / {_average}
+	if {_percent} < 0.5:
+		set {_percent} to 0.5
+
+	return {_percent}
 
 # ---Respawn Timeを延長する処理---
 on death of player:
 	{Kit-tochu} is true
 	{Kit-GameStage::rule} is "CTF"
+	# ---victimがFlagHolderであった場合の処理---
+	kitFlagDrop_CTF(victim)
+	# ---------------------------------------
 	if {Kit-FlagHolder} is set:
 		{Kit-FlagHolder} is not victim
 		if kitCheckTeam(victim, {Kit-FlagHolder}, true, true) is true:
@@ -41,9 +61,10 @@ on death of player:
 
 function kitFlagSpawn_CTF(location: location, color: text = "white", former: text = "<none>"):  # Flagを対象地点にスポーンさせる関数
 	set {_mgloc} to {_location}
+	set pitch of {_mgloc} to 0
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0.5f,0f]", "[1f,1f,1f]")
 	set {_nbt} to nbt compound from "{PersistenceRequired:1,Glowing:1,transformation:%{_transformation}%,item:{id:""%{_color}%_banner"",Count:1b},Team:""kit-%{_color}%""}"
-	spawn an item display at {_location} with nbt {_nbt}
+	spawn an item display at {_mgloc} with nbt {_nbt}
 	set metadata value "gametype" of spawned item display to "Kit"
 	set metadata value "flag-color" of spawned item display to {_color}
 	set metadata value "flag-former" of spawned item display to {_former}
