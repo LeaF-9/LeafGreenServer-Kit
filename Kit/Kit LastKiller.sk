@@ -1,42 +1,51 @@
 ﻿on damage of player:
-	{Join::%victim%} is "Kit"
 	if attacker exists:
 		if checkEntityType(attacker, player) is true:
-			set {LastKiller::%victim%} to attacker
-			add attacker to {damager.%victim%::*}
-			if {tochu} is true:
-				if damage was caused by projectile:
-					if metadata value "freezedry" of projectile is "true":
-						stop
-				if {Ulting::%attacker%} is not set:
-					add 1 to {Ultimate::%attacker%}
+			LastKiller(victim, attacker)
 		else:
 			if attacker is tnt:
 				set {_attacker} to metadata value "attacker" of attacker
 				set {_attacker} to {_attacker} parsed as player
-				if {team::%{_attacker}%} is {team::%victim%}:
+				if kitCheckTeam({_attacker}, victim, true) is true:
 					cancel event
 				else:
-					set {LastKiller::%victim%} to {_attacker}
-					add {_attacker} to {damager.%victim%::*}
+					LastKiller(victim, {_attacker})
 			else:
 				loop all players:
 					attacker's display name is name of loop-player
-					set {LastKiller::%victim%} to loop-player
-					add loop-player to {damager.%victim%::*}
+					LastKiller(victim, loop-player)
 	else:
 		if damage was caused by suffocation:
 			set {_bl} to location of block above victim
 			loop all players:
-				delete {_ok}
 				loop-player is not victim
-				loop {Block.%loop-player%::*}:
-					loop-value-2 is {_bl}
-					set {_ok} to true
-				{_ok} is true
-				if {team::%loop-player%} is {team::%victim%}:
-					cancel event
-					teleport victim to location of loop-player
-				else:
-					set {LastKiller::%victim%} to loop-player
-					add loop-player to {damager.%victim%::*}
+				if {Block.%loop-player%::*} contains {_bl}:
+					set {_attacker} to loop-player
+			if {_attacker} is not set:
+				stop
+			if kitCheckTeam(victim, {_attacker}, true) is true:
+				cancel event
+				teleport victim to location of {_attacker}
+			else:
+				LastKiller(victim, {_attacker})
+		else if damage was caused by fire:
+			set {_d} to 100
+			set {_loc.v} to location of victim
+			loop all blocks in radius 1.5 around victim:
+				"%type of loop-block%" contains "fire"
+				set {_loc.b} to location of loop-block
+				set {_distance} to distance between {_loc.v} and {_loc.b}
+				if {_distance} < {_d}:
+					set {_d} to {_distance}
+					set {_bl} to location of loop-block
+			loop all players:
+				if {Block.%loop-player%::*} contains {_bl}:
+					set {_attacker} to loop-player
+			if {_attacker} is not set:
+				stop
+			if kitCheckTeam(victim, {_attacker}, true) is true:
+				cancel event
+				extinguish victim
+			else:
+				LastKiller(victim, {_attacker})
+			
