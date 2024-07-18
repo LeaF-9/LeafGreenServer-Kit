@@ -1,0 +1,56 @@
+# skill-name: Rush Attack
+
+function kitSkill_Berserker_2(player: player):
+	toolCT({_player}, "Berserker", 2)
+	kitEffect_RushAttack({_player})
+
+
+
+local function kitEffect_RushAttack(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::RushAttack} to {_now}
+	applyEffect({_player}, speed, 2, 5 seconds, true)
+	kitParticle_RushAttack({_player})
+	kitMsg({_player}, "<##D66A35>周囲の生物を傷付け続けます...")
+	loop 10 times:
+		if {Stats.%{_player}%::RushAttack} is not {_now}:
+			continue
+		
+		loop all entities in radius 5 around {_player}:
+			loop-entity is not {_player}
+			kitDamage({_player}, loop-entity, 1)
+			kitParticle_RushAttack_Hit(loop-entity)
+
+		wait 10 ticks
+	
+	if {Stats.%{_player}%::RushAttack} is not {_now}:
+		stop
+	delete {Stats.%{_player}%::RushAttack}
+	kitMsg({_player}, "§6Rush Attack §eの効果が切れました")
+
+
+
+local function kitParticle_RushAttack(player: player):
+	playSound("entity.blaze.hurt", 1, 0.5, {_player})
+	set {_now} to {Stats.%{_player}%::RushAttack}
+	set {_rad} to 0
+	loop 100 times:
+		if {Stats.%{_player}%::RushAttack} is not {_now}:
+			stop
+		
+		set {_baseloc} to location 1 meter above {_player}
+		loop 8 times:
+			set {_el} to {_baseloc}
+			add 5 * sin({_rad}) to x-pos of {_el}
+			add 5 * cos({_rad}) to z-pos of {_el}
+			add 45 to {_rad}
+			spawnParticle_Block(magma block, {_el})
+
+		add 20 to {_rad}
+		wait a tick
+
+local function kitParticle_RushAttack_Hit(entity: entity):
+	playSound("entity.firework_rocket.blast", 0.9, 2, {_entity})
+	set {_loc} to location 1 meter above {_entity}
+	loop 15 times:
+		spawnParticle_Vector(flame, randomVector(), 0.65, {_loc})
