@@ -1,0 +1,82 @@
+# skill-name: Health Suction
+
+function kitSkill_Berserker_3(player: player):
+	toolCT({_player}, "Berserker", 3)
+	kitEffect_HealthSuction({_player})
+
+
+
+on damage of player:
+	{Stats.%attacker%::HealthSuction} is set
+	max health of attacker is not health of attacker
+	set damage to 1
+	kitEffect_HealthSuction_Heal(attacker, victim)
+
+on death of player:
+	{Stats.%attacker%::HealthSuction} is set
+	kitEffect_HealthSuction_Health(attacker)
+
+
+
+local function kitEffect_HealthSuction(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::HealthSuction} to {_now}
+	kitMsg({_player}, "§4敵の血を奪うことで§d回復§4します...")
+	kitParticle_HealthSuction({_player})
+	wait 10 seconds
+	{Stats.%{_player}%::HealthSuction} is {_now}
+	delete {Stats.%{_player}%::HealthSuction}
+	kitMsg({_player}, "§cHealth Suction§dの効果が切れました")
+
+local function kitEffect_HealthSuction_Heal(player: player, target: player):
+	kitHeal({_player}, 1)
+	kitParticle_HealthSuction_Heal({_player}, {_target})
+
+local function kitEffect_HealthSuction_Health(player: player):
+	add 0.5 to max health of {_player}
+	kitParticle_HealthSuction_Health({_player})
+
+
+
+local function kitParticle_HealthSuction(player: player):
+	playSound("entity.ghast.warn", 1, 1.2, {_player})
+	set {_now} to {Stats.%{_player}%::HealthSuction}
+	loop 200 times:
+		if {Stats.%{_player}%::HealthSuction} is not {_now}:
+			stop
+
+		set {_el} to aroundEffect({_player})
+		spawnParticle(raid_omen, {_el})
+
+		wait a tick
+
+local function kitParticle_HealthSuction_Heal(player: player, target: player):
+	playSound("entity.generic.drink", 0.95, 1.5, {_player})
+	loop 5 times:
+		set {_from} to location 1 meter above {_target}
+		set {_to} to location 1 meter above {_player}
+		set {_distance} to distance between {_from} and {_to}
+		set {_baseloc} to setDirToVec({_from}, setVector({_from}, {_to}))
+		set {_m} to {_distance} / (6 - loop-number)
+		set {_el} to location {_m} meters in front of {_baseloc}
+		spawnParticle_DustTransition(rgb(183, 40, 46), rgb(162, 32, 65), 0.9, {_el})
+		wait a tick
+
+local function kitParticle_HealthSuction_Health(player: player):
+	playSound("item.honey_bottle.drink", 1.05, 1.5, {_player})
+	set {_rad} to 0
+	set {_y} to 0
+	loop 11 times:
+
+		set {_baseloc} to location of {_player}
+		loop 4 times:
+			set {_el} to {_baseloc}
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle(heart, {_el})
+			add 90 to {_rad}
+
+		add 0.2 to {_y} 
+		add 20 to {_rad}
+		wait a tick
