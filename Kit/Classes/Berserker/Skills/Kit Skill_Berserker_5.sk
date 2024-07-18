@@ -1,0 +1,80 @@
+# skill-name: Rampage
+
+function kitSkill_Berserker_5(player: player):
+	toolCT({_player}, "Berserker", 5)
+	kitEffect_Rampage({_player})
+
+
+on damage of player:
+	if {Stats.%victim%::Rampage} is set:
+		set {Stats.%victim%::Rampage-Combo} to 0
+		kitParticle_Rampage_Reset(victim)
+	if {Stats.%attacker%::Rampage} is set:
+		set {_damage} to 3 + {Stats.%attacker%::Rampage-Combo}
+		set damage to {_damage}
+		add 1 to {Stats.%attacker%::Rampage-Combo}
+		kitParticle_Rampage_Combo(attacker, victim, {Stats.%attacker%::Rampage-Combo})
+
+
+
+local function kitEffect_Rampage(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::Rampage} to {_now}
+	set {Stats.%{_player}%::Rampage-Combo} to 0
+	kitMsg({_player}, "§6§lRampage §eを発動します...")
+	kitParticle_Rampage({_player})
+	loop 200 times:
+		if {Stats.%{_player}%::Rampage} is not {_now}:
+			continue
+		send action bar "§6§lRampage Combo§b: §e§l%{Stats.%{_player}%::Rampage-Combo}%" to {_player}
+		wait a tick
+	{Stats.%{_player}%::Rampage} is {_now}
+	delete {Stats.%{_player}%::Rampage}
+	delete {Stats.%{_player}%::Rampage-Combo}
+	kitMsg({_player}, "§6Rampage §bが終了しました")
+
+
+
+local function kitParticle_Rampage(player: player):
+	playSound("entity.ender_dragon.growl", 1, 1.55, {_player})
+	set {_now} to {Stats.%{_player}%::Rampage}
+	set {_rad} to 0
+	loop 200 times:
+		if {Stats.%{_player}%::Rampage} is not {_now}:
+			stop
+		
+		set {_el} to location of {_player}
+		add 18 to {_rad}
+		add 0.55 * sin({_rad}) to x-pos of {_el}
+		add 0.55 * cos({_rad}) to z-pos of {_el}
+		add 2 to y-pos of {_el}
+		spawnParticle(angry_villager, {_el})
+
+		wait a tick
+
+local function kitParticle_Rampage_Combo(player: player, target: player, combo: number):
+	playSound("entity.blaze.hurt", 1, 1.75, {_player})
+	set {_baseloc} to location 1 meter above {_target}
+	loop 20 times:
+		spawnParticle_Vector(wax_on, randomVector(), 10, {_baseloc})
+
+	loop 3 * {_combo} times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle_Vector(trial_spawner_detection, vector(0, 0.25, 0), 0.5, {_el})
+
+local function kitParticle_Rampage_Reset(player: player):
+	playSound("entity.blaze.death", 1, 1.5, {_player})
+	set {_y} to 2
+	loop 11 times:
+		set {_baseloc} to location of {_player}
+		set {_rad} to 0
+		loop 8 times:
+			set {_el} to {_baseloc}
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle(splash, {_el})
+			add 360 / 8 to {_rad}
+
+		subtract 0.2 from {_y}
+		wait a tick
