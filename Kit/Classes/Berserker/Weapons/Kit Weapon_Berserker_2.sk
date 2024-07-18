@@ -1,0 +1,88 @@
+# weapon-name: Halberd
+
+on leftclick:
+	{Class::%player%} is "Berserker"
+	player is sneaking
+	set {_tool} to tool of player
+	kitItemAllChecker({_tool}, "Berserker", "Weapon.main", 2) is true
+	checkItemCT(player, {_tool}) is true
+	kitEffect_Halberd_Thrust(player)
+
+on rightclick:
+	{Class::%player%} is "Berserker"
+	player is sneaking
+	set {_tool} to tool of player
+	kitItemAllChecker({_tool}, "Berserker", "Weapon.main", 2) is true
+	checkItemCT(player, {_tool}) is true
+	kitEffect_Halberd_Sweep(player)
+
+
+
+local function kitEffect_Halberd_Thrust(player: player):
+	toolItemCT({_player}, "Berserker", 2)
+	set {_baseloc} to location 1.2 meters above {_player}
+	playSound("entity.player.attack.knockback", 1, 1.2, {_baseloc})
+	set {_m} to 0.25
+	set {_totalm} to 0
+	loop 5 / {_m} times:
+		add {_m} to {_totalm}
+		set {_el} to location {_totalm} meters in front of {_baseloc}
+		kitParticle_Halberd_Thrust({_el})
+		set {_hits::*} to checkHitEntities({_el})
+		loop {_hits::*}:
+			set {_entity} to loop-value-2
+			{_entity} is not {_player}
+			{_hit.%id of {_entity}%} is not set
+			set {_hit.%id of {_entity}%} to true
+			kitDamage({_player}, {_entity}, 3)
+
+local function kitEffect_Halberd_Sweep(player: player):
+	toolItemCT({_player}, "Berserker", 2)
+	set {_baseloc} to location 1.2 meters above {_player}
+	playSound("entity.player.attack.sweep", 1, 0.7, {_baseloc})
+	set {_rightm} to 5
+	loop 11 times:
+		# yaw & pitch setting
+		set {_to} to {_baseloc}
+		set {_pitch} to pitch of {_to}
+		set pitch of {_to} to 0
+		set {_to} to location {_rightm} meters to the right of {_to}
+		set pitch of {_to} to {_pitch}
+		set {_to} to location 5 meters in front of {_to}
+		set {_from} to setDirToVec({_baseloc}, setVector({_baseloc}, {_to}))
+
+		set {_m} to 0
+		loop 5 times:
+			add 1 to {_m}
+			set {_el} to location {_m} meters in front of {_from}
+			kitParticle_Halberd_Sweep({_el})
+			loop all entities in radius 1.5 around {_el}:
+				loop-entity is not {_player}
+				{_hit.%id of loop-entity%} is not set
+				set {_hit.%id of loop-entity%} to true
+				kitDamage({_player}, loop-entity, 2)
+				kitEffect_Halberd_Knockback({_baseloc}, loop-entity)
+		
+		subtract 1 from {_rightm}
+		if mod(loop-number, 2) is 0:
+			wait a tick
+
+local function kitEffect_Halberd_Knockback(from: location, target: entity):
+	set {_to} to location of head of {_target}
+	set {_vector} to setVector({_from}, {_to})
+	set velocity of {_target} to {_vector}
+
+
+
+local function kitParticle_Halberd_Thrust(loc: location):
+	spawnParticle(crit, {_loc})
+	loop 3 times:
+		chance of 50%:
+			set {_el} to {_loc}
+			add a random number between -0.5 and 0.5 to x-pos of {_el}
+			add a random number between -0.5 and 0.5 to y-pos of {_el}
+			add a random number between -0.5 and 0.5 to z-pos of {_el}
+			spawnParticle(small_gust, {_el})
+
+local function kitParticle_Halberd_Sweep(loc: location):
+	spawnParticle(sweep_attack, {_loc})
