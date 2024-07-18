@@ -30,6 +30,11 @@ on damage of player:
 		set {_enable} to true
 		set {_range} to 5
 		set {_damage} to 1
+	if {Stats.%attacker%::BerserkTime} is set:
+		set {_enable} to true
+		set {_range} to 7
+		set {_damage} to 2
+		playSound("entity.blaze.shoot", 0.75, 1.75, attacker)
 
 	if {_enable} is false:
 		stop
@@ -65,8 +70,8 @@ function kitTimerBerserker(player: player):
 		loop all players in radius 10 around {_player}:
 			loop-player is not {_player}
 			add 1 to {_pop}
-		if {_pop} <= 3:
-			set {_lvl} to 6 - (2 * {_pop})
+		if {_pop} <= 4:
+			set {_lvl} to 4 - (1 * {_pop})
 			applyEffect({_player}, weakness, {_lvl}, 1 seconds, true)
 			kitParticle_InsaneLimiter({_player})
 
