@@ -64,6 +64,13 @@ local function kitEffect_Catastrophy(player: player):
 			if {_hit.entity} is set:
 				kitDamage({_player}, {_hit.entity}, 3)
 			kitExplosion({_player}, 3.5, {_hit.block})
+			
+			# suicidal explosion
+			set {_distance} to distance between {_player} and {_hit.block}
+			if {_distance} < 3.5:
+				set {_damage} to 3.5 - {_distance}
+				damage {_player} by {_damage} hearts
+
 			# delete item display
 			loop all entities:
 				checkEntityType(loop-entity, item display) is true
