@@ -1,0 +1,102 @@
+# weapon-name: Catastrophy
+
+on leftclick:
+	{Class::%player%} is "Berserker"
+	player is sneaking
+	set {_tool} to tool of player
+	kitItemAllChecker({_tool}, "Berserker", "Weapon.main", 3) is true
+	kitEffect_Catastrophy(player)
+
+
+
+local function kitEffect_Catastrophy(player: player):
+	set {_tool} to tool of {_player}
+	set tool of {_player} to air
+
+	# locations
+	set {_baseloc} to location 1.2 meters above {_player}
+	set {_pitch} to pitch of {_baseloc}
+	kitParticle_Catastrophy_Throw({_baseloc})
+
+	# throwed entity
+	set {_item} to "minecraft:netherite_pickaxe"
+	set {_transformation} to "[-0.0000f,0.0000f,1.0000f,0.0000f,0.0000f,1.0000f,0.0000f,0.0000f,-1.0000f,0.0000f,-0.0000f,0.0000f,0.0000f,0.0000f,0.0000f,1.0000f]"
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b}}"
+	spawn an item display at {_baseloc} with nbt {_nbt}
+	set {_itemdisplay} to spawned item display
+	set {_now} to now
+	set metadata value "Catastrophy - player" of {_itemdisplay} to {_player}
+	set metadata value "Catastrophy - time" of {_itemdisplay} to {_now}
+
+	# throwing
+	set {_enabled} to true
+	set {_m} to 0
+	loop 60 times:
+		if {_enabled} is false:
+			wait a tick
+			continue
+		
+		# item display control
+		add 1 to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		add 90 to {_pitch}
+		set pitch of {_el} to {_pitch}
+		teleport {_itemdisplay} to {_el}
+		kitParticle_Catastrophy_Pickaxe({_el}, loop-number)
+
+		# check hitting (entity)
+		loop all entities in radius 1.5 around {_el}:
+			loop-entity is not {_player}
+			checkEntityType(loop-entity, item display) is false
+			{_enabled} is true
+			set {_enabled} to false
+			set {_hit.entity} to loop-entity
+			set {_hit.block} to {_el}
+		
+		# check hitting (block)
+		if {_enabled} is true:
+			if block at {_el} is not passable:
+				set {_enabled} to false
+				set {_hit.block} to location {_m} - 1 meters in front of {_baseloc}
+		
+		# hit processing
+		if {_enabled} is false:
+			if {_hit.entity} is set:
+				kitDamage({_player}, {_hit.entity}, 3)
+			kitExplosion({_player}, 3.5, {_hit.block})
+			# delete item display
+			loop all entities:
+				checkEntityType(loop-entity, item display) is true
+				metadata value "Catastrophy - player" of loop-entity is {_player}
+				metadata value "Catastrophy - time" of loop-entity is {_now}
+				delete loop-entity
+
+		wait a tick
+	
+	# return weapon
+	set {_slot} to slot 0 of inventory of {_player}
+	set slot 0 of inventory of {_player} to {_tool}
+	if {_slot} is not air:
+		give {_slot} to {_player}
+	set current hotbar slot of {_player} to 0
+
+	# delete item display
+	loop all entities:
+		checkEntityType(loop-entity, item display) is true
+		metadata value "Catastrophy - player" of loop-entity is {_player}
+		metadata value "Catastrophy - time" of loop-entity is {_now}
+		delete loop-entity
+
+
+
+local function kitParticle_Catastrophy_Throw(loc: location):
+	playSound("item.trident.throw", 1, 0.5, {_loc})
+	loop 30 times:
+		spawnParticle_Vector(flame, randomVector(), 0.5, {_loc})
+		chance of 30%:
+			spawnParticle_Vector(smoke, randomVector(), 0.5, {_loc})
+
+local function kitParticle_Catastrophy_Pickaxe(loc: location, num: number):
+	if mod({_num}, 4) is 0:
+		playSound("entity.arrow.shoot", 1, 0.5, {_loc})
+	spawnParticle(lava, {_loc})
