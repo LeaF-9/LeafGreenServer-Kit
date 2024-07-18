@@ -1,0 +1,45 @@
+# skill-name: Crazy Patience
+
+function kitSkill_Berserker_6(player: player):
+	toolCT({_player}, "Berserker", 6)
+	kitEffect_CrazyPatience({_player})
+
+
+
+on damage of player:
+	{Stats.%victim%::CrazyPatience} is set
+	set damage to damage * 0.8
+	kitParticle_CrazyPatience_Damage(victim)
+
+
+
+local function kitEffect_CrazyPatience(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::CrazyPatience} to {_now}
+	kitParticle_CrazyPatience({_player})
+	kitMsg({_player}, "§8§l狂気の我慢§7により§6§lノックバック§7を§e§l無効化§7します...")
+	set knockback resistance attribute of {_player} to 1
+	wait 5 seconds
+	{Stats.%{_player}%::CrazyPatience} is {_now}
+	set knockback resistance attribute of {_player} to 0
+	delete {Stats.%{_player}%::CrazyPatience}
+	kitMsg({_player}, "§8§lCrazy Patience§5の効果が終了しました")
+
+
+
+local function kitParticle_CrazyPatience(player: player):
+	playSound("entity.iron_golem.death", 1, 1.35, {_player})
+	set {_now} to {Stats.%{_player}%::CrazyPatience}
+	loop 100 times:
+		if {Stats.%{_player}%::CrazyPatience} is not {_now}:
+			stop
+		
+		set {_el} to aroundEffect({_player})
+		spawnParticle(end_rod, {_el})
+
+		wait a tick
+
+local function kitParticle_CrazyPatience_Damage(player: player):
+	playSound("entity.zombie.attack_iron_door", 0.9, 1.35, {_player})
+	set {_el} to location 1 meter above {_player}
+	spawnParticle(explosion, {_el})
