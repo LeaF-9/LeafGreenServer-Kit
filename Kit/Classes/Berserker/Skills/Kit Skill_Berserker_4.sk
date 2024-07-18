@@ -1,0 +1,48 @@
+# skill-name: Devil Contract
+
+function kitSkill_Berserker_4(player: player):
+	toolCT({_player}, "Berserker", 4)
+	kitEffect_DevilContract({_player})
+
+
+
+local function kitEffect_DevilContract(player: player):
+	set {_max} to max health of {_player}
+	if {_max} <= 3:
+		kitMsg({_player}, "§c契約に必要な §4§l体力 §cが不足しています")
+		stop
+	kitMsg({_player}, "§5悪魔との契約によって§4§l力§5を手に入れた...")
+	set {_health} to health of {_player}
+	if {_health} >= 5:
+		subtract 5 from {_health}
+		set health of {_player} to {_health}
+	else:
+		subtract 3 from {_max}
+		set max health of {_player} to {_max}
+	applyEffect({_player}, strength, 3, 5 seconds, true)
+	kitParticle_DevilContract({_player})
+
+
+
+local function kitParticle_DevilContract(player: player):
+	playSound("entity.wither.spawn", 1, 1.5, {_player})
+	loop 30 times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle(trial_omen, {_el})
+	set {_y} to 0
+	loop 100 times:
+		add 0.2 to {_y}
+		if {_y} > 2:
+			set {_y} to 0
+		
+		set {_rad} to 0
+		set {_baseloc} to location of {_player}
+		loop 8 times:
+			add 360 / 8 to {_rad}
+			set {_el} to {_baseloc}
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle(witch, {_el})
+
+		wait a tick
