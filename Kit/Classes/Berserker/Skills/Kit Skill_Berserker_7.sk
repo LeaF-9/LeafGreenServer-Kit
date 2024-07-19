@@ -1,0 +1,284 @@
+# skill-name: Lunatic Madness
+
+function kitSkill_Berserker_7(player: player):
+	set {_tool} to tool of {_player}
+	if {_tool} is enchanted:
+		toolCT({_player}, "Berserker", 7)
+		kitEffect_LunaticMadness_Execute({_player}, "Buff")
+		stop
+	kitEffect_LunaticMadness({_player})
+
+on leftclick:
+	set {_tool} to tool of player
+	{_tool} is enchanted
+	kitItemAllChecker({_tool}, "Berserker", "Skill", 7) is true
+	toolCT(player, "Berserker", 7)
+	kitEffect_LunaticMadness_Execute(player, "Splash")
+
+on damage of player:
+	damage was caused by projectile
+	projectile is a snowball
+	metadata value "lunatic madness - liquid" of projectile is set
+	set {_player} to metadata value "lunatic madness - liquid" of projectile
+	set metadata value "lunatic madness - hit" of victim to {_player}
+
+on projectile hit:
+	projectile is a snowball
+	metadata value "lunatic madness - liquid" of projectile is set
+	kitParticle_LunaticMadness_Splash(location of projectile)
+
+
+local function kitEffect_LunaticMadness(player: player):
+	# save effects
+	set {_effects::*} to all potion effects of {_player}
+	set {_debuff effects::*} to kitEffect_LunaticMadness_DebuffEffects({_effects::*})
+
+	if {_debuff effects::1} is not set:
+		kitMsg({_player}, "§c現在§4§lデバフエフェクト§cを所持していません")
+		stop
+	set {_debuff types::*} to kitEffect_LunaticMadness_DebuffCheck({_debuff effects::*})
+
+	kitParticle_LunaticMadness({_player})
+	kitMsg({_player}, "§5現在付与された§4§lデバフ§5を取り込みました...")
+
+	# clear debuffs from player
+	loop {_debuff types::*}:
+		remove loop-value from {_player}
+	
+	# enchanting item
+	loop all items in {_player}'s inventory:
+		kitItemAllChecker(loop-item, "Berserker", "Skill", 7) is true
+		enchant loop-item with unbreaking 1
+	
+	# check item whether it was used
+	set {_true} to true
+	while {_true} is true:
+		# check if player has the item
+		delete {_possess}
+		loop all items in {_player}'s inventory:
+			kitItemAllChecker(loop-item, "Berserker", "Skill", 7) is true
+			set {_possess} to true
+		if {_possess} is not set:
+			set {_true} to false
+			continue
+
+		# check if item was used
+		if {Stats.%{_player}%::LunaticMadness} is set:
+			set {_execute} to {Stats.%{_player}%::LunaticMadness}
+			delete {Stats.%{_player}%::LunaticMadness}
+			set {_true} to false
+			continue
+
+		wait a tick
+	
+	# exception handling
+	if {_execute} is not set:
+		log "%{_player}% のLunatic Madnessは効果を発動せずに強制終了しました"
+		stop
+	
+	# disenchant
+	loop all items in {_player}'s inventory:
+		kitItemAllChecker(loop-item, "Berserker", "Skill", 7) is true
+		disenchant loop-item
+
+	# execute
+	if {_execute} is "Buff":
+		kitEffect_LunaticMadness_Buff({_player}, {_debuff effects::*})
+	else if {_execute} is "Splash":
+		kitEffect_LunaticMadness_Splash({_player}, {_debuff effects::*})
+	else:
+		log "%{_player}% のLunatic Madnessは適切な効果が指定されていませんでした"
+		stop
+
+local function kitEffect_LunaticMadness_DebuffEffects(effects: potion effects) :: potion effects:
+	# create debuff lists
+	add "slowness" parsed as potion effect type to {_debuffs::*}
+	add "mining fatigue" parsed as potion effect type to {_debuffs::*}
+	add "instant damage" parsed as potion effect type to {_debuffs::*}
+	add "nausea" parsed as potion effect type to {_debuffs::*}
+	add "blindness" parsed as potion effect type to {_debuffs::*}
+	add "hunger" parsed as potion effect type to {_debuffs::*}
+	add "poison" parsed as potion effect type to {_debuffs::*}
+	add "wither" parsed as potion effect type to {_debuffs::*}
+	add "glowing" parsed as potion effect type to {_debuffs::*}
+	add "darkness" parsed as potion effect type to {_debuffs::*}
+	add "bad omen" parsed as potion effect type to {_debuffs::*}
+
+	# check debuffs from effect list
+	loop {_effects::*}:
+		set {_efftype} to effectType(loop-value)
+		if {_debuffs::*} contains {_efftype}:
+			add loop-value to {_returns::*}
+	
+	return {_returns::*}
+
+
+local function kitEffect_LunaticMadness_DebuffCheck(effects: potion effects) :: potion effect types:
+	loop {_effects::*}:
+		set {_efftype} to effectType(loop-value)
+		add {_efftype} to {_returns::*}
+	
+	return {_returns::*}
+
+local function kitEffect_LunaticMadness_Execute(player: player, type: text):
+	set {Stats.%{_player}%::LunaticMadness} to {_type}
+
+local function kitEffect_LunaticMadness_Buff(player: player, effects: potion effects):
+	set {_mintier} to 0
+	set {_mintime} to 0 seconds
+	loop {_effects::*}:
+		# tier
+		set {_tier} to effectTier(loop-value)
+		if {_tier} > 2:
+			set {_tier} to 2
+		
+		if {_tier} > {_mintier}:
+			set {_mintier} to {_tier}
+
+		# time
+		set {_time} to effectTime(loop-value)
+		if {_time} > 10 seconds:
+			set {_time} to 10 seconds
+		
+		if {_time} > {_mintime}:
+			set {_mintime} to {_time}
+	
+	kitParticle_LunaticMadness_Buff({_player})
+	
+	applyEffect({_player}, strength, {_mintier}, {_mintime}, true)
+	applyEffect({_player}, regeneration, {_mintier}, {_mintime})
+
+	kitMsg({_player}, "§5デバフを§4§l自分の力§5へと変換した...")
+
+local function kitEffect_LunaticMadness_Splash(player: player, effects: potion effects):
+	kitMsg({_player}, "§5デバフ§cを§4液体§cとして撒き散らします!")
+	playSound("item.bucket.empty_lava", 1, 0.85, {_player})
+	loop {_effects::*}:
+		add 1 to {_count}
+
+		# type
+		set {_type} to effectType(loop-value)
+		set {_effect-types::%{_count}%} to {_type}
+
+		# tier
+		set {_tier} to effectTier(loop-value)
+		set {_effect-tiers::%{_count}%} to {_tier}
+
+		# time
+		set {_time} to effectTime(loop-value)
+		if {_time} > 10 seconds:
+			set {_time} to 10 seconds
+		set {_effect-times::%{_count}%} to {_time}
+	
+	set {_baseloc} to location 1.5 meters above {_player}
+	loop 20 times:
+		set {_fromshoot} to {_baseloc}
+		add a random number between -30 and 30 to yaw of {_fromshoot}
+		add a random number between -20 and 20 to pitch of {_fromshoot}
+
+		shoot a snowball from {_fromshoot} at speed 0.75
+		setShooter(shot snowball, {_player})
+		set metadata value "lunatic madness - liquid" of shot snowball to {_player}
+		set item of shot snowball to magma block
+		kitParticle_LunaticMadness_Liquid(shot snowball)
+	
+	set {_enable} to true
+	loop 200 times:
+		if {_enable} is false:
+			continue
+
+		loop all players:
+			{_hit.%id of loop-player%} is not set
+			metadata value "lunatic madness - hit" of loop-player is {_player}
+			set {_hit.%id of loop-player%} to true
+			loop {_effect-types::*}:
+				set {_index} to loop-index
+				applyEffect(loop-player, {_effect-types::%{_index}%}, {_effect-tiers::%{_index}%}, {_effect-times::%{_index}%})
+			message "§4赤い液体に含まれていた§5§lデバフエフェクト§4を食らってしまった!" to loop-player
+			kitParticle_LunaticMadness_Hit(loop-player)
+			delete metadata value "lunatic madness - hit" of loop-player
+		
+		set {_projcount} to 0
+		loop all projectiles:
+			metadata value "lunatic madness - liquid" of loop-projectile is {_player}
+			add 1 to {_projcount}
+		if {_projcount} is 0:
+			set {_enable} to false
+			continue
+
+		wait a tick
+			
+
+
+local function kitParticle_LunaticMadness(player: player):
+	playSound("entity.ender_dragon.ambient", 1, 1.6, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 100 times:
+		set {_el} to {_baseloc}
+		chance of 30%:
+			add a random number between -1 and 1 to x-pos of {_el}
+			add a random number between -1 and 1 to y-pos of {_el}
+			add a random number between -1 and 1 to z-pos of {_el}
+		spawnParticle(crimson_spore, {_el})
+
+local function kitParticle_LunaticMadness_Buff(player: player):
+	playSound("entity.wither.break_block", 1, 0.65, {_player})
+	loop 30 times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle_Block(magma block, {_el})
+	
+	set {_y} to 0
+	set {_color.g} to 255
+	loop 11 times:
+		set {_baseloc} to location of {_player}
+		set {_rad} to 0
+		loop 8 times:
+			set {_el} to {_baseloc}
+			add 360 / 8 to {_rad}
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle_Dust(rgb(255, {_color.g}, 0), 1, {_el})
+
+		subtract 23 from {_color.g}
+		add 0.2 to {_y}
+		wait a tick
+
+local function kitParticle_LunaticMadness_Liquid(proj: projectile):
+	loop 200 times:
+		set {_exist} to false
+		loop all projectiles:
+			loop-projectile is {_proj}
+			set {_exist} to true
+		if {_exist} is false:
+			stop
+		spawnParticle(lava, location of {_proj})
+		wait a tick
+
+local function kitParticle_LunaticMadness_Hit(player: player):
+	playSound("entity.witch.drink", 1, 0.85, {_player})
+	loop 30 times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle(landing_lava, {_el})
+	
+	set {_y} to 2
+	set {_color.r} to 255
+	loop 11 times:
+		set {_baseloc} to location of {_player}
+		set {_rad} to 0
+		loop 8 times:
+			set {_el} to {_baseloc}
+			add 360 / 8 to {_rad}
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle_Dust(rgb({_color.r}, 0, 0), 1, {_el})
+
+		subtract 23 from {_color.r}
+		subtract 0.2 from {_y}
+		wait a tick
+
+local function kitParticle_LunaticMadness_Splash(loc: location):
+	playSound("item.bucket.fill_lava", 0.75, 1.5, {_loc})
+	loop 10 times:
+		spawnParticle(crimson_spore, {_loc})
