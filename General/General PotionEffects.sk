@@ -1,0 +1,48 @@
+# potion effect memo
+# Ver2.8.5
+# potion effect of strength of tier 1 for 2 minutes and 24.1 seconds
+
+# effect format:
+# strength|1|2 minutes and 24.1 seconds
+local function effectFormat(effect: potion effect) :: text:
+	delete {_effalls::*}
+	set {_effall} to "%{_effect}%"
+	replace "potion effect of " with "" in {_effall}
+	replace "of tier " with "" in {_effall}
+	replace "for " with "" in {_effall}
+	# strength 1 2 minutes and 24.1 seconds
+	set {_effalls::*} to {_effall} split at " "
+	set {_efftype} to {_effalls::1}
+	set {_efflevel} to {_effalls::2}
+	remove {_efftype} from {_effalls::*}
+	remove {_efflevel} from {_effalls::*}
+
+	set {_efftime} to ""
+	loop {_effalls::*}:
+		set {_effvalue} to loop-value
+		if {_efftime} is not "":
+			set {_efftime} to "%{_efftime}% "
+		set {_efftime} to "%{_efftime}%%{_effvalue}%"
+	
+	# strength|1|2 minutes and 24.1 seconds
+	set {_effectformat} to "%{_efftype}%|%{_efflevel}%|%{_efftime}%"
+
+	return {_effectformat}
+
+function effectType(effect: potion effect) :: potion effect type:
+	set {_format} to effectFormat({_effect})
+	set {_formats::*} to {_format} split at "|"
+	set {_effecttype} to {_formats::1} parsed as potion effect type
+	return {_effecttype}
+
+function effectTier(effect: potion effect) :: number:
+	set {_format} to effectFormat({_effect})
+	set {_formats::*} to {_format} split at "|"
+	set {_effecttier} to {_formats::2} parsed as number
+	return {_effecttier}
+
+function effectTime(effect: potion effect) :: time span:
+	set {_format} to effectFormat({_effect})
+	set {_formats::*} to {_format} split at "|"
+	set {_effecttime} to {_formats::3} parsed as time span
+	return {_effecttime}
