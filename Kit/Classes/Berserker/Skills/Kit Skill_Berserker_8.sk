@@ -1,0 +1,115 @@
+# skill-name: Frenzy Slash
+
+function kitSkill_Berserker_8(player: player):
+	toolCT({_player}, "Berserker", 8)
+	kitEffect_FrenzySlash({_player})
+
+
+
+on damage of player:
+	metadata value "frenzy slash" of victim is set
+	set damage to 1
+
+on death of player:
+	metadata value "frenzy slash" of victim is attacker
+	kitEffect_FrenzySlash_Heal(attacker, victim)
+
+
+
+local function kitEffect_FrenzySlash(player: player):
+	kitMsg({_player}, "§5敵を弱らせる§4§l突進斬撃!")
+	kitParticle_FrenzySlash({_player})
+
+	set {_from} to location of head of {_player}
+	set pitch of {_from} to 0
+	set {_to} to location 10 meters in front of {_player}
+	set {_vector} to setVector({_from}, {_to}, 1)
+	loop 10 times:
+		set velocity of {_player} to {_vector}
+
+		set {_baseloc} to location 1 meters above {_player}
+		loop all entities in radius 2 around {_baseloc}:
+			loop-entity is not {_player}
+			{_hit.%id of loop-entity%} is not set
+			set {_hit.%id of loop-entity%} to true
+			kitDamage({_player}, loop-entity, 3)
+
+			if checkEntityType(loop-entity, player) is true:
+				add loop-entity to {_hitplayers::*}
+				set metadata value "frenzy slash" of loop-entity to {_player}
+				set maximum damage delay of loop-entity to 10 ticks
+				message formatted "§4§l被ダメージ間隔§cが§6§l半分§cになってしまった!" to loop-entity
+			
+			kitParticle_FrenzySlash_Hit(loop-entity)
+				
+		wait a tick
+	
+	set velocity of {_player} to vector(0, 0, 0)
+	wait 5 seconds
+	loop {_hitplayers::*}:
+		set {_loop-player} to loop-value
+		metadata value "frenzy slash" of {_loop-player} is {_player}
+		delete metadata value "frenzy slash" of {_loop-player}
+		set maximum damage delay of {_loop-player} to 20 ticks
+		message formatted "§4被ダメージ間隔§bが元に戻りました" to {_loop-player}
+
+local function kitEffect_FrenzySlash_Heal(player: player, target: player):
+	kitHeal({_player}, 1, 5)
+	kitParticle_FrenzySlash_Heal({_player}, {_target})
+	delete metadata value "frenzy slash" of {_target}
+	delete metadata value "frenzy slash - time" of {_target}
+
+
+
+local function kitParticle_FrenzySlash(player: player):
+	playSound("item.trident.throw", 1, 0.65, {_player})
+	loop 10 times:
+		if mod(loop-number, 5) is 0:
+			playSound("item.trident.throw", 1, 0.65, {_player})
+		set {_baseloc} to location 1 meter above {_player}
+		spawnParticle(sweep_attack, {_baseloc})
+		spawnParticle(lava, {_baseloc})
+		wait a tick
+
+local function kitParticle_FrenzySlash_Hit(entity: entity):
+	playSound("item.trident.hit", 1, 0.75, {_entity})
+	loop 30 times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle_BlockData(falling_dust, redstone block, {_el})
+	
+	if checkEntityType({_entity}, player) is false:
+		stop
+
+	loop 100 times:
+		if metadata value "frenzy slash" of {_entity} is not set:
+			stop
+		
+		set {_el} to aroundEffect({_entity})
+		chance of 30%:
+			kitParticle_FrenzySlash_Aura({_el})
+		wait a tick
+
+local function kitParticle_FrenzySlash_Aura(loc: location):
+	set pitch of {_loc} to 90
+	set {_m} to 0
+	loop 10 times:
+		set {_el} to location {_m} meters in front of {_loc}
+		spawnParticle_DustTransition(rgb(217, 51, 63), rgb(67, 47, 47), 0.75, {_el})
+		add 0.1 to {_m}
+		wait a tick
+
+local function kitParticle_FrenzySlash_Heal(player: player, target: player):
+	playSound("item.trident.return", 1, 0.65, {_player})
+
+	set {_from} to location 1 meter above {_target}
+	set {_to} to location 1 meter above {_player}
+	set {_baseloc} to setDirToVec({_from}, setVector({_from}, {_to}))
+
+	set {_m} to 0
+	set {_distance} to distance between {_from} and {_to}
+	set {_madd} to {_distance} / 5
+
+	loop 5 times:
+		add {_madd} to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		spawnParticle_Dust(rgb(128, 0, 0), 2, {_el})
