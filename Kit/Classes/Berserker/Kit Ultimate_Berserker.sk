@@ -1,0 +1,132 @@
+# ultimate-name: adrenalin rage
+
+function kitUltBerserker(player: player):
+	kitEffect_AdrenalinRage({_player})
+
+
+
+on damage of player:
+	{Stats.%attacker%::AdrenalinRage} is set
+	set {_now} to now
+	set {Stats.%attacker%::AdrenalinRage-Time} to {_now}
+
+	set {_damage} to {Stats.%attacker%::AdrenalinRage}
+	loop all players in radius 10 around attacker:
+		loop-player is not attacker
+		add 1 to {_damage}
+		if loop-player is not victim:
+			kitDamage(attacker, loop-player, 1)
+			kitParticle_AdrenalinRage_Around(loop-player)
+	
+	set damage to {_damage}
+	add 1 to {Stats.%attacker%::AdrenalinRage}
+	send action bar "§4§lコンボ§5: §6§l%{Stats.%attacker%::AdrenalinRage}%" to attacker
+	kitParticle_AdrenalinRage_Damage(victim)
+
+	wait a second
+	{Stats.%attacker%::AdrenalinRage-Time} is {_now}
+	delete {Stats.%attacker%::AdrenalinRage-Time}
+	set {Stats.%attacker%::AdrenalinRage} to 0
+
+
+
+#		set {_n} to now
+#		set {Ult.%attacker%::BerserkTime} to {_n}
+#		set {_d} to 0
+#		loop all players in radius 10 around attacker:
+#			loop-player is not attacker
+#			add 1 to {_d}
+#			if loop-player is not victim:
+#				damage loop-player by 3 hearts
+#		set damage to {_d} + {Ult.%attacker%::Berserker}
+#		add 1 to {Ult.%attacker%::Berserker}
+#		play raw sound "mob.blaze.hit" at victim with pitch 0.5 volume 1
+#		set action bar of attacker to "§cコンボ!§6: §4§l%{Ult.%attacker%::Berserker}%"
+#		wait a second
+#		if {Ult.%attacker%::BerserkTime} is {_n}:
+#			set {Ult.%attacker%::Berserker} to 0
+
+
+
+
+local function kitEffect_AdrenalinRage(player: player):
+	set {Stats.%{_player}%::AdrenalinRage} to 0
+	applyEffect({_player}, speed, 3, 10 seconds, true)
+	kitParticle_AdrenalinRage({_player})
+
+	loop 200 times:
+		if {Stats.%{_player}%::AdrenalinRage} is not set:
+			stop
+
+		delete {_eg::*}
+
+		loop all players in radius 10 around {_player}:
+			loop-player is not {_player}
+			kitParticle_AdrenalinRage_Inner(loop-player)
+			set {_eg::%loop-player%} to true
+			if {_jb::%loop-player%} is not set:
+				set {_jb::%loop-player%} to true
+				set maximum damage delay of loop-player to 1 tick
+				kitParticle_AdrenalinRage_Join(loop-player)
+
+		loop all players:
+			{_eg::%loop-player%} is not set
+			{_jb::%loop-player%} is true
+			set maximum damage delay of loop-player to 20 ticks
+			delete {_jb::%loop-player%}
+
+		wait a tick
+	
+	delete {Stats.%{_player}%::AdrenalinRage}
+	delete {Stats.%{_player}%::AdrenalinRage-Time}
+	loop all players:
+		{_jb::%loop-player%} is true
+		set maximum damage delay of loop-player to 20 ticks
+
+
+
+local function kitParticle_AdrenalinRage(player: player):
+	set {_baserad} to 0
+	loop 200 times:
+		if {Stats.%{_player}%::AdrenalinRage} is not set:
+			stop
+		
+		set {_baseloc} to location 1 meter above {_player}
+		set {_rad} to {_baserad}
+		loop 16 times:
+			add 360 / 16 to {_rad}
+			set {_el} to {_baseloc}
+			add 10 * sin({_rad}) to x-pos of {_el}
+			add 10 * cos({_rad}) to z-pos of {_el}
+			spawnParticle(lava, {_el})
+
+		add 10 to {_baserad}
+		wait a tick
+
+local function kitParticle_AdrenalinRage_Inner(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	loop 8 times:
+		add 360 / 8 to {_rad}
+		set {_el} to {_baseloc}
+		add 0.5 * sin({_rad}) to x-pos of {_el}
+		add 0.5 * cos({_rad}) to z-pos of {_el}
+		spawnParticle(flame, {_el})
+
+local function kitParticle_AdrenalinRage_Join(player: player):
+	playSound("entity.blaze.death", 0.8, 0.7, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 30 times:
+		spawnParticle_Vector(flame, randomVector(), 0.9, {_baseloc})
+
+local function kitParticle_AdrenalinRage_Around(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	spawnParticle(lava, {_baseloc})
+
+local function kitParticle_AdrenalinRage_Damage(player: player):
+	playSound("entity.blaze.hurt", 0.85, 0.5, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 30 times:
+		set {_v} to randomVector()
+		chance of 50%:
+			spawnParticle_Vector(large_smoke, {_v}, 0.5, {_baseloc})
+		spawnParticle_Vector(campfire_cosy_smoke, {_v}, 0.5, {_baseloc})

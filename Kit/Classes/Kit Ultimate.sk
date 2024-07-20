@@ -52,42 +52,8 @@ on rightclick holding a nether star:
 		kitUltWarrior(player)
 	else if {Class::%player%} is "Mercenary":
 		kitUltMercenary(player)
-#	else if {Class::%player%} is "Berserker":
-#		loop all players:
-#			set {_ok} to true
-#			if {_silent} is true:
-#				if loop-player is not player:
-#					delete {_ok}
-#			{_ok} is true
-#			send loop-player title "<%{TrueTeam::%player%}%>§l§oUncontrol Berserk" with subtitle "§bー 誰にも止められない暴走 ー" for 3 seconds
-#		drawWarpRings style 0, particle "lava", center player, id "%player%", scan true, height 2, radius 10, ringCount 5, ringDensity 5, visibleRange 32
-#		remove speed from player
-#		set {Ult.%player%::Berserker} to 0
-#		apply speed 3 to player for 10 seconds
-#		apply regeneration 3 to player for 10 seconds
-#		message "§c周辺10m内に入ったプレイヤーの無敵時間を無効化します!"
-#		message "§c連続攻撃をすることでダメージがより増大します!"
-#		loop 200 times:
-#			delete {_eg::*}
-#			loop all players in radius 10 around player:
-#				loop-player is not player
-#				drawDot count 1, particle "critmagic", center loop-player, visibleRange 30, keepFor 1 ticks
-#				set {_eg::%loop-player%} to true
-#				if {_jb::%loop-player%} is not set:
-#					set {_jb::%loop-player%} to true
-#					set maximum damage delay of loop-player to 1 tick
-#					play raw sound "mob.blaze.death" at loop-player with pitch 0.5 volume 0.5
-#			loop all players:
-#				{_eg::%loop-player%} is not set
-#				{_jb::%loop-player%} is true
-#				set maximum damage delay of loop-player to 20 ticks
-#				delete {_jb::%loop-player%}
-#			wait a tick
-#		stopEffect "%player%"
-#		delete {Ult.%player%::Berserker}
-#		delete {Ult.%player%::BerserkTime}
-#		loop all players:
-#			set maximum damage delay of loop-player to 20 ticks
+	else if {Class::%player%} is "Berserker":
+		kitUltBerserker(player)
 #	else if {Class::%player%} is "Werewolf":
 #		loop all players:
 #			set {_ok} to true
@@ -765,25 +731,6 @@ on rightclick holding a nether star:
 #	projectile is an arrow
 #	metadata value "ult-turret" of projectile is "true"
 #	set damage to 2
-#
-#on damage of player:
-# # Berserker's Ult
-#	if {Ult.%attacker%::Berserker} is set:
-#		set {_n} to now
-#		set {Ult.%attacker%::BerserkTime} to {_n}
-#		set {_d} to 0
-#		loop all players in radius 10 around attacker:
-#			loop-player is not attacker
-#			add 1 to {_d}
-#			if loop-player is not victim:
-#				damage loop-player by 3 hearts
-#		set damage to {_d} + {Ult.%attacker%::Berserker}
-#		add 1 to {Ult.%attacker%::Berserker}
-#		play raw sound "mob.blaze.hit" at victim with pitch 0.5 volume 1
-#		set action bar of attacker to "§cコンボ!§6: §4§l%{Ult.%attacker%::Berserker}%"
-#		wait a second
-#		if {Ult.%attacker%::BerserkTime} is {_n}:
-#			set {Ult.%attacker%::Berserker} to 0
 #
 #on death:
 #	loop all players:
