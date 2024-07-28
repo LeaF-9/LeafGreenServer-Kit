@@ -5,3 +5,41 @@ on join:
 
 function ocmAttackSpeed(player: player):
 	set attack speed attribute of {_player} to 24
+
+# sweep attack
+on damage:
+	damage was caused by sweep attack
+	cancel event
+
+# Fish Hook Knockback
+on shoot:
+	projectile is a fish hook
+	if name of shooter's tool contains "Grappling Hook":
+		stop
+	set metadata value "fish hook knockback" of projectile to true
+
+on projectile hit:
+	projectile is a fish hook
+	metadata value "fish hook knockback" of projectile is true
+	set {_victim} to event.getHitEntity()
+	
+	if {_victim} is not set:
+		stop
+	if kitCheckTeam({_victim}, shooter, true, true) is true:
+		stop
+	
+	kitDamage(shooter, {_victim}, 0.01)
+	set {_velocity} to hookKnockback(location of projectile, location 1 meter above {_victim})
+	set velocity of {_victim} to {_velocity}
+
+local function hookKnockback(from: location, to: location) :: vector:
+	set {_vector} to setVector({_from}, {_to}, 0.5)
+	add 0.4 to y of {_vector}
+	if y of {_vector} > 0.4:
+		set y of {_vector} to 0.4
+
+	if block 1.1 meters below {_to} is not passable:
+		set x of {_vector} to x of {_vector} * 1.5
+		set z of {_vector} to z of {_vector} * 1.5
+
+	return {_vector}
