@@ -905,3 +905,24 @@ command /test-fake-effect <player=%player%>:
 		{_packet}.getIntegers().write(0, {_id})
 		{_packet}.getEffectTypes().write(0, strength)
 		ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_packet})
+
+# player head checker
+
+# テスト結果: 無理 別の方法で頭の検知をするしかない
+command /test-head-checker:
+	permission: sk.admin
+	trigger:
+		set {_head} to player head
+		set {_nbt} to nbt compound of {_head}
+		set string tag "profile" of {_nbt} to "Forest9"
+		set {_nbthead} to {_head} with nbt {_nbt}
+		set {_helmet} to helmet of player
+		set {_nbt.helmet} to nbt compound of {_helmet}
+		set {_nbt.head} to nbt compound of {_nbthead}
+		if {_nbt.helmet} = {_nbt.head}:
+			log "もう被ってます"
+			stop
+		else:
+			log "%nbt compound of {_helmet}%"
+			log "%nbt compound of {_nbthead}%"
+		set helmet of player to {_nbthead}
