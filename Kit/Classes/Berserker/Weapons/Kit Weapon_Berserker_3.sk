@@ -30,19 +30,27 @@ local function kitEffect_Catastrophy(player: player):
 
 	# throwing
 	set {_enabled} to true
-	set {_m} to 0
-	loop 60 times:
+	set {_m} to 1
+	set {_throwloc} to {_baseloc}
+	set {_gravity} to vector(0, -0.03, 0)
+	loop 100 times:
 		if {_enabled} is false:
 			wait a tick
 			continue
 		
 		# item display control
-		add 1 to {_m}
-		set {_el} to location {_m} meters in front of {_baseloc}
+		set {_throwvec} to setVector({_throwloc}, location {_m} meters in front of {_throwloc})
+		set {_throwvec} to {_throwvec} + {_gravity}
+		set {_throwloc} to setDirToVec({_throwloc}, {_throwvec})
+		set {_el} to location {_m} meters in front of {_throwloc}
+
+		set {_pitch.el} to pitch of {_el}
 		add 90 to {_pitch}
 		set pitch of {_el} to {_pitch}
 		teleport {_itemdisplay} to {_el}
-		kitParticle_Catastrophy_Pickaxe({_el}, loop-number)
+		kitParticle_Catastrophy_Pickaxe({_el}, loop-number)	
+
+		set pitch of {_el} to {_pitch.el}
 
 		# check hitting (entity)
 		loop all entities in radius 1.5 around {_el}:
@@ -57,18 +65,20 @@ local function kitEffect_Catastrophy(player: player):
 		if {_enabled} is true:
 			if block at {_el} is not passable:
 				set {_enabled} to false
-				set {_hit.block} to location {_m} - 1 meters in front of {_baseloc}
+				set {_hit.block} to {_throwloc}
 		
+		set {_throwloc} to {_el}
+
 		# hit processing
 		if {_enabled} is false:
 			if {_hit.entity} is set:
 				kitDamage({_player}, {_hit.entity}, 3)
-			kitExplosion({_player}, 3.5, {_hit.block})
+			kitExplosion({_player}, 2.5, {_hit.block})
 			
 			# suicidal explosion
 			set {_distance} to distance between {_player} and {_hit.block}
-			if {_distance} < 3.5:
-				set {_damage} to 3.5 - {_distance}
+			if {_distance} < 5:
+				set {_damage} to 5 - {_distance}
 				damage {_player} by {_damage} hearts
 
 			# delete item display
