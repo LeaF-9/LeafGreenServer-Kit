@@ -58,6 +58,7 @@ function kitWeapon_Engineer_3(player: player):
 			set {_BotHead} to yml value "kititems.Bot Red" from "bot.%{_player}%"
 			loop all skeletons:
 				metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+				set metadata value "Bot Pattern" of loop-skeleton to "Attack"
 				set spawned skeleton's helmet to {_BotHead}
 		else:
 			set {Stats.%{_player}%::BotPattern} to "Defence"
@@ -65,6 +66,7 @@ function kitWeapon_Engineer_3(player: player):
 			set {_BotHead} to yml value "kititems.Bot Blue" from "bot.%{_player}%"
 			loop all skeletons:
 				metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
+				set metadata value "Bot Pattern" of loop-skeleton to "Defence"
 				set spawned skeleton's helmet to {_BotHead}
 		unload yml "bot.%{_player}%"
 
@@ -108,21 +110,30 @@ on damage of skeleton:
 		cancel event
 
 function engineerBotAI(player: player):
+	# loading heads
 	load yml "plugins/skript-yaml/Kit Classes/Engineer.yml" as "botai.%{_player}%"
 	set {_BotRed} to yml value "kititems.Bot Red" from "botai.%{_player}%"
 	set {_BotBlue} to yml value "kititems.Bot Blue" from "botai.%{_player}%"
 	set {_BotInactive} to yml value "kititems.Bot Inactive" from "botai.%{_player}%"
 	unload yml "botai.%{_player}%"
+
+	# bot ai
 	while {Class::%{_player}%} is "Engineer":
 		delete {_target}
+
+		# Defence Mode
 		if {Stats.%{_player}%::BotPattern} is "Defence":
 			loop 5 times:
 				delete {_aloc.%loop-number%}
+			
+			# target detection
 			loop all entities in radius 5 around {_player}:
 				{_target} is not set
 				loop-entity is not {_player}
 				kitCheckTeam(loop-entity, {_player}, false) is true
 				set {_target} to loop-entity
+
+			# bot locations
 			set {_baseloc} to location of {_player}
 			subtract 1 from y-coordinate of {_baseloc}
 			set pitch of {_baseloc} to 0
@@ -133,6 +144,8 @@ function engineerBotAI(player: player):
 			set {_loc3} to location 1 meters to the right of {_loc3}
 			set {_loc4} to location 2 meters to the left of {_baseloc}
 			set {_loc5} to location 2 meters to the right of {_baseloc}
+
+			# beam attack to target
 			if {_target} is set:
 				set {_to} to vector of location 1 meters above {_target}
 				loop 5 times:
@@ -151,14 +164,22 @@ function engineerBotAI(player: player):
 							set {_ok} to true
 						{_ok} is true
 						engineerBotBeam({_player}, location 1.5 meters above {_loc%loop-number%}, false)
+			
+			# head properties
 			loop all skeletons:
 				metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
 				set loop-skeleton's helmet to {_BotBlue}
+				set metadata value "Bot Pattern" of loop-skeleton to "Defence"
 				set {_num} to metadata value "Bot Number" of loop-skeleton
 				teleport loop-skeleton to {_loc%{_num}%}
+		
+		# Attack Mode
 		else:
+			# check attack location
 			if {Stats.%{_player}%::BotAttack} is set:
 				if distance between {_player} and {Stats.%{_player}%::BotAttack} <= 30:
+
+					# location checker
 					loop 5 times:
 						if {_aloc.%loop-number%} is not set:
 							loop all skeletons:
@@ -173,12 +194,18 @@ function engineerBotAI(player: player):
 								set {_aloc.%loop-number-1%} to location of loop-skeleton
 								set yaw of {_aloc.%loop-number-1%} to {_yaw}
 								set pitch of {_aloc.%loop-number-1%} to {_pitch}
+					
+					# target detection
 					loop all entities in radius 10 around {Stats.%{_player}%::BotAttack}:
 						{_target} is not set
 						loop-entity is not {_player}
 						kitCheckTeam(loop-entity, {_player}, false) is true
 						set {_target} to loop-entity
+					
+					# bot locations
 					loop 5 times:
+
+						# far from attack location
 						if distance between {Stats.%{_player}%::BotAttack} and {_aloc.%loop-number%} > 8:
 							set {_to} to vector of location 3 meters above {Stats.%{_player}%::BotAttack}
 							set {_from} to vector of {_aloc.%loop-number%}
@@ -195,7 +222,11 @@ function engineerBotAI(player: player):
 								if loop-skeleton's helmet is not {_BotRed}:
 									set loop-skeleton's helmet to {_BotRed}
 								teleport loop-skeleton to {_aloc.%loop-number-1%}
+						
+						# stray bots
 						else:
+
+							# attacks target
 							if {_target} is set:
 								set {_to} to vector of location 1 meters above {_target}
 								loop all skeletons:
@@ -213,6 +244,8 @@ function engineerBotAI(player: player):
 									teleport loop-skeleton to {_loc}
 									chance of 10%:
 										engineerBotBeam({_player}, location 1.5 meters above {_loc}, true)
+							
+							# moving bots
 							else:
 								delete {_ng}
 								if distance between {_aloc.%loop-number%} and {Stats.%{_player}%::BotAttack} >= 8:
@@ -238,21 +271,28 @@ function engineerBotAI(player: player):
 									metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
 									metadata value "Bot Number" of loop-skeleton is loop-number-1
 									set loop-skeleton's helmet to {_BotRed}
+									set metadata value "Bot Pattern" of loop-skeleton to "Attack"
 									teleport loop-skeleton to {_aloc.%loop-number-1%}
+				
+				# player is far from attack location
 				else:
 					loop all skeletons:
 						metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
-						loop-skeleton's helmet is not {_BotInactive}
+						metadata value "Bot Pattern" of loop-skeleton is not "Inactive"
 						set loop-skeleton's helmet to {_BotInactive}
+						set metadata value "Bot Pattern" of loop-skeleton to "Inactive"
 						set {_tl} to location of loop-skeleton
 						set pitch of {_tl} to 75
 						teleport loop-skeleton to {_tl}
 						playSound("block.beacon.deactivate", 1, 2, loop-skeleton)
+			
+			# doesnt dicide attack locations
 			else:
 				loop all skeletons:
 					metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
-					loop-skeleton's helmet is not {_BotInactive}
+					metadata value "Bot Pattern" of loop-skeleton is not "Inactive"
 					set loop-skeleton's helmet to {_BotInactive}
+					set metadata value "Bot Pattern" of loop-skeleton to "Inactive"
 					set {_tl} to location of loop-skeleton
 					set pitch of {_tl} to 75
 					teleport loop-skeleton to {_tl}
