@@ -136,15 +136,14 @@ function openKitInvGenre(player: player, genre: text):
 					{Join::%loop-player%} is "Kit"
 					{TrueTeam::%loop-player%} is {TrueTeam::%{_player}%}
 					{Class::%loop-player%} is set
-					set {_used::%loop-player%} to {Class::%loop-player%}
+					set {_allyclass} to {Class::%loop-player%}
+					set {_used::%{_allyclass}%} to loop-player
 			set {_slot} to 0
 			loop {_classes::*}:
 				delete {_setitem}
 				set {_slotitem} to slot {_slot} of {_player}'s current inventory
-				if {_used::*} contains loop-value:
-					loop {_used::*}:
-						loop-value-2 is loop-value-1
-						set {_user} to loop-index-2
+				if {_used::%loop-value%} is set:
+					set {_user} to {_used::%loop-value%}
 					set {_setitem} to a structure void named "§6§l%loop-value%" with lore "§2§l%{_user}% §5が使用中です"
 				else:
 					set {_setitem} to {_item.%loop-value%}

@@ -92,28 +92,44 @@ function kitGameEnd(rule: text):
 		set {_maxData} to max({Kit-Kill.personal::*})
 		loop {Kit-Kill.personal::*}:
 			loop-value = {_maxData}
-			add loop-index to {_highplayer::*}
+			add loop-index to {_highplayer.UUID::*}
+		loop all players:
+			set {_checkuuid} to UUID of loop-player
+			{_highplayer.UUID::*} contains {_checkuuid}
+			add loop-player to {_highplayer::*}
 		gameMsg("Kit", "§6§lTop Killer§7: §e§l%{_highplayer::*}% §9%{_maxData}% Kills")
 	# DTC戦
 	else if {_rule} is "DTC":
 		set {_maxData} to max({Kit-Break.personal::*})
 		loop {Kit-Break.personal::*}:
 			loop-value = {_maxData}
-			add loop-index to {_highplayer::*}
+			add loop-index to {_highplayer.UUID::*}
+		loop all players:
+			set {_checkuuid} to UUID of loop-player
+			{_highplayer.UUID::*} contains {_checkuuid}
+			add loop-player to {_highplayer::*}
 		gameMsg("Kit", "§6§lTop Breaker§7: §e§l%{_highplayer::*}% §9%{_maxData}% Breaks")
 	# CTF戦
 	else if {_rule} is "CTF":
 		set {_maxData} to max({Kit-Hold.personal::*})
 		loop {Kit-Hold.personal::*}:
 			loop-value = {_maxData}
-			add loop-index to {_highplayer::*}
+			add loop-index to {_highplayer.UUID::*}
+		loop all players:
+			set {_checkuuid} to UUID of loop-player
+			{_highplayer.UUID::*} contains {_checkuuid}
+			add loop-player to {_highplayer::*}
 		gameMsg("Kit", "§6§lTop Holder§7: §e§l%{_highplayer::*}% §9%{_maxData}% Seconds")
 	# SH戦
 	else if {_rule} is "SH":
 		set {_maxData} to max({Kit-Carry.personal::*})
 		loop {Kit-Carry.personal::*}:
 			loop-value = {_maxData}
-			add loop-index to {_highplayer::*}
+			add loop-index to {_highplayer.UUID::*}
+		loop all players:
+			set {_checkuuid} to UUID of loop-player
+			{_highplayer.UUID::*} contains {_checkuuid}
+			add loop-player to {_highplayer::*}
 		gameMsg("Kit", "§6§lTop Carrier§7: §e§l%{_highplayer::*}% §9%{_maxData}% Sheeps")
 	# CP戦
 	else if {_rule} is "CP":
