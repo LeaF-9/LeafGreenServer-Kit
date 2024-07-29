@@ -63,7 +63,7 @@ function kitSkillNecromancer(player: player) :: boolean:
 
 # Abilities
 on death:
-	if type of victim is not a player:  # 自分のMobが死亡した際の処理
+	if checkEntityType(victim, player) is false:  # 自分のMobが死亡した際の処理
 		metadata value "gametype" of victim is "Kit"
 		if metadata value "necromancer-entity" of victim is not set:
 			stop
@@ -134,7 +134,7 @@ function kitSpawn_Necromancer_Zombie(player: player, loc: location) :: entity:
 		set {_color} to "65280"
 	else:
 		set {_color} to "16711935"
-	set {_nbt} to "{IsBaby:0,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+	set {_nbt} to "{IsBaby:0,ArmorItems:[{},{},{},{id:""minecraft:leather_helmet"",components:{dyed_color:{rgb:%{_color}%}},Count:1b}],HandItems:[{},{}]}"
 	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-undead" of {_mob} to "zombie"
@@ -152,7 +152,7 @@ function kitSpawn_Necromancer_Skeleton(player: player, loc: location) :: entity:
 		set {_color} to "65280"
 	else:
 		set {_color} to "16711935"
-	set {_nbt} to "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+	set {_nbt} to "{ArmorItems:[{},{},{},{id:""minecraft:leather_helmet"",components:{dyed_color:{rgb:%{_color}%}},Count:1b}],HandItems:[{},{}]}"
 	set {_mob} to kitSpawnMob_NBT({_player}, skeleton, {_loc}, {_nbt})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-undead" of {_mob} to "skeleton"
@@ -170,7 +170,7 @@ function kitSpawn_Necromancer_BabyZombie(player: player, loc: location):
 		set {_color} to "65280"
 	else:
 		set {_color} to "16711935"
-	set {_nbt} to "{IsBaby:1,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_helmet"",tag:{display:{color:%{_color}%}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}]}"
+	set {_nbt} to "{IsBaby:1,ArmorItems:[{},{},{},{id:""minecraft:leather_helmet"",components:{dyed_color:{rgb:%{_color}%}},Count:1b}],HandItems:[{},{}]}"
 	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-babyzombie" of {_mob} to true
@@ -182,7 +182,7 @@ on damage:
 		set damage to 1
 
 function kitSpawn_Necromancer_Grudge(player: player, loc: location):
-	set {_nbt} to "{Silent:1,IsBaby:0,ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:{Id:[I;907160796,1821854615,-1727336627,-176309982],Properties:{textures:[{Value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGFhOGZjOGRlNjQxN2I0OGQ0OGM4MGI0NDNjZjUzMjZlM2Q5ZGE0ZGJlOWIyNWZjZDQ5NTQ5ZDk2MTY4ZmMwIn19fQ==""}]}}},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],active_effects:[{id:slowness,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
+	set {_nbt} to "{Silent:1,IsBaby:0,ArmorItems:[{},{},{},{id:""minecraft:player_head"",components:{profile:{id:[I;907160796,1821854615,-1727336627,-176309982],properties:[{name:""textures"",value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGFhOGZjOGRlNjQxN2I0OGQ0OGM4MGI0NDNjZjUzMjZlM2Q5ZGE0ZGJlOWIyNWZjZDQ5NTQ5ZDk2MTY4ZmMwIn19fQ==""}]}},Count:1b}],HandItems:[{},{}],active_effects:[{id:slowness,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
 	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-grudgesoul" of {_mob} to true
@@ -211,7 +211,7 @@ on damage:
 			wait a tick
 
 function kitSpawn_Necromancer_Vengeful(player: player, loc: location):
-	set {_nbt} to "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:16750230}},Count:1b},{id:""minecraft:zombie_head"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],active_effects:[{id:speed,duration:12000,amplifier:0,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
+	set {_nbt} to "{ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",components:{dyed_color:{rgb:16750230}},Count:1b},{id:""minecraft:zombie_head"",Count:1b}],HandItems:[{},{}],active_effects:[{id:speed,duration:12000,amplifier:0,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
 	set {_mob} to kitSpawnMob_NBT({_player}, skeleton, {_loc}, {_nbt})
 	set max health of {_mob} to 5
 	set metadata value "necromancer-entity" of {_mob} to {_player}
@@ -232,9 +232,9 @@ on damage:
 
 function kitSpawn_Necromancer_Ghost(player: player, loc: location, head: boolean):
 	if {_head} is true:
-		set {_nbt} to "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:player_head"",tag:{SkullOwner:%{_player}%},Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],active_effects:[{id:speed,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
+		set {_nbt} to "{ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",components:{dyed_color:{rgb:0}},Count:1b},{id:""minecraft:player_head"",components:{profile:%{_player}%},Count:1b}],HandItems:[{},{}],active_effects:[{id:speed,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
 	else:
-		set {_nbt} to "{ArmorItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b},{id:""minecraft:leather_chestplate"",tag:{display:{color:0}},Count:1b},{id:""minecraft:wither_skeleton_skull"",Count:1b}],HandItems:[{id:""minecraft:air"",Count:1b},{id:""minecraft:air"",Count:1b}],active_effects:[{id:speed,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
+		set {_nbt} to "{ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",components:{dyed_color:{rgb:0}},Count:1b},{id:""minecraft:wither_skeleton_skull"",Count:1b}],HandItems:[{},{}],active_effects:[{id:speed,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
 	set {_mob} to kitSpawnMob_NBT({_player}, wither skeleton, {_loc}, {_nbt})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-ghost" of {_mob} to true
