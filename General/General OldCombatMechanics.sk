@@ -43,3 +43,28 @@ local function hookKnockback(from: location, to: location) :: vector:
 		set z of {_vector} to z of {_vector} * 1.5
 
 	return {_vector}
+
+# Shield Reduction
+
+import:
+	org.bukkit.event.entity.EntityDamageEvent$DamageModifier
+
+# 盾でダメージを防いだ際の被ダメージ量を変更する処理
+on damage of player:
+	victim is blocking
+
+	# Damage取得 (取得されたダメージは ❤10 = 20 であることに注意)
+	set {_damage.base} to event.getDamage(DamageModifier.BASE)  # 元のダメージ (3)
+	set {_damage.blocking} to event.getDamage(DamageModifier.BLOCKING)  # 減らすダメージ (-3)
+
+	set {_damagereduction} to {_damage.blocking} * 0.5  # (-1.5)
+
+	# attacker toolがaxeだった場合、別の処理を実行
+	set {_tooltype} to type of tool of attacker
+	if "%{_tooltype}%" contains "axe":
+		cancel event
+		playSound("item.shield.block", 1, 1, victim)
+		kitDamage(attacker, victim, {_damage.base} / 4, true)
+		stop
+
+	event.setDamage(DamageModifier.BLOCKING, {_damagereduction})
