@@ -18,3 +18,34 @@ command /damagetest <boolean>:
 	trigger:
 		set {DamageTest} to arg 1
 		message "§1DamageTest§bを§a%arg 1%§bにしました"
+
+
+# DamageModifier Tests
+
+command /damagemodifier <boolean>:
+	permission: sk.admin
+	trigger:
+		set {DamageModifierTest} to arg 1
+		message "§1DamageModifier§bを§a%arg 1%§bにしました"
+
+import:
+	org.bukkit.event.entity.EntityDamageEvent$DamageModifier
+
+on damage:
+	{DamageModifierTest} is true
+	"%world of victim%" is {@worldname}
+
+	# Damage取得 (取得されたダメージは ❤10 = 20 であることに注意)
+	broadcast "----- [DamageModifier] -----"
+	set {_damage.base} to event.getDamage(DamageModifier.BASE)  # 元のダメージ (3)
+	broadcast "BASE: %{_damage.base}%"
+	set {_damage.blocking} to event.getDamage(DamageModifier.BLOCKING)  # 減らすダメージ (-3)
+	broadcast "BLOCKING: %{_damage.blocking}%"
+	set {_damage.absorption} to event.getDamage(DamageModifier.ABSORPTION)  # 減らすダメージ (-3)
+	broadcast "ABSORPTION: %{_damage.absorption}%"
+	set {_damage.armor} to event.getDamage(DamageModifier.ARMOR)  # 減らすダメージ (-3)
+	broadcast "ARMOR: %{_damage.armor}%"
+	set {_damage.magic} to event.getDamage(DamageModifier.MAGIC)  # 減らすダメージ (-3)
+	broadcast "MAGIC: %{_damage.magic}%"
+	set {_damage.resistance} to event.getDamage(DamageModifier.RESISTANCE)  # 減らすダメージ (-3)
+	broadcast "RESISTANCE: %{_damage.resistance}%"
