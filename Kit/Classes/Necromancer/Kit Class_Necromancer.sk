@@ -92,9 +92,11 @@ on rightclick:
 	set {_item.type} to kitItemTypeChecker({_tool})
 	set {_item.num} to kitItemNumberChecker({_tool})
 	{_item.type} is "Weapon.main"
-	set {_tg} to targeted entity
+	loop all entities:
+		metadata value "targetdead.%player%" of loop-entity is true
+		set {_tg} to loop-entity
 	{_tg} is set
-	type of {_tg} is an armor stand
+	checkEntityType({_tg}, armor stand) is true
 	distance between {_tg} and player <= 50
 	metadata value "deadplayer" of {_tg} is set
 	set {_dead} to metadata value "deadplayer" of {_tg}
@@ -313,21 +315,24 @@ function kitTimerNecromancer(player: player):
 		# --- 死体発光処理 ---
 		delete {_undetected}
 		delete {_tg}
-		set {_tg} to target entity of {_player}
+		set {_baseloc} to location of head of {_player}
+		set {_m} to 0
+		loop 50 times:
+			if {_tg} is set:
+				continue
+			add 1 to {_m}
+			set {_meterloc} to location {_m} meters in front of {_baseloc}
+			loop all entities in radius 1.5 around {_meterloc}:
+				checkEntityType(loop-entity, armor stand) is true
+				metadata value "deadplayer" of loop-entity is set
+				set {_tg} to loop-entity
 		# --- 例外処理 ---
-		if {_targeted} is not set:
-			set {_undetected} to true
 		if {_tg} is not set:
-			set {_undetected} to true
-		if checkEntityType({_tg}, armor stand) is false:
-			set {_undetected} to true
-		if metadata value "deadplayer" of {_tg} is not set:
-			set {_undetected} to true
-		if distance between {_tg} and {_player} > 50:
 			set {_undetected} to true
 		if {_undetected} is true:
 			if {_targeted} is set:
 				# --- 発光消滅処理 ---
+				delete metadata value "targetdead.%{_player}%" of {_targeted}
 				packetUnglowing({_player}, {_targeted})
 				# ------------------
 			delete {_targeted}
@@ -337,8 +342,10 @@ function kitTimerNecromancer(player: player):
 		packetGlowing({_player}, {_tg})
 		if {_tg} is not {_targeted}:
 			# --- 発光消滅処理 ---
+			delete metadata value "targetdead.%{_player}%" of {_targeted}
 			packetUnglowing({_player}, {_targeted})
 			# ------------------
+		set metadata value "targetdead.%{_player}%" of {_tg} to true
 		set {_targeted} to {_tg}
 		# ---------------------
 		wait a tick
