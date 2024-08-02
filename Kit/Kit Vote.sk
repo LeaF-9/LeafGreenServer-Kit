@@ -37,7 +37,11 @@ function kitVoteSetting():
 on inventory click:
 	type of event-inventory is chest inventory
 	name of event-inventory contains "§6§lMap Vote"
-	set {_name} to clicked item
+	cancel event
+	set {_item} to clicked item
+	set {_name} to name of {_item}
+	if {_item} is not set:
+		stop
 	replace "§6§l" with "" in {_name}
 	loop {Kit-VoteStage::*}:
 		if loop-value is {_name}:
@@ -53,6 +57,8 @@ function kitOpenVoting(player: player):
 	wait a tick
 	set {_slot} to 2
 	loop 5 times:
+		if {Kit-VoteStage::%loop-number%} is not set:
+			continue
 		set {_name} to {Kit-VoteStage::%loop-number%}
 		load yml "plugins/skript-yaml/Kit Stages/%{_name}%.yml" as "VoteInv"
 		set {_team} to yml value "team" from "VoteInv"
