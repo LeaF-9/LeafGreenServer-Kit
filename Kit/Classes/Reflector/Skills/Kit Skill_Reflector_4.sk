@@ -31,6 +31,14 @@ on damage of player:
 	kitParticle_MirrorBall_Damage({_mirror}, {_damaged::*})
 	set {_damage.separate} to {_damage.origin} / {_member}
 	loop {_damaged::*}:
+		# victimの場合
+		if loop-value is victim:
+			if health of victim > {_damage.separate}:
+				set damage to 0.00001
+				set health of victim to health of victim - {_damage.separate}
+			else:
+				set damage to 10000
+			continue
 		# attackerとチームが異なる場合
 		# この場合はattackerをそのままattackerにする
 		if kitCheckTeam(loop-value, {_attacker}, false) is true:
