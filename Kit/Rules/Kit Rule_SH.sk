@@ -18,9 +18,13 @@ function kitDeathEvent_SH(attacker: player, victim: player, supporters: players)
 	add 1 to {Kit-Kill.personal::%{_attacker}%}
 	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
-	# ---victimがSheep Carrierであった場合の処理---
-	kitDropSheeps_SH({_victim})
-	# ---------------------------------------------
+
+on death of player:
+	{Join::%victim%} is "Kit"
+	{Kit-GameStage::rule} is "SH"
+	kitDropSheeps_SH(victim)
+
+
 
 function kitDropSheeps_SH(player: player):
 	unleash {_player}
@@ -83,7 +87,7 @@ function kitSpawnSheep_SH(loc: location):
 	# ---------------
 	# --- 子羊召喚 ---
 	else:
-		set {_nbt} to nbt compound from "{Color:0,PersistenceRequired:1b,Team:noCollision,Age:-15000,ForcedAge:-15000,Attributes:[{Name:""generic.knockback_resistance"",Base:1f}, {Name:""generic.movement_speed"",Base:0f}]}"
+		set {_nbt} to nbt compound from "{Color:0,PersistenceRequired:1b,Team:noCollision,Age:-15000,ForcedAge:-15000,AgeLocked:1b,Attributes:[{Name:""generic.knockback_resistance"",Base:1f}, {Name:""generic.movement_speed"",Base:0f}]}"
 		set {_age} to "baby"
 	# -------------
 	spawn a sheep at {_loc} with {_nbt}
@@ -98,7 +102,11 @@ function kitSpawnSheep_SH(loc: location):
 
 # Sheepを獲得できるかのチェック
 function kitCheckAvailable_SH(player: player, sheep: entity):
-	# 獲得中かのチェック
+	# そのプレイヤーが獲得中かのチェック
+	set {_sneaking} to metadata value "sh-sneaking" of {_player}
+	if {_sneaking} is true:
+		stop
+	# その羊が獲得中かのチェック
 	set {_taking} to metadata value "sh-taking" of {_sheep}
 	if {_taking} is set:
 		stop
@@ -143,6 +151,7 @@ function kitTakingSheep_SH(player: player, sheep: entity, hadnum: number = 0):
 			set {_count} to round(100 / {Kit-TeamBuff::%{_team}%}) * {_hadnum}
 		else:
 			set {_count} to round(60 / {Kit-TeamBuff::%{_team}%}) * {_hadnum}
+	set metadata value "sh-sneaking" of {_player} to true
 	set metadata value "sh-taking" of {_sheep} to 0
 	# 獲得中の処理
 	while {_ok} is false:
@@ -169,6 +178,7 @@ function kitTakingSheep_SH(player: player, sheep: entity, hadnum: number = 0):
 		send title "§b§l獲得中です..." with subtitle "%{_bar}%" to {_player} for 2 ticks with fadein 0 tick and fadeout 0 tick
 		wait a tick
 	delete metadata value "sh-taking" of {_sheep}
+	delete metadata value "sh-sneaking" of {_player}
 	if {_get} is true:
 		playSound("block.note_block.chime", 1, 2, {_player}, true)
 		set metadata value "sh-holder" of {_sheep} to {_player}
