@@ -20,8 +20,15 @@ local function kitEffect_MistifyHaze(player: player):
 			kitCheckTeam({_shooter}, {_player}, false) is true
 			set {_loc.proj} to location of loop-projectile
 			delete loop-projectile
-			kitEffect_MistifyHaze_Hit({_player}, {_shooter})
-			kitParticle_MistifyHaze_Beam({_effloc}, {_loc.proj}, location 1 meter above {_shooter})
+			kitParticle_MistifyHaze_Beam({_effloc}, {_loc.proj})
+			if {_hits::%{_shooter}%} is not set:
+				set {_hits::%{_shooter}%} to 20
+				kitEffect_MistifyHaze_Hit({_player}, {_shooter})
+				kitParticle_MistifyHaze_Beam({_loc.proj}, location 1 meter above {_shooter}, true)
+		loop {_hits::*}:
+			subtract 1 from {_hits::%loop-index%}
+			if {_hits::%loop-index%} <= 0:
+				delete {_hits::%loop-index%}
 		wait a tick
 	kitParticle_MistifyHaze_Vanish({_effloc})
 
@@ -77,37 +84,34 @@ local function kitParticle_MistifyHaze_Bulb(loc: location):
 		else:
 			spawnParticle_BlockData(falling_dust, purple wool, {_el})
 
-local function kitParticle_MistifyHaze_Beam(base: location, proj: location, targ: location):
-	playSound("block.respawn_anchor.charge", 1, 1.85, {_proj})
-	playSound("block.respawn_anchor.deplete", 1, 2, {_targ})
+local function kitParticle_MistifyHaze_Beam(from: location, to: location, target: boolean = false):
+	if {_target} is true:
+		playSound("block.respawn_anchor.deplete", 1, 2, {_to})
+	else:
+		playSound("block.respawn_anchor.charge", 1, 1.85, {_to})
 	# base - proj
-	set {_beam.proj} to setDirToVec({_base}, setVector({_base}, {_proj}))
-	set {_distance} to distance between {_base} and {_proj}
+	set {_beam.proj} to setDirToVec({_from}, setVector({_from}, {_to}))
+	set {_distance} to distance between {_from} and {_to}
 	set {_loopnum} to round({_distance} * 10)
 	loop {_loopnum} times:
 		set {_el} to location loop-number * 0.1 meters in front of {_beam.proj}
 		spawnParticle(witch, {_el})
-	# proj - targ
-	set {_beam.targ} to setDirToVec({_proj}, setVector({_proj}, {_targ}))
-	set {_distance} to distance between {_proj} and {_targ}
-	set {_loopnum} to round({_distance} * 10)
-	loop {_loopnum} times:
-		set {_el} to location loop-number * 0.1 meters in front of {_beam.targ}
-		spawnParticle(witch, {_el})
-	set {_locs::*} to particleLocation_SpiralV({_beam.targ}, 10, 2.5, 1, {_distance})
-	loop {_locs::*}:
-		set {_el} to loop-value
-		set {_rn} to a random integer between 1 and 5
-		if {_rn} is 1:
-			spawnParticle_Dust(rgb(103, 69, 152), 1.5, {_el})
-		else if {_rn} is 2:
-			spawnParticle_Dust(rgb(112, 88, 163), 1.25, {_el})
-		else if {_rn} is 3:
-			spawnParticle_Dust(rgb(165, 154, 202), 1, {_el})
-		else if {_rn} is 4:
-			spawnParticle_DustTransition(rgb(116, 50, 92), rgb(70, 14, 68), 1.5, {_el})
-		else:
-			spawnParticle_DustTransition(rgb(85, 41, 91), rgb(70, 14, 68), 1.25, {_el})
+	# if target exists
+	if {_target} is true:
+		set {_locs::*} to particleLocation_SpiralV({_beam.targ}, 10, 2.5, 1, {_distance})
+		loop {_locs::*}:
+			set {_el} to loop-value
+			set {_rn} to a random integer between 1 and 5
+			if {_rn} is 1:
+				spawnParticle_Dust(rgb(103, 69, 152), 1.5, {_el})
+			else if {_rn} is 2:
+				spawnParticle_Dust(rgb(112, 88, 163), 1.25, {_el})
+			else if {_rn} is 3:
+				spawnParticle_Dust(rgb(165, 154, 202), 1, {_el})
+			else if {_rn} is 4:
+				spawnParticle_DustTransition(rgb(116, 50, 92), rgb(70, 14, 68), 1.5, {_el})
+			else:
+				spawnParticle_DustTransition(rgb(85, 41, 91), rgb(70, 14, 68), 1.25, {_el})
 
 local function kitParticle_MistifyHaze_Vanish(loc: location):
 	playSound("entity.zombie.infect", 1, 1.35, {_loc})
