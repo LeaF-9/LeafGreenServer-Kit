@@ -5,8 +5,8 @@ function kitSkill_Ghost_4(player: player):
 		if kitCheckSpirit({_player}, 4) is true:
 			toolCT({_player}, "Ghost", 4)
 			set {_tg} to {Stats.%{_player}%::SkillTarget}
-			set {Stats.%{_tg}%::LethalSouvenir} to true
-			kitLuck({_tg}, -5)
+			kitFear({_tg}, 1000 seconds)
+			applyEffect({_tg}, slowness, 3, 1000 seconds, true)
 			playSound("entity.elder_guardian.death", 1, 1, {_tg})
 			set {_memsg} to kitGhostMessage("§5%{_tg}% §0に置き土産を残した...")
 			set {_youmsg} to kitGhostMessage("§5霊の憑拠を受けてしまった...", true)
@@ -27,10 +27,3 @@ function kitSkill_Ghost_4(player: player):
 				wait a tick
 	else:
 		send action bar "§c§l対象が存在しません!" to {_player}
-
-on damage of player:
-	metadata value "gametype" of victim is "Kit"
-	if {Stats.%victim%::LethalSouvenir} is true:
-		set damage to damage * 2
-	if {Stats.%attacker%::LethalSouvenir} is true:
-		set damage to damage * 0.5
