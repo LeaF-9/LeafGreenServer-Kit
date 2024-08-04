@@ -43,15 +43,15 @@ function kitExplosion(attacker: player, power: number, loc: location, bool: bool
 		if checkEntityType(loop-entity, player) is false:
 			set {_distance} to distance between {_loc} and loop-entity
 			set {_impact} to ({_round} - {_distance})
-			set {_damage} to {_impact} + 0.5
-			kitDamage({_attacker}, loop-entity, {_damage})
+			set {_damage} to {_impact} + 0.1
+			kitDamagePierce({_attacker}, loop-entity, {_damage})
 			continue
 		# ダメージ処理
 		set {_distance} to distance between {_loc} and loop-entity  # 距離
 		set {_expose} to kitCalcExpose(loop-entity, {_loc})
 		set {_impact} to ({_round} - {_distance}) / 2 * {_expose}
-		set {_damage} to {_impact} + 0.5
-		kitDamage({_attacker}, loop-entity, {_damage})
+		set {_damage} to {_impact} + 0.1
+		kitDamagePierce({_attacker}, loop-entity, {_damage})
 		set {_hit} to true
 	if {_hit} is true:
 		playSound("entity.experience_orb.pickup", 1, 2, {_attacker}, true)
