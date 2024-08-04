@@ -1,7 +1,10 @@
-function kitDamage(attacker: player, victim: entity, damage: number, pierce: boolean = false):
-	if type of {_victim} is a player:
+import:
+	org.bukkit.attribute.Attribute
+
+function kitDamage(attacker: player, victim: entity, damage: number, fix: boolean = false):
+	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
-	if {_pierce} is true:
+	if {_fix} is true:
 		{Stats.%{_victim}%::DamageTicks} is not set
 		{Stats.%{_victim}%::Invincible} is not set
 		if {Kit-Shield::%{_victim}%} is set:
@@ -34,7 +37,26 @@ function kitDamage(attacker: player, victim: entity, damage: number, pierce: boo
 			if {Stats.%{_victim}%::DamageTicks} <= 0:
 				delete {Stats.%{_victim}%::DamageTicks}
 	else:
-		damage {_victim} by {_damage} hearts
+		# Attribute取得
+		set {_attribute.armor} to {_victim}.getAttribute(Attribute.GENERIC_ARMOR).getValue()  # 防具値 (最大20)
+		set {_attribute.armor_toughness} to {_victim}.getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS).getValue()  # 防具強度値 (最大20)
+
+		# 軽減率計算
+		set {_calcdamage} to {_damage} * 2
+
+		set {_maxarg.1} to {_attribute.armor} / 5
+		set {_maxarg.2} to {_attribute.armor} - ((4 * {_calcdamage}) / ({_attribute.armor_toughness} + 8))
+		set {_maxarg} to max({_maxarg.1}, {_maxarg.2})
+		set {_minarg} to min(20, {_maxarg})
+
+		set {_truedamage} to {_calcdamage} * (1 - {_minarg} / 25)
+		set {_truedamage} to {_truedamage} * 0.5
+		damage {_victim} by {_truedamage} hearts
+
+function kitDamagePierce(attacker: player, victim: entity, damage: number):
+	if checkEntityType({_victim}, player) is true:
+		LastKiller({_victim}, {_attacker})
+	damage {_victim} by {_damage} hearts
 
 function kitDamageInstant(attacker: player, victim: entity, damage: number):
 	if type of {_victim} is a player:
