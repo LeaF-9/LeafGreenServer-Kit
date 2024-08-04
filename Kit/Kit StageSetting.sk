@@ -1,7 +1,7 @@
 options:
 	prefix: §e[§aKit PvP§e]
 
-command /kitstagelist <text> <text>:
+command /kit-stagelist <text> <text>:
 	permission: sk.admin
 	trigger:
 		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
@@ -112,7 +112,7 @@ command /kitstagelist <text> <text>:
 				message "{@prefix} §cこのステージは存在しません" to player
 		unload yml "KitStages"
 
-command /kitstage <text> <text> <text>:
+command /kit-stage <text> <text> <text>:
 	permission: sk.admin
 	trigger:
 		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "KitStages"
@@ -168,18 +168,26 @@ command /kitstage <text> <text> <text>:
 		else:
 			message "{@prefix} §cこのステージは存在しません" to player
 
-command /kit-stageallyml:
-	permission: sk.admin
-	trigger:
-		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "AW"
-		set yml list "Stages" from "AW" to {Kit-Stage::*}
-		save yml "AW"
-		loop {Kit-Stage::*}:
-			load yml "plugins/skript-yaml/Kit Stages/%loop-value%.yml" as "WI"
-			set yml value "enable" from "WI" to {Kit-Stagelist::%loop-value%}
-			save yml "WI"
-
 function kitWorldNC(world: text) :: text:
 	replace every " " with "" in {_world}
 	set {_rw} to "Kit-%{_world}%"
 	return {_rw}
+
+command /kit-stagegamerule:
+	description: ワールドのゲームルールを変更するコマンド
+	permission: sk.admin
+	executable by: player
+	trigger:
+		make player execute command "/difficulty normal"
+		wait a tick
+		make player execute command "/gamerule announceAdvancements false"
+		wait a tick
+		make player execute command "/gamerule doDaylightCycle false"
+		wait a tick
+		make player execute command "/gamerule doFireTick false"
+		wait a tick
+		make player execute command "/gamerule doMobSpawning false"
+		wait a tick
+		make player execute command "/gamerule mobGriefing true"
+		wait a tick
+		make player execute command "/gamerule randomTickSpeed 0"
