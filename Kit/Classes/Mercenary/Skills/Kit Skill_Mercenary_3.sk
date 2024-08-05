@@ -29,7 +29,8 @@ on pick up redstone:
 	metadata value "kit-bloodysplash" of event-dropped item is set
 	cancel event
 	set {_blood} to metadata value "kit-bloodysplash" of event-dropped item
-	if {team::%player%} is not {team::%{_blood}%}:
+	set {_blood} to {_blood} parsed as player
+	if kitCheckTeam(player, {_blood}, false) is true:
 		delete event-dropped item
 		kitBlood(player)
 		playSound("block.glass.break", 1, 1.5, player)
