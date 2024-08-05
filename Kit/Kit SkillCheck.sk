@@ -73,10 +73,16 @@ on rightclick on a sign:
 	if line 1 of target block is "§a[§e§lKit§a]":
 		if line 2 of target block is "§2Join Ally":
 			execute console command "/st green %player%"
+			send action bar "§eチームを §a§lAlly §eに設定しました!" to player
 		else if line 2 of target block is "§4Join Enemy":
 			execute console command "/st red %player%"
+			send action bar "§eチームを §c§lEnemy §eに設定しました!" to player
 		else if line 2 of target block is "§bReset CoolTime":
 			execute console command "/ctreset %player%"
+			send action bar "§b§lCool Time §eを §c§lリセット §eしました!" to player
+		else:
+			stop
+		playSound("entity.player.levelup", 1, 1.5, player, true)
 
 on death of player:
 	if "%world of victim%" is "Kit-SkillCheck":
