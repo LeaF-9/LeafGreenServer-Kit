@@ -228,6 +228,7 @@ on inventory click:
 		set {_classes.all::*} to yml list "Classes" from "class.all"
 		unload yml "class.all"
 		loop {_classes.all::*}:
+			# Weapon Custom
 			if inventory name of event-inventory is "§bKit: §6%loop-value%§c's Weapon":
 				cancel event
 				set {_weapon} to clicked item
@@ -253,6 +254,39 @@ on inventory click:
 				loop {_sub-weapon::*}:
 					if loop-value-2 is {_weapon}:
 						message "{@prefix} §cそのアイテムは§aSub Weapon§cです" to player
+			# Skill Custom
+			else if inventory name of event-inventory is "§bKit: §6%loop-value%§e's Skill":
+				set {_skill} to clicked item
+				set {_kit} to loop-value
+
+				load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.select.%{_kit}%"
+				loop yaml node keys "skill" from "class.select.%{_kit}%":
+					set {_sk} to yml value "%loop-node%" from "class.select.%{_kit}%"
+					add {_sk} to {_skills::*}
+				unload yml "class.select.%{_kit}%"
+
+				if {_skills::*} contains {_skill}:
+					stop
+				if {_skill} is not set:
+					stop
+				cancel event
+				if {_skill} is a white glass pane named " ":
+					stop
+				if {_skill} is a red glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩":
+					stop
+
+				# Unitインベントリ
+				if name of {_skill} contains "Registered Unit":
+					execute console command "/kit-unitlist %{_kit}% %player%"
+				# 一部Kitのタイプ変更
+				else if name of {_skill} contains "Type Change":
+					changeCustomKitType(player, {_kit})
+				# Skill保存
+				else if name of {_skill} contains "Save Skills":
+					saveCustomKitSkill(player, {_kit})
+				close player's inventory
+
+
 
 function openKitGenre(player: player, type: text):
 	wait a tick
@@ -334,10 +368,10 @@ function openKitSkillCustom(player: player, kit: text):
 	loop {_skills::*}:
 		add 1 to {_num}
 		set slot {_num} of {_player}'s current inventory to loop-value
-	format slot 38 of {_player} with chest named "§9Registered Unit" with lore "§b登録済であるSkill編成に変更します" to run "kit-unitlist %{_kit}% %{_player}%" 
+	set slot 38 of {_player}'s current inventory to a chest named "§9Registered Unit" with lore "§b登録済であるSkill編成に変更します"
 	if {_kit} is "Werewolf", "Werewolf_Instinct", "Vampire" or "Vampire_Bat":
-		format slot 42 of {_player} with redstone item named "§cType Change" with lore "§7Kitのタイプを変更します" and "§9Kit§7: §4§lWerewolf§7, §4§lVampire" to run "kittypechange %{_kit}% %{_player}%"
-	format slot 44 of {_player} with nether star named "§eSave Skills" with lore "§a選択したSkillをセーブします" to run "kitskillsave %{_kit}% %{_player}%"
+		set slot 42 of {_player}'s current inventory to a redstone item named "§cType Change" with lore "§7Kitのタイプを変更します" and "§9Kit§7: §4§lWerewolf§7, §4§lVampire"
+	set slot 44 of {_player}'s current inventory to nether star named "§eSave Skills" with lore "§a選択したSkillをセーブします"
 
 function openKitWeaponCustom(player: player, kit: text):
 	wait a tick
@@ -361,55 +395,56 @@ function openKitWeaponCustom(player: player, kit: text):
 		set slot {_slot} of {_player}'s current inventory to loop-value
 		add 1 to {_slot}
 
-command /kittypechange <text> <player>:
-	executable by: console
-	trigger:
-		execute console command "/kitskillsave %arg 1% %arg 2%"
-		if arg 1 is "Werewolf":
-			set {_type} to "Werewolf_Instinct"
-		else if arg 1 is "Vampire":
-			set {_type} to "Vampire_Bat"
-		else:
-			message "{@prefix} §c§lこのKitは別Typeが存在しません!" to arg 2
-			stop
-		make arg 2 execute command "/skillcustom %{_type}%"
 
-command /kitskillsave <text> <player>:
-	executable by: console
-	trigger:
-		set {_skill1} to slot 10 of arg 2's current inventory
-		set {_skill2} to slot 13 of arg 2's current inventory
-		set {_skill3} to slot 16 of arg 2's current inventory
-		load yml "plugins/skript-yaml/Kit Classes/%arg 1%.yml" as "class.custom.%arg 1%"
-		loop yaml node keys "skill" from "class.custom.%arg 1%":
-			set {_skill} to yml value "%loop-node%" from "class.custom.%arg 1%"
-			add {_skill} to {_skills::*}
-		loop {_skills::*}:
-			if {_skill1} is loop-value:
-				add 1 to {_con}
-				set {_skillslot-1} to loop-index parsed as number
-			if {_skill2} is loop-value:
-				add 1 to {_con}
-				set {_skillslot-2} to loop-index parsed as number
-			if {_skill3} is loop-value:
-				add 1 to {_con}
-				set {_skillslot-3} to loop-index parsed as number
-		if {_con} is 3:
-			set {_uuid} to UUID of arg 2
-			load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%arg 2%.custom"
-			set yml value "custom.%arg 1%.skill.1" from "player.%arg 2%.custom" to {_skillslot-1}
-			set yml value "custom.%arg 1%.skill.2" from "player.%arg 2%.custom" to {_skillslot-2}
-			set yml value "custom.%arg 1%.skill.3" from "player.%arg 2%.custom" to {_skillslot-3}
-			save yml "player.%arg 2%.custom"
-			message "{@prefix} §a選択したSkillをセーブしました" to arg 2
-			if {Kit-tochu} is true:
-				if {Join::%arg 2%} is "Kit":
-					execute console command "/class %arg 1% %arg 2% true"
-			if {Kit-Testing::%arg 2%} is true:
-				execute console command "/class %arg 1% %arg 2% false"
-		else:
-			message "{@prefix} §c選択したアイテムはSkillではありません" to arg 2
-		close arg 2's inventory
+
+local function changeCustomKitType(player: player, kit: text):
+	saveCustomKitSkill({_player}, {_kit})
+	if {_kit} is "Werewolf":
+		set {_type} to "Werewolf_Instinct"
+	else if {_kit} is "Vampire":
+		set {_type} to "Vampire_Bat"
+	else:
+		message "{@prefix} §c§lこのKitは別Typeが存在しません!" to {_player}
+		stop
+	make {_player} execute command "/skillcustom %{_type}%"
+
+local function saveCustomKitSkill(player: player, kit: text):
+	set {_skill1} to slot 10 of {_player}'s current inventory
+	set {_skill2} to slot 13 of {_player}'s current inventory
+	set {_skill3} to slot 16 of {_player}'s current inventory
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
+	loop yaml node keys "skill" from "class.custom.%{_kit}%":
+		set {_skill} to yml value "%loop-node%" from "class.custom.%{_kit}%"
+		add {_skill} to {_skills::*}
+	unload yml "class.custom.%{_kit}%"
+	loop {_skills::*}:
+		if {_skill1} is loop-value:
+			add 1 to {_con}
+			set {_skillslot-1} to loop-index parsed as number
+		if {_skill2} is loop-value:
+			add 1 to {_con}
+			set {_skillslot-2} to loop-index parsed as number
+		if {_skill3} is loop-value:
+			add 1 to {_con}
+			set {_skillslot-3} to loop-index parsed as number
+	if {_con} is 3:
+		set {_uuid} to UUID of {_player}
+		load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%{_player}%.custom"
+		set yml value "custom.%{_kit}%.skill.1" from "player.%{_player}%.custom" to {_skillslot-1}
+		set yml value "custom.%{_kit}%.skill.2" from "player.%{_player}%.custom" to {_skillslot-2}
+		set yml value "custom.%{_kit}%.skill.3" from "player.%{_player}%.custom" to {_skillslot-3}
+		save yml "player.%{_player}%.custom"
+		message "{@prefix} §a選択したSkillをセーブしました" to {_player}
+		if {Kit-tochu} is true:
+			if {Join::%{_player}%} is "Kit":
+				execute console command "/class %{_kit}% %{_player}% true"
+		if {Kit-Testing::%{_player}%} is true:
+			execute console command "/class %{_kit}% %{_player}% false"
+	else:
+		message "{@prefix} §c選択したアイテムはSkillではありません" to {_player}
+	close {_player}'s inventory
+
+
 
 command /kitskillusage <text>:
 	permission: sk.admin
