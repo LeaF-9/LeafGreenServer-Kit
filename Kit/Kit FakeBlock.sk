@@ -1,5 +1,5 @@
 function kitFakeBlock(player: player, location: location, block: text, transformation: text, metadata: text):
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15}}"
 	spawn a block display at {_location} with nbt {_nbt}
 	set {_blockdisplay} to spawned block display
 	set metadata value "gametype" of {_blockdisplay} to "Kit"
@@ -7,7 +7,7 @@ function kitFakeBlock(player: player, location: location, block: text, transform
 	set metadata value {_metadata} of {_blockdisplay} to "%{_player}%"
 
 function kitFakeItem(player: player, location: location, item: text, transformation: text, metadata: text):
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b}}"
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},brightness:{block:15,sky:15}}"
 	spawn an item display at {_location} with nbt {_nbt}
 	set {_itemdisplay} to spawned item display
 	set metadata value "gametype" of {_itemdisplay} to "Kit"
@@ -158,10 +158,12 @@ on projectile hit:
 		else:
 			stop
 		set {_target} to {_target} parsed as offline player
-		if {team::%shooter%} is not {team::%{_target}%}:
+		if kitCheckTeam(shooter, {_target}, false) is true:
 			make a fake explosion at location of loop-entity
-			kitMsg({_target}, "§9§l%{_metadata}% §cが破壊された!")
-			message "§e%{_target}%§aの§9§l%{_metadata}%§aを破壊しました!" to shooter
-			kitFakeDeleteData({_target}, {_metadata})
+			if {_breaks::*} does not contain {_metadata}:
+				kitFakeDeleteData({_target}, {_metadata})
+				add {_metadata} to {_breaks::*}
+				kitMsg({_target}, "§9§l%{_metadata}% §cが破壊された!")
+				message "§e%{_target}%§aの§9§l%{_metadata}%§aを破壊しました!" to shooter
 		else:
 			message "§c§l味方の設置物は破壊できません!" to shooter
