@@ -11,15 +11,20 @@ function playerCoolTimer(player: player):
 			delete {_timer}
 			continue
 		loop {CT.%{_player}%::*}:
+			if {_ctitem.%loop-index%} is not set:
+				loop all items in {_player}'s inventory:
+					name of loop-item contains loop-index
+					set {_ctitem.%loop-index%} to loop-item
+
 			if loop-value <= 0:
 				delete {CT.%{_player}%::%loop-index%}
-				delete {_ok}
-				loop all items in {_player}'s inventory:
-					name of loop-item is loop-index
-					set {_ok} to true
-				if {_ok} is true:
+
+				set {_bar} to true
+				if {_ctitem.%loop-index%} is set:
+					set item cooldown of {_ctitem.%loop-index%} for {_player} to 0 seconds
 					send action bar "§a%loop-index% §bのクールタイムが終了しました!" to {_player}
 					playSound("entity.player.levelup", 0.5, 1, {_player}, true)
+
 			else:
 				if {_maxct::%loop-index%} is not set:  # maxctの取得
 					set {_maxct::%loop-index%} to {CT.%{_player}%::%loop-index%}
@@ -30,19 +35,22 @@ function playerCoolTimer(player: player):
 				else:
 					set {_sub} to 0.05
 				subtract {_sub} from {CT.%{_player}%::%loop-index%}
+
 				if {CT.%{_player}%::%loop-index%} <= 0:
 					delete {CT.%{_player}%::%loop-index%}
-					delete {_ok}
-					loop all items in {_player}'s inventory:
-						name of loop-item contains loop-index
-						set {_ok} to true
-					if {_ok} is true:
+
+					if {_ctitem.%loop-index%} is set:
+						set item cooldown of {_ctitem.%loop-index%} for {_player} to 0 seconds
+						set {_bar} to true
 						send action bar "§a%loop-index% §bのクールタイムが終了しました!" to {_player}
 						playSound("entity.player.levelup", 0.5, 1, {_player}, true)
+
 				else:
 					if name of tool of {_player} contains loop-index:
+						set item cooldown of {_ctitem.%loop-index%} for {_player} to 100 seconds
 						set {_bar} to true
 						barCT({_player}, {CT.%{_player}%::%loop-index%}, {_maxct::%loop-index%})
+
 		if {_bar} is true:
 			set {_bar} to false
 		else if {_bar} is false:
@@ -78,12 +86,16 @@ every a second:
 		{Kit-Palsy::%loop-player%} is not set
 		if size of {CT.%loop-player%::*} is not 0:
 			set {_checker::%loop-player%} to loop-player
-			set {_checkCT::%loop-player%} to {CT.%loop-player%::1}
+			loop {CT.%loop-player%::*}:
+				if {_index.%loop-player%} is set:
+					continue
+				set {_index.%loop-player%} to loop-index
+			set {_checkCT::%loop-player%} to {CT.%loop-player%::%{_index.%loop-player%}%}
 	if size of {_checker::*} is 0:
 		stop
 	wait 0.5 seconds
 	loop {_checker::*}:
-		if {CT.%loop-value%::1} is {_checkCT::%loop-value%}:
+		if {CT.%loop-value%::%{_index.%loop-value%}%} is {_checkCT::%loop-value%}:
 			set {CoolTimer::%loop-value%} to false
 			playerCoolTimer(loop-value)
 
