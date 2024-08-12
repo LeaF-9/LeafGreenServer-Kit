@@ -1,24 +1,24 @@
 function packetGlowing(player: player, target: entity, color: color = white):
 	# waiting update of skript-packet...
 	# #
-	# set {_pkt} to new play_server_entity_metadata packet
-	# set field 0 of {_pkt} to id of {_target}
-	# set {_dw} to new data watcher for {_target}
-	# set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
-	# set field 1 of {_pkt} to {_dw}
-	# send {_player} packet {_pkt}
-	poaGlowing({_player}, {_target})
+	set {_pkt} to new play_server_entity_metadata packet
+	set field 0 of {_pkt} to {_target}
+	set {_dw} to new data watcher from {_pkt}
+	set datawatcher index 0 of {_dw} to (64 as byte) # 0x40
+	set field 1 of {_pkt} to {_dw}
+	send {_player} packet {_pkt}
+	# poaGlowing({_player}, {_target})
 
 function packetUnglowing(player: player, target: entity):
 	# waiting update of skript-packet...
 	# #
-	# set {_pkt} to new play_server_entity_metadata packet
-	# set field 0 of {_pkt} to id of {_target}
-	# set {_dw} to new data watcher for {_target}
-	# set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
-	# set field 1 of {_pkt} to {_dw}
-	# send {_player} packet {_pkt}
-	poaUnglowing({_player}, {_target})
+	set {_pkt} to new play_server_entity_metadata packet
+	set field 0 of {_pkt} to {_target}
+	set {_dw} to new data watcher from {_pkt}
+	set datawatcher index 0 of {_dw} to (0 as byte) # 0x40
+	set field 1 of {_pkt} to {_dw}
+	send {_player} packet {_pkt}
+	# poaUnglowing({_player}, {_target})
 
 import:
 	java.util.ArrayList
@@ -82,15 +82,15 @@ function reflectUnglowing(player: player, target: entity):
 	{_p}.getDataValueCollectionModifier().write(0, {_list})
 	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_p})
 
-function poaGlowing(player: player, target: entity):
-	set {_p} to metadata packet with id (id of {_target})
-	add data from "glowing true" to packet {_p}
-	send packet {_p} to {_player}
+# function poaGlowing(player: player, target: entity):
+# 	set {_p} to metadata packet with id (id of {_target})
+# 	add data from "glowing true" to packet {_p}
+# 	send packet {_p} to {_player}
 
-function poaUnglowing(player: player, target: entity):
-	set {_p} to metadata packet with id (id of {_target})
-	add data from "glowing false" to packet {_p}
-	send packet {_p} to {_player}
+# function poaUnglowing(player: player, target: entity):
+# 	set {_p} to metadata packet with id (id of {_target})
+# 	add data from "glowing false" to packet {_p}
+# 	send packet {_p} to {_player}
 
 # function skacketGlowing(player: player, target: entity):
 # 	if metadata value "glowing-%id of {_target}%" of {_player} is not set:
