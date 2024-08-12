@@ -1,0 +1,63 @@
+# Crimson
+function kitWeapon_Pyro_1(player: player):
+	set {_firetick} to {_player}.getFireTicks()
+	# 効果解除
+	if {_firetick} <= 0:
+		if {_player} does not have speed:
+			stop
+
+		loop all items in inventory of {_player}:
+			name of loop-item contains "Crimson"
+			disenchant loop-item
+			enchant loop-item with fire aspect 1
+		remove speed from {_player}
+		kitParticle_Crimson_Cool({_player})
+		stop
+	
+	# 効果付与
+	applyEffect({_player}, speed, 1, 3 seconds, true)
+
+	loop all items in inventory of {_player}:
+		name of loop-item contains "Crimson"
+		loop-item is not enchanted with sharpness
+		set {_enchanted} to true
+		enchant loop-item with sharpness 1
+	
+	if {_enchanted} is true:
+		kitParticle_Crimson_Hot({_player})
+
+
+
+local function kitParticle_Crimson_Hot(player: player):
+	playSound("entity.blaze.shoot", 1, 1.4, {_player})
+
+	set {_y} to 0
+	loop 5 times:
+		set {_baseloc} to location of {_player}
+		set {_rad} to 0
+
+		loop 10 times:
+			add 36 to {_rad}
+			set {_el} to {_baseloc}
+
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+
+			spawnParticle(flame, {_el})
+
+		add 0.25 to {_y}
+		wait a tick
+
+
+
+local function kitParticle_Crimson_Cool(player: player):
+	playSound("block.fire.extinguish", 1, 1.65, {_player})
+	set {_baseloc} to location of {_player}
+	add 1 to y-pos of {_baseloc}
+
+	loop 10 times:
+		set {_el} to {_baseloc}
+		add a random number between -0.5 and 0.5 to x-pos of {_el}
+		add a random number between -0.5 and 0.5 to z-pos of {_el}
+		add a random number between -1 and 1 to y-pos of {_el}
