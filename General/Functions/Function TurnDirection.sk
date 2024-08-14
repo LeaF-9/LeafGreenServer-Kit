@@ -1,9 +1,11 @@
+# 指定したlocationのyawとpitchをVectorから変換する関数
 function setDirToVec(loc.old: location, vec: vector) :: location:
 	set {_loc.new} to {_loc.old}
 	set yaw of {_loc.new} to yaw of {_vec}
 	set pitch of {_loc.new} to pitch of {_vec}
 	return {_loc.new}
 
+# oldとnewのyawの差異を出力する関数
 # +がright -がleft
 function checkTurnDiff(yaw.old: number, yaw.new: number) :: number:
 	set {_returndiff} to {_yaw.new} - {_yaw.old}
@@ -13,7 +15,7 @@ function checkTurnDiff(yaw.old: number, yaw.new: number) :: number:
 		set {_returndiff} to (360 + {_yaw.new}) - {_yaw.old}
 	return {_returndiff}
 		
-
+# maxdiffを基準にyawのTurnを制限する関数
 function forceTurnAngle(dir.old: location, dir.new: location, maxdiff: number) :: location:
 	set {_returnloc} to {_dir.old}
 	set {_diff} to checkTurnDiff(yaw of {_dir.old}, yaw of {_dir.new})
