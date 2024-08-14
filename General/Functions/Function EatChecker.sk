@@ -1,0 +1,54 @@
+on load:
+	wait a tick
+	set {_message} to "§4!!! §lWARNING §4!!! §cConsole確認が必須のSkriptが読み込まれました"
+	loop all players:
+		loop-player has permission "sk.admin"
+		message formatted {_message} to loop-player
+	message formatted {_message} to console
+
+on packet event play_client_block_dig:
+	{-eating.checker::%event-player%} is set
+	set {_enum} to field 2 of event-packet
+	if "%{_enum}%" is "RELEASE_USE_ITEM":
+		delete {-eating.checker::%event-player%}
+
+on rightclick:
+	set {_tool} to tool of player
+	set {_always} to {_tool}.getItemMeta().getFood().canAlwaysEat()
+	{_always} is true
+
+	set {_now} to now
+	set {-eating.checker::%player%} to {_now}
+	set {-eating.time::%player%} to -1
+
+	while {_delete} is not set:
+		if {-eating.checker::%player%} is not {_now}:
+			set {_delete} to true
+			continue
+
+		set {_nowtool} to tool of player
+		if {_nowtool} is not {_tool}:
+			set {_delete} to true
+		if {-eating.checker::%player%} is not set:
+			set {_delete} to true
+		
+		if {_delete} is true:
+			delete {-eating.checker::%player%}
+			delete {-eating.time::%player%}
+			continue
+		
+		add 1 to {-eating.time::%player%}
+		wait a tick
+
+
+
+function checkEating(player: player) :: boolean:
+	if {-eating.checker::%{_player}%} is set:
+		return true
+	return false
+
+function checkEatingTime(player: player) :: number:
+	set {_time} to 0
+	if {-eating.checker::%{_player}%} is set:
+		set {_time} to {-eating.time::%{_player}%}
+	return {_time}
