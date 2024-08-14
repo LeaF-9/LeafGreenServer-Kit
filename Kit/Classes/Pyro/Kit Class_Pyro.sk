@@ -1,8 +1,23 @@
+# Pyroのスキル Ver1.0.0
+
+# Weapons
+function kitWeaponPyro(player: player):
+	set {_tool} to {_player}'s tool
+	set {_item.num} to kitItemNumberChecker({_tool})
+	checkCT({_player}, name of {_tool}) is true
+	checkItemCT({_player}, {_tool}) is true
+	if {_item.num} is 2:
+		kitWeapon_Pyro_2({_player})
+
 # Timer
 
 function kitTimerPyro(player: player):
-	if kitSelectChecker_Weapon({_player}, "Pyro") is not 1:
+	set {_select.weapon} to kitSelectChecker_Weapon({_player}, "Pyro")
+	if {_select.weapon} is not 1 or 2:
 		stop
 	while {Class::%{_player}%} is "Pyro":
-		kitWeapon_Pyro_1({_player})
+		if {_select.weapon} is 1:
+			kitWeapon_Pyro_1({_player})
+		else if {_select.weapon} is 2:
+			kitEffect_InfernoStaff_Bar({_player})
 		wait a tick

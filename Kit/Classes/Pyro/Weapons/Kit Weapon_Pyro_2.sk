@@ -1,0 +1,116 @@
+# weapon-name: Inferno Staff
+
+on damage:
+	damage was caused by projectile
+	projectile is a snowball
+	metadata value "inferno staff - projectile" of projectile is true
+	kitEffect_InfernoStaff_Hit(attacker, victim)
+
+
+
+function kitWeapon_Pyro_2(player: player):
+	kitEffect_InfernoStaff({_player})
+
+function kitEffect_InfernoStaff_Bar(player: player):
+	set {_bar} to {Stats.%{_player}%::InfernoStaff}
+	if {_bar} is not set:
+		set {_bar} to 30
+	
+	if {_bar} is 0:
+		send action bar "§b§lリロード中..." to {_player}
+		stop
+	
+	chargeActionBar({_player}, {_bar}, 30)
+
+
+
+local function kitEffect_InfernoStaff(player: player):
+	if {Stats.%{_player}%::InfernoStaff} <= 0:
+		stop
+
+	if {Stats.%{_player}%::InfernoStaff} is not set:
+		set {Stats.%{_player}%::InfernoStaff} to 30
+
+	set {_true} to true
+	while {_true} is true:
+		if checkEating({_player}) is false:
+			set {_delete} to true
+
+		if {Stats.%{_player}%::InfernoStaff} <= 0:
+			set {_reload} to true
+		if {Stats.%{_player}%::InfernoStaff} is not set:
+			set {_reload} to true
+
+		if {_reload} is true:
+			kitEffect_InfernoStaff_Reload({_player})
+			set {_delete} to true
+		if {_delete} is true:
+			delete {_true}
+			continue
+		
+		subtract 1 from {Stats.%{_player}%::InfernoStaff}
+		kitEffect_InfernoStaff_Shoot({_player})
+		wait a tick
+
+local function kitEffect_InfernoStaff_Shoot(player: player):
+	set {_m.hor} to a random number between -3 and 3
+	set {_m.ver} to a random number between -3 and 3
+
+	set {_from} to location of head of {_player}
+	set {_to} to {_from}
+	set pitch of {_to} to 0
+	set {_to} to location {_m.hor} meters to the left of {_to}
+	add {_m.ver} to y-pos of {_to}
+	set {_to} to location 10 meters in front of {_to}
+	set {_from} to setDirToVec({_from}, setVector({_from}, {_to}))
+
+	shoot a snowball from {_from} at speed 0.75
+	setShooter(shot snowball, {_player})
+	set item of shot snowball to blaze powder
+	set metadata value "inferno staff - projectile" of shot snowball to true
+	kitParticle_InfernoStaff_Shoot({_player}, shot snowball)
+
+local function kitEffect_InfernoStaff_Reload(player: player):
+	playSound("block.fire.extinguish", 1, 1.75, {_player})
+	loop all items in {_player}'s inventory:
+		name of loop-item contains "Inferno Staff"
+		set {_itemct} to loop-item
+	set item cooldown of {_itemct} for {_player} to 5 seconds
+
+	loop 100 times:
+		delete {_hold}
+		loop all items in {_player}'s inventory:
+			name of loop-item contains "Inferno Staff"
+			set {_hold} to true
+		if {_hold} is not set:
+			delete {Stats.%{_player}%::InfernoStaff}
+			stop
+		wait a tick
+
+	delete {_hold}
+	loop all items in {_player}'s inventory:
+		name of loop-item contains "Inferno Staff"
+		set {_hold} to true
+	if {_hold} is true:
+		set {Stats.%{_player}%::InfernoStaff} to 30
+		playSound("block.iron_door.close", 1, 1.5, {_player})
+
+local function kitEffect_InfernoStaff_Hit(player: player, entity: entity):
+	kitDamageInstant({_player}, {_entity}, 0.3)
+	ignite {_entity} for 3 seconds
+	playSound("item.flintandsteel.use", 0.75, 1.4, {_entity})
+
+
+
+local function kitParticle_InfernoStaff_Shoot(player: player, proj: projectile):
+	playSound("entity.blaze.shoot", 0.75, 2, {_player})
+	while {_delete} is not set:
+		set {_loc} to location of {_proj}
+		if {_proloc} is set:
+			if {_loc} is {_proloc}:
+				set {_delete} to true
+				continue
+		
+		spawnParticle(small_flame, {_loc})
+		set {_proloc} to {_loc}
+		wait a tick
