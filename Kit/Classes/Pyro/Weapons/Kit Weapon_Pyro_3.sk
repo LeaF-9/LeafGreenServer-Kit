@@ -1,0 +1,51 @@
+# weapon-name: Kelvin Tech - [Ω]
+
+function kitWeapon_Pyro_3(player: player):
+	toolItemCT({_player}, "Pyro", 3)
+	kitEffect_KelvinTechOmega({_player})
+
+
+
+local function kitEffect_KelvinTechOmega(player: player):
+	set {_baseloc} to location of head of {_player}
+	loop 20 times:
+		if {_hit} is true:
+			continue
+		
+		set {_el} to location loop-number * 0.25 meters in front of {_baseloc}
+		kitParticle_KelvinTechOmega_Trail({_el})
+		# player hit check
+		set {_hits::*} to checkHitEntities({_el})
+		if size of {_hits::*} >= 1:
+			loop {_hits::*}:
+				{_hit} is not set
+				kitCheckTeam({_player}, loop-value-2, false, true) is true
+				set {_hit} to true
+				set {_hitentity} to loop-value-2
+				kitEffect_KelvinTechOmega_Hit({_player}, loop-value-2)
+		# block hit check
+		set {_hitblock} to block at {_el}
+		if {_hitblock} is not passable:
+			set {_hit} to true
+
+		if mod(loop-number, 2) is 0 or 2:
+			wait a tick
+	
+	# Hit Effect
+	kitParticle_KelvinTechOmega_Blast({_el})
+	loop all entities in radius 4 around {_el}:
+		kitCheckTeam({_player}, loop-entity, false, true) is true
+		set {_hitloc} to location 1 meter above loop-entity
+		set {_distance} to distance between {_el} and {_hitloc}
+		{_distance} <= 3
+		kitEffect_KelvinTechOmega_Explosion({_player}, loop-entity)
+
+local function kitEffect_KelvinTechOmega_Hit(player: player, hit: entity):
+
+local function kitEffect_KelvinTechOmega_Explosion(player: player, hit: entity):
+
+
+
+local function kitParticle_KelvinTechOmega_Trail(loc: location):
+
+local function kitParticle_KelvinTechOmega_Blast(loc: location):
