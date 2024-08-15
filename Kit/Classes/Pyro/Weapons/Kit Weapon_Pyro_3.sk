@@ -1,5 +1,8 @@
 # weapon-name: Kelvin Tech - [Ω]
 
+options:
+	radius: 2
+
 function kitWeapon_Pyro_3(player: player):
 	toolItemCT({_player}, "Pyro", 3)
 	kitEffect_KelvinTechOmega({_player})
@@ -8,6 +11,7 @@ function kitWeapon_Pyro_3(player: player):
 
 local function kitEffect_KelvinTechOmega(player: player):
 	set {_baseloc} to location of head of {_player}
+	kitSound_KelvinTechOmega_Launch({_baseloc})
 	loop 20 times:
 		if {_hit} is true:
 			continue
@@ -33,19 +37,86 @@ local function kitEffect_KelvinTechOmega(player: player):
 	
 	# Hit Effect
 	kitParticle_KelvinTechOmega_Blast({_el})
-	loop all entities in radius 4 around {_el}:
+	loop all entities in radius {@radius} + 1 around {_el}:
+		{_hitentity} is not loop-entity
 		kitCheckTeam({_player}, loop-entity, false, true) is true
 		set {_hitloc} to location 1 meter above loop-entity
 		set {_distance} to distance between {_el} and {_hitloc}
-		{_distance} <= 3
+		{_distance} <= {@radius}
+		set {_hitexplosion} to true
 		kitEffect_KelvinTechOmega_Explosion({_player}, loop-entity)
+	if {_hitexplosion} is true:
+		{_hitentity} is not set
+		kitSound_KelvinTechOmega_HitExplosion({_player})
 
 local function kitEffect_KelvinTechOmega_Hit(player: player, hit: entity):
+	kitParticle_KelvinTechOmega_Hit({_player}, {_hit})
+	set {_damage} to 3
+	if {Class::%{_hit}%} is "Iceman":
+		add 2 to {_damage}
+	kitDamage({_player}, {_hit}, {_damage})
+	ignite {_hit} for 5 seconds
 
 local function kitEffect_KelvinTechOmega_Explosion(player: player, hit: entity):
+	set {_damage} to 2
+	if {Class::%{_hit}%} is "Iceman":
+		add 2 to {_damage}
+	kitDamage({_player}, {_hit}, {_damage})
+	ignite {_hit} for 3 seconds
 
 
 
 local function kitParticle_KelvinTechOmega_Trail(loc: location):
+	spawnParticle(end_rod, {_loc})
+	loop 3 times:
+		set {_el} to {_loc}
+		add a random number between -0.5 and 0.5 to x-pos of {_el}
+		add a random number between -0.5 and 0.5 to y-pos of {_el}
+		add a random number between -0.5 and 0.5 to z-pos of {_el}
+
+		set {_d} to dice(5)
+		if {_d} <= 3:
+			spawnParticle_BlockData(falling_dust, redstone block, {_el})
+		else if {_d} is 4:
+			spawnParticle_BlockData(falling_dust, orange wool, {_el})
+		else:
+			spawnParticle_BlockData(falling_dust, yellow wool, {_el})
 
 local function kitParticle_KelvinTechOmega_Blast(loc: location):
+	playSound("entity.firework_rocket.blast", 1, 0.9, {_loc})
+	
+	# fragment
+	loop 30 times:
+		spawnParticle_Vector(firework, randomVector(1), 0.2, {_loc})
+		set {_v} to randomVector()
+		set {_el} to setDirToVec({_loc}, {_v})
+		set {_m} to a random number between 0 and {@radius}
+		set {_el} to location {_m} meters in front of {_el}
+
+		set {_d} to dice(3)
+		if {_d} is 1:
+			spawnParticle_BlockData(falling_dust, redstone block, {_el})
+		else if {_d} is 2:
+			spawnParticle_BlockData(falling_dust, red wool, {_el})
+		else:
+			spawnParticle_BlockData(falling_dust, stripped crimson stem, {_el})
+	
+	# sphere
+	set {_locs::*} to particleLocation_Sphere({_loc}, 9, {@radius}, 80)
+	loop {_locs::*}:
+		set {_el} to loop-value
+		spawnParticle(flame, {_el})
+
+local function kitParticle_KelvinTechOmega_Hit(player: player, entity: entity):
+	playSound("entity.arrow.hit_player", 1, 1.25, {_player}, true)
+	set {_loc} to location 1 meter above {_entity}
+	loop 100 times:
+		spawnParticle(crimson_spore, {_loc})
+
+
+
+local function kitSound_KelvinTechOmega_Launch(loc: location):
+	playSound("entity.iron_golem.attack", 1, 0.75, {_loc})
+
+local function kitSound_KelvinTechOmega_HitExplosion(player: player):
+	playSound("entity.arrow.hit_player", 1, 2, {_player}, true)
