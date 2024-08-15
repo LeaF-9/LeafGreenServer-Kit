@@ -926,3 +926,12 @@ command /test-head-checker:
 			log "%nbt compound of {_helmet}%"
 			log "%nbt compound of {_nbthead}%"
 		set helmet of player to {_nbthead}
+
+command /test-knockback <player=%player%>:
+	permission: sk.admin
+	trigger:
+		set {_delay} to maximum damage delay of arg 1
+		if {_delay} is 20 ticks:
+			set maximum damage delay of arg 1 to 1 tick
+			stop
+		set maximum damage delay of arg 1 to 20 ticks
