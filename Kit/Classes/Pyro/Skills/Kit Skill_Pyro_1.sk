@@ -1,10 +1,15 @@
 # skill-name: Flame Blast
 
 on projectile hit:
-	projectile is a fireball
+	projectile is a large fireball
 	metadata value "flame blast - projectile" of projectile is true
 	set metadata value "flame blast - projectile" of projectile to false
 	kitEffect_FlameBlast_Explosion(shooter, location of projectile)
+
+on damage of player:
+	damage was caused by projectile
+	metadata value "flame blast - projectile" of projectile is set
+	cancel event
 
 
 
@@ -17,18 +22,18 @@ function kitSkill_Pyro_1(player: player):
 local function kitEffect_FlameBlast(player: player):
 	set {_baseloc} to location of head of {_player}
 	set {_vector} to setVector({_baseloc}, location 10 meters in front of {_baseloc}, 1)
-	shoot a fireball from {_baseloc} at speed 1
-	setShooter(shot fireball, {_player})
-	set metadata value "flame blast" of shot fireball to {_player}
-	set metadata value "flame blast - projectile" of shot fireball to true
+	shoot a large fireball from {_baseloc} at speed 1
+	setShooter(shot large fireball, {_player})
+	set metadata value "flame blast" of shot large fireball to {_player}
+	set metadata value "flame blast - projectile" of shot large fireball to true
 	kitMsg({_player}, "§c周辺を焼き尽くす§4§l爆炎弾§cを発射します!")
-	kitParticle_FlameBlast_Fireball(shot fireball)
+	kitParticle_FlameBlast_Fireball(shot large fireball)
 
 	set {_enable} to true
 	while {_enable} is true:
 		delete {_exist}
 		loop all projectiles:
-			loop-projectile is a fireball
+			loop-projectile is a large fireball
 			metadata value "flame blast" of loop-projectile is {_player}
 			metadata value "flame blast - projectile" of loop-projectile is true
 			set {_exist} to loop-projectile
@@ -40,6 +45,7 @@ local function kitEffect_FlameBlast(player: player):
 		wait a tick
 
 local function kitEffect_FlameBlast_Explosion(player: player, loc: location):
+	kitParticle_FlameBlast_Explosion({_loc})
 	loop all entities in radius 5 around {_loc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		kitDamage({_player}, loop-entity, 2)
@@ -61,8 +67,10 @@ local function kitEffect_FlameBlast_Explosion(player: player, loc: location):
 
 
 local function kitParticle_FlameBlast_Fireball(proj: projectile):
+	playSound("entity.ghast.shoot", 1, 0.8, location of {_proj})
 	set {_enable} to true
 	set {_rad} to 0
+	wait a tick
 	while {_enable} is true:
 		if metadata value "flame blast - projectile" of {_proj} is false:
 			delete {_enable}
@@ -74,9 +82,9 @@ local function kitParticle_FlameBlast_Fireball(proj: projectile):
 				delete {_enable}
 				continue
 			
-			set {_fromloc} to setDirToVec({_proloc}, setVector({_proloc}, {_loc}))
+			set {_fromloc} to setDirToVec(location 0.5 meters above {_proloc}, setVector({_proloc}, {_loc}))
 			set {_distance} to distance between {_proloc} and {_loc}
-			set {_loopnum} to {_distance} * 0.5
+			set {_loopnum} to ceil({_distance} * 2)
 			set {_m} to 0
 			loop {_loopnum} times:
 				add 0.5 to {_m}
@@ -104,55 +112,26 @@ local function kitParticle_FlameBlast_Fireball(proj: projectile):
 
 					add 1 to {_ln}
 
-			add 10 to{_rad}
-		set {_proloc} to {_loc}
+			add 10 to {_rad}
+		set {_proloc} to location of {_proj}
 		wait a tick
 
+local function kitParticle_FlameBlast_Explosion(loc: location):
+	playSound("entity.dragon_fireball.explode", 1, 1.75, {_loc})
+	loop 100 times:
+		spawnParticle_Vector(poof, randomVector(), 0.75, {_loc})
+	loop all blocks in radius 5 around {_loc}:
+		loop-block is passable
+		chance of 30%:
+			spawnParticle_Vector(trial_spawner_detection, vector(0, 0.1, 0), 0.5, location of loop-block)
+	set {_els::*} to particleLocation_Sphere({_loc}, 11, 5)
+	loop {_els::*}:
+		spawnParticle(flame, loop-value)
+
 local function kitParticle_FlameBlast_Extinguish(loc: location):
+	spawnParticle(cloud, {_loc})
 
 
 
 local function kitSound_FlameBlast_Extinguish(loc: location):
-
-
-
-
-
-
-
-
-on rightclick holding a blaze rod:
-	name of player's tool is "§eFire Contagion"
-	if {CT.%player%::%name of player's tool%} is not set:
-		shoot a fireball at speed 3
-		set metadata value "fire" of shot fireball to "true"
-		drawDot count 3, particle "flame", center shot entity, visibleRange 30, keepFor 20 ticks
-		play raw sound "mob.ghast.fireball" at the player with pitch 0.5 volume 1
-		message "{@prefix} §6当たった周辺の敵を燃やす弾を放ちました！"
-		set {CT.%player%::%name of player's tool%} to 40
-	else:
-		set action bar of player to "§c§lクールタイムが終わっていません!"
-
-on projectile hit:
-	projectile is fireball
-	metadata value "fire" of projectile is "true"
-#	loop all players in radius 3 around projectile:
-#		{team::%loop-player%} is not {team::%shooter%}
-#		set {Stats.%loop-player%::DoubleFire} to true
-#		drawWarpRings style 0, particle "lava", center loop-player, id "%loop-player%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
-#		add loop-player to {_df::*}
-	loop all players in radius 5 around projectile:
-		{team::%loop-player%} is not {team::%shooter%}
-		make shooter damage loop-player by 4
-		ignite loop-player for 5 seconds
-		message "§4熱い！" to loop-player
-		set {_pl} to location of projectile
-	wait 5 ticks
-	loop {_df::*}:
-		stopEffect "%loop-value%"
-
-on damage of player:
-	damage was caused by projectile
-	projectile is fireball
-	metadata value "fire" of projectile is "true"
-	set damage to 3
+	playSound("block.fire.extinguish", 1, 1.5, {_loc})
