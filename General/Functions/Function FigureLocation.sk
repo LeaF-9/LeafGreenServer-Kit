@@ -26,7 +26,8 @@ function particleLocation_Sphere(baseloc: location, count: number, radius: numbe
 			set y-pos of {_el} to {_y} + ( {_radius} * cos({_s}) )
 			set z-pos of {_el} to {_z} + ( {_radius} * sin({_s}) * sin({_t}) )
 			chance of {_chance}%:
-				add {_el} to {_returnlocs::*}
+				if {_returnlocs::*} does not contain {_el}:
+					add {_el} to {_returnlocs::*}
 			add 360 / {_countdouble} to {_t}
 		add 360 / {_countdouble} to {_s}
 	return {_returnlocs::*}
