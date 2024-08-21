@@ -1,0 +1,44 @@
+import:
+	org.bukkit.attribute.Attribute
+	org.bukkit.event.entity.EntityKnockbackByEntityEvent
+
+on EntityKnockbackByEntityEvent with priority MONITOR:
+	set {_player} to event.getEntity()
+	if metadata value "knockback change" of {_player} is set:
+		delete metadata value "knockback change" of {_player}
+		set {_vector.knockback} to event.getKnockback()
+		set y of {_vector.knockback} to metadata value "knockback change - vertical" of {_player}
+
+		if metadata value "knockback multiplier - horizontal" of {_player} is set:
+			set {_multiplier} to metadata value "knockback multiplier - horizontal" of {_player}
+			set x of {_vector.knockback} to x of {_vector.knockback} * {_multiplier}
+			set z of {_vector.knockback} to z of {_vector.knockback} * {_multiplier}
+		
+		delete metadata value "knockback change - vertical" of {_player}
+		delete metadata value "knockback multiplier - horizontal" of {_player}
+		event.setFinalKnockback({_vector.knockback})
+
+on damage of player with priority LOWEST:
+	damage was caused by attack
+	set metadata value "knockback change" of victim to true
+	set {_vertical} to 0.44
+	if attacker is sprinting:
+		set {_add} to true
+	set {_tool} to tool of attacker
+	if {_tool} is enchanted with knockback:
+		set {_add} to true
+	
+	if {_add} is true:
+		set {_vertical} to 0.48
+		set {_enchant} to enchant level of knockback of {_tool}
+		if {_enchant} >= 2:
+			set {_base} to 7 + (5 * ({_enchant} - 1))
+			set {_multiplier} to {_base} / 4
+		else:
+			set {_multiplier} to 7 / 4
+
+		set metadata value "knockback multiplier - horizontal" of victim to {_multiplier}
+	
+	set {_attribute.knockback_resistance} to victim.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).getValue()
+	set {_vertical} to {_vertical} * (1 - {_attribute.knockback_resistance})
+	set metadata value "knockback change - vertical" of victim to {_vertical}
