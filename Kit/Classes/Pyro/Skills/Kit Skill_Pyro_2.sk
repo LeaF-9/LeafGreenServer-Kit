@@ -18,6 +18,7 @@ local function kitEffect_FireStorm(player: player):
 	kitMsg({_player}, "§6炎を纏った暴風§eを発生させます!")
 	loop all entities in radius {@radius} around {_baseloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
+		LastKiller(loop-entity, {_player})
 		ignite loop-entity for {@ignite-second}
 		kitParticle_FireStorm_Hit(loop-entity)
 
@@ -42,7 +43,6 @@ local function kitParticle_FireStorm_Storm(loc: location):
 			spawnParticle(flame, {_el})
 
 		add round(2 * (loop-number / 10)) to {_baserad}
-		log "%{_baserad}%"
 		if mod(loop-number, 4) is 0:
 			wait a tick
 
