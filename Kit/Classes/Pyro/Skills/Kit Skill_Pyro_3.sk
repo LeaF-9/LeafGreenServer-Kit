@@ -1,3 +1,154 @@
+# skill-name: Solar Track
+
+options:
+	radius: 7
+	effect-time: 200
+	fire-second: 5 seconds
+
+
+
+on damage:
+	# 火属性
+	if {Stats.%attacker%::SolarTrack} is set:
+		ignite victim for {@fire-second}
+	
+	# 火炎耐性
+	if {Stats.%victim%::SolarTrack} is set:
+		damage cause is fire, burning, campfire, magma or lava
+		cancel event
+
 
 
 function kitSkill_Pyro_3(player: player):
+	toolCT({_player}, "Pyro", 3)
+	kitEffect_SolarTrack({_player})
+
+
+
+local function kitEffect_SolarTrack(player: player):
+	set {_baseloc} to location of {_player}
+	set {_now} to now
+	kitParticle_SolarTrack_Launch({_baseloc})
+	kitMsg({_player}, "§e周囲の味方に§c§l太陽の加護§eを付与します!")
+
+	loop all players in radius {@radius} around {_baseloc}:
+		kitCheckTeam(loop-player, {_player}, true) is true
+		setSupporter(loop-player, {_player})
+		set {Stats.%loop-player%::SolarTrack} to {_now}
+		add loop-player to {_players::*}
+		if loop-player is not {_player}:
+			message formatted "§6%{_player}% §eより§c§l太陽の加護§eを授かった!" to loop-player
+		kitParticle_SolarTrack_Apply(loop-player)
+	
+	loop {@effect-time} times:
+		loop {_players::*}:
+			set {_loop-player} to loop-value-2
+			if {Stats.%{_loop-player}%::SolarTrack} is not {_now}:
+				remove {_loop-player} from {_players::*}
+				continue
+			
+			set {_blockchecker} to location of block at {_loop-player}
+			block at {_blockchecker} is air
+			block below {_blockchecker} is not passable
+			kitEffect_SolarTrack_Track({_player}, {_blockchecker})
+		wait a tick
+	
+	loop {_players::*}:
+		set {_loop-player} to loop-value
+		{Stats.%{_loop-player}%::SolarTrack} is {_now}
+		delete {Stats.%{_loop-player}%::SolarTrack}
+		message formatted "§c§l太陽の加護§9の効果が終了しました" to {_loop-player}
+
+# 一定期間炎を設置する関数
+local function kitEffect_SolarTrack_Track(player: player, loc: location):
+	kitParticle_SolarTrack_Ignite({_loc})
+	set block at {_loc} to fire
+	add {_loc} to {Block.%{_player}%::*}
+	wait {@fire-second}
+	kitParticle_SolarTrack_Extinguish({_loc})
+	if block at {_loc} is not air:
+		set block at {_loc} to air
+	remove {_loc} from {Block.%{_player}%::*}
+
+
+local function kitParticle_SolarTrack_Launch(loc: location):
+	playSound("entity.ghast.warn", 1, 1.1, {_loc})
+	set {_options.time} to 10
+	set {_options.count} to 5
+
+	set {_baserad} to 0
+	loop {_options.time} times:
+		set {_rad} to {_baserad}
+		loop {_options.count} times:
+			set {_el} to {_loc}
+			add 360 / {_options.count} to {_rad}
+			add {@radius} * sin({_rad}) to x-pos of {_el}
+			add {@radius} * cos({_rad}) to z-pos of {_el}
+			add 1 to y-pos of {_el}
+			spawnParticle(wax_off, {_el})
+
+			loop 10 times:
+				set {_el.2} to {_el}
+				add a random number between -0.5 and 0.5 to x-pos of {_el.2}
+				add a random number between -0.5 and 0.5 to y-pos of {_el.2}
+				add a random number between -0.5 and 0.5 to z-pos of {_el.2}
+				spawnParticle(small_flame, {_el.2})
+
+		add 360 / {_options.count} / 10 to {_baserad}
+		wait a tick
+
+# 付与したプレイヤーの演出・効果中の演出
+local function kitParticle_SolarTrack_Apply(player: player):
+	set {_baseloc} to location of {_player}
+	set {_checkstats} to {Stats.%{_player}%::SolarTrack}
+	playSound("item.trident.return", 1, 1.65, {_baseloc})
+	set {_options.applycount} to 50
+	set {_options.applytime} to 5
+	set {_options.radius} to 0.5
+	set {_options.effecttime} to {@effect-time} - {_options.applytime}
+	set {_options.effectcycle} to 1
+	set {_options.effectcount} to 10
+
+	set {_y} to 0
+	loop {_options.applytime} times:
+		set {_rad} to 0
+		loop {_options.applycount} times:
+			set {_el} to {_baseloc}
+			add 360 / {_options.applycount} to {_rad}
+			add {_options.radius} * sin({_rad}) to x-pos of {_el}
+			add {_options.radius} * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle(crimson_spore, {_el})
+
+		add 2 / ({_options.applytime} - 1) to {_y}
+		wait a tick
+	
+	set {_rad} to 0
+	loop {_options.effecttime} times:
+		if {Stats.%{_player}%::SolarTrack} is not {_checkstats}:
+			stop
+
+		loop {_options.effectcycle} times:
+			set {_el} to location of {_player}
+			add 360 / {_options.effectcount} to {_rad}
+			add {_options.radius} * sin({_rad}) to x-pos of {_el}
+			add {_options.radius} * cos({_rad}) to z-pos of {_el}
+			add 2 to y-pos of {_el}
+			spawnParticle_BlockData(falling_dust, yellow wool, {_el})
+		wait a tick
+
+local function kitParticle_SolarTrack_Ignite(loc: location):
+	playSound("item.flintandsteel.use", 0.5, 1.5, {_loc})
+	set {_blockloc} to location of block at {_loc}
+	loop 30 times:
+		set {_el} to {_blockloc}
+		add a random number between -0.5 and 0.5 to x-pos of {_el}
+		add a random number between -0.5 and 0.5 to y-pos of {_el}
+		add a random number between -0.5 and 0.5 to z-pos of {_el}
+		spawnParticle(crimson_spore, {_el})
+
+local function kitParticle_SolarTrack_Extinguish(loc: location):
+	playSound("block.fire.extinguish", 0.5, 1.5, {_loc})
+	set {_blockloc} to location of block at {_loc}
+	loop 10 times:
+		spawnParticle_Vector(white_smoke, randomVector(), 0.3, {_blockloc})
