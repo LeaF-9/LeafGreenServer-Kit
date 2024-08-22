@@ -1,3 +1,59 @@
+# skill-name: Fire Storm
+
+options:
+	radius: 10
+	ignite-second: 10 seconds
+
 
 
 function kitSkill_Pyro_2(player: player):
+	toolCT({_player}, "Pyro", 2)
+	kitEffect_FireStorm({_player})
+
+
+
+local function kitEffect_FireStorm(player: player):
+	set {_baseloc} to location of {_player}
+	kitParticle_FireStorm_Storm({_baseloc})
+	kitMsg({_player}, "§6炎を纏った暴風§eを発生させます!")
+	loop all entities in radius {@radius} around {_baseloc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		ignite loop-entity for {@ignite-second}
+		kitParticle_FireStorm_Hit(loop-entity)
+
+
+
+local function kitParticle_FireStorm_Storm(loc: location):
+	playSound("entity.blaze.shoot", 1, 1.25, {_loc})
+	set {_options.count} to 60
+
+	set {_y} to 0
+	set {_baserad} to 0
+	loop 20 times:
+		add 0.5 to {_y}
+
+		set {_rad} to {_baserad}
+		loop {_options.count} times:
+			set {_el} to {_loc}
+			add 360 / {_options.count} to {_rad}
+			add {@radius} * sin({_rad}) to x-pos of {_el}
+			add {@radius} * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+			spawnParticle(flame, {_el})
+
+		add round(2 * (loop-number / 10)) to {_baserad}
+		log "%{_baserad}%"
+		if mod(loop-number, 4) is 0:
+			wait a tick
+
+local function kitParticle_FireStorm_Hit(entity: entity):
+	playSound("item.flintandsteel.use", 1, 0.85, location of {_entity})
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 30 times:
+		spawnParticle_Vector(small_flame, randomVector(), 0.5, {_baseloc})
+	loop 50 times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle(smoke, {_el})
+		chance of 50%:
+			set {_el} to aroundEffect({_entity})
+			spawnParticle_BlockData(falling_dust, redstone block, {_el})
