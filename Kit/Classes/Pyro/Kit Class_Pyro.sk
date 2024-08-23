@@ -44,8 +44,20 @@ function kitTimerPyro(player: player):
 	if {_select.weapon} is not 1 or 2:
 		stop
 	while {Class::%{_player}%} is "Pyro":
+		# weapon checker
 		if {_select.weapon} is 1:
 			kitWeapon_Pyro_1({_player})
 		else if {_select.weapon} is 2:
 			kitEffect_InfernoStaff_Bar({_player})
+
+		# Water Rejection
+		set {_loc.floor} to location of {_player}
+		if block at {_loc.floor} is water:
+			add 1 to {_waterrejection}
+		set {_loc.ceil} to location 1 meter above {_player}
+		if block at {_loc.ceil} is water:
+			add 1 to {_waterrejection}
+		
+		if mod({_waterrejection}, 20) is 0:
+			damage {_player} by 1 heart
 		wait a tick
