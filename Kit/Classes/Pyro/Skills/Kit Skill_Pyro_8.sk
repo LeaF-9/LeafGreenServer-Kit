@@ -1,3 +1,62 @@
+# skill-name: Molotov Cocktail
+
+options:
+	shoot-power: 0.95
+	molotov-radius: 6
+	molotov-second: 10 seconds
+	molotov-soul-chance: 10
+
+
+
+on projectile hit:
+	projectile is a snowball
+	metadata value "molotov cocktail" of projectile is true
+	set metadata value "molotov cocktail" of projectile to false
+	kitEffect_MolotovCocktail_Molotov(shooter, location of projectile)
+
 
 
 function kitSkill_Pyro_8(player: player):
+	kitEffect_MolotovCocktail({_player})
+
+
+
+local function kitEffect_MolotovCocktail(player: player):
+	kitSound_MolotovCocktail_Launch({_player})
+	subtract 1 from item amount of tool of {_player}
+
+	shoot a snowball from {_player} at speed {@shoot-power}
+	set metadata value "molotov cocktail" of shot projectile to true
+	set item of shot projectile to dragon breath
+	kitParticle_MolotovCocktail_Projectile(shot projectile)
+
+local function kitEffect_MolotovCocktail_Molotov(player: player, loc: location):
+	kitParticle_MolotovCocktail_Molotov({_loc})
+	loop all blocks in radius {@molotov-radius} around {_loc}:
+		loop-block is air
+		block below loop-block is not passable
+		set {_lb::%location of loop-block%} to location of loop-block
+		set loop-block to fire
+		chance of {@molotov-soul-chance}%:
+			set loop-block to soul fire
+		add location of loop-block to {Block.%{_player}%::*}
+	
+	wait {@molotov-second}
+
+	kitSound_MolotovCocktail_Extinguish({_loc})
+	loop {_lb::*}:
+		if block at loop-value is not air:
+			set block at loop-value to air
+		remove loop-value from {Block.%{_player}%::*}
+
+
+
+local function kitParticle_MolotovCocktail_Projectile(proj: projectile):
+
+local function kitParticle_MolotovCocktail_Molotov(loc: location):
+
+
+
+local function kitSound_MolotovCocktail_Launch(player: player):
+
+local function kitSound_MolotovCocktail_Extinguish(loc: location):
