@@ -24,13 +24,14 @@ local function kitEffect_FlareDrive(player: player):
 	kitMsg({_player}, "§c自らも火傷しうる§4§l業火の特攻§cを行います!")
 
 	# 自傷
+	playSound("entity.generic.hurt", 1, 1, {_player})
 	set {_health} to health of {_player}
 	subtract {@damage-self} from {_health}
 	set health of {_player} to {_health}
 
 	# 突撃
 	set {_baseloc} to location of head of {_player}
-	set {_power} to {@dash-meter} / {@dash-tick} * 0.1
+	set {_power} to {@dash-meter} / {@dash-tick}
 	set {_v} to setVector({_baseloc}, location 10 meters in front of {_baseloc}, {_power})
 	loop {@dash-tick} times:
 		set velocity of {_player} to {_v}
@@ -44,6 +45,7 @@ local function kitEffect_FlareDrive(player: player):
 			ignite loop-entity for {@ignite-second}
 			kitParticle_FlareDrive_Hit(loop-entity)
 		wait a tick
+	set velocity of {_player} to vector(0, 0, 0)
 
 
 
@@ -53,10 +55,16 @@ local function kitParticle_FlareDrive_Rush(player: player):
 	loop {@dash-tick} times:
 		# lava
 		set {_baseloc} to location 1 meter above {_player}
-		spawnParticle(lava, {_baseloc})
+		loop 10 times:
+			set {_el} to {_baseloc}
+			add a random number between -0.5 and 0.5 to x-pos of {_el}
+			add a random number between -0.5 and 0.5 to y-pos of {_el}
+			add a random number between -0.5 and 0.5 to z-pos of {_el}
+			spawnParticle(lava, {_el})
+			spawnParticle_BlockData(dust_pillar, magma block, {_el})
 
 		# flame
-		set {_els::*} to function particleLocation_CircleV({_baseloc}, 10, 1)
+		set {_els::*} to particleLocation_CircleV({_baseloc}, 10, 1)
 		loop {_els::*}:
 			set {_el} to loop-value-2
 			spawnParticle(flame, {_el})
