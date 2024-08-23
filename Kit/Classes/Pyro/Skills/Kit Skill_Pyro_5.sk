@@ -1,3 +1,77 @@
+# skill-name: Heat Flash
+
+options:
+	flash-tick-speed: 0.5
+	flash-max-tick: 60
+	ignite-radius: 5
+	ignite-second: 5 seconds
+	flash-radius: 30
+	flash-second: 6 seconds
+
+
+
+on leftclick:
+	metadata value "gametype" of player is "Kit"
+	{Stats.%player%::HeatFlash} is true
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Pyro", "Skill", 5) is true
+	delete {Stats.%player%::HeatFlash}
+
 
 
 function kitSkill_Pyro_5(player: player):
+	toolCT({_player}, "Pyro", 5)
+	kitEffect_HeatFlash({_player})
+
+
+
+local function kitEffect_HeatFlash(player: player):
+	set {_baseloc} to location of head of {_player}
+	kitMsg({_player}, "§e§l閃光弾§dを発射します!")
+	set {Stats.%{_player}%::HeatFlash} to true
+	kitSound_HeatFlash_Launch({_player})
+
+	set {_m} to 0
+	loop {@flash-max-tick} times:
+		if {Stats.%{_player}%::HeatFlash} is not set:
+			continue
+		
+		add {@flash-tick-speed} to {_m}
+		set {_effloc} to location {_m} meters in front of {_baseloc}
+		kitParticle_HeatFlash_Bullet({_effloc})
+		wait a tick
+	
+	# ignite
+	kitParticle_HeatFlash_Blast({_effloc})
+	loop all entities in radius {@ignite-radius} around {_effloc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		LastKiller(loop-entity, {_player})
+		ignite loop-entity for {@ignite-second}
+		kitParticle_HeatFlash_Ignite(loop-entity)
+
+	# flash
+	kitParticle_HeatFlash_Flash({_effloc})
+	loop all players in radius {@flash-radius} around {_effloc}:
+		kitCheckTeam(loop-player, {_player}, false) is true
+		checkCanSee(loop-player, {_effloc}) is true
+		if {damager.%loop-player%::*} does not contain {_player}:
+			add {_player} to {damager.%loop-player%::*}
+		applyEffect(loop-player, blindness, 1, {@flash-second})
+		kitParticle_HeatFlash_Dazzle(loop-player)
+
+
+
+local function kitParticle_HeatFlash_Bullet(loc: location):
+
+local function kitParticle_HeatFlash_Blast(loc: location):
+
+local function kitParticle_HeatFlash_Ignite(entity: entity):
+
+local function kitParticle_HeatFlash_Flash(loc: location):
+
+local function kitParticle_HeatFlash_Dazzle(player: player):
+
+
+
+local function kitSound_HeatFlash_Launch(player: player):
+	playSound("entity.firework_rocket.launch", 1, 0.6, {_player})
