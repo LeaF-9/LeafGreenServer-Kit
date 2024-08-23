@@ -1,3 +1,73 @@
+# skill-name: Scorch Ray
+
+options:
+	beam-range: 10
+	beam-density: 0.2
+	beam-tick: 60
+	beam-damage: 0.1
+	beam-damage-burn: 0.25
+
 
 
 function kitSkill_Pyro_7(player: player):
+	toolCT({_player}, "Pyro", 7)
+	kitEffect_ScorchRay({_player})
+
+
+
+local function kitEffect_ScorchRay(player: player):
+	kitMsg({_player}, "§e§l超高熱光線 §6を発射します!")
+	kitSound_ScorchRay_Launch({_player})
+
+	loop {@beam-tick} times:
+		# item slot fix
+		# あとで処理書く
+
+		set {_baseloc} to location of head of {_player}
+		set {_beam-range-tick} to {@beam-range} / {@beam-density}
+		set {_m} to 0
+		delete {_hit}
+		loop {_beam-range-tick} times:
+			{_hit} is not set
+			add {@beam-density} to {_m}
+			set {_effloc} to location {_m} meters in front of {_baseloc}
+			kitParticle_ScorchRay_Beam({_effloc})
+
+			set {_hits::*} to checkHitEntities({_effloc})
+			if size of {_hits::*} > 0:
+				set {_hit} to true
+			loop {_hits::*}:
+				set {_loop-entity} to loop-value-3
+				kitCheckTeam({_loop-entity}, {_player}, false) is true
+				kitEffect_ScorchRay_Hit({_player}, {_loop-entity})
+
+		wait a tick
+
+local function kitEffect_ScorchRay_Hit(player: player, target: entity):
+	kitParticle_ScorchRay_Hit({_target})
+	set {_firetick} to {_target}.getFireTicks()
+	set {_damage} to {@beam-damage}
+	set {_block} to fire
+	if {_firetick} > 0:
+		set {_damage} to {@beam-damage-burn}
+		set {_block} to soul fire
+	
+	kitDamageInstant({_player}, {_target}, {_damage})
+	set {_v} to randomVector(1)
+	if y of {_v} < 0:
+		set y of {_v} to y of {_v} * -1
+	if y of {_v} < 0.3:
+		add 0.3 to y of {_v}
+	
+	# falling blockの処理 (後で処理書く)
+	# spawn a falling  from block above {_player} at speed 1 upwards
+
+
+
+local function kitParticle_ScorchRay_Beam(loc: location):
+
+local function kitParticle_ScorchRay_Hit(entity: entity):
+
+
+
+local function kitSound_ScorchRay_Launch(player: player):
