@@ -1,3 +1,68 @@
+# skill-name: Flare Drive
+
+options:
+	damage-self: 2
+	dash-meter: 10
+	dash-tick: 5
+	damage-hit: 2
+	ignite-second: 5 seconds
+
 
 
 function kitSkill_Pyro_4(player: player):
+	set {_health} to health of {_player}
+	if {_health} < {@damage-self}:
+		send action bar "§c§lスキルを発動するための体力が不足しています" to {_player}
+		stop
+	toolCT({_player}, "Pyro", 4)
+	kitEffect_FlareDrive({_player})
+
+
+
+local function kitEffect_FlareDrive(player: player):
+	kitParticle_FlareDrive_Rush({_player})
+
+	# 自傷
+	set {_health} to health of {_player}
+	subtract {@damage-self} from {_health}
+	set health of {_player} to {_health}
+
+	# 突撃
+	set {_baseloc} to location of head of {_player}
+	set {_power} to {@dash-meter} / {@dash-tick} * 0.1
+	set {_v} to setVector({_baseloc}, location 10 meters in front of {_baseloc}, {_power})
+	loop {@dash-tick} times:
+		set velocity of {_player} to {_v}
+
+		set {_damagebase} to location 1 meter above {_player}
+		loop all entities in radius 2 around {_damagebase}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			{_hit.%id of loop-entity%} is not set
+			set {_hit.%id of loop-entity%} to true
+			kitDamage({_player}, loop-entity, {@damage-hit})
+			ignite loop-entity for {@ignite-second}
+			kitParticle_FlareDrive_Hit(loop-entity)
+		wait a tick
+
+
+
+local function kitParticle_FlareDrive_Rush(player: player):
+	playSound("entity.blaze.ambient", 1, 1.25, {_player})
+	set {_rad} to 0
+	loop {@dash-tick} times:
+		# lava
+		set {_baseloc} to location 1 meter above {_player}
+		spawnParticle(lava, {_baseloc})
+
+		# flame
+		set {_els::*} to function particleLocation_CircleV({_baseloc}, 10, 1)
+		loop {_els::*}:
+			set {_el} to loop-value-2
+			spawnParticle(flame, {_el})
+		wait a tick
+
+local function kitParticle_FlareDrive_Hit(entity: entity):
+	playSound("entity.blaze.hurt", 1, 0.85, {_entity})
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 30 times:
+		spawnParticle_Vector(small_flame, randomVector(), 0.3, {_baseloc})
