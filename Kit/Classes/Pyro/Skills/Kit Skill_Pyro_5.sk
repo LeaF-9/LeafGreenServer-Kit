@@ -38,7 +38,7 @@ local function kitEffect_HeatFlash(player: player):
 		
 		add {@flash-tick-speed} to {_m}
 		set {_effloc} to location {_m} meters in front of {_baseloc}
-		kitParticle_HeatFlash_Bullet({_effloc})
+		kitParticle_HeatFlash_Bullet({_effloc}, loop-number)
 		wait a tick
 	
 	# ignite
@@ -61,9 +61,31 @@ local function kitEffect_HeatFlash(player: player):
 
 
 
-local function kitParticle_HeatFlash_Bullet(loc: location):
+# 弾道の演出
+local function kitParticle_HeatFlash_Bullet(loc: location, num: number):
+	spawnParticle_DustTransition(rgb(255, 147 ,153), rgb(255, 255, 255), 0.5, {_loc})
+
+	set {_radius} to 0.5
+	set {_rad} to 30 * {_num}
+	set {_el} to {_loc}
+	set {_m1} to {_el}
+	set pitch of {_m1} to pitch of {_m1} - 90
+	set {_test1} to {_radius} * cos({_rad})
+	set {_t1} to location {_test1} meters in front of {_m1}
+	set {_m2} to {_el}
+	set pitch of {_m2} to 0
+	set {_test2} to {_radius} * sin({_rad})
+	set {_t2} to location {_test2} meters to the right of {_m2}
+	set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
+	set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
+	set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+	spawnParticle(electric_spark, {_el})
 
 local function kitParticle_HeatFlash_Blast(loc: location):
+	playSound("entity.firework_rocket.blast", 3, 1.4, {_loc})
+	# 着火範囲
+
+	# フラッシュ
 
 local function kitParticle_HeatFlash_Ignite(entity: entity):
 
