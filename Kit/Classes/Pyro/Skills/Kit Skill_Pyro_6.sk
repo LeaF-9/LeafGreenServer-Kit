@@ -1,3 +1,104 @@
+# skill-name: Witchery Ignis
+
+options:
+	ignite-damage: 1
+	ignite-radius: 5
+	ignite-second: 5 seconds
+	soul-radius: 30
+	soul-tick: 200
+	soul-damage: 2
+	soul-ignite: 5 seconds
+	soul-time: 10 seconds
+	soul-speed: 0.25
+
+
+
+on damage:
+	damage cause is fire, burning, campfire, magma or lava
+	metadata value "witchery ignis" of victim is set
+	set damage to damage * 2
+	kitParticle_WitcheryIgnis_Burn(victim)
+
 
 
 function kitSkill_Pyro_6(player: player):
+	toolCT({_player}, "Pyro", 6)
+	kitEffect_WitcheryIgnis({_player})
+
+
+
+local function kitEffect_WitcheryIgnis(player: player):
+	kitParticle_WitcheryIgnis_Launch({_player})
+	kitMsg({_player}, "§3§l炎呪の人魂§8を放出します...")
+	set {_baseloc} to location of {_player}
+
+	# ignite
+	loop all entities in radius {@ignite-radius} around {_baseloc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		kitDamage({_player}, loop-entity, {@ignite-damage})
+		ignite loop-entity for {@ignite-second}
+	
+	# soul fire
+	loop all entities in radius {@soul-radius} around {_baseloc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		add loop-entity to {_targets::*}
+	
+	set {_baseloc} to location 1 meter above {_baseloc}
+	loop {@soul-tick} times:
+		loop {_targets::*}:
+			set {_loop-entity} to loop-value-2
+			# check alive
+			if checkEntityType({_loop-entity}, player) is true:
+				if kitCheckAlive({_loop-entity}) is false:
+					remove {_loop-entity} from {_targets::*}
+					continue
+			else:
+				if {_loop-entity} is dead:
+					remove {_loop-entity} from {_targets::*}
+					continue
+			
+			if {_soulloc.%id of {_loop-entity}%} is not set:
+				set {_soulloc.%id of {_loop-entity}%} to {_baseloc}
+			set {_v} to setVector({_soulloc.%id of {_loop-entity}%}, location 1 meters above {_loop-entity})
+			set {_soulloc.%id of {_loop-entity}%} to setDirToVec({_soulloc.%id of {_loop-entity}%}, {_v})
+			set {_soulloc.%id of {_loop-entity}%} to location {@soul-speed} meters in front of {_soulloc.%id of {_loop-entity}%}
+			set {_hitchecker} to distance between {_soulloc.%id of {_loop-entity}%} and location 1 meters above {_soulloc.%id of {_loop-entity}%}
+			if {_hitchecker} <= 0.5:
+				kitEffect_WitcheryIgnis_Hit({_player}, {_loop-entity})
+				remove {_loop-entity} from {_targets::*}
+				continue
+
+		wait a tick
+
+local function kitEffect_WitcheryIgnis_Hit(player: player, target: entity):
+	kitParticle_WitcheryIgnis_Hit({_target})
+	if checkEntityType({_target}, player) is true:
+		kitSound_WitcheryIgnis_HitCheck({_player})
+		kitMsg({_player}, "§3§l%{_target}% §bにヒット!")
+		message formatted "§3§l炎呪§cにより§4§l火炎ダメージ§cが§6§l倍増§cする..." to {_target}
+
+	kitDamage({_player}, {_target}, {@soul-damage})
+	ignite {_target} for {@soul-ignite}
+	
+	set {_now} to now
+	set metadata value "witchery ignis" of {_target} to {_now}
+
+	wait {@soul-time}
+
+	if metadata value "witchery ignis" of {_target} is {_now}:
+		delete metadata value "witchery ignis" of {_target}
+		message formatted "§3§l炎呪 §dは消え去った!" to {_target}
+
+
+
+
+local function kitParticle_WitcheryIgnis_Launch(player: player):
+	playSound("entity.illusioner.cast_spell", 1, 0.85, {_player})
+
+local function kitParticle_WitcheryIgnis_Hit(entity: entity):
+
+local function kitParticle_WitcheryIgnis_Burn(entity: entity):
+
+
+
+local function kitSound_WitcheryIgnis_HitCheck(player: player):
