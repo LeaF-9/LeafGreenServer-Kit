@@ -58,12 +58,13 @@ local function kitEffect_HeatFlash(player: player):
 			add {_player} to {damager.%loop-player%::*}
 		applyEffect(loop-player, blindness, 1, {@flash-second})
 		kitParticle_HeatFlash_Dazzle(loop-player)
+		message formatted "§e§l閃光§6を食らった!" to loop-player
 
 
 
 # 弾道の演出
 local function kitParticle_HeatFlash_Bullet(loc: location, num: number):
-	spawnParticle_DustTransition(rgb(255, 147 ,153), rgb(255, 255, 255), 0.5, {_loc})
+	spawnParticle_DustTransition(rgb(255, 247 ,153), rgb(255, 255, 255), 0.5, {_loc})
 
 	set {_radius} to 0.5
 	set {_rad} to 30 * {_num}
@@ -84,14 +85,46 @@ local function kitParticle_HeatFlash_Bullet(loc: location, num: number):
 local function kitParticle_HeatFlash_Blast(loc: location):
 	playSound("entity.firework_rocket.blast", 3, 1.4, {_loc})
 	# 着火範囲
-
-	# フラッシュ
+	set {_els::*} to particleLocation_Sphere({_loc}, 9, {@ignite-radius})
+	loop {_els::*}:
+		set {_el} to loop-value
+		set {_d} to dice(3)
+		if {_d} is 1:
+			set {_color.f} to rgb(255, 201, 147)
+		else if {_d} is 2:
+			set {_color.f} to rgb(254, 242, 99)
+		else:
+			set {_color.f} to rgb(255, 247, 153)
+		spawnParticle_DustTransition({_color.f}, rgb(255, 255, 255), 1.5, {_el})
+	
+	loop all blocks in radius {@ignite-radius} around {_loc}:
+		loop-block is passable
+		chance of 50%:
+			spawnParticle(small_flame, location of loop-block)
 
 local function kitParticle_HeatFlash_Ignite(entity: entity):
+	playSound("entity.blaze.shoot", 1, 1.5, {_entity})
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 30 times:
+		spawnParticle_Vector(flame, randomVector(), 0.3, {_baseloc})
 
 local function kitParticle_HeatFlash_Flash(loc: location):
+	# フラッシュ
+	loop 100 times:
+		set {_power} to 50
+		spawnParticle_Vector(wax_on, randomVector(), {_power}, {_loc})
+		spawnParticle_Vector(wax_off, randomVector(), {_power}, {_loc})
 
 local function kitParticle_HeatFlash_Dazzle(player: player):
+	playSound("entity.experience_orb.pickup", 3, 0.6, {_player})
+	set {_rad} to 0
+	loop 120 times:
+		set {_el} to location of head of {_player}
+		add 36 to {_rad}
+		add 0.5 * sin({_rad}) to x-pos of {_el}
+		add 0.5 * cos({_rad}) to z-pos of {_el}
+		spawnParticle(electric_spark, {_el})
+		wait a tick
 
 
 
