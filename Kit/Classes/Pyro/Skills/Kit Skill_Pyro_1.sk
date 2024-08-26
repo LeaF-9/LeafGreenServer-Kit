@@ -53,9 +53,10 @@ local function kitEffect_FlameBlast_Explosion(player: player, loc: location):
 	loop all blocks in radius 5 around {_loc}:
 		loop-block is air
 		block below loop-block is not passable
-		set {_lb::%location of loop-block%} to location of loop-block
-		set loop-block to fire
-		add location of loop-block to {Block.%{_player}%::*}
+		chance of 50%:
+			set {_lb::%location of loop-block%} to location of loop-block
+			set loop-block to fire
+			add location of loop-block to {Block.%{_player}%::*}
 	wait 5 seconds
 	kitSound_FlameBlast_Extinguish({_loc})
 	loop {_lb::*}:
