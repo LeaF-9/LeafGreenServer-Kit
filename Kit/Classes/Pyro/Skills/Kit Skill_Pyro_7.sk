@@ -6,6 +6,7 @@ options:
 	beam-tick: 60
 	beam-damage: 0.1
 	beam-damage-burn: 0.25
+	fire-remain-time: 3 seconds
 
 
 
@@ -18,12 +19,19 @@ function kitSkill_Pyro_7(player: player):
 local function kitEffect_ScorchRay(player: player):
 	kitMsg({_player}, "§e§l超高熱光線 §6を発射します!")
 	kitSound_ScorchRay_Launch({_player})
+	set {_s} to 0
+	loop 9 times:
+		{_slot} is not set
+		set {_si} to slot {_s} of {_player}'s inventory
+		if name of {_si} contains "Scorch Ray":
+			set {_slot} to {_s}
+		add 1 to {_s}
 
 	loop {@beam-tick} times:
 		# item slot fix
-		# あとで処理書く
+		set current hotbar slot of {_player} to {_slot}
 
-		set {_baseloc} to location of head of {_player}
+		set {_baseloc} to location 1.2 meters above {_player}
 		set {_beam-range-tick} to {@beam-range} / {@beam-density}
 		set {_m} to 0
 		delete {_hit}
@@ -34,11 +42,10 @@ local function kitEffect_ScorchRay(player: player):
 			kitParticle_ScorchRay_Beam({_effloc})
 
 			set {_hits::*} to checkHitEntities({_effloc})
-			if size of {_hits::*} > 0:
-				set {_hit} to true
 			loop {_hits::*}:
 				set {_loop-entity} to loop-value-3
 				kitCheckTeam({_loop-entity}, {_player}, false) is true
+				set {_hit} to true
 				kitEffect_ScorchRay_Hit({_player}, {_loop-entity})
 
 		wait a tick
@@ -47,27 +54,109 @@ local function kitEffect_ScorchRay_Hit(player: player, target: entity):
 	kitParticle_ScorchRay_Hit({_target})
 	set {_firetick} to {_target}.getFireTicks()
 	set {_damage} to {@beam-damage}
-	set {_block} to fire
+	set {_block} to "fire"
 	if {_firetick} > 0:
 		set {_damage} to {@beam-damage-burn}
-		set {_block} to soul fire
+		set {_block} to "soul_fire"
 	
 	kitDamageInstant({_player}, {_target}, {_damage})
-	set {_v} to randomVector(1)
+	
+	set {_spawnloc} to location 1.5 meters above {_target}
+	kitEffect_ScorchRay_Falling({_player}, {_block}, {_spawnloc})
+
+local function kitEffect_ScorchRay_Falling(player: player, block: text, loc: location):
+	set {_v} to randomVector(0.5)
 	if y of {_v} < 0:
 		set y of {_v} to y of {_v} * -1
-	if y of {_v} < 0.3:
-		add 0.3 to y of {_v}
+
+	if {_block} is "fire":
+		shoot a falling fire from {_loc} at speed 1 upwards
+	else:
+		shoot a falling soul fire from {_loc} at speed 1 upwards
+	set {_shotentity} to shot entity
+	set metadata value "scorch ray" of {_shotentity} to true
+	set velocity of {_shotentity} to {_v}
+
+	loop 60 times:
+		set {_blockloc} to location of {_shotentity}
+		if block at {_blockloc} is not air:
+			loop all entities:
+				loop-entity is {_shotentity}
+				delete loop-entity
+			stop
+		kitParticle_ScorchRay_Block({_blockloc})
+
+		set {_checkloc} to location 0.1 meter below {_blockloc}
+		if block at {_checkloc} is not passable:
+			kitEffect_ScorchRay_Fire({_player}, {_block}, {_blockloc})
+			loop all entities:
+				loop-entity is {_shotentity}
+				delete loop-entity
+			stop
+		
+		wait a tick
+
+	loop all entities:
+		loop-entity is {_shotentity}
+		delete loop-entity
 	
-	# falling blockの処理 (後で処理書く)
-	# spawn a falling  from block above {_player} at speed 1 upwards
+local function kitEffect_ScorchRay_Fire(player: player, block: text, loc: location):
+	set {_blockloc} to location of block at {_loc}
+	kitParticle_ScorchRay_Place({_blockloc})
+	if {_block} is "fire":
+		set block at {_blockloc} to fire
+	else if {_block} is "soul_fire":
+		set block at {_blockloc} to soul fire
+	add {_blockloc} to {Block.%{_player}%::*}
+	wait {@fire-remain-time}
+	if block at {_blockloc} is not air:
+		set block at {_blockloc} to air
+		kitParticle_ScorchRay_Extinguish({_blockloc})
+	remove {_blockloc} from {Block.%{_player}%::*}
 
 
 
 local function kitParticle_ScorchRay_Beam(loc: location):
+	spawnParticle(electric_spark, {_loc})
+	chance of 30%:
+		set {_el} to {_loc}
+		add a random number between -0.5 and 0.5 to x-pos of {_el}
+		add a random number between -0.5 and 0.5 to y-pos of {_el}
+		add a random number between -0.5 and 0.5 to z-pos of {_el}
+		set {_d} to dice(2)
+		if {_d} is 1:
+			spawnParticle_BlockData(falling_dust, yellow wool, {_el})
+		else:
+			spawnParticle_DustTransition(rgb(248, 229, 140), rgb(255, 255, 255), 1.5, {_el})
 
 local function kitParticle_ScorchRay_Hit(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+	set {_firetick} to {_entity}.getFireTicks()
+	if {_firetick} > 0:
+		set {_pitch} to 1.8
+		spawnParticle_Vector(soul_fire_flame, randomVector(), 0.75, {_baseloc})
+	else:
+		set {_pitch} to 2
+		spawnParticle_Vector(flame, randomVector(), 0.2, {_baseloc})
+	playSound("entity.player.hurt_on_fire", 1, {_pitch}, {_entity})
+
+local function kitParticle_ScorchRay_Block(loc: location):
+	spawnParticle(lava, {_loc})
+
+local function kitParticle_ScorchRay_Place(loc: location):
+	set {_baseloc} to location 0.5 meters below {_loc}
+	set yaw of {_baseloc} to 0
+	set pitch of {_baseloc} to 0
+	loop 20 times:
+		set {_v} to setVector({_baseloc}, location 10 meters in front of {_baseloc})
+		spawnParticle_Vector(smoke, {_v}, 0.1, {_baseloc})
+		add 360 / 20 to yaw of {_baseloc}
+
+local function kitParticle_ScorchRay_Extinguish(loc: location):
+	loop 5 times:
+		spawnParticle_Vector(cloud, randomVector(), 0.1, {_loc})
 
 
 
 local function kitSound_ScorchRay_Launch(player: player):
+	playSound("entity.blaze.ambient", 1, 1.6, {_player})
