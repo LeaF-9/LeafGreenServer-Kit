@@ -41,8 +41,6 @@ function kitSkillPyro(player: player) :: boolean:
 # Timer
 function kitTimerPyro(player: player):
 	set {_select.weapon} to kitSelectChecker_Weapon({_player}, "Pyro")
-	if {_select.weapon} is not 1 or 2:
-		stop
 	while {Class::%{_player}%} is "Pyro":
 		# weapon checker
 		if {_select.weapon} is 1:
@@ -54,10 +52,11 @@ function kitTimerPyro(player: player):
 		set {_loc.floor} to location of {_player}
 		if block at {_loc.floor} is water:
 			add 1 to {_waterrejection}
+
 		set {_loc.ceil} to location 1 meter above {_player}
 		if block at {_loc.ceil} is water:
 			add 1 to {_waterrejection}
 		
-		if mod({_waterrejection}, 20) is 0:
+		if mod({_waterrejection}, 20) is 0 or 20:
 			damage {_player} by 1 heart
 		wait a tick
