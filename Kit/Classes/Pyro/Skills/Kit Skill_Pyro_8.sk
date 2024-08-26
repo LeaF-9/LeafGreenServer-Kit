@@ -2,9 +2,10 @@
 
 options:
 	shoot-power: 0.95
-	molotov-radius: 6
+	molotov-radius: 5
+	molotov-spread-tick: 10
 	molotov-second: 10 seconds
-	molotov-soul-chance: 10
+	molotov-soul-chance: 30
 
 
 
@@ -32,14 +33,22 @@ local function kitEffect_MolotovCocktail(player: player):
 
 local function kitEffect_MolotovCocktail_Molotov(player: player, loc: location):
 	kitParticle_MolotovCocktail_Molotov({_loc})
-	loop all blocks in radius {@molotov-radius} around {_loc}:
-		loop-block is air
-		block below loop-block is not passable
-		set {_lb::%location of loop-block%} to location of loop-block
-		set loop-block to fire
-		chance of {@molotov-soul-chance}%:
-			set loop-block to soul fire
-		add location of loop-block to {Block.%{_player}%::*}
+	set {_maxm} to 0.5
+	set {_addm} to {@molotov-radius} / {@molotov-spread-tick}
+	loop {@molotov-spread-tick} times:
+		add {_addm} to {_maxm}
+
+		loop all blocks in radius {@molotov-radius} around {_loc}:
+			loop-block is air
+			block below loop-block is not passable
+			set {_distance} to distance between {_loc} and location of loop-block
+			{_distance} <= {_maxm}
+			set {_lb::%location of loop-block%} to location of loop-block
+			set loop-block to fire
+			chance of {@molotov-soul-chance}%:
+				set loop-block to soul fire
+			add location of loop-block to {Block.%{_player}%::*}
+		wait a tick
 	
 	wait {@molotov-second}
 
@@ -52,11 +61,77 @@ local function kitEffect_MolotovCocktail_Molotov(player: player, loc: location):
 
 
 local function kitParticle_MolotovCocktail_Projectile(proj: projectile):
+	set {_enable} to true
+	wait a tick
+	loop 200 times:
+		if metadata value "molotov cocktail" of {_proj} is false:
+			set {_enable} to false
+		if {_enable} is false:
+			stop
+
+		set {_loc} to location of {_proj}
+		if {_proloc} is set:
+			if {_proloc} is {_loc}:
+				delete {_enable}
+				continue
+			
+			set {_fromloc} to setDirToVec({_proloc}, setVector({_proloc}, {_loc}))
+			set {_distance} to distance between {_proloc} and {_loc}
+			set {_loopnum} to ceil({_distance} * 2)
+			set {_m} to 0
+			loop {_loopnum} times:
+				add 0.5 to {_m}
+				set {_el} to location {_m} meters in front of {_fromloc}
+				spawnParticle(witch, {_el})
+				chance of 30%:
+					set {_d} to dice(3)
+					if {_d} is 1:
+						set {_color.f} to rgb(116, 50, 92)
+					else if {_d} is 2:
+						set {_color.f} to rgb(85, 41, 91)
+					else:
+						set {_color.f} to rgb(100, 1, 37)
+					set {_eel} to {_el}
+					add a random number between -0.5 and 0.5 to x-pos of {_eel}
+					add a random number between -0.5 and 0.5 to y-pos of {_eel}
+					add a random number between -0.5 and 0.5 to z-pos of {_eel}
+					spawnParticle_DustTransition({_color.f}, rgb(73, 55, 89), 1.75, {_eel})
+
+		set {_proloc} to location of {_proj}
+
+		wait a tick
 
 local function kitParticle_MolotovCocktail_Molotov(loc: location):
+	kitSound_MolotovCocktail_Molotov({_loc})
+	set {_radius} to 0
+	set {_addm} to {@molotov-radius} / {@molotov-spread-tick}
+	loop {@molotov-spread-tick} times:
+		add {_addm} to {_radius}
+		set {_rad} to 0
+		loop 180 times:
+			set {_el} to {_loc}
+			add 360 / 180 to {_rad}
+			add {_radius} * sin({_rad}) to x-pos of {_el}
+			add {_radius} * cos({_rad}) to z-pos of {_el}
+			set {_d} to dice(3)
+			if {_d} is 1:
+				set {_color.f} to rgb(116, 50, 92)
+			else if {_d} is 2:
+				set {_color.f} to rgb(85, 41, 91)
+			else:
+				set {_color.f} to rgb(100, 1, 37)
+			spawnParticle_DustTransition({_color.f}, rgb(73, 55, 89), 2, {_el})
+		wait a tick
 
 
 
 local function kitSound_MolotovCocktail_Launch(player: player):
+	playSound("entity.witch.throw", 1, 0.7, {_player})
+
+local function kitSound_MolotovCocktail_Molotov(loc: location):
+	playSound("entity.splash_potion.break", 1, 0.5, {_loc})
+	wait 2 ticks
+	playSound("entity.blaze.shoot", 1, 0.8, {_loc})
 
 local function kitSound_MolotovCocktail_Extinguish(loc: location):
+	playSound("block.candle.extinguish", 1, 0.5, {_loc})
