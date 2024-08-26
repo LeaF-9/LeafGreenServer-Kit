@@ -37,14 +37,20 @@ local function kitEffect_WitcheryIgnis(player: player):
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		kitDamage({_player}, loop-entity, {@ignite-damage})
 		ignite loop-entity for {@ignite-second}
+		kitParticle_WitcheryIgnis_Ignite(loop-entity)
 	
 	# soul fire
 	loop all entities in radius {@soul-radius} around {_baseloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		add loop-entity to {_targets::*}
+		if checkEntityType(loop-entity, player) is true:
+			message formatted "§3§l人魂 §5が迫っている..." to loop-entity
 	
 	set {_baseloc} to location 1 meter above {_baseloc}
 	loop {@soul-tick} times:
+		if size of {_targets::*} is 0:
+			stop
+
 		loop {_targets::*}:
 			set {_loop-entity} to loop-value-2
 			# check alive
@@ -62,7 +68,8 @@ local function kitEffect_WitcheryIgnis(player: player):
 			set {_v} to setVector({_soulloc.%id of {_loop-entity}%}, location 1 meters above {_loop-entity})
 			set {_soulloc.%id of {_loop-entity}%} to setDirToVec({_soulloc.%id of {_loop-entity}%}, {_v})
 			set {_soulloc.%id of {_loop-entity}%} to location {@soul-speed} meters in front of {_soulloc.%id of {_loop-entity}%}
-			set {_hitchecker} to distance between {_soulloc.%id of {_loop-entity}%} and location 1 meters above {_soulloc.%id of {_loop-entity}%}
+			kitParticle_WitcheryIgnis_Bullet({_soulloc.%id of {_loop-entity}%})
+			set {_hitchecker} to distance between {_soulloc.%id of {_loop-entity}%} and location 1 meters above {_loop-entity}
 			if {_hitchecker} <= 0.5:
 				kitEffect_WitcheryIgnis_Hit({_player}, {_loop-entity})
 				remove {_loop-entity} from {_targets::*}
@@ -94,11 +101,109 @@ local function kitEffect_WitcheryIgnis_Hit(player: player, target: entity):
 
 local function kitParticle_WitcheryIgnis_Launch(player: player):
 	playSound("entity.illusioner.cast_spell", 1, 0.85, {_player})
+	set {_baseloc} to location of {_player}
+
+	loop 50 times:
+		set {_el} to {_baseloc}
+		set yaw of {_el} to a random number between 0 and 360
+		set pitch of {_el} to 0
+		set {_m} to a random number between 0 and {@ignite-radius}
+		set {_el} to location {_m} meters in front of {_el}
+		set {_vector} to randomVector()
+		if y of {_vector} < 0:
+			set y of {_vector} to y of {_vector} * -1
+		spawnParticle_Vector(soul_fire_flame, {_vector}, 0.15, {_el})
+
+	set {_baselaunch} to location 0.5 meters below {_baseloc}
+	set {_baserad} to 0
+	loop 10 times:
+		set {_rad} to {_baserad}
+		loop 36 times:
+			set {_el} to {_baselaunch}
+			add 10 to {_rad}
+			add {@ignite-radius} * sin({_rad}) to x-pos of {_el}
+			add {@ignite-radius} * cos({_rad}) to z-pos of {_el}
+			spawnParticle_Vector(trial_spawner_detection_ominous, vector(0, 1, 0), 0.3, {_el})
+
+		add 1 to {_baserad}
+		wait a tick
+
+local function kitParticle_WitcheryIgnis_Ignite(entity: entity):
+	playSound("block.soul_sand.break", 1, 1.25, {_entity})
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 30 times:
+		spawnParticle_Vector(enchanted_hit, randomVector(), 1, {_baseloc})
+		set {_el} to aroundEffect({_entity})
+		set {_d} to dice(3)
+		if {_d} is 1:
+			set {_color.f} to rgb(0, 164, 151)
+		else if {_d} is 2:
+			set {_color.f} to rgb(0, 163, 175)
+		else:
+			set {_color.f} to rgb(22, 94, 131)
+		spawnParticle_DustTransition({_color.f}, rgb(28, 48, 92), 2, {_el})
+
+local function kitParticle_WitcheryIgnis_Bullet(loc: location):
+	set {_d} to dice(3)
+	if {_d} is 1:
+		set {_color.f} to rgb(0, 164, 151)
+	else if {_d} is 2:
+		set {_color.f} to rgb(0, 163, 175)
+	else:
+		set {_color.f} to rgb(22, 94, 131)
+	spawnParticle_DustTransition({_color.f}, rgb(28, 48, 92), 2.5, {_loc})
+
+	loop 3 times:
+		set {_el} to {_loc}
+		add a random number between -0.5 and 0.5 to x-pos of {_el}
+		add a random number between -0.5 and 0.5 to y-pos of {_el}
+		add a random number between -0.5 and 0.5 to z-pos of {_el}
+		set {_d} to dice(2)
+		if {_d} is 1:
+			spawnParticle_BlockData(falling_dust, warped planks, {_el})
+		else:
+			spawnParticle(soul_fire_flame, {_el})
 
 local function kitParticle_WitcheryIgnis_Hit(entity: entity):
+	playSound("particle.soul_escape", 1, 0.85, {_entity})
+	set {_baseloc} to location 1 meter above {_baseloc}
+	loop 20 times:
+		spawnParticle_Vector(soul_fire_flame, randomVector(), 0.2, {_baseloc})
+
+	set {_y} to 2
+	set {_baserad} to 0	
+	loop 11 times:
+		set {_loc} to location of {_entity}
+		set {_rad} to {_baserad}
+		loop 4 times:
+			set {_el} to {_loc}
+			add 360 / 4 to {_rad}
+			add 0.5 * sin({_rad}) to x-pos of {_el}
+			add 0.5 * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+
+			set {_d} to dice(3)
+			if {_d} is 1:
+				set {_color.f} to rgb(0, 164, 151)
+			else if {_d} is 2:
+				set {_color.f} to rgb(0, 163, 175)
+			else:
+				set {_color.f} to rgb(22, 94, 131)
+			spawnParticle_DustTransition({_color.f}, rgb(28, 48, 92), 2, {_loc})
+
+		add 20 to {_baserad}
+		subtract 0.2 from {_y}
+		wait a tick
 
 local function kitParticle_WitcheryIgnis_Burn(entity: entity):
+	playSound("entity.firework_rocket.twinkle_far", 1, 2, {_entity})
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 20 times:
+		set {_el} to aroundEffect({_entity})
+		set {_vector} to setVector({_baseloc}, {_el})
+		spawnParticle_Vector(trial_omen, {_vector}, 1, {_el})
 
 
 
 local function kitSound_WitcheryIgnis_HitCheck(player: player):
+	playSound("entity.experience_orb.pickup", 1, 0.57, {_player}, true)
