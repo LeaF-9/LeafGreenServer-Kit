@@ -1,0 +1,90 @@
+# ultimate-name: Eternal Phoenix
+
+options:
+	effect-tick: 200
+	eruption-interval: 10
+	fire-hit-radius: 1.5
+	fire-damage: 3
+	fire-ignite-time: 5 seconds
+	regeneration-tier: 5
+	regeneration-time: 1 second
+
+
+
+on damage:
+	{Stats.%attacker%::EternalPhoenix} is true
+	set {_firetick} to victim.getFireTicks()
+	if {_firetick} > 0:
+		set damage to damage * 2
+		kitParticle_EternalPhoenix_Damage(victim)
+
+
+
+function kitUltPyro(player: player):
+	kitEffect_EternalPhoenix({_player})
+
+
+
+local function kitEffect_EternalPhoenix(player: player):
+	kitParticle_EternalPhoenix_Wing({_player})
+	allow fly for {_player}
+	set {Stats.%{_player}%::EternalPhoenix} to true
+	loop {@effect-tick} times:
+		if mod(loop-number, {@eruption-interval}) is 0 or {@eruption-interval}:
+			kitEffect_EternalPhoenix_Burning({_player})
+		wait a tick
+	delete {Stats.%{_player}%::EternalPhoenix}
+	disallow fly for {_player}
+
+local function kitEffect_EternalPhoenix_Burning(player: player):
+	kitSound_EternalPhoenix_Burning({_player})
+	loop 10 times:
+		kitEffect_EternalPhoenix_Fire({_player})
+
+local function kitEffect_EternalPhoenix_Fire(player: player):
+	set {_baseloc} to location 1.5 meters above {_player}
+	shoot a falling soul fire from {_baseloc} at speed 1 upwards
+	set {_fireentity} to shot entity
+	set metadata value "eternal phoenix - fire" of {_fireentity} to "%player%"
+	push {_fireentity} north at speed random number from -0.5 to 0.5
+	push {_fireentity} east at speed random number from -0.5 to 0.5
+
+	set {_enable} to true
+	loop 100 times:
+		set {_checkloc} to location 0.1 meters below {_fireentity}
+		if block at {_checkloc} is not passable:
+			set {_enable} to false
+			continue
+		
+		loop all entities in radius {@fire-hit-radius} around {_fireentity}:
+			{_hit} is not set
+			kitCheckTeam(loop-entity, {_player}, false, true) is true
+			set {_hit} to true
+			kitDamage({_player}, loop-entity, {@fire-damage})
+			ignite loop-entity for {@fire-ignite-time}
+
+		if {_hit} is true:
+			applyEffect({_player}, regeneration, {@regeneration-tier}, {@regeneration-time})
+			set {_enable} to false
+		
+		if {_enable} is false:
+			loop all soul fires:
+				loop-soul fire is {_fireentity}
+				delete loop-soul fire
+			stop
+		kitParticle_EternalPhoenix_Fire(location of {_fireentity})
+		wait a tick
+
+
+
+local function kitParticle_EternalPhoenix_Wing(player: player):
+
+local function kitParticle_EternalPhoenix_Fire(loc: location):
+	spawnParticle(soul_fire_flame, {_loc})
+
+local function kitParticle_EternalPhoenix_Damage(player: player):
+
+
+
+local function kitSound_EternalPhoenix_Burning(player: player):
+	playSound("entity.ghast.shoot", 1, 0.7, {_player})

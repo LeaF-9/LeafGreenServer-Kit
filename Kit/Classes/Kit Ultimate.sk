@@ -172,6 +172,8 @@ on rightclick holding a nether star:
 #			delete {_hit::*}
 	else if {Class::%player%} is "Wizard":
 		kitUltWizard(player)
+	else if {Class::%player%} is "Pyro":
+		kitUltPyro(player)
 	else if {Class::%player%} is "Necromancer":
 		kitUltNecromancer(player)
 	else if {Class::%player%} is "Ghost":
@@ -207,37 +209,6 @@ on rightclick holding a nether star:
 #		loop all players:
 #			walk speed of loop-player is not 0.2
 #			set walk speed of loop-player to 0.2
-#	else if {Class::%player%} is "Pyro":
-#		loop all players:
-#			set {_ok} to true
-#			if {_silent} is true:
-#				if loop-player is not player:
-#					delete {_ok}
-#			{_ok} is true
-#			send loop-player title "<%{TrueTeam::%player%}%>§l§oBlast Burning" with subtitle "§bー 命尽きるまで消えない炎 ー" for 3 seconds
-#		drawComplexSpiral particle "lava", center player, id "%player%", clockwise true, scan true, radius 1, density 30, height 6, effectMod .05, start 0, visibleRange 30
-#		message "§c自身の場所から1秒おきに炎を放出します!"
-#		message "§cこの炎に当たった敵に3ダメージ+10秒炎上を付与します!"
-#		loop 200 times:
-#			add 1 to {_num}
-#			if {_num} is 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190 or 200:
-#				play raw sound "mob.ghast.fireball" at player with pitch 0.1 volume 1
-#				loop 10 times:
-#					shoot a falling fire from player at speed 2 upwards
-#					set metadata value "pyroult" of shot entity to "%player%"
-#					set metadata value "nochange" of shot entity to "true"
-#					drawDot count 1, particle "flame", center shot entity, visibleRange 32, keepFor 1 seconds
-#					push shot entity north at speed random number from -0.5 to 0.5
-#					push shot entity east at speed random number from -0.5 to 0.5
-#			loop all falling fires:
-#				metadata value "pyroult" of loop-falling fire is "%player%"
-#				loop all players in radius 1.5 around loop-falling fire:
-#					{team::%loop-player%} is not {team::%player%}
-#					make player damage loop-player by 6
-#					ignite loop-player for 10 seconds
-#					delete loop-falling fire
-#			wait a tick
-#		stopEffect "%player%"
 #	else if {Class::%player%} is "Summoner":
 #		loop all players:
 #			set {_ok} to true
@@ -680,50 +651,17 @@ on rightclick holding a nether star:
 # # Iceman's Ult
 #	if {Ult.%attacker%::Iceman} is true:
 #		cancel event
-# # Pyro's Ult
-#	if {Ult.%attacker%::Pyro} is false:
-#		ignite victim for 5 seconds
-#	if {Ult.%victim%::Fire} is true:
-#		damage was caused by fire, burning or lava
-#		set damage to 1.1
-#	if {Ult.%attacker%::Fire} is true:
-#		{Ult.%victim%::Pyro} is true
-#		cancel event
 # # Gunner's Ult
 #	if damage was caused by projectile:
 #		projectile is a fireball
 #		metadata value "jetbazooka" of projectile is "true"
 #		set damage to 5
-# # Thief's Ult
-#	if {Ult.%victim%::Thief} is set:
-#		{team::%victim%} is {team::%attacker%}
-#		cancel event
 # # Vampire's Ult
 #	if {Ult.%victim%::Vampire} is true:
 #		set {_a} to attacker's health
 #		set {_v} to victim's health
 #		if {_a} > {_v}:
 #			cancel event
-#
-# # Reflector's Ult
-#on damage of player:
-#	{MirrorWorld} is set
-#	attacker exists
-#	set {_damage} to damage
-#	set {_mirror} to 10 - {_damage}
-#	if {_mirror} < 0:
-#		set {_mirror} to 0
-#	if {TrueTeam::%victim%} is {TrueTeam::%{MirrorWorld}%}:
-#		loop all players in radius 10 around victim:
-#			loop-player is {MirrorWorld}
-#			set {_true} to true
-#		if {_true} is true:
-#			if {_mirror} > 2:
-#				set {_mirror} to 2
-#		else:
-#			if {_mirror} > 4:
-#				set {_mirror} to 4
-#	set damage to {_mirror}
 #
 # # Hunter's Ult
 #on damage of player:
