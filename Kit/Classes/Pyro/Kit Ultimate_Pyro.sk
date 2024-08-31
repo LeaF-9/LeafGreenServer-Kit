@@ -3,7 +3,7 @@
 options:
 	effect-tick: 200
 	eruption-interval: 10
-	fire-hit-radius: 1.5
+	fire-hit-radius: 3
 	fire-damage: 3
 	fire-ignite-time: 5 seconds
 	regeneration-tier: 5
@@ -26,9 +26,9 @@ function kitUltPyro(player: player):
 
 
 local function kitEffect_EternalPhoenix(player: player):
+	set {Stats.%{_player}%::EternalPhoenix} to true
 	kitParticle_EternalPhoenix_Wing({_player})
 	allow fly for {_player}
-	set {Stats.%{_player}%::EternalPhoenix} to true
 	loop {@effect-tick} times:
 		if mod(loop-number, {@eruption-interval}) is 0 or {@eruption-interval}:
 			kitEffect_EternalPhoenix_Burning({_player})
@@ -45,7 +45,7 @@ local function kitEffect_EternalPhoenix_Fire(player: player):
 	set {_baseloc} to location 1.5 meters above {_player}
 	shoot a falling soul fire from {_baseloc} at speed 1 upwards
 	set {_fireentity} to shot entity
-	set metadata value "eternal phoenix - fire" of {_fireentity} to "%player%"
+	set metadata value "eternal phoenix - fire" of {_fireentity} to "%{_player}%"
 	push {_fireentity} north at speed random number from -0.5 to 0.5
 	push {_fireentity} east at speed random number from -0.5 to 0.5
 
@@ -64,13 +64,13 @@ local function kitEffect_EternalPhoenix_Fire(player: player):
 			ignite loop-entity for {@fire-ignite-time}
 
 		if {_hit} is true:
-			applyEffect({_player}, regeneration, {@regeneration-tier}, {@regeneration-time})
+			applyEffect({_player}, regeneration, {@regeneration-tier}, {@regeneration-time}, true)
 			set {_enable} to false
 		
 		if {_enable} is false:
-			loop all soul fires:
-				loop-soul fire is {_fireentity}
-				delete loop-soul fire
+			loop all entities:
+				loop-entity is {_fireentity}
+				delete loop-entity
 			stop
 		kitParticle_EternalPhoenix_Fire(location of {_fireentity})
 		wait a tick
@@ -78,11 +78,146 @@ local function kitEffect_EternalPhoenix_Fire(player: player):
 
 
 local function kitParticle_EternalPhoenix_Wing(player: player):
+	loop 200 times:
+		if {Stats.%{_player}%::EternalPhoenix} is not true:
+			stop
+
+		set {_wing.1::*} to kitParticle_EternalPhoenix_Wing_Upper({_player})
+		set {_wing.2::*} to kitParticle_EternalPhoenix_Wing_Middle({_player})
+		set {_wing.3::*} to kitParticle_EternalPhoenix_Wing_Lower({_player})
+		loop 3 times:
+			set {_ln} to loop-number-2
+			loop {_wing.%{_ln}%::*}:
+				set {_loc} to loop-value-3
+				spawnParticle(flame, {_loc})
+				chance of 10%:
+					spawnParticle_Vector(small_flame, randomVector(), 0.15, {_loc})
+		wait a tick
+
+local function kitParticle_EternalPhoenix_Wing_Upper(player: player) :: locations:
+	# baseloc
+	set {_baseloc} to location 1.25 meters above {_player}
+	set pitch of {_baseloc} to 0
+	set {_baseloc} to location 0.25 meters behind {_baseloc}
+	# left-1
+	set {_baselefts::1} to location 0.25 meters to the left of {_baseloc}
+	# left-2
+	set {_baselefts::2} to location 0.25 meters to the left of {_baselefts::1}
+	set {_baselefts::2} to location 0.25 meters above {_baselefts::2}
+
+	# left-1 - left-2
+	set {_dis} to distance between {_baselefts::1} and {_baselefts::2}
+	set {_v} to setVector({_baselefts::1}, {_baselefts::2})
+	set yaw of {_baselefts::1} to yaw of {_v}
+	set pitch of {_baselefts::1} to pitch of {_v}
+
+	loop 5 times:
+		set {_el} to location {_dis} / 5 * loop-number meters in front of {_baselefts::1}
+		add {_el} to {_resultlocs::*}
+
+	# right-1
+	set {_baserights::1} to location 0.25 meters to the right of {_baseloc}
+	# right-2
+	set {_baserights::2} to location 0.25 meters to the right of {_baserights::1}
+	set {_baserights::2} to location 0.25 meters above {_baserights::2}
+
+	# right-1 - right-2
+	set {_dis} to distance between {_baserights::1} and {_baserights::2}
+	set {_v} to setVector({_baserights::1}, {_baserights::2})
+	set yaw of {_baserights::1} to yaw of {_v}
+	set pitch of {_baserights::1} to pitch of {_v}
+
+	loop 5 times:
+		set {_el} to location {_dis} / 5 * loop-number meters in front of {_baserights::1}
+		add {_el} to {_resultlocs::*}
+
+	return {_resultlocs::*}
+
+local function kitParticle_EternalPhoenix_Wing_Middle(player: player) :: locations:
+	# baseloc
+	set {_baseloc} to location 1.2 meters above {_player}
+	set pitch of {_baseloc} to 0
+	set {_baseloc} to location 0.25 meters behind {_baseloc}
+	# left-1
+	set {_baselefts::1} to location 0.3 meters to the left of {_baseloc}
+	# left-2
+	set {_baselefts::2} to location 0.5 meters to the left of {_baselefts::1}
+
+	# left-1 - left-2
+	set {_dis} to distance between {_baselefts::1} and {_baselefts::2}
+	set {_v} to setVector({_baselefts::1}, {_baselefts::2})
+	set yaw of {_baselefts::1} to yaw of {_v}
+	set pitch of {_baselefts::1} to pitch of {_v}
+
+	loop 10 times:
+		set {_el} to location {_dis} / 10 * loop-number meters in front of {_baselefts::1}
+		add {_el} to {_resultlocs::*}
+
+	# right-1
+	set {_baserights::1} to location 0.3 meters to the right of {_baseloc}
+	# right-2
+	set {_baserights::2} to location 0.5 meters to the right of {_baserights::1}
+
+	# right-1 - right-2
+	set {_dis} to distance between {_baserights::1} and {_baserights::2}
+	set {_v} to setVector({_baserights::1}, {_baserights::2})
+	set yaw of {_baserights::1} to yaw of {_v}
+	set pitch of {_baserights::1} to pitch of {_v}
+
+	loop 10 times:
+		set {_el} to location {_dis} / 10 * loop-number meters in front of {_baserights::1}
+		add {_el} to {_resultlocs::*}
+
+	return {_resultlocs::*}
+
+local function kitParticle_EternalPhoenix_Wing_Lower(player: player) :: locations:
+	# baseloc
+	set {_baseloc} to location 1.1 meters above {_player}
+	set pitch of {_baseloc} to 0
+	set {_baseloc} to location 0.25 meters behind {_baseloc}
+	# left-1
+	set {_baselefts::1} to location 0.35 meters to the left of {_baseloc}
+	# left-2
+	set {_baselefts::2} to location 1 meters to the left of {_baselefts::1}
+	set {_baselefts::2} to location 1 meters below {_baselefts::2}
+
+	# left-1 - left-2
+	set {_dis} to distance between {_baselefts::1} and {_baselefts::2}
+	set {_v} to setVector({_baselefts::1}, {_baselefts::2})
+	set yaw of {_baselefts::1} to yaw of {_v}
+	set pitch of {_baselefts::1} to pitch of {_v}
+
+	loop 15 times:
+		set {_el} to location {_dis} / 15 * loop-number meters in front of {_baselefts::1}
+		add {_el} to {_resultlocs::*}
+
+	# right-1
+	set {_baserights::1} to location 0.35 meters to the right of {_baseloc}
+	# right-2
+	set {_baserights::2} to location 1 meters to the right of {_baserights::1}
+	set {_baserights::2} to location 1 meters below {_baserights::2}
+
+	# right-1 - right-2
+	set {_dis} to distance between {_baserights::1} and {_baserights::2}
+	set {_v} to setVector({_baserights::1}, {_baserights::2})
+	set yaw of {_baserights::1} to yaw of {_v}
+	set pitch of {_baserights::1} to pitch of {_v}
+
+	loop 15 times:
+		set {_el} to location {_dis} / 15 * loop-number meters in front of {_baserights::1}
+		add {_el} to {_resultlocs::*}
+
+	return {_resultlocs::*}
+
+
 
 local function kitParticle_EternalPhoenix_Fire(loc: location):
 	spawnParticle(soul_fire_flame, {_loc})
 
 local function kitParticle_EternalPhoenix_Damage(player: player):
+	playSound("item.bucket.fill_lava", 1, 1.5, {_player})
+	loop 10 times:
+		spawnParticle(lava, aroundEffect({_player}))
 
 
 
