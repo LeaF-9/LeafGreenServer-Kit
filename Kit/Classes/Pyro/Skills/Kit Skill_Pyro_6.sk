@@ -7,9 +7,9 @@ options:
 	soul-radius: 30
 	soul-tick: 200
 	soul-damage: 2
-	soul-ignite: 5 seconds
-	soul-time: 10 seconds
-	soul-speed: 0.25
+	soul-ignite: 3 seconds
+	soul-time: 5 seconds
+	soul-speed: 0.2
 
 
 
@@ -42,6 +42,7 @@ local function kitEffect_WitcheryIgnis(player: player):
 	# soul fire
 	loop all entities in radius {@soul-radius} around {_baseloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
+		kitEffect_WitcheryIgnis_Check({_player}, loop-entity) is true
 		add loop-entity to {_targets::*}
 		if checkEntityType(loop-entity, player) is true:
 			message formatted "§3§l人魂 §5が迫っている..." to loop-entity
@@ -53,6 +54,7 @@ local function kitEffect_WitcheryIgnis(player: player):
 
 		loop {_targets::*}:
 			set {_loop-entity} to loop-value-2
+			set {_loop-id} to {_loop-entity}.getEntityId()
 			# check alive
 			if checkEntityType({_loop-entity}, player) is true:
 				if kitCheckAlive({_loop-entity}) is false:
@@ -63,19 +65,36 @@ local function kitEffect_WitcheryIgnis(player: player):
 					remove {_loop-entity} from {_targets::*}
 					continue
 			
-			if {_soulloc.%id of {_loop-entity}%} is not set:
-				set {_soulloc.%id of {_loop-entity}%} to {_baseloc}
-			set {_v} to setVector({_soulloc.%id of {_loop-entity}%}, location 1 meters above {_loop-entity})
-			set {_soulloc.%id of {_loop-entity}%} to setDirToVec({_soulloc.%id of {_loop-entity}%}, {_v})
-			set {_soulloc.%id of {_loop-entity}%} to location {@soul-speed} meters in front of {_soulloc.%id of {_loop-entity}%}
-			kitParticle_WitcheryIgnis_Bullet({_soulloc.%id of {_loop-entity}%})
-			set {_hitchecker} to distance between {_soulloc.%id of {_loop-entity}%} and location 1 meters above {_loop-entity}
+			if {_soulloc.%{_loop-id}%} is not set:
+				set {_soulloc.%{_loop-id}%} to {_baseloc}
+			set {_v} to setVector({_soulloc.%{_loop-id}%}, location 1 meters above {_loop-entity})
+			set {_soulloc.%{_loop-id}%} to setDirToVec({_soulloc.%{_loop-id}%}, {_v})
+			set {_soulloc.%{_loop-id}%} to location {@soul-speed} meters in front of {_soulloc.%{_loop-id}%}
+			kitParticle_WitcheryIgnis_Bullet({_soulloc.%{_loop-id}%})
+			set {_hitchecker} to distance between {_soulloc.%{_loop-id}%} and location 1 meters above {_loop-entity}
 			if {_hitchecker} <= 0.5:
 				kitEffect_WitcheryIgnis_Hit({_player}, {_loop-entity})
 				remove {_loop-entity} from {_targets::*}
 				continue
 
 		wait a tick
+
+local function kitEffect_WitcheryIgnis_Check(player: player, target: entity) :: boolean:
+	set {_from} to location 1 meter above {_player}
+	set {_to} to location 1 meter above {_target}
+	set {_from} to setDirToVec({_from}, setVector({_from}, {_to}))
+	set {_dis} to distance between {_from} and {_to}
+	set {_loopnum} to round({_dis} * 5)
+
+	set {_addm} to 0.2
+	set {_m} to 0
+	loop {_loopnum} times:
+		add {_addm} to {_m}
+		set {_checkblock} to location {_m} meters in front of {_from}
+
+		if block at {_checkblock} is not passable:
+			return false
+	return true
 
 local function kitEffect_WitcheryIgnis_Hit(player: player, target: entity):
 	kitParticle_WitcheryIgnis_Hit({_target})
