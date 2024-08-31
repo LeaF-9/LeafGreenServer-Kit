@@ -1,5 +1,10 @@
 # skill-name: Mirror Ball
 
+import:
+	org.bukkit.event.entity.EntityDamageEvent$DamageModifier
+
+
+
 function kitSkill_Reflector_4(player: player):
 	toolCT({_player}, "Reflector", 4)
 	kitEffect_MirrorBall({_player})
@@ -7,6 +12,7 @@ function kitSkill_Reflector_4(player: player):
 
 
 on damage of player:
+	damage cause is not sweep attack
 	{Stats.%victim%::MirrorBall} is set
 	set {_damage.origin} to damage
 	set {_victim} to victim
@@ -19,7 +25,8 @@ on damage of player:
 		# log "[MirrorBall] attackerがplayerでない"
 		stop
 	set {_attacker} to attacker
-	set damage to 0.01
+	event.setDamage(DamageModifier.ARMOR, 0)
+	set damage to 0.5
 	set {_mirror} to {Stats.%victim%::MirrorBall}
 	set {_member} to 0
 	loop all players:
@@ -34,8 +41,7 @@ on damage of player:
 		# victimの場合
 		if loop-value is victim:
 			if health of victim > {_damage.separate}:
-				set damage to 0.00001
-				set health of victim to health of victim - {_damage.separate}
+				kitEffect_MirrorBall_Damage(victim, {_damage.separate} - 0.5)
 			else:
 				set damage to 10000
 			continue
@@ -51,7 +57,10 @@ on damage of player:
 		# この場合はattackerを存在させない
 		else:
 			delete {_attacker.true}
-		kitDamage({_attacker.true}, loop-value, {_damage.separate}, true)
+		
+		if {_attacker.true} is set:
+			LastKiller(loop-value, {_attacker.true})
+		kitEffect_MirrorBall_Damage(loop-value, {_damage.separate})
 	
 
 # 同時に発動された際の処理がわからない
@@ -73,12 +82,21 @@ local function kitEffect_MirrorBall(player: player):
 		loop {_entried::*}:
 			if {_entrying::%loop-value-2%} is not {_player}:
 				delete {_entried::%loop-value-2%}
+				delete {Stats.%loop-value-2%::MirrorBall}
 		wait a tick
 	kitParticle_MirrorBall_Break({_player})
 	kitMsg({_player}, "§7ミラーボールは弾けて消え去った...")
-	loop {_entried::*}:
-		{Stats.%loop-value%::MirrorBall} is {_player}
-		delete {Stats.%loop-value%::MirrorBall}
+	loop all players:
+		{Stats.%loop-player%::MirrorBall} is {_player}
+		delete {Stats.%loop-player%::MirrorBall}
+
+local function kitEffect_MirrorBall_Damage(victim: player, damage: number):
+	set {_nodamage} to metadata value "mirror ball - nodamagetick" of {_victim}
+	if {_nodamage} is not set:
+		set metadata value "mirror ball - nodamagetick" of {_victim} to true
+		set health of {_victim} to health of {_victim} - {_damage}
+		wait 0.5 seconds
+		delete metadata value "mirror ball - nodamagetick" of {_victim}
 
 
 
