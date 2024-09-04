@@ -9,25 +9,59 @@ on damage of player:
 	{Ulting::%attacker%} is not set
 	add 1 to {Ultimate::%attacker%}
 
-every a second:
-	loop all players:
-		kitCheckAlive(loop-player) is true
-		{Class::%loop-player%} is set
-		{Ulting::%loop-player%} is not set
-		set {_l} to {Ultimate::%loop-player%}
-		if {Ultimate::%loop-player%} >= 100:
+function kitCheckUltimate(player: player):
+	set {_enable} to true
+	while {_enable} is true:
+		if kitCheckAlive({_player}) is false:
+			set {_enable} to false
+		if {Class::%{_player}%} is not set:
+			set {_enable} to false
+		
+		if {_enable} is false:
+			log "disabled"
+			stop
+
+		if {Ulting::%{_player}%} is set:
+			wait a second
+			log "Ulting"
+			continue
+		
+		set {_l} to {Ultimate::%{_player}%}
+		if {Ultimate::%{_player}%} >= 100:
+			log "Ultimate OK"
 			set {_l} to 100
-			loop-player do not have nether star named "§4§lUltimate Skill"
-			give a nether star named "§4§lUltimate Skill" to loop-player
-			message "§c§l必殺技のポイントが貯まりました!" to loop-player
-		else if {Ultimate::%loop-player%} is not set:
+
+			delete {_canult}
+			set {_slot} to 0
+			loop 9 times:
+				if {_canult} is true:
+					continue
+
+				set {_slotitem} to slot {_slot} of {_player}'s inventory
+				if {_slotitem} is a structure void named "§7§oUltimate Skill":
+					set {_canult} to true
+				else:				
+					add 1 to {_slot}
+
+			if {_canult} is true:
+				log "can ult"
+				set {_ultitem} to a nether star named "§4§lUltimate Skill"
+				set slot {_slot} of {_player}'s inventory to {_ultitem}
+				message formatted "§c§l必殺技のポイントが貯まりました!" to {_player}
+				playSound("entity.player.levelup", 1, 0.75, {_player}, true)
+
+		else if {Ultimate::%{_player}%} is not set:
 			set {_l} to 0
-		loop-player's level is not {_l}
-		set loop-player's level to {_l}
+
+		{_player}'s level is not {_l}
+		set {_player}'s level to {_l}
 		set {_lp} to {_l} * 0.01
 		if {_lp} >= 1:
 			set {_lp} to {_lp} - 0.01
-		set loop-player's level progress to {_lp}
+		set {_player}'s level progress to {_lp}
+		log "Complete"
+
+		wait a second
 
 #on rightclick holding a nether star:
 #	name of player's tool is "§a§lUltimate Skill"
