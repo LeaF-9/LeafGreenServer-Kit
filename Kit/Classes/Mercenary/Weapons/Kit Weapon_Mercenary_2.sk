@@ -8,14 +8,15 @@ on damage:
 	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 2) is true
 	{Kit-Blood::%victim%} is set
-	set damage to damage + 2
+	set damage to damage + 3
 	kitEffect_Vander(attacker, victim)
 
 local function kitEffect_Vander(player: player, target: player):
 	kitParticle_Vander_Edge({_player}, {_target})
 	delete {Kit-Blood::%{_target}%}
 	message formatted "§4傷口から吸血された..." to {_target}
-	kitHeal({_player}, 2)
+	kitHeal({_player}, 3)
+	applyEffect({_player}, speed, 2, 5 seconds)
 	kitParticle_Vander_Heal({_player}, {_target})
 
 local function kitParticle_Vander_Edge(attacker: player, victim: player):
