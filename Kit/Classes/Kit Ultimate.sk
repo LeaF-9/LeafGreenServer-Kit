@@ -12,23 +12,21 @@ on damage of player:
 function kitCheckUltimate(player: player):
 	set {_enable} to true
 	while {_enable} is true:
+		wait a second
+
 		if kitCheckAlive({_player}) is false:
 			set {_enable} to false
 		if {Class::%{_player}%} is not set:
 			set {_enable} to false
 		
 		if {_enable} is false:
-			log "disabled"
 			stop
 
 		if {Ulting::%{_player}%} is set:
-			wait a second
-			log "Ulting"
 			continue
 		
 		set {_l} to {Ultimate::%{_player}%}
 		if {Ultimate::%{_player}%} >= 100:
-			log "Ultimate OK"
 			set {_l} to 100
 
 			delete {_canult}
@@ -44,30 +42,30 @@ function kitCheckUltimate(player: player):
 					add 1 to {_slot}
 
 			if {_canult} is true:
-				log "can ult"
 				set {_ultitem} to a nether star named "§4§lUltimate Skill"
 				set slot {_slot} of {_player}'s inventory to {_ultitem}
-				message formatted "§c§l必殺技のポイントが貯まりました!" to {_player}
+				message formatted "§c§l必殺技§6§lのチャージが完了しました!" to {_player}
 				playSound("entity.player.levelup", 1, 0.75, {_player}, true)
 
 		else if {Ultimate::%{_player}%} is not set:
 			set {_l} to 0
 
-		{_player}'s level is not {_l}
-		set {_player}'s level to {_l}
-		set {_lp} to {_l} * 0.01
-		if {_lp} >= 1:
-			set {_lp} to {_lp} - 0.01
-		set {_player}'s level progress to {_lp}
-		log "Complete"
+		if level of {_player} is not {_l}:
+			set level of {_player} to {_l}
+			set {_lp} to {_l} * 0.01
+			if {_lp} >= 1:
+				set {_lp} to {_lp} - 0.01
+			set level progress of {_player} to {_lp}
 
-		wait a second
 
-#on rightclick holding a nether star:
-#	name of player's tool is "§a§lUltimate Skill"
-#	delete {Ultimate::%player%}
-#	message "§bまだ必殺技が実装されていません"
-#	remove a nether star named "§a§lUltimate Skill" from player
+
+on rightclick holding a structure void:
+	name of player's tool is "§7§oUltimate Skill"
+	cancel event
+	send action bar "§6!!! §c§l必殺技のチャージが完了していません §6!!!"
+	playSound("block.note_block.bass", 1, 0.9, player, true)
+
+
 
 on rightclick holding a nether star:
 	name of player's tool contains "§lUltimate Skill"
