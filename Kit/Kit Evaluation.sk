@@ -13,13 +13,6 @@ function kitMapEvaluation(player: player):
 	message formatted "{@prefix} §eインベントリ内の §5Map Evaluation §eでも評価できます!" to {_player}
 	kitMapRating({_player})
 
-
-
-
-
-		if {Kit-Vote.%{Kit-MapEV}%::%arg 1%} is not set:
-			make arg 1 execute command "/kit-evaluate %arg 1%"
-
 function kitMapRating(player: player):
 	if {Kit-MapEvaluation} is not set:
 		kitMapRateGeneral({_player})
@@ -84,7 +77,7 @@ local function kitMapRateGeneral(player: player):
 	
 	set slot 2 of {_player}'s current inventory to an iron sword named "§b§lTeam Death Match" with lore "§7§oTDM"
 	set slot 3 of {_player}'s current inventory to a diamond pickaxe named "§b§lDestroy the Core" with lore "§7§oDTC"
-	set slot 4 of {_player}'s current inventory to a white banner named "§b§lCapture the Flag" with lore "§7§oCTF"
+	set slot 4 of {_player}'s current inventory to a white standing banner named "§b§lCapture the Flag" with lore "§7§oCTF"
 	set slot 5 of {_player}'s current inventory to a sheep spawn egg named "§b§lSheep Hunt" with lore "§7§oSH"
 	set slot 6 of {_player}'s current inventory to a eye of ender named "§b§lControl Point" with lore "§7§oCP"
 
@@ -147,10 +140,10 @@ command /kit-rate <number>:
 			message formatted "§c§lMap評価は開始されていません!" to player
 			stop
 		if arg 1 < 1:
-			message formatted "§6§l1-5 §c§lの数値で評価してください"
+			message formatted "§6§l1-5 §c§lの数値で評価してください" to player
 			stop
 		if arg 1 > 5:
-			message formatted "§6§l1-5 §c§lの数値で評価してください"
+			message formatted "§6§l1-5 §c§lの数値で評価してください" to player
 			stop
 		
 		set {_uuid} to UUID of player
@@ -161,9 +154,6 @@ command /kit-rate <number>:
 		set {_msg} to ""
 		loop arg 1 times:
 			set {_msg} to "%{_msg}%★"
-		else:
-			message "{@prefix} §c1-5で評価をつけて下さい" to player
-			stop
 		message formatted "{@prefix} §6§l%{Kit-MapEvaluation}% §eに§d§l%{_msg}%§eの評価を付けました!" to player
 
 local function kitMapRate(player: player, stage: text):
@@ -179,14 +169,14 @@ local function kitMapRate(player: player, stage: text):
 		add 1 to {_voter::%loop-value%}
 		add loop-value to {_evsum}
 	set {_Acc} to {_evsum} / {_sum}
-	message "§a==========§6§l%{_stage}%§e's Map Rate§a=========="
-	message "§6Rate§7: §a%{_Acc}%"
-	message "§8------------------------------"
-	message "§cExellent§7: §d%{_voter::5}%"
-	message "§eGood§7: §d%{_voter::4}%"
-	message "§aOK§7: §d%{_voter::3}%"
-	message "§9Poor§7: §d%{_voter::2}%"
-	message "§5Bad§7: §d%{_voter::1}%"
+	message "§a==========§6§l%{_stage}%§e's Map Rate§a==========" to {_player}
+	message "§6Rate§7: §a%{_Acc}%" to {_player}
+	message "§8------------------------------" to {_player}
+	message "§cExellent§7: §d%{_voter::5}%" to {_player}
+	message "§eGood§7: §d%{_voter::4}%" to {_player}
+	message "§aOK§7: §d%{_voter::3}%" to {_player}
+	message "§9Poor§7: §d%{_voter::2}%" to {_player}
+	message "§5Bad§7: §d%{_voter::1}%" to {_player}
 
 command /kit-rateremove <text>:
 	trigger:
