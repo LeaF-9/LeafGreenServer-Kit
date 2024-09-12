@@ -1,126 +1,192 @@
 ﻿options:
-	prefix: §a[§6Map Rate§a]
+	prefix: §a[§6§lMap Rate§a]
+	invname: "§6§l%{Kit-MapEvaluation}% §eの評価をお願いします!"
+	invname-general: "§6Map§eのルールを選択してください"
 
 command /kit-mapev <player>:
 	permission: sk.admin
 	trigger:
-		message "{@prefix} §e今回のMap §6§l%{Kit-MapEV}% §eはどうでしたか?" to arg 1
-		message "{@prefix} §eコマンド §a/rate <1-5> §eを使ってMapの評価にご協力下さい!" to arg 1
-		message "{@prefix} §eインベントリ内の §5Map Evaluation §eでも評価できます!" to arg 1
+
+function kitMapEvaluation(player: player):
+	message formatted "{@prefix} §e今回のMap §6§l%{Kit-MapEvaluation}% §eはどうでしたか?" to {_player}
+	message formatted "{@prefix} §eコマンド §a/rate <1-5> §eを使ってMapの評価にご協力下さい!" to {_player}
+	message formatted "{@prefix} §eインベントリ内の §5Map Evaluation §eでも評価できます!" to {_player}
+	kitMapRating({_player})
+
+
+
+
+
 		if {Kit-Vote.%{Kit-MapEV}%::%arg 1%} is not set:
 			make arg 1 execute command "/kit-evaluate %arg 1%"
 
-command /kit-evaluate <player=%player%>:
-	trigger:
-		wait a tick
-		open chest with 1 row named "§6%{Kit-MapEV}% §aはどうでしたか?" to arg 1
-		wait a tick
-		if {Kit-MapEV} is set:
-			format slot 2 of arg 1 with purple wool named "§5最悪..... §7(Bad)" with lore "§d★" to close then run [make arg 1 execute command "kit-rate 1"]
-			format slot 3 of arg 1 with cyan wool named "§9ビミョー... §7(Poor)" with lore "§d★★" to close then run [make arg 1 execute command "kit-rate 2"]
-			format slot 4 of arg 1 with light green wool named "§aふつう §7(OK)" with lore "§d★★★" to close then run [make arg 1 execute command "kit-rate 3"]
-			format slot 5 of arg 1 with yellow wool named "§eいいね! §7(Good)" with lore "§d★★★★" to close then run [make arg 1 execute command "kit-rate 4"]
-			format slot 6 of arg 1 with red wool named "§cサイコー!!! §7(Exellent!)" with lore "§d★★★★★" to close then run [make arg 1 execute command "kit-rate 5"]
-		if name of arg 1's tool is "§5Map Evaluation":
-			format slot 8 of arg 1 with nether star named "§dAll Evaluation" with lore "§7全てのマップ評価を見ることができます" to close then run "kit-mapevgenre %arg 1%"
+function kitMapRating(player: player):
+	if {Kit-MapEvaluation} is not set:
+		kitMapRateGeneral({_player})
+		stop
 
-command /kit-mapevgenre <player>:
-	executable by: console
-	trigger:
-		wait 5 ticks
-		open chest with 1 row named "§6Select Map Genre" to arg 1
-		wait a tick
-		format slot 0 of arg 1 with sheep spawn egg named "§aSecure the Wool" to close then run "kit-mapevaluation %arg 1% StW"
-		format slot 2 of arg 1 with diamond pickaxe named "§aBreaking Enemy Core" to close then run "kit-mapevaluation %arg 1% BEC"
-		format slot 4 of arg 1 with iron sword named "§aGoal of Killing" to close then run "kit-mapevaluation %arg 1% GoK"
-		format slot 6 of arg 1 with emerald named "§aEarn many Jewels" to close then run "kit-mapevaluation %arg 1% EmJ"
-		format slot 8 of arg 1 with eye of ender named "§aCapture Point Area" to close then run "kit-mapevaluation %arg 1% CPA"
+	wait a tick
+	open chest with 1 row named {@invname} to {_player}
+	wait a tick
+	if {_player}.getOpenInventory().getTitle() is not {@invname}:
+		stop
 
-command /kit-mapevaluation <player> <text>:
-	executable by: console
-	trigger:
-		wait 5 ticks
-		open chest with 6 row named "§5All Maps Evaluation" to arg 1
-		wait a tick
-		set {_slot} to 0
-		load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "Stages"
-		set {_stages::*} to yml list "Stages" from "Stages"
-		unload yml "Stages"
-		loop {_stages::*}:
-			load yml "plugins/skript-yaml/Kit Stages/%loop-value%.yml" as "Stage"
-			yml value "rule" from "Stage" is "%arg 2%"
-			set {_team} to yml value "team" from "Stage"
-			unload yml "Stage"
-			if {_team} is 2:
-				set {_tm} to "§92"
-			else if {_team} is 4:
-				set {_tm} to "§a4"
-			set {_command} to loop-value
-			delete {_sum}
-			delete {_evsum}
-			delete {_Acc}
-			loop {Kit-Vote.%loop-value-1%::*}:
-				add 1 to {_sum}
-				add loop-value-2 to {_evsum}
-			set {_Acc} to {_evsum} / {_sum}
-			if {_sum} is not set:
-				set {_Acc} to "No data"
-				set {_color} to black wool named "§6%loop-value% §f[%{_tm}%§f]" with lore "§eRate§7: §a%{_Acc}%"
-			else if {_Acc} < 1.8:
-				set {_color} to purple wool named "§6%loop-value% §f[%{_tm}%§f]" with lore "§eRate§7: §a%{_Acc}%"
-			else if {_Acc} <= 2.5:
-				set {_color} to cyan wool named "§6%loop-value% §f[%{_tm}%§f]" with lore "§eRate§7: §a%{_Acc}%"
-			else if {_Acc} < 3.5:
-				set {_color} to light green wool named "§6%loop-value% §f[%{_tm}%§f]" with lore "§eRate§7: §a%{_Acc}%"
-			else if {_Acc} <= 4.2:
-				set {_color} to yellow wool named "§6%loop-value% §f[%{_tm}%§f]" with lore "§eRate§7: §a%{_Acc}%"
-			else if {_Acc} <= 5:
-				set {_color} to red wool named "§6%loop-value% §f[%{_tm}%§f]" with lore "§eRate§7: §a%{_Acc}%"
-			format slot {_slot} of arg 1 with {_color} to close then run "kit-maprator %arg 1% %loop-value%"
-			add 1 to {_slot}
+	set slot 2 of {_player}'s current inventory to a purple concrete named "§6[ §e★ §6]" with lore "§5§o物足りなかった"
+	set slot 3 of {_player}'s current inventory to a cyan concrete named "§6[ §e★★ §6]" with lore "§9§o少し物足りなかった"
+	set slot 4 of {_player}'s current inventory to a lime concrete named "§6[ §e★★★ §6]" with lore "§a§o普通"
+	set slot 5 of {_player}'s current inventory to a yellow concrete named "§6[ §e★★★★ §6]" with lore "§e§o楽しかった"
+	set slot 6 of {_player}'s current inventory to a red concrete named "§6[ §e★★★★★ §6]" with lore "§c§oとても楽しかった"
+	if name of {_player}'s tool is "§5Map Evaluation":
+		set slot 8 of {_player}'s current inventory to a nether star named "§d全てのMap評価を閲覧する"
 
-command /kit-maprator <player> <text>:
-	executable by: console
-	trigger:
-		make arg 1 execute command "kit-maprate %arg 2%"
+on inventory click:
+	if type of event-inventory is not chest inventory:
+		stop
+	set {_clickinv.name} to name of event-inventory
+	set {_clickinv.item} to clicked item
+
+	if {_clickinv.name} is {@invname}:
+		cancel event
+		close player's inventory
+		set {_clickinv.slot} to clicked slot
+		if {_clickinv.slot} is 8:
+			kitMapRateGeneral(player)
+			stop
+		set {_rating} to {_clickinv.slot} - 1
+		make player execute command "/kit-rate %{_rating}%"
+		stop
+	
+	else if {_clickinv.name} is {@invname-general}:
+		cancel event
+		close player's inventory
+		if {_clickinv.item} is not set:
+			stop
+		set {_lores::*} to lore of {_clickinv.item}
+		set {_rulecode} to {_lores::1}
+		replace "§7§o" with "" in {_rulecode}
+		kitMapRateRule(player, {_rulecode})
+	
+	else if {_clickinv.name} contains "§6Map評価一覧":
+		cancel event
+		close player's inventory
+		set {_stagename} to name of {_clickinv.item}
+		replace "§6" with "" in {_stagename}
+		kitMapRate({_player}, {_stagename})
+
+		
+
+local function kitMapRateGeneral(player: player):
+	wait a tick
+	open chest with 1 row named {@invname-general} to {_player}
+	wait a tick
+	if {_player}.getOpenInventory().getTitle() is not {@invname-general}:
+		stop
+	
+	set slot 2 of {_player}'s current inventory to an iron sword named "§b§lTeam Death Match" with lore "§7§oTDM"
+	set slot 3 of {_player}'s current inventory to a diamond pickaxe named "§b§lDestroy the Core" with lore "§7§oDTC"
+	set slot 4 of {_player}'s current inventory to a white banner named "§b§lCapture the Flag" with lore "§7§oCTF"
+	set slot 5 of {_player}'s current inventory to a sheep spawn egg named "§b§lSheep Hunt" with lore "§7§oSH"
+	set slot 6 of {_player}'s current inventory to a eye of ender named "§b§lControl Point" with lore "§7§oCP"
+
+local function kitMapRateRule(player: player, rule: text):
+	wait a tick
+	open chest with 6 row named "§b%{_rule}% §7の§6Map評価一覧" to {_player}
+	wait a tick
+	if {_player}.getOpenInventory().getTitle() is not "§b%{_rule}% §eのMap評価一覧":
+		stop
+	
+	set {_slot} to 0
+	load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "Stages"
+	set {_stages::*} to yml list "Stages" from "Stages"
+	unload yml "Stages"
+	loop {_stages::*}:
+		delete {_map.rating::*}
+		set {_stage} to loop-value
+		load yml "plugins/skript-yaml/Kit Stages/%{_stage}%.yml" as "Stage"
+		set {_map.rule} to yml value "rule" from "Stage"
+		set {_map.team} to yml value "team" from "Stage"
+		loop yaml node keys "evaluations" from "Stage":
+			set {_map.rating::%loop-key%} to yml value "%loop-node%" from "Stage"
+		unload yml "Stage"
+		if {_map.rule} is not {_rule}:
+			continue
+
+		# if {_team} is 2:
+		# 	set {_tm} to "§92"
+		# else if {_team} is 4:
+		# 	set {_tm} to "§a4"
+
+		set {_sum} to 0
+		set {_evsum} to 0
+		delete {_Acc}
+		loop {_map.rating::*}:
+			add 1 to {_sum}
+			add loop-value-2 to {_evsum}
+		set {_Acc} to {_evsum} / {_sum}
+		if {_sum} is 0:
+			set {_Acc} to "No data"
+			set {_color} to black wool named "§6%{_stage}%" with lore "§eRate§7: §a%{_Acc}%"
+		else if {_Acc} < 1.8:
+			set {_color} to purple wool named "§6%{_stage}%" with lore "§eRate§7: §a%{_Acc}%"
+		else if {_Acc} <= 2.5:
+			set {_color} to cyan wool named "§6%{_stage}%" with lore "§eRate§7: §a%{_Acc}%"
+		else if {_Acc} < 3.5:
+			set {_color} to light green wool named "§6%{_stage}%" with lore "§eRate§7: §a%{_Acc}%"
+		else if {_Acc} <= 4.2:
+			set {_color} to yellow wool named "§6%{_stage}%" with lore "§eRate§7: §a%{_Acc}%"
+		else if {_Acc} <= 5:
+			set {_color} to red wool named "§6%{_stage}%" with lore "§eRate§7: §a%{_Acc}%"
+		
+		set slot {_slot} of {_player}'s current inventory to {_color}
+		add 1 to {_slot}
 
 command /kit-rate <number>:
 	executable by: player
 	trigger:
-		{Kit-MapEv} is set
-		set {Kit-Vote.%{Kit-MapEv}%::%player%} to arg 1
-		if arg 1 is 1:
-			set {_msg} to "★"
-		else if arg 1 is 2:
-			set {_msg} to "★★"
-		else if arg 1 is 3:
-			set {_msg} to "★★★"
-		else if arg 1 is 4:
-			set {_msg} to "★★★★"
-		else if arg 1 is 5:
-			set {_msg} to "★★★★★"
+		if {Kit-MapEvaluation} is not set:
+			message formatted "§c§lMap評価は開始されていません!" to player
+			stop
+		if arg 1 < 1:
+			message formatted "§6§l1-5 §c§lの数値で評価してください"
+			stop
+		if arg 1 > 5:
+			message formatted "§6§l1-5 §c§lの数値で評価してください"
+			stop
+		
+		set {_uuid} to UUID of player
+		load yml "plugins/skript-yaml/Kit Stages/%{Kit-MapEvaluation}%.yml" as "MapEvaluation.%player%"
+		set yml value "evaluations.%{_uuid}%" from "MapEvaluation.%player%" to arg 1
+		unload yml "MapEvaluation.%player%"
+
+		set {_msg} to ""
+		loop arg 1 times:
+			set {_msg} to "%{_msg}%★"
 		else:
 			message "{@prefix} §c1-5で評価をつけて下さい" to player
 			stop
-		message "{@prefix} §6§l%{Kit-MapEv}% §eに§d§l%{_msg}%§eの評価を付けました!" to player
+		message formatted "{@prefix} §6§l%{Kit-MapEvaluation}% §eに§d§l%{_msg}%§eの評価を付けました!" to player
 
-command /kit-maprate <text>:
-	trigger:
-		loop 5 times:
-			set {_voter::%loop-number%} to 0
-		loop {Kit-Vote.%arg 1%::*}:
-			add 1 to {_sum}
-			add 1 to {_voter::%loop-value%}
-			add loop-value to {_evsum}
-		set {_Acc} to {_evsum} / {_sum}
-		message "§a==========§6§l%arg 1%§e's MapRate§a=========="
-		message "§6Rate§7: §a%{_Acc}%"
-		message "§8------------------------------"
-		message "§cExellent§7: §d%{_voter::5}%"
-		message "§eGood§7: §d%{_voter::4}%"
-		message "§aOK§7: §d%{_voter::3}%"
-		message "§9Poor§7: §d%{_voter::2}%"
-		message "§5Bad§7: §d%{_voter::1}%"
+local function kitMapRate(player: player, stage: text):
+	load yml "plugins/skript-yaml/Kit Stages/%{_stage}%.yml" as "Stage"
+	loop yaml node keys "evaluations" from "Stage":
+		set {_map.rating::%loop-key%} to yml value "%loop-node%" from "Stage"
+	unload yml "Stage"
+
+	loop 5 times:
+		set {_voter::%loop-number%} to 0
+	loop {_map.rating::*}:
+		add 1 to {_sum}
+		add 1 to {_voter::%loop-value%}
+		add loop-value to {_evsum}
+	set {_Acc} to {_evsum} / {_sum}
+	message "§a==========§6§l%{_stage}%§e's Map Rate§a=========="
+	message "§6Rate§7: §a%{_Acc}%"
+	message "§8------------------------------"
+	message "§cExellent§7: §d%{_voter::5}%"
+	message "§eGood§7: §d%{_voter::4}%"
+	message "§aOK§7: §d%{_voter::3}%"
+	message "§9Poor§7: §d%{_voter::2}%"
+	message "§5Bad§7: §d%{_voter::1}%"
 
 command /kit-rateremove <text>:
 	trigger:

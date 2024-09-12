@@ -121,7 +121,7 @@ command /kjclear:
 	description: KitJoinの引数を削除します
 	permission: sk.admin
 	trigger:
-		set {Kit-MapEV} to {Kit-GameStage::name}
+		set {Kit-MapEvaluation} to {Kit-GameStage::name}
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
 				set {_joiner::%loop-player%} to true
@@ -216,7 +216,7 @@ command /kjclear:
 		# rankingEnding()
 		loop all players:
 			{_joiner::%loop-player%} is true
-			execute console command "/kit-mapev %loop-player%"
+			kitMapEvaluation(loop-player)
 
 function addKitOS(stats: text):
 	if {Kit-OptionStats::*} does not contain {_stats}:
