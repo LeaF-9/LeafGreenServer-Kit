@@ -75,8 +75,20 @@ on rightclick holding a nether star:
 	set {Ulting::%player%} to true
 	kitUltExp(player)
 	playSound("entity.wither.spawn", 2, 0.5, player)
+
 	set {_tooling} to player's tool
+	if name of {_tooling} is "§4§lUltimate Skill":
+		set {_slot} to 0
+		loop 9 times:
+			{_decideslot} is not set
+			set {_checkslot} to slot {_slot} of player's inventory
+			if {_checkslot} is {_tooling}:
+				set {_decideslot} to {_slot}
+			add 1 to {_slot}
 	remove {_tooling} from player
+	if {_decideslot} is set:
+		set slot {_decideslot} of player's inventory to a structure void named "§7§oUltimate Skill"
+
 	kitUltMessage(player, {Class::%player%})
 	if {Class::%player%} is "Knight":
 		kitUltKnight(player)
