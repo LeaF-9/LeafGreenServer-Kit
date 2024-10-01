@@ -40,7 +40,7 @@ function setDamageModification_SET(entity: entity, num: number):
 function getDamageModification_SET(entity: entity) :: number:
 	set {_num} to metadata value "damage modification - set" of {_entity}
 	if {_num} is not set:
-		set {_num} to 0
+		set {_num} to -1
 	return {_num}
 
 function removeDamageModification_SET(entity: entity):
@@ -49,20 +49,20 @@ function removeDamageModification_SET(entity: entity):
 
 
 # Damage Modificationを適用するイベント
-on damage with priority LOW:
+on damage with priority MONITOR:
 	checkDamagable(victim) is true
 
 	set {_damage} to damage
-	if getDamageModification_SET({_victim}) is not 0:
-		set {_damage} to getDamageModification_SET({_victim})
+	if getDamageModification_SET(victim) is not -1:
+		set {_damage} to getDamageModification_SET(victim)
 		set {_fix} to true
 	
 	else:
-		set {_dm.add} to getDamageModification_ADD({_victim})
-		set {_dm.mul} to getDamageModification_MUL({_victim})
+		set {_dm.add} to getDamageModification_ADD(victim)
+		set {_dm.mul} to getDamageModification_MUL(victim)
 		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
-	
-	event.setDamage(DamageModifier.BASE, {_damage})
+
+	event.setDamage(DamageModifier.BASE, {_damage} * 2)
 	if {_fix} is true:
 		event.setDamage(DamageModifier.ARMOR, 0)
 		event.setDamage(DamageModifier.RESISTANCE, 0)
@@ -73,7 +73,7 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
 	
-	if getDamageModification_SET({_victim}) is not 0:
+	if getDamageModification_SET({_victim}) is not -1:
 		set {_damage} to getDamageModification_SET({_victim})
 		set {_fix} to true
 	
@@ -135,7 +135,7 @@ function kitDamagePierce(attacker: player, victim: entity, damage: number):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
 
-	if getDamageModification_SET({_victim}) is not 0:
+	if getDamageModification_SET({_victim}) is not -1:
 		set {_damage} to getDamageModification_SET({_victim})
 	
 	else:
@@ -149,7 +149,7 @@ function kitDamageInstant(attacker: player, victim: entity, damage: number):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
 
-	if getDamageModification_SET({_victim}) is not 0:
+	if getDamageModification_SET({_victim}) is not -1:
 		set {_damage} to getDamageModification_SET({_victim})
 	
 	else:
@@ -215,7 +215,6 @@ on damage with priority LOWEST:
 # ダメージを受けた際、それがskriptからのものでないことを確認する関数
 function checkDamagable(entity: entity) :: boolean:
 	set {_rawtime} to metadata value "raw damage" of {_entity}
-	delete metadata value "raw damage" of {_entity}
 	if {_rawtime} is not set:
 		return false
 	set {_now} to now
