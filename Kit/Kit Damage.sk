@@ -1,5 +1,6 @@
 import:
 	org.bukkit.attribute.Attribute
+	org.bukkit.event.entity.EntityDamageEvent$DamageModifier
 
 # memo
 # metadata: "damage modification - %index%" (value: number)
@@ -9,7 +10,7 @@ function setDamageModification_ADD(entity: entity, num: number):
 	set metadata value "damage modification - add" of {_entity} to {_num}
 
 function getDamageModification_ADD(entity: entity) :: number:
-	set {_num} to set metadata value "damage modification - add" of {_entity}
+	set {_num} to metadata value "damage modification - add" of {_entity}
 	if {_num} is not set:
 		set {_num} to 0
 	return {_num}
@@ -23,7 +24,7 @@ function setDamageModification_MUL(entity: entity, num: number):
 	set metadata value "damage modification - mul" of {_entity} to {_num}
 
 function getDamageModification_MUL(entity: entity) :: number:
-	set {_num} to set metadata value "damage modification - mul" of {_entity}
+	set {_num} to metadata value "damage modification - mul" of {_entity}
 	if {_num} is not set:
 		set {_num} to 1
 	return {_num}
@@ -37,7 +38,7 @@ function setDamageModification_SET(entity: entity, num: number):
 	set metadata value "damage modification - set" of {_entity} to {_num}
 
 function getDamageModification_SET(entity: entity) :: number:
-	set {_num} to set metadata value "damage modification - set" of {_entity}
+	set {_num} to metadata value "damage modification - set" of {_entity}
 	if {_num} is not set:
 		set {_num} to 0
 	return {_num}
@@ -47,16 +48,39 @@ function removeDamageModification_SET(entity: entity):
 
 
 
+# Damage Modificationを適用するイベント
+on damage with priority LOW:
+	checkDamagable(victim) is true
+
+	set {_damage} to damage
+	if getDamageModification_SET({_victim}) is not 0:
+		set {_damage} to getDamageModification_SET({_victim})
+		set {_fix} to true
+	
+	else:
+		set {_dm.add} to getDamageModification_ADD({_victim})
+		set {_dm.mul} to getDamageModification_MUL({_victim})
+		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
+	
+	event.setDamage(DamageModifier.BASE, {_damage})
+	if {_fix} is true:
+		event.setDamage(DamageModifier.ARMOR, 0)
+		event.setDamage(DamageModifier.RESISTANCE, 0)
+
+
+
 function kitDamage(attacker: player, victim: entity, damage: number, fix: boolean = false):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
 	
 	if getDamageModification_SET({_victim}) is not 0:
-		damage {_victim} by getDamageModification_SET({_victim}) hearts
+		set {_damage} to getDamageModification_SET({_victim})
+		set {_fix} to true
 	
-	set {_dm.add} to getDamageModification_ADD({_victim})
-	set {_dm.mul} to getDamageModification_MUL({_victim})
-	set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
+	else:
+		set {_dm.add} to getDamageModification_ADD({_victim})
+		set {_dm.mul} to getDamageModification_MUL({_victim})
+		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
 
 	if {_fix} is true:
 		{Stats.%{_victim}%::DamageTicks} is not set
@@ -108,27 +132,30 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 		damage {_victim} by {_truedamage} hearts
 
 function kitDamagePierce(attacker: player, victim: entity, damage: number):
-	if getDamageModification_SET({_victim}) is not 0:
-		damage {_victim} by getDamageModification_SET({_victim}) hearts
-	
-	set {_dm.add} to getDamageModification_ADD({_victim})
-	set {_dm.mul} to getDamageModification_MUL({_victim})
-	set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
-
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
+
+	if getDamageModification_SET({_victim}) is not 0:
+		set {_damage} to getDamageModification_SET({_victim})
+	
+	else:
+		set {_dm.add} to getDamageModification_ADD({_victim})
+		set {_dm.mul} to getDamageModification_MUL({_victim})
+		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
+
 	damage {_victim} by {_damage} hearts
 
 function kitDamageInstant(attacker: player, victim: entity, damage: number):
-	if type of {_victim} is a player:
+	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
 
 	if getDamageModification_SET({_victim}) is not 0:
-		damage {_victim} by getDamageModification_SET({_victim}) hearts
+		set {_damage} to getDamageModification_SET({_victim})
 	
-	set {_dm.add} to getDamageModification_ADD({_victim})
-	set {_dm.mul} to getDamageModification_MUL({_victim})
-	set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
+	else:
+		set {_dm.add} to getDamageModification_ADD({_victim})
+		set {_dm.mul} to getDamageModification_MUL({_victim})
+		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
 
 	{Stats.%{_victim}%::Invincible} is not set
 	if {Kit-Shield::%{_victim}%} is set:
@@ -175,7 +202,7 @@ function healEffect(player: entity, count: number = 5):
 
 
 # raw damageかどうかを確認する処理
-on damage of player with priority LOWEST:
+on damage with priority LOWEST:
 	# checking unknown damage
 	if damage cause is unknown:
 		stop
@@ -185,10 +212,10 @@ on damage of player with priority LOWEST:
 	set {_now} to now
 	set metadata value "raw damage" of victim to {_now}
 
-# プレイヤーを攻撃した際、それがskriptからのものでないことを確認する関数
-function checkDamagable(player: player) :: boolean:
-	set {_rawtime} to metadata value "raw damage" of {_player}
-	delete metadata value "raw damage" of {_player}
+# ダメージを受けた際、それがskriptからのものでないことを確認する関数
+function checkDamagable(entity: entity) :: boolean:
+	set {_rawtime} to metadata value "raw damage" of {_entity}
+	delete metadata value "raw damage" of {_entity}
 	if {_rawtime} is not set:
 		return false
 	set {_now} to now
