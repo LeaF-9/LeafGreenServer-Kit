@@ -1,9 +1,63 @@
 import:
 	org.bukkit.attribute.Attribute
 
+# memo
+# metadata: "damage modification - %index%" (value: number)
+# 加算: add | 乗算: mul | 設定: set
+# 受け手(victim)に付与
+function setDamageModification_ADD(entity: entity, num: number):
+	set metadata value "damage modification - add" of {_entity} to {_num}
+
+function getDamageModification_ADD(entity: entity) :: number:
+	set {_num} to set metadata value "damage modification - add" of {_entity}
+	if {_num} is not set:
+		set {_num} to 0
+	return {_num}
+
+function removeDamageModification_ADD(entity: entity):
+	delete metadata value "damage modification - add" of {_entity}
+
+
+
+function setDamageModification_MUL(entity: entity, num: number):
+	set metadata value "damage modification - mul" of {_entity} to {_num}
+
+function getDamageModification_MUL(entity: entity) :: number:
+	set {_num} to set metadata value "damage modification - mul" of {_entity}
+	if {_num} is not set:
+		set {_num} to 1
+	return {_num}
+
+function removeDamageModification_MUL(entity: entity):
+	delete metadata value "damage modification - mul" of {_entity}
+
+
+
+function setDamageModification_SET(entity: entity, num: number):
+	set metadata value "damage modification - set" of {_entity} to {_num}
+
+function getDamageModification_SET(entity: entity) :: number:
+	set {_num} to set metadata value "damage modification - set" of {_entity}
+	if {_num} is not set:
+		set {_num} to 0
+	return {_num}
+
+function removeDamageModification_SET(entity: entity):
+	delete metadata value "damage modification - set" of {_entity}
+
+
+
 function kitDamage(attacker: player, victim: entity, damage: number, fix: boolean = false):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
+	
+	if getDamageModification_SET({_victim}) is not 0:
+		damage {_victim} by getDamageModification_SET({_victim}) hearts
+	
+	set {_dm.add} to getDamageModification_ADD({_victim})
+	set {_dm.mul} to getDamageModification_MUL({_victim})
+	set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
+
 	if {_fix} is true:
 		{Stats.%{_victim}%::DamageTicks} is not set
 		{Stats.%{_victim}%::Invincible} is not set
@@ -54,6 +108,13 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 		damage {_victim} by {_truedamage} hearts
 
 function kitDamagePierce(attacker: player, victim: entity, damage: number):
+	if getDamageModification_SET({_victim}) is not 0:
+		damage {_victim} by getDamageModification_SET({_victim}) hearts
+	
+	set {_dm.add} to getDamageModification_ADD({_victim})
+	set {_dm.mul} to getDamageModification_MUL({_victim})
+	set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
+
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
 	damage {_victim} by {_damage} hearts
@@ -61,6 +122,14 @@ function kitDamagePierce(attacker: player, victim: entity, damage: number):
 function kitDamageInstant(attacker: player, victim: entity, damage: number):
 	if type of {_victim} is a player:
 		LastKiller({_victim}, {_attacker})
+
+	if getDamageModification_SET({_victim}) is not 0:
+		damage {_victim} by getDamageModification_SET({_victim}) hearts
+	
+	set {_dm.add} to getDamageModification_ADD({_victim})
+	set {_dm.mul} to getDamageModification_MUL({_victim})
+	set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
+
 	{Stats.%{_victim}%::Invincible} is not set
 	if {Kit-Shield::%{_victim}%} is set:
 		set {_shield} to {Kit-Shield::%{_victim}%}
@@ -102,3 +171,28 @@ function healEffect(player: entity, count: number = 5):
 		add a random number between 0 and 2 to y-coordinate of {_loc}
 		add a random number between -1 and 1 to z-coordinate of {_loc}
 		spawnParticle(heart, {_loc})
+
+
+
+# raw damageかどうかを確認する処理
+on damage of player with priority LOWEST:
+	# checking unknown damage
+	if damage cause is unknown:
+		stop
+	# check attacker exists
+	if attacker is not set:
+		stop
+	set {_now} to now
+	set metadata value "raw damage" of victim to {_now}
+
+# プレイヤーを攻撃した際、それがskriptからのものでないことを確認する関数
+function checkDamagable(player: player) :: boolean:
+	set {_rawtime} to metadata value "raw damage" of {_player}
+	delete metadata value "raw damage" of {_player}
+	if {_rawtime} is not set:
+		return false
+	set {_now} to now
+	set {_diftime} to difference between {_rawtime} and {_now}
+	if {_diftime} >= 1 tick:
+		return false
+	return true
