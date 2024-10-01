@@ -5,6 +5,7 @@ function kitSkill_Knight_5(player: player):
 	set {Stats.%{_player}%::JusticePower} to true
 	kitMsg({_player}, "§9与えるダメージと受けるダメージを§63§9にします...")
 	sendTimeBossbar_GREEN({_player}, "§6§lJustice Power", 140)
+	setDamageModification_SET({_player}, 3)
 	playSound("entity.illusioner.prepare_mirror", 1, 1.5, {_player})
 	loop 140 times:
 		set {_loc} to location of {_player}
@@ -21,19 +22,25 @@ function kitSkill_Knight_5(player: player):
 		add 0.5 * cos({_rad}) to z-coordinate of {_loc}
 		spawnParticle_Color(entity_effect, 255, 165, 0, {_loc})
 		wait a tick
+	removeDamageModification_SET({_player})
 	delete {Stats.%{_player}%::JusticePower}
 	kitMsg({_player}, "§6Justice Power§cの効果が切れました")
 
+# Damage Modification Editor
 on damage:
+	# Justice Power発動者がダメージを与える
 	if {Stats.%attacker%::JusticePower} is true:
-		if {Stats.%victim%::ReligiousShelter} is true:
+		if checkDamagable(victim) is false:
 			stop
-		{Stats.%victim%::Invincible} is not set
-		if health of victim > 3:
-			set damage to 0.00001
-			set health of victim to health of victim - 3
-		else:
-			set damage to 10000
+		if {Stats.%victim%::Invincible} is set:
+			stop
+		
+		set {_now} to now
+		set metadata value "Justice Power - Damaged" of victim to {_now}
+		setDamageModification_SET(victim, 3)
+		kitEffectDescription(victim, "§c§l真ダメージ§7: §4❤3")
+
+		# Particles
 		playSound("entity.iron_golem.hurt", 1, 2, victim)
 		loop all blocks in radius 2 around victim:
 			chance of 20%:
@@ -42,23 +49,32 @@ on damage:
 				add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
 				add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
 				spawnParticle_Color(entity_effect, 255, 200, 0, {_loc})
+		
+		wait a tick
+		if metadata value "Justice Power - Damaged" of victim is {_now}:
+			removeDamageModification_SET(victim)
+
+	# Justice Power発動者がダメージを受ける
 	else if checkEntityType(victim, player) is true:
 		if {Stats.%victim%::Invincible} is true:
 			stop
 		if {Stats.%victim%::ReligiousShelter} is true:
 			stop
-		if {Stats.%victim%::JusticePower} is true:
-			if damage cause is not void:
-				if health of victim > 3:
-					set damage to 0.00001
-					set health of victim to health of victim - 3
-				else:
-					set damage to 10000
-				playSound("entity.iron_golem.hurt", 1, 2, victim)
-				loop all blocks in radius 2 around victim:
-					chance of 20%:
-						set {_loc} to location of loop-block
-						add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
-						add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
-						add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
-						spawnParticle_Color(entity_effect, 255, 200, 0, {_loc})
+		if {Stats.%victim%::JusticePower} is not true:
+			stop
+		if checkDamagable(victim) is false:
+			stop
+
+		if getDamageModification_SET(victim) is not 3:
+			setDamageModification_SET(victim, 3)
+		kitEffectDescription(victim, "§c§l真ダメージ§7: §4❤3")
+
+		# Particles
+		playSound("entity.iron_golem.hurt", 1, 2, victim)
+		loop all blocks in radius 2 around victim:
+			chance of 20%:
+				set {_loc} to location of loop-block
+				add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
+				add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
+				add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
+				spawnParticle_Color(entity_effect, 255, 200, 0, {_loc})
