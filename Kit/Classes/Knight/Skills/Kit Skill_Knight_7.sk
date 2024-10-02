@@ -4,6 +4,7 @@ function kitSkill_Knight_7(player: player):
 	toolCT({_player}, "Knight", 7)
 	set {Stats.%{_player}%::ReligiousShelter} to true
 	kitMsg({_player}, "<##0000cd>3秒間,<##00bfff>体力以上のダメージを0にします!")
+	sendTimeBossbar_GREEN({_player}, "Religious Shelter", 60)
 	strike lightning effect at {_player}
 	playSound("entity.vex.ambient", 1, 1, {_player})
 	loop 60 times:
@@ -27,12 +28,16 @@ function kitSkill_Knight_7(player: player):
 	delete {Stats.%{_player}%::ReligiousShelter}
 	kitMsg({_player}, "§bReligious Shelter§cの効果が切れました")
 
-on damage of player:
+on damage of player with priority LOW:
 	if {Stats.%victim%::ReligiousShelter} is true:
 		set {_hp} to health of victim
 		set {_dm} to damage
 		if {_dm} > {_hp}:
-			set damage to 0
+			set {_now} to now
+			set metadata value "Religious Shelter - Activated" of victim to {_now}
+			setDamageModification_SET(victim, 0)
+			kitEffectDescription(victim, "§c§lダメージ§6§l変更§7: §4❤0")
+
 			playSound("entity.phantom.bite", 1, 1, victim)
 			loop all blocks in radius 2 around victim:
 				chance of 10%:
@@ -41,3 +46,9 @@ on damage of player:
 					add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
 					add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
 					spawnParticle(end_rod, {_loc})
+			
+			wait a tick
+			if metadata value "Religious Shelter - Activated" of victim is {_now}:
+				removeDamageModification_SET(victim)
+			else if metadata value "Religious Shelter - Activated" of victim is set:
+				delete metadata value "Religious Shelter - Activated" of victim
