@@ -16,13 +16,18 @@ local function kitEffect_Ancience(player: player):
 		set {_loc} to aroundEffect({_player})
 		set y-coordinate of {_loc} to {_y}
 		spawnParticle(totem_of_undying, {_loc})
+	set {_activenum} to 200
 	loop 200 times:
 		{Stats.%{_player}%::Ancience} is {_now}
 		loop all items in {_player}'s inventory:
 			name of loop-item contains "Ancience"
 			loop-item is not enchanted
 			enchant loop-item with sharpness 5
+		if display name of tool of {_player} contains "Ancience":
+			chargeActionBar_TimeDisplay({_player}, {_activenum} / 4, 200 / 4, {_activenum})
+		subtract 1 from {_activenum}
 		wait a tick
+	send action bar "" to {_player}
 	if {Stats.%{_player}%::Ancience} is {_now}:
 		loop all items in {_player}'s inventory:
 			name of loop-item is "<##866629>Ancience"
