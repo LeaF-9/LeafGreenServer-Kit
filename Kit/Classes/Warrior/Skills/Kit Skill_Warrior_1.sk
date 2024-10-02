@@ -10,6 +10,8 @@ function kitSkill_Warrior_1(player: player):
 		toolCT({_player}, "Warrior", 1)
 		playSound("entity.wolf.growl", 1, 0.5, {_player})
 		while {Stats.%{_player}%::FocusEnergy} is true:
+			send action bar "§8§l集中しています..." to {_player}
+			
 			set {_loc} to location of {_player}
 			add 0.02 to {_dy}
 			if {_dy} >= 4:
@@ -24,17 +26,30 @@ function kitSkill_Warrior_1(player: player):
 			add 0.5 * cos({_rad}) to z-coordinate of {_loc}
 			spawnParticle(flame, {_loc})
 			wait a tick
+		send action bar "" to {_player}
 
-on damage:
+on damage with priority NORMAL:
+	set {_damage.mul} to 0
 	if {Stats.%attacker%::FocusEnergy} is true:
-		set {_FEattack} to true
-		set damage to damage * 2
+		set {_focusenergy} to true
+		add 2 to {_damage.mul}
 		kitMsg(attacker, "§d力を思い切り振り絞った!")
 		delete {Stats.%attacker%::FocusEnergy}
 		playSound("entity.iron_golem.repair", 1, 0.75, attacker)
 	if {Stats.%victim%::FocusEnergy} is true:
-		set {_FEvictim} to true
-		set damage to damage * 2
+		set {_focusenergy} to true
+		add 2 to {_damage.mul}
 		kitMsg(victim, "§4おっと! 集中が切れてしまった!")
 		delete {Stats.%victim%::FocusEnergy}
 		playSound("entity.iron_golem.damage", 1, 0.75, victim)
+	
+	{_focusenergy} is true
+	set {_now} to now
+	set metadata value "Focus Energy - Damaged" of victim to {_now}
+	setDamageModification_MUL(victim, {_damage.mul})
+	kitEffectDescription(victim, "§c§lダメージ§4§l倍増§7: §4x%{_damage.mul}%")
+
+	wait a tick
+	if metadata value "Focus Energy - Damaged" of victim is {_now}:
+		removeDamageModification_MUL(victim)
+		delete metadata value "Focus Energy - Damaged" of victim
