@@ -7,7 +7,7 @@ function kitSkill_Warrior_4(player: player):
 		set {Stats.%{_player}%::SonicRevolution} to true
 		kitMsg({_player}, "§b回転斬りをします...")
 		apply speed 2 to {_player} for 3 seconds
-		apply jump boost -2 to {_player} for 3 seconds
+		set generic jump strength attribute of {_player} to 0.21
 		set {_weapon} to slot 0 of {_player}
 		set slot 0 of {_player} to a stick
 		set {_baseloc} to location of {_player}
@@ -40,6 +40,7 @@ function kitSkill_Warrior_4(player: player):
 				{Class::%{_player}%} is "Warrior"
 				kitCheckTeam(loop-entity, {_player}, false) is true
 				kitDamage({_player}, loop-entity, 1.5)
+				kitEffectDescription(loop-entity, "§c§lダメージ§7: §4❤1.5")
 			wait a tick
 		loop all entities:
 			type of loop-entity is an armor stand
@@ -48,6 +49,7 @@ function kitSkill_Warrior_4(player: player):
 		if {Stats.%{_player}%::SonicRevolution} is true:
 			set slot 0 of {_player} to {_weapon}
 			apply nausea 1 to {_player} for 10 seconds
+		set generic jump strength attribute of {_player} to 0.42
 		delete {Stats.%{_player}%::SonicRevolution}
 	else:
 		send action bar "§c§lWeaponがありません" to {_player}
