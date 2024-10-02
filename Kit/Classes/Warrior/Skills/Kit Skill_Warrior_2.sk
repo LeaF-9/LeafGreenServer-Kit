@@ -6,6 +6,7 @@ function kitSkill_Warrior_2(player: player):
 	set {Stats.%{_player}%::LimiterRemoval} to true
 	set {Stats.%{_player}%::LimiterRemovalTime} to {_now}
 	kitMsg({_player}, "§5リミッターを外しました...")
+	sendTimeBossbar_GREEN({_player}, "Limiter Removal - Buff", 100)
 	playSound("entity.blaze.ambient", 1, 0.5, {_player})
 	apply speed 2 to {_player} for 5 seconds
 	loop 100 times:
@@ -16,6 +17,7 @@ function kitSkill_Warrior_2(player: player):
 		kitMsg({_player}, "§1リミッターが戻り,疲れてしまった...")
 		remove slowness from {_player}
 		apply slowness 3 to {_player} for 5 seconds
+		sendTimeBossbar_RED({_player}, "Limiter Removal - Debuff", 100)
 		loop 100 times:
 			spawnParticle_Color(entity_effect, 0, 0, 255, location of {_player})
 			wait a tick
@@ -27,19 +29,48 @@ function kitSkill_Warrior_2(player: player):
 	else:
 		delete {Stats.%{_player}%::LimiterRemoval}
 
-on damage:
-	if {Stats.%attacker%::FocusEnergy} is not set:
-		if {Stats.%attacker%::LimiterRemoval} is true:
-			{_FEattack} is not set
-			set damage to damage * 1.5
-			create a fake explosion at victim
-		else if {Stats.%attacker%::LimiterRemoval} is false:
-			{_FEattack} is not set
-			set damage to damage * 0.75
-	if {Stats.%victim%::FocusEnergy} is not set:
-		if {Stats.%victim%::LimiterRemoval} is true:
-			{_FEvictim} is not set
-			set damage to damage * 0.75
-		else if {Stats.%victim%::LimiterRemoval} is false:
-			{_FEvictim} is not set
-			set damage to damage * 1.5
+on damage with priority LOW:
+	set {_damage.mul} to 1
+
+	if {Stats.%attacker%::LimiterRemoval} is true:
+		set {_per} to kitEffect_LimiterRemoval_CalcDamage({_damage.mul}, true)
+		add {_per} to {_damage.mul}
+		create a fake explosion at victim
+	else if {Stats.%attacker%::LimiterRemoval} is false:
+		set {_per} to kitEffect_LimiterRemoval_CalcDamage({_damage.mul}, false)
+		add {_per} to {_damage.mul}
+
+	if {Stats.%victim%::LimiterRemoval} is true:
+		set {_per} to kitEffect_LimiterRemoval_CalcDamage({_damage.mul}, false)
+		add {_per} to {_damage.mul}
+	else if {Stats.%victim%::LimiterRemoval} is false:
+		set {_per} to kitEffect_LimiterRemoval_CalcDamage({_damage.mul}, true)
+		add {_per} to {_damage.mul}
+	
+	if {_damage.mul} is 1:
+		stop
+	set {_now} to now
+	set metadata value "Limiter Removal - Damaged" of victim to {_now}
+	setDamageModification_MUL(victim, {_damage.mul})
+	if {_damage.mul} > 1:
+		kitEffectDescription(victim, "§c§lダメージ§4§l倍増§7: §4x%{_damage.mul}%")
+	else:
+		kitEffectDescription(victim, "§c§lダメージ§d§l半減§7: §dx%{_damage.mul}%")
+
+	wait a tick
+	if metadata value "Focus Energy - Damaged" of victim is {_now}:
+		removeDamageModification_MUL(victim)
+		delete metadata value "Focus Energy - Damaged" of victim
+
+local function kitEffect_LimiterRemoval_CalcDamage(base: number, plus: boolean) :: number:
+	if {_plus} is true:
+		if {_base} >= 1:
+			set {_per} to 0.5
+		else:
+			set {_per} to 0.25
+	else:
+		if {_base} > 1:
+			set {_per} to -0.5
+		else:
+			set {_per} to -0.25
+	return {_per}
