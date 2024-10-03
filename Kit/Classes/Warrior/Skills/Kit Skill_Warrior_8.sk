@@ -1,8 +1,30 @@
 # skill-name: Barbaric Torment
 
-on damage:
-	{Stats.%attacker%::BarbaricTorment} is true
-	cancel event
+options:
+	effect-tick: 60
+	debuff-radius: 6
+	debuff-rate: 0.5
+	fear-time: 5 seconds
+
+
+
+on damage with priority LOW:
+	set {_bt} to metadata value "Barbaric Torment - Hit" of attacker
+	if {_bt} is set:
+		set {_enabled} to true
+		setDamageModification_MUL(victim, 0.5)
+
+	if {Stats.%victim%::BarbaricTorment} is set:
+		if {_enabled} is not set:
+			cancel event
+		kitFear(attacker, {@fear-time})
+		kitEffectDescription(attacker, "§6§l恐怖効果: §b5秒")
+		kitParticle_BarbaricTorment_Damage(victim)
+	
+	{_enabled} is true
+	wait a tick
+	removeDamageModification_SET(victim) 
+
 
 function kitSkill_Warrior_8(player: player):
 	toolCT({_player}, "Warrior", 8)
@@ -10,48 +32,46 @@ function kitSkill_Warrior_8(player: player):
 
 local function kitEffect_BarbaricTorment(player: player):
 	kitMsg({_player}, "§5§l残忍な本性§5を開放します...")
-	set {Stats.%{_player}%::BarbaricTorment} to true
+	set {_now} to now
+	set {Stats.%{_player}%::BarbaricTorment} to {_now}
+	set metadata value "Barbaric Torment - Hit" of {_player} to {_player}
+	sendTimeBossbar_GREEN({_player}, "Barbaric Torment", {@effect-tick})
 	kitParticle_BarbaricTorment_Launch({_player})
-	loop 60 times:
-		if {Stats.%{_player}%::BarbaricTorment} is not set:
-			continue
-		kitParticle_BarbaricTorment_Aura({_player})
-		loop all players in radius 50 around {_player}:
-			{_hit.%loop-player%} is not set
-			kitCheckTeam(loop-player, {_player}, false) is true
-			set {_t} to target player of loop-player
-			{_t} is {_player}
-			set {_ok} to kitEffect_BarbaricTorment_Sight({_player}, loop-player)
-			{_ok} is true
-			set {_hit.%loop-player%} to true
-		wait a tick
-	delete {Stats.%{_player}%::BarbaricTorment}
 
-local function kitEffect_BarbaricTorment_Sight(player: player, target: player) :: boolean:
-	set {_loc.player} to location 1 meter above {_player}
-	set {_loc.target} to location of head of {_target}
-	set {_distance} to distance between {_loc.player} and {_loc.target}
-	set {_baseloc} to setDirToVec({_loc.target}, setVector({_loc.target}, {_loc.player}))
-	set {_m} to 0
-	loop round({_distance}) times:
-		{_ng} is not set
-		add 1 to {_m}
-		set {_effloc} to location {_m} meters in front of {_baseloc}
-		if block at {_effloc} is not passable:
-			set {_ng} to true
-	if {_ng} is true:
-		return false
-	message formatted "§4§l放たれた残忍性§5に威圧されてしまった..." to {_target}
-	kitMsg({_player}, "§5§l%{_target}% §4が怯んだ!")
-	kitParticle_BarbaricTorment_Hit({_player}, {_target})
-	kitDamage({_player}, {_target}, 3)
-	kitFear({_target}, 5 seconds)
-	kitTrail({_target}, 5 seconds, location of {_player})
-	return true
+	loop {@effect-tick} times:
+		if {Stats.%{_player}%::BarbaricTorment} is not {_now}:
+			stop
+		
+		delete {_hit.now::*}
+		loop all entities in radius {@debuff-radius} around {_player}:
+			kitCheckTeam({_player}, loop-entity, false) is true
+			add loop-entity to {_hit.now::*}
+			if {_hit.past::*} does not contain loop-entity:
+				add loop-entity to {_hit.past::*}
+			set metadata value "Barbaric Torment - Hit" of loop-entity to {_player}
+			kitEffectDescription(loop-entity, "§c§l与ダメージ§4§l半減§7: §4x{@debuff-rate}")
+			kitParticle_BarbaricTorment_Hit(loop-entity)
+		
+		loop {_hit.past::*}:
+			set {_loop-entity} to loop-value-2
+			{_hit.now::*} does not contain {_loop-entity}
+			remove {_loop-entity} from {_hit.past::*}
+			delete metadata value "Barbaric Torment - Hit" of {_loop-entity}
+
+			
+		kitParticle_BarbaricTorment_Aura({_player}, loop-number)
+		wait a tick
+
+	delete {Stats.%{_player}%::BarbaricTorment}
+	delete metadata value "Barbaric Torment - Hit" of {_player}
+	loop {_hit.past::*}:
+		set {_loop-entity} to loop-value
+		delete metadata value "Barbaric Torment - Hit" of {_loop-entity}
 
 
 
 local function kitParticle_BarbaricTorment_Launch(player: player):
+	playSound("entity.warden.sonic_boom", 1, 2, {_player})
 	playSound("entity.warden.agitated", 1, 0.7, {_player})
 	set {_baseloc} to location 1 meter above {_player}
 	loop 30 times:
@@ -70,7 +90,56 @@ local function kitParticle_BarbaricTorment_Launch(player: player):
 			set {_color} to rgb(75, 0, 130)
 		spawnParticle_DustTransition({_color}, rgb(0, 0, 0), 3, {_el})
 
-local function kitParticle_BarbaricTorment_Aura(player: player):
+	set {_baseloc} to location of {_player}
+	set {_ln} to 0
+	set {_y} to 0
+	loop 5 times:
+		add 1 to {_ln}
+		set {_sub} to 0.5 * (5 - {_ln})
+		set {_radius} to {@debuff-radius} - {_sub}
+
+		set {_rad} to 0
+		loop 90 times:
+			add 360 / 90 to {_rad}
+			set {_el} to {_baseloc}
+			add {_radius} * sin({_rad}) to x-pos of {_el}
+			add {_radius} * cos({_rad}) to z-pos of {_el}
+			add {_y} to y-pos of {_el}
+
+			set {_rn} to a random integer between 1 and 3
+			if {_rn} is 1:
+				set {_color} to rgb(103, 69, 152)
+			else if {_rn} is 2:
+				set {_color} to rgb(28, 48, 92)
+			else:
+				set {_color} to rgb(75, 0, 130)
+			spawnParticle_DustTransition({_color}, rgb(0, 0, 0), 2, {_el})
+			chance of 50%:
+				spawnParticle_Vector(reverse_portal, randomVector(), 0.5, {_el})
+
+		add 0.25 to {_y}
+		wait a tick
+
+local function kitParticle_BarbaricTorment_Aura(player: player, num: number):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_baserad} to 5 * {_num}
+
+	set {_index} to 0
+	loop 4 times:
+		set {_rad} to {_baserad} + (90 * {_index})
+		set {_el} to {_baseloc}
+		add {@debuff-radius} * sin({_rad}) to x-pos of {_el}
+		add {@debuff-radius} * cos({_rad}) to z-pos of {_el}
+		set {_rn} to a random integer between 1 and 3
+		if {_rn} is 1:
+			set {_color} to rgb(103, 69, 152)
+		else if {_rn} is 2:
+			set {_color} to rgb(28, 48, 92)
+		else:
+			set {_color} to rgb(75, 0, 130)
+		spawnParticle_DustTransition({_color}, rgb(0, 0, 0), 2.5, {_el})
+		add 1 to {_index}
+
 	chance of 70%:
 		stop
 	set {_effloc} to aroundEffect({_player})
@@ -86,11 +155,23 @@ local function kitParticle_BarbaricTorment_Aura(player: player):
 		spawnParticle_DustTransition({_color}, rgb(0, 0, 0), 0.5, {_el})
 		wait a tick
 
-local function kitParticle_BarbaricTorment_Hit(player: player, target: player):
-	playSound("entity.warden.heartbeat", 1, 2, {_player}, true)
-	playSound("entity.warden.angry", 1, 1.2, {_target})
+local function kitParticle_BarbaricTorment_Hit(entity: entity):
+	set {_rn} to a random integer between 3 and 5
+	loop {_rn} times:
+		set {_el} to aroundEffect({_entity})
+		set {_d} to dice(3)
+		if {_d} is 1:
+			spawnParticle_BlockData(falling_dust, black concrete, {_el})
+		else if {_d} is 2:
+			spawnParticle_BlockData(falling_dust, crying obsidian, {_el})
+		else:
+			spawnParticle_BlockData(falling_dust, black terracotta, {_el})
+		spawnParticle(falling_obsidian_tear, {_el})
+
+local function kitParticle_BarbaricTorment_Damage(player: player):
+	playSound("entity.warden.angry", 1, 1.2, {_player})
 	loop 10 times:
-		set {_el} to aroundEffect({_target})
+		set {_el} to aroundEffect({_player})
 		add {_el} to {_locs::*}
 	set {_m} to 0
 	loop 10 times:
