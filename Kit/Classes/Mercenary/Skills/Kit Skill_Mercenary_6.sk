@@ -3,6 +3,7 @@
 function kitSkill_Mercenary_6(player: player):
 	toolCT({_player}, "Mercenary", 6)
 	kitMsg({_player}, "§4§l血痕魔法陣§cを展開します...")
+	sendTimeBossbar_GREEN({_player}, "Ischemia Curse", 200)
 	playSound("entity.phantom.ambient", 1, 0.8, {_player})
 	set {_point} to location of {_player}
 # 弧を描く
@@ -72,13 +73,16 @@ function kitParticle_IschemiaCurse_Magic(loc: location):
 		spawnParticle_Dust(rgb(100, 1, 37), 1, {_loc})
 		wait a tick
 
-on damage of player:
+on damage of player with priority LOW:
 	metadata value "gametype" of victim is "Kit"
 	{Stats.%victim%::IschemiaCurse} is true
-	set damage to damage * 2
+	setDamageModification_MUL(victim, 2)
 	send action bar "§5§l血痕魔法陣が傷を増幅する..." to victim
+	kitEffectDescription(victim, "§c§lダメージ倍増§7: §cx2")
 	playSound("item.axe.strip", 1, 0.9, victim)
 	set {_el} to location of victim
 	add 1 to y-coordinate of {_el}
 	loop 10 times:
 		spawnParticle_Vector(end_rod, randomVector(), 1, {_el})
+	wait a tick
+	removeDamageModification_MUL(victim)

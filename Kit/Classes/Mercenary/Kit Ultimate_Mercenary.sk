@@ -30,6 +30,7 @@ function kitUltMercenary(player: player):
 			{_bl} is true
 			kitDamage({_player}, loop-player, 1, true)
 			kitBlood(loop-player)
+			kitEffectDescription(loop-player, "§4§l出血 §8| §c§l真ダメージ§7: §4❤1")
 		loop {_lb::*}:
 			make all players see block at loop-value-2 as redstone wire
 		wait a tick
@@ -42,13 +43,8 @@ function kitParticle_SanguinaryMurder(player: player):
 		spawnParticle_Color(entity_effect, 150, 0, 0, {_player})
 		wait a tick
 
-on damage of player:
-	metadata value "gametype" of victim is "Kit"
-	{Stats.%attacker%::UltMercenary} is true
-	{Kit-Blood::%victim%} is set
-	health of victim <= 3
-	set damage to 10000
-	set {_baseloc} to location of victim
+local function kitParticle_SanguinaryMurder_Kill(player: player):
+	set {_baseloc} to location of {_player}
 	loop 10 times:
 		loop 3 times:
 			set {_el} to {_baseloc}
@@ -57,3 +53,13 @@ on damage of player:
 			add a random number between 0 and 2 to y-coordinate of {_el}
 			spawnParticle(explosion_emitter, {_el})
 		wait a tick
+
+on damage of player with priority HIGH:
+	metadata value "gametype" of victim is "Kit"
+	{Stats.%attacker%::UltMercenary} is true
+	{Kit-Blood::%victim%} is set
+	health of victim <= 3
+	setDamageModification_SET(victim, 100)
+	kitParticle_SanguinaryMurder_Kill(victim)
+	wait a tick
+	removeDamageModification_SET(victim)
