@@ -5,7 +5,7 @@ function kitUltBerserker(player: player):
 
 
 
-on damage of player:
+on damage of player with priority LOW:
 	{Stats.%attacker%::AdrenalinRage} is set
 	set {_now} to now
 	set {Stats.%attacker%::AdrenalinRage-Time} to {_now}
@@ -16,14 +16,20 @@ on damage of player:
 		add 1 to {_damage}
 		if loop-player is not victim:
 			kitDamage(attacker, loop-player, 1)
+			kitEffectDescription(loop-player, "§c§lダメージ§7: §4❤1")
 			kitParticle_AdrenalinRage_Around(loop-player)
 	
-	set damage to {_damage}
+	set metadata value "Adrenalin Rage - Damage" of victim to {_now}
+	setDamageModification_SET(victim, {_damage})
 	add 1 to {Stats.%attacker%::AdrenalinRage}
 	send action bar "§4§lコンボ§5: §6§l%{Stats.%attacker%::AdrenalinRage}%" to attacker
 	kitParticle_AdrenalinRage_Damage(victim)
+	wait a tick
+	if metadata value "Adrenalin Rage - Damage" of victim is {_now}:
+		remove metadata value "Adrenalin Rage - Damage" of victim
+		removeDamageModification_SET(victim)
 
-	wait a second
+	wait 19 ticks
 	{Stats.%attacker%::AdrenalinRage-Time} is {_now}
 	delete {Stats.%attacker%::AdrenalinRage-Time}
 	set {Stats.%attacker%::AdrenalinRage} to 0
@@ -48,6 +54,7 @@ local function kitEffect_AdrenalinRage(player: player):
 			if {_jb::%loop-player%} is not set:
 				set {_jb::%loop-player%} to true
 				set maximum damage delay of loop-player to 1 tick
+				kitEffectDescription(loop-player, "§c§lダメージ§b§l間隔§7: §b0.05秒")
 				kitParticle_AdrenalinRage_Join(loop-player)
 
 		loop all players:

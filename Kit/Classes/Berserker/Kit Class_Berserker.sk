@@ -25,6 +25,7 @@ function kitSkillBerserker(player: player) :: boolean:
 # Passive
 on damage of player:
 	damage was caused by attack
+	{Stats.%attacker%::AdrenalinRage} is not set
 	set {_enable} to false
 
 	if {Stats.%attacker%::Berserk} is true:
@@ -45,6 +46,7 @@ on damage of player:
 		loop-player is not attacker
 		loop-player is not victim
 		kitDamage(attacker, loop-player, {_damage})
+		kitEffectDescription(victim, "§c§lダメージ§7: §4❤%{_damage}%")
 		kitParticle_Berserk_Hit(loop-player, {_damage})
 
 local function kitParticle_Berserk_Around(player: player, range: number):
