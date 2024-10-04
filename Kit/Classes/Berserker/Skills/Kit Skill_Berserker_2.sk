@@ -12,6 +12,7 @@ local function kitEffect_RushAttack(player: player):
 	applyEffect({_player}, speed, 2, 5 seconds, true)
 	kitParticle_RushAttack({_player})
 	kitMsg({_player}, "<##D66A35>周囲の生物を傷付け続けます...")
+	sendTimeBossbar_GREEN({_player}, "Rush Attack", 100)
 	loop 10 times:
 		if {Stats.%{_player}%::RushAttack} is not {_now}:
 			continue
@@ -19,6 +20,7 @@ local function kitEffect_RushAttack(player: player):
 		loop all entities in radius 5 around {_player}:
 			loop-entity is not {_player}
 			kitDamage({_player}, loop-entity, 1)
+			kitEffectDescription(loop-entity, "§c§lダメージ§7: §4❤1")
 			kitParticle_RushAttack_Hit(loop-entity)
 
 		wait 10 ticks
