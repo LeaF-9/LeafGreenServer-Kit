@@ -15,13 +15,16 @@ function kitSkill_Mercenary_8(player: player):
 			if {Kit-Blood::%loop-player%} is set:
 				kitDamage({_player}, loop-player, 3)
 				apply wither 1 to loop-player for 3 seconds replacing existing effect
+				kitEffectDescription(loop-player, "§c§lダメージ§7: §4❤3")
 			else:
 				kitDamage({_player}, loop-player, 1)
+				kitEffectDescription(loop-player, "§c§lダメージ§7: §4❤1")
 				{_ct::%loop-player%} is not set
 				set {_ct::%loop-player%} to 10
 				set {_c} to kitPercentDuel({_player}, loop-player, 10)
 				chance of {_c}%:
 					kitBlood(loop-player)
+					kitEffectDescription(loop-player, "§4§l出血")
 			loop 3 times:
 				set {_ae} to aroundEffect(loop-player)
 				spawnParticle_Dust(rgb(255, 0, 120), 1, {_ae})

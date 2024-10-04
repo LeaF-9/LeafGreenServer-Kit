@@ -7,10 +7,11 @@ on shoot:
 	kitItemAllChecker({_tool}, "Mercenary", "Skill", 1) is true
 	set metadata value "kit-harmful" of projectile to "true"
 
-on damage of player:
+on damage of player with priority HIGH:
 	damage was caused by potion
 	metadata value "kit-harmful" of projectile is "true"
 	cancel event
+
 	set {_hp} to victim's health
 	set {_addhp} to {_hp} * 0.25 * 0.1
 	if {Kit-Blood::%victim%} is set:
@@ -18,7 +19,11 @@ on damage of player:
 	else:
 		set {_firsthp} to {_hp} * 0.5
 	set victim's health to {_firsthp}
+
+	set {_sub.health} to {_firsthp} + ({_addhp} * 10)
+	kitEffectDescription(victim, "§d§lHP§c§l減少§7: §c-§4❤%{_sub.health}%")
 	kitHarmfulEffect(victim)
+
 	loop 10 times:
 		wait 2 tick
 		if kitCheckAlive(victim) is true:
