@@ -6,11 +6,13 @@ function kitSkill_Berserker_3(player: player):
 
 
 
-on damage of player:
+on damage of player with priority LOW:
 	{Stats.%attacker%::HealthSuction} is set
 	max health of attacker is not health of attacker
-	set damage to 1
+	setDamageModification_SET(victim, 1)
 	kitEffect_HealthSuction_Heal(attacker, victim)
+	wait a tick
+	removeDamageModification_SET(victim)
 
 on death of player:
 	{Stats.%attacker%::HealthSuction} is set
@@ -22,6 +24,7 @@ local function kitEffect_HealthSuction(player: player):
 	set {_now} to now
 	set {Stats.%{_player}%::HealthSuction} to {_now}
 	kitMsg({_player}, "§4敵の血を奪うことで§d回復§4します...")
+	sendTimeBossbar_GREEN({_player}, "Health Suction", 200)
 	kitParticle_HealthSuction({_player})
 	wait 10 seconds
 	{Stats.%{_player}%::HealthSuction} is {_now}
@@ -30,10 +33,12 @@ local function kitEffect_HealthSuction(player: player):
 
 local function kitEffect_HealthSuction_Heal(player: player, target: player):
 	kitHeal({_player}, 1)
+	kitEffectDescription({_player}, "§d§l回復§7: §4❤1")
 	kitParticle_HealthSuction_Heal({_player}, {_target})
 
 local function kitEffect_HealthSuction_Health(player: player):
 	add 0.5 to max health of {_player}
+	kitEffectDescription({_player}, "§d§l体力増強§7: §a+§4❤0.5")
 	kitParticle_HealthSuction_Health({_player})
 
 

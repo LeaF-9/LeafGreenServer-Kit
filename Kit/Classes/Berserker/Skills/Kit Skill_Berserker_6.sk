@@ -6,10 +6,12 @@ function kitSkill_Berserker_6(player: player):
 
 
 
-on damage of player:
+on damage of player with priority LOW:
 	{Stats.%victim%::CrazyPatience} is set
-	set damage to damage * 0.8
+	setDamageModification_MUL(victim, 0.8)
 	kitParticle_CrazyPatience_Damage(victim)
+	wait a tick
+	removeDamageModification_MUL(victim)
 
 
 
@@ -20,6 +22,7 @@ local function kitEffect_CrazyPatience(player: player):
 	delete {Stats.%{_player}%::Berserk}
 	kitParticle_CrazyPatience({_player})
 	kitMsg({_player}, "§8§l狂気の我慢§7により§6§lノックバック§7を§e§l無効化§7します...")
+	sendTimeBossbar_GREEN({_player}, "Crazy Patience", 100)
 	set knockback resistance attribute of {_player} to 1
 	wait 5 seconds
 	{Stats.%{_player}%::CrazyPatience} is {_now}

@@ -5,15 +5,18 @@ function kitSkill_Berserker_5(player: player):
 	kitEffect_Rampage({_player})
 
 
-on damage of player:
+on damage of player with priority LOW:
 	if {Stats.%victim%::Rampage} is set:
 		set {Stats.%victim%::Rampage-Combo} to 0
 		kitParticle_Rampage_Reset(victim)
 	if {Stats.%attacker%::Rampage} is set:
 		set {_damage} to 3 + {Stats.%attacker%::Rampage-Combo}
-		set damage to {_damage}
+		setDamageModification_SET(victim, {_damage})
+		kitEffectDescription(victim, "§c§lダメージ§6§l変化§7: §4❤%{_damage}%")
 		add 1 to {Stats.%attacker%::Rampage-Combo}
 		kitParticle_Rampage_Combo(attacker, victim, {Stats.%attacker%::Rampage-Combo})
+		wait a tick
+		removeDamageModification_SET(victim)
 
 
 
@@ -22,6 +25,7 @@ local function kitEffect_Rampage(player: player):
 	set {Stats.%{_player}%::Rampage} to {_now}
 	set {Stats.%{_player}%::Rampage-Combo} to 0
 	kitMsg({_player}, "§6§lRampage §eを発動します...")
+	sendTimeBossbar_GREEN({_player}, "Rampage", 200)
 	kitParticle_Rampage({_player})
 	loop 200 times:
 		if {Stats.%{_player}%::Rampage} is not {_now}:
