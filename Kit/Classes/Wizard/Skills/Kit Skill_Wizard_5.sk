@@ -6,6 +6,7 @@ function kitSkill_Wizard_5(player: player):
 		toolCT({_player}, "Wizard", 5)
 		shoot a snowball from {_player} at speed 1
 		set metadata value "magic" of shot snowball to "drain"
+		set item of shot snowball to green concrete
 		kitParticle_Wizard_Magic(shot snowball, 0, 100, 0)
 		subtract {_mana} from {Kit-Mana::%{_player}%}
 	else:
@@ -15,12 +16,22 @@ function kitEffect_DrainMagic(player: player, loc: location):
 	loop all players in radius 5 around {_loc}:
 		kitCheckTeam(loop-player, {_player}, false) is true
 		LastKiller(loop-player, {_player})
-		kitDrain(loop-player, 5 seconds)
+		kitEffect_DrainMagic_Hit({_player}, loop-player)
 		message formatted "§2吸収魔法を受けた!" to loop-player
 		kitMsg({_player}, "§5%loop-player% §dに§2吸収魔法§dを付与した!")
 		kitParticle_DrainMagic_Hit(loop-player)
 
-function kitParticle_DrainMagic_Hit(player: player):
+local function kitEffect_DrainMagic_Hit(player: player, target: player):
+	loop 3 times:
+		wait a second
+		kitDamage({_player}, {_target}, 0.5, true)
+		kitHeal({_player}, 0.5, 3)
+		kitEffectDescription({_target}, "§c§lダメージ§7: §4❤0.5")
+		kitParticle_DrainMagic_Drain({_player}, {_target})
+
+
+
+local function kitParticle_DrainMagic_Hit(player: player):
 	loop 5 times:
 		add 0.4 to {_h}
 		set {_rad} to 0
@@ -31,4 +42,33 @@ function kitParticle_DrainMagic_Hit(player: player):
 			add 0.5 * cos({_rad}) to z-coordinate of {_el}
 			add {_h} to y-coordinate of {_el}
 			spawnParticle_Color(entity_effect, 0, 100, 0, {_el})
+		wait a tick
+
+local function kitParticle_DrainMagic_Drain(player: player, target: player):
+	playSound("entity.generic.drink", 1, 0.85, {_target})
+	playSound("block.composter.empty", 1, 1.3, {_player}, true)
+	set {_baseloc} to location 1 meter above {_target}
+	set {_to} to location 1 meter above {_player}
+	set {_baseloc} to setDirToVec({_baseloc}, setVector({_baseloc}, {_to}))
+
+	set {_dis} to distance between {_baseloc} and {_to}
+	set {_addm} to ({_dis} / 5)
+
+	set {_addnum} to 0
+	loop 5 times:
+		loop 5 times:
+			add 0.2 to {_addnum}
+			set {_el} to location {_addm} * {_addnum} meters in front of {_baseloc}
+			spawnParticle(composter, {_el})
+
+			add a random number between -0.5 and 0.5 to x-pos of {_el}
+			add a random number between -0.5 and 0.5 to y-pos of {_el}
+			add a random number between -0.5 and 0.5 to z-pos of {_el}
+			set {_d} to dice(3)
+			if {_d} is 1:
+				spawnParticle_DustTransition(rgb(152, 217, 142), rgb(214, 233, 202), 0.75, {_el})
+			else if {_d} is 2:
+				spawnParticle_DustTransition(rgb(147, 202, 118), rgb(214, 233, 202), 0.85, {_el})
+			else:
+				spawnParticle_BlockData(falling_dust, lime concrete, {_el})
 		wait a tick
