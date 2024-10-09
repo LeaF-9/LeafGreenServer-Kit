@@ -6,6 +6,7 @@ function kitSkill_Wizard_3(player: player):
 		toolCT({_player}, "Wizard", 3)
 		shoot a snowball from {_player} at speed 1
 		set metadata value "magic" of shot snowball to "freeze"
+		set item of shot snowball to cyan concrete
 		kitParticle_Wizard_Magic(shot snowball, 0, 0, 100)
 		subtract {_mana} from {Kit-Mana::%{_player}%}
 	else:
@@ -67,6 +68,7 @@ function kitEffect_FreezeMagic(player: player, loc: location):
 		set {Stats.%loop-player%::Invincible} to true
 		message formatted "§1凍結魔法を受けた!" to loop-player
 		kitMsg({_player}, "§5%loop-player% §dに§1凍結魔法§dを付与した!")
+		kitEffectDescription(loop-player, "§b§l凍結§7: §b2秒")
 		kitParticle_FreezeMagic_Hit(loop-player)
 		add loop-player to {_hit::*}
 	loop 40 times:

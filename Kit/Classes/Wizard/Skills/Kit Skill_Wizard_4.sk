@@ -6,6 +6,7 @@ function kitSkill_Wizard_4(player: player):
 		toolCT({_player}, "Wizard", 4)
 		shoot a snowball from {_player} at speed 1
 		set metadata value "magic" of shot snowball to "electro"
+		set item of shot snowball to yellow concrete
 		kitParticle_Wizard_Magic(shot snowball, 100, 100, 0)
 		subtract {_mana} from {Kit-Mana::%{_player}%}
 	else:
@@ -18,6 +19,7 @@ function kitEffect_ElectroMagic(player: player, loc: location):
 		strike lightning effect at loop-entity
 		message formatted "§e電撃魔法を受けた!" to loop-entity
 		kitMsg({_player}, "§5%loop-entity% §dに§e電撃魔法§dを付与した!")
+		kitEffectDescription(loop-entity, "§e§l麻痺§7: §b10秒")
 		if "%type of loop-entity%" is "player":
 			kitPalsy(loop-entity, 10 seconds)
 		kitParticle_ElectroMagic_Hit(loop-entity)
