@@ -50,7 +50,6 @@ function removeDamageModification_SET(entity: entity):
 
 # Damage Modificationを適用するイベント
 on damage with priority MONITOR:
-	checkDamagable(victim) is true
 
 	set {_damage} to damage
 	if getDamageModification_SET(victim) is not -1:
@@ -67,22 +66,25 @@ on damage with priority MONITOR:
 		event.setDamage(DamageModifier.ARMOR, 0)
 		event.setDamage(DamageModifier.RESISTANCE, 0)
 
+	removeDamageModification_ADD(victim)
+	removeDamageModification_MUL(victim)
+	removeDamageModification_SET(victim)
+
 
 
 function kitDamage(attacker: player, victim: entity, damage: number, fix: boolean = false):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
-	
-	if getDamageModification_SET({_victim}) is not -1:
-		set {_damage} to getDamageModification_SET({_victim})
-		set {_fix} to true
-	
-	else:
-		set {_dm.add} to getDamageModification_ADD({_victim})
-		set {_dm.mul} to getDamageModification_MUL({_victim})
-		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
 
 	if {_fix} is true:
+		if getDamageModification_SET({_victim}) is not -1:
+			set {_damage} to getDamageModification_SET({_victim})
+		
+		else:
+			set {_dm.add} to getDamageModification_ADD({_victim})
+			set {_dm.mul} to getDamageModification_MUL({_victim})
+			set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
+
 		{Stats.%{_victim}%::DamageTicks} is not set
 		{Stats.%{_victim}%::Invincible} is not set
 		if {Kit-Shield::%{_victim}%} is set:
@@ -134,14 +136,6 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 function kitDamagePierce(attacker: player, victim: entity, damage: number):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
-
-	if getDamageModification_SET({_victim}) is not -1:
-		set {_damage} to getDamageModification_SET({_victim})
-	
-	else:
-		set {_dm.add} to getDamageModification_ADD({_victim})
-		set {_dm.mul} to getDamageModification_MUL({_victim})
-		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
 
 	damage {_victim} by {_damage} hearts
 
