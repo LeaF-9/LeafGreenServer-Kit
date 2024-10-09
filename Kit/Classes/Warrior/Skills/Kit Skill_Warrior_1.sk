@@ -30,12 +30,13 @@ function kitSkill_Warrior_1(player: player):
 
 on damage with priority NORMAL:
 	set {_damage.mul} to 0
-	if {Stats.%attacker%::FocusEnergy} is true:
+	set {_attacker} to metadata value "Last Killer" of victim
+	if {Stats.%{_attacker}%::FocusEnergy} is true:
 		set {_focusenergy} to true
 		add 2 to {_damage.mul}
-		kitMsg(attacker, "§d力を思い切り振り絞った!")
-		delete {Stats.%attacker%::FocusEnergy}
-		playSound("entity.iron_golem.repair", 1, 0.75, attacker)
+		kitMsg({_attacker}, "§d力を思い切り振り絞った!")
+		delete {Stats.%{_attacker}%::FocusEnergy}
+		playSound("entity.iron_golem.repair", 1, 0.75, {_attacker})
 	if {Stats.%victim%::FocusEnergy} is true:
 		set {_focusenergy} to true
 		add 2 to {_damage.mul}
@@ -44,12 +45,5 @@ on damage with priority NORMAL:
 		playSound("entity.iron_golem.damage", 1, 0.75, victim)
 	
 	{_focusenergy} is true
-	set {_now} to now
-	set metadata value "Focus Energy - Damaged" of victim to {_now}
 	setDamageModification_MUL(victim, {_damage.mul})
 	kitEffectDescription(victim, "§c§lダメージ§4§l倍増§7: §4x%{_damage.mul}%")
-
-	wait a tick
-	if metadata value "Focus Energy - Damaged" of victim is {_now}:
-		removeDamageModification_MUL(victim)
-		delete metadata value "Focus Energy - Damaged" of victim

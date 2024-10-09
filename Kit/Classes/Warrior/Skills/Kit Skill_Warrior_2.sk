@@ -30,13 +30,14 @@ function kitSkill_Warrior_2(player: player):
 		delete {Stats.%{_player}%::LimiterRemoval}
 
 on damage with priority LOW:
+	set {_attacker} to metadata value "Last Killer" of victim
 	set {_damage.mul} to 1
 
-	if {Stats.%attacker%::LimiterRemoval} is true:
+	if {Stats.%{_attacker}%::LimiterRemoval} is true:
 		set {_per} to kitEffect_LimiterRemoval_CalcDamage({_damage.mul}, true)
 		add {_per} to {_damage.mul}
 		create a fake explosion at victim
-	else if {Stats.%attacker%::LimiterRemoval} is false:
+	else if {Stats.%{_attacker}%::LimiterRemoval} is false:
 		set {_per} to kitEffect_LimiterRemoval_CalcDamage({_damage.mul}, false)
 		add {_per} to {_damage.mul}
 
@@ -49,18 +50,11 @@ on damage with priority LOW:
 	
 	if {_damage.mul} is 1:
 		stop
-	set {_now} to now
-	set metadata value "Limiter Removal - Damaged" of victim to {_now}
 	setDamageModification_MUL(victim, {_damage.mul})
 	if {_damage.mul} > 1:
 		kitEffectDescription(victim, "§c§lダメージ§4§l倍増§7: §4x%{_damage.mul}%")
 	else:
 		kitEffectDescription(victim, "§c§lダメージ§d§l半減§7: §dx%{_damage.mul}%")
-
-	wait a tick
-	if metadata value "Limiter Removal - Damaged" of victim is {_now}:
-		removeDamageModification_MUL(victim)
-		delete metadata value "Limiter Removal - Damaged" of victim
 
 local function kitEffect_LimiterRemoval_CalcDamage(base: number, plus: boolean) :: number:
 	if {_plus} is true:

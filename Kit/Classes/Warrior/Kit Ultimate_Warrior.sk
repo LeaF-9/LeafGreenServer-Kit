@@ -66,7 +66,7 @@ on sneak toggle:
 				set {Stats.%player%::UltWarrior-OK} to true
 				kitEffect_UltWarrior(player)
 
-on damage with priority HIGH:
+on damage with priority LOW:
 	if {Stats.%attacker%::UltWarrior-OK} is true:
 		setDamageModification_SET(victim, 100)
 		delete {Stats.%attacker%::UltWarrior-OK}
@@ -74,5 +74,3 @@ on damage with priority HIGH:
 		loop 10 times:
 			set {_loc} to aroundEffect(victim)
 			spawnParticle(soul, {_loc})
-		wait a tick
-		removeDamageModification_SET(victim)

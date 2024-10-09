@@ -28,13 +28,11 @@ function kitSkill_Knight_7(player: player):
 	delete {Stats.%{_player}%::ReligiousShelter}
 	kitMsg({_player}, "§bReligious Shelter§cの効果が切れました")
 
-on damage of player with priority LOW:
+on damage of player with priority HIGH:
 	if {Stats.%victim%::ReligiousShelter} is true:
 		set {_hp} to health of victim
 		set {_dm} to damage
 		if {_dm} > {_hp}:
-			set {_now} to now
-			set metadata value "Religious Shelter - Activated" of victim to {_now}
 			setDamageModification_SET(victim, 0)
 			kitEffectDescription(victim, "§c§lダメージ§6§l変更§7: §4❤0")
 
@@ -46,9 +44,3 @@ on damage of player with priority LOW:
 					add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
 					add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
 					spawnParticle(end_rod, {_loc})
-			
-			wait a tick
-			if metadata value "Religious Shelter - Activated" of victim is {_now}:
-				removeDamageModification_SET(victim)
-			else if metadata value "Religious Shelter - Activated" of victim is set:
-				delete metadata value "Religious Shelter - Activated" of victim
