@@ -5,11 +5,14 @@ function kitSkill_Knight_8(player: player):
 	kitMsg({_player}, "<##ffff00>名誉<##ff8c00>が光をもたらした!")
 	playSound("item.totem.use", 1, 1.5, {_player})
 	apply glowing 1 to {_player} for 10 seconds
-	loop all players in radius 10 around {_player}:
-		loop-player is not {_player}
-		{Class::%loop-player%} is set
-		apply glowing 1 to loop-player for 10 seconds
-		message "<##ffff00>大きな光<##ffd700>で長い発光が付与された!" to loop-player
+	sendTimeBossbar_YELLOW({_player}, "Glorious Honor", 200)
+	loop all entities in radius 10 around {_player}:
+		loop-entity is not {_player}
+		metadata value "gametype" of loop-entity is "Kit"
+		apply glowing 1 to loop-entity for 10 seconds
+		message formatted "<##ffff00>大きな光<##ffd700>で長い発光が付与された!" to loop-entity
+		kitEffectDescription(loop-entity, "§e発光")
+		sendTimeBossbar_YELLOW(loop-entity, "Glorious Honor", 200)
 	set {_num} to 0
 	set {_ploc} to location of block at {_player}
 	loop 10 times:
