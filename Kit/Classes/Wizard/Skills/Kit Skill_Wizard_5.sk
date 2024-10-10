@@ -19,6 +19,8 @@ function kitEffect_DrainMagic(player: player, loc: location):
 		kitEffect_DrainMagic_Hit({_player}, loop-player)
 		message formatted "§2吸収魔法を受けた!" to loop-player
 		kitMsg({_player}, "§5%loop-player% §dに§2吸収魔法§dを付与した!")
+		kitEffectDescription(loop-player, "§2吸収魔法")
+		sendTimeBossbar_RED(loop-player, "吸収魔法", 60)
 		kitParticle_DrainMagic_Hit(loop-player)
 
 local function kitEffect_DrainMagic_Hit(player: player, target: player):
@@ -26,7 +28,7 @@ local function kitEffect_DrainMagic_Hit(player: player, target: player):
 		wait a second
 		kitDamage({_player}, {_target}, 0.5, true)
 		kitHeal({_player}, 0.5, 3)
-		kitEffectDescription({_target}, "§c§lダメージ§7: §4❤0.5")
+		kitEffectDescription({_target}, "§4❤0.5")
 		kitParticle_DrainMagic_Drain({_player}, {_target})
 
 
