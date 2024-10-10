@@ -13,12 +13,13 @@ on damage with priority LOW:
 	if {_bt} is set:
 		set {_enabled} to true
 		setDamageModification_MUL(victim, 0.5)
+		kitEffectDescription(victim, "§1x{@debuff-rate}")
 
 	if {Stats.%victim%::BarbaricTorment} is set:
-		if {_enabled} is not set:
-			stop
+		if {_enabled} is not set:  # 範囲外からの攻撃を無効化
+			cancel event
 		kitFear(attacker, {@fear-time})
-		kitEffectDescription(attacker, "§6§l恐怖効果: §b5秒")
+		kitEffectDescription(attacker, "§5恐怖")
 		kitParticle_BarbaricTorment_Damage(victim)
 
 
@@ -45,7 +46,6 @@ local function kitEffect_BarbaricTorment(player: player):
 			if {_hit.past::*} does not contain loop-entity:
 				add loop-entity to {_hit.past::*}
 			set metadata value "Barbaric Torment - Hit" of loop-entity to {_player}
-			kitEffectDescription(loop-entity, "§c§l与ダメージ§4§l半減§7: §4x{@debuff-rate}")
 			kitParticle_BarbaricTorment_Hit(loop-entity)
 		
 		loop {_hit.past::*}:
