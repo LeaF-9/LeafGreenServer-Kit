@@ -27,6 +27,7 @@ local function kitSpawn_Necromancer_Wander(player: player, loc: location, target
 	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt.text})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-wandersoul" of {_mob} to true
+	set {_speed} to a random number between 0.1 and 1
 	set {_exists} to true
 	while {_exists} is true:
 		if {_mob} is dead:
@@ -39,19 +40,19 @@ local function kitSpawn_Necromancer_Wander(player: player, loc: location, target
 			set {_exists} to false
 			kill {_mob}
 			continue
-		set {_toloc} to location of {_target}
-		add a random number between -3 and 3 to x-pos of {_toloc}
-		add a random number between -3 and 3 to y-pos of {_toloc}
-		add a random number between -3 and 3 to z-pos of {_toloc}
+		set {_toloc} to location 1 meter above {_target}
+		add a random number between -1.5 and 1.5 to x-pos of {_toloc}
+		add a random number between -1.5 and 1.5 to y-pos of {_toloc}
+		add a random number between -1.5 and 1.5 to z-pos of {_toloc}
 		set {_v} to setVector(location of {_mob}, {_toloc})
 		set {_baseloc} to location of {_mob}
 		set yaw of {_baseloc} to yaw of {_v}
 		set pitch of {_baseloc} to pitch of {_v}
-		set {_fm} to a random number between 0.05 and 0.3
+		set {_fm} to a random number between {_speed} * 0.1 and {_speed}
 		set {_tploc} to location {_fm} meters in front of {_baseloc}
 		teleport {_mob} to {_tploc}
 		spawnParticle(soul_fire_flame, location 1 meter above {_tploc})
-		if distance between {_target} and {_mob} <= 1:
+		if distance between location 1 meter above {_target} and {_mob} <= 1:
 			set {_elbase} to location of {_mob}
 			loop all entities:
 				loop-entity is {_mob}
