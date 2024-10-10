@@ -175,7 +175,12 @@ function kitSpawn_Necromancer_BabyZombie(player: player, loc: location):
 	set {_nbt} to "{IsBaby:1,ArmorItems:[{},{},{},{id:""minecraft:leather_helmet"",components:{dyed_color:{rgb:%{_color}%}},Count:1b}],HandItems:[{},{}]}"
 	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
+	set metadata value "necromancer-entity-undead" of {_mob} to "zombie"
 	set metadata value "necromancer-entity-babyzombie" of {_mob} to true
+	set max health of {_mob} to 1
+	wait 10 seconds
+	{_mob} is alive
+	kill {_mob}
 
 on damage:
 	if metadata value "necromancer-entity-babyzombie" of victim is true:
@@ -299,12 +304,9 @@ function kitTimerNecromancer(player: player):
 		if {_timer} >= 200:
 			set {_timer} to 0
 		if {_timer} = 0:
-			loop all zombies:
-				metadata value "necromancer-entity-undead" of loop-zombie is "zombie"
-				subtract 1.2 from loop-zombie's health
-			loop all skeletons:
-				metadata value "necromancer-entity-undead" of loop-skeleton is "skeleton"
-				subtract 1.2 from loop-skeleton's health
+			loop all entities:
+				metadata value "necromancer-entity-undead" of loop-entity is set
+				subtract 1.2 from loop-entity's health
 		# -----------------
 		# --- Boss Bar処理 ---
 		set bossbar "%{_player}%-Necromance" title to "&5&lNecromance&0: &4&l%{Kit-Necromance::%{_player}%}%"
