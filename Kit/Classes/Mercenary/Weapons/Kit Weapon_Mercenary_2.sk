@@ -1,6 +1,6 @@
 # Weapon-Name: Vander
 
-on damage:
+on damage with priority LOW:
 	metadata value "gametype" of attacker is "Kit"
 	{Class::%attacker%} is "Mercenary"
 	damage was caused by attack
@@ -8,7 +8,7 @@ on damage:
 	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 2) is true
 	{Kit-Blood::%victim%} is set
-	set damage to damage + 3
+	setDamageModification_ADD(victim, 3)
 	kitEffect_Vander(attacker, victim)
 
 local function kitEffect_Vander(player: player, target: player):
