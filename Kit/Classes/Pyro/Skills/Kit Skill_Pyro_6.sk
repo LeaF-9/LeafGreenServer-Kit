@@ -3,20 +3,21 @@
 options:
 	ignite-damage: 1
 	ignite-radius: 5
-	ignite-second: 5 seconds
+	ignite-tick: 100
 	soul-radius: 30
 	soul-tick: 200
 	soul-damage: 2
 	soul-ignite: 3 seconds
-	soul-time: 5 seconds
+	soul-time: 100
 	soul-speed: 0.2
 
 
 
-on damage:
+on damage with priority LOW:
 	damage cause is fire, burning, campfire, magma or lava
 	metadata value "witchery ignis" of victim is set
-	set damage to damage * 2
+	setDamageModification_MUL(victim, 2)
+	kitEffectDescription(victim "§c§lダメージ倍増§7: §cx2")
 	kitParticle_WitcheryIgnis_Burn(victim)
 
 
@@ -36,8 +37,10 @@ local function kitEffect_WitcheryIgnis(player: player):
 	loop all entities in radius {@ignite-radius} around {_baseloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		kitDamage({_player}, loop-entity, {@ignite-damage})
-		ignite loop-entity for {@ignite-second}
+		ignite loop-entity for convertTickTime({@ignite-tick})
 		kitParticle_WitcheryIgnis_Ignite(loop-entity)
+		set {_igniteSeconds} to {@ignite-tick} / 20
+		kitEffectDescription(loop-entity, "§6§l炎上§7: §b%{_igniteSeconds}%秒")
 	
 	# soul fire
 	loop all entities in radius {@soul-radius} around {_baseloc}:
@@ -101,6 +104,9 @@ local function kitEffect_WitcheryIgnis_Hit(player: player, target: entity):
 	if checkEntityType({_target}, player) is true:
 		kitSound_WitcheryIgnis_HitCheck({_player})
 		kitMsg({_player}, "§3§l%{_target}% §bにヒット!")
+		set {_soulSeconds} to {@soul-time} / 20
+		kitEffectDescription({_target}, "§3§l炎呪§7: §b%{_soulSeconds}%秒")
+		sendTimeBossbar_RED({_target}, "炎呪", {@soul-time})
 		message formatted "§3§l炎呪§cにより§4§l火炎ダメージ§cが§6§l倍増§cする..." to {_target}
 
 	kitDamage({_player}, {_target}, {@soul-damage})
@@ -109,7 +115,7 @@ local function kitEffect_WitcheryIgnis_Hit(player: player, target: entity):
 	set {_now} to now
 	set metadata value "witchery ignis" of {_target} to {_now}
 
-	wait {@soul-time}
+	wait convertTickTime({@soul-time})
 
 	if metadata value "witchery ignis" of {_target} is {_now}:
 		delete metadata value "witchery ignis" of {_target}

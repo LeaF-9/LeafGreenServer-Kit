@@ -2,7 +2,7 @@
 
 options:
 	radius: 10
-	ignite-second: 10 seconds
+	ignite-tick: 200
 
 
 
@@ -19,7 +19,9 @@ local function kitEffect_FireStorm(player: player):
 	loop all entities in radius {@radius} around {_baseloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		LastKiller(loop-entity, {_player})
-		ignite loop-entity for {@ignite-second}
+		ignite loop-entity for convertTickTime({@ignite-tick})
+		set {_igniteSeconds} to {@ignite-tick} / 20
+		kitEffectDescription(loop-entity, "§6§l炎上§7: §b%{_igniteSeconds}%秒")
 		kitParticle_FireStorm_Hit(loop-entity)
 
 

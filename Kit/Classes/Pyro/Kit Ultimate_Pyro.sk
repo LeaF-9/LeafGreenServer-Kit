@@ -5,17 +5,19 @@ options:
 	eruption-interval: 10
 	fire-hit-radius: 3
 	fire-damage: 3
-	fire-ignite-time: 5 seconds
+	fire-ignite-time: 100
 	regeneration-tier: 5
 	regeneration-time: 1 second
 
 
 
-on damage:
-	{Stats.%attacker%::EternalPhoenix} is true
+on damage with priority LOW:
+	set {_attacker} to metadata value "Last Killer" of victim
+	{Stats.%{_attacker}%::EternalPhoenix} is true
 	set {_firetick} to victim.getFireTicks()
 	if {_firetick} > 0:
-		set damage to damage * 2
+		setDamageModification_MUL(victim, 2)
+		kitEffectDescription(victim, "§c§lダメージ倍増§7: §cx2")
 		kitParticle_EternalPhoenix_Damage(victim)
 
 
@@ -61,7 +63,9 @@ local function kitEffect_EternalPhoenix_Fire(player: player):
 			kitCheckTeam(loop-entity, {_player}, false, true) is true
 			set {_hit} to true
 			kitDamage({_player}, loop-entity, {@fire-damage})
-			ignite loop-entity for {@fire-ignite-time}
+			ignite loop-entity for convertTickTime({@fire-ignite-time})
+			set {_igniteSeconds} to {@fire-ignite-time} / 20
+			kitEffectDescription(loop-entity, "§c§lダメージ§7: §4❤{@fire-damage} §8| §6§l炎上§7: §b%{_igniteSeconds}%秒")
 
 		if {_hit} is true:
 			applyEffect({_player}, regeneration, {@regeneration-tier}, {@regeneration-time}, true)

@@ -3,14 +3,16 @@
 options:
 	radius: 7
 	effect-time: 200
-	fire-second: 5 seconds
+	fire-tick: 100
 
 
 
 on damage:
 	# 火属性
 	if {Stats.%attacker%::SolarTrack} is set:
-		ignite victim for {@fire-second}
+		ignite victim for convertTickTime({@fire-tick})
+		set {_fireSeconds} to {@fire-tick} / 20
+		kitEffectDescription(victim, "§6§l炎上§7: §b%{_fireSeconds}%秒")
 	
 	# 火炎耐性
 	if {Stats.%victim%::SolarTrack} is set:
@@ -35,6 +37,9 @@ local function kitEffect_SolarTrack(player: player):
 		kitCheckTeam(loop-player, {_player}, true) is true
 		setSupporter(loop-player, {_player})
 		set {Stats.%loop-player%::SolarTrack} to {_now}
+		set {_effectseconds} to {@effect-time} / 20
+		kitEffectDescription(loop-player, "§6§l太陽の加護§7: §b%{_effectseconds}%秒")
+		sendTimeBossbar_GREEN(loop-player, "太陽の加護", {@effect-time})
 		add loop-player to {_players::*}
 		if loop-player is not {_player}:
 			message formatted "§6%{_player}% §eより§c§l太陽の加護§eを授かった!" to loop-player
@@ -64,7 +69,7 @@ local function kitEffect_SolarTrack_Track(player: player, loc: location):
 	kitParticle_SolarTrack_Ignite({_loc})
 	set block at {_loc} to fire
 	add {_loc} to {Block.%{_player}%::*}
-	wait {@fire-second}
+	wait convertTickTime({@fire-tick})
 	if block at {_loc} is not air:
 		kitParticle_SolarTrack_Extinguish({_loc})
 		set block at {_loc} to air

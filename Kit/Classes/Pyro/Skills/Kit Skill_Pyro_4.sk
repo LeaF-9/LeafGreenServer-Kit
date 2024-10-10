@@ -5,7 +5,7 @@ options:
 	dash-meter: 10
 	dash-tick: 5
 	damage-hit: 2
-	ignite-second: 5 seconds
+	ignite-tick: 100
 
 
 
@@ -42,7 +42,9 @@ local function kitEffect_FlareDrive(player: player):
 			{_hit.%id of loop-entity%} is not set
 			set {_hit.%id of loop-entity%} to true
 			kitDamage({_player}, loop-entity, {@damage-hit})
-			ignite loop-entity for {@ignite-second}
+			ignite loop-entity for convertTickTime({@ignite-tick})
+			set {_igniteSeconds} to {@ignite-tick} / 20
+			kitEffectDescription(loop-entity, "§c§lダメージ§7: §4❤{@damage-hit} §8| §6§l炎上§7: §b%{_igniteSeconds}%秒")
 			kitParticle_FlareDrive_Hit(loop-entity)
 		wait a tick
 	set velocity of {_player} to vector(0, 0, 0)

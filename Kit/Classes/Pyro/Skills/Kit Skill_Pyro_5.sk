@@ -4,9 +4,9 @@ options:
 	flash-tick-speed: 0.5
 	flash-max-tick: 60
 	ignite-radius: 5
-	ignite-second: 5 seconds
+	ignite-tick: 100
 	flash-radius: 30
-	flash-second: 6 seconds
+	flash-tick: 120
 
 
 
@@ -46,7 +46,9 @@ local function kitEffect_HeatFlash(player: player):
 	loop all entities in radius {@ignite-radius} around {_effloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		LastKiller(loop-entity, {_player})
-		ignite loop-entity for {@ignite-second}
+		ignite loop-entity for convertTickTime({@ignite-tick})
+		set {_igniteSeconds} to {@ignite-tick} / 20
+		kitEffectDescription(loop-entity, "§6§l炎上§7: §b%{_igniteSeconds}%秒")
 		kitParticle_HeatFlash_Ignite(loop-entity)
 
 	# flash
@@ -56,9 +58,11 @@ local function kitEffect_HeatFlash(player: player):
 		checkCanSee(loop-player, {_effloc}) is true
 		if {damager.%loop-player%::*} does not contain {_player}:
 			add {_player} to {damager.%loop-player%::*}
-		applyEffect(loop-player, blindness, 1, {@flash-second})
+		applyEffect(loop-player, blindness, 1, convertTickTime({@flash-tick}))
 		kitParticle_HeatFlash_Dazzle(loop-player)
 		message formatted "§e§l閃光§6を食らった!" to loop-player
+		set {_flashSeconds} to ({@flash-tick} - 20) / 20
+		kitEffectDescription(loop-entity, "§e§l閃光§7: §b%{_flashSeconds}%秒")
 
 
 
