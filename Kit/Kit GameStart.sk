@@ -44,16 +44,34 @@ function kitStageDecision():
 	if {Kit-VoteStage::1} is set:
 		loop 5 times:
 			set {_result::%loop-number%} to 0
+		# Vote結果の集計
+		loop all players:
+			set {_vn} to 0
+			loop 5 times:
+				add 1 to {_vn}
+				if {Kit-Vote.%loop-player%::%{_vn}%} is true:
+					add 1 to {_result::%{_vn}%}
+			delete {Kit-Vote.%loop-player%::*}
+
 		# Vote結果の確認
-		loop {Kit-Vote::*}:
-			add 1 to {_result::%loop-value%}
-		delete {Kit-Vote}
 		set {_max} to max({_result::*})
 		loop {_result::*}:
 			loop-value = {_max}
 			add loop-index to {_maxs::*}
 		set {_mapindex} to a random element out of {_maxs::*}
 		set {_mapname} to {Kit-VoteStage::%{_mapindex}%}
+		
+		# Vote結果の発表
+		broadcast "§e§m=============== §9[§b§l§oVote Result§9] §e§m==============="
+		loop {Kit-VoteStage::*}:
+			set {_index.decide} to loop-index
+			set {_value.decide} to {Kit-VoteStage::%{_index.decide}%}
+			if {_index.decide} is {_mapindex}:
+				set {_mapname.decide} to "§6§l§n%{_value.decide}%"
+			else:
+				set {_mapname.decide} to "§7§o%{_value.decide}%"
+			broadcast "§e%{_index.decide}%. %{_mapname.decide}%§r §a%{_result::%{_index.decide}%}%§9票"
+
 		delete {Kit-VoteStage::*}
 		worldLoad("Kit", {_mapname})
 		if {Kit-StageListing} is true:
