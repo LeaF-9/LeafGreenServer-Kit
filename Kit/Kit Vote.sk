@@ -39,6 +39,7 @@ on inventory click:
 	name of event-inventory contains "§6§lMap Vote"
 	cancel event
 	set {_item} to clicked item
+	set {_slot} to clicked slot
 	set {_bool} to true
 	if {_item} is enchanted:
 		set {_bool} to false
@@ -55,10 +56,11 @@ on inventory click:
 	set {Kit-Vote.%player%::%{_num}%} to {_bool}
 	if {_bool} is true:
 		message formatted "{@prefix} §6§l%{_name}% §eに投票しました" to player
-		enchant clicked item with unbreaking 1
+		enchant {_item} with unbreaking 1
 	else:
 		message formatted "{@prefix} §6§l%{_name}% §9への投票を取り消しました" to player
-		disenchant clicked item
+		disenchant {_item}
+	set slot {_slot} of event-inventory to {_item}
 
 function kitOpenVoting(player: player):
 	open chest with 1 row named "§6§lMap Vote§r §b|| §a遊びたいマップを選んでね" to {_player}
