@@ -39,6 +39,9 @@ on inventory click:
 	name of event-inventory contains "§6§lMap Vote"
 	cancel event
 	set {_item} to clicked item
+	set {_bool} to true
+	if {_item} is enchanted:
+		set {_bool} to false
 	set {_name} to name of {_item}
 	if {_item} is not set:
 		stop
@@ -49,8 +52,13 @@ on inventory click:
 	if {_num} is not set:
 		message formatted "{@prefix} §c§l既に投票は終了しています" to player
 		stop
-	set {Kit-Vote::%player%} to {_num}
-	message formatted "{@prefix} §6§l%{_name}% §eに投票しました" to player
+	set {Kit-Vote.%player%::%{_num}%} to {_bool}
+	if {_bool} is true:
+		message formatted "{@prefix} §6§l%{_name}% §eに投票しました" to player
+		enchant clicked item with unbreaking 1
+	else:
+		message formatted "{@prefix} §6§l%{_name}% §9への投票を取り消しました" to player
+		disenchant clicked item
 
 function kitOpenVoting(player: player):
 	open chest with 1 row named "§6§lMap Vote§r §b|| §a遊びたいマップを選んでね" to {_player}
@@ -62,7 +70,10 @@ function kitOpenVoting(player: player):
 		set {_name} to {Kit-VoteStage::%loop-number%}
 		load yml "plugins/skript-yaml/Kit Stages/%{_name}%.yml" as "VoteInv"
 		set {_team} to yml value "team" from "VoteInv"
-		set {_rule} to yml value "rule" from "VoteInv"
+		set {_rule.pre} to yml value "rule" from "VoteInv"
+		set {_rule} to getCorrectRuleName({_rule.pre})
 		unload yml "VoteInv"
-		set slot {_slot} of current inventory of {_player} to diamond sword named "§6§l%{_name}%" with lore "§bチーム数§7: §6§l%{_team}%" and "§bゲームルール§7: §6§l%{_rule}%"
+		set {_slotitem} to diamond sword named "§6§l%{_name}%" with lore "§bチーム数§7: §6§l%{_team}%" and "§bゲームルール§7: §6§l%{_rule}%"
+		hide additional tooltip of {_slotitem}
+		set slot {_slot} of current inventory of {_player} to {_slotitem}
 		add 1 to {_slot}
