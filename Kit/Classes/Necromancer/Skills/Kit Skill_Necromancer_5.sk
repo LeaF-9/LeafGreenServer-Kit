@@ -17,6 +17,9 @@ function kitSkill_Necromancer_5(player: player):
 				loop all entities in radius 15 around {_point}:
 					kitCheckTeam(loop-entity, {_player}, false) is true
 					applyEffect(loop-entity, slowness, 3, 1 ticks)
+					if mod({_ln}, 20) = 0:
+						set {_ln.second} to {_ln} / 20
+						kitEffectDescription(loop-entity, "§5§l%{_ln.second}%")
 				wait a tick
 			message formatted "<##493759>§l術が発動した..." to {_player}
 			playSound("entity.wither.death", 1, 0.9, {_point})
@@ -25,6 +28,8 @@ function kitSkill_Necromancer_5(player: player):
 				if type of loop-entity is a player:
 					LastKiller(loop-entity, {_player})
 					message formatted "<##2e2930>魂の滅殺を受けてしまった..." to loop-entity
+					kitEffectDescription(loop-entity, "§c衰弱")
+					sendTimeBossbar_RED(loop-entity, "Necronomicon", 300)
 				add location of loop-entity to {_locs::*}
 				apply wither 3 to loop-entity for 15 seconds
 			set {_y} to 0
