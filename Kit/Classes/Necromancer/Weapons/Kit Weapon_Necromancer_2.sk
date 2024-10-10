@@ -25,12 +25,17 @@ function kitWeapon_Necromancer_2(player: player):
 	set {_now} to now
 	set {Stats.%{_player}%::Erasure Rapier} to {_now}
 	playSound("block.enchantment_table.use", 1.1, 0.8, {_player})
+	set {_time} to 200
 	loop 200 times:
 		{Stats.%{_player}%::Erasure Rapier} is {_now}
 		loop all items in {_player}'s inventory:
 			name of loop-item contains "Erasure Rapier"
 			loop-item is not enchanted
 			enchant loop-item with sharpness 3
+		
+		set {_active} to {_time} / (200 / 50)
+		chargeActionBar_TimeDisplay({_player}, {_active}, 50, {_time})
+		subtract 1 from {_time}
 		wait a tick
 	if {Stats.%{_player}%::Erasure Rapier} is {_now}:
 		loop all items in {_player}'s inventory:
