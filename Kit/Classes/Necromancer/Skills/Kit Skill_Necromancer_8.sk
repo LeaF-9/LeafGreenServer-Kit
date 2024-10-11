@@ -15,7 +15,7 @@ function kitSkill_Necromancer_8(player: player):
 			wait a tick
 
 local function kitSpawn_Necromancer_Wraith(player: player, loc: location):
-	set {_nbt} to "{PersistenceRequired:1b,Health:100,Attributes:[{Name:""generic.max_health"",Base:100},{Name:""generic.follow_range"",Base:50},{Name:""generic.knockback_resistance"",Base:1f}],Silent:1,HandItems:[{id:""minecraft:netherite_sword"",components:{custom_name:'[{""text"":""Wraith Sword""}]',enchantments:{levels:{knockback:2}}},Count:1},{}],ArmorItems:[{},{id:""minecraft:leather_leggings"",components:{dyed_color:{rgb:0}},Count:1},{id:""minecraft:leather_chestplate"",components:{dyed_color:{rgb:0}},Count:1},{id:""minecraft:player_head"",Count:1b,components:{profile:{id:[I;-843851991,-552779082,-1798462201,-1255611656],properties:[{name:""textures"",value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2EwYzg3ZmVjNzQxM2RjYjdkMWY2MWFmMjRjZjY0OWE1NTZlMDViMDIyNTAyMmMxZjYxZDgwODkzZjMzOTg3ZiJ9fX0=""}]}},Count:1b}],active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b},{id:slow_falling,duration:12000,amplifier:0,show_particles:0b}]}"
+	set {_nbt} to "{PersistenceRequired:1b,Health:100,Attributes:[{Name:""generic.max_health"",Base:100},{Name:""generic.follow_range"",Base:100},{Name:""generic.knockback_resistance"",Base:1f}],Silent:1,HandItems:[{id:""minecraft:netherite_sword"",components:{custom_name:'[{""text"":""Wraith Sword""}]',enchantments:{levels:{knockback:2}}},Count:1},{}],ArmorItems:[{},{id:""minecraft:leather_leggings"",components:{dyed_color:{rgb:0}},Count:1},{id:""minecraft:leather_chestplate"",components:{dyed_color:{rgb:0}},Count:1},{id:""minecraft:player_head"",Count:1b,components:{profile:{id:[I;-843851991,-552779082,-1798462201,-1255611656],properties:[{name:""textures"",value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2EwYzg3ZmVjNzQxM2RjYjdkMWY2MWFmMjRjZjY0OWE1NTZlMDViMDIyNTAyMmMxZjYxZDgwODkzZjMzOTg3ZiJ9fX0=""}]}},Count:1b}],active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b},{id:slow_falling,duration:12000,amplifier:0,show_particles:0b}]}"
 	set {_mob} to kitSpawnMob_NBT({_player}, wither skeleton, {_loc}, {_nbt})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-abyss" of {_mob} to true
@@ -36,13 +36,13 @@ local function kitWraithTimer(player: player, wraith: entity):
 			continue
 		# --- ターゲット設定 ---
 		delete {_target}
-		set {_target} to target of {_wraith}
-		if {_target} is not set:
-			delete {_target::*}
-			loop all players in radius 50 around {_wraith}:
-				kitCheckTeam({_player}, loop-player, false) is true
-				add loop-player to {_targets::*}
-			set {_target} to a random player out of {_targets::*}
+		set {_dis} to 1000000
+		loop all players:
+			kitCheckTeam({_player}, loop-player, false) is true
+			if {_dis} > distance between {_player} and loop-player:
+				set {_dis} to distance between {_player} and loop-player
+				set {_target} to loop-player
+		if {_target} is set:
 			set target of {_wraith} to {_target}
 		# --------------------	
 		if {_target} is not set:
@@ -51,7 +51,7 @@ local function kitWraithTimer(player: player, wraith: entity):
 		set {_dis} to distance between {_target} and {_wraith}
 		# --- 10m効果 ---
 		if {_dis} <= 10:
-			set {_chance} to a random integer between 1 and 3
+			set {_chance} to a random integer between 1 and 5
 			# --- 突進攻撃 ---
 			if {_chance} is 1:
 				kitWraith_Charge({_player}, {_wraith})
@@ -60,35 +60,23 @@ local function kitWraithTimer(player: player, wraith: entity):
 			else if {_chance} is 2:
 				kitWraith_Dark({_player}, {_wraith})
 			# ---------------
-			# --- 前方広範囲攻撃 ---
+			# --- 防御攻撃 ---
 			else if {_chance} is 3:
 				kitWraith_Barrier({_player}, {_wraith})
 			# --------------------
-		# --------------
-		# --- 30m効果 ---
-		else if {_dis} <= 30:
-			set {_chance} to a random integer between 1 and 2
-			apply slowness 10 without particles to {_wraith} for 3 seconds replacing existing effect
 			# --- 落雷攻撃 ---
-			if {_chance} is 1:
+			else if {_chance} is 4:
 				kitWraith_Thunder({_player}, {_wraith})
 			# ---------------
 			# --- 召喚攻撃 ---
-			else if {_chance} is 2:
+			else if {_chance} is 5:
 				kitWraith_Summon({_player}, {_wraith})
 			# ---------------
 		# --------------
-		# --- 50m効果 ---
-		else if {_dis} <= 50:
-			apply slowness 10 without particles to {_wraith} for 3 seconds replacing existing effect
-			# --- 波動砲攻撃 ---
-			kitWraith_Beam({_player}, {_wraith})
-			# ----------------
-		# --------------
-		# --- 静止効果 ---
+		# --- それ以上離れている場合はテレポート ---
 		else:
-			apply slowness 10 without particles to {_wraith} for 3 seconds replacing existing effect
-		# ---------------
+			kitWraith_Teleport({_player}, {_wraith})
+		# --------------
 		wait a second
 	loop all entities:
 		if loop-entity is {_wraith}:
@@ -98,6 +86,10 @@ local function kitWraithTimer(player: player, wraith: entity):
 		metadata value "necromancer-entity-wraith" of loop-entity is true
 		delete loop-entity
 
+
+
+# 突進攻撃
+# ターゲットに向かいとんでもない突進を行う
 local function kitWraith_Charge(player: player, wraith: entity):
 	set {_target} to target of {_wraith}
 	set {_tploc} to location of {_wraith}
@@ -139,6 +131,10 @@ local function kitWraith_Charge_Particle_2(wraith: entity, vector: vector):
 	set {_newVector} to {_newVector} + vector(a random number between -1 and 1, a random number between -1 and 1, a random number between -1 and 1)
 	spawnParticle_Vector(smoke, {_newVector}, 0.5, location of {_wraith})
 
+
+
+# 暗闇攻撃
+# 周囲のプレイヤーに盲目を付与し、更に盲目が付与されているプレイヤーを自身の位置に吸引する
 local function kitWraith_Dark(player: player, wraith: entity):
 	set {_baseloc} to location of {_wraith}
 	set {_baserad} to 0
@@ -180,6 +176,10 @@ local function kitWraith_Dark(player: player, wraith: entity):
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
 	# -----------------------
 
+
+
+# 防御攻撃
+# ダメージを完全に無効化し、ダメージを与えた敵にダメージを与える
 local function kitWraith_Barrier(player: player, wraith: entity):
 	playSound("entity.shulker.shoot", 1, 0.6, {_wraith})
 	set metadata value "abyss-barrier" of {_wraith} to true
@@ -193,6 +193,10 @@ local function kitWraith_Barrier(player: player, wraith: entity):
 		wait a tick
 	set metadata value "abyss-barrier" of {_wraith} to false
 
+
+
+# 落雷魔法
+# 上空に飛び上がり、周囲の敵めがけて落雷魔法を落とす
 local function kitWraith_Thunder(player: player, wraith: entity):
 	set {_baseloc} to location of {_wraith}
 	loop all players in radius 30 around {_baseloc}:
@@ -257,6 +261,10 @@ local function kitWraith_Thunder(player: player, wraith: entity):
 			set {_l} to location {_m} meters above {_loc}
 			spawnParticle(end_rod, {_l})
 
+
+
+# 召喚魔法
+# 自身の周囲に従者を5体召喚する この従者は無敵な上、敵を攻撃すると5秒間の恐怖効果を付与する
 local function kitWraith_Summon(player: player, wraith: entity):
 	set {_baseloc} to location of {_wraith}
 	playSound("entity.wither.spawn", 1, 0.9, {_baseloc})
@@ -282,6 +290,57 @@ local function kitWraith_Summon(player: player, wraith: entity):
 		set {_mob} to kitSpawnMob_NBT({_player}, skeleton, {_l}, {_nbt})
 		set metadata value "necromancer-entity" of {_mob} to {_player}
 		set metadata value "necromancer-entity-wraith" of {_mob} to true
+
+
+
+# 転移魔法
+# プレイヤーとの距離が離れすぎている場合に使用される
+local function kitWraith_Teleport(player: player, wraith: entity):
+	set {_target} to target of {_wraith}
+	set {_fromloc} to location 1 meter above {_wraith}
+	set {_toloc} to location 1 meter above {_target}
+	kitWraith_Teleport_Particle_Path({_fromloc}, {_toloc})
+	apply slowness 10 without particles to {_wraith} for 1 second replacing existing effect
+	teleport {_wraith} to location of {_target}
+	kitWraith_Teleport_Particle_End({_toloc})
+
+local function kitWraith_Teleport_Particle_Path(from: location, to: location):
+	set {_dis} to distance between {_from} and {_to}
+	set {_count} to round({_dis} * 5)
+	set {_baseloc} to setDirToVec({_from}, setVector({_from}, {_to}))
+	set {_m} to 0
+	loop {_count} times:
+		add 0.2 to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		chance of 5%:
+			kitWraith_Teleport_Particle_Line({_el})
+		spawnParticle(witch, {_el})
+
+local function kitWraith_Teleport_Particle_Line(loc: location):
+	set {_baseloc} to {_loc}
+	add a random number between -1 and 1 to x-pos of {_baseloc}
+	add a random number between -1 and 1 to y-pos of {_baseloc}
+	add a random number between -1 and 1 to z-pos of {_baseloc}
+	set {_d} to dice(3)
+	if {_d} is 1:
+		set {_color} to rgb(77, 67, 152)
+	else if {_d} is 2:
+		set {_color} to rgb(70, 14, 68)
+	else:
+		set {_color} to rgb(67, 61, 60)
+	set {_m} to 0
+	loop 10 times:
+		add 0.2 to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		
+
+
+local function kitWraith_Teleport_Particle_End(loc: location):
+	playSound("entity.enderman.teleport", 1, 0.55, {_loc})
+	loop 100 times:
+		spawnParticle_Vector(end_rod, randomVector(), 0.3, {_loc})
+
+
 
 local function kitWraith_Beam(player: player, wraith: entity):
 	set {_target} to target of {_wraith}
