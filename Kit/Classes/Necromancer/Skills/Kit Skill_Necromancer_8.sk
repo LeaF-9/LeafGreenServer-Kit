@@ -23,16 +23,12 @@ local function kitSpawn_Necromancer_Wraith(player: player, loc: location):
 
 local function kitWraithTimer(player: player, wraith: entity):
 	set {_true} to true
-	set {_num} to 0
+	set {_num} to -1
 	loop 30 times:
 		delete {_ok}
 		if {_wraith} is alive:
 			set {_ok} to true
 		if {_ok} is not set:
-			continue
-		add 1 to {_num}
-		if mod({_num}, 3) is not 0:
-			wait a second
 			continue
 		# --- ターゲット設定 ---
 		delete {_target}
@@ -48,6 +44,12 @@ local function kitWraithTimer(player: player, wraith: entity):
 		if {_target} is not set:
 			wait a second
 			continue
+		# --- タイマー ---
+		add 1 to {_num}
+		if mod({_num}, 3) is not 0:
+			wait a second
+			continue
+		# ----------------
 		set {_dis} to distance between {_target} and {_wraith}
 		# --- 10m効果 ---
 		if {_dis} <= 10:
@@ -153,11 +155,33 @@ local function kitWraith_Dark(player: player, wraith: entity):
 		add 15 to {_baserad}
 		wait a tick
 	# --- 暗闇効果付与 ---
-	loop all entities in radius 5 around {_baseloc}:
+	loop all entities in radius 10 around {_baseloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
-		applyEffect(loop-entity, blindness, 1, 4 seconds)
+		applyEffect(loop-entity, blindness, 1, 3 seconds)
 		setSupporter(loop-entity, {_player})
 	# ------------------
+	kitWraith_Dark_Particle_Launch({_baseloc})
+	wait 10 ticks
+	set {_count} to 0
+	loop 40 times:
+		set {_baseloc} to location of {_wraith}
+		add 1 to {_count}
+		kitWraith_Dark_Particle_Vortex({_baseloc}, {_count})
+		if mod({_count}, 5) is not 0:
+			wait a tick
+			continue
+		
+		loop all entities in radius 10 around {_baseloc}:
+			loop-entity has blindness
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_to} to location of loop-entity
+			set {_vec} to setVector({_baseloc}, {_to}, 0.5)
+			set velocity of loop-entity to {_vec}
+			kitWraith_Dark_Particle_Hit(loop-entity)
+		wait a tick
+
+
+local function kitWraith_Dark_Particle_Launch(baseloc: location):
 	# --- 音の演出 ---
 	playSound("block.sculk_catalyst.bloom", 1, 0.75, {_baseloc})
 	# --------------
@@ -175,6 +199,11 @@ local function kitWraith_Dark(player: player, wraith: entity):
 		add a random number between -5 and 5 to z-coordinate of {_el}
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
 	# -----------------------
+
+
+local function kitWraith_Dark_Particle_Vortex(loc: location, num: number):
+
+local function kitWraith_Dark_Particle_Hit(entity: entity):
 
 
 
