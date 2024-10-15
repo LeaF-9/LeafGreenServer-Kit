@@ -1,34 +1,34 @@
-function spawnParticle(particle: particle, loc: location, players: players = all players):
-	draw 1 of {_particle} at {_loc} with extra 0 with force for {_players::*}
+function spawnParticle(particle: particle, loc: locations, players: players = all players):
+	draw 1 of {_particle} at {_loc::*} with extra 0 with force for {_players::*}
 
-function spawnParticle_Block(block: block data, loc: location, players: players = all players):
-	draw 1 of block particle using {_block} at {_loc} with force for {_players::*}
+function spawnParticle_Block(block: block data, loc: locations, players: players = all players):
+	draw 1 of block particle using {_block} at {_loc::*} with force for {_players::*}
 
-function spawnParticle_BlockData(particle: particle, block: block data, loc: location, players: players = all players):
-	draw 1 of {_particle} using {_block} at {_loc} with force for {_players::*}
+function spawnParticle_BlockData(particle: particle, block: block data, loc: locations, players: players = all players):
+	draw 1 of {_particle} using {_block} at {_loc::*} with force for {_players::*}
 
-function spawnParticle_Color(particle: particle, R: number, G: number, B: number, loc: location, players: players = all players):
+function spawnParticle_Color(particle: particle, R: number, G: number, B: number, loc: locations, players: players = all players):
 	set {_bukkitColor} to bukkitColor(255, {_R}, {_G}, {_B})
-	draw 1 of {_particle} using {_bukkitColor} at {_loc} with force for {_players::*}
+	draw 1 of {_particle} using {_bukkitColor} at {_loc::*} with force for {_players::*}
 
-function spawnParticle_ColorAlpha(particle: particle, R: number, G: number, B: number, A: number, loc: location, players: players = all players):
+function spawnParticle_ColorAlpha(particle: particle, R: number, G: number, B: number, A: number, loc: locations, players: players = all players):
 	set {_bukkitColor} to bukkitColor({_A}, {_R}, {_G}, {_B})
-	draw 1 of {_particle} using {_bukkitColor} at {_loc} with force for {_players::*}
+	draw 1 of {_particle} using {_bukkitColor} at {_loc::*} with force for {_players::*}
 
-function spawnParticle_Dust(color: color, size: number, loc: location, players: players = all players):
+function spawnParticle_Dust(color: color, size: number, loc: locations, players: players = all players):
 	set {_dustOption} to dustOption({_color}, {_size})
-	draw 1 of dust using {_dustOption} at {_loc} with force for {_players::*}
+	draw 1 of dust using {_dustOption} at {_loc::*} with force for {_players::*}
 
-function spawnParticle_DustTransition(fColor: color, tColor: color, size: number, loc: location, players: players = all players):
+function spawnParticle_DustTransition(fColor: color, tColor: color, size: number, loc: locations, players: players = all players):
 	set {_dustTransition} to dustTransition({_fColor}, {_tColor}, {_size})
-	draw 1 of dust_color_transition using {_dustTransition} at {_loc} with force for {_players::*}
+	draw 1 of dust_color_transition using {_dustTransition} at {_loc::*} with force for {_players::*}
 
-function spawnParticle_Item(item: item type, loc: location, players: players = all players):
-	draw 1 of item particle using {_item} at {_loc} with force for {_players::*}
+function spawnParticle_Item(item: item type, loc: locations, players: players = all players):
+	draw 1 of item particle using {_item} at {_loc::*} with force for {_players::*}
 
-function spawnParticle_Note(color: text, loc: location, players: players = all players):
+function spawnParticle_Note(color: text, loc: locations, players: players = all players):
 	set {_c} to noteColorOffset({_color})
-	draw 0 of note at {_loc} with offset vector({_c}, 0, 0) with extra 1 with force for {_players::*}
+	draw 0 of note at {_loc::*} with offset vector({_c}, 0, 0) with extra 1 with force for {_players::*}
 
 function noteColorOffset(color: text) :: number:
 	if {_color} is "brown":
@@ -59,18 +59,43 @@ function noteColorOffset(color: text) :: number:
 		set {_offset} to 0
 	return {_offset}
 
-function spawnParticle_NoteOption(color: number, loc: location, players: players = all players):
-	draw 0 of note at {_loc} with offset vector({_color}, 0, 0) with extra 1 with force for {_players::*}
+function spawnParticle_NoteOption(color: number, loc: locations, players: players = all players):
+	draw 0 of note at {_loc::*} with offset vector({_color}, 0, 0) with extra 1 with force for {_players::*}
 
-function spawnParticle_Number(particle: particle, num: number, loc: location, players: players = all players):
-	draw 0 of {_particle} using {_num} at {_loc} with force for {_players::*}
+function spawnParticle_Number(particle: particle, num: number, loc: locations, players: players = all players):
+	draw 0 of {_particle} using {_num} at {_loc::*} with force for {_players::*}
 
-function spawnParticle_Size(particle: particle, size: number, loc: location, players: players = all players):
-	draw 1 of {_particle} at {_loc} with extra {_size} with force for {_players::*}
+function spawnParticle_Size(particle: particle, size: number, loc: locations, players: players = all players):
+	draw 1 of {_particle} at {_loc::*} with extra {_size} with force for {_players::*}
 
-function spawnParticle_Vector(particle: particle, vector: vector, power: number, loc: location, players: players = all players):
-	draw 0 of {_particle} at {_loc} with offset {_vector} with extra {_power} with force for {_players::*}
+function spawnParticle_Vector(particle: particle, vector: vector, power: number, loc: locations, players: players = all players):
+	draw 0 of {_particle} at {_loc::*} with offset {_vector} with extra {_power} with force for {_players::*}
 
 function spawnParticle_Vibration(fromloc: location, toloc: location, speed: time span, players: players = all players):
 	set {_vibration} to vibration({_toloc}, {_speed})
 	draw 1 of vibration using {_vibration} at {_fromloc} with force for {_players::*}
+
+
+
+function colorRandomizer(r: number, g: number, b: number, rr: number, rg: number, rb: number) :: color:
+	set {_rr.min} to {_r} - {_rr}
+	set {_rr.min} to 0 if {_rr.min} < 0
+	set {_rr.max} to {_r} + {_rr}
+	set {_rr.max} to 255 if {_rr.max} > 255
+
+	set {_rg.min} to {_g} - {_rg}
+	set {_rg.min} to 0 if {_rg.min} < 0
+	set {_rg.max} to {_g} + {_rg}
+	set {_rg.max} to 255 if {_rg.max} > 255
+
+	set {_rb.min} to {_b} - {_rb}
+	set {_rb.min} to 0 if {_rb.min} < 0
+	set {_rb.max} to {_b} + {_rb}
+	set {_rb.max} to 255 if {_rb.max} > 255
+
+	set {_dr} to a random integer between {_rr.min} and {_rr.max}
+	set {_dg} to a random integer between {_rg.min} and {_rg.max}
+	set {_db} to a random integer between {_rb.min} and {_rb.max}
+
+	set {_return} to rgb({_dr}, {_dg}, {_db})
+	return {_return}
