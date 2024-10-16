@@ -1,7 +1,7 @@
 # Circle
-function particleLocation_Circle(baseloc: location, count: number, radius: number) :: locations:
+function particleLocation_Circle(baseloc: location, count: number, radius: number, a: number = 0) :: locations:
 	set {_count} to floor({_count})
-	set {_rad} to 0
+	set {_rad} to 0 + {_a}
 	loop {_count} times:
 		set {_el} to {_baseloc}
 		add {_radius} * sin({_rad}) to x-pos of {_el}
@@ -74,8 +74,9 @@ function particleLocation_Tornado(baseloc: location, count: number, density: num
 		stop
 	set {_count} to floor({_count})
 	set {_rad} to {_arad}
+	set {_addrad} to 360 / {_count}
 	if {_clockwize} is false:
-		set {_addradius} to {_addradius} * -1
+		set {_addrad} to {_addrad} * -1
 	set {_el} to {_baseloc}
 	set {_addy} to {_density} / {_count}
 	set {_basey} to y-pos of {_baseloc}
