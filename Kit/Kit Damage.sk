@@ -77,45 +77,7 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 		LastKiller({_victim}, {_attacker})
 
 	if {_fix} is true:
-		if getDamageModification_SET({_victim}) is not -1:
-			set {_damage} to getDamageModification_SET({_victim})
-		
-		else:
-			set {_dm.add} to getDamageModification_ADD({_victim})
-			set {_dm.mul} to getDamageModification_MUL({_victim})
-			set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
-
-		{Stats.%{_victim}%::DamageTicks} is not set
-		{Stats.%{_victim}%::Invincible} is not set
-		if {Kit-Shield::%{_victim}%} is set:
-			set {_shield} to {Kit-Shield::%{_victim}%}
-			subtract {_damage} from {_shield}
-			send action bar "§9§lシールドがダメージを無効化した!" to {_victim}
-			send action bar "§c§lシールドが攻撃を阻害した!" to {_attacker}
-			if {_shield} > 0:
-				set {Kit-Shield::%{_victim}%} to {_shield}
-				playSound("block.anvil.land", 0.7, 2, {_victim})
-			else:
-				delete {Kit-Shield::%{_victim}%}
-				delete {Kit-ShieldTime::%{_victim}%}
-				message formatted "§3§lシールドが崩壊した!" to {_victim}
-				playSound("entity.item.break", 0.7, 1, {_victim})
-		else:
-			set {_health} to health of {_victim}
-			subtract {_damage} from {_health}
-			if {_health} <= 0:
-				damage {_victim} by 10000 hearts
-			else:
-				set health of {_victim} to {_health}
-			playSound("entity.generic.hurt", 1, 1, {_victim})
-			play hurt animation on {_victim}
-		set {_atktick} to 20  # maximum damage delay of {_victim}
-		set {Stats.%{_victim}%::DamageTicks} to round({_atktick} / 2)
-		while {Stats.%{_victim}%::DamageTicks} is set:
-			wait a tick
-			subtract 1 from {Stats.%{_victim}%::DamageTicks}
-			if {Stats.%{_victim}%::DamageTicks} <= 0:
-				delete {Stats.%{_victim}%::DamageTicks}
+		damage {_victim} by {_damage} hearts
 	else:
 		# Attribute取得
 		set {_attribute.armor} to {_victim}.getAttribute(Attribute.GENERIC_ARMOR).getValue()  # 防具値 (最大20)
@@ -132,12 +94,6 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 		set {_truedamage} to {_calcdamage} * (1 - {_minarg} / 25)
 		set {_truedamage} to {_truedamage} * 0.5
 		damage {_victim} by {_truedamage} hearts
-
-function kitDamagePierce(attacker: player, victim: entity, damage: number):
-	if checkEntityType({_victim}, player) is true:
-		LastKiller({_victim}, {_attacker})
-
-	damage {_victim} by {_damage} hearts
 
 function kitDamageInstant(attacker: player, victim: entity, damage: number):
 	if checkEntityType({_victim}, player) is true:
