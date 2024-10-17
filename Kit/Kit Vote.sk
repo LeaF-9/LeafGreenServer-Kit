@@ -37,9 +37,15 @@ function kitVoteSetting():
 on inventory click:
 	type of event-inventory is chest inventory
 	name of event-inventory contains "§6§lMap Vote"
-	cancel event
 	set {_item} to clicked item
-	set {_slot} to clicked slot
+	set {_lores::*} to lore of {_item}
+	set {_slot} to 2
+	loop 5 times:
+		set {_invitem} to slot {_slot} of event-inventory
+		if {_invitem} is {_item}:
+			continue
+		add 1 to {_slot}
+	cancel event
 	set {_bool} to true
 	if {_item} is enchanted:
 		set {_bool} to false
@@ -56,10 +62,13 @@ on inventory click:
 	set {Kit-Vote.%player%::%{_num}%} to {_bool}
 	if {_bool} is true:
 		message formatted "{@prefix} §6§l%{_name}% §eに投票しました" to player
-		enchant {_item} with unbreaking 1
+		set {_lores::4} to "§a§l§n投票済"
+		set {_item} to lime concrete named "§6§l%{_name}%" with lore {_lores::*}
+		set {_item} to {_item} with nbt from "{enchantments:{levels:{unbreaking:1},show_in_tooltip:false}}"
 	else:
 		message formatted "{@prefix} §6§l%{_name}% §9への投票を取り消しました" to player
-		disenchant {_item}
+		set {_lores::4} to "§7§o未投票"
+		set {_item} to light gray concrete named "§6§l%{_name}%" with lore {_lores::*}
 	set slot {_slot} of event-inventory to {_item}
 
 function kitOpenVoting(player: player):
@@ -75,7 +84,18 @@ function kitOpenVoting(player: player):
 		set {_rule.pre} to yml value "rule" from "VoteInv"
 		set {_rule} to getCorrectRuleName({_rule.pre})
 		unload yml "VoteInv"
-		set {_slotitem} to diamond sword named "§6§l%{_name}%" with lore "§bチーム数§7: §6§l%{_team}%" and "§bゲームルール§7: §6§l%{_rule}%"
-		hide additional tooltip of {_slotitem}
+		set {_lores::1} to "§bチーム数§7: §6§l%{_team}%"
+		set {_lores::2} to "§bゲームルール§7: §6§l%{_rule}%"
+		set {_lores::3} to ""
+		set {_lores::4} to "§7§o未投票"
+		set {_slotitem} to light gray concrete named "§6§l%{_name}%" with lore {_lores::*}
+
+		set {_bool} to {Kit-Vote.%{_player}%::%loop-number%}
+		if {_bool} is true:
+			set {_lores::4} to "§a§l§n投票済"
+			set {_slotitem} to lime concrete named "§6§l%{_name}%" with lore {_lores::*}
+			set {_slotitem} to {_slotitem} with nbt from "{enchantments:{levels:{unbreaking:1},show_in_tooltip:false}}"
+
+
 		set slot {_slot} of current inventory of {_player} to {_slotitem}
 		add 1 to {_slot}
