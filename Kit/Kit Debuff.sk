@@ -437,16 +437,22 @@ function kitFear(player: player, tick: number):
 		removeDebuffs({_player}, "Fear")
 
 # 追跡
-function kitTrail(player: player, time: time span, from: location = location(0.0, 0.0, 0.0)):
-	addKitOS("Trail")
-	{Kit-Trail::%{_player}%} is not set
+function kitTrail(player: player, tick: number, from: location = location(0.0, 0.0, 0.0)):
+	kitCheckAlive({_player}) is true
+	if getDebuffs({_player}, "Trail") is true:
+		set {_hasTime} to getDebuffRemains({_player}, "Trail")
+		if {_hasTime} >= {_tick}:
+			stop
 	set {_now} to now
-	set {Kit-Trail::%{_player}%} to {_now}
-	create bossbar titled "&9&l追跡" and id "%{_player}%-Trail" for {_player} with progress 100 with colors blue with style solid
-	message "§9追跡された! §d自分の位置情報が残留してしまう!" to {_player}
+	set metadata value "Debuff - Trail" of {_player} to {_now}
+	set metadata value "DebuffTime - Trail" of {_player} to {_tick}
+
+	set {_bossbar.id} to a random UUID
+	create bossbar titled "&9&l追跡" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+	message formatted "§9追跡された! §d自分の位置情報が残留してしまう!" to {_player}
 	playSound("item.lodestone_compass.lock", 1, 0.5, {_player})
 	# タイマー初期設定
-	set {_tick} to convertTimeNumber({_time})
+	set {_time} to "%{_tick}% ticks" parsed as time span
 	set {_prog} to 100 / {_tick}
 	# from-location設定
 	set {_sum.xyz} to x-pos of {_from} + y-pos of {_from} + z-pos of {_from}
@@ -460,14 +466,14 @@ function kitTrail(player: player, time: time span, from: location = location(0.0
 	# 効果
 	loop {_tick} times:
 		# 例外処理
-		if {Kit-Trail::%{_player}%} is not {_now}:
+		if getDebuffDates({_player}, "Trail") is not {_now}:
 			continue
 		# initialize
 		delete {_player.trail::*}
 		# タイマー設定
-		set {_value} to value of bossbar "%{_player}%-Trail"
+		set {_value} to value of bossbar {_bossbar.id}
 		subtract {_prog} from {_value}
-		set bossbar "%{_player}%-Trail" value to {_value}
+		set bossbar {_bossbar.id} value to {_value}
 		# 1秒おきの効果
 		if mod(loop-number, 20) is 0:
 			# 音
@@ -525,13 +531,16 @@ function kitTrail(player: player, time: time span, from: location = location(0.0
 				# ポイント発光
 				# loop {_magmacube.point::*}:
 				# 	packetUnglowing(loop-player, loop-value-3)
+		# DebuffTime処理
+		subtractDebuffTime({_player}, "Trail")
 		wait a tick
-	remove bossbar "%{_player}%-Trail"
-	delete {Kit-Trail::%{_player}%}
+	remove bossbar {_bossbar.id}
 	# loop {_magmacube.point::*}:
 	# 	delete loop-value
 	loop {_player.trail::*}:
 		packetUnglowing(loop-value, {_player})
+	if getDebuffDates({_player}, "Trail") is {_now}:
+		removeDebuffs({_player}, "Trail")
 
 # シールド
 function kitShield(player: player, shield: number):
