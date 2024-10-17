@@ -7,9 +7,9 @@ function kitSkill_Archer_2(player: player):
 	kitMsg({_player}, "§b§lForceSnipe§9を起動しました!")
 	kitMsg({_player}, "§35秒間の間矢の近くにいる敵にダメージを与えます!")
 	set {_time} to 100
-	while {_time} > 0:
+	sendTimeBossbar_GREEN({_player}, "Force Snipe", {_time})
+	loop {_time} times:
 		wait a tick
-		subtract 1 from {_time}
 	kitMsg({_player}, "§b§lForceSnipe§3の効果が切れました")
 	delete {Stats.%{_player}%::ForceSnipe}
 
@@ -30,6 +30,7 @@ on projectile hit:
 		set {_mul} to (5 - {_dis}) / 5
 		set {_damage} to 3 * {_mul}
 		kitDamage(shooter, loop-entity, {_damage})
+		kitEffectDescription(loop-entity, "§4❤%{_damage}%")
 		playSound("entity.phantom.hurt", 1, 2, location of loop-entity)
 		add loop-entity to {_sp::*}
 	set {_loc} to location of projectile
