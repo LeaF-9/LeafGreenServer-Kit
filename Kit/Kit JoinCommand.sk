@@ -3,6 +3,13 @@ command /join:
 	trigger:
 		if {Join::%player%} is set:  # 既に参加済
 			message "§cあなたは既にゲームに参加しています" to player
+			# 投票機能
+			if {Kit-tochu} is true:
+				stop
+			if {Kit-StageVote} is true:  # 投票の場合
+				if {Kit-VoteStage::1} is not set:  # 投票ステージが未決定
+					kitVoteSetting()
+				kitOpenVoting(player)
 			stop
 		if {Kit-Testing::%player%} is true:  # スキルテスト中の排除
 			message "§cスキルテスト中はJoinすることが出来ません!" to player
@@ -123,7 +130,7 @@ command /leave:
 			subtract 1 from {Kit-Join}
 			broadcast "§2[§aKit PvP§2] §6%player% §dが退出しました §7(§b%{Kit-Join}%§9人参加中です§7)"
 			execute console command "/team leave %player%"
-			teleport the player to {LobbyLocation::Kit}
+			teleport the player to {LobbyLocation}
 			wait a tick
 			set gamemode of player to survival
 			execute console command "/skclass %player% LobbyInv"
