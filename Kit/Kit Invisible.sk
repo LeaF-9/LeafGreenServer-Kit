@@ -1,51 +1,150 @@
 options:
 	vprefix: §b[§7Vanish§b]
 
-function kitInvisible(player: player, second: time span):
-	addKitOS("Invisible")
+function kitInvisible(player: player, tick: number):
+	kitCheckAlive({_player}) is true
+	if getInvisibleStatus({_player}) is true:
+		set {_hasTime} to getInvisibleRemains({_player})
+		if {_hasTime} >= {_tick}:
+			stop
+	kitInvisibleRepeat_Stop({_player})
 	set {_now} to now
-	set {Kit-Invisible::%{_player}%} to {_now}
-	set {_tick} to "%{_second}%"
-	replace " seconds" with "" in {_tick}
-	replace " second" with "" in {_tick}
-	set {_tick} to {_tick} parsed as number
-	set {_tick} to {_tick} * 20
-	set {_hasEffects::*} to checkEffects({_player})
+	set metadata value "Invisible - Date" of {_player} to {_now}
+	set metadata value "Invisible - Time" of {_player} to {_tick}
+
+	# 透明Effect付与
+	set {_second} to "%{_tick}% ticks" parsed as time span
+	set {_hasEffects::*} to getClassEffects("Kit-%{Class::%{_player}%}%")
 	if {_hasEffects::*} does not contain invisibility:
 		set {_invnot} to true
 		apply invisibility 1 to {_player} for {_second} replacing existing effect
-	loop all players:
-		{Class::%loop-player%} is not "Sentinel"
-		{team::%loop-player%} is not {team::%{_player}%}
-		hide {_player} from loop-player
+
+	# タイマー作成
+	set {_bossbar.id} to a random UUID
+	create bossbar titled "&b&l透明" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+	set {_prog} to 100 / {_tick}
+
+	# 透明処理
 	loop {_tick} times:
-		if {_ng} is not set:
-			wait a tick
-			if {Kit-Invisible::%{_player}%} is not set:
-				set {_ng} to true
-			if {_player} has glowing:
-				set {_ng} to true
-	if {Kit-Invisible::%{_player}%} is {_now}:
-		if {_invnot} is true:
-			remove invisibility from {_player}
-		reveal {_player} from all players
-		delete {Kit-Invisible::%{_player}%}
-		send action bar "§b§l透明化が解除されました!" to {_player}
+		# 例外処理
+		if getInvisibleDates({_player}) is not {_now}:
+			continue
+		if {_player} has glowing:
+			continue
+		
+		# 透明付与
+		loop all players:
+			{Class::%loop-player%} is not "Sentinel"
+			kitCheckTeam({_player}, loop-player, false) is true
+			hide {_player} from loop-player
+
+		# ボスバー処理
+		set {_value} to value of bossbar {_bossbar.id}
+		subtract {_prog} from {_value}
+		set bossbar {_bossbar.id} value to {_value}
+		# InvisibleTime処理
+		subtractInvisibleTime({_player})
+		wait a tick
+	remove bossbar {_bossbar.id}
+	if getInvisibleDates({_player}) is {_now}:
+		removeInvisible({_player})
+
+function kitInvisibleRepeat_Start(player: player):
+	kitCheckAlive({_player}) is true
+	metadata value "Invisible - Repeat" of {_player} is not set
+	removeInvisible({_player})
+	set metadata value "Invisible - Repeat" of {_player} to true
+
+	# 透明Effect付与
+	set {_hasEffects::*} to getClassEffects("Kit-%{Class::%{_player}%}%")
+	if {_hasEffects::*} does not contain invisibility:
+		set {_invnot} to true
+		apply infinite invisibility 1 to {_player} replacing existing effect
+
+	# 透明処理
+	set {_repeater} to metadata value "Invisible - Repeat" of {_player}
+	while {_repeater} is true:
+		# 例外処理
+		if {_player} has glowing:
+			kitInvisibleRepeat_Stop({_player})
+			stop
+
+		# 透明付与
+		loop all players:
+			{Class::%loop-player%} is not "Sentinel"
+			kitCheckTeam({_player}, loop-player, false) is true
+			hide {_player} from loop-player
+		send action bar "§b§o透明化しています..." to {_player}
+
+		wait a tick
+		delete {_repeat}
+		set {_repeater} to metadata value "Invisible - Repeat" of {_player}
+	removeInvisible({_player})
+
+function kitInvisibleRepeat_Stop(player: player):
+	delete metadata value "Invisible - Repeat" of {_player}
 
 on leftclick:
-	if {Kit-Invisible::%targeted player%} is set:
-		distance between the player and the targeted player is smaller than 5
-		remove invisibility from {_player}
-		reveal the targeted player from all players
-		send action bar "§b§l透明化が解除されました!" to targeted player
-		delete {Kit-Invisible::%targeted player%}
+	set {_target} to targeted player
+	getInvisibleStatus({_target}) is true
+	distance between the player and {_target} is smaller than 5
+	removeInvisible({_target})
 
-on damage of player:
-	if {Kit-Invisible::%victim%} is set:
+on damage of player with priority HIGHEST:
+	if getInvisibleStatus(victim) is true:
 		if damage was caused by fall:
 			stop
-		else:
-			remove invisibility from victim
-			reveal victim from all players
-			send action bar "§b§l透明化が解除されました!" to victim
-			delete {Kit-Invisible::%victim%}
+		removeInvisible(victim)
+
+
+
+function getInvisibleStatus(player: player) :: boolean:
+	set {_metadata} to "Invisible - Date"
+	set {_has} to metadata value {_metadata} of {_player}
+	if {_has} is not set:
+		return false
+	set {_metadata.repeat} to "Invisible - Repeat"
+	set {_repeat} to metadata value {_metadata.repeat} of {_player}
+	if {_repeat} is false:
+		return false
+	return true
+
+function getInvisibleRemains(player: player) :: number:
+	if getInvisibleStatus({_player}) is false:
+		return 0
+	
+	set {_metadata} to "Invisible - Time" of {_player}
+	set {_time} to metadata value {_metadata} of {_player}
+	return {_time}
+
+function getInvisibleDates(player: player) :: date:
+	set {_metadata} to "Invisible - Date"
+	set {_return} to metadata value {_metadata} of {_player}
+	return {_return}
+
+function getInvisibleRepeats(player: player) :: boolean:
+	if getInvisibleStatus({_player}) is true:
+		return false
+	set {_metadata.repeat} to "Invisible - Repeat"
+	set {_repeat} to metadata value {_metadata.repeat} of {_player}
+	if {_repeat} is not set:
+		return false
+	return true
+
+function removeInvisible(player: player):
+	set {_metadata.base} to "Invisible - Date"
+	set {_metadata.time} to "Invisible - Time
+	delete metadata value {_metadata.base} of {_player}
+	delete metadata value {_metadata.time} of {_player}
+
+	set {_hasEffects::*} to getClassEffects("Kit-%{Class::%{_player}%}%")
+	if {_hasEffects::*} does not contain invisibility:
+		remove invisibility from {_player}
+	reveal {_player} from all players
+	send action bar "§b§l透明化が解除されました!" to {_player}
+
+local function subtractInvisibleTime(player: player):
+	set {_debufftime} to getInvisibleRemains({_player})
+	subtract 1 from {_debufftime}
+	set {_metadata} to "Invisible - Time"
+	set metadata value {_metadata} of {_player} to {_debufftime}

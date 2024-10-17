@@ -49,17 +49,11 @@ on projectile hit:
 			else if loop-entity is shooter:
 				loop-entity does not have glowing
 				set {_jc} to true
-				{Kit-Invisible::%shooter%} is not set
-				set {Kit-Invisible::%shooter%} to true
-				loop all players:
-					{Class::%loop-player%} is not "Engineer"
-					kitCheckTeam(loop-player, shooter, false) is true
-					hide shooter from loop-player
+				getInvisibleRepeats(shooter) is false
+				kitInvisibleRepeat_Start(shooter)
 		if {_jc} is not set:
-			if {Kit-Invisible::%shooter%} is true:
-				reveal shooter from all players
-				delete {Kit-Invisible::%shooter%}
-				send action bar "§b§l透明化が解除されました!" to shooter
+			if getInvisibleRepeats(shooter) is true:
+				kitInvisibleRepeat_Stop(shooter)
 		loop all entities:
 			metadata value "gametype" of loop-entity is "Kit"
 			{_eg::%id of loop-entity%} is not set
@@ -67,10 +61,8 @@ on projectile hit:
 			remove poison from loop-entity
 			delete {_jb::%id of loop-entity%}
 		wait a tick
-	if {Kit-Invisible::%shooter%} is true:
-		reveal shooter from all players
-		delete {Kit-Invisible::%shooter%}
-		send action bar "§b§l透明化が解除されました!" to shooter
+	if getInvisibleRepeats(shooter) is true:
+		kitInvisibleRepeat_Stop(shooter)
 	loop all entities:
 		{_eg::%id of loop-entity%} is true
 		{_jb::%id of loop-entity%} is true

@@ -422,7 +422,7 @@ function kitFear(player: player, tick: number):
 			if distance between loop-player and {_player} > 10:
 				hide loop-player from {_player}
 			else:
-				if {Kit-Invisible::%loop-player%} is not set:
+				if getInvisibleStatus(loop-player) is false:
 					reveal loop-player from {_player}
 		# -----------
 		# DebuffTime処理
@@ -432,7 +432,7 @@ function kitFear(player: player, tick: number):
 	if getDebuffDates({_player}, "Fear") is {_now}:
 		loop all players:
 			metadata value "gametype" of loop-player is "Kit"
-			{Kit-Invisible::%loop-player%} is not set
+			getInvisibleStatus(loop-player) is false
 			reveal loop-player from {_player}
 		removeDebuffs({_player}, "Fear")
 
@@ -641,7 +641,7 @@ function kitLuck(player: player, pluslvl: number, absolute: boolean = false):
 
 function getDebuffs(player: player, debuff: text) :: boolean:
 	set {_metadata} to "Debuff - %{_debuff}%"
-	set {_has} to metadata value {_metdata} of {_player}
+	set {_has} to metadata value {_metadata} of {_player}
 	if {_has} is not set:
 		return false
 	return true

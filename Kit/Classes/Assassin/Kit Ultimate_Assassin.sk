@@ -9,27 +9,18 @@ function kitUltAssassin(player: player):
 			{TrueTeam::%{_player}%} is not {TrueTeam::%loop-player%}
 			set {_enemy} to true
 		if {_enemy} is not set:
-			if {Kit-Invisible::%{_player}%} is not set:
-				set {Kit-Invisible::%{_player}%} to true
+			if getInvisibleRepeats({_player}) is false:
+				kitInvisibleRepeat_Start({_player})
 				send action bar "§b§l透明化した!" to {_player}
-				loop all players:
-					{Join::%loop-player%} is "Kit"
-					{team::%loop-player%} is not {team::%{_player}%}
-					{Class::%loop-player%} is not "Engineer"
-					hide {_player} from loop-player
 		else:
-			if {Kit-Invisible::%{_player}%} is true:
-				reveal {_player} from all players
-				delete {Kit-Invisible::%{_player}%}
-				send action bar "§c§l透明化が解除された!" to {_player}
+			if getInvisibleRepeats({_player}) is true:
+				kitInvisibleRepeat_Stop({_player})
 			set {_eb} to aroundEffect({_player})
 			spawnParticle_Color(entity_effect, 100, 0, 10, {_eb})
 		wait a tick
 	delete {Stats.%{_player}%::UltAssassin}
-	if {Kit-Invisible::%{_player}%} is true:
-		reveal {_player} from all players
-		delete {Kit-Invisible::%{_player}%}
-		send action bar "§c§l透明化が解除された!" to {_player}
+	if getInvisibleRepeats({_player}) is true:
+		kitInvisibleRepeat_Stop({_player})
 
 on rightclick:
 	if {Stats.%player%::UltAssassin} is true:

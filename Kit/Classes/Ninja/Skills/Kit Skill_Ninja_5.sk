@@ -241,8 +241,8 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
 				if loop-player does not have regeneration:
 					applyEffect(loop-player, regeneration, 1, 5 seconds)
-				if {Kit-Invisible::%loop-player%} is not set:
-					kitInvisible(loop-player, 5 seconds)
+				if getInvisibleStatus(loop-player) is false:
+					kitInvisible(loop-player, 100)
 			else:
 				add loop-player to {_nowentering::*}
 				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
@@ -253,10 +253,8 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 				remove loop-value-2 from {_entered::*}
 				if kitCheckTeam(loop-value-2, {_player}, true) is true:
 					resetEffect(loop-value-2)
-					if {Kit-Invisible::%loop-value-2%} is set:
-						reveal loop-value-2 from all players
-						delete {Kit-Invisible::%loop-value-2%}
-						send action bar "§b§l透明化が解除されました!" to loop-value-2
+					if getInvisibleStatus(loop-value-2) is true:
+						removeInvisible(loop-value-2)
 				else:
 					resetEffect(loop-value-2)
 		loop {_grasses::*}:
@@ -265,10 +263,8 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 	loop {_entered::*}:
 		if kitCheckTeam(loop-value, {_player}, true) is true:
 			resetEffect(loop-value)
-			if {Kit-Invisible::%loop-value%} is set:
-				reveal loop-value from all players
-				delete {Kit-Invisible::%loop-value%}
-				send action bar "§b§l透明化が解除されました!" to loop-value
+			if getInvisibleStatus(loop-value) is true:
+				removeInvisible(loop-value)
 		else:
 			resetEffect(loop-value)
 	loop {_grasses::*}:

@@ -26,7 +26,7 @@ local function kitEffect_AlienationDome(player: player):
 				kitParticle_AlienationDome_Inner({_player}, loop-player)
 			else:
 				add loop-player to {_others::*}
-			if {Kit-Invisible::%loop-player%} is not set:
+			if getInvisibleStatus(loop-player) is false:
 				add loop-player to {_allplayers::*}
 		# reveal list
 		loop {_allplayers::*}:
@@ -44,7 +44,7 @@ local function kitEffect_AlienationDome(player: player):
 	delete {_allplayers::*}
 	loop all players:
 		loop-player is not {_player}
-		if {Kit-Invisible::%loop-player%} is not set:
+		if getInvisibleStatus(loop-player) is false:
 			add loop-player to {_allplayers::*}
 	reveal {_allplayers::*} from all players
 

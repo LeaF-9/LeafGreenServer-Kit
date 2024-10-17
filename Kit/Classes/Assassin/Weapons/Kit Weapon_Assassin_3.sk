@@ -27,7 +27,7 @@ on sneak toggle:
 		if {_cansee} is true:
 			delete {_true}
 		if {_true} is true:
-			kitInvisible(player, 0.1 seconds)
+			kitInvisible(player, 2)
 			wait a tick
 	playSound("entity.phantom.hurt", 1, 2, player)
 	loop 10 times:
@@ -37,7 +37,7 @@ on sneak toggle:
 on damage:
 	metadata value "gametype" of attacker is "Kit"
 	{Class::%attacker%} is "Assassin"
-	{Kit-Invisible::%attacker%} is set
+	getInvisibleStatus(attacker) is true
 	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 3) is true
 	applyEffect(victim, wither, 3, 1.5 seconds, true)
