@@ -73,10 +73,9 @@ on heal:
 
 #凍結
 function kitFreeze(player: player, tick: number, msg: boolean = true):
-	addKitOS("Freeze")
 	kitCheckAlive({_player}) is true
 
-	if metadata value "Debuff - Freeze" of {_player} is set:
+	if getDebuffs({_player}, "Freeze") is true:
 		set {_has} to metadata value "DebuffTime - Freeze" of {_player}
 		if {_has} is not set:
 			set {_has} to 0
@@ -554,9 +553,25 @@ function kitLuck(player: player, pluslvl: number, absolute: boolean = false):
 		set {_pitch} to 1 - ({_pitchlvl} / 5 * 0.5)
 	playSound("entity.experience_orb.pickup", 1, {_pitch}, {_player}, true)
 
+
+
 function getDebuffs(player: player, debuff: text) :: boolean:
 	set {_metadata} to "Debuff - %{_debuff}%"
 	set {_has} to metadata value {_metdata} of {_player}
 	if {_has} is not set:
 		return false
 	return true
+
+function getDebuffRemains(player: player, debuff: text) :: number:
+	if getDebuffs({_player}, {_debuff}) is false:
+		return 0
+	
+	set {_metadata} to "DebuffTime - %{_debuff}%" of {_player}
+	set {_time} to metadata value {_metadata} of {_player}
+	return {_time}
+
+function removeDebuffs(player: player, debuff: text):
+	set {_metadata.base} to "Debuff - %{_debuff}%"
+	set {_metadata.time} to "DebuffTime - %{_debuff}%"
+	delete metadata value {_metadata.base} of {_player}
+	delete metadata value {_metadata.time} of {_player}
