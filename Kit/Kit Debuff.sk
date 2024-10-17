@@ -322,39 +322,56 @@ function kitImmortal(player: player, time: time span):
 	delete {Kit-Immortal::%{_player}%}
 
 # 眩暈
-function kitStun(player: player, time: time span):
-	addKitOS("Stun")
-	{Kit-Stun::%{_player}%} is not set
+function kitStun(player: player, tick: number):
+	kitCheckAlive({_player}) is true
+	if getDebuffs({_player}, "Stun") is true:
+		set {_hasTime} to getDebuffRemains({_player}, "Stun")
+		if {_hasTime} >= {_tick}:
+			stop
 	set {_now} to now
-	set {Kit-Stun::%{_player}%} to {_now}
-	create bossbar titled "&6&l眩暈" and id "%{_player}%-Stun" for {_player} with progress 100 with colors yellow with style solid
-	message "§6眩暈を起こしてしまった!" to {_player}
+	set metadata value "Debuff - Stun" of {_player} to {_now}
+	set metadata value "DebuffTime - Stun" of {_player} to {_tick}
+
+	set {_bossbar.id} to a random UUID
+	create bossbar titled "&6&l眩暈" and id {_bossbar.id} for {_player} with progress 100 with colors yellow with style solid
+	message formatted "§6眩暈を起こしてしまった!" to {_player}
 	playSound("entity.iron_golem.hurt", 0.7, 0.7, {_player})
-	set {_tick} to convertTimeNumber({_time})
+	set {_time} to "%{_tick}% ticks" parsed as time span
 	set {_prog} to 100 / {_tick}
 	set walk speed of {_player} to 0.1
 	set attack speed attribute of {_player} to 4
+
+	# 眩暈処理
 	set {_rad} to 0
 	loop {_tick} times:
-		if {Kit-Stun::%{_player}%} is {_now}:
-			set {_value} to value of bossbar "%{_player}%-Stun"
-			subtract {_prog} from {_value}
-			set bossbar "%{_player}%-Stun" value to {_value}
-			set {_el} to location of {_player}
-			add 2 to y-coordinate of {_el}
-			add 36 to {_rad}
-			add 0.5 * sin({_rad}) to x-coordinate of {_el}
-			add 0.5 * cos({_rad}) to z-coordinate of {_el}
-			spawnParticle(crit, {_el})
-			wait a tick
-	remove bossbar "%{_player}%-Stun"
-	set walk speed of {_player} to 0.2
-	set attack speed attribute of {_player} to 24
-	delete {Kit-Stun::%{_player}%}
+		if getDebuffDates({_player}, "Stun") is not {_now}:
+			continue
+
+		# ボスバー処理
+		set {_value} to value of bossbar {_bossbar.id}
+		subtract {_prog} from {_value}
+		set bossbar {_bossbar.id} value to {_value}
+
+		# パーティクル処理
+		set {_el} to location of {_player}
+		add 2 to y-coordinate of {_el}
+		add 36 to {_rad}
+		add 0.5 * sin({_rad}) to x-coordinate of {_el}
+		add 0.5 * cos({_rad}) to z-coordinate of {_el}
+		spawnParticle(crit, {_el})
+
+		# DebuffTime処理
+		subtractDebuffTime({_player}, "Stun")
+		wait a tick
+	remove bossbar {_bossbar.id}
+	if getDebuffDates({_player}, "Stun") is {_now}:
+		set walk speed of {_player} to 0.2
+		set attack speed attribute of {_player} to 24
+		removeDebuffs({_player}, "Stun")
 
 on shoot:
 	metadata value "gametype" of shooter is "Kit"
-	if {Kit-Stun::%shooter%} is set:
+	if getDebuffs(shooter, "Stun") is true:
 		wait a tick
 		push projectile to the left at speed random number from -1 to 1
 		push projectile upwards at speed random number from -1 to 1
