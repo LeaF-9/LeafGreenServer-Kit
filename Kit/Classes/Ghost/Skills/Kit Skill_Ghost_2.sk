@@ -21,11 +21,13 @@ function kitSkill_Ghost_2(player: player):
 
 on damage of player:
 	metadata value "gametype" of victim is "Kit"
+	checkDamagable(victim) is true
 	if {Stats.%victim%::MindDependence} is set:
-		set {_dmg} to damage * 0.75
+		set {_dmg} to damage
 		loop all players:
 			{Stats.%victim%::MindDependence} is loop-player
-			kitDamage(victim, loop-player, {_dmg}, true)
+			kitDamage(victim, loop-player, {_dmg})
+			kitEffectDescription(loop-player, "§4§l痛覚共有")
 			loop 10 times:
 				set {_el} to aroundEffect(victim)
 				spawnParticle_BlockData(falling_dust, red concrete powder, {_el})
