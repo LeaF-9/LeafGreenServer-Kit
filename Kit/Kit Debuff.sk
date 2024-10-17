@@ -206,50 +206,51 @@ function kitEffect_Palsy(player: player):
 		wait a tick
 
 #吸収
-function kitDrain(player: player, time: time span):
-	addKitOS("Drain")
-	{Kit-Drain::%{_player}%} is not set
-	set {Kit-Drain::%{_player}%} to {_player}
-	message "§2§l体力が養分として吸われていく!" to {_player}
-	set {_level} to round({_level})
-	create bossbar titled "&2&l吸収" and id "%{_player}%-Drain" for {_player} with progress 100 with colors green with style solid
-	set {_tick} to convertTimeNumber({_time})
-	set {_prog} to 100 / {_tick}
-	loop {_tick} times:
-		set {_value} to value of bossbar "%{_player}%-Drain"
-		subtract {_prog} from {_value}
-		set bossbar "%{_player}%-Drain" value to {_value}
-		apply poison 1 without particles to {_player} for a tick
-		if mod(loop-number, 20) is 0:
-			set {_hp} to health of {_player}
-			subtract 1 from {_hp}
-			set health of {_player} to {_hp}
-			playSound("entity.generic.drink", 1, 0.85, {_player})
-			set {_mindis} to 15
-			loop all players in radius 10 around {_player}:
-				kitCheckTeam(loop-player, {_player}, false) is true
-				set {_dis} to distance between loop-player and {_player}
-				if {_mindis} > {_dis}:
-					set {_target} to loop-player
-					set {_mindis} to {_dis}
-			if {_target} is set:
-				kitHeal({_target}, 0.5)
-				playSound("block.composter.empty", 1, 1.3, {_target})
-				set {_from} to location 1 meters above {_player}
-				set {_to} to location 1 meters above {_target}
-				set {_vector} to setVector({_from}, {_to})
-				set yaw of {_from} to yaw of {_vector}
-				set pitch of {_from} to pitch of {_vector}
-				set {_eln} to round({_mindis}) * 2
-				set {_en} to 0
-				loop {_eln} times:
-					add 1 to {_en}
-					set {_el} to location 0.5 * {_en} meters in front of {_from}
-					spawnParticle(composter, {_el})
-		wait a tick
-	delete {Kit-Drain::%{_player}%}
-	message "§a吸収効果が切れました" to {_player}
-	remove bossbar "%{_player}%-Drain"
+# 現在見直し
+# function kitDrain(player: player, time: time span):
+# 	addKitOS("Drain")
+# 	{Kit-Drain::%{_player}%} is not set
+# 	set {Kit-Drain::%{_player}%} to {_player}
+# 	message "§2§l体力が養分として吸われていく!" to {_player}
+# 	set {_level} to round({_level})
+# 	create bossbar titled "&2&l吸収" and id "%{_player}%-Drain" for {_player} with progress 100 with colors green with style solid
+# 	set {_tick} to convertTimeNumber({_time})
+# 	set {_prog} to 100 / {_tick}
+# 	loop {_tick} times:
+# 		set {_value} to value of bossbar "%{_player}%-Drain"
+# 		subtract {_prog} from {_value}
+# 		set bossbar "%{_player}%-Drain" value to {_value}
+# 		apply poison 1 without particles to {_player} for a tick
+# 		if mod(loop-number, 20) is 0:
+# 			set {_hp} to health of {_player}
+# 			subtract 1 from {_hp}
+# 			set health of {_player} to {_hp}
+# 			playSound("entity.generic.drink", 1, 0.85, {_player})
+# 			set {_mindis} to 15
+# 			loop all players in radius 10 around {_player}:
+# 				kitCheckTeam(loop-player, {_player}, false) is true
+# 				set {_dis} to distance between loop-player and {_player}
+# 				if {_mindis} > {_dis}:
+# 					set {_target} to loop-player
+# 					set {_mindis} to {_dis}
+# 			if {_target} is set:
+# 				kitHeal({_target}, 0.5)
+# 				playSound("block.composter.empty", 1, 1.3, {_target})
+# 				set {_from} to location 1 meters above {_player}
+# 				set {_to} to location 1 meters above {_target}
+# 				set {_vector} to setVector({_from}, {_to})
+# 				set yaw of {_from} to yaw of {_vector}
+# 				set pitch of {_from} to pitch of {_vector}
+# 				set {_eln} to round({_mindis}) * 2
+# 				set {_en} to 0
+# 				loop {_eln} times:
+# 					add 1 to {_en}
+# 					set {_el} to location 0.5 * {_en} meters in front of {_from}
+# 					spawnParticle(composter, {_el})
+# 		wait a tick
+# 	delete {Kit-Drain::%{_player}%}
+# 	message "§a吸収効果が切れました" to {_player}
+# 	remove bossbar "%{_player}%-Drain"
 
 #睡眠
 function kitSleep(player: player, time: time span):
