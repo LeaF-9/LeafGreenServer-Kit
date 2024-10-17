@@ -417,16 +417,16 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 	kitParticle_Ninjutsu_HYOU_2({_loc})
 	loop all players in radius 5 around {_loc}:
 		kitCheckTeam({_player}, loop-player, false) is true
-		kitFreeze(loop-player, 2 seconds)
+		kitFreeze(loop-player, 40)
 	loop 100 times:
 		delete {_jb::*}
 		loop all players in radius 5 around {_loc}:
 			kitCheckTeam(loop-player, {_player}, false) is true
-			if {Kit-Freeze::%loop-player%} is not set:
+			if getDebuffs(loop-player, "Freeze") is false:
 				add 1 to {_eg::%loop-player%}
 				if {_eg::%loop-player%} >= 20:
 					set {_eg::%loop-player%} to 0
-					kitFreeze(loop-player, 0.25 seconds)
+					kitFreeze(loop-player, 5)
 					playSound("block.glass.break", 1, 2, loop-player)
 			set {_jb::%loop-player%} to true
 		loop all players:

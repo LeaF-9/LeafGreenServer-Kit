@@ -21,7 +21,7 @@ function kitSkill_Wizard_7(player: player):
 	{_ok} is true
 	subtract {_mana} from {Kit-Mana::%{_player}%}
 	kitMsg({_player}, "<##00ced1>ブリザード<##5f9ea0>を召喚します...")
-	kitFreeze({_player}, 1 seconds, false)
+	kitFreeze({_player}, 20, false)
 	set {_bn} to 0
 	while {_blockok} is not set:
 		add 0.1 to {_bn}
@@ -81,13 +81,13 @@ function kitSkill_Wizard_7(player: player):
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			kitDamage({_player}, loop-entity, 1)
 			if checkEntityType(loop-entity, player):
-				if {Kit-Freeze::%loop-entity%} is not set:
+				if getDebuffs(loop-entity, "Freeze") is false:
 					add loop-entity to {_fp::*}
 					set {_wk} to walk speed of loop-entity
 					subtract 0.025 from {_wk}
 					if {_wk} <= 0:
 						set walk speed of loop-entity to 0.2
-						kitFreeze(loop-entity, 2 seconds)
+						kitFreeze(loop-entity, 40)
 						kitEffectDescription(loop-entity, "§4❤1 §8& §b凍結")
 						playSound("entity.player.levelup", 1, 2, loop-entity)
 					else:

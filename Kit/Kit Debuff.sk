@@ -76,52 +76,61 @@ function kitFreeze(player: player, tick: number, msg: boolean = true):
 	kitCheckAlive({_player}) is true
 
 	if getDebuffs({_player}, "Freeze") is true:
-		set {_has} to metadata value "DebuffTime - Freeze" of {_player}
-		if {_has} is not set:
-			set {_has} to 0
-		if {_has} >= {_tick}:
+		set {_hasTime} to getDebuffRemains({_player}, "Freeze")
+		if {_hasTime} >= {_tick}:
 			stop
 
+	# パラメータの設定
 	set {_loc} to location of {_player}
 	set {_now} to now
-	set {Kit-Freeze::%{_player}%} to {_now}
 	set metadata value "Debuff - Freeze" of {_player} to {_now}
 	set metadata value "DebuffTime - Freeze" of {_player} to {_tick}
 	set {_time} to "%{_tick}% ticks" parsed as time span
+	set {_bossbar.id} to a random UUID
 	if {_msg} is true:
 		message "§b凍ってしまった!" to {_player}
-		create bossbar titled "&b&l凍結" and id "%{_player}%-Freeze" for {_player} with progress 100 with colors blue with style solid
+		create bossbar titled "&b&l凍結" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
 	set {_prog} to 100 / {_tick}
+
+	# 凍結処理
 	loop {_tick} times:
-		if {Kit-Freeze::%{_player}%} is {_now}:
-			teleport {_player} to {_loc}
-			if {_msg} is true:
-				loop 5 times:
+		if getDebuffDates({_player}, "Freeze") is not {_now}:
+			continue
+		
+		teleport {_player} to {_loc}
+		set {_debufftime} to getDebuffRemains({_player}, "Freeze")
+		subtract 1 from {_debufftime}
+		set metadata value "DebuffTime - Freeze" of {_player} to {_debufftime}
+		# 演出
+		if {_msg} is true:
+			# パーティクル
+			loop 5 times:
+				set {_el} to aroundEffect({_player})
+				spawnParticle_BlockData(falling_dust, snow block, {_el})
+				chance of 50%:
 					set {_el} to aroundEffect({_player})
-					spawnParticle_BlockData(falling_dust, snow block, {_el})
-					chance of 50%:
-						set {_el} to aroundEffect({_player})
-						spawnParticle_BlockData(falling_dust, blue ice, {_el})
-				set {_value} to value of bossbar "%{_player}%-Freeze"
-				subtract {_prog} from {_value}
-				set bossbar "%{_player}%-Freeze" value to {_value}
-				set {_nbt} to nbt compound of {_player}
-				set int tag "TicksFrozen" of {_nbt} to 130
-			wait a tick
-	{Kit-Freeze::%{_player}%} is {_now}
-	delete {Kit-Freeze::%{_player}%}
+					spawnParticle_BlockData(falling_dust, blue ice, {_el})
+			set {_value} to value of bossbar {_bossbar.id}
+			subtract {_prog} from {_value}
+			set bossbar {_bossbar.id} value to {_value}
+			set {_nbt} to nbt compound of {_player}
+			set int tag "TicksFrozen" of {_nbt} to 130
+		wait a tick
+	
+	if getDebuffDates({_player}, "Freeze") is {_now}:
+		removeDebuffs({_player}, "Freeze")
 	if {_msg} is true:
-		remove bossbar "%{_player}%-Freeze"
+		remove bossbar {_bossbar.id}
 		set {_nbt} to nbt compound of {_player}
 		set int tag "TicksFrozen" of {_nbt} to 0
 
-on damage of player:
-	{Kit-Freeze::%victim%} is set
+on damage of player with priority NORMAL:
+	getDebuffs(victim, "Freeze") is true
 	if damage was caused by fire, burning or lava:
-		set damage to 3
-		delete {Kit-Freeze::%victim%}
+		setDamageModification_SET(victim, 3)
+		removeDebuffs(victim, "Freeze")
 	else:
-		set damage to damage * 0.75
+		setDamageModification_MUL(victim, 0.75)
 
 #麻痺
 function kitPalsy(player: player, time: time span, eff: boolean = true):
@@ -569,6 +578,11 @@ function getDebuffRemains(player: player, debuff: text) :: number:
 	set {_metadata} to "DebuffTime - %{_debuff}%" of {_player}
 	set {_time} to metadata value {_metadata} of {_player}
 	return {_time}
+
+function getDebuffDates(player: player, debuff: text) :: date:
+	set {_metadata} to "Debuff - %{_debuff}%"
+	set {_return} to metadata value {_metadata} of {_player}
+	return {_return}
 
 function removeDebuffs(player: player, debuff: text):
 	set {_metadata.base} to "Debuff - %{_debuff}%"
