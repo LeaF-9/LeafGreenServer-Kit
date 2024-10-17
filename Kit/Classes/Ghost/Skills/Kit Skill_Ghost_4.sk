@@ -6,12 +6,13 @@ function kitSkill_Ghost_4(player: player):
 			toolCT({_player}, "Ghost", 4)
 			set {_tg} to {Stats.%{_player}%::SkillTarget}
 			kitFear({_tg}, 20000)
-			applyEffect({_tg}, slowness, 3, 1000 seconds, true)
+			set metadata value "Lethal Souvenir" of {_tg} to true
 			playSound("entity.elder_guardian.death", 1, 1, {_tg})
 			set {_memsg} to kitGhostMessage("§5%{_tg}% §0に置き土産を残した...")
 			set {_youmsg} to kitGhostMessage("§5霊の憑拠を受けてしまった...", true)
 			kitMsg({_player}, {_memsg})
 			message formatted {_youmsg} to {_tg}
+			kitEffectDescription({_tg}, "§5§l死霊の置き土産")
 			set health of {_player} to 0
 			set {_baseloc} to location of {_tg}
 			loop 10 times:
@@ -27,3 +28,10 @@ function kitSkill_Ghost_4(player: player):
 				wait a tick
 	else:
 		send action bar "§c§l対象が存在しません!" to {_player}
+
+
+
+on damage of player with priority LOW:
+	metadata value "gametype" of victim is "Kit"
+	metadata value "Lethal Souvenir" of attacker is true
+	setDamageModification_SET(victim, 1)
