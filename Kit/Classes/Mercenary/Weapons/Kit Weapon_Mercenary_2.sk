@@ -7,13 +7,13 @@ on damage with priority LOW:
 	attacker is sneaking
 	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 2) is true
-	{Kit-Blood::%victim%} is set
+	getDebuffs(victim, "Blood") is true
 	setDamageModification_ADD(victim, 3)
 	kitEffect_Vander(attacker, victim)
 
 local function kitEffect_Vander(player: player, target: player):
 	kitParticle_Vander_Edge({_player}, {_target})
-	delete {Kit-Blood::%{_target}%}
+	delete metadata value "Debuff - Blood" of {_target}
 	message formatted "§4傷口から吸血された..." to {_target}
 	kitHeal({_player}, 3)
 	applyEffect({_player}, speed, 2, 5 seconds)

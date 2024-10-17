@@ -14,7 +14,7 @@ on damage of player with priority HIGH:
 
 	set {_hp} to victim's health
 	set {_addhp} to {_hp} * 0.25 * 0.1
-	if {Kit-Blood::%victim%} is set:
+	if getDebuffs(victim, "Blood") is true:
 		set {_firsthp} to {_hp} * 0.25
 	else:
 		set {_firsthp} to {_hp} * 0.5
@@ -46,7 +46,7 @@ function kitHarmfulEffect(player: player):
 
 on death of player:
 	{Class::%{LastKiller::%victim%}%} is "Mercenary"
-	{Kit-Blood::%victim%} is set
+	getDebuffs(victim, "Blood") is true
 	set {_potion} to kitSkillItem("Mercenary", 1)
 	set {_potion} to kitItemTagChanger({_potion}, "Mercenary", "Skill", 1)
 	if {LastKiller::%victim%}'s inventory does not contain {_potion}:

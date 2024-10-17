@@ -1,73 +1,94 @@
 #出血
 function kitBlood(player: player):
-	addKitOS("Blood")
+	# Conditions
 	set {_now} to now
-	{Kit-Blood::%{_player}%} is not set
-	set {Kit-Blood::%{_player}%} to {_now}
-	create bossbar titled "&4&l出血" and id "%{_player}%-Blood" for {_player} with progress 100 with colors red with style solid
-	message "§4出血してしまった!" to {_player}
+	set {_has} to metadata value "Debuff - Blood" of {_player}
+	{_has} is not set
+
+	# 出血 - 初期処理
+	set metadata value "Debuff - Blood" of {_player} to {_now}
+	set {_bossbar.id} to a random UUID
+	create bossbar titled "&4&l出血" and id {_bossbar.id} for {_player} with progress 100 with colors red with style solid
+	message formatted "§4出血してしまった!" to {_player}
 	apply blindness 1 to {_player} for 3 seconds
+
+	# 出血パーティクル
 	loop 10 times:
 		set {_el} to aroundEffect({_player})
 		spawnParticle_Block(redstone block, {_el})
-	loop 100 times:
+
+	# 初期処理 - Bossbar
+	loop 200 times:
 		wait a tick
-		set {_value} to value of bossbar "%{_player}%-Blood"
+		set {_value} to value of bossbar {_bossbar.id}
 		subtract 0.5 from {_value}
-		set bossbar "%{_player}%-Blood" value to {_value}
-	while {Kit-Blood::%{_player}%} is {_now}:
-		message "§4出血している...!" to {_player}
-		set bossbar "%{_player}%-Blood" value to 100
-		if {Stats.%{_player}%::Gaping} is true:
-			damage {_player} by 1 hearts
-			loop 10 times:
-				set {_el} to aroundEffect({_player})
-				spawnParticle_Dust(rgb(100, 0, 10), 1.5, {_el})
-			chance of 30%:
-				delete {Kit-Blood::%{_player}%}
-				message "§d出血が収まった!" to {_player}
-				set {_ng} to true
-				remove bossbar "%{_player}%-Blood"
-		else:
-			set {_hp} to health of {_player}
-			subtract 0.5 from {_hp}
-			set health of {_player} to {_hp}
-			playSound("entity.player.hurt", 1, 1, {_player})
-			chance of 50%:
-				delete {Kit-Blood::%{_player}%}
-				message "§d出血が収まった!" to {_player}
-				set {_ng} to true
-				remove bossbar "%{_player}%-Blood"
+		set bossbar {_bossbar.id} value to {_value}
+	
+	# ループ処理
+	set {_status.blood} to metadata value "Debuff - Blood" of {_player}
+	while {_status.blood} is {_now}:
+		message formatted "§4出血している...!" to {_player}
+		set bossbar {_bossbar.id} value to 100
+
+		# 出血処理
+		set {_hp} to health of {_player}
+		subtract 0.5 from {_hp}
+		set health of {_player} to {_hp}
 		apply blindness 1 to {_player} for 3 seconds
+		playSound("entity.player.hurt", 1, 1, {_player})
+
+		# 治癒処理
+		chance of 50%:
+			delete metadata value "Debuff - Blood" of {_player}
+			message formatted "§d出血が収まった!" to {_player}
+			set {_ng} to true
+			remove bossbar {_bossbar.id}
+
+		# パーティクル処理
 		loop 10 times:
 			set {_el} to aroundEffect({_player})
 			spawnParticle_Block(redstone block, {_el})
 			spawnParticle(dripping_lava, {_el})
+
+		# 継続処理
 		if {_ng} is not set:
-			loop 100 times:
-				wait 2 ticks
-				set {_value} to value of bossbar "%{_player}%-Blood"
-				subtract 1 from {_value}
-				set bossbar "%{_player}%-Blood" value to {_value}
-				set {_el} to aroundEffect({_player})
-				spawnParticle(falling_lava, {_el})
-	if {Kit-Blood::%{_player}%} is not set:
-		remove bossbar "%{_player}%-Blood"
+			loop 200 times:
+				wait a tick
+				set {_value} to value of bossbar {_bossbar.id}
+				subtract 0.5 from {_value}
+				set bossbar {_bossbar.id} value to {_value}
+				chance of 50%:
+					set {_el} to aroundEffect({_player})
+					spawnParticle(falling_lava, {_el})
+		
+		# 確認処理
+		delete {_status.blood}
+		set {_status.blood} to metadata value "Debuff - Blood" of {_player}
+	remove bossbar {_bossbar.id}
 
 on heal:
 	metadata value "gametype" of player is "Kit"
-	{Kit-Blood::%player%} is set
+	getDebuffs(player, "Blood") is true
 	cancel event
 
 #凍結
-function kitFreeze(player: player, time: time span, msg: boolean = true):
+function kitFreeze(player: player, tick: number, msg: boolean = true):
 	addKitOS("Freeze")
-	{Kit-Freeze::%{_player}%} is not set
 	kitCheckAlive({_player}) is true
+
+	if metadata value "Debuff - Freeze" of {_player} is set:
+		set {_has} to metadata value "DebuffTime - Freeze" of {_player}
+		if {_has} is not set:
+			set {_has} to 0
+		if {_has} >= {_tick}:
+			stop
+
 	set {_loc} to location of {_player}
 	set {_now} to now
 	set {Kit-Freeze::%{_player}%} to {_now}
-	set {_tick} to convertTimeNumber({_time})
+	set metadata value "Debuff - Freeze" of {_player} to {_now}
+	set metadata value "DebuffTime - Freeze" of {_player} to {_tick}
+	set {_time} to "%{_tick}% ticks" parsed as time span
 	if {_msg} is true:
 		message "§b凍ってしまった!" to {_player}
 		create bossbar titled "&b&l凍結" and id "%{_player}%-Freeze" for {_player} with progress 100 with colors blue with style solid
@@ -532,3 +553,10 @@ function kitLuck(player: player, pluslvl: number, absolute: boolean = false):
 		set {_pitchlvl} to abs({_pitchlvl})
 		set {_pitch} to 1 - ({_pitchlvl} / 5 * 0.5)
 	playSound("entity.experience_orb.pickup", 1, {_pitch}, {_player}, true)
+
+function getDebuffs(player: player, debuff: text) :: boolean:
+	set {_metadata} to "Debuff - %{_debuff}%"
+	set {_has} to metadata value {_metdata} of {_player}
+	if {_has} is not set:
+		return false
+	return true
