@@ -97,9 +97,8 @@ function kitFreeze(player: player, tick: number, msg: boolean = true):
 			continue
 		
 		teleport {_player} to {_loc}
-		set {_debufftime} to getDebuffRemains({_player}, "Freeze")
-		subtract 1 from {_debufftime}
-		set metadata value "DebuffTime - Freeze" of {_player} to {_debufftime}
+		# DebuffTime処理
+		subtractDebuffTime({_player}, "Freeze")
 		# 演出
 		if {_msg} is true:
 			# パーティクル
@@ -164,6 +163,8 @@ function kitPalsy(player: player, tick: number, eff: boolean = true):
 		set {_value} to value of bossbar {_bossbar.id}
 		subtract {_prog} from {_value}
 		set bossbar {_bossbar.id} value to {_value}
+		# DebuffTime処理
+		subtractDebuffTime({_player}, "Palsy")
 		wait a tick
 	if getDebuffDates({_player}, "Palsy") is {_now}:
 		removeDebuffs({_player}, Palsy)
@@ -253,45 +254,63 @@ function kitEffect_Palsy(player: player):
 # 	remove bossbar "%{_player}%-Drain"
 
 #睡眠
-function kitSleep(player: player, time: time span):
-	addKitOS("Sleep")
-	{Kit-Sleep::%{_player}%} is not set
-	message "§bZzz..." to {_player}
-	playSound("entity.wolf.growl", 0.5, 0.5, {_player})
+function kitSleep(player: player, tick: number):
+	kitCheckAlive({_player}) is true
+	if getDebuffs({_player}, "Sleep") is true:
+		set {_hasTime} to getDebuffRemains({_player}, "Sleep")
+		if {_hasTime} >= {_tick}:
+			stop
+	set {_now} to now
+	set metadata value "Debuff - Sleep" of {_player} to {_now}
+	set metadata value "DebuffTime - Sleep" of {_player} to {_tick}
+
+	set {_tickEffect} to {_tick} + 20
+	set {_time} to "%{_tickEffect}% ticks" parsed as time span
 	apply blindness 1 to {_player} for {_time} replacing existing effect
-	create bossbar titled "&5&l睡眠" and id "%{_player}%-Sleep" for {_player} with progress 100 with colors purple with style solid
-	set {Kit-Sleep::%{_player}%} to true
-	set {_tick} to convertTimeNumber({_time})
+
+	set {_bossbar.id} to a random UUID
+	create bossbar titled "&5&l睡眠" and id {_bossbar.id} for {_player} with progress 100 with colors purple with style solid
+
+	message formatted "§bZzz..." to {_player}
+	playSound("entity.wolf.growl", 0.5, 0.5, {_player})
+
 	set {_prog} to 100 / {_tick}
 	set {_loc} to location of {_player}
+	# 睡眠処理
 	loop {_tick} times:
-		if {Kit-Sleep::%{_player}%} is true:
-			if block below {_loc} is passable:
-				set {_loc} to location 1 meter below {_loc}
-			set {_tl} to {_loc}
-			teleport {_player} to {_tl}
-			set {_el} to location of head of {_player}
-			add a random number between -0.5 and 0.5 to x-coordinate of {_el}
-			add a random number between -0.5 and 0.5 to y-coordinate of {_el}
-			add a random number between -0.5 and 0.5 to z-coordinate of {_el}
-			spawnParticle_Vector(sculk_charge_pop, vector(0, 0.1, 0), 0.1, {_el})
-			set {_value} to value of bossbar "%{_player}%-Sleep"
-			subtract {_prog} from {_value}
-			set bossbar "%{_player}%-Sleep" value to {_value}
-			wait a tick
-	remove bossbar "%{_player}%-Sleep"
-	if {Kit-Sleep::%{_player}%} is true:
-		delete {Kit-Sleep::%{_player}%}
+		if getDebuffDates({_player}, "Sleep") is not {_now}:
+			continue
 
-on damage of player:
-	{Kit-Sleep::%victim%} is set
+		if block below {_loc} is passable:
+			set {_loc} to location 1 meter below {_loc}
+		teleport {_player} to {_loc}
+
+		set {_value} to value of bossbar {_bossbar.id}
+		subtract {_prog} from {_value}
+		set bossbar {_bossbar.id} value to {_value}
+
+		# パーティクル処理
+		set {_el} to location of head of {_player}
+		add a random number between -0.5 and 0.5 to x-coordinate of {_el}
+		add a random number between -0.5 and 0.5 to y-coordinate of {_el}
+		add a random number between -0.5 and 0.5 to z-coordinate of {_el}
+		spawnParticle_Vector(sculk_charge_pop, vector(0, 0.1, 0), 0.1, {_el})
+		# DebuffTime処理
+		subtractDebuffTime({_player}, "Sleep")
+		wait a tick
+	remove bossbar {_bossbar.id}
+	if getDebuffDates({_player}, "Sleep") is {_now}:
+		removeDebuffs({_player}, "Sleep")
+
+on damage of player with priority HIGHEST:
+	getDebuffs(victim, "Sleep") is true
 	if damage was caused by projectile:
 		if metadata value "sleep" of projectile is "true":
 			stop
 	if damage was caused by fall:
-		set damage to 0
+		cancel event
 		stop
-	delete {Kit-Sleep::%victim%}
+	removeDebuffs(victim, "Sleep")
 	remove blindness from victim
 
 #不死
@@ -604,3 +623,9 @@ function removeDebuffs(player: player, debuff: text):
 	set {_metadata.time} to "DebuffTime - %{_debuff}%"
 	delete metadata value {_metadata.base} of {_player}
 	delete metadata value {_metadata.time} of {_player}
+
+local function subtractDebuffTime(player: player, debuff: text):
+	set {_debufftime} to getDebuffRemains({_player}, {_debuff})
+	subtract 1 from {_debufftime}
+	set {_metadata} to "DebuffTime - %{_debuff}%"
+	set metadata value {_metadata} of {_player} to {_debufftime}
