@@ -35,7 +35,7 @@ on shoot:
 			set {_hit.%id of loop-entity%} to true
 			kitDamage(shooter, loop-entity, 2, true)
 			kitPalsy(loop-entity, 60)
-			kitParticle_HolyBow_Hit(loop-entity)
+			kitParticle_HolyBow_Hit(shooter, loop-entity)
 			playSound("block.amethyst_block.resonate", 1, 1.5, shooter, true)
 		wait a tick
 
@@ -78,13 +78,15 @@ local function kitParticle_HolyBow_Circle(loc: location):
 		spawnParticle_DustTransition(colorRandomizer(255, 247, 173, 0, 0, 20), rgb(255, 255, 255), 0.75, particleLocation_CircleV({_loc}, 90, {_radius}))
 		wait a tick
 
-local function kitParticle_HolyBow_Hit(entity: entity):
+local function kitParticle_HolyBow_Hit(player: player, entity: entity):
 	playSound("entity.allay.item_thrown", 1, 1.35, {_entity})
 	set {_baseloc} to location 1 meter above {_entity}
+	set yaw of {_baseloc} to yaw of {_player}
+	set pitch of {_baseloc} to pitch of {_player}
 	set {_radius} to 0
-	loop 6 times:
+	loop 4 times:
 		add 0.5 to {_radius}
-		spawnParticle_DustTransition(colorRandomizer(255, 243, 103, 0, 0, 50), rgb(255, 243, 203), 1, particleLocation_CircleV({_loc}, 60, {_radius}))
+		spawnParticle_DustTransition(colorRandomizer(255, 243, 103, 0, 0, 50), rgb(255, 243, 203), 1, particleLocation_CircleV({_baseloc}, 60, {_radius}))
 		wait a tick
 
 on projectile hit:
