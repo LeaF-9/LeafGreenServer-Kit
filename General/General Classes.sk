@@ -164,3 +164,12 @@ function potionChanger(potion: text) :: potion effect type:
 	else if {_potion} is "HARM":
 		set {_effect} to "instant damage" parsed as potion effect type
 	return {_effect}
+
+function getClassEffects(class: text) :: potion effect types:
+	set {_yaml.id} to a random UUID
+	load yml "plugins/skript-yaml/General Classes/%{_class}%.yml" as {_yaml.id}
+	loop yaml node keys "effects" from {_yaml.id}:
+		set {_effect} to potionChanger("%loop-key%")
+		add {_effect} to {_classEffects::*}
+	unload yml {_yaml.id}
+	return {_classEffects::*}
