@@ -74,7 +74,6 @@ on heal:
 #凍結
 function kitFreeze(player: player, tick: number, msg: boolean = true):
 	kitCheckAlive({_player}) is true
-
 	if getDebuffs({_player}, "Freeze") is true:
 		set {_hasTime} to getDebuffRemains({_player}, "Freeze")
 		if {_hasTime} >= {_tick}:
@@ -133,27 +132,42 @@ on damage of player with priority NORMAL:
 		setDamageModification_MUL(victim, 0.75)
 
 #麻痺
-function kitPalsy(player: player, time: time span, eff: boolean = true):
-	addKitOS("Palsy")
-	{Kit-Palsy::%{_player}%} is not set
-	set {Kit-Palsy::%{_player}%} to true
+function kitPalsy(player: player, tick: number, eff: boolean = true):
+	kitCheckAlive({_player}) is true
+	if getDebuffs({_player}, "Palsy") is true:
+		set {_hasTime} to getDebuffRemains({_player}, "Palsy")
+		if {_hasTime} >= {_tick}:
+			stop
+	
+	set {_now} to now
+	set metadata value "Debuff- Palsy" of {_player} to {_now}
+	set metadata value "DebuffTime - Palsy" of {_player} to {_tick}
+	set {_bossbar.id} to a random UUID
 	if {_eff} is true:
 		message "§e痺れてしまった!" to {_player}
-	create bossbar titled "&e&l麻痺" and id "%{_player}%-Palsy" for {_player} with progress 100 with colors yellow with style solid
-	set {_tick} to convertTimeNumber({_time})
+		create bossbar titled "&e&l麻痺" and id {_bossbar.id} for {_player} with progress 100 with colors yellow with style solid
+	set {_time} to "%{_tick}% ticks" parsed as time span
 	set {_prog} to 100 / {_tick}
+
+	# 麻痺処理
 	loop {_tick} times:
+		if getDebuffDates({_player}, "Palsy") is not {_now}:
+			continue
+
+		# パーティクル演出
 		if {_eff} is true:
 			set {_ln} to a random integer between 1 and 3
 			loop {_ln} times:
 				chance of 20%:
 					kitEffect_Palsy({_player})
-		set {_value} to value of bossbar "%{_player}%-Palsy"
+		# ボスバー処理
+		set {_value} to value of bossbar {_bossbar.id}
 		subtract {_prog} from {_value}
-		set bossbar "%{_player}%-Palsy" value to {_value}
+		set bossbar {_bossbar.id} value to {_value}
 		wait a tick
-	delete {Kit-Palsy::%{_player}%}
-	remove bossbar "%{_player}%-Palsy"
+	if getDebuffDates({_player}, "Palsy") is {_now}:
+		removeDebuffs({_player}, Palsy)
+	remove bossbar {_bossbar.id}
 
 function kitEffect_Palsy(player: player):
 	set {_baseloc} to location of {_player}

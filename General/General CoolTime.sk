@@ -4,7 +4,7 @@ function playerCoolTimer(player: player):
 	set {CoolTimer::%{_player}%} to true
 	set {_timer} to true
 	while {_timer} is true:
-		if {Kit-Palsy::%{_player}%} is set:
+		if getDebuffs({_player}, "Palsy") is true:
 			wait a tick
 			continue
 		if size of {CT.%{_player}%::*} is 0:
@@ -87,7 +87,7 @@ local function barCT(player: player, ct: number, max: number):
 
 every a second:
 	loop all players:
-		{Kit-Palsy::%loop-player%} is not set
+		getDebuffs(loop-player, "Palsy") is false
 		if size of {CT.%loop-player%::*} is not 0:
 			set {_checker::%loop-player%} to loop-player
 			loop {CT.%loop-player%::*}:
@@ -137,7 +137,7 @@ function toolCT(player: player, kit: text, num: number, type: text = "Skill"):
 	detectCT({_player}, {_cttool})
 
 function checkCT(player: player, skill: text, only: boolean = false) :: boolean:
-	if {Kit-Palsy::%{_player}%} is true:
+	if getDebuffs({_player}, "Palsy") is true:
 		loop 30 times:
 			set {_loc} to location of {_player}
 			add 1 to y-coordinate of {_loc}
