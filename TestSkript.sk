@@ -942,3 +942,16 @@ command /test-knockback <player=%player%>:
 # on EntityKnockbackByEntityEvent:
 # 	set {_v} to event.getKnockback()
 # 	log "%{_v}%"
+
+import:
+	org.bukkit.Color
+
+command /test-color <number> <number> <number>:
+	permission: sk.admin
+	trigger:
+		set {_color} to rgb(arg 1, arg 2, arg 3)
+		set {_color} to {_color}.asBukkitColor()
+		set {_r} to {_color}.getRed()
+		set {_g} to {_color}.getGreen()
+		set {_b} to {_color}.getBlue()
+		message formatted "§4%{_r}% §2%{_g}% §1%{_b}%" to player
