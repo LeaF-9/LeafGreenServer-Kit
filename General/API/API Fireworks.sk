@@ -1,0 +1,35 @@
+function spawnFireworks(loc: location, lifetime: number, explosion: text):
+	set {_tag} to "{Silent:1b,LifeTime:%{_lifetime}%,FireworksItem:{id:""minecraft:firework_rocket"",count:1,components:{""minecraft:fireworks"":{explosions:%{_explosion}%}}}}"
+	
+	set {_nbt} to nbt compound from {_tag}
+	spawn a firework rocket at {_loc} with nbt {_nbt}
+
+function spawnFireworks_PLAYER(player: player, loc: location, lifetime: number, explosion: text) :: entity:
+	set {_tag} to "{Silent:1b,LifeTime:%{_lifetime}%,FireworksItem:{id:""minecraft:firework_rocket"",count:1,components:{""minecraft:fireworks"":{explosions:%{_explosion}%}}}}"
+	set {_entity} to kitSpawnMob_NBT({_player}, firework rocket, {_loc}, {_tag})
+
+	return {_entity}
+
+# typeList:
+# - small_ball
+# - large_ball
+# - star
+# - creeper
+# - burst
+function setFireWorksExplosion(type: text, colors: colors, fadeColors: colors, twinkle: boolean = false, trail: boolean = false) :: text:
+	set {_inColor} to ""
+	loop {_colors::*}:
+		set {_dataColor} to convertColorToDataColor(loop-value)
+		if {_inColor} is not "":
+			set {_inColor} to "%{_inColor}%,"
+		set {_inColor} to "%{_inColor}%%{_dataColor}%"
+	
+	set {_outColor} to ""
+	loop {_fadeColors::*}:
+		set {_dataColor} to convertColorToDataColor(loop-value)
+		if {_outColor} is not "":
+			set {_outColor} to "%{_outColor}%,"
+		set {_outColor} to "%{_outColor}%%{_dataColor}%"
+	
+	set {_explosion} to "[{shape:""%{_type}%"",has_twinkle:%{_twinkle}%,has_trail:%{_trail}%,colors:[I;%{_inColor}%],fade_colors:[I;%{_inColor}%]}]"
+	return {_explosion}
