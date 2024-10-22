@@ -29,6 +29,30 @@ function kitGameStart(rule: text):
 		set {Kit-SheepPoint::blue} to 0
 		set {Kit-SheepPoint::yellow} to 0
 		set {Kit-SheepPoint::green} to 0
+		loop {Kit-GameStage.Places-Red::*}:
+			set {_loc} to loop-value
+			add -0.25 to y-coordinate of {_loc}
+			spawn a magma cube at {_loc} with nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}],Team:""kit-red""}"
+			set metadata value "gametype" of spawned magma cube to "Kit"
+			set metadata value "kit-placelocation" of spawned magma cube to "Red-%loop-index%"
+		loop {Kit-GameStage.Places-Blue::*}:
+			set {_loc} to loop-value
+			add -0.25 to y-coordinate of {_loc}
+			spawn a magma cube at {_loc} with nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}],Team:""kit-blue""}"
+			set metadata value "gametype" of spawned magma cube to "Kit"
+			set metadata value "kit-placelocation" of spawned magma cube to "Blue-%loop-index%"
+		loop {Kit-GameStage.Places-Yellow::*}:
+			set {_loc} to loop-value
+			add -0.25 to y-coordinate of {_loc}
+			spawn a magma cube at {_loc} with nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}],Team:""kit-yellow""}"
+			set metadata value "gametype" of spawned magma cube to "Kit"
+			set metadata value "kit-placelocation" of spawned magma cube to "Yellow-%loop-index%"
+		loop {Kit-GameStage.Places-Green::*}:
+			set {_loc} to loop-value
+			add -0.25 to y-coordinate of {_loc}
+			spawn a magma cube at {_loc} with nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}],Team:""kit-green""}"
+			set metadata value "gametype" of spawned magma cube to "Kit"
+			set metadata value "kit-placelocation" of spawned magma cube to "Green-%loop-index%"
 		kitSpawnCheck_SH()
 		kitTimer_SH()
 	else if {_rule} is "CP":

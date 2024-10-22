@@ -203,8 +203,9 @@ function kitTutorial():
 			delete loop-entity
 #	(3) Sheepスポーン地点
 		set {_players::*} to kitTutorialPlayers()
+		set gamemode of {_players::*} to spectator
 		send title "§a羊の出現場所" with subtitle "§bSheep Spawn Points" to {_players::*}
-		loop {Kit-GameStageSpawnLocations::*}:
+		loop {Kit-GameStage.Spawns::*}:
 			set {_loc} to loop-value
 			add -0.25 to y-coordinate of {_loc}
 			set {_nbt} to nbt compound of "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
@@ -225,12 +226,21 @@ function kitTutorial():
 		set {_players::*} to kitTutorialPlayers()
 		send title "§a羊の確保場所" with subtitle "§bSheep Securing Points" to {_players::*}
 		set gamemode of {_players::*} to spectator
+		loop {Kit-GameStage.Places-Red::*}:
+			set {_loc} to loop-value
+			add -0.25 to y-coordinate of {_loc}
+			set {_nbt} to nbt compound of "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
+			spawn a magma cube at {_loc} with nbt {_nbt}
+			set metadata value "Tutorial-WoolPlace" of spawned magma cube to true
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§b羊§aは拠点付近にある§b確保エリア§aまで連れていきましょう" to {_players::*}
 		message formatted "§aこの地点まで連れて行くことでポイントとなります" to {_players::*}
 		message formatted "§a敵から羊を守りつつ,羊を集めて勝利を目指しましょう" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
+		loop all magma cubes:
+			metadata value "Tutorial-WoolPlace" of loop-magma cube is true
+			delete loop-magma cube
 #	(5) ゲームスタート
 		set {_players::*} to kitTutorialPlayers()
 		message formatted "§2------------------------------" to {_players::*}
