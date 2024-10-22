@@ -34,7 +34,7 @@ function kitSetHologram_CP(stage: text):
 		set metadata value "gametype" of spawned armor stand to "Kit"
 		set metadata value "paname" of spawned armor stand to "%loop-index%"
 		# エリアタイプ生成
-		set {_transformation} to kitTransformation("[0f,0f,0f,1f]". "[0f,0f,0f,1f]", "[0f,0f,0f]", "[0.8f,0.8f,0.8f]")
+		set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[0.8f,0.8f,0.8f]")
 		set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_blocktype}%"",Count:1b},brightness:{block:15,sky:15}}"
 		spawn an item display at {_typeloc} with nbt {_nbt}
 		set metadata value "gametype" of spawned item display to "Kit"
@@ -169,6 +169,7 @@ local function kitExecuteArea_CP(team: text, pa: text):
 				set {_fatigue} to true
 			# 人数同数の場合,再ループ
 			if {_true} = {_false}:
+				wait a tick
 				continue
 			# 人数が十分である場合、タイマーを進める
 			if {_true} > {_false}:
@@ -220,6 +221,7 @@ local function kitExecuteArea_CP(team: text, pa: text):
 				set {_false} to 100
 			# 人数同数の場合,再ループ
 			if {_true} = {_false}:
+				wait a tick
 				continue
 			# 人数が十分である場合、タイマーを引く
 			if {_true} > {_false}:
