@@ -81,16 +81,20 @@ function kitReadYML(map: text):
 				set {Kit-GameStage.Places-Green::%loop-key%::max} to invertLocation("%loop-node%.max", "KitRead.%{_map}%")
 
 	else if yml value "rule" from "KitRead.%{_map}%" is "CP":
+		# ゴールポイント
 		set {Kit-GameStage::goal} to yml value "cp-rule.goal" from "KitRead.%{_map}%"
+		# ベースカラーとなるブロックの設定
 		set {Kit-GameStage::color-white} to yml value "cp-rule.color.white" from "KitRead.%{_map}%"
+		# チームカラーとなるブロックの設定
 		set {Kit-GameStage::color-red} to yml value "cp-rule.color.red" from "KitRead.%{_map}%"
 		set {Kit-GameStage::color-blue} to yml value "cp-rule.color.blue" from "KitRead.%{_map}%"
 		if {Kit-GameStage::team} is 4:
 			set {Kit-GameStage::color-yellow} to yml value "cp-rule.color.yellow" from "KitRead.%{_map}%"
 			set {Kit-GameStage::color-green} to yml value "cp-rule.color.green" from "KitRead.%{_map}%"
+		# エリア設定
 		loop yaml node keys "cp-rule.areas" from "KitRead.%{_map}%":
-			set {Kit-GameStageAreas::%loop-key%} to invertLocation("%loop-node%.location", "KitRead.%{_map}%")
-			set {Kit-GameStageType::%loop-key%} to yml value "%loop-node%.type" from "KitRead.%{_map}%"
-			set {Kit-GameStageForm::%loop-key%} to yml value "%loop-node%.form" from "KitRead.%{_map}%"
-			set {Kit-GameStageTime::%loop-key%} to yml value "%loop-node%.time" from "KitRead.%{_map}%"
-			set {Kit-GameStageRange::%loop-key%} to yml value "%loop-node%.range" from "KitRead.%{_map}%"
+			set {Kit-GameStage.Areas::%loop-key%} to invertLocation("%loop-node%.location.center", "KitRead.%{_map}%")
+			set {Kit-GameStage.Areas::%loop-key%::min} to invertLocation("%loop-node%.location.min", "KitRead.%{_map}%")
+			set {Kit-GameStage.Areas::%loop-key%::max} to invertLocation("%loop-node%.location.max", "KitRead.%{_map}%")
+			set {Kit-GameStage.Type::%loop-key%} to yml value "%loop-node%.type" from "KitRead.%{_map}%"
+			set {Kit-GameStage.Time::%loop-key%} to yml value "%loop-node%.time" from "KitRead.%{_map}%"

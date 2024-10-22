@@ -2,31 +2,43 @@
 	coreblock = minecraft:iron_block, minecraft:gold_block, minecraft:diamond_block, minecraft:air, minecraft:bedrock
 
 function kitSetHologram_CP(stage: text):
-	loop {Kit-GameStageAreas::*}:
+	loop {Kit-GameStage.Areas::*}:
+		# エリアのベース座標
 		set {_paloc} to loop-value
+		# 発光マーカー座標
 		set {_loc} to location 0.25 meters below {_paloc}
+		# エリア名ディスプレイ座標
 		set {_nameloc} to location 3.5 meters above {_paloc}
-		set {_typeloc} to location 3.3 meters above {_paloc}
-		set {_type} to {Kit-GameStageType::%loop-index%}
+		# エリアタイプ表示座標
+		set {_typeloc} to location 3.8 meters above {_paloc}
+		# エリアタイプ取得
+		set {_type} to {Kit-GameStage.Type::%loop-index%}
 		if {_type} is "Iron":
-			set {_color} to "§8"
+			set {_blocktype} to "minecraft:iron_block"
 		else if {_type} is "Gold":
-			set {_color} to "§6"
+			set {_blocktype} to "minecraft:gold_block"
 		else if {_type} is "Diamond":
-			set {_color} to "§b"
+			set {_blocktype} to "minecraft:diamond_block"
+		else:
+			set {_blocktype} to "minecraft:barrier"
+
+		# 発光マーカー生成
 		set {_nbt} to nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}],Team:""kit-white""}"
 		spawn a magma cube at {_loc} with nbt {_nbt}
 		set metadata value "gametype" of spawned magma cube to "Kit"
 		set metadata value "kit-areaname" of spawned magma cube to "%loop-index%"
+		# エリア名ディスプレイ生成
 		set {_nbt} to nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
 		spawn an armor stand at {_nameloc} with nbt {_nbt}
 		set spawned armor stand's display name to "§f§l%loop-index%"
 		set metadata value "gametype" of spawned armor stand to "Kit"
 		set metadata value "paname" of spawned armor stand to "%loop-index%"
-		set {_nbt} to nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
-		spawn an armor stand at {_typeloc} with nbt {_nbt}
-		set spawned armor stand's display name to "%{_color}%%{_type}% Area"
-		set metadata value "gametype" of spawned armor stand to "Kit"
+		# エリアタイプ生成
+		set {_transformation} to kitTransformation("[0f,0f,0f,1f]". "[0f,0f,0f,1f]", "[0f,0f,0f]", "[0.8f,0.8f,0.8f]")
+		set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_blocktype}%"",Count:1b},brightness:{block:15,sky:15}}"
+		spawn an item display at {_typeloc} with nbt {_nbt}
+		set metadata value "gametype" of spawned item display to "Kit"
+		set metadata value "patype" of spawned item display to {_type}
 
 function kitChangeHologram_CP(team: text, area: text):
 	set {_color} to kitTeamColor({_team})
@@ -37,7 +49,7 @@ function kitChangeHologram_CP(team: text, area: text):
 	loop all magma cubes:
 		metadata value "kit-areaname" of loop-magma cube is "%{_area}%"
 		delete loop-magma cube
-	set {_loc} to {Kit-GameStageAreas::%{_area}%}
+	set {_loc} to {Kit-GameStage.Areas::%{_area}%}
 	add -0.25 to y-coordinate of {_loc}
 	set {_nbt} to nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}],Team:""kit-%{_team}%""}"
 	spawn a magma cube at {_loc} with nbt {_nbt}
@@ -47,16 +59,16 @@ function kitChangeHologram_CP(team: text, area: text):
 # TeamBuff適用
 on damage of player:
 	{Kit-tochu} is true
-	{Kit-GameStage::rule} is "DTC"
+	{Kit-GameStage::rule} is "CP"
 	if {Join::%victim%} is "Kit":
 		delete {_ok}
-		loop {Kit-GameStageAreas::*}:
+		loop {Kit-GameStage.Areas::*}:
 			set {_ok} to kitCheckInPlayer_CP(victim, loop-index)
 		if {_ok} is true:
 			set damage to damage / {Kit-TeamBuff::%{TrueTeam::%victim%}%}
 	if {Join::%attacker%} is "Kit":
 		delete {_ok}
-		loop {Kit-GameStageAreas::*}:
+		loop {Kit-GameStage.Areas::*}:
 			set {_ok} to kitCheckInPlayer_CP(attacker, loop-index)
 		if {_ok} is true:
 			set damage to damage * {Kit-TeamBuff::%{TrueTeam::%attacker%}%}
@@ -71,184 +83,219 @@ function kitDeathEvent_CP(attacker: player, victim: player, supporters: players)
 	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
 
-function kitCheckArea_CP():
-	loop {Kit-GameStageAreas::*}:
-		set {_teamcolor::red} to 0
-		set {_teamcolor::blue} to 0
-		set {_teamcolor::yellow} to 0
-		set {_teamcolor::green} to 0
-		set {_teamnum} to 0
-#	周辺の矢の削除 (on projectile hitのループ対策)
-		# loop all projectiles in radius 3 around loop-value:
-		# 	loop-projectile is an arrow or a spectral arrow
-		# 	delete loop-projectile
-		loop all players:
-			kitCheckInPlayer_CP(loop-player, loop-index) is true
-			set {_team} to {TrueTeam::%loop-player%}
-			add 1 to {_teamcolor::%{_team}%}
-		set {_max} to max({_teamcolor::red}, {_teamcolor::blue}, {_teamcolor::yellow}, {_teamcolor::green})
-		if {_teamcolor::red} is {_max}:
-			set {_win} to "red"
-			add 1 to {_teamnum}
-		if {_teamcolor::blue} is {_max}:
-			set {_win} to "blue"
-			add 1 to {_teamnum}
-		if {_teamcolor::yellow} is {_max}:
-			set {_win} to "yellow"
-			add 1 to {_teamnum}
-		if {_teamcolor::green} is {_max}:
-			set {_win} to "green"
-			add 1 to {_teamnum}
-		if {_teamnum} is 1:
-			kitExecuteArea_CP({_win}, loop-index)
+# --- 以下 改良中 ---
 
-function kitExecuteArea_CP(team: text, pa: text):
+# kitTimerで実行する関数 - Event
+# AreaTimerが動いていない際のみ実行する - Condition
+# AreaTimerを実行するかどうかを決定する - Effect
+local function kitCheckArea_CP(name: text):
+	set {_teamcolor::red} to 0
+	set {_teamcolor::blue} to 0
+	set {_teamcolor::yellow} to 0
+	set {_teamcolor::green} to 0
+	set {_teamnum} to 0
+	loop all players:
+		kitCheckInPlayer_CP(loop-player, {_name}) is true
+		set {_team} to {TrueTeam::%loop-player%}
+		add 1 to {_teamcolor::%{_team}%}
+	set {_max} to max({_teamcolor::red}, {_teamcolor::blue}, {_teamcolor::yellow}, {_teamcolor::green})
+	if {_teamcolor::red} is {_max}:
+		set {_win} to "red"
+		add 1 to {_teamnum}
+	if {_teamcolor::blue} is {_max}:
+		set {_win} to "blue"
+		add 1 to {_teamnum}
+	if {_teamcolor::yellow} is {_max}:
+		set {_win} to "yellow"
+		add 1 to {_teamnum}
+	if {_teamcolor::green} is {_max}:
+		set {_win} to "green"
+		add 1 to {_teamnum}
+	if {_teamnum} is 1:
+		kitExecuteArea_CP({_win}, {_name})
+
+# kitCheckArea_CPで起動する関数 - Event
+# AreaTimerを実行する - Effect
+# memo:
+# - AreaTimer: 占領状況
+# - AreaSecure: 占領したチーム
+local function kitExecuteArea_CP(team: text, pa: text):
+	# 例外処理
+	if {Kit-AreaSecure::%{_pa}%} is {_team}:  # 既にエリア占領済
+		stop
+	if {Kit-AreaTimer::%{_pa}%} is set:  # 既にタイマー起動中
+		stop
+
+	# エリア内のプレイヤーカウント変数
 	set {_true} to 0
 	set {_false} to 0
-	set {_red} to "&c"
-	set {_blue} to "&9"
-	set {_yellow} to "&e"
-	set {_green} to "&a"
-	set {_type} to {Kit-GameStageType::%{_pa}%}
-	set {_typecolor} to kitSetTypeColor_CP({_type})
-	# set {_pa} to setCasePA({_pa})
-	set {_loc} to {Kit-GameStageAreas::%{_pa}%}
-	set {_range} to {Kit-GameStageRange::%{_pa}%}
-	set {_blockrange} to {Kit-GameStageRange::%{_pa}%} + 1
-# 占領されているかどうかのチェック
-	if {Kit-AreaSecure::%{_pa}%} is set:
-# 占領が自チームであるかどうかのチェック
-		if {Kit-AreaSecure::%{_pa}%} is {_team}:
-			stop
-# 占領解除が自チームであるかどうかのチェック
-		if {Kit-AreaRelease::%{_pa}%} is {_team}:
-			stop
-#	占領が自チームでなければ占領解除
-		set {Kit-AreaRelease::%{_pa}%} to {_team}
-		# エリア内の変更ブロック全てを保存してループ
-		set {_cpblocks::*} to kitCompileBlocksInArea_CP({_pa})
-		loop {_cpblocks::*}:
+	# チームカラー変数
+	set {_white} to "§f"
+	set {_red} to kitTeamColor("red")
+	set {_blue} to kitTeamColor("blue")
+	set {_yellow} to kitTeamColor("Yellow")
+	set {_green} to kitTeamColor("Green")
+	# タイプカラー変数
+	set {_typecolor} to kitSetTypeColor_CP({Kit-GameStage.Type::%{_pa}%})
+	# エリアタイム変数
+	set {_maxtime} to {Kit-GameStage.Time::%{_pa}%}
+	set {_edittime} to 100 / {_maxtime}
+	# エリア内のブロック変数
+	set {_areablocks::*} to kitCompileBlocksInArea_CP({_pa})
+	# 未占領
+	if {Kit-AreaSecure::%{_pa}%} is not set:
+		set {Kit-AreaTimer::%{_pa}%} to 0
+		set {_areatimer} to true
+		while {_areatimer} is true:
 			# 範囲内のプレイヤーをループ
+			set {_true} to 0
+			set {_false} to 0
+			set {_mf} to 0
 			loop all players:
 				kitCheckInPlayer_CP(loop-player, {_pa}) is true
 				kitCheckAlive(loop-player) is true
-				if {TrueTeam::%loop-player%} is not {Kit-AreaSecure::%{_pa}%}:
+				if {TrueTeam::%loop-player%} is {_team}:
+					add 1 to {_true}
+					if loop-player has mining fatigue:
+						add 1 to {_mf}
+				else:
+					add 1 to {_false}
+			set {_tf} to {_true} + {_false}
+			if {_tf} = 0:
+				set {_false} to 100
+			
+			set {_fatigue} to false
+			if {_true} = {_mf}:
+				set {_fatigue} to true
+			# 人数同数の場合,再ループ
+			if {_true} = {_false}:
+				continue
+			# 人数が十分である場合、タイマーを進める
+			if {_true} > {_false}:
+				set {_counttime} to kitSetAreaTime_CP({_edittime}, {_fatigue}, {Kit-TeamBuff::%{_team}%}) 
+				add {_counttime} to {Kit-AreaTimer::%{_pa}%}
+				kitChangeAreaBlocks_CP({_team}, {_areablocks::*}, {Kit-AreaTimer::%{_pa}%})
+			# 人数不十分である場合、タイマーを戻す
+			if {_true} < {_false}:
+				subtract {_edittime} from {Kit-AreaTimer::%{_pa}%}
+				kitChangeAreaBlocks_CP({_team}, {_areablocks::*}, {Kit-AreaTimer::%{_pa}%})
+
+			if {Kit-AreaTimer::%{_pa}%} <= 0:
+				set {_areatimer} to false
+				continue
+			if {Kit-AreaTimer::%{_pa}%} >= 100:
+				set {_areatimer} to false
+				continue
+			wait a tick
+		
+		set {_timercontain} to {Kit-AreaTimer::%{_pa}%}
+		delete {Kit-AreaTimer::%{_pa}%}
+		# 占領に失敗
+		if {_timercontain} < 100:
+			kitChangeAreaBlocks_CP({_team}, {_areablocks::*}, 0)
+			stop
+		
+		set {Kit-AreaSecure::%{_pa}%} to {_team}
+		gameMsg("Kit", "§e§l!§6§l!§c§l! %{_typecolor}%§l%{_pa}% §aが %{_%{_team}%}%§l%{_team}% §aに占領されました! §e§l!§6§l!§c§l!")
+		kitChangeHologram_CP({_team}, {_pa})
+		set {_exp} to setFireWorksExplosion("star", kitTeamRGB({_team}), kitTeamRGB({_team}), true, false)
+		spawnFireworks(location 2.5 meter above {Kit-GameStage.Areas::%{_pa}%}, 0, {_exp})
+	# 占領済
+	else:
+		set {Kit-AreaTimer::%{_pa}%} to 100
+		set {_areatimer} to true
+		while {_areatimer} is true:
+			# 範囲内のプレイヤーをループ
+			set {_true} to 0
+			set {_false} to 0
+			loop all players:
+				kitCheckInPlayer_CP(loop-player, {_pa}) is true
+				kitCheckAlive(loop-player) is true
+				if {TrueTeam::%loop-player%} is {_team}:
 					add 1 to {_true}
 				else:
 					add 1 to {_false}
-			# 人数同数であればループする
+			set {_tf} to {_true} + {_false}
+			if {_tf} = 0:
+				set {_false} to 100
+			# 人数同数の場合,再ループ
 			if {_true} = {_false}:
-				while {_true} = {_false}:
-					set {_true} to 0
-					set {_false} to 0
-					loop all players:
-						kitCheckInPlayer_CP(loop-player, {_pa}) is true
-						if {TrueTeam::%loop-player%} is not {Kit-AreaSecure::%{_pa}%}:
-							add 1 to {_true}
-						else:
-							add 1 to {_false}
-					set {_tf} to {_true} + {_false}
-					if {_tf} = 0:
-						set {_false} to 100
-					wait a tick
-			#　占領解除の人数が足りている場合
+				continue
+			# 人数が十分である場合、タイマーを引く
 			if {_true} > {_false}:
-				set {_true} to 0
-				set {_false} to 0
-			# 足りていない場合は元のチーム色に戻す
-			else:
-				loop {_cpblocks::*}:
-					set block at loop-value-2 to kitSetColorBlock_CP(block at loop-value-2, {Kit-AreaSecure::%{_pa}%})
-				delete {Kit-AreaRelease::%{_pa}%}
-			# 占領解除がなお自チームのものである場合
-			if {Kit-AreaRelease::%{_pa}%} is {_team}:
-				set block at loop-value to kitSetColorBlock_CP(block at loop-value, "white")
-				set {_dif} to {Kit-PRank::%{Kit-AreaSecure::%{_pa}%}%} - {Kit-PRank::%{Kit-AreaRelease::%{_pa}%}%}
-				if {_dif} > 0:
-					add 1 to {_dif}
-					set {_dtick} to "%{_dif}% ticks" parsed as time span
-				else:
-					set {_dtick} to a tick
-				wait {_dtick}
-			# そうでなければコードストップ
-			else:
-				stop
+				set {_counttime} to kitSetAreaTime_CP({_edittime}, {_fatigue}, {Kit-TeamBuff::%{_team}%})
+				subtract {_counttime} from {Kit-AreaTimer::%{_pa}%}
+				kitChangeAreaBlocks_CP({Kit-AreaSecure::%{_pa}%}, {_areablocks::*}, {Kit-AreaTimer::%{_pa}%})
+			# 人数不十分である場合、タイマーを足す
+			if {_true} < {_false}:
+				add {_edittime} to {Kit-AreaTimer::%{_pa}%}
+				kitChangeAreaBlocks_CP({Kit-AreaSecure::%{_pa}%}, {_areablocks::*}, {Kit-AreaTimer::%{_pa}%})
+
+			if {Kit-AreaTimer::%{_pa}%} <= 0:
+				set {_areatimer} to false
+				continue
+			if {Kit-AreaTimer::%{_pa}%} >= 100:
+				set {_areatimer} to false
+				continue
+			wait a tick
+		
+		set {_timercontain} to {Kit-AreaTimer::%{_pa}%}
+		delete {Kit-AreaTimer::%{_pa}%}
+		# 占領に失敗
+		if {_timercontain} >= 100:
+			kitChangeAreaBlocks_CP({Kit-AreaSecure::%{_pa}%}, {_areablocks::*}, 100)
+			stop
+		
 		delete {Kit-AreaSecure::%{_pa}%}
-		delete {Kit-AreaRelease::%{_pa}%}
 		gameMsg("Kit", "§e§l!§6§l!§c§l! %{_typecolor}%§l%{_pa}% §5の占領が解除されました! §e§l!§6§l!§c§l!")
 		kitChangeHologram_CP("white", {_pa})
-		loop all players in radius {_range} around {_loc}:
-			{TrueTeam::%loop-player%} is {_team}
-			# execute console command "/givecoin %loop-player% 3 占領解除"
-	# 占領中が自チームであればコードストップ
-	if {Kit-AreaOccupy::%{_pa}%} is {_team}:
-		stop
-	# 占領の開始
-	set {Kit-AreaOccupy::%{_pa}%} to {_team}
-	set {_cpblocks::*} to kitCompileBlocksInArea_CP({_pa})
-	loop {_cpblocks::*}:
-		loop all players:
-			kitCheckInPlayer_CP(loop-player, {_pa}) is true
-			if {TrueTeam::%loop-player%} is {Kit-AreaOccupy::%{_pa}%}:
-				add 1 to {_true}
-			else:
-				add 1 to {_false}
-		# 人数同数であればループする
-		if {_true} = {_false}:
-			while {_true} = {_false}:
-				set {_true} to 0
-				set {_false} to 0
-				loop all players:
-					kitCheckInPlayer_CP(loop-player, {_pa}) is true
-					if {TrueTeam::%loop-player%} is {Kit-AreaOccupy::%{_pa}%}:
-						add 1 to {_true}
-					else:
-						add 1 to {_false}
-				set {_tf} to {_true} + {_false}
-				if {_tf} = 0:
-					set {_false} to 100
-				wait a tick
-		# 占領解除の人数が足りているかどうか
-		if {_true} > {_false}:
-			set {_true} to 0
-			set {_false} to 0
-		# 足りていなければ白色に戻す
-		else:
-			loop {_cpblocks::*}:
-				set block at loop-value-2 to kitSetColorBlock_CP(block at loop-value-2, "white")
-			delete {Kit-AreaOccupy::%{_pa}%}
-		# 占領中がなお自チームであるかどうか
-		if {Kit-AreaOccupy::%{_pa}%} is {_team}:
-			set block at loop-value to kitSetColorBlock_CP(block at loop-value, {_team})
-			set {_preotick} to {Kit-GameStageTime::%{_pa}%}
-			set {_mf} to false
-			loop all players:
-				kitCheckInPlayer_CP(loop-player, {_pa}) is true
-				{TrueTeam::%loop-player%} is {_team}
-				if loop-player has mining fatigue:
-					set {_mf} to true
-			if {_mf} is true:
-				add 1 to {_preotick}
-			set {_otick} to "%{_preotick}% ticks" parsed as time span
-			wait {_otick}
-#	そうでなければコードストップ
-		else:
-			stop
-	set {Kit-AreaSecure::%{_pa}%} to {_team}
-	delete {Kit-AreaOccupy::%{_pa}%}
-	gameMsg("Kit", "§e§l!§6§l!§c§l! %{_typecolor}%§l%{_pa}% §aが <%{_team}%>%{_team}% §aに占領されました! §e§l!§6§l!§c§l!")
-	kitChangeHologram_CP({_team}, {_pa})
-	# loop all players:
-	# 	{TrueTeam::%loop-player%} is {_team}
-	# 	kitCheckInPlayer(loop-player, {_pa}) is true
-	# 	if {_type} is "Iron":
-	# 		execute console command "/givecoin %loop-player% 5 アイアン占領"
-	# 	else if {_type} is "Gold":
-	# 		execute console command "/givecoin %loop-player% 7 ゴールド占領"
-	# 	else if {_type} is "Diamond":
-	# 		execute console command "/givecoin %loop-player% 10 ダイヤ占領"
+		kitExecuteArea_CP({_team}, {_pa})
 
-function kitSetTypeColor_CP(type: text) :: text:
+# kitExecuteArea_CPで実行する - Event
+# 割合分、指定されたエリアに色を付ける - Effect
+local function kitChangeAreaBlocks_CP(team: text, blocks: locations, percentage: number):
+	set {_percentage} to 0 if {_percentage} < 0
+	set {_percentage} to 100 if {_percentage} > 100
+	set {_blocknums} to size of {_blocks::*}
+	set {_checknums} to {_blocknums} / 100 * {_percentage}
+	set {_ln} to 0
+	loop {_blocks::*}:
+		set {_blockloc} to loop-value
+		add 1 to {_ln}
+		if {_ln} <= {_checknums}:
+			set {_colorblock} to kitSetColorBlock_CP({_blockloc}, {_team})
+		else:
+			set {_colorblock} to kitSetColorBlock_CP({_blockloc}, "white")
+		set block at {_blockloc} to {_colorblock}
+
+# kitChangeAreaBlocksで実行 - event
+# ブロックが指定されていない場合、そのブロックのカラー色を返す - Effect
+function kitSetColorBlock_CP(loc: location, color: text) :: item:
+	if {Kit-GameStage::color-%{_color}%} is set:
+		return {Kit-GameStage::color-%{_color}%}
+	set {_block} to block at {_loc}
+	if type of {_block} is wool:
+		set {_pb} to "%{_color}% wool" parsed as item
+		return {_pb}
+	else if type of {_block} is hard clay:
+		set {_pb} to "%{_color}% hard clay" parsed as item
+		return {_pb}
+	else if type of {_block} is glass:
+		set {_pb} to "%{_color}% glass" parsed as item
+		return {_pb}
+	else if type of {_block} is concrete:
+		set {_pb} to "%{_color}% concrete" parsed as item
+		return {_pb}
+	else if type of {_block} is concrete powder:
+		set {_pb} to "%{_color}% concrete powder" parsed as item
+		return {_pb}
+	else:
+		set {_pb} to "%{_color}% wool" parsed as item
+		return {_pb}
+
+# kitExecuteArea_CPで実行する - Event
+# 指定したタイプのカラーコードを返す - Effect
+local function kitSetTypeColor_CP(type: text) :: text:
 	if {_type} is "Iron":
 		set {_color} to "§8"
 	else if {_type} is "Gold":
@@ -257,91 +304,68 @@ function kitSetTypeColor_CP(type: text) :: text:
 		set {_color} to "§b"
 	return {_color}
 
-function kitSetColorBlock_CP(block: block, color: text) :: item:
-	if {Kit-GameStage::color-%{_color}%} is set:
-		return {Kit-GameStage::color-%{_color}%}
-	else:
-		if type of {_block} is wool:
-			set {_pb} to "%{_color}% wool" parsed as item
-			return {_pb}
-		else if type of {_block} is hard clay:
-			set {_pb} to "%{_color}% hard clay" parsed as item
-			return {_pb}
-		else if type of {_block} is glass:
-			set {_pb} to "%{_color}% glass" parsed as item
-			return {_pb}
-		else if type of {_block} is concrete:
-			set {_pb} to "%{_color}% concrete" parsed as item
-			return {_pb}
-		else if type of {_block} is concrete powder:
-			set {_pb} to "%{_color}% concrete powder" parsed as item
-			return {_pb}
-
+# kitExecuteArea_CPで実行
 # プレイヤーが領域内にいるかどうか確認する関数
-function kitCheckInPlayer_CP(player: player, areaname: text) :: boolean:
+local function kitCheckInPlayer_CP(player: player, areaname: text) :: boolean:
 	if {Join::%{_player}%} is not "Kit":
 		return false
 	if metadata value "gametype" of {_player} is not "Kit":
 		return false
 	if kitCheckAlive({_player}) is false:
 		return false
-	set {_loc} to {Kit-GameStageAreas::%{_areaname}%}
-	add 0.5 to y-pos of {_loc}
-	set {_form} to {Kit-GameStageForm::%{_areaname}%}
-	set {_range} to {Kit-GameStageRange::%{_areaname}%}
-	if {_form} is "sphere":
-		if y-pos of {_player} < y-pos of {_loc}:
-			return false
-		if distance between {_loc} and {_player} > {_range}:
-			return false
-		return true
-	else if {_form} is "cuboid":
-		set {_loc.player} to location of {_player}
-		# loc.1 (negative)
-		set {_loc.1} to {_loc}
-		subtract {_range} from x-pos of {_loc.1}
-		subtract {_range} from z-pos of {_loc.1}
-		# loc.2 (positive)
-		set {_loc.2} to {_loc}
-		add {_range} to x-pos of {_loc.2}
-		add {_range} to z-pos of {_loc.2}
-		add 5 to y-pos of {_loc.2}
-		if {_loc.player} is not within {_loc.1} and {_loc.2}:
-			return false
-		return true
-	else:
-		return false
 
+	set {_playerloc} to location of {_player}
+	set {_min} to {Kit-GameStage.Areas::%{_areaname}%::min}
+	set {_max} to {Kit-GameStage.Areas::%{_areaname}%::max}
+	set {_checker} to checkWithin({_playerloc}, {_min}, {_max})
+	
+	return {_checker}
+
+# kitExecuteArea_CPで実行
 # エリア内のブロック地点をまとめて出力する関数
 function kitCompileBlocksInArea_CP(areaname: text) :: locations:
-	set {_loc} to {Kit-GameStageAreas::%{_areaname}%}
-	set {_form} to {Kit-GameStageForm::%{_areaname}%}
-	set {_range} to {Kit-GameStageRange::%{_areaname}%} + 1
-	if {_form} is "sphere":
-		loop all blocks in radius {_range} around {_loc}:
-			loop-block is not coreblock
-			block below loop-block is glowstone
-			add location of loop-block to {_locs::*}
-	else if {_form} is "cuboid":
-		# loc.1 (negative)
-		set {_loc.1} to {_loc}
-		subtract {_range} from x-pos of {_loc.1}
-		subtract {_range} from z-pos of {_loc.1}
-		# loc.2 (positive)
-		set {_loc.2} to {_loc}
-		add {_range} to x-pos of {_loc.2}
-		add {_range} to z-pos of {_loc.2}
-		add {_range} * 2 + 1 to y-pos of {_loc.2}
-		loop all blocks within {_loc.1} and {_loc.2}:
-			loop-block is not coreblock
-			block below loop-block is glowstone
-			add location of loop-block to {_locs::*}
-	return {_locs::*}
+	set {_min} to {Kit-GameStage.Areas::%{_areaname}%::min}
+	set {_max} to {Kit-GameStage.Areas::%{_areaname}%::max}
+
+	if {Kit-GameStage::color-white} is set:
+		add {Kit-GameStage::color-white} to {_blocks::*}
+		add {Kit-GameStage::color-red} to {_blocks::*}
+		add {Kit-GameStage::color-blue} to {_blocks::*}
+		add {Kit-GameStage::color-yellow} to {_blocks::*}
+		add {Kit-GameStage::color-green} to {_blocks::*}
+	else:
+		set {_colors::*} to kitTeamList()
+		add "white" to {_colors::*}
+
+		add "wool" to {_colorblocks::*}
+		add "hard clay" to {_colorblocks::*}
+		add "glass" to {_colorblocks::*}
+		add "concrete" to {_colorblocks::*}
+		add "concrete powder" to {_colorblocks::*}
+		loop {_colors::*}:
+			set {_color} to loop-value
+			loop {_colorblocks::*}:
+				set {_colorblock} to loop-value-2
+				set {_pb} to "%{_color}% %{_colorblock}%" parsed as item
+				add {_pb} to {_blocks::*}
+
+	loop all blocks within {_min} and {_max}:
+		set {_loop-block} to loop-block
+		if {_blocks::*} contains {_loop-block}:
+			add location of {_loop-block} to {_areablocks::*}
+
+	return {_areablocks::*}
+
+# kitExecuteArea_CPで実行する
+# カウントする時間を採掘速度低下とTeamBuffと照らし合わせて出力する関数
+local function kitSetAreaTime_CP(time: number, fatigue: boolean, buff: number) :: number:
+	set {_time} to {_time} * {_buff}
+	if {_fatigue} is true:
+		set {_time} to {_time} * 0.5
+	return {_time}
 
 function kitTimer_CP():
 	while {Kit-tochu} is true:
-		# CPのプレイヤー数をチェック
-		kitCheckArea_CP()
 		# チーム順位を設定
 		loop {Kit-TeamPoint::*}:
 			set {_list::%loop-index%} to loop-value
@@ -360,14 +384,18 @@ function kitTimer_CP():
 			else:
 				loop {_list::*}:
 					set {Kit-PRank::%loop-index%} to 4
-		# TeamPoint更新
-		loop {Kit-GameStageAreas::*}:
+		loop {Kit-GameStage.Areas::*}:
+			# Timerが動いてなければ、CPのプレイヤー数をチェック
+			if {Kit-AreaTimer::%loop-index%} is not set:
+				kitCheckArea_CP(loop-index)
+
+			# TeamPoint更新
 			{Kit-AreaSecure::%loop-index%} is set
-			if {Kit-GameStageType::%loop-index%} is "Iron":
+			if {Kit-GameStage.Type::%loop-index%} is "Iron":
 				set {_point} to 1 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%}
-			else if {Kit-GameStageType::%loop-index%} is "Gold":
+			else if {Kit-GameStage.Type::%loop-index%} is "Gold":
 				set {_point} to 3 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%}
-			else if {Kit-GameStageType::%loop-index%} is "Diamond":
+			else if {Kit-GameStage.Type::%loop-index%} is "Diamond":
 				set {_point} to 5 * {Kit-TeamBuff::%{Kit-AreaSecure::%loop-index%}%}
 			add {_point} to {Kit-TeamPoint::%{Kit-AreaSecure::%loop-index%}%}
 		# 勝敗決定
@@ -415,7 +443,7 @@ function kitChangeScoreboard_CP(type: text):
 			if {Join::%loop-player%} is "Kit":
 				scoreboard_UpdateTitle(loop-player, "§a§lKit PvP")
 				set {_slot} to 16
-				loop {Kit-GameStageAreas::*}:
+				loop {Kit-GameStage.Areas::*}:
 					delete {_team}
 					subtract 1 from {_slot}
 					set {_pa} to loop-index
@@ -424,10 +452,10 @@ function kitChangeScoreboard_CP(type: text):
 						set {_color} to kitTeamColor({_team})
 					else:
 						set {_color} to "<##FFFFFF>"
-					if {Kit-GameStageType::%{_pa}%} is "Iron":
+					if {Kit-GameStage.Type::%{_pa}%} is "Iron":
 						set {_ct} to "8"
-					else if {Kit-GameStageType::%{_pa}%} is "Gold":
+					else if {Kit-GameStage.Type::%{_pa}%} is "Gold":
 						set {_ct} to "6"
-					else if {Kit-GameStageType::%{_pa}%} is "Diamond":
+					else if {Kit-GameStage.Type::%{_pa}%} is "Diamond":
 						set {_ct} to "b"
 					scoreboard_UpdateLine(loop-player, "§%{_ct}%- %{_color}%%{_pa}%", {_slot})
