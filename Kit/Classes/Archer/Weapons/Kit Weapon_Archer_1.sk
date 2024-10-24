@@ -15,13 +15,13 @@ on projectile hit:
 	set metadata value "massivebow" of projectile to false
 	kitParticle_MassiveBow_Hit(location of projectile)
 
-on damage:
+on damage with priority LOW:
 	checkEntityType(attacker, player) is true
 	damage was caused by projectile
 	metadata value "massivebow" of projectile is set
 	set {_dis} to distance between attacker and victim
 	set {_dmg} to {_dis} / 10
-	set damage to {_dmg}
+	setDamageModification_SET(victim, {_dmg})
 
 function kitEffect_MassiveBow(player: player, proj: projectile):
 	set {_baseloc} to location of {_player}
