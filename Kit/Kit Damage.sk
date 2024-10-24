@@ -51,6 +51,7 @@ function removeDamageModification_SET(entity: entity):
 # Damage Modificationを適用するイベント
 on damage with priority MONITOR:
 
+	# ダメージ量取得
 	set {_damage} to damage
 	if getDamageModification_SET(victim) is not -1:
 		set {_damage} to getDamageModification_SET(victim)
@@ -61,14 +62,23 @@ on damage with priority MONITOR:
 		set {_dm.mul} to getDamageModification_MUL(victim)
 		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
 
+	# ダメージ操作データ消去
+	removeDamageModification_ADD(victim)
+	removeDamageModification_MUL(victim)
+	removeDamageModification_SET(victim)
+
+	# シールド処理
+	if getShield(victim) > 0:
+		ShieldDamageEvent(victim, {_damage}, damage cause)
+		send action bar "§3§lシールド §cにダメージを§4§l無効化§cされた!" to attacker
+		cancel event
+		stop
+
+	# ダメージ量操作
 	event.setDamage(DamageModifier.BASE, {_damage} * 2)
 	if {_fix} is true:
 		event.setDamage(DamageModifier.ARMOR, 0)
 		event.setDamage(DamageModifier.RESISTANCE, 0)
-
-	removeDamageModification_ADD(victim)
-	removeDamageModification_MUL(victim)
-	removeDamageModification_SET(victim)
 
 
 

@@ -1,0 +1,102 @@
+function kitShield(player: player, shield: number):
+	kitCheckAlive({_player}) is true
+	set {_shielded} to getShield({_player})
+	if {_shielded} >= {_shield}:
+		stop
+
+	set {_now} to now
+	setShield({_player}, {_shield})
+	setShieldTime({_player}, {_now})
+
+	set {_bossbar.id} to a random UUID
+	create bossbar titled "&9&lシールド" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+
+	shieldParticles({_player}, {_now})
+	while getShieldTime({_player}) is {_now}:
+		set {_shield.now} to getShield({_player})
+		set {_prog} to {_shield.now} / {_shield} * 100
+		set bossbar {_bossbar.id} value to {_prog}
+		wait a tick
+	remove bossbar {_bossbar.id}
+
+local function shieldParticles(player: player, now: date):
+	while getShieldTime({_player}) is {_now}:
+		set {_baseloc} to location of {_player}
+		add 0.02 to {_dy}
+		if {_dy} >= 4:
+			set {_dy} to 0
+		if {_dy} > 2:
+			set {_y} to 2 - ({_dy} - 2)
+		else:
+			set {_y} to {_dy}
+
+		add {_y} to y-coordinate of {_loc}
+		add 9 to {_baserad}
+		set {_ln} to -1
+		loop 8 times:
+			add 1 to {_ln}
+			set {_percent} to 0
+			if {_ln} is not 0:
+				set {_percent} to 90
+			chance of {_percent}%:
+				continue
+			
+			set {_rad} to {_baserad} + (45 * {_ln})
+			add 0.5 * sin({_rad}) to x-coordinate of {_loc}
+			add 0.5 * cos({_rad}) to z-coordinate of {_loc}
+			spawnParticle_Dust(colorRandomizer(0, 163, 175, 0, 0, 10), 0.8, {_loc})
+		wait a tick
+
+
+
+function ShieldDamageEvent(player: player, damage: number, cause: damage cause):
+	if {_cause} is fall:
+		set {_damage} to 0
+	subtractShield({_player}, {_damage})
+	kitEffectDescription({_player}, "§3§lシールド")
+	if getShield({_player}) <= 0:
+		deleteShield({_player})
+		message formatted "§3§lシールド§cが崩壊した!" to {_player}
+		shieldBreakParticles({_player})
+		playSound("entity.item.break", 0.7, 1, {_player})
+		stop
+	playSound("block.anvil.land", 0.7, 2, {_player})
+
+local function shieldBreakParticles(player: player):
+	set {_loopnum} to a random integer between 4 and 6
+	loop {_loopnum} times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle(sonic_boom, {_el})
+
+
+
+function getShield(player: player) :: number:
+	set {_metadata} to "Shield - Amount"
+	set {_shield} to metadata value {_metadata} of {_player}
+	if {_shield} is not set:
+		set {_shield} to 0
+	return {_shield}
+
+local function getShieldTime(player: player) :: date:
+	set {_metadata} to "Shield - Time"
+	set {_time} to metadata value {_metadata} of {_player}
+	return {_time}
+
+local function setShield(player: player, shield: number):
+	set {_metadata} to "Shield - Amount"
+	set metadata value {_metadata} of {_player} to {_shield}
+
+local function setShieldTime(player: player, time: date):
+	set {_metadata} to "Shield - Time"
+	set metadata value {_metadata} of {_player} to {_time}
+
+local function subtractShield(player: player, sub: number):
+	set {_shield} to getShield({_player})
+	subtract {_sub} from {_shield}
+	setShield({_player}, {_shield})
+
+local function deleteShield(player: player):
+	set {_metadata} to "Shield - Amount"
+	delete metadata value {_metadata} of {_player}
+	set {_metadata} to "Shield - Time"
+	delete metadata value {_metadata} of {_player}

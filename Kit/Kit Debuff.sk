@@ -542,56 +542,7 @@ function kitTrail(player: player, tick: number, from: location = location(0.0, 0
 	if getDebuffDates({_player}, "Trail") is {_now}:
 		removeDebuffs({_player}, "Trail")
 
-# シールド
-function kitShield(player: player, shield: number):
-	addKitOS("Shield")
-	addKitOS("ShieldTime")
-	if {Kit-Shield::%{_player}%} is set:
-		if {Kit-Shield::%{_player}%} > {_shield}:
-			stop
-		else:
-			set bossbar "%{_player}%-Shield" value to 100
-	else:
-		create bossbar titled "&9&lシールド" and id "%{_player}%-Shield" for {_player} with progress 100 with colors blue with style solid
-	set {_now} to now
-	set {Kit-ShieldTime::%{_player}%} to {_now}
-	set {Kit-Shield::%{_player}%} to {_shield}
-	while {Kit-ShieldTime::%{_player}%} is {_now}:
-		set {_prog} to {Kit-Shield::%{_player}%} / {_shield} * 100
-		set bossbar "%{_player}%-Shield" value to {_prog}
-		set {_loc} to location of {_player}
-		add 0.02 to {_dy}
-		if {_dy} >= 4:
-			set {_dy} to 0
-		if {_dy} > 2:
-			set {_y} to 2 - ({_dy} - 2)
-		else:
-			set {_y} to {_dy}
-		add {_y} to y-coordinate of {_loc}
-		add 9 to {_rad}
-		add 0.5 * sin({_rad}) to x-coordinate of {_loc}
-		add 0.5 * cos({_rad}) to z-coordinate of {_loc}
-		spawnParticle_Dust(rgb(100, 100, 255), 1, {_loc})
-		wait a tick
-	if {Kit-Shield::%{_player}%} is not set:
-		remove bossbar "%{_player}%-Shield"
 
-on damage of player:
-	{Kit-Shield::%victim%} is set
-	set {_dm} to damage
-	if damage cause is fall:
-		set {_dm} to 0
-	cancel event
-	subtract {_dm} from {Kit-Shield::%victim%}
-	send action bar "§9§lシールドがダメージを無効化した!" to victim
-	send action bar "§c§lシールドが攻撃を阻害した!" to attacker
-	if {Kit-Shield::%victim%} <= 0:
-		delete {Kit-Shield::%victim%}
-		delete {Kit-ShieldTime::%victim%}
-		message formatted "§3§lシールドが崩壊した!" to victim
-		playSound("entity.item.break", 0.7, 1, victim)
-	else:
-		playSound("block.anvil.land", 0.7, 2, victim)
 
 function kitLuck(player: player, pluslvl: number, absolute: boolean = false):
 	addKitOS("Luck")
