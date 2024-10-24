@@ -1,13 +1,167 @@
 # Homing Star
 
+options:
+	firework-lifetime: 20
+	firework-metadata: "Homing Star - Firework"
+	search-radius: 30
+	min-speed: 0.25
+	max-speed: 0.5
+	max-vector-power: 0.5
+	max-block-through: 5
+
+
+
+import:
+	org.bukkit.event.entity.FireworkExplodeEvent
+
+on FireworkExplodeEvent:
+	set {_firework} to event.getEntity()
+	set {_player} to metadata value {@firework-metadata} of {_firework}
+	if {_player} is not set:
+		stop
+	
+	set {_loc} to location of {_firework}
+	kitEffect_HomingStar_Explode({_player}, {_loc})
+
+
+
 function kitSkill_Archer_4(player: player):
 	toolCT({_player}, "Archer", 4)
+	kitEffect_HomingStar({_player})
+
+
+
+local function kitEffect_HomingStar(player: player):
 	kitMsg({_player}, "§9矢の花火を上空へ放ちます...")
 	# --- 発射時の音の演出 ---
 	playSound("entity.firework_rocket.launch", 1.25, 0.75, {_player})
 	# ---------------------
 	# --- 破裂までの処理 ---
+	set {_firework} to spawnFireworks_PLAYER({_player}, location of {_player}, {@firework-lifetime}, setFireWorksExplosion("large_ball", rgb(), rgb(255, 255, 255), false, true))
+	set metadata value {@firework-metadata} of {_firework} to {_player}
 	
+
+
+local function kitEffect_HomingStar_Explode(player: player, loc: location):
+	# 対象設定
+	loop all players in radius {@search-radius} around {_player}:
+		kitCheckTeam(loop-player, {_player}, false) is true
+		add loop-player to {_targets::*}
+	
+	loop {_targets::*}:
+		set {_target} to loop-value
+		set {_rn} to a random integer between 3 and 5
+		loop {_rn} times:
+			kitEffect_HomingStar_Star({_player}, {_target}, {_loc})
+
+local function kitEffect_HomingStar_Star(player: player, target: player, loc: location):
+	# 爆発方向決定
+	set {_baseloc} to setDirToVec({_loc}, randomVector())
+	# 爆発処理
+	set {_m} to 0
+	loop 10 times:
+		set {_el} to location {_m} meters in front of {_baseloc}
+		spawnParticle(electric_spark, {_el})
+		set {_rn} to a random integer between 0 and 2
+		loop {_rn} times:
+			set {_el} to {_baseloc}
+			add a random number between -1 and 1 to x-pos of {_el}
+			add a random number between -1 and 1 to y-pos of {_el}
+			add a random number between -1 and 1 to z-pos of {_el}
+			spawnParticle_DustTransition(colorRandomizer(245, 255, 255, 0, 10, 5), rgb(255, 255, 255), 0.75, {_el})
+		add {_m} to 0.5
+		wait a tick
+	
+	set {_baseloc} to location 5 meters in front of {_baseloc}
+	loop 10 times:
+		spawnParticle(electric_spark, {_baseloc})
+		set {_rn} to a random integer between 1 and 3
+		loop {_rn} times:
+			set {_el} to {_baseloc}
+			add a random number between -1 and 1 to x-pos of {_el}
+			add a random number between -1 and 1 to y-pos of {_el}
+			add a random number between -1 and 1 to z-pos of {_el}
+			spawnParticle_DustTransition(colorRandomizer(245, 255, 255, 0, 10, 5), rgb(255, 255, 255), 0.75, {_el})
+		wait a tick
+	
+	# 発射処理
+	kitParticle_HomingStar_Shoot({_baseloc}, {_target})
+	set {_speed} to a random number between {@min-speed} and {@max-speed}
+	set {_flying} to true
+	set {_ticks} to 0
+	while {_flying} is true:
+		add 1 to {_ticks}
+		if {_ticks} > 1200:
+			set {_flying} to false
+			continue
+
+		# 方向確認
+		set {_basetargetloc} to location 1 meter in front of {_baseloc}
+		set {_basevec} to setVector({_baseloc} {_basetargetloc})
+		set {_plusvec} to setVector({_basetargetloc}, location 1 meter above {_target}, 0)
+		set length of {_plusvec} to {@max-vector-length} if length of {_plusvec} > {@max-vector-length}
+		set {_vec} to {_basevec} + {_plusvec}
+
+		set {_baseloc} to setDirToVec({_baseloc}, {_vec})
+		set {_baseloc} to location {_speed} meters in front of {_baseloc}
+		# 軌道パーティクル
+		kitParticle_HomingStar_Trail({_baseloc}, {_target})
+
+		# ヒット確認(block)
+		if block at {_baseloc} is passable:
+			if {_blockthrough::*} does not contain location of block at {_baseloc}:
+				add location of block at {_baseloc} to {_blockthrough::*}
+				if size of {_blockthrough::*} > {@max-block-through}:
+					set {_baseloc} to location {_speed} meters behind {_baseloc}
+					set {_flying} to false
+					continue
+		
+		# ヒット確認(player)
+		set {_dis} to distance between {_baseloc} and location 1 meter above {_target}
+		if {_dis} <= 1:
+			set {_flying} to false
+			continue
+
+		wait a tick
+	kitEffect_HomingStar_Blast({_player}, {_target}, {_baseloc})
+
+local function kitEffect_HomingStar_Blast(player: player, target: player, loc: location):
+	set {_color} to kitTeamRGB(getTeam({_target}))
+	set {_firework} to spawnFireworks_PLAYER({_player}, {_loc}, 0, setFireWorksExplosion("star", {_color}, {_color}, true, false))
+	set metadata value "firework" of {_firework} to true
+
+		
+
+local function kitParticle_HomingStar_Shoot(loc: location, target: player):
+	playSound("entity.firework_rocket.launch", 1.25, 1.25, {_loc})
+	playSound("entity.firework_rocket.launch", 1.25, 1.25, {_target}, true)
+
+	set {_team} to getTeam({_target})
+	set {_blockparticle} to "%{_team}% concrete" parsed as block data
+	loop a random integer between 10 and 20 times:
+		spawnParticle_Vector(firework, randomVector(1), 0.5, {_loc})
+		chance of 50%:
+			set {_el} to {_loc}
+			add a random number between -1 and 1 to x-pos of {_el}
+			add a random number between -1 and 1 to y-pos of {_el}
+			add a random number between -1 and 1 to z-pos of {_el}
+			spawnParticle_BlockData(falling_dust, {_blockparticle}, {_el})
+
+local function kitParticle_HomingStar_Trail(loc: location, target: player):
+	spawnParticle(electric_spark, {_loc})
+	set {_color} to kitTeamRGB(getTeam({_target}))
+	loop a random integer between 1 and 5 times:
+		set {_el} to {_loc}
+		add a random number between -0.5 and 0.5 to x-pos of {_el}
+		add a random number between -0.5 and 0.5 to y-pos of {_el}
+		add a random number between -0.5 and 0.5 to z-pos of {_el}
+		spawnParticle_Color(entity_effect, {_color}, {_el})
+
+
+
+
+
+
 
 	set {_baseloc} to location of {_player}
 	loop 20 times:
@@ -56,7 +210,7 @@ function kitEffect_MeteoricTwinkle_Arrow(projectile: projectile, bR: number, bG:
 	loop 50 times:
 		set {_baseloc} to location of {_projectile}
 		# --- 軌跡の演出 ---
-		spawnParticle_Color(entity_effect, {_bR}, {_bG}, {_bB}, {_baseloc})
+		spawnParticle_Color(entity_effect, rgb({_bR}, {_bG}, {_bB}), {_baseloc})
 		# ----------------
 		# --- キラキラの演出 ---
 		loop 3 times:
