@@ -42,6 +42,15 @@ function kitCheckTeam(player1: entity, player2: entity, ally: boolean, all: bool
 		else:
 			return false
 
+function getTeam(player: player, all: boolean = false) :: text:
+	set {_change} to "team"
+	if {_all} is true:
+		set {_change} to "TrueTeam"
+	set {_team} to {%{_change}%::%{_player}%}
+	if {_team} is not set:
+		set {_team} to "white"
+	return {_team}
+
 function kitTeamColor(team: text) :: text:
 	if {_team} is "red":
 		set {_color} to "<##FF6464>"
