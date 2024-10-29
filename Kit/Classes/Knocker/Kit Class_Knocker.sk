@@ -37,22 +37,16 @@ on death of player:
 	{Class::%{LastKiller::%victim%}%} is "Knocker"
 	give 8 arrows to {LastKiller::%victim%}
 
-on damage of player:
+on damage of player with priority LOW:
 	metadata value "gametype" of victim is "Kit"
 	damage was caused by fall
 	if {Stats.%victim%::FallTiming} is set:
-		set damage to {Stats.%victim%::FallDamage}
+		setDamageModification_SET(victim, {Stats.%victim%::FallDamage})
 		delete {Stats.%victim%::FallTiming}
 		delete {Stats.%victim%::FallDamage}
 	else if {Stats.%victim%::FallRemove} is set:
-		set damage to damage * 0.1
+		setDamageModification_MUL(victim, 0.1)
 		delete {Stats.%victim%::FallRemove}
-
-on damage:
-	metadata value "gametype" of attacker is "Kit"
-	{Class::%attacker%} is "Knocker"
-	damage was caused by projectile
-	set damage to damage * 0.8
 
 # Timer
 function kitTimerKnocker(player: player):
