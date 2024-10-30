@@ -59,6 +59,22 @@ on drop:
 
 # Abilities
 
+on pick up:
+	{Class::%player%} is "Thief"
+	set {_attacker} to metadata value "Jewelry" of event-dropped item
+	if {_attacker} is not set:
+		stop
+	if kitCheckTeam({_attacker}, player, true) is true:
+		stop
+	
+	delete event-dropped item
+	applyEffect(player, strength, 1, 5 seconds)
+	applyEffect(player, regeneration, 1, 5 seconds)
+	playSound("entity.experience_orb.pickup", 1, 2, player)
+	message formatted "§eおっと! §6§lお宝§eだ!" to player
+	kitEffectDescription(player, "§a§l攻撃力上昇 §8& §a§l再生能力")
+	sendTimeBossbar_GREEN(player, "Gem Bounty", 100)
+
 # --- Stealed Item管理 ---
 on inventory click:
 	metadata value "gametype" of player is "Kit"
@@ -138,9 +154,9 @@ on inventory click:
 # -----------------------
 
 on damage of player:
-	if damage was caused by fall:
-		{CLS::%victim%} is "THI"
-		cancel event
+	damage was caused by fall
+	{Class::%victim%} is "Thief"
+	cancel event
 
 # Timer
 function kitTimerThief(player: player):

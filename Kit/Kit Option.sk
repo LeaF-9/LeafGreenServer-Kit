@@ -25,11 +25,11 @@ on death:
 aliases:
 	pickable = minecraft:gold_block, minecraft:apple, minecraft:diamond, minecraft:gold_ingot, minecraft:wheat_seeds, minecraft:wheat, minecraft:golden_apple, minecraft:gold_nugget, minecraft:sheep_spawn_egg, minecraft:emerald, minecraft:carrot, minecraft:potato, minecraft:baked_potato, minecraft:poisonous_potato, minecraft:golden_carrot, minecraft:llama_spawn_egg, minecraft:rotten_flesh, minecraft:redstone, minecraft:emerald_block
 
-on pick up:
-	if metadata value "unpickable" of event-dropped item is "true":
-		cancel event
-	else if type of item is not pickable:
-		cancel event
+on pick up with priority MONITOR:
+	# 不要のため無効化
+	# metadata value "unpickable" of event-dropped item is "true"
+	cancel event
+	if type of item is not pickable:
 		delete event-dropped item
 
 on damage of player:
