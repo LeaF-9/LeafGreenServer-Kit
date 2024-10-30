@@ -3,7 +3,8 @@
 function kitSkill_Defender_6(player: player):
 	toolCT({_player}, "Defender", 6)
 	set {Stats.%{_player}%::MobileFortress} to true
-	kitMsg({_player}, "<##1e90ff>8秒間,<##00bfff>領域外からの攻撃を無効化します!")
+	kitMsg({_player}, "<##1e90ff>10秒間,<##00bfff>領域外からの攻撃を無効化します!")
+	sendTimeBossbar_GREEN({_player}, "Mobile Fortress", 200)
 	playSound("block.beacon.power_select", 1, 1, {_player})
 	set {_y} to 0
 	loop 200 times:
@@ -27,14 +28,16 @@ function kitSkill_Defender_6(player: player):
 	delete {Stats.%{_player}%::MobileFortress}
 	kitMsg({_player}, "§bMobile Fortress<##6495ed>の効果が終了しました")
 
-on damage:
+on damage with priority HIGH:
 	{Stats.%victim%::NoSupport} is not set
+	set {_attacker} to getLastKiller(victim)
 	loop all players in radius 8 around victim:
 		{_mf} is not set
-		{team::%loop-player%} is {team::%victim%}
+		kitCheckTeam(loop-player, victim, true) is true
 		{Stats.%loop-player%::MobileFortress} is true
 		set {_mf} to loop-player
 	{_mf} is set
-	if distance between attacker and {_mf} > 8:
+	if distance between {_attacker} and {_mf} > 8:
 		cancel event
+		kitEffectDescription(victim, "§9§l防御")
 		playSound("block.beacon.deactivate", 0.7, 2, victim)
