@@ -7,10 +7,11 @@ function kitSkill_Berserker_3(player: player):
 
 
 on damage of player with priority LOW:
-	{Stats.%attacker%::HealthSuction} is set
-	max health of attacker is not health of attacker
+	set {_attacker} to getAttacker(victim)
+	{Stats.%{_attacker}%::HealthSuction} is set
+	max health of {_attacker} is not health of {_attacker}
 	setDamageModification_SET(victim, 1)
-	kitEffect_HealthSuction_Heal(attacker, victim)
+	kitEffect_HealthSuction_Heal({_attacker}, victim)
 
 on death of player:
 	{Stats.%attacker%::HealthSuction} is set

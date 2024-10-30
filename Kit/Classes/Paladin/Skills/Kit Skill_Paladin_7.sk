@@ -41,6 +41,7 @@ function kitSkill_Paladin_7(player: player):
 
 on damage of player with priority NORMAL:
 	{Stats.%victim%::RecipientGenie} is set
+	checkDamagable(victim) is true
 	set {_attacker} to getAttacker(victim)
 	set {_dmg} to damage
 	cancel event
@@ -50,7 +51,7 @@ on damage of player with priority NORMAL:
 	kitEffectDescription(victim, "§2§l護衛")
 	kitEffectDescription({_player}, "§2§l護衛")
 	playSound("entity.ravager.hurt", 1, 1, victim)
-	kitDamage({_attacker}, {_player}, {_truedmg})
+	kitDamageNull({_attacker}, {_player}, {_truedmg})
 	set {_from} to location of {_player}
 	add 1 to y-coordinate of {_from}
 	set {_baseloc} to location of victim

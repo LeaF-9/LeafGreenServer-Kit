@@ -1,18 +1,17 @@
 # Assassin Dagger
 
-on damage:
-	metadata value "gametype" of attacker is "Kit"
+on damage with priority LOW:
+	set {_attacker} to getAttacker(victim)
+	metadata value "gametype" of {_attacker} is "Kit"
 	damage was caused by attack
-	{Class::%attacker%} is "Assassin"
-	attacker is sneaking
-	set {_tool} to attacker's tool
+	{Class::%{_attacker}%} is "Assassin"
+	{_attacker} is sneaking
+	set {_tool} to {_attacker}'s tool
 	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 2) is true
 	if victim's health <= 5:
-		set {_per} to kitPercentDuel(attacker, victim, 5)
+		set {_per} to kitPercentDuel({_attacker}, victim, 5)
 		chance of {_per}%:
-			cancel event
-			LastKiller(victim, attacker)
-			kill victim
+			setDamageModification_SET(victim, 100)
 			playSound("entity.phantom.bite", 1, 1, victim)
 			spawnParticle_Color(entity_effect, rgb(108, 36, 99), victim)
 

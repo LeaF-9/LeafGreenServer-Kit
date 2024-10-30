@@ -10,11 +10,12 @@ function kitSkill_Bard_6(player: player):
 
 
 
-on damage:
-	attacker is set
-	{Stats.%attacker%::BeatClapper} is set
-	set damage to damage * 2
-	kitParticle_BeatClapper_Damage(attacker)
+on damage with priority LOW:
+	set {_attacker} to getAttacker(victim)
+	{_attacker} is set
+	{Stats.%{_attacker}%::BeatClapper} is set
+	setDamageModification_MUL(victim, 2)
+	kitParticle_BeatClapper_Damage({_attacker})
 
 local function kitEffect_BeatClapper(player: player, loc: location):
 	set {_now} to now

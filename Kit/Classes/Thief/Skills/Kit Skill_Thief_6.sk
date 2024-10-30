@@ -54,7 +54,8 @@ function kitSetSkinScanner(player: player, target: player):
 			give {_skill} to {_player}
 
 on damage of player:
-	attacker is set
+	set {_attacker} to getAttacker(victim)
+	{_attacker} is set
 	{Stats.%victim%::FakePlayer} is set
-	kitCheckTeam(victim, attacker, false) is true
+	kitCheckTeam(victim, {_attacker}, false) is true
 	apply glowing 1 to victim for 1 second replacing existing effect

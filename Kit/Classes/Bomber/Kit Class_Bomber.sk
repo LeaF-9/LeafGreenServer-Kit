@@ -33,11 +33,12 @@ function kitSkillBomber(player: player) :: boolean:
 	return true
 
 # Abilities
-on damage of player:
+on damage of player with priority LOW:
 	damage was caused by projectile
 	projectile is an arrow
-	{Class::%attacker%} is "Bomber"
-	set damage to damage * 0.5
+	set {_attacker} to getAttacker(victim)
+	{Class::%{_attacker}%} is "Bomber"
+	setDamageModification_MUL(victim, 0.5)
 
 on death of player:
 	if {Class::%victim%} is "Bomber":

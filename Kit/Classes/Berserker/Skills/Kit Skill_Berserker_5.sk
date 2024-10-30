@@ -6,15 +6,16 @@ function kitSkill_Berserker_5(player: player):
 
 
 on damage of player with priority LOW:
+	set {_attacker} to getAttacker(victim)
 	if {Stats.%victim%::Rampage} is set:
 		set {Stats.%victim%::Rampage-Combo} to 0
 		kitParticle_Rampage_Reset(victim)
-	if {Stats.%attacker%::Rampage} is set:
-		set {_damage} to 3 + {Stats.%attacker%::Rampage-Combo}
+	if {Stats.%{_attacker}%::Rampage} is set:
+		set {_damage} to 3 + {Stats.%{_attacker}%::Rampage-Combo}
 		setDamageModification_SET(victim, {_damage})
 		kitEffectDescription(victim, "§4❤%{_damage}%")
-		add 1 to {Stats.%attacker%::Rampage-Combo}
-		kitParticle_Rampage_Combo(attacker, victim, {Stats.%attacker%::Rampage-Combo})
+		add 1 to {Stats.%{_attacker}%::Rampage-Combo}
+		kitParticle_Rampage_Combo({_attacker}, victim, {Stats.%{_attacker}%::Rampage-Combo})
 
 
 

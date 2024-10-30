@@ -1,16 +1,17 @@
 # Weapon-Name: Gem Stinger
 
 on damage with priority LOW:
-	{Class::%attacker%} is "Thief"
+	set {_attacker} to getAttacker(victim)
+	{Class::%{_attacker}%} is "Thief"
 	# sneak + 攻撃時
 	if damage was caused by attack:
-		if attacker is not sneaking:
+		if {_attacker} is not sneaking:
 			stop
 		if "%type of victim%" is not "player":
 			stop
-		set {_tool} to attacker's tool
+		set {_tool} to {_attacker}'s tool
 		kitItemAllChecker({_tool}, "Thief", "Weapon.main", 2) is true
-		kitEffect_GemStinger_Drop(attacker, victim)
+		kitEffect_GemStinger_Drop({_attacker}, victim)
 	# 宝石弾丸ヒット時
 	else if damage was caused by projectile:
 		metadata value "gem-stinger-bullet" of projectile is set

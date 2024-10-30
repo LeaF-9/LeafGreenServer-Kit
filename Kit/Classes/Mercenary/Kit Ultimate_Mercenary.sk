@@ -56,7 +56,8 @@ local function kitParticle_SanguinaryMurder_Kill(player: player):
 
 on damage of player with priority NORMAL:
 	metadata value "gametype" of victim is "Kit"
-	{Stats.%attacker%::UltMercenary} is true
+	set {_attacker} to getAttacker(victim)
+	{Stats.%{_attacker}%::UltMercenary} is true
 	getDebuffs(victim, "Blood") is true
 	health of victim <= 3
 	setDamageModification_SET(victim, 100)

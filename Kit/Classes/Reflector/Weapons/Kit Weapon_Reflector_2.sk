@@ -1,8 +1,9 @@
 # weapon-name: Mirror Blade
 
-on damage of player:
+on damage of player with priority LOW:
 	{Class::%victim%} is "Reflector"
-	set {_attacker} to getAttacker
+	checkDamagable(victim) is true
+	set {_attacker} to getAttacker(victim)
 	{_attacker} is set
 	{Stats.%victim%::MirrorBlade} is true
 	delete {Stats.%victim%::MirrorBlade}
@@ -12,7 +13,7 @@ on damage of player:
 	kitEffectDescription(victim, "§f§lパリィ")
 	kitEffectDescription({_attacker}, "§f§lパリィ")
 	kitParticle_MirrorBlade_Parry(victim)
-	kitDamage(victim, {_attacker}, {_dmg})
+	kitDamageNull(victim, {_attacker}, {_dmg})
 
 on sneak toggle:
 	{Class::%player%} is "Reflector"

@@ -35,12 +35,13 @@ on rightclick:
 		set {_tploc} to location 1 meter behind {_tploc}
 		teleport player to {_tploc}
 
-on damage:
-	{Class::%attacker%} is "Assassin"
-	if {Stats.%attacker%::UltAssassin} is true:
-		if victim's facing is attacker's facing:
-			set damage to 20
-			send action bar "§0§l暗殺に成功した..." to attacker
+on damage with priority LOW:
+	set {_attacker} to getAttacker(victim)
+	{Class::%{_attacker}%} is "Assassin"
+	if {Stats.%{_attacker}%::UltAssassin} is true:
+		if victim's facing is {_attacker}'s facing:
+			setDamageModification_SET(victim, 100)
+			send action bar "§0§l暗殺に成功した..." to {_attacker}
 			message "<##8b0000>暗殺されてしまった..." to victim
 			playSound("entity.wither.spawn", 1, 1, victim)
 			set {_l} to location of victim
@@ -50,4 +51,4 @@ on damage:
 				set y-coordinate of {_e} to y-coordinate of victim + {_r}
 				spawnParticle(witch, {_e})
 		else:
-			set damage to 1
+			setDamageModification_SET(victim, 1)

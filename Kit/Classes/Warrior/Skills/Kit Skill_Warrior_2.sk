@@ -30,7 +30,7 @@ function kitSkill_Warrior_2(player: player):
 		delete {Stats.%{_player}%::LimiterRemoval}
 
 on damage with priority LOW:
-	set {_attacker} to metadata value "Last Killer" of victim
+	set {_attacker} to getAttacker(victim)
 	set {_damage.mul} to 1
 
 	if {Stats.%{_attacker}%::LimiterRemoval} is true:
@@ -52,9 +52,9 @@ on damage with priority LOW:
 		stop
 	setDamageModification_MUL(victim, {_damage.mul})
 	if {_damage.mul} > 1:
-		kitEffectDescription(victim, "§4x%{_damage.mul}%")
+		kitEffectDescription(victim, "§4❤§c§lx%{_damage.mul}%")
 	else:
-		kitEffectDescription(victim, "§1x%{_damage.mul}%")
+		kitEffectDescription(victim, "§4❤§a§lx%{_damage.mul}%")
 
 local function kitEffect_LimiterRemoval_CalcDamage(base: number, plus: boolean) :: number:
 	if {_plus} is true:

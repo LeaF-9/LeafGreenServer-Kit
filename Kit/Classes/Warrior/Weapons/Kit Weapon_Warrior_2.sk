@@ -1,12 +1,13 @@
 # Pluto
 
 on damage:
-	metadata value "gametype" of attacker is "Kit"
+	set {_attacker} to getAttacker(victim)
+	metadata value "gametype" of {_attacker} is "Kit"
 	damage was caused by attack
-	{Class::%attacker%} is "Warrior"
-	set {_tool} to attacker's tool
-	if {Stats.%attacker%::PlutoCharge} is true:
-		subtract 1 from attacker's health
+	{Class::%{_attacker}%} is "Warrior"
+	set {_tool} to {_attacker}'s tool
+	if {Stats.%{_attacker}%::PlutoCharge} is true:
+		subtract 1 from {_attacker}'s health
 		kitStun(victim, 100)
 		playSound("entity.wither.break_block", 1, 0.9, victim)
 		loop all blocks in radius 3 around victim:
@@ -15,7 +16,7 @@ on damage:
 			set {_loc} to location of loop-block
 			subtract 0.4 from y-coordinate of {_loc}
 			spawnParticle_Block(dirt, {_loc})
-		delete {Stats.%attacker%::PlutoCharge}
+		delete {Stats.%{_attacker}%::PlutoCharge}
 
 on sneak toggle:
 	{Class::%player%} is "Warrior"

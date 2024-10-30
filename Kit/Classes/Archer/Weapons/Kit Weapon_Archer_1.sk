@@ -16,10 +16,11 @@ on projectile hit:
 	kitParticle_MassiveBow_Hit(location of projectile)
 
 on damage with priority LOW:
-	checkEntityType(attacker, player) is true
+	set {_attacker} to getAttacker(victim)
+	checkEntityType({_attacker}, player) is true
 	damage was caused by projectile
 	metadata value "massivebow" of projectile is set
-	set {_dis} to distance between attacker and victim
+	set {_dis} to distance between {_attacker} and victim
 	set {_dmg} to {_dis} / 10
 	setDamageModification_SET(victim, {_dmg})
 

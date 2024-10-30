@@ -67,9 +67,10 @@ on sneak toggle:
 				kitEffect_UltWarrior(player)
 
 on damage with priority LOW:
-	if {Stats.%attacker%::UltWarrior-OK} is true:
+	set {_attacker} to getAttacker(victim)
+	if {Stats.%{_attacker}%::UltWarrior-OK} is true:
 		setDamageModification_SET(victim, 100)
-		delete {Stats.%attacker%::UltWarrior-OK}
+		delete {Stats.%{_attacker}%::UltWarrior-OK}
 		strike lightning effect at victim
 		loop 10 times:
 			set {_loc} to aroundEffect(victim)

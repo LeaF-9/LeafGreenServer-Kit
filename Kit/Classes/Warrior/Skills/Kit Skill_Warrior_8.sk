@@ -9,17 +9,18 @@ options:
 
 
 on damage with priority LOW:
-	set {_bt} to metadata value "Barbaric Torment - Hit" of attacker
+	set {_attacker} to getAttacker(victim)
+	set {_bt} to metadata value "Barbaric Torment - Hit" of {_attacker}
 	if {_bt} is set:
 		set {_enabled} to true
 		setDamageModification_MUL(victim, 0.5)
-		kitEffectDescription(victim, "§1x{@debuff-rate}")
+		kitEffectDescription(victim, "§4❤§a§lx{@debuff-rate}")
 
 	if {Stats.%victim%::BarbaricTorment} is set:
 		if {_enabled} is not set:  # 範囲外からの攻撃を無効化
 			cancel event
-		kitFear(attacker, {@fear-time})
-		kitEffectDescription(attacker, "§5恐怖")
+		kitFear({_attacker}, {@fear-time})
+		kitEffectDescription({_attacker}, "§5§l恐怖")
 		kitParticle_BarbaricTorment_Damage(victim)
 
 

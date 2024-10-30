@@ -25,6 +25,8 @@ on projectile hit:
 	
 	if {_victim} is not set:
 		stop
+	if checkEntityType({_victim}, sheep) is true:
+		stop
 	if kitCheckTeam({_victim}, shooter, true, true) is true:
 		stop
 	
@@ -60,11 +62,13 @@ on damage of player:
 	set {_damagereduction} to {_damage.blocking} * 0.5  # (-1.5)
 
 	# attacker toolがaxeだった場合、別の処理を実行
-	set {_tooltype} to type of tool of attacker
-	if "%{_tooltype}%" contains "axe":
-		cancel event
-		playSound("item.shield.block", 1, 1, victim)
-		kitDamage(attacker, victim, {_damage.base} / 4, true)
-		stop
+	if damage was caused by attack:
+		set {_tooltype} to type of tool of attacker
+		if "%{_tooltype}%" contains "axe":
+			cancel event
+			playSound("item.shield.block", 1, 1, victim)
+			set {_attacker} to getAttacker(victim)
+			kitDamageNull({_attacker}, victim, {_damage.base} / 4, true)
+			stop
 
 	event.setDamage(DamageModifier.BLOCKING, {_damagereduction})

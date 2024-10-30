@@ -1,12 +1,13 @@
 # Titan
 
 on damage:
-	metadata value "gametype" of attacker is "Kit"
+	set {_attacker} to getAttacker(victim)
+	metadata value "gametype" of {_attacker} is "Kit"
 	damage was caused by attack
-	{Class::%attacker%} is "Warrior"
-	set {_tool} to attacker's tool
+	{Class::%{_attacker}%} is "Warrior"
+	set {_tool} to {_attacker}'s tool
 	if kitItemAllChecker({_tool}, "Warrior", "Weapon.main", 1) is true:
-		set {_c} to kitPercentDuel(attacker, victim, 10)
+		set {_c} to kitPercentDuel({_attacker}, victim, 10)
 		chance of {_c}%:
 			apply slowness 3 to victim for 3 seconds
 			playSound("entity.phantom.hurt", 1, 0.75, victim)

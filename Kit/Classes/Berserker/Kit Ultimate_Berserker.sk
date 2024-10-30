@@ -6,28 +6,29 @@ function kitUltBerserker(player: player):
 
 
 on damage of player with priority LOW:
-	{Stats.%attacker%::AdrenalinRage} is set
+	set {_attacker} to getAttacker(victim)
+	{Stats.%{_attacker}%::AdrenalinRage} is set
 	set {_now} to now
-	set {Stats.%attacker%::AdrenalinRage-Time} to {_now}
+	set {Stats.%{_attacker}%::AdrenalinRage-Time} to {_now}
 
-	set {_damage} to {Stats.%attacker%::AdrenalinRage}
-	loop all players in radius 10 around attacker:
-		loop-player is not attacker
+	set {_damage} to {Stats.%{_attacker}%::AdrenalinRage}
+	loop all players in radius 10 around {_attacker}:
+		loop-player is not {_attacker}
 		add 1 to {_damage}
 		if loop-player is not victim:
-			kitDamage(attacker, loop-player, 1)
+			kitDamageNull({_attacker}, loop-player, 1)
 			kitEffectDescription(loop-player, "§4❤1")
 			kitParticle_AdrenalinRage_Around(loop-player)
 	
 	setDamageModification_SET(victim, {_damage})
-	add 1 to {Stats.%attacker%::AdrenalinRage}
-	send action bar "§4§lコンボ§5: §6§l%{Stats.%attacker%::AdrenalinRage}%" to attacker
+	add 1 to {Stats.%{_attacker}%::AdrenalinRage}
+	send action bar "§4§lコンボ§5: §6§l%{Stats.%{_attacker}%::AdrenalinRage}%" to {_attacker}{_attacker}
 	kitParticle_AdrenalinRage_Damage(victim)
 
 	wait a second
-	{Stats.%attacker%::AdrenalinRage-Time} is {_now}
-	delete {Stats.%attacker%::AdrenalinRage-Time}
-	set {Stats.%attacker%::AdrenalinRage} to 0
+	{Stats.%{_attacker}%::AdrenalinRage-Time} is {_now}
+	delete {Stats.%{_attacker}%::AdrenalinRage-Time}
+	set {Stats.%{_attacker}%::AdrenalinRage} to 0
 
 
 

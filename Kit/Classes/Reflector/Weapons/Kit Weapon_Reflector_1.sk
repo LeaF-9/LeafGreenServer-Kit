@@ -1,12 +1,13 @@
 # weapon-name: Reflec Tickle
 
 on damage with priority NORMAL:
-	if {Stats.%attacker%::ReflecTickle} is true:
+	set {_attacker} to getAttacker(victim)
+	if {Stats.%{_attacker}%::ReflecTickle} is true:
 		cancel event
 	if {Stats.%victim%::ReflecTickle} is true:
 		checkDamagable(victim) is true
 		cancel event
-		kitDamage(attacker, victim, 1, true)
+		kitDamageNull({_attacker}, victim, 1, true)
 		kitParticle_ReflecTickle_Damage(victim)
 
 on sneak toggle:

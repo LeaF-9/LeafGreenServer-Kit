@@ -15,19 +15,20 @@ on sneak toggle:
 	# ギアチェンジ
 	kitEffect_GearyCog_Change(player)
 
-on damage:
+on damage with priority LOW:
+	set {_attacker} to getAttacker(victim)
 	# Geary Cogでの攻撃時
-	if {Class::%attacker%} is "Engineer":
-		set {_tool} to attacker's tool
+	if {Class::%{_attacker}%} is "Engineer":
+		set {_tool} to {_attacker}'s tool
 		if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
 			stop
-		if {Stats.%attacker%::GearyCog} is true:
-			set damage to damage * 2
-			kitParticle_GearyCog_Positive(location of attacker, location of victim)
-			kitEffect_GearyCog_Change(attacker)
+		if {Stats.%{_attacker}%::GearyCog} is true:
+			setDamageModification_MUL(victim, 2)
+			kitParticle_GearyCog_Positive(location of {_attacker}, location of victim)
+			kitEffect_GearyCog_Change({_attacker})
 		else:
-			set damage to damage * 0.2
-			kitParticle_GearyCog_Negative(location of attacker, location of victim)
+			setDamageModification_MUL(victim, 0.2)
+			kitParticle_GearyCog_Negative(location of {_attacker}, location of victim)
 	# Geary Cog選択時のダメージ
 	if {Class::%victim%} is "Engineer":
 		kitSelectChecker_Weapon(victim, "Engineer") is 2

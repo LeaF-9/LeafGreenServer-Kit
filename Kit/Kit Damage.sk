@@ -90,6 +90,9 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 		LastKiller({_victim}, {_attacker})
 	setAttacker({_victim}, {_attacker})
 
+	set {_now} to now
+	set metadata value "kit damage" of {_victim} to {_now}
+
 	if {_fix} is true:
 		damage {_victim} by {_damage} hearts
 	else:
@@ -109,9 +112,11 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 		set {_truedamage} to {_truedamage} * 0.5
 		damage {_victim} by {_truedamage} hearts
 
+# checkDamagableを通さないダメージ関数
 function kitDamageNull(attacker: player, victim: entity, damage: number, fix: boolean = false):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
+	setAttacker({_victim}, {_attacker})
 
 	if {_fix} is true:
 		damage {_victim} by {_damage} hearts
@@ -136,6 +141,9 @@ function kitDamageInstant(attacker: player, victim: entity, damage: number, fix:
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
 	setAttacker({_victim}, {_attacker})
+
+	set {_now} to now
+	set metadata value "kit damage" of {_victim} to {_now}
 
 	# 無敵時間操作
 	set {_baseTick} to maximum damage delay of {_victim}
@@ -196,13 +204,23 @@ on damage with priority LOWEST:
 
 # ダメージを受けた際、それがskriptからのものでないことを確認する関数
 function checkDamagable(entity: entity) :: boolean:
+	set {_kittime} to metadata value "kit damage" of {_entity}
+	if {_kittime} is set:
+		set {_now} to now
+		set {_diftime} to difference between {_kittime} and {_now}
+		if {_diftime} < 1 tick:
+			delete metadata value "kit damage" of {_entity}
+			return true
+
 	set {_rawtime} to metadata value "raw damage" of {_entity}
 	if {_rawtime} is not set:
 		return false
+
 	set {_now} to now
 	set {_diftime} to difference between {_rawtime} and {_now}
 	if {_diftime} >= 1 tick:
 		return false
+
 	return true
 
 

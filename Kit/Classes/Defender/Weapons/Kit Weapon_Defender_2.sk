@@ -1,12 +1,13 @@
 # Mace
 
 on damage of player:
-	metadata value "gametype" of attacker is "Kit"
+	set {_attacker} to getAttacker(victim)
+	metadata value "gametype" of {_attacker} is "Kit"
 	damage was caused by attack
-	{Class::%attacker%} is "Defender"
-	set {_tool} to attacker's tool
+	{Class::%{_attacker}%} is "Defender"
+	set {_tool} to {_attacker}'s tool
 	kitItemAllChecker({_tool}, "Defender", "Weapon.main", 2) is true
-	attacker is sneaking
+	{_attacker} is sneaking
 	playSound("entity.iron_golem.damage", 1, 1, victim)
 	kitStun(victim, 10)
 	loop 10 times:

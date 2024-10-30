@@ -34,12 +34,13 @@ on damage of player:
 		if damage cause is not fall:
 			set {_ulthp} to {Stats.%victim%::Ult_Paladin} - damage
 		if {_ulthp} <= 0:
+			set {_attacker} to getAttacker(victim)
 			delete {Stats.%victim%::Ult_Paladin}
 			message formatted "<##4d4398>加護が崩れた! <##dc6b9a>妖精の回復魔法が付与されます...!" to victim
 			apply regeneration 1 to victim for 10 seconds
-			if attacker exists:
-				apply poison 1 to attacker for 10 seconds
-				message formatted "<##8d93c8>妖精のいたずらが身体を蝕む..." to attacker
+			if {_attacker} exists:
+				apply poison 1 to {_attacker} for 10 seconds
+				message formatted "<##8d93c8>妖精のいたずらが身体を蝕む..." to {_attacker}
 			loop 5 times:
 				set {_baseloc} to location of victim
 				set {_rad} to 0

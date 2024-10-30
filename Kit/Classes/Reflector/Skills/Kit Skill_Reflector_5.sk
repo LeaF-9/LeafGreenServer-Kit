@@ -56,11 +56,12 @@ on damage of slime:
 	set {_name} to victim's display name parsed as player
 	metadata value "Speculum Shield" of victim is set
 	cancel event
-	if kitCheckTeam({_name}, attacker, false) is false:
+	set {_attacker} to getAttacker(victim)
+	if kitCheckTeam({_name}, {_attacker}, false) is false:
 		stop
 	if damage was caused by attack, projectile or potion:
 		set {_dmg} to damage / 2
-		kitDamage({_name}, attacker, {_dmg})
+		kitDamage({_name}, {_attacker}, {_dmg})
 		kitParticle_SpeculumShield_Damage(location of victim)
 	else:
 		cancel event

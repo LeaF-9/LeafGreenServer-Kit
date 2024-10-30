@@ -1,11 +1,12 @@
 # Leadull
 
 on damage with priority LOW:
-	metadata value "gametype" of attacker is "Kit"
-	{Class::%attacker%} is "Mercenary"
+	set {_attacker} to getAttacker(victim)
+	metadata value "gametype" of {_attacker} is "Kit"
+	{Class::%{_attacker}%} is "Mercenary"
 	damage was caused by attack
-	attacker is sneaking
-	set {_tool} to attacker's tool
+	{_attacker} is sneaking
+	set {_tool} to {_attacker}'s tool
 	kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 1) is true
 	setDamageModification_SET(victim, 1)
 	if "%type of victim%" is not "player":

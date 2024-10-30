@@ -4,12 +4,14 @@ function kitSkill_Reflector_1(player: player):
 	toolCT({_player}, "Reflector", 1)
 	kitEffect_PerfectReflection({_player})
 
-on damage of player:
-	attacker exists
+on damage of player with priority LOW:
+	checkDamagable(victim) is true
+	set {_attacker} to getAttacker(victim)
+	{_attacker} is set
 	kitReflector_DamageChecker(victim) is "Perfect Reflection"
 	set {_dm} to damage / 2
-	kitDamage(victim, attacker, {_dm}, true)
-	kitParticle_PerfectReflection_Reflect(victim, attacker)
+	kitDamageNull(victim, {_attacker}, {_dm}, true)
+	kitParticle_PerfectReflection_Reflect(victim, {_attacker})
 
 local function kitEffect_PerfectReflection(player: player):
 	set {_now} to now

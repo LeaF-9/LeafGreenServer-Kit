@@ -35,13 +35,14 @@ function kitSkillReflector(player: player) :: boolean:
 # Ability
 on damage of player with priority NORMAL:
 	{Class::%victim%} is "Reflector"
+	checkDamagable(victim) is true
 	set {_attacker} to getAttacker(victim)
 	{_attacker} is set
 	kitReflector_DamageChecker(victim) is "none"
-	set {_c} to kitPercentDuel(victim, attacker, 20)
+	set {_c} to kitPercentDuel(victim, {_attacker}, 20)
 	chance of {_c}%:
 		set {_dm} to damage / 4
-		kitDamage(victim, {_attacker}, {_dm})
+		kitDamageNull(victim, {_attacker}, {_dm})
 		playSound("entity.experience_orb.pickup", 1, 1.5, victim)
 
 function kitReflector_DamageChecker(victim: player) :: text:

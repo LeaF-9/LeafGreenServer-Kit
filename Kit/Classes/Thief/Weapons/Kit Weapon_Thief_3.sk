@@ -22,14 +22,15 @@ on sneak toggle:
 		wait a tick
 
 on damage of player:
+	set {_attacker} to getAttacker(victim)
 	attacker is set
 	victim is sneaking
 	{Class::%victim%} is "Thief"
 	set {_tool} to victim's tool
 	kitItemAllChecker({_tool}, "Thief", "Weapon.main", 3) is true
-	set {_c} to kitPercentDuel(victim, attacker, 30)
+	set {_c} to kitPercentDuel(victim, {_attacker}, 30)
 	chance of {_c}%:
-		kitBlood(attacker)
+		kitBlood({_attacker})
 
 on leftclick:
 	player is sneaking

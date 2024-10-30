@@ -1,10 +1,5 @@
 # skill-name: Mirror Ball
 
-import:
-	org.bukkit.event.entity.EntityDamageEvent$DamageModifier
-
-
-
 function kitSkill_Reflector_4(player: player):
 	toolCT({_player}, "Reflector", 4)
 	kitEffect_MirrorBall({_player})
@@ -13,38 +8,36 @@ function kitSkill_Reflector_4(player: player):
 
 on damage of player:
 	damage cause is not sweep attack
+	checkDamagable(victim) is true
 	{Stats.%victim%::MirrorBall} is set
+	set {_attacker} to getAttacker(victim)
 	set {_damage.origin} to damage
 	set {_victim} to victim
-	if attacker is not set:
+	if {_attacker} is not set:
 		# デバッグ用
 		# log "[MirrorBall] attackerが存在しない"
 		stop
-	if checkEntityType(attacker, player) is false:
+	if checkEntityType({_attacker}, player) is false:
 		# デバッグ用
 		# log "[MirrorBall] attackerがplayerでない"
 		stop
-	set {_attacker} to attacker
-	event.setDamage(DamageModifier.ARMOR, 0)
-	set damage to 0.5
-	set {_mirror} to {Stats.%victim%::MirrorBall}
-	set {_member} to 0
+	
+	# Knockback処理
+	setDamageModification_SET(victim, 0)
+
+	set {_mirror} to {Stats.%victim%::MirrorBall}  # Mirror Ball発動者の取得
+	set {_member} to 0  # 範囲人数のカウント
 	loop all players:
-		{Stats.%loop-player%::MirrorBall} is {_mirror}
-		add loop-player to {_damaged::*}
+		{Stats.%loop-player%::MirrorBall} is {_mirror}  # 同じMirror Ballに居るプレイヤーかどうか
+		add loop-player to {_damaged::*}  # ダメージ共有者として追加
 		add 1 to {_member}
 	if {_member} <= 0:
 		stop
-	kitParticle_MirrorBall_Damage({_mirror}, {_damaged::*})
-	set {_damage.separate} to {_damage.origin} / {_member}
+
+	kitParticle_MirrorBall_Damage({_mirror}, {_damaged::*})  # パーティクル処理
+
+	set {_damage.separate} to {_damage.origin} / {_member}  # ダメージ数の計算
 	loop {_damaged::*}:
-		# victimの場合
-		if loop-value is victim:
-			if health of victim > {_damage.separate}:
-				kitEffect_MirrorBall_Damage(victim, {_damage.separate} - 0.5)
-			else:
-				set damage to 10000
-			continue
 		# attackerとチームが異なる場合
 		# この場合はattackerをそのままattackerにする
 		if kitCheckTeam(loop-value, {_attacker}, false) is true:
@@ -60,7 +53,9 @@ on damage of player:
 		
 		if {_attacker.true} is set:
 			LastKiller(loop-value, {_attacker.true})
-		kitEffect_MirrorBall_Damage(loop-value, {_damage.separate})
+			kitDamageNull({_attacker.true}, loop-value, {_damage.separate}, true)
+		else:
+			damage loop-value by {_damage.separate} hearts
 	
 
 # 同時に発動された際の処理がわからない
@@ -89,14 +84,6 @@ local function kitEffect_MirrorBall(player: player):
 	loop all players:
 		{Stats.%loop-player%::MirrorBall} is {_player}
 		delete {Stats.%loop-player%::MirrorBall}
-
-local function kitEffect_MirrorBall_Damage(victim: player, damage: number):
-	set {_nodamage} to metadata value "mirror ball - nodamagetick" of {_victim}
-	if {_nodamage} is not set:
-		set metadata value "mirror ball - nodamagetick" of {_victim} to true
-		set health of {_victim} to health of {_victim} - {_damage}
-		wait 0.5 seconds
-		delete metadata value "mirror ball - nodamagetick" of {_victim}
 
 
 

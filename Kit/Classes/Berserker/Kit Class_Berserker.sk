@@ -25,27 +25,28 @@ function kitSkillBerserker(player: player) :: boolean:
 # Passive
 on damage of player:
 	damage was caused by attack
-	{Stats.%attacker%::AdrenalinRage} is not set
+	set {_attacker} to getAttacker(victim)
+	{Stats.%{_attacker}%::AdrenalinRage} is not set
 	set {_enable} to false
 
-	if {Stats.%attacker%::Berserk} is true:
+	if {Stats.%{_attacker}%::Berserk} is true:
 		set {_enable} to true
 		set {_range} to 5
 		set {_damage} to 1
-	if {Stats.%attacker%::BerserkTime} is set:
+	if {Stats.%{_attacker}%::BerserkTime} is set:
 		set {_enable} to true
 		set {_range} to 7
 		set {_damage} to 2
-		playSound("entity.blaze.shoot", 0.75, 1.75, attacker)
+		playSound("entity.blaze.shoot", 0.75, 1.75, {_attacker})
 
 	if {_enable} is false:
 		stop
 
-	kitParticle_Berserk_Around(attacker, {_range})
-	loop all players in radius {_range} around attacker:
-		loop-player is not attacker
+	kitParticle_Berserk_Around({_attacker}, {_range})
+	loop all players in radius {_range} around {_attacker}:
+		loop-player is not {_attacker}
 		loop-player is not victim
-		kitDamage(attacker, loop-player, {_damage})
+		kitDamageNull({_attacker}, loop-player, {_damage})
 		kitEffectDescription(victim, "§4❤%{_damage}%")
 		kitParticle_Berserk_Hit(loop-player, {_damage})
 

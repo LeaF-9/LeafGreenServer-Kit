@@ -1,9 +1,10 @@
 # Skill-Name: Damage Absorption
 
 on damage of player:
-	if {Stats.%attacker%::DamageAbsorption} is true:
+	set {_attacker} to getAttacker(victim)
+	if {Stats.%{_attacker}%::DamageAbsorption} is true:
 		cancel event
-		set action bar of attacker to "§c§l我慢中は攻撃できません!"
+		set action bar of {_attacker} to "§c§l我慢中は攻撃できません!"
 	if kitReflector_DamageChecker(victim) is "Damage Absorption":
 		cancel event
 		add 1 to {Stats.%victim%::DamageAbsorption-Point}

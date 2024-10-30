@@ -183,11 +183,12 @@ function kitSpawn_Necromancer_BabyZombie(player: player, loc: location):
 	{_mob} is alive
 	kill {_mob}
 
-on damage:
+on damage with priority HIGHEST:
+	set {_attacker} to getAttacker(victim)
 	if metadata value "necromancer-entity-babyzombie" of victim is true:
-		set damage to 10000
-	else if metadata value "necromancer-entity-babyzombie" of attacker is true:
-		set damage to 1
+		setDamageModification_SET(victim, 100)
+	else if metadata value "necromancer-entity-babyzombie" of {_attacker} is true:
+		setDamageModification_SET(victim, 1)
 
 function kitSpawn_Necromancer_Grudge(player: player, loc: location):
 	set {_nbt} to "{Silent:1,IsBaby:0,ArmorItems:[{},{},{},{id:""minecraft:player_head"",components:{profile:{id:[I;907160796,1821854615,-1727336627,-176309982],properties:[{name:""textures"",value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGFhOGZjOGRlNjQxN2I0OGQ0OGM4MGI0NDNjZjUzMjZlM2Q5ZGE0ZGJlOWIyNWZjZDQ5NTQ5ZDk2MTY4ZmMwIn19fQ==""}]}},Count:1b}],HandItems:[{},{}],active_effects:[{id:slowness,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
@@ -203,15 +204,16 @@ function kitSpawn_Necromancer_Grudge(player: player, loc: location):
 		loop-entity is {_mob}
 		delete loop-entity
 
-on damage:
-	if metadata value "necromancer-entity-grudgesoul" of attacker is true:
+on damage with priority HIGHEST:
+	set {_attacker} to getAttacker(victim)
+	if metadata value "necromancer-entity-grudgesoul" of {_attacker} is true:
 		set damage to 1
 	if metadata value "necromancer-entity-grudgesoul" of victim is true:
 		cancel event
-		if attacker is set:
+		if {_attacker} is set:
 			set {_victim} to metadata value "necromancer-entity" of victim
-			kitCheckTeam({_victim}, attacker, false) is true
-			applyEffect(attacker, wither, 1, 5 seconds, true)
+			kitCheckTeam({_victim}, {_attacker}, false) is true
+			applyEffect({_attacker}, wither, 1, 5 seconds, true)
 		set {_el} to location of victim
 		delete victim
 		loop 20 times:
@@ -225,18 +227,19 @@ function kitSpawn_Necromancer_Vengeful(player: player, loc: location):
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-vengefulspirit" of {_mob} to 5
 
-on damage:
+on damage with priority HIGHEST:
+	set {_attacker} to getAttacker(victim)
 	damage cause is not sweep attack
 	if metadata value "necromancer-entity-vengefulspirit" of victim is set:
 		set {_hp} to metadata value "necromancer-entity-vengefulspirit" of victim
 		subtract 1 from {_hp}
 		if {_hp} <= 0:
-			set damage to 10000
+			setDamageModification_SET(victim, 100)
 		else:
-			set damage to 0.1
+			setDamageModification_SET(victim, 0.1)
 			set metadata value "necromancer-entity-vengefulspirit" of victim to {_hp}
-	else if metadata value "necromancer-entity-vengefulspirit" of attacker is set:
-		set damage to 0
+	else if metadata value "necromancer-entity-vengefulspirit" of {_attacker} is set:
+		setDamageModification_SET(victim, 0)
 		applyEffect(victim, wither, 3, 1 seconds, true)
 
 function kitSpawn_Necromancer_Ghost(player: player, loc: location, head: boolean):
@@ -251,9 +254,9 @@ function kitSpawn_Necromancer_Ghost(player: player, loc: location, head: boolean
 	if {_mob} is alive:
 		kill {_mob}
 
-on damage of wither skeleton:
+on damage of wither skeleton with priority HIGHEST:
 	metadata value "necromancer-entity-ghost" of victim is true
-	set damage to 100
+	setDamageModification_SET(victim, 100)
 
 function kitAddNecromance(player: player, num: number):
 	add {_num} to {Kit-Necromance::%{_player}%}

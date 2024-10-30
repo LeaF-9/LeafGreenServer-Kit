@@ -2,11 +2,12 @@
 
 # Weapons
 on damage of player:
-	metadata value "gametype" of attacker is "Kit"
+	set {_attacker} to getAttacker(victim)
+	metadata value "gametype" of {_attacker} is "Kit"
 	damage was caused by attack
 	{Class::%attacker%} is "Wizard"
 	{Stats.%victim%::Invincible} is not set
-	set {_tool} to attacker's tool
+	set {_tool} to {_attacker}'s tool
 	if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 1) is true:
 		set {_ok} to true
 		set {_mana} to 5
@@ -17,8 +18,8 @@ on damage of player:
 		set {_ok} to true
 		set {_mana} to 1
 	if {_ok} is true:
-		add {_mana} to {Kit-Mana::%attacker%}
-		kitMsg(attacker, "§bマナ §9§l%{_mana}% §7ゲット!")
+		add {_mana} to {Kit-Mana::%{_attacker}%}
+		kitMsg({_attacker}, "§bマナ §9§l%{_mana}% §7ゲット!")
 
 on shoot:
 	if name of shooter's tool is "§bMana Drawing":
@@ -26,18 +27,19 @@ on shoot:
 	else if name of shooter's tool is "§aMana Assimilation":
 		set metadata value "managreen" of projectile to "true"
 
-on damage of player:
-	{Class::%attacker%} is "Wizard"
-	victim is not attacker
+on damage of player with priority LOW:
+	set {_attacker} to getAttacker(victim)
+	{Class::%{_attacker}%} is "Wizard"
+	victim is not {_attacker}
 	{Stats.%victim%::Invincible} is not set
 	if damage was caused by potion:
 		if metadata value "managreen" of projectile is "true":
-			set damage to 1
-			add 2 to {Kit-Mana::%attacker%}
-			kitMsg(attacker, "§bマナ §9§l2 §7ゲット!")
+			setDamageModification_SET(victim, 1)
+			add 2 to {Kit-Mana::%{_attacker}%}
+			kitMsg({_attacker}, "§bマナ §9§l2 §7ゲット!")
 		else if metadata value "manablue" of projectile is "true":
-			add 3 to {Kit-Mana::%attacker%}
-			kitMsg(attacker, "§bマナ §9§l3 §7ゲット!")
+			add 3 to {Kit-Mana::%{_attacker}%}
+			kitMsg({_attacker}, "§bマナ §9§l3 §7ゲット!")
 
 function kitWeaponWizard(player: player):
 	set {_tool} to {_player}'s tool

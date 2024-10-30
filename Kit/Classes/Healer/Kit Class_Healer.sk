@@ -41,14 +41,13 @@ on death of player:
 	kitHeal(attacker, 3)
 	add 10 to {Kit-Odo::%attacker%}
 
-on damage of player:
+on damage of player with priority LOW:
 	{Class::%victim%} is "HEA"
 	if damage was caused by void or fall:
 		stop
 	else if damage >= 100:
 		stop
-	else:
-		set damage to damage * 1.5
+	setDamageModification_MUL(victim, 1.5)
 
 command /odoset <number> <player=%player%>:
 	permission: sk.admin

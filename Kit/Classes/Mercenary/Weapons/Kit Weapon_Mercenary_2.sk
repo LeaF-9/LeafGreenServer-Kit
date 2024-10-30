@@ -1,15 +1,16 @@
 # Weapon-Name: Vander
 
 on damage with priority LOW:
-	metadata value "gametype" of attacker is "Kit"
-	{Class::%attacker%} is "Mercenary"
+	set {_attacker} to getAttacker(victim)
+	metadata value "gametype" of {_attacker} is "Kit"
+	{Class::%{_attacker}%} is "Mercenary"
 	damage was caused by attack
-	attacker is sneaking
-	set {_tool} to attacker's tool
+	{_attacker} is sneaking
+	set {_tool} to {_attacker}'s tool
 	kitItemAllChecker({_tool}, "Mercenary", "Weapon.main", 2) is true
 	getDebuffs(victim, "Blood") is true
 	setDamageModification_ADD(victim, 3)
-	kitEffect_Vander(attacker, victim)
+	kitEffect_Vander({_attacker}, victim)
 
 local function kitEffect_Vander(player: player, target: player):
 	kitParticle_Vander_Edge({_player}, {_target})

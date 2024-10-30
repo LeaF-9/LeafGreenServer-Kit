@@ -32,6 +32,7 @@ function kitSpawn_Necromancer_Reaper(player: player, loc: location):
 		wait a tick
 
 on damage of player:
-	metadata value "necromancer-entity-reaper" of attacker is true
-	set {_player} to metadata value "necromancer-entity" of attacker
+	set {_attacker} to getAttacker(victim)
+	metadata value "necromancer-entity-reaper" of {_attacker} is true
+	set {_player} to metadata value "necromancer-entity" of {_attacker}
 	kitAddNecromance({_player}, 1)

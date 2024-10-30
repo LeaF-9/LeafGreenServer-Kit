@@ -28,25 +28,28 @@ function kitSkill_Paladin_1(player: player):
 		send action bar "§c§l対象のプレイヤーがいません" to {_player}
 
 on damage of player with priority NORMAL:
-	if {Stats.%victim%::AllySafeguard} is set:
-		damage cause is not fall, void, lava, flame or suffocation
-		loop all players:
-			{Stats.%victim%::AllySafeguard} is loop-player
-			distance between loop-player and victim <= 15
-			set {_per} to kitPercent(loop-player, 50)
-			chance of {_per}%:
-				setSupporter(victim, loop-player)
-				set {_dl} to damage * 0.8
-				cancel the event
-				playSound("entity.iron_golem.hurt", 1, 1, victim)
-				kitDamage(attacker, loop-player, {_dl})
-				send action bar "§2%loop-player% §7が§cダメージを受け持ってくれました!" to victim
-				send action bar "§6%victim% §aを護衛しました!" to loop-player
-				kitEffectDescription(victim, "§2§l護衛")
-				kitEffectDescription(loop-player, "§2§l護衛")
-				loop 10 times:
-					set {_el} to aroundEffect(loop-player)
-					spawnParticle(happy_villager, {_el})
+	{Stats.%victim%::AllySafeguard} is set
+	checkDamagable(victim) is true
+	damage cause is not fall, void, lava, flame or suffocation
+
+	set {_attacker} to getAttacker(victim)
+	loop all players:
+		{Stats.%victim%::AllySafeguard} is loop-player
+		distance between loop-player and victim <= 15
+		set {_per} to kitPercent(loop-player, 50)
+		chance of {_per}%:
+			setSupporter(victim, loop-player)
+			set {_dl} to damage * 0.8
+			cancel the event
+			playSound("entity.iron_golem.hurt", 1, 1, victim)
+			kitDamageNull({_attacker}, loop-player, {_dl})
+			send action bar "§2%loop-player% §7が§cダメージを受け持ってくれました!" to victim
+			send action bar "§6%victim% §aを護衛しました!" to loop-player
+			kitEffectDescription(victim, "§2§l護衛")
+			kitEffectDescription(loop-player, "§2§l護衛")
+			loop 10 times:
+				set {_el} to aroundEffect(loop-player)
+				spawnParticle(happy_villager, {_el})
 
 on death of player:
 	loop all players:

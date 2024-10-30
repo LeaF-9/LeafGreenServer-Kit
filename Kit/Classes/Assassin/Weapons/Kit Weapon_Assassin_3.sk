@@ -35,10 +35,11 @@ on sneak toggle:
 		spawnParticle_Vector(glow, {_rv}, 1, location of player)
 
 on damage:
-	metadata value "gametype" of attacker is "Kit"
-	{Class::%attacker%} is "Assassin"
-	getInvisibleStatus(attacker) is true
-	set {_tool} to attacker's tool
+	set {_attacker} to getAttacker(victim)
+	metadata value "gametype" of {_attacker} is "Kit"
+	{Class::%{_attacker}%} is "Assassin"
+	getInvisibleStatus({_attacker}) is true
+	set {_tool} to {_attacker}'s tool
 	kitItemAllChecker({_tool}, "Assassin", "Weapon.main", 3) is true
 	applyEffect(victim, wither, 3, 1.5 seconds, true)
 	playSound("entity.phantom.ambient", 1, 2, victim)
