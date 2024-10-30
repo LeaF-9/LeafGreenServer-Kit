@@ -13,6 +13,7 @@ function kitSkill_Assassin_6(player: player):
 on projectile hit:
 	projectile is thrown potion
 	metadata value "poisonmist" of projectile is "true"
+	sendTimeBossbar_GREEN(shooter, "Poison Mist", 100)
 	set {_l} to location of projectile
 	playSound("block.fungus.break", 1.5, 0.5, {_l})
 	loop 100 times:
@@ -46,6 +47,7 @@ on projectile hit:
 				if {_jb::%id of loop-entity%} is not set:
 					set {_jb::%id of loop-entity%} to true
 					apply poison 3 to loop-entity for 10 seconds replacing existing effect
+					kitEffectDescription(loop-entity, "§c§l毒")
 			else if loop-entity is shooter:
 				loop-entity does not have glowing
 				set {_jc} to true
