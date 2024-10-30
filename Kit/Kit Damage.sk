@@ -67,6 +67,9 @@ on damage with priority MONITOR:
 	removeDamageModification_MUL(victim)
 	removeDamageModification_SET(victim)
 
+	# attacker消去
+	deleteAttacker(victim)
+
 	# シールド処理
 	if getShield(victim) > 0:
 		ShieldDamageEvent(victim, {_damage}, damage cause)
@@ -85,6 +88,7 @@ on damage with priority MONITOR:
 function kitDamage(attacker: player, victim: entity, damage: number, fix: boolean = false):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
+	setAttacker({_victim}, {_attacker})
 
 	if {_fix} is true:
 		damage {_victim} by {_damage} hearts
@@ -108,6 +112,7 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 function kitDamageInstant(attacker: player, victim: entity, damage: number):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
+	setAttacker({_victim}, {_attacker})
 
 	if getDamageModification_SET({_victim}) is not -1:
 		set {_damage} to getDamageModification_SET({_victim})
@@ -169,6 +174,9 @@ on damage with priority LOWEST:
 	set {_now} to now
 	set metadata value "raw damage" of victim to {_now}
 
+	if attacker exists:
+		setAttacker(victim, attacker)
+
 # ダメージを受けた際、それがskriptからのものでないことを確認する関数
 function checkDamagable(entity: entity) :: boolean:
 	set {_rawtime} to metadata value "raw damage" of {_entity}
@@ -179,3 +187,16 @@ function checkDamagable(entity: entity) :: boolean:
 	if {_diftime} >= 1 tick:
 		return false
 	return true
+
+
+
+# ダメージを与えたプレイヤーを処理する関数
+function getAttacker(victim: player) :: player:
+	set {_attacker} to metadata value "attacker" of {_victim}
+	retunr {_attacker}
+
+function setAttacker(victim: player, attacker: player):
+	set metadata value "attacker" of {_victim} to {_attacker}
+
+function deleteAttacker(victim: player):
+	delete metadata value "attacker" of {_victim}
