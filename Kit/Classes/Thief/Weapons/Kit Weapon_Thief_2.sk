@@ -1,6 +1,6 @@
 # Weapon-Name: Gem Stinger
 
-on damage:
+on damage with priority LOW:
 	{Class::%attacker%} is "Thief"
 	# sneak + 攻撃時
 	if damage was caused by attack:
@@ -14,9 +14,10 @@ on damage:
 	# 宝石弾丸ヒット時
 	else if damage was caused by projectile:
 		metadata value "gem-stinger-bullet" of projectile is set
-		set damage to 2
+		setDamageModification_SET(victim, 2)
 		if "%type of victim%" is "player":
 			kitStun(victim, 10)
+			kitEffectDescription(victim, "§6§l眩暈")
 		kitParticle_GemStinger_Hit(victim)
 
 on pick up emerald block:
@@ -51,7 +52,7 @@ function kitEffect_GemStinger_Drop(attacker: player, victim: player):
 		drop an emerald block named "%{_attacker}%" at {_droploc}
 		set metadata value "gametype" of last dropped item to "Kit"
 		set metadata value "delete" of last dropped item to "%{_player}%"
-		set metadata value "unpickable" of last dropped item to "true"
+		set metadata value "undelete" of last dropped item to true
 		set metadata value "gem-stinger" of last dropped item to true
 		kitParticle_GemStinger_Drop({_droploc})
 

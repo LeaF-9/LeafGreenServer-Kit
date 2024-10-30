@@ -25,7 +25,7 @@ function kitSkill_Thief_7(player: player):
 	set {_vector} to setVector({_from}, {_to}, 1.5)
 	drop a paper named "%{_player}%" at location of head of {_player}
 	set metadata value "gametype" of last dropped item to "Kit"
-	set metadata value "unpickable" of last dropped item to "true"
+	set metadata value "undelete" of last dropped item to true
 	set metadata value "theft-declaration" of last dropped item to "%{_player}%"
 	kitParticle_TheftDeclaration_Paper(last dropped item)
 	set velocity of last dropped item to {_vector}
@@ -49,6 +49,8 @@ function kitSkill_Thief_7(player: player):
 		kitCheckTeam({_player}, loop-player, false, true) is true
 		message formatted "§bスキル§cを盗まれてしまった!" to loop-player
 		applyEffect(loop-player, blindness, 1, 5 seconds)
+		kitEffectDescription(loop-player, "§7§l窃盗 §8& §0§l盲目")
+		sendTimeBossbar_RED(loop-player, "Theft Declaration", 200)
 		if {Class::%loop-player%} is "Werewolf":
 			if {Stats.%loop-player%::Instinct} is true:
 				set {_type.%loop-player%} to "Werewolf_Instinct"
@@ -78,6 +80,7 @@ function kitSkill_Thief_7(player: player):
 	if size of {_skills::*} is 0:
 		kitMsg({_player}, "§1スキルを盗むことはできませんでした...")
 		stop
+	sendTimeBossbar_GREEN({_player}, "Theft Declaration", 200)
 	set {Stats.%{_player}%::Stealing.Theft Declaration} to true
 	set {StealItem-Theft Declaration.%{_player}%::*} to {_skills::*}
 	remove {_tool} from {_player}
