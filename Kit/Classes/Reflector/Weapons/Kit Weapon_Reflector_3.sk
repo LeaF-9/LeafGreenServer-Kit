@@ -1,12 +1,12 @@
 # weapon-name: Tolle Stone
 
-on damage of player:
+on damage of player with priority NORMAL:
 	{Class::%victim%} is "Reflector"
 	victim is sneaking
 	attacker is set
 	set {_tool} to victim's tool
 	kitItemAllChecker({_tool}, "Reflector", "Weapon.main", 3) is true
-	set damage to damage - 1
+	setDamageModification_ADD(victim, -1)
 	kitMsg(victim, "§cダメージ§5をチャージした!")
 	add 1 to {Stats.%victim%::TolleStone}
 	kitParticle_TolleStone_Charge(victim)

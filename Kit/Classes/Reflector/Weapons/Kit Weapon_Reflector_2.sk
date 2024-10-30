@@ -2,13 +2,17 @@
 
 on damage of player:
 	{Class::%victim%} is "Reflector"
-	attacker is set
+	set {_attacker} to getAttacker
+	{_attacker} is set
 	{Stats.%victim%::MirrorBlade} is true
+	delete {Stats.%victim%::MirrorBlade}
 	set {_dmg} to damage
 	cancel event
 	kitMsg(victim, "§e§lパリィ§f成功!")
+	kitEffectDescription(victim, "§f§lパリィ")
+	kitEffectDescription({_attacker}, "§f§lパリィ")
 	kitParticle_MirrorBlade_Parry(victim)
-	kitDamage(victim, attacker, {_dmg}, true)
+	kitDamage(victim, {_attacker}, {_dmg})
 
 on sneak toggle:
 	{Class::%player%} is "Reflector"
@@ -23,6 +27,7 @@ on sneak toggle:
 
 local function kitEffect_MirrorBlade(player: player):
 	kitParticle_MirrorBlade_Launch({_player})
+	sendTimeBossbar_GREEN({_player}, "Mirror Blade", 3)
 	set {Stats.%{_player}%::MirrorBlade} to true
 	wait 3 ticks
 	delete {Stats.%{_player}%::MirrorBlade}
