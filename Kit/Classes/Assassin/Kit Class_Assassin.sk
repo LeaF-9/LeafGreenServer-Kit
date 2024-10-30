@@ -30,7 +30,7 @@ on damage of player:
 	{Class::%victim%} is "Assassin"
 	cancel event
 
-on damage:
+on damage with priority LOW:
 	{Class::%attacker%} is "Assassin"
 	{Stats.%attacker%::UltAssassin} is not set
 	set {_dis} to distance between attacker and victim
@@ -39,18 +39,18 @@ on damage:
 		playSound("entity.arrow.hit_player", 1, 1.5, attacker, true)
 		send action bar "§c接近されてしまった!" to victim
 		spawnParticle_Block(redstone block, victim)
-		set damage to damage + 2
+		setDamageModification_ADD(victim, 2)
 		add 1 to {_asn}
 	if victim's facing is attacker's facing:
 		kitMsg(attacker, "§4不意打ち効果でダメージが2倍になった!")
 		playSound("entity.arrow.hit_player", 1, 0.75, attacker, true)
 		send action bar "§c不意を突かれた!" to victim
 		spawnParticle_Block(redstone block, victim)
-		set damage to damage * 2
+		setDamageModification_MUL(victim, 2)
 		add 1 to {_asn}
 	if {_asn} is set:
 		checkEntityType(victim, player) is true
 		kitSkillSub_Assassin_5(victim, {_asn})
 		if {_asn} >= 2:
-			kitWeapon_Assassin_4(attacker, victim) is true
-			set damage to 100
+			kitWeapon_Assassin_2(attacker, victim) is true
+			setDamageModification_SET(victim, 100)
