@@ -109,41 +109,59 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 		set {_truedamage} to {_truedamage} * 0.5
 		damage {_victim} by {_truedamage} hearts
 
-function kitDamageInstant(attacker: player, victim: entity, damage: number):
+function kitDamageNull(attacker: player, victim: entity, damage: number, fix: boolean = false):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
 
-	if getDamageModification_SET({_victim}) is not -1:
-		set {_damage} to getDamageModification_SET({_victim})
-	
+	if {_fix} is true:
+		damage {_victim} by {_damage} hearts
 	else:
-		set {_dm.add} to getDamageModification_ADD({_victim})
-		set {_dm.mul} to getDamageModification_MUL({_victim})
-		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
+		# Attribute取得
+		set {_attribute.armor} to {_victim}.getAttribute(Attribute.GENERIC_ARMOR).getValue()  # 防具値 (最大20)
+		set {_attribute.armor_toughness} to {_victim}.getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS).getValue()  # 防具強度値 (最大20)
 
-	{Stats.%{_victim}%::Invincible} is not set
-	if {Kit-Shield::%{_victim}%} is set:
-		set {_shield} to {Kit-Shield::%{_victim}%}
-		subtract {_damage} from {_shield}
-		send action bar "§9§lシールドがダメージを無効化した!" to {_victim}
-		send action bar "§c§lシールドが攻撃を阻害した!" to {_attacker}
-		if {_shield} > 0:
-			set {Kit-Shield::%{_victim}%} to {_shield}
-			playSound("block.anvil.land", 0.7, 2, {_victim})
-		else:
-			delete {Kit-Shield::%{_victim}%}
-			delete {Kit-ShieldTime::%{_victim}%}
-			message formatted "§3§lシールドが崩壊した!" to {_victim}
-			playSound("entity.item.break", 0.7, 1, {_victim})
+		# 軽減率計算
+		set {_calcdamage} to {_damage} * 2
+
+		set {_maxarg.1} to {_attribute.armor} / 5
+		set {_maxarg.2} to {_attribute.armor} - ((4 * {_calcdamage}) / ({_attribute.armor_toughness} + 8))
+		set {_maxarg} to max({_maxarg.1}, {_maxarg.2})
+		set {_minarg} to min(20, {_maxarg})
+
+		set {_truedamage} to {_calcdamage} * (1 - {_minarg} / 25)
+		set {_truedamage} to {_truedamage} * 0.5
+		damage {_victim} by {_truedamage} hearts
+
+function kitDamageInstant(attacker: player, victim: entity, damage: number, fix: boolean = false):
+	if checkEntityType({_victim}, player) is true:
+		LastKiller({_victim}, {_attacker})
+	setAttacker({_victim}, {_attacker})
+
+	# 無敵時間操作
+	set {_baseTick} to maximum damage delay of {_victim}
+	set maximum damage delay of {_victim} to 1 tick
+
+	if {_fix} is true:
+		damage {_victim} by {_damage} hearts
 	else:
-		set {_health} to health of {_victim}
-		subtract {_damage} from {_health}
-		if {_health} <= 0:
-			damage {_victim} by 10000 hearts
-		else:
-			set health of {_victim} to {_health}
-		playSound("entity.generic.hurt", 1, 1.3, {_victim})
-		play hurt animation on {_victim}
+		# Attribute取得
+		set {_attribute.armor} to {_victim}.getAttribute(Attribute.GENERIC_ARMOR).getValue()  # 防具値 (最大20)
+		set {_attribute.armor_toughness} to {_victim}.getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS).getValue()  # 防具強度値 (最大20)
+
+		# 軽減率計算
+		set {_calcdamage} to {_damage} * 2
+
+		set {_maxarg.1} to {_attribute.armor} / 5
+		set {_maxarg.2} to {_attribute.armor} - ((4 * {_calcdamage}) / ({_attribute.armor_toughness} + 8))
+		set {_maxarg} to max({_maxarg.1}, {_maxarg.2})
+		set {_minarg} to min(20, {_maxarg})
+
+		set {_truedamage} to {_calcdamage} * (1 - {_minarg} / 25)
+		set {_truedamage} to {_truedamage} * 0.5
+		damage {_victim} by {_truedamage} hearts
+	
+	# 無敵時間戻す
+	set maximum damage delay of {_victim} to {_baseTick}
 
 on damage of player:
 	{Stats.%victim%::Invincible} is true
