@@ -9,11 +9,13 @@ function kitSkill_Ninja_6(player: player):
 		delete {_player}'s tool
 		kunaiNinjutsu({_player}, "Kamaitachi")
 		apply speed 3 to {_player} for 5 seconds replacing existing effect
+		sendTimeBossbar_GREEN({_player}, "Kamaitachi", 100)
 		loop 100 times:
 			if {Stats.%{_player}%::Kamaitachi} is set:
 				loop all entities in radius 5 around {_player}:
 					kitCheckTeam({_player}, loop-entity, false) is true
 					kitDamage({_player}, loop-entity, 0.25)
+					kitEffectDescription(loop-entity, "§4❤0.25")
 					set {_loc} to location of loop-entity
 					add 1 to y-coordinate of {_loc}
 					spawnParticle_Vector(cloud, randomVector(), 0.5, {_loc})

@@ -136,6 +136,7 @@ on rightclick holding a dye:
 
 # Ninjutsu -風-
 function kitNinjutsu_KAZE(player: player, l: location):
+	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 風 -", 100)
 	playSound("entity.wither.shoot", 1, 0.5, {_player})
 	if block at location 0.1 meters below {_l} is passable:
 		set {_v} to setVector({_l}, location 5 meters above {_l})
@@ -190,6 +191,7 @@ on explosion:
 			drop a tnt named "%{_act}%" at event-location
 			set metadata value "gametype" of last dropped item to "Kit"
 			set metadata value "ninjutsu-baku-2" of last dropped item to "%{_act}%"
+			set metadata value "undelete" of last dropped item to true
 			spawnParticle(flame, last dropped item)
 			push last dropped item upwards at speed 0.2
 			push last dropped item north at speed random number from -1 to 1
@@ -207,6 +209,7 @@ on explosion:
 				drop a gunpowder named "%{_act}%" at loop-value-1
 				set metadata value "gametype" of last dropped item to "Kit"
 				set metadata value "ninjutsu-baku-3" of last dropped item to "%{_act}%"
+				set metadata value "undelete" of last dropped item to true
 				spawnParticle(smoke, last dropped item)
 				push last dropped item upwards at speed 0.1
 				push last dropped item north at speed random number from -1 to 1
@@ -223,6 +226,7 @@ on explosion:
 # Ninjutsu -木-
 function kitNinjutsu_MOKU(player: player, loc: location):
 	playSound("block.cherry_leaves.break", 1, 0.5, {_loc})
+	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 木 -", 100)
 	# --- 草木フィールド展開 ---
 	loop all blocks in radius 5 around {_loc}:
 		loop-block is air
@@ -243,11 +247,13 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 					applyEffect(loop-player, regeneration, 1, 5 seconds)
 				if getInvisibleStatus(loop-player) is false:
 					kitInvisible(loop-player, 100)
+					kitEffectDescription(loop-player, "§b§l透明化")
 			else:
 				add loop-player to {_nowentering::*}
 				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
 				if loop-player does not have poison:
 					applyEffect(loop-player, poison, 1, 5 seconds)
+					kitEffectDescription(loop-player, "§c§l毒")
 		loop {_entered::*}:
 			if {_nowentering::*} does not contain loop-value-2:
 				remove loop-value-2 from {_entered::*}
@@ -294,6 +300,7 @@ function kitNinjutsu_MIZU(player: player, l: location):
 		add location of loop-block to {_base::*}
 	# ----------------
 	# --- 水のベール展開 ---
+	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 水 -", 110)
 	playSound("entity.generic.splash", 1, 1.5, {_l})
 	# nmは高さ
 	# chは1のときは継続して高くする それ以外はストップ
@@ -326,6 +333,7 @@ function kitNinjutsu_MIZU(player: player, l: location):
 			extinguish loop-entity
 			if loop-entity does not have regeneration:
 				applyEffect(loop-entity, regeneration, 2, 1 second)
+				kitEffectDescription(loop-entity, "§d§l再生能力")
 		# ------------------------------
 		# ---ブロック表示 ---
 		loop {_locations::*}:
@@ -342,6 +350,7 @@ function kitNinjutsu_MIZU(player: player, l: location):
 # Ninjutsu -火-
 function kitNinjutsu_HONO(player: player, loc: location):
 	playSound("entity.ghast.shoot", 1, 1, {_player})
+	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 火 -", 100)
 	applyEffect({_player}, fire resistance, 1, 5 seconds)
 	kitParticle_Ninjutsu_HONO_1({_loc})
 	loop all entities in radius 5 around {_loc}:
@@ -360,6 +369,8 @@ function kitNinjutsu_HONO(player: player, loc: location):
 			if loop-entity is not ignited:
 				playSound("block.campfire.crackle", 1, 1, loop-entity)
 				ignite loop-entity for 5 seconds
+				kitEffectDescription(loop-entity, "§4§l着火")
+				sendTimeBossbar_RED(loop-entity, "Ninjutsu - 火 -", 100)
 			kitParticle_Ninjutsu_HONO_2(location of loop-entity)
 		chance of 10%:
 			playSound("block.furnace.fire_crackle", 1, 1.25, {_loc})
@@ -411,9 +422,11 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 	kitParticle_Ninjutsu_HYOU_1({_loc})
 	wait a seconds
 	kitParticle_Ninjutsu_HYOU_2({_loc})
+	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 氷 -", 100)
 	loop all players in radius 5 around {_loc}:
 		kitCheckTeam({_player}, loop-player, false) is true
 		kitFreeze(loop-player, 40)
+		kitEffectDescription(loop-player, "§b§l凍結")
 	loop 100 times:
 		delete {_jb::*}
 		loop all players in radius 5 around {_loc}:
@@ -423,6 +436,7 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 				if {_eg::%loop-player%} >= 20:
 					set {_eg::%loop-player%} to 0
 					kitFreeze(loop-player, 5)
+					kitEffectDescription(loop-player, "§b§l凍結")
 					playSound("block.glass.break", 1, 2, loop-player)
 			set {_jb::%loop-player%} to true
 		loop all players:
@@ -504,11 +518,14 @@ function kitParticle_Ninjutsu_HYOU_3(player: player):  # フィールド内の�
 
 # Ninjutsu -土-
 function kitNinjutsu_TSUCHI(player: player, l: location):
+	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 土 -", 110)
 	loop all entities in radius 5 around {_l}:
 		kitCheckTeam(loop-entity, {_player}, true) is true
 		setSupporter(loop-entity, {_player})
 		applyEffect(loop-entity, resistance, 1, 5 seconds)
 		applyEffect(loop-entity, mining fatigue, 1, 5 seconds)
+		kitEffectDescription(loop-entity, "§6§l耐性")
+		sendTimeBossbar_GREEN(loop-entity, "Ninjutsu - 土 -", 100)
 	set {_y} to y-coordinate of block at {_player}
 	loop all blocks in radius 5 around {_l}:
 		distance between location of block at {_l} and location of loop-block >= 4
@@ -543,6 +560,7 @@ function kitNinjutsu_TSUCHI(player: player, l: location):
 
 # Ninjutsu -雷-
 function kitNinjutsu_RAI(player: player, loc: location):
+	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 雷 -", 100)
 	strike lightning effect at {_loc}
 	loop all players in radius 5 around {_loc}:
 		kitCheckTeam(loop-player, {_player}, false) is true
@@ -550,6 +568,8 @@ function kitNinjutsu_RAI(player: player, loc: location):
 		strike lightning effect at loop-player
 		kitDamage({_player}, loop-player, 2, true)
 		kitPalsy(loop-player, 100)
+		kitEffectDescription(loop-player, "§4❤2 §8& §e§l麻痺 §8& §5§l拘束")
+		sendTimeBossbar_RED(loop-player, "Ninjutsu - 雷 -", 100)
 	loop 100 times:
 		kitParticle_Ninjutsu_RAI_1(location 1 meters above {_loc})
 		loop {_hitplayers::*}:

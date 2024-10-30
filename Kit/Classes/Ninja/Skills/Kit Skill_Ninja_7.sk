@@ -35,6 +35,7 @@ function kitSkill_Ninja_7(player: player):
 			wait a tick
 	if {_hit} is false:
 		kitMsg({_player}, "§8§l撒菱の展開が完了した...!")
+		sendTimeBossbar_GREEN({_player}, "Makibishi", 200)
 		playSound("entity.villager.work_farmer", 0.5, 1.5, {_baseloc})
 		loop 200 times:
 			if {_hit} is false:
@@ -59,6 +60,8 @@ function kitSkill_Ninja_7(player: player):
 					kitMsg({_player}, "§6§l撒菱が踏まれた!")
 					kitDamage({_player}, loop-player, 2)
 					apply slowness 1 to loop-player for 5 seconds
+					kitEffectDescription(loop-player, "§4❤2 §8& §7§l鈍足")
+					sendTimeBossbar_RED(loop-player, "Makibishi", 100)
 					set {_c} to kitPercentDuel({_player}, loop-player, 70)
 					chance of {_c}%:
 						kitBlood(loop-player)
