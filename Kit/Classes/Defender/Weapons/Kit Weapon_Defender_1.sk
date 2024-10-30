@@ -1,13 +1,13 @@
 # Club
 
-on damage:
+on damage with priority LOW:
 	metadata value "gametype" of attacker is "Kit"
 	damage was caused by attack
 	{Class::%attacker%} is "Defender"
 	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Defender", "Weapon.main", 1) is true
 	victim's facing is attacker's facing
-	set damage to damage * 1.5
+	setDamageModification_MUL(victim, 1.5)
 	playSound("entity.iron_golem.damage", 1, 0.5, victim)
 	loop 10 times:
 		set {_el} to aroundEffect(victim)

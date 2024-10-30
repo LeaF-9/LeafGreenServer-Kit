@@ -33,7 +33,7 @@ function kitSkill_Defender_3(player: player):
 	else:
 		send action bar "§c§l発動地点が有効ではありません!" to {_player}
 
-on damage:
+on damage with priority NORMAL:
 	{Stats.%victim%::NoSupport} is not set
 	metadata value "gametype" of victim is "Kit"
 	loop all block displays in radius 5 around victim:
@@ -45,7 +45,8 @@ on damage:
 			if checkEntityType(victim, player) is true:
 				setSupporter(victim, {_player})
 		set {_a} to true
-		set damage to damage * 0.5
+		setDamageModification_MUL(victim, 0.5)
+		kitEffectDescription(victim, "§ax0.5")
 		playSound("entity.zombie.attack_wooden_door", 1, 2, victim)
 		loop 10 times:
 			spawnParticle_Vector(enchanted_hit, randomVector(), 0.5, location 0.5 meters above loop-block display)
