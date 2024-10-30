@@ -1,22 +1,24 @@
 # Holy Lance
 
-on damage:
+on damage with priority LOW:
 	{Class::%attacker%} is "Paladin"
 	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Paladin", "Weapon.main", 3) is true
 	if {Stats.%attacker%::HolyLance-Charged} is set:
 		playSound("entity.zombie_villager.cure", 1, 2, victim)
 		kitParticle_HolyLance_Damage(victim)
-		set damage to damage * 2
+		setDamageModification_MUL(victim, 2)
 		applyEffect(victim, glowing, 1, 10 seconds)
 		ignite victim for 10 seconds
+		kitEffectDescription(victim, "§cx2 §8& §e§l発光 §8& §4着火")
+		sendTimeBossbar_RED(victim, "Holy Lance", 200)
 		stop
 	set {_victimtype} to "%type of victim%"
 	set {_undeads::*} to kitWeapon_HolyLance_UndeadList()
 	{_undeads::*} contains {_victimtype}
 	kitCheckTeam(attacker, victim, false) is true
 	playSound("block.beacon.activate", 1, 1.3, attacker)
-	set damage to 10000
+	setDamageModification_SET(victim, 100)
 	set {_now} to now
 	set {Stats.%attacker%::HolyLance-Charged} to {_now}
 	loop 100 times:

@@ -3,6 +3,8 @@
 function kitSkill_Paladin_7(player: player):
 	toolCT({_player}, "Paladin", 7)
 	kitMsg({_player}, "§1周りのダメージを全て受け持ちます!")
+	set {Stats.%{_player}%::RecipientGenie-Launcher}
+	sendTimeBossbar_GREEN({_player}, "Recipient Genie", 100)
 	playSound("entity.ravager.roar", 1, 1.5, {_player})
 	loop 100 times:
 		delete {_eg::*}
@@ -16,6 +18,7 @@ function kitSkill_Paladin_7(player: player):
 		loop all players in radius 7 around {_player}:
 			loop-player is not {_player}
 			kitCheckTeam(loop-player, {_player}, true) is true
+			{Stats.%loop-player%::RecipientGenie-Launcher} is not set
 			add 1 to {_popularity}
 			set {_eg::%id of loop-player%} to true
 			if {_jb::%id of loop-player%} is not set:
@@ -29,21 +32,25 @@ function kitSkill_Paladin_7(player: player):
 			delete {Stats.%loop-player%::RecipientGenie}
 		set {Stats.%{_player}%::RecipientGenie-Number} to {_popularity} 
 		wait a tick
+	delete {Stats.%{_player}%::RecipientGenie-Launcher}
 	delete {Stats.%{_player}%::RecipientGenie-Number}
 	loop all players:
 		{_eg::%id of loop-player%} is true
 		{_jb::%id of loop-player%} is true
 		delete {Stats.%loop-player%::RecipientGenie}
 
-on damage of player:
+on damage of player with priority NORMAL:
 	{Stats.%victim%::RecipientGenie} is set
+	set {_attacker} to getAttacker(victim)
 	set {_dmg} to damage
 	cancel event
 	set {_player} to {Stats.%victim%::RecipientGenie}
 	set {_popularity} to {Stats.%{_player}%::RecipientGenie-Number}
 	set {_truedmg} to {_dmg} * (1 / (1 + {_popularity}))
+	kitEffectDescription(victim, "§2§l護衛")
+	kitEffectDescription({_player}, "§2§l護衛")
 	playSound("entity.ravager.hurt", 1, 1, victim)
-	kitDamage(attacker, {_player}, {_truedmg}, true)
+	kitDamage({_attacker}, {_player}, {_truedmg})
 	set {_from} to location of {_player}
 	add 1 to y-coordinate of {_from}
 	set {_baseloc} to location of victim

@@ -4,6 +4,7 @@ function kitSkill_Paladin_5(player: player):
 	toolCT({_player}, "Paladin", 5)
 	kitMsg({_player}, "§8周辺の味方の気配を消します!")
 	playSound("entity.wither.ambient", 1, 1, {_player})
+	sendTimeBossbar_YELLOW({_player}, "Attract Ego", 60)
 	apply glowing 1 to {_player} for 3 seconds
 	apply resistance 1 to {_player} for 3 seconds
 	loop all players in radius 5 around {_player}:
@@ -12,6 +13,7 @@ function kitSkill_Paladin_5(player: player):
 		setSupporter(loop-player, {_player})
 		kitInvisible(loop-player, 60)
 		message formatted "§9透明化を§b%{_player}%§9に付与してもらった!" to loop-player
+		kitEffectDescription(loop-player, "§b§l透明化")
 	set {_to} to vector of location of {_player}
 	loop all players in radius 10 around {_player}:
 		kitCheckTeam(loop-player, {_player}, false) is true
@@ -24,3 +26,4 @@ function kitSkill_Paladin_5(player: player):
 		set yaw of {_loc} to {_yaw}
 		set pitch of {_loc} to {_pitch}
 		teleport loop-player to {_loc}
+		kitEffectDescription(loop-player, "§7§l方向転換")

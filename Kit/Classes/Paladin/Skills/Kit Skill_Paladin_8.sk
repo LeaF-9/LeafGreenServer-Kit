@@ -8,6 +8,7 @@ on damage of player:
 	kitParticle_FortunatePixie_Damage(victim)
 	wait a seconds
 	{Stats.%victim%::FortunatePixie-Time} is {_now}
+	kitEffectDescription(victim, "§d§l回復")
 	kitParticle_FortunatePixie_Heal(victim)
 	kitEffect_ForTunatePixie_Healing(victim, {_dmg}, {_now})
 
@@ -142,6 +143,8 @@ local function kitEffect_FortunatePixie_Apply(player: player, target: player, fr
 		wait a tick
 	
 	message formatted "§a幸運の妖精が身を護ってくれます!" to {_target}
+	kitEffectDescription({_target}, "§d§l幸運の妖精")
+	sendTimeBossbar_GREEN({_target}, "Fortunate Pixie", 140)
 	set {Stats.%{_target}%::FortunatePixie} to {_player}
 	kitParticle_FortunatePixie_Apply({_player}, {_target})
 	kitLuck({_target}, 3, true)

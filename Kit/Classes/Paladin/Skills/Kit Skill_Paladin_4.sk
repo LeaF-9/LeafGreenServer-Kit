@@ -1,11 +1,11 @@
 # Sprite Talisman
 
-on damage of player:
+on damage of player with priority NORMAL:
 	if {Stats.%victim%::SpriteTalisman} is set:
 		set {_dmg} to damage - {Stats.%victim%::SpriteTalisman}
 		if {_dmg} < 0:  # ゼロ以下になった場合はノックバックのみ
-			set {_dmg} to 0.00001
-		set damage to {_dmg}
+			set {_dmg} to 0
+		setDamageModification_SET({_dmg})
 		send action bar "§4❤%{Stats.%victim%::SpriteTalisman}%§cダメージ §aを§2§l吸収§aしました!" to victim
 		set {Stats.%victim%::SpriteTalisman} to {Stats.%victim%::SpriteTalisman} - 0.5
 		if {Stats.%victim%::SpriteTalisman} <= 0:  # ダメージ減衰の効果終了時

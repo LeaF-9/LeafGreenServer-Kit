@@ -20,13 +20,14 @@ function kitSkill_Paladin_1(player: player):
 		set {Stats.%{_tp}%::AllySafeguard} to {_player}
 		kitMsg({_player}, "§a守る相手を§6%{_tp}%§aに設定しました!")
 		send action bar "§a%{Stats.%{_tp}%::AllySafeguard}% §7が護衛してくれるそうです!" to {_tp}
+		kitEffectDescription({_tp}, "§2§l護衛")
 		loop 5 times:
 			set {_el} to aroundEffect({_tp})
 			spawnParticle(happy_villager, {_el})
 	else:
 		send action bar "§c§l対象のプレイヤーがいません" to {_player}
 
-on damage of player:
+on damage of player with priority NORMAL:
 	if {Stats.%victim%::AllySafeguard} is set:
 		damage cause is not fall, void, lava, flame or suffocation
 		loop all players:
@@ -41,6 +42,8 @@ on damage of player:
 				kitDamage(attacker, loop-player, {_dl})
 				send action bar "§2%loop-player% §7が§cダメージを受け持ってくれました!" to victim
 				send action bar "§6%victim% §aを護衛しました!" to loop-player
+				kitEffectDescription(victim, "§2§l護衛")
+				kitEffectDescription(loop-player, "§2§l護衛")
 				loop 10 times:
 					set {_el} to aroundEffect(loop-player)
 					spawnParticle(happy_villager, {_el})

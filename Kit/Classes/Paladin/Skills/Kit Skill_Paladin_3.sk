@@ -6,6 +6,7 @@ function kitSkill_Paladin_3(player: player):
 	set {Stats.%{_player}%::Resurrection} to true
 	kitMsg({_player}, "§d妖精の加護を受けました!")
 	apply regeneration 2 to {_player} for 5 seconds
+	sendTimeBossbar_GREEN({_player}, "Fairy Protection", 100)
 	playSound("entity.firework_rocket.twinkle", 1, 1.5, {_player})
 	loop 100 times:
 		if {Stats.%{_player}%::FairyProtection} is true:
@@ -22,10 +23,13 @@ function kitSkill_Paladin_3(player: player):
 		delete {Stats.%{_player}%::FairyProtection}
 		kitMsg({_player}, "§e妖精は去っていきました")
 
-on damage of player:
+on damage of player with priority LOW:
 	{Stats.%victim%::FairyProtection} is true
-	attacker is set
-	apply poison 2 to attacker for 2 seconds replacing existing effect
+	set {_attacker} to getAttacker(victim)
+	{_attacker} is set
+	apply poison 2 to {_attacker} for 2 seconds replacing existing effect
+	kitEffectDescription({_attacker}, "§2§l毒")
+	sendTimeBossbar_RED({_attacker}, "Fairy Protection", 40)
 
 on death of player:
 	{Stats.%victim%::FairyProtection} is true
