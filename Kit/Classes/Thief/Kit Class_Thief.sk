@@ -94,62 +94,8 @@ on inventory click:
 	# --- Skill 8 ---
 	else if inventory name of event-inventory is "§d§lFence Marker":
 		cancel event
-		if {Stats.%player%::FenceMarker} is set:
-			set {_fakeskill} to clicked item
-			{_fakeskill} is set
-			"%type of {_fakeskill}%" is not "air"
-			close player's inventory
-			set {_lore::*} to lore of {_fakeskill}
-			loop {_lore::*}:
-				if loop-value contains "§6所持者§7: §e":
-					set {_target} to loop-value
-					replace "§6所持者§7: §e" with "" in {_target}
-					set {_target} to {_target} parsed as player
-				else if loop-value contains "§6キット§7: §e":
-					set {_type} to loop-value
-					replace "§6キット§7: §e" with "" in {_type}
-				else if loop-value contains "§6ナンバー§7: §e":
-					set {_skillnum} to loop-value
-					replace "§6ナンバー§7: §e" with "" in {_skillnum}
-					set {_skillnum} to {_skillnum} parsed as number
-			set {_skill} to kitPlayerSkillItem({_target}, {_type}, {_skillnum})
-			if {_target}'s inventory contains {_skill}:
-				kitItemTargetTimer(player, {_skill})
-				kitMsg(player, "§8Fence Marker§dより §a%display name of {_skill}% §dを強奪した!")
-				message formatted "§a%display name of {_skill}% §1を奪われた!" to {_target}
-				playSound("entity.item.pickup", 1, 0.5, player)
-				playSound("entity.witch.drink", 1, 0.9, {Stats.%player%::FenceMarker})
-				set {_from} to {Stats.%player%::FenceMarker}
-				set {_to} to location of head of {_target}
-				set {_vector} to setVector({_from}, {_to})
-				set yaw of {_from} to yaw of {_vector}
-				set pitch of {_from} to pitch of {_vector}
-				set {_dis} to round(distance between {_from} and {_to})
-				loop {_dis} times:
-					set {_el} to location loop-number meters in front of {_from}
-					spawnParticle(smoke, {_el})
-				loop all items in player's inventory:
-					{_deleted} is not set
-					kitItemAllChecker(loop-item, "Thief", "Skill", 8) is true
-					set {_deleted} to true
-					set {_tool} to loop-item
-					remove loop-item from player
-				set {Stats.%player%::Stealing.Fence Marker} to true
-				set {Stats.%{_target}%::Stealed.Fence Marker} to true
-				give {_skill} to player
-				remove all {_skill} from {_target}
-				wait 10 seconds
-				if {Stats.%player%::Stealing.Fence Marker} is true:
-					remove {_skill} from player
-					give {_tool} to player
-					delete {Stats.%player%::Stealing.Fence Marker}
-				if {Stats.%{_target}%::Stealed.Fence Marker} is true:
-					give {_skill} to {_target}
-					delete {Stats.%{_target}%::Stealed.Fence Marker}
-			else:
-				send action bar "§c§l既にそのプレイヤーはスキルを所持していません!" to player
-		else:
-			send action bar "§c§l既にマーカーが破壊されています!" to player
+		kitEffect_FenceMarker_Click(player, clicked item)
+		close player's inventory
 	# -----------------
 # -----------------------
 
