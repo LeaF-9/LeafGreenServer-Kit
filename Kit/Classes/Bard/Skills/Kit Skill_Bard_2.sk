@@ -8,6 +8,7 @@ function kitSkill_Bard_2(player: player):
 
 local function kitEffect_HarmonyNotes(player: player):
 	kitMsg({_player}, "§d調和を保つ音符を発射します...")
+	sendTimeBossbar_GREEN({_player}, "Harmony Notes", 200)
 	set {_playerloc} to location of head of {_player}
 	set {_targetloc} to location 10 meters in front of {_playerloc}
 	set {_vector.notes} to setVector({_playerloc}, {_targetloc})
@@ -85,11 +86,13 @@ local function kitEffect_HarmonyNotes(player: player):
 			if kitCheckTeam(loop-player, {_player}, true) is true:
 				setSupporter(loop-player, {_player})
 				kitParticle_HarmonyNotes_Beam({_loc.notes}, {_loc.player}, true)
+				kitEffectDescription(loop-player, "§d§l再生能力")
 				set {_potiontype} to regeneration
 			else if kitCheckTeam(loop-player, {_player}, false) is true:
 				kitParticle_HarmonyNotes_Beam({_loc.notes}, {_loc.player}, false)
 				add {_player} to {damager.%loop-player%::*}
 				set {_potiontype} to poison
+				kitEffectDescription(loop-player, "§2§l毒")
 			applyEffect(loop-player, {_potiontype}, {_tier}, 0.1 seconds)
 		wait a tick
 	kitParticle_HarmonyNotes_Explode({_loc.notes})

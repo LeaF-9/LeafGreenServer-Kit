@@ -44,6 +44,8 @@ local function kitEffect_MarkSound_Hit(player: player, target: player):
 	kitParticle_MarkRequiem_Hit({_target}, {_tick})
 	set {Stats.%{_target}%::MarkRequiem} to {_player}
 	message formatted "§4§lマークされた! §cマーク中§6ダメージが増大してしまう!" to {_target}
+	kitEffectDescription({_target}, "§5§lマーク")
+	sendTimeBossbar_RED({_target}, "Mark Requiem", {_tick})
 	loop all players:
 		kitCheckTeam({_player}, loop-player, true) is true
 		message formatted "§6§l%{_target}% §eがマークされた! §aダメージが増大する!" to loop-player

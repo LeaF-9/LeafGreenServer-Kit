@@ -78,36 +78,42 @@ function kitTimerBard(player: player):
 			set {_pitch.high} to 1.59
 			set {_pitch.mid} to 1.33
 			set {_pitch.low} to 1.06
+			set {_text} to "§d§l再生能力"
 		else if {_potiontype} is resistance:
 			set {_ally} to true
 			set {_color} to "yellow"
 			set {_pitch.high} to 1.78
 			set {_pitch.mid} to 1.41
 			set {_pitch.low} to 1.06
+			set {_text} to "§e§l耐性"
 		else if {_potiontype} is speed:
 			set {_ally} to true
 			set {_color} to "lightblue"
 			set {_pitch.high} to 1.89
 			set {_pitch.mid} to 1.41
 			set {_pitch.low} to 1.19
+			set {_text} to "§b§l俊敏"
 		else if {_potiontype} is weakness:
 			set {_ally} to false
 			set {_color} to "green"
 			set {_pitch.high} to 2
 			set {_pitch.mid} to 1.5
 			set {_pitch.low} to 1.33
+			set {_text} to "§8§l弱体化"
 		else if {_potiontype} is mining fatigue:
 			set {_ally} to false
 			set {_color} to "purple"
 			set {_pitch.high} to 2
 			set {_pitch.mid} to 1.78
 			set {_pitch.low} to 1.33
+			set {_text} to "§7§l疲労"
 		else if {_potiontype} is slowness:
 			set {_ally} to false
 			set {_color} to "blue"
 			set {_pitch.high} to 1.78
 			set {_pitch.mid} to 1.33
 			set {_pitch.low} to 1.19
+			set {_text} to "§8§l鈍足"
 		set {_tier} to 1
 		if {Stats.%{_player}%::Fortissimo} is true:
 			set {_tier} to 2
@@ -122,6 +128,8 @@ function kitTimerBard(player: player):
 				if loop-player has potion {_potiontype}:
 					continue
 			applyEffect(loop-player, {_potiontype}, {_tier}, 5 seconds, false, "none")
+			kitEffectDescription(loop-player, {_text})
+			sendTimeBossbar_YELLOW(loop-player, "Melody Effect", 100)
 			kitParticle_MelodyEffect_Player(loop-player, {_color})
 			if {_play} is not set:
 				set {_play} to true
