@@ -11,6 +11,8 @@ on damage of player with priority LOW:
 	kitReflector_DamageChecker(victim) is "Perfect Reflection"
 	set {_dm} to damage / 2
 	kitDamageNull(victim, {_attacker}, {_dm}, true)
+	kitEffectDescription({_attacker}, "§f§l反射")
+	kitEffectDescription(victim, "§f§l反射")
 	kitParticle_PerfectReflection_Reflect(victim, {_attacker})
 
 local function kitEffect_PerfectReflection(player: player):
@@ -18,6 +20,7 @@ local function kitEffect_PerfectReflection(player: player):
 	set {Stats.%{_player}%::PerfectReflection} to {_now}
 	kitParticle_PerfectReflection_Launch({_player})
 	kitMsg({_player}, "§f全てのダメージを5秒間跳ね返します!")
+	sendTimeBossbar_GREEN({_player}, "Perfect Reflection", 100)
 	loop 100 times:
 		{Stats.%{_player}%::PerfectReflection} is {_now}
 		kitParticle_PerfectReflection_Armor({_player})

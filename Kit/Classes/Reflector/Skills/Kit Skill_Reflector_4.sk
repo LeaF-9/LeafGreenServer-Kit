@@ -21,13 +21,11 @@ on damage of player:
 		# デバッグ用
 		# log "[MirrorBall] attackerがplayerでない"
 		stop
-	
-	# Knockback処理
-	setDamageModification_SET(victim, 0)
 
 	set {_mirror} to {Stats.%victim%::MirrorBall}  # Mirror Ball発動者の取得
 	set {_member} to 0  # 範囲人数のカウント
 	loop all players:
+
 		{Stats.%loop-player%::MirrorBall} is {_mirror}  # 同じMirror Ballに居るプレイヤーかどうか
 		add loop-player to {_damaged::*}  # ダメージ共有者として追加
 		add 1 to {_member}
@@ -37,7 +35,12 @@ on damage of player:
 	kitParticle_MirrorBall_Damage({_mirror}, {_damaged::*})  # パーティクル処理
 
 	set {_damage.separate} to {_damage.origin} / {_member}  # ダメージ数の計算
+	setDamageModification_SET(victim, {_damage.separate})
 	loop {_damaged::*}:
+		# victimの場合
+		# SKIP
+		if loop-value is victim:
+			continue
 		# attackerとチームが異なる場合
 		# この場合はattackerをそのままattackerにする
 		if kitCheckTeam(loop-value, {_attacker}, false) is true:
@@ -56,6 +59,8 @@ on damage of player:
 			kitDamageNull({_attacker.true}, loop-value, {_damage.separate}, true)
 		else:
 			damage loop-value by {_damage.separate} hearts
+		
+		kitEffectDescription(loop-value, "§4❤%{_damage.separate}%")
 	
 
 # 同時に発動された際の処理がわからない
@@ -66,6 +71,7 @@ local function kitEffect_MirrorBall(player: player):
 	wait 10 ticks  # 演出時間
 	kitParticle_MirrorBall_Move({_player})
 	kitParticle_MirrorBall_Field({_loc})
+	sendTimeBossbar_GREEN({_player}, "Mirror Ball", 100)
 	loop 100 times:
 		delete {_entrying::*}
 		loop all players in radius 10 around {_loc}:

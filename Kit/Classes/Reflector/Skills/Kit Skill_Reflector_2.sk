@@ -5,6 +5,7 @@ on damage of player:
 	if {Stats.%{_attacker}%::DamageAbsorption} is true:
 		cancel event
 		set action bar of {_attacker} to "§c§l我慢中は攻撃できません!"
+		stop
 	if kitReflector_DamageChecker(victim) is "Damage Absorption":
 		cancel event
 		add 1 to {Stats.%victim%::DamageAbsorption-Point}
@@ -21,6 +22,7 @@ local function kitEffect_DamageAbsorption(player: player):
 	kitMsg({_player}, "§8ダメージを溜め込みます...!")
 	set {Stats.%{_player}%::DamageAbsorption} to true
 	applyEffect({_player}, mining fatigue, 2, 3 seconds)
+	sendTimeBossbar_GREEN({_player}, "Damage Absorption", 60)
 	kitParticle_DamageAbsorption_Launch({_player})
 	wait 54 ticks
 	kitParticle_DamageAbsorption_Explode({_player})
@@ -35,6 +37,7 @@ local function kitEffect_DamageAbsorption(player: player):
 		kitCheckTeam({_player}, loop-entity, false) is true
 		kitDamage({_player}, loop-entity, {_dmg})
 		message formatted "§c反撃ダメージを喰らった!" to loop-entity
+		kitEffectDescription(loop-entity, "§4❤%{_dmg}%")
 		kitParticle_DamageAbsorption_Hit({_player}, loop-entity)
 
 # 我慢中にダメージを受ける時のパーティクル

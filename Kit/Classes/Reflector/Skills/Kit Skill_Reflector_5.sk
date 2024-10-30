@@ -10,6 +10,7 @@ function kitSkill_Reflector_5(player: player):
 
 local function kitEffect_SpeculumShield(player: player):
 	kitMsg({_player}, "§f§l鏡面シールド§7を展開します!")
+	sendTimeBossbar_GREEN({_player}, "Speculum Shield", 200)
 	set {_baseloc} to location of head of {_player}
 	set pitch of {_baseloc} to 0
 	set {_loc.shield} to location 1.5 meter in front of {_baseloc}
@@ -62,6 +63,7 @@ on damage of slime:
 	if damage was caused by attack, projectile or potion:
 		set {_dmg} to damage / 2
 		kitDamage({_name}, {_attacker}, {_dmg})
+		kitEffectDescription({_attacker}, "§f§l反射")
 		kitParticle_SpeculumShield_Damage(location of victim)
 	else:
 		cancel event
