@@ -39,6 +39,9 @@ function kitSkill_Engineer_3(player: player, loc: location):
 	
 	set {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} to {_now}
 	kitMsg({_player}, "<##E8383D>Jump Beacon§6を設置しました!")
+	loop all players:
+		kitCheckTeam({_player}, loop-player, true) is true
+		kitEffectDescription(loop-player, "§c§lJump Beacon§6§l設置")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
 	while {Stats.%{_player}%::JumpBeacon-Time-%{_num}%} is {_now}:
 		wait a tick
