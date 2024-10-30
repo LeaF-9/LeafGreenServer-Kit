@@ -35,6 +35,8 @@ function kitUltDefender(player: player):
 				playSound("entity.player.levelup", 1, 0.8, loop-player)
 			if {Stats.%loop-player%::UltDefender} is not set:
 				set {Stats.%loop-player%::UltDefender} to true
+				kitEffectDescription(loop-player, "§9§lバリア")
+				sendTimeBossbar_GREEN(loop-player, "Perfect Bubble", 60)
 			set {_time::%loop-player%} to 60
 			set {_hit::%loop-player%} to true
 		loop {_give::*}:
@@ -49,9 +51,10 @@ function kitUltDefender(player: player):
 		if {Stats.%loop-value%::UltDefender} is true:
 			delete {Stats.%loop-value%::UltDefender}
 
-on damage of player:
+on damage of player with priority HIGH:
 	if {Stats.%victim%::UltDefender} is set:
 		cancel event
 		playSound("entity.item.break", 1, 0.5, victim)
-		if attacker exists:
-			push victim in direction of attacker at speed 1
+		set {_attacker} to attacker
+		if {_attacker} is set:
+			push victim in direction of {_attacker} at speed 1
