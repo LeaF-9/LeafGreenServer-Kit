@@ -30,6 +30,9 @@ on pick up with priority MONITOR:
 	# metadata value "unpickable" of event-dropped item is "true"
 	cancel event
 	if type of item is not pickable:
+		set {_undelete} to metadata value "undelete" of event-dropped item
+		if {_undelete} is true:
+			stop
 		delete event-dropped item
 
 on damage of player:
