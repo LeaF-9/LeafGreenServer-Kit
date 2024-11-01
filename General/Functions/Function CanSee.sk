@@ -1,7 +1,7 @@
 function playerCanSee(player: player, target: player) :: boolean:
 	set {_cansee} to checkCanSee({_player}, location of head of {_target})
 
-function checkCanSee(player: player, targetloc: location) :: boolean:
+function checkCanSee(player: player, targetloc: location, max: number = 0.5) :: boolean:
 	set {_fromloc} to location of head of {_player}
 	set {_vector.base} to setVector({_fromloc}, {_targetloc})
 	set {_dis} to distance between {_fromloc} and {_targetloc}
@@ -9,7 +9,7 @@ function checkCanSee(player: player, targetloc: location) :: boolean:
 	set {_vector.target} to setVector({_fromloc}, {_toloc})
 	set {_vector} to {_vector.target} - {_vector.base}
 	set {_length} to squared length of {_vector}
-	if {_length} <= 0.5:
+	if {_length} <= {_max}:
 		set {_m} to 0
 		set {_looploc} to {_fromloc}
 		set yaw of {_looploc} to yaw of {_vector.base}
