@@ -64,5 +64,42 @@ on shoot:
 
 
 
+function startTrackProjectile(proj: projectile):
+	# metadata setting
+	set {_now} to now
+	set metadata value "projectile tracking - START" of {_proj} to {_now}
+
+	set {_enable} to true
+	set {_rad} to 0
+	wait a tick
+	while {_enable} is true:
+		if metadata value "projectile tracking - START" of {_proj} is not {_now}:
+			delete {_enable}
+			stop
+		
+		set {_loc} to location of {_proj}
+		set {_proloc} to metadata value "projectile tracking - SAVE" of {_proj}
+		if {_proloc} is set:
+			if {_proloc} is {_loc}:
+				delete metadata value "projectile tracking - START" of {_proj}
+				delete metadata value "projectile tracking - SAVE" of {_proj}
+				delete {_enable}
+				stop
+
+		set metadata value "projectile tracking - SAVE" of {_proj} to {_loc}
+		wait a tick
+
+function getProjectilePreviousLocation(proj: projectile) :: location:
+	set {_proloc} to metadata value "projectile tracking - SAVE" of {_proj}
+	set {_loc} to location of {_proj}
+	set {_proloc} to setDirToVec({_proloc}, setVector({_proloc}, {_loc}))
+	return {_proloc}
+
+on projectile hit:
+	metadata value "projectile tracking - START" of projectile is set
+	delete metadata value "projectile tracking - START" of projectile
+
+
+
 function setShooter(proj: projectile, shooter: living entity):
 	{_proj}.setShooter({_shooter})
