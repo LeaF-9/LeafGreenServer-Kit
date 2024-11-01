@@ -1,0 +1,40 @@
+# memo:
+#	デフォルトのマックスチャージまでの時間は 24 ticks
+options:
+	draw-time: "BOW-draw time"
+	draw-start: "BOW-draw start"
+
+on rightclick holding a bow:
+	set {_time} to 0
+	set metadata value {@draw-time} of player to {_time}
+	set {_now} to now
+	set metadata value {@draw-start} of player to {_now}
+
+	while metadata value {@draw-time} of player is set:
+		wait a tick
+		if getBowDrawTime(player) is not set:
+			stop
+		if type of player's tool is not a bow:
+			stop
+		if getBowDrawStart(player) is not {_now}:
+			stop
+		add 1 to {_time}
+		set metadata value {@draw-time} of player to {_time}
+
+on shoot with priority MONITOR:
+	getBowDrawTime(shooter) is set
+	delete metadata value {@draw-time} of shooter
+	delete metadata value {@draw-start} of shooter
+
+function getBowDrawTime(player: player, maxTime: number = 24) :: number:
+	set {_time} to metadata value {@draw-time} of {_player}
+	if {_time} > {_maxTime}:
+		set {_time} to {_maxTime}
+	return {_time}
+
+function getBowDrawStart(player: player) :: date:
+	set {_startTime} to metadata value {@draw-start} of {_player}
+	return {_startTime}
+
+function setShooter(proj: projectile, shooter: living entity):
+	{_proj}.setShooter({_shooter})
