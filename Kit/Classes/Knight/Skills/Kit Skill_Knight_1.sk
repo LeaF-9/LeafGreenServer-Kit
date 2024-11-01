@@ -1,71 +1,119 @@
-# Reject Projectile
+# Deflective Sweep
 
-function kitSkill_Knight_1(player: player):
-	toolCT({_player}, "Knight", 1)
-	playSound("entity.player.attack.sweep", 1, 1, {_player})
-	kitMsg({_player}, "§310秒間§c汎ゆる遠距離攻撃を跳ね返します!")
-	sendTimeBossbar_GREEN({_player}, "Reject Projectile", 200)
-	set {_ln} to 0
-	loop 200 times:
-		add 1 to {_ln}
-		set {_tool} to {_player}'s tool
-		if kitItemAllChecker({_tool}, "Knight", "Skill", 1):
-			kitEffect_RejectProjectile({_player}, {_ln})
-			set {_floc} to location 1 meter in front of head of {_player}
-			delete {_pok}
-			loop all projectiles in radius 5 around {_player}:
-				shooter of loop-projectile is not {_player}
-				if checkEntityType(shooter of loop-projectile, player) is true:
-					kitCheckTeam(shooter of loop-projectile, {_player}, false) is true
-					set {_pok} to true
-				else:
-					set {_pok} to true
-				set shooter of loop-projectile to {_player}
-				set metadata value "reject-projectile" of loop-projectile to "true"
-				playSound("block.anvil.land", 1, 1.5, {_player})
-				spawnParticle(explosion, {_player})
-				teleport loop-projectile to {_floc}
-				delete velocity of loop-projectile
-				set {_v} to setVector(location of head of {_player}, location 10 meters in front of head of {_player}, 3)
-				set velocity of loop-projectile to {_v}
-#				push loop-projectile forward at speed 5
-		wait a tick
-	kitMsg({_player}, "§5Reject Projectile§1の§9構え状態§1が終了しました")
+Options:
+	effect-tick: 100
+	metadata-name: "deflective sweep"
 
-function kitEffect_RejectProjectile(player: player, num: number):
-	set {_baseloc} to location of head of {_player}
-	set pitch of {_baseloc} to 0
-	set {_twen} to floor({_num} / 20) + 1
-	if mod({_twen}, 2) is 0:  # 偶数(右)
-		set {_tweplus} to {_num} + 20
-		if mod({_num}, 20) is 19:
-			add -27 to yaw of {_baseloc}
-		else if mod({_num}, 20) is 18:
-			add -9 to yaw of {_baseloc}
-		else if mod({_num}, 20) is 17:
-			add 9 to yaw of {_baseloc}
-		else if mod({_num}, 20) is 16:
-			add 27 to yaw of {_baseloc}
-		else:
-			add 45 to yaw of {_baseloc}
-	else:  # 奇数(左)
-		set {_tweplus} to {_num} + 20
-		if mod({_num}, 20) is 19:
-			add 27 to yaw of {_baseloc}
-		else if mod({_num}, 20) is 18:
-			add 9 to yaw of {_baseloc}
-		else if mod({_num}, 20) is 17:
-			add -9 to yaw of {_baseloc}
-		else if mod({_num}, 20) is 16:
-			add -27 to yaw of {_baseloc}
-		else:
-			add -45 to yaw of {_baseloc}
-	loop 5 times:
-		set {_effloc} to location loop-number meters in front of {_baseloc}
-		set {_g} to a random number between 0 and 255
-		spawnParticle_Dust(rgb(0, {_g}, 255), 1, {_effloc})
+
 
 on damage with priority LOW:
 	damage was caused by projectile
-	metadata value "reject-projectile" of projectile is "true"
+	metadata value {@metadata-name} of projectile is true
 	setDamageModification_SET(victim, 3)
+
+on projectile hit:
+	metadata value {@metadata-name} of projectile is true
+	delete metadata value {@metadata-name} of projectile
+
+
+function kitSkill_Knight_1(player: player):
+	toolCT({_player}, "Knight", 1)
+	kitEffect_DeflectiveSweep({_player})
+
+
+
+local function kitEffect_DeflectiveSweep(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::DeflectiveSweep} to {_now}
+
+	set {_secondsText} to {@effect-tick} / 20
+	kitMsg({_player}, "§3%{_secondsText}%秒間§c汎ゆる遠距離攻撃を跳ね返します!")
+	sendTimeBossbar_GREEN({_player}, "Reject Projectile", {@effect-tick})
+	kitParticle_DeflectiveSweep({_player})
+
+	loop {@effect-tick} times:
+		# 条件確認
+		if {Stats.%{_player}%::DeflectiveSweep} is not {_now}:
+			stop
+
+		# 武器スロット固定化
+		{_player}.getInventory().setHeldItemSlot(0)
+
+		# 跳ね返し処理
+		set {_floc} to location 1 meter in front of head of {_player}  # 投擲物の発射位置
+		loop all projectiles in radius 5 around {_player}:
+			delete {_pok}
+			shooter of loop-projectile is not {_player}
+			if checkEntityType(shooter of loop-projectile, player) is true:
+				kitCheckTeam(shooter of loop-projectile, {_player}, false) is true
+				set {_pok} to true
+			else:
+				set {_pok} to true
+			
+			if {_pok} is not set:
+				continue
+			
+			set shooter of loop-projectile to {_player}
+			set metadata value {@metadata-name} of loop-projectile to true
+
+			teleport loop-projectile to {_floc}
+			delete velocity of loop-projectile
+			set {_v} to setVector(location of head of {_player}, location 10 meters in front of head of {_player}, 3)
+			set velocity of loop-projectile to {_v}
+
+			kitParticle_DeflectiveSweep_Deflect({_player}, loop-projectile)
+
+		wait a tick
+	kitMsg({_player}, "§e剣舞状態9が終了しました")
+
+
+
+local function kitParticle_DeflectiveSweep(player: player):
+	kitSound_DeflectiveSweep_Launch({_player})
+
+local function kitParticle_DeflectiveSweep_Deflect(player: player, proj: projectile):
+	playSound("block.anvil.land", 1, 1.5, {_player})
+	set {_loc.proj} to location of projectile
+	set {_loc.base} to location of head of {_player}
+	set {_loc.front} to location 1 meter in front of {_loc.base}
+	set {_yaw} to yaw of {_loc.base} - 40
+
+	# front particle
+	loop 5 times:
+		set {_loc.direct} to {_loc.base}
+		set yaw of {_loc.direct} to {_yaw}
+		set {_el} to location 0.5 meters in front of {_loc.direct}
+		spawnParticle(sweep_attack, {_el})
+		add 20 to {_yaw}
+
+	# projectile particle
+	loop 30 times:
+		spawnParticle_Vector(crit, randomVector(), 1, {_loc.proj})
+	
+	# trail particle
+	set {_loc.trail} to setDirToVec({_loc.proj}, setVector({_loc.proj}, {_loc.front}))
+	set {_distance} to distance between {_loc.proj} and {_loc.front}
+	set {_FM} to 0.5
+	set {_loopnum} to {_distance} * {_FM}
+	set {_frontMeter} to 0
+	loop {_loopnum} times:
+		set {_el} to location {_frontMeter} meters in front of {_loc.trail}
+		spawnParticle(wax_off, {_el})
+		add {_FM} to {_frontMeter}
+
+	# shoot particle
+	loop 200 times:
+		# previous使って奇跡書く予定
+		delete {_metadata}
+		set {_metadata} to metadata value {@metadata-name} of {_proj}
+
+
+
+
+local function kitSound_DeflectiveSweep_Launch(player: player):
+	set {_pitch} to 1
+
+	loop 5 times:
+		playSound("entity.player.attack.sweep", 1, {_pitch}, {_player})
+		add 0.1 to {_pitch}
+		wait a tick
