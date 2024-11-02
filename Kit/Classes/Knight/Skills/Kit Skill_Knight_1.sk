@@ -7,13 +7,18 @@ Options:
 
 
 on damage with priority LOW:
-	damage was caused by projectile
-	metadata value {@metadata-name} of projectile is true
-	setDamageModification_SET(victim, 3)
+	if damage was caused by projectile:
+		metadata value {@metadata-name} of projectile is true
+		setDamageModification_SET(victim, 3)
+	else if damage was caused by attack:
+		set {_attacker} to getAttacker(victim)
+		{Stats.%{_attacker}%::DeflectiveSweep} is set
+		cancel event
 
 on projectile hit:
 	metadata value {@metadata-name} of projectile is true
 	delete metadata value {@metadata-name} of projectile
+
 
 
 function kitSkill_Knight_1(player: player):
@@ -28,13 +33,13 @@ local function kitEffect_DeflectiveSweep(player: player):
 
 	set {_secondsText} to {@effect-tick} / 20
 	kitMsg({_player}, "§3%{_secondsText}%秒間§c汎ゆる遠距離攻撃を跳ね返します!")
-	sendTimeBossbar_GREEN({_player}, "Reject Projectile", {@effect-tick})
+	sendTimeBossbar_GREEN({_player}, "Deflective Sweep", {@effect-tick})
 	kitParticle_DeflectiveSweep({_player})
 
 	loop {@effect-tick} times:
 		# 条件確認
 		if {Stats.%{_player}%::DeflectiveSweep} is not {_now}:
-			stop
+			continue
 
 		# 武器スロット固定化
 		{_player}.getInventory().setHeldItemSlot(0)
@@ -56,24 +61,75 @@ local function kitEffect_DeflectiveSweep(player: player):
 			set shooter of loop-projectile to {_player}
 			set metadata value {@metadata-name} of loop-projectile to true
 
+			kitParticle_DeflectiveSweep_Deflect({_player}, loop-projectile)
+
 			teleport loop-projectile to {_floc}
 			delete velocity of loop-projectile
 			set {_v} to setVector(location of head of {_player}, location 10 meters in front of head of {_player}, 3)
 			set velocity of loop-projectile to {_v}
 
-			kitParticle_DeflectiveSweep_Deflect({_player}, loop-projectile)
-
 		wait a tick
-	kitMsg({_player}, "§e剣舞状態9が終了しました")
+	delete {Stats.%{_player}%::DeflectiveSweep}
+	kitMsg({_player}, "§e剣舞状態§9が終了しました")
 
 
 
 local function kitParticle_DeflectiveSweep(player: player):
 	kitSound_DeflectiveSweep_Launch({_player})
 
+	add rgb(190, 241, 239) to {_colors::*}
+	add rgb(189, 223, 231) to {_colors::*}
+	add rgb(219, 255, 254) to {_colors::*}
+
+	loop ({@effect-tick} / 5) times:
+		set {_loc.head} to location of head of {_player}
+		set {_loc.basecircle} to location 4 meters behind {_loc.head}
+		set {_loc.basecircle} to moveRandomLocation({_loc.basecircle}, 0.5)
+		set {_vector} to setVector({_loc.basecircle}, location 10 meters in front of {_loc.head})
+
+		set {_vector.rotate} to randomVector()
+		set y of {_vector.rotate} to 1
+
+		set {_COUNT} to 180
+		set {_FM} to 5
+		set {_degree} to 0
+		loop {_COUNT} times:
+			delete {_els::*}
+
+			set {_vector.sweep} to {_vector}
+			rotate {_vector.sweep} around {_vector.rotate} by {_degree}
+			set {_loc.save} to setDirToVec({_loc.basecircle}, {_vector.sweep})
+			set {_el} to location {_FM} meters in front of {_loc.save}
+			if checkCanSee({_player}, {_el}, 1) is true:
+				add {_el} to {_els::*}
+
+			set {_vector.sweep} to {_vector}
+			rotate {_vector.sweep} around {_vector.rotate} by {_degree} * -1
+			set {_loc.save} to setDirToVec({_loc.basecircle}, {_vector.sweep})
+			set {_el} to location {_FM} meters in front of {_loc.save}
+			if checkCanSee({_player}, {_el}, 1) is true:
+				add {_el} to {_els::*}
+
+			loop {_els::*}:
+				set {_effloc} to loop-value-3
+				set {_rcolor} to a random element out of {_colors::*}
+				spawnParticle_DustTransition({_rcolor}, rgb(238, 238, 238), 0.9, {_effloc})
+
+			chance of 1%:
+				set {_el.2} to moveRandomLocation({_effloc}, 0.5)
+				spawnParticle_BlockData(falling_dust, light blue terracotta, {_el.2})
+
+			add 180 / {_COUNT} to {_degree}
+		wait 5 ticks
+
+			
+
+
+
 local function kitParticle_DeflectiveSweep_Deflect(player: player, proj: projectile):
+	startTrackProjectile({_proj})
 	playSound("block.anvil.land", 1, 1.5, {_player})
-	set {_loc.proj} to location of projectile
+	set {_loc.proj} to location of {_proj}
 	set {_loc.base} to location of head of {_player}
 	set {_loc.front} to location 1 meter in front of {_loc.base}
 	set {_yaw} to yaw of {_loc.base} - 40
@@ -94,18 +150,36 @@ local function kitParticle_DeflectiveSweep_Deflect(player: player, proj: project
 	set {_loc.trail} to setDirToVec({_loc.proj}, setVector({_loc.proj}, {_loc.front}))
 	set {_distance} to distance between {_loc.proj} and {_loc.front}
 	set {_FM} to 0.5
-	set {_loopnum} to {_distance} * {_FM}
+	set {_loopnum} to round({_distance} / {_FM})
 	set {_frontMeter} to 0
 	loop {_loopnum} times:
 		set {_el} to location {_frontMeter} meters in front of {_loc.trail}
-		spawnParticle(wax_off, {_el})
+		spawnParticle(electric_spark, {_el})
 		add {_FM} to {_frontMeter}
 
 	# shoot particle
 	loop 200 times:
-		# previous使って奇跡書く予定
 		delete {_metadata}
 		set {_metadata} to metadata value {@metadata-name} of {_proj}
+		if {_metadata} is not set:
+			stop
+		
+		wait a tick
+		set {_loc} to location of {_proj}
+		spawnParticle(firework, {_loc})
+		set {_proloc} to getProjectilePreviousLocation({_proj})
+		if {_proloc} is not set:
+			continue
+		
+		set {_distance} to distance between {_loc} and {_proloc}
+		set {_FM} to 0.5
+		set {_loopnum} to round({_distance} / {_FM})
+		set {_frontMeter} to 0
+		loop {_loopnum} times:
+			add {_FM} to {_frontMeter}
+			set {_el} to location {_frontMeter} meters in front of {_proloc}
+			spawnParticle(wax_off, {_el})
+
 
 
 
