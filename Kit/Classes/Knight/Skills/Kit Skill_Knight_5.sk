@@ -1,74 +1,175 @@
 # Justice Power
 
-function kitSkill_Knight_5(player: player):
-	toolCT({_player}, "Knight", 5)
-	set {Stats.%{_player}%::JusticePower} to true
-	kitMsg({_player}, "§9与えるダメージと受けるダメージを§63§9にします...")
-	sendTimeBossbar_GREEN({_player}, "Justice Power", 140)
-	setDamageModification_SET({_player}, 3)
-	playSound("entity.illusioner.prepare_mirror", 1, 1.5, {_player})
-	loop 140 times:
-		set {_loc} to location of {_player}
-		add 0.02 to {_dy}
-		if {_dy} >= 4:
-			set {_dy} to 0
-		if {_dy} > 2:
-			set {_y} to 2 - ({_dy} - 2)
-		else:
-			set {_y} to {_dy}
-		add {_y} to y-coordinate of {_loc}
-		add 9 to {_rad}
-		add 0.5 * sin({_rad}) to x-coordinate of {_loc}
-		add 0.5 * cos({_rad}) to z-coordinate of {_loc}
-		spawnParticle_Color(entity_effect, rgb(255, 165, 0), {_loc})
-		wait a tick
-	removeDamageModification_SET({_player})
-	delete {Stats.%{_player}%::JusticePower}
-	kitMsg({_player}, "§6Justice Power§cの効果が切れました")
+options:
+	effect-tick: 140
+	damage-amount: 3
+
+
 
 # Damage Modification Editor
 on damage with priority NORMAL:
 	set {_attacker} to getAttacker(victim)
 	# Justice Power発動者がダメージを与える
-	if {Stats.%{_attacker}%::JusticePower} is true:
-		if checkDamagable(victim) is false:
+	if {Stats.%{_attacker}%::JusticePower} is set:
+		set {_enable} to true
+	
+	# Justice Power発動者がダメージを受ける
+	else if {Stats.%victim%::JusticePower} is set:
+		if {Stats.%victim%::ReligiousShelter} is true:
+			delete {_enable}
+		set {_enable} to true
+	
+	if {_enable} is not set:
+		stop
+		
+	setDamageModification_SET(victim, {@damage-amount})
+	kitEffectDescription(victim, "§4❤{@damage-amount}")
+	kitParticle_JusticePower_Hit(victim)
+
+
+
+function kitSkill_Knight_5(player: player):
+	toolCT({_player}, "Knight", 5)
+	kitEffect_JusticePower({_player})
+
+
+
+local function kitEffect_JusticePower(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::JusticePower} to {_now}
+	kitMsg({_player}, "§c§l与ダメージ§9と§c§l被ダメージ§9を§4❤3§9にします...")
+	sendTimeBossbar_GREEN({_player}, "Justice Power", {@effect-tick})
+
+	kitParticle_JusticePower_Launch({_player})
+	kitParticle_JusticePower_Apply({_player})
+
+	loop {@effect-tick} times:
+		if {Stats.%{_player}%::JusticePower} is not {_now}:
 			stop
-		if {Stats.%victim%::Invincible} is set:
+		wait a tick
+
+	delete {Stats.%{_player}%::JusticePower}
+	kitMsg({_player}, "§6Justice Power§cの効果が切れました")
+
+
+
+local function kitParticle_JusticePower_Launch(player: player):
+	playSound("entity.illusioner.prepare_mirror", 1, 1.35, {_player})
+
+	set {_looptime} to 20
+
+	set {_front} to 0.5
+	set {_density} to 0.25
+	set {_maxLength} to 5
+	set {_looptime.2} to 1
+	if {_maxLength} / {_looptime} > {_density}:
+		set {_looptime.2} to {_maxLength} / {_looptime} / {_density}
+
+	set {_baserad} to 0
+	set {_add.rad} to 200 / {_looptime}
+	loop {_looptime} times:
+
+		set {_baseloc} to location 1 meters above {_player}
+		set pitch of {_baseloc} to 0
+
+		set {_basevector} to setVector({_baseloc}, location 10 meters in front of {_baseloc})
+		
+		loop {_looptime.2} times:
+			set {_loopnum.3} to 0
+			loop 4 times:
+				set {_rad} to {_baserad} + 90 * {_loopnum.3}
+				set {_vector} to {_basevector} 
+				rotate {_vector} around y-axis by {_rad}
+				set {_el} to setDirToVec({_baseloc}, {_vector})
+				set {_el} to location {_front} meters in front of {_el}
+				spawnParticle(wax_on, {_el})
+				chance of 10%:
+					set {_el.2} to moveRandomLocation({_el}, 0.5)
+					spawnParticle_Dust(rgb(233, 181, 102), 0.65, {_el.2})
+				add 1 to {_loopnum.3}
+
+			add {_density} to {_front}
+			add {_add.rad} to {_baserad}
+		wait a tick
+
+local function kitParticle_JusticePower_Apply(player: player):
+	set {_now} to {Stats.%{_player}%::JusticePower}
+	set {_baserad} to 0
+	set {_add.rad} to 90 / 20
+	set {_FM.center} to 1
+	set {_FM.side} to 0.5
+
+	loop {@effect-tick} times:
+		if {Stats.%{_player}%::JusticePower} is not {_now}:
 			stop
 		
-		setDamageModification_SET(victim, 3)
-		kitEffectDescription(victim, "§4❤3")
+		set {_baseloc} to location of {_player}
+		set pitch of {_baseloc} to 0
+		set {_basevector} to setVector({_baseloc}, location 10 meters in front of {_baseloc})
 
-		# Particles
-		playSound("entity.iron_golem.hurt", 1, 2, victim)
-		loop all blocks in radius 2 around victim:
-			chance of 20%:
-				set {_loc} to location of loop-block
-				add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
-				add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
-				add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
-				spawnParticle_Color(entity_effect, rgb(255, 200, 0), {_loc})
+		set {_rad} to {_baserad}
+		set {_vector} to {_basevector} 
+		rotate {_vector} around y-axis by {_rad}
+		set {_baseel} to location 1 meter above {_baseloc}
+		set {_baseel} to setDirToVec({_baseel}, {_vector})
+		set {_baseel} to location {_FM.center} meters in front of {_baseel}
+		add 135 to yaw of {_baseel}
+		kitParticle_JusticePower_Square({_baseel}, {_FM.center}, rgb(255, 174, 0))
 
-	# Justice Power発動者がダメージを受ける
-	else if checkEntityType(victim, player) is true:
-		if {Stats.%victim%::Invincible} is true:
-			stop
-		if {Stats.%victim%::ReligiousShelter} is true:
-			stop
-		if {Stats.%victim%::JusticePower} is not true:
-			stop
-		if checkDamagable(victim) is false:
-			stop
+		# sideの記載
+		set {_ln.2} to 0
+		loop 2 times:
+			set {_rad} to {_baserad} + 45
+			set {_vector} to {_basevector}
+			rotate {_vector} around y-axis by {_rad}
+			set {_baseel} to location {_ln.2} meter above {_baseloc}
+			set {_baseel} to setDirToVec({_baseel}, {_vector})
+			set {_baseel} to location {_FM.side} meters in front of {_baseel}
+			add 135 to yaw of {_baseel}
+			kitParticle_JusticePower_Square({_baseel}, {_FM.side}, rgb(255, 196, 0))
+			add 2 to {_ln.2}
 
-		setDamageModification_SET(victim, 3)
-		kitEffectDescription(victim, "§4❤3")
+		add {_add.rad} to {_baserad}
+		wait a tick
 
-		# Particles
-		playSound("entity.iron_golem.hurt", 1, 2, victim)
-		loop all blocks in radius 2 around victim:
-			chance of 20%:
-				set {_loc} to location of loop-block
-				add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
-				add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
-				add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
-				spawnParticle_Color(entity_effect, rgb(255, 200, 0), {_loc})
+local function kitParticle_JusticePower_Square(loc: location, front: number, color: color):
+	set {_length} to sqrt({_front} ^ 2 + {_front} ^ 2)
+
+	set {_fm} to {_length} / 10
+	loop 4 times:
+		set {_ln.2} to 0
+		loop 10 times:
+			add 1 to {_ln.2}
+			set {_el} to location ({_fm} * {_ln.2}) meters in front of {_loc}
+			spawnParticle_Dust({_color}, 0.5, {_el})
+
+		set {_loc} to location {_length} meters in front of {_loc}
+		add 90 to yaw of {_loc}
+
+local function kitParticle_JusticePower_Hit(player: player):
+	playSound("entity.iron_golem.hurt", 1, 2, {_player})
+	set {_tick} to 5
+	set {_baserad} to 0
+	set {_add.rad} to 270 / {_tick}
+	set {_FM} to 0.75
+
+	loop {_tick} times:
+		
+		set {_baseloc} to location of {_player}
+		set pitch of {_baseloc} to 0
+		set {_basevector} to setVector({_baseloc}, location 10 meters in front of {_baseloc})
+
+		set {_ln.2} to 0.5
+		loop 2 times:
+			set {_rad} to {_baserad}
+			set {_vector} to {_basevector}
+			rotate {_vector} around y-axis by {_rad}
+			set {_baseel} to location {_ln.2} meter above {_baseloc}
+			set {_baseel} to setDirToVec({_baseel}, {_vector})
+			set {_baseel} to location {_FM} meters in front of {_baseel}
+			add 135 to yaw of {_baseel}
+			kitParticle_JusticePower_Square({_baseel}, {_FM}, rgb(255, 217, 0))
+
+			add 1 to {_ln.2}
+		add {_add.rad} to {_baserad}
+		wait a tick
