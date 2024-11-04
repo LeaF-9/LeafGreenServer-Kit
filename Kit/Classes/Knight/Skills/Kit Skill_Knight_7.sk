@@ -1,46 +1,195 @@
 # Religious Shelter
 
-function kitSkill_Knight_7(player: player):
-	toolCT({_player}, "Knight", 7)
-	set {Stats.%{_player}%::ReligiousShelter} to true
-	kitMsg({_player}, "<##0000cd>3秒間,<##00bfff>体力以上のダメージを0にします!")
-	sendTimeBossbar_GREEN({_player}, "Religious Shelter", 60)
-	strike lightning effect at {_player}
-	playSound("entity.vex.ambient", 1, 1, {_player})
-	loop 60 times:
-		set {_baseloc} to location of {_player}
-		add 0.2 to {_dy}
-		if {_dy} >= 4:
-			set {_dy} to 0
-		if {_dy} > 2:
-			set {_y} to 2 - ({_dy} - 2)
-		else:
-			set {_y} to {_dy}
-		add {_y} to y-coordinate of {_baseloc}
-		set {_rad} to 0
-		loop 10 times:
-			set {_el} to {_baseloc}
-			add 36 to {_rad}
-			add 0.5 * sin({_rad}) to x-coordinate of {_el}
-			add 0.5 * cos({_rad}) to z-coordinate of {_el}
-			spawnParticle_Dust(rgb(0, 255, 255), 1, {_el})
-		wait a tick
-	delete {Stats.%{_player}%::ReligiousShelter}
-	kitMsg({_player}, "§bReligious Shelter§cの効果が切れました")
+options:
+	prepare-tick: 5
+	effect-tick: 60
+
+
 
 on damage of player with priority HIGH:
-	if {Stats.%victim%::ReligiousShelter} is true:
+	if {Stats.%victim%::ReligiousShelter} is set:
 		set {_hp} to health of victim
 		set {_dm} to damage
 		if {_dm} > {_hp}:
 			setDamageModification_SET(victim, 0)
 			kitEffectDescription(victim, "§4❤0")
+			kitParticle_ReligiousShelter_Shield(victim)
 
-			playSound("entity.phantom.bite", 1, 1, victim)
-			loop all blocks in radius 2 around victim:
+
+
+function kitSkill_Knight_7(player: player):
+	toolCT({_player}, "Knight", 7)
+	kitEffect_ReligiousShelter({_player})
+
+
+
+local function kitEffect_ReligiousShelter(player: player):
+	kitParticle_ReligiousShelter_Prepare({_player})
+	loop {@prepare-tick} times:
+		wait a tick
+
+	set {_now} to now
+	set {Stats.%{_player}%::ReligiousShelter} to {_now}
+	kitMsg({_player}, "<##2262c2>3秒間,<##00bfff>体力以上のダメージを<##d9ffff>§l0<##00bfff>にします!")
+	sendTimeBossbar_GREEN({_player}, "Religious Shelter", 60)
+	kitParticle_ReligiousShelter_Launch({_player})
+	kitParticle_ReligiousShelter_Apply({_player})
+
+	loop {@effect-tick} times:
+		if {Stats.%{_player}%::ReligiousShelter} is not {_now}:
+			stop
+		wait a tick
+	delete {Stats.%{_player}%::ReligiousShelter}
+	kitMsg({_player}, "§bReligious Shelter§cの効果が切れました")
+
+
+
+local function kitParticle_ReligiousShelter_Prepare(player: player):
+	kitSound_ReligiousShelter_Prepare({_player})
+	set {_meter} to 100
+	set {_looptime.2} to {_meter} / {@prepare-tick}
+	set {_baseloc} to location {_meter} meters above {_player}
+	set pitch of {_baseloc} to 90
+
+	set {_ln.1} to 0
+	loop {@prepare-tick} times:
+		add 1 to {_ln.1}
+		set {_baseloc.2} to location of {_player}
+		set {_baseloc} to setDirToVec({_baseloc}, setVector({_baseloc}, {_baseloc.2}))
+
+		set {_ln.2} to 0
+		loop {_looptime.2} times:
+			add 1 to {_ln.2}
+			set {_elbase} to location {_ln.2} meters in front of {_baseloc}
+
+			set {_looptime.3} to a random integer between 3 and 5
+			loop {_looptime.3} times:
+				set {_el} to moveRandomLocation({_elbase}, 1)
+				spawnParticle(end_rod, {_el})
 				chance of 10%:
-					set {_loc} to location of loop-block
-					add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
-					add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
-					add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
-					spawnParticle(end_rod, {_loc})
+					set {_el.2} to moveRandomLocation({_el}, 0.5)
+					spawnParticle(wax_off, {_el.2})
+
+		set {_baseloc} to location {_looptime.2} meters in front of {_baseloc}
+		wait a tick
+
+local function kitParticle_ReligiousShelter_Launch(player: player):
+	playSound("item.trident.thunder", 1, 1.65, {_player})
+
+	# Vector Particles
+	set {_baseloc} to location 1 meter above {_player}
+	set pitch of {_baseloc} to 0
+	set {_basevector} to setVector({_baseloc}, location 10 meters in front of {_baseloc})
+	spawnParticle(flash, {_baseloc})
+
+	loop 50 times:
+		spawnParticle_Vector(wax_off, randomVector(), 30, {_baseloc})
+	loop 30 times:
+		spawnParticle_Vector(cloud, randomVector(), 0.75, {_baseloc})
+	
+	loop 30 times:
+		set {_el} to moveRandomLocation({_baseloc}, 5)
+		spawnParticle_Block(diamond block, {_el})
+
+	# Wave Particles
+	set {_looptime.2} to 180
+	set {_addrad} to 360 / {_looptime.2}
+
+	set {_ln.1} to 0
+	loop 5 times:
+		add 1 to {_ln.1}
+
+		set {_ln.2} to 0
+		loop {_looptime.2} times:
+			add {_addrad} to {_ln.2}		
+			set {_vector} to {_basevector}
+			rotate {_vector} around y-axis by {_ln.2}
+			set {_el} to location {_ln.1} meters in front of setDirToVec({_baseloc}, {_vector})
+			spawnParticle_Dust(rgb(163, 226, 226), 0.8, {_el})
+
+		wait a tick
+
+local function kitParticle_ReligiousShelter_Apply(player: player):
+	kitParticle_ReligiousShelter_Chain({_player})
+	kitParticle_ReligiousShelter_Aura({_player})
+
+local function kitParticle_ReligiousShelter_Chain(player: player):
+	set {_now} to {Stats.%{_player}%::ReligiousShelter}
+
+	loop {@effect-tick} times:
+		if {Stats.%{_player}%::ReligiousShelter} is not {_now}:
+			stop
+
+		set {_baseloc} to location of {_player}
+		set {_height} to 0.75
+		loop 3 times:
+			set {_el} to location {_height} meters above {_baseloc}
+			set {_radius} to 0.5
+			if {_height} is 1:
+				set {_radius} to 0.75
+			spawnParticle(electric_spark, particleLocation_Circle({_el}, 10, {_radius}))
+			add 0.25 to {_height}
+		wait a tick	
+
+local function kitParticle_ReligiousShelter_Aura(player: player):
+	set {_now} to {Stats.%{_player}%::ReligiousShelter}
+
+	set {_rad} to 0
+	set {_add.rad} to 360 / {@effect-tick}
+
+	set {_colors::1} to rgb(172, 236, 238)
+	set {_colors::2} to rgb(132, 212, 206)
+	set {_colors::3} to rgb(156, 253, 253)
+
+	set {_ln.1} to 0
+	loop {@effect-tick} times:
+		if {Stats.%{_player}%::ReligiousShelter} is not {_now}:
+			stop
+		
+		set {_baseloc} to location 1 meter above {_player}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 2.5, particleLocation_Circle({_baseloc}, 4, 3, {_rad}))
+
+		loop 1 times:
+			set {_el} to moveRandomLocation({_baseloc}, 1)
+			spawnParticle_BlockData(falling_dust, cyan wool, {_el})
+			set {_el} to moveRandomLocation({_baseloc}, 1)
+			spawnParticle_BlockData(falling_dust, white wool, {_el})
+			set {_el} to moveRandomLocation({_baseloc}, 1)
+			spawnParticle_BlockData(falling_dust, light blue wool, {_el})
+		
+		add {_add.rad} to {_rad}
+		wait a tick
+
+local function kitParticle_ReligiousShelter_Shield(player: player):
+	playSound("item.trident.return", 1, 0.65, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+
+	set {_ln.1} to 0
+	loop 10 times:
+		set {_el.above} to location {_ln.1} * 0.5 meters above {_player}
+		spawnParticle(scrape, {_el.above})
+		spawnParticle_Vector(end_rod, randomVector(), 0.5, particleLocation_Circle({_el.above}, 6, 0.75))
+
+		set {_el.below} to location {_ln.1} * 0.5 meters below {_player}
+		spawnParticle(scrape, {_el.below})
+		spawnParticle_Vector(end_rod, randomVector(), 0.5, particleLocation_Circle({_el.below}, 6, 0.75))
+
+		add 1 to {_ln.1}
+
+
+
+
+local function kitSound_ReligiousShelter_Prepare(player: player):
+	set {_pitch::1} to 2
+	set {_pitch::2} to 1.5
+	set {_pitch::3} to 1
+	set {_pitch::4} to 0.75
+	set {_pitch::5} to 0.5
+
+	set {_ln} to 0
+	loop 5 times:
+		add 1 to {_ln}
+		playSound("block.amethyst_block.break", 1, {_pitch::%{_ln}%}, {_player})
+		wait a tick
