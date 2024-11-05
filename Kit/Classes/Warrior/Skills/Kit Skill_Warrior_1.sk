@@ -1,33 +1,5 @@
 # Focus Energy
 
-function kitSkill_Warrior_1(player: player):
-	if {Stats.%{_player}%::FocusEnergy} is true:
-		send action bar "§e§lまだ気合は入っています" to {_player}
-		stop
-	else:
-		kitMsg({_player}, "§5§l気合を込めた....")
-		set {Stats.%{_player}%::FocusEnergy} to true
-		toolCT({_player}, "Warrior", 1)
-		playSound("entity.wolf.growl", 1, 0.5, {_player})
-		while {Stats.%{_player}%::FocusEnergy} is true:
-			send action bar "§8§l集中しています..." to {_player}
-			
-			set {_loc} to location of {_player}
-			add 0.02 to {_dy}
-			if {_dy} >= 4:
-				set {_dy} to 0
-			if {_dy} > 2:
-				set {_y} to 2 - ({_dy} - 2)
-			else:
-				set {_y} to {_dy}
-			add {_y} to y-coordinate of {_loc}
-			add 9 to {_rad}
-			add 0.5 * sin({_rad}) to x-coordinate of {_loc}
-			add 0.5 * cos({_rad}) to z-coordinate of {_loc}
-			spawnParticle(flame, {_loc})
-			wait a tick
-		send action bar "" to {_player}
-
 on damage with priority NORMAL:
 	set {_damage.mul} to 0
 	set {_attacker} to getAttacker(victim)
@@ -47,3 +19,65 @@ on damage with priority NORMAL:
 	{_focusenergy} is true
 	setDamageModification_MUL(victim, {_damage.mul})
 	kitEffectDescription(victim, "§4❤§c§lx%{_damage.mul}%")
+	kitParticle_FocusEnergy_Damage(victim)
+
+
+
+function kitSkill_Warrior_1(player: player):
+	if {Stats.%{_player}%::FocusEnergy} is true:
+		send action bar "§e§lまだ気合は入っています" to {_player}
+		stop
+	toolCT({_player}, "Warrior", 1)
+	kitEffect_FocusEnergy({_player})
+
+
+
+local function kitEffect_FocusEnergy(player: player):
+	kitMsg({_player}, "§5§l気合を込めた....")
+	set {Stats.%{_player}%::FocusEnergy} to true
+	kitParticle_FocusEnergy_Launch({_player})
+
+	playSound("entity.wolf.growl", 1, 0.5, {_player})
+	
+	set {_ln} to 0
+	while {Stats.%{_player}%::FocusEnergy} is true:
+		add 1 to {_ln}
+		send action bar "§8§l集中しています..." to {_player}
+		kitParticle_FocusEnergy_Aura({_player}, {_ln})
+		wait a tick
+	send action bar "" to {_player}
+
+
+
+local function kitParticle_FocusEnergy_Launch(player: player):
+	playSound("entity.wolf.growl", 1, 0.5, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+
+	loop 30 times:
+		spawnParticle_Vector(campfire_cosy_smoke, randomVector(), 0.3, {_baseloc})
+		spawnParticle_Vector(flame, randomVector(), 1, {_baseloc})
+
+local function kitParticle_FocusEnergy_Aura(player: player, offset: number):
+	set {_baseloc} to location of {_player}
+	
+	set {_ln} to 0
+	loop 4 times:
+		add 1 to {_ln}
+		set {_rad} to (90 * {_ln}) + ({_offset} * 5)
+
+		set {_el} to {_baseloc}
+		add 0.5 * sin({_rad}) to x-pos of {_el}
+		add 0.5 * cos({_rad}) to z-pos of {_el}
+		spawnParticle_Vector(smoke, vector(0, 0.5, 0), 0.3, {_el})
+
+local function kitParticle_FocusEnergy_Damage(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+
+	loop 30 times:
+		spawnParticle_Vector(damage_indicator, randomVector(), 0.5, {_baseloc})
+		chance of 50%:
+			set {_el} to moveRandomLocation({_baseloc}, 1)
+			spawnParticle_Block(redstone block, {_el})
+		chance of 50%:
+			set {_el} to moveRandomLocation({_baseloc}, 1)
+			spawnParticle_Block(netherrack, {_el})
