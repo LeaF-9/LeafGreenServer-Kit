@@ -92,6 +92,8 @@ function getProjectilePreviousLocation(proj: projectile) :: location:
 	set {_proloc} to metadata value "projectile tracking - SAVE" of {_proj}
 	set {_loc} to location of {_proj}
 	set {_proloc} to setDirToVec({_proloc}, setVector({_proloc}, {_loc}))
+	if pitch of {_proloc} is not between -90 and 90:
+		set pitch of {_proloc} to 0
 	return {_proloc}
 
 on projectile hit:
