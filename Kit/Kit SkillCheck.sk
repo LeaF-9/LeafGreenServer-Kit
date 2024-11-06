@@ -28,21 +28,14 @@ command /testworld <text> <player=%player%>:
 command /kit-standspawn:
 	permission: sk.admin
 	trigger:
-		set {team::Test-Stand} to "green"
-		set {TrueTeam::Test-Stand} to "green"
-		set {team::Tester-2} to "green"
-		set {TrueTeam::Tester-2} to "green"
 		loop all skeletons:
 			display name of loop-entity is "Test-Stand"
 			set metadata value "gametype" of loop-skeleton to "Kit"
-			set {team::Test-Stand} to "green"
-			set {TrueTeam::Test-Stand} to "green"
+			teleport loop-skeleton to location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0)
 			set {_exist} to true
 		{_exist} is not set
 		spawn a skeleton at location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0) with nbt compound from "{NoAI:1b,Silent:1b,ArmorItems:[{},{},{},{id:""player_head"",tag:{SkullOwner:MHF_Steve},Count:1b}],HandItems:[{id:""diamond_sword"",Count:1b},{id:""diamond_sword"",Count:1b}],CustomName:'{""text"":""Test-Stand""}'}"
 		set metadata value "gametype" of spawned skeleton to "Kit"
-		set {team::Test-Stand} to "green"
-		set {TrueTeam::Test-Stand} to "green"
 
 on damage of skeleton with priority MONITOR:
 	metadata value "gametype" of victim is "Kit"
@@ -56,10 +49,7 @@ on damage of skeleton with priority MONITOR:
 	add a random number between 0.5 and 3 to y-coordinate of {_l}
 	spawn an armor stand at {_l} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,Marker:1b}"
 	set display name of spawned armor stand to "§4❤%{_damage}%"
-	loop 8 times:
-		set {_num} to a random integer between 0 and 9
-		set {_n.%loop-number%} to {_num}
-	set {_uuid} to "%{_n.1}%%{_n.2}%%{_n.3}%%{_n.4}%%{_n.5}%%{_n.6}%%{_n.7}%%{_n.8}%"
+	set {_uuid} to a random uuid
 	set metadata value "damage-check-uuid" of spawned armor stand to {_uuid}
 	loop all projectiles in radius 3 around victim:
 		delete loop-projectile
