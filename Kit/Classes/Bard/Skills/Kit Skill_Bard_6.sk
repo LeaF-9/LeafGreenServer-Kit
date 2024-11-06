@@ -96,7 +96,7 @@ local function kitEffect_BeatClapper_Lever(player: player, loc: location, y: num
 	if {_y} is 0:
 		stop
 	set {_tploc} to {_loc}
-	set y-pos of {_tploc} to y-pos of {_tploc} + {_y}
+	add {_y} to y-pos of {_tploc}
 	loop all block displays:
 		metadata value "kit-block" of loop-block display is "Beat Clapper"
 		metadata value "Beat Clapper" of loop-block display is "%{_player}%"
@@ -130,14 +130,14 @@ local function kitParticle_BeatClapper_Clap(player: player):
 local function kitParticle_BeatClapper_Wave(loc: location, meter: number):
 	set {_m} to {_meter} - 0.25
 	loop 11 times:
-		set {_count} to round({_m} + 1) * 5
+		set {_count} to 180
 		set {_rad} to 0
 		set {_addrad} to 360 / {_count}
 		loop {_count} times:
 			set {_el} to {_loc}
 			add {_m} * sin({_rad}) to x-pos of {_el}
 			add {_m} * cos({_rad}) to z-pos of {_el}
-			spawnParticle_Dust(rgb(243, 152, 29), 0.75, {_el})
+			spawnParticle_Dust(rgb(243, 152, 29), 0.5, {_el})
 			add {_addrad} to {_rad}
 		add 0.05 to {_m}
 
