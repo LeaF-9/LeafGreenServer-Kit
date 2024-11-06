@@ -113,11 +113,27 @@ local function kitParticle_HeatFlash_Ignite(entity: entity):
 		spawnParticle_Vector(flame, randomVector(), 0.3, {_baseloc})
 
 local function kitParticle_HeatFlash_Flash(loc: location):
+	# 発光
+	spawnParticle(flash, {_loc})
+
+	set {_now} to now
+	set {_el} to {_loc}
+	add -0.25 to y-coordinate of {_el}
+	set {_nbt} to nbt compound of "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
+	spawn a magma cube at {_el} with nbt {_nbt}
+	set metadata value "Heat Flash - Glowing" of spawned magma cube to {_now}
+
+
 	# フラッシュ
 	loop 100 times:
 		set {_power} to 50
 		spawnParticle_Vector(wax_on, randomVector(), {_power}, {_loc})
 		spawnParticle_Vector(wax_off, randomVector(), {_power}, {_loc})
+	
+	wait 10 ticks
+	loop all magma cubes:
+		metadata value "Heat Flash - Glowing" of loop-magma cube is {_now}
+		delete loop-magma cube
 
 local function kitParticle_HeatFlash_Dazzle(player: player):
 	playSound("entity.experience_orb.pickup", 3, 0.6, {_player})
