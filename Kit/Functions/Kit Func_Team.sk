@@ -3,6 +3,10 @@ function kitCheckTeam(player1: entity, player2: entity, ally: boolean, all: bool
 		return false
 	if metadata value "gametype" of {_player2} is not "Kit":
 		return false
+
+	if checkTestStand({_player1}, {_player2}, {_ally}) is true:
+		return true
+
 	set {_name1} to display name of {_player1}
 	if {_name1} is not set:
 		return false
@@ -41,6 +45,28 @@ function kitCheckTeam(player1: entity, player2: entity, ally: boolean, all: bool
 			return true
 		else:
 			return false
+
+local function checkTestStand(entity1: entity, entity2: entity, ally: boolean) :: boolean:
+	set {_bool} to false
+
+	set {_checkteam} to "red"
+	if {_ally} is true:
+		set {_checkteam} to "green"
+
+	add "Test-Stand" to {_tests::*}
+	add "Tester-2" to {_tests::*}
+
+	if {_tests::*} contains display name of {_entity1}:
+		if {team::%{_entity2}%} is {_checkteam}:
+			set {_bool} to true
+	else if {_tests::*} contains display name of {_entity2}:
+		if {team::%{_entity1}%} is {_checkteam}:
+			set {_bool} to true
+	
+	return {_bool}
+
+
+
 
 function getTeam(player: player, all: boolean = false) :: text:
 	set {_change} to "team"
