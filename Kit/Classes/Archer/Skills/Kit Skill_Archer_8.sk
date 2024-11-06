@@ -10,6 +10,7 @@ local function kitEffect_LeapGale(player: player):
 	kitMsg({_player}, "§b§l突風射撃!")
 	kitEffect_LeapGale_Leap({_player})
 	wait 10 ticks
+	kitCheckAlive({_player}) is true
 	kitEffect_LeapGale_Gale({_player})
 
 local function kitEffect_LeapGale_Leap(player: player):
@@ -21,7 +22,7 @@ local function kitEffect_LeapGale_Gale(player: player):
 	set {_baseloc} to location of head of {_player}
 	# velocity
 	kitParticle_LeapGale_Gale(location 1 meter above {_player})
-	set {_vector} to setVector(location of {_player}, location 10 meters behind {_player}, 0.9)
+	set {_vector} to setVector(location of {_player}, location 10 meters behind {_player}, 0.5)
 	set velocity of {_player} to {_vector}
 	# arrow
 	loop 30 times:
