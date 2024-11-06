@@ -1,59 +1,195 @@
 # Force Snipe
 
+options:
+	effect-tick: 100
+	effect-radius: 5
+	max-damage: 5
+	min-damage: 2
+	sub-damage: 2
+
+
+
+on shoot:
+	{Stats.%shooter%::ForceSnipe} is set
+	projectile is an arrow or a spectral arrow
+	set {_draw} to getBowDrawTime(shooter)
+	set metadata value "force snipe - arrow" of projectile to {_draw}
+	kitParticle_ForceSnipe_Arrow(projectile, {_draw})
+
+on projectile hit:
+	metadata value "force snipe - arrow" of projectile is set
+	kitEffect_ForceSnipe_Hit(shooter, projectile)
+
+on damage:
+	damage was caused by projectile
+	metadata value "force snipe - arrow" of projectile is set
+	cancel event
+
+
+
 function kitSkill_Archer_2(player: player):
 	toolCT({_player}, "Archer", 2)
-	set {Stats.%{_player}%::ForceSnipe} to true
-	playSound("entity.ender_dragon.flap", 1, 2, {_player})
+	kitEffect_ForceSnipe({_player})
+
+
+
+local function kitEffect_ForceSnipe(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::ForceSnipe} to {_now}
 	kitMsg({_player}, "§b§lForceSnipe§9を起動しました!")
 	kitMsg({_player}, "§35秒間の間矢の近くにいる敵にダメージを与えます!")
-	set {_time} to 100
-	sendTimeBossbar_GREEN({_player}, "Force Snipe", {_time})
-	loop {_time} times:
+	sendTimeBossbar_GREEN({_player}, "Force Snipe", {@effect-tick})
+	kitParticle_ForceSnipe_Launch({_player})
+	kitParticle_ForceSnipe_Apply({_player})
+	loop {@effect-tick} times:
+		if {Stats.%{_player}%::ForceSnipe} is not {_now}:
+			stop
 		wait a tick
 	kitMsg({_player}, "§b§lForceSnipe§3の効果が切れました")
 	delete {Stats.%{_player}%::ForceSnipe}
 
-on shoot:
-	{Stats.%shooter%::ForceSnipe} is true
-	projectile is an arrow or a spectral arrow
-	loop 20 times:
-		spawnParticle_Dust(rgb(0, 255, 255), 1.5, projectile)
+local function kitEffect_ForceSnipe_Hit(player: player, proj: projectile):
+	set {_draw} to metadata value "force snipe - arrow" of {_proj}
+	set {_loc} to location of {_proj}
+	kitParticle_ForceSnipe_Impact({_loc}, {_draw})
+
+	set {_damage.base} to {@max-damage} - (({@max-damage} - {@min-damage}) * (1 - ({_draw} / 24)))
+	loop all entities in radius {@effect-radius} around projectile:
+		kitCheckTeam({_player}, loop-entity, false) is true
+
+		set {_dis} to distance between projectile and loop-entity
+		set {_mul} to ({@effect-radius} - {_dis}) / {@effect-radius}
+		set {_sub} to {@sub-damage} * (1 - {_mul})
+		set {_damage} to {_damage.base} - {_sub}
+		kitDamage({_player}, loop-entity, {_damage})
+
+		kitEffectDescription(loop-entity, "§4❤%{_damage}%")
+		kitParticle_ForceSnipe_Hit(loop-entity, {_damage})
+
+	delete metadata value "force snipe - arrow" of {_proj}
+
+
+
+local function kitParticle_ForceSnipe_Launch(player: player):
+	playSound("entity.ender_dragon.flap", 1, 2, {_player})
+
+	set {_colors::1} to rgb(24, 234, 223)
+	set {_colors::2} to rgb(111, 221, 248)
+	set {_colors::3} to rgb(24, 150, 234)
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 30 times:
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(entity_effect, {_color}, moveRandomLocation({_baseloc}, 1.5))
+
+	
+
+local function kitParticle_ForceSnipe_Apply(player: player):
+	set {_now} to {Stats.%{_player}%::ForceSnipe}
+	set {_baseloc} to location 1 meter above {_player}
+	set pitch of {_baseloc} to 0
+
+	loop {@effect-tick} times:
+		if {Stats.%{_player}%::ForceSnipe} is not {_now}:
+			stop
+
+		chance of 10%:
+			set {_el} to {_baseloc}
+			add a random number between -1 and 1 to y-pos of {_el}
+			set yaw of {_el} to a random number between 0 and 360
+			set {_el} to location 0.5 meters in front of {_el}
+			kitParticle_ForceSnipe_Aura({_el})
 		wait a tick
 
-on projectile hit:
-	{Stats.%shooter%::ForceSnipe} is true
-	projectile is an arrow or a spectral arrow
-	playSound("entity.illusioner.cast_spell", 1, 2, location of projectile)
-	loop all entities in radius 5 around projectile:
-		kitCheckTeam(shooter, loop-entity, false) is true
-		set {_dis} to distance between projectile and loop-entity
-		set {_mul} to (5 - {_dis}) / 5
-		set {_damage} to 3 * {_mul}
-		kitDamage(shooter, loop-entity, {_damage})
-		kitEffectDescription(loop-entity, "§4❤%{_damage}%")
-		playSound("entity.phantom.hurt", 1, 2, location of loop-entity)
-		add loop-entity to {_sp::*}
-	set {_loc} to location of projectile
-	loop 100 times:
+local function kitParticle_ForceSnipe_Aura(loc: location):
+	set pitch of {_loc} to -90
+
+	set {_colors::1} to rgb(24, 234, 223)
+	set {_colors::2} to rgb(111, 221, 248)
+	set {_colors::3} to rgb(24, 150, 234)
+
+	set {_loopnum} to 5
+	set {_m} to 0
+	set {_addm} to 1 / 10
+
+	loop {_loopnum} times:
+		set {_el} to location {_m} meters in front of {_loc}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.85, {_el})
+
+		add {_addm} to 0
+		wait a tick
+
+local function kitParticle_ForceSnipe_Arrow(proj: projectile, time: number):
+	startTrackProjectile({_proj})
+
+	set {_pitch} to 2 - {_time}
+	playSound("entity.breeze.shoot", 1, {_pitch}, location of {_proj})]
+
+	set {_colors::1} to rgb(24, 234, 223)
+	set {_colors::2} to rgb(111, 221, 248)
+	set {_colors::3} to rgb(24, 150, 234)
+
+	set {_rad} to 0
+	set {_addrad} to 360 / 10
+
+	loop 200 times:	
+		if metadata value "force snipe - arrow" of {_proj} is not set:
+			stop
+
+		wait a tick
+		set {_loc} to location of {_proj}
+
+		set {_proloc} to getProjectilePreviousLocation({_proj})
+		if {_proloc} is not set:
+			continue
+		
+		set {_distance} to distance between {_loc} and {_proloc}
+		set {_FM} to 0.5
+		set {_loopnum} to round({_distance} / {_FM})
+		set {_frontMeter} to 0
+		loop {_loopnum} times:
+			add {_FM} to {_frontMeter}
+			set {_el} to location {_frontMeter} meters in front of {_proloc}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 1, {_el})
+
+			set {_vector.base} to setVector({_el}, location 10 meters in front of {_el})
+			set {_loc.vec} to {_el}
+			add -90 to pitch of {_loc.vec}
+			set {_vector} to setVector({_loc.vec}, location 10 meters in front of {_loc.vec})
+
+			rotate {_vector} around {_vector.base} by {_rad}
+			set {_el.2} to location 0.5 meters in front of setDirToVec({_el}, {_vector})
+			set {_color.2} to a random element out of {_colors::*}
+			spawnParticle_Color(entity_effect, {_color}, {_el.2})
+
+			add {_addrad} to {_rad}
+
+local function kitParticle_ForceSnipe_Impact(loc: location, power: number):
+	set {_pitch} to 2 - {_power}
+	playSound("entity.breeze.wind_burst", 1, {_pitch}, {_loc})
+
+	loop 50 times:
 		spawnParticle_Vector(enchanted_hit, randomVector(1), 5, {_loc})
-	set {_els::*} to particleLocation_Sphere({_loc}, 11, 5, 80)
-	loop {_els::*}:
-		spawnParticle_Dust(rgb(0, 255, 255), 1.5, loop-value)
+	
+	loop 50 times:
+		set {_el} to location 5 meters in front of setDirToVec({_loc}, randomVector)
+		spawnParticle_Block(cyan concrete, {_el})
+	
+	set {_R} to 255 - (255 * ({_power} / 24))
+	set {_color} to rgb({_R}, 255, 255)
+	spawnParticle_Dust({_color}, 1.5, particleLocation_Sphere({_loc}, 10, {@effect-radius}))
+
+local function kitParticle_ForceSnipe_Hit(entity: entity, power: number):
+	playSound("entity.phantom.hurt", 1, 2, {_entity})
+	set {_R} to 255 - (255 * ({_power} / 5))
+	set {_color} to rgb({_R}, 255, 255)
+
+	set {_h} to 0
 	loop 5 times:
 		add 0.4 to {_h}
-		loop {_sp::*}:
-			set {_rad} to 0
-			loop 10 times:
-				set {_el} to location of loop-value-2
-				add 36 to {_rad}
-				add 0.5 * sin({_rad}) to x-coordinate of {_el}
-				add 0.5 * cos({_rad}) to z-coordinate of {_el}
-				add {_h} to y-coordinate of {_el}
-				spawnParticle_Color(entity_effect, rgb(0, 255, 255), {_el})
+		set {_baseloc} to location of {_entity}
+		add {_h} to y-pos of {_baseloc}
+		spawnParticle_Color(entity_effect, {_color}, particleLocation_Circle({_baseloc}, 10, 0.5))
 		wait a tick
-
-on damage:
-	damage was caused by projectile
-	projectile is an arrow
-	if {Stats.%attacker%::ForceSnipe} is true:
-		cancel event
