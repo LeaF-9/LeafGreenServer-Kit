@@ -54,10 +54,10 @@ local function kitEffect_ForceSnipe_Hit(player: player, proj: projectile):
 	kitParticle_ForceSnipe_Impact({_loc}, {_draw})
 
 	set {_damage.base} to {@max-damage} - (({@max-damage} - {@min-damage}) * (1 - ({_draw} / 24)))
-	loop all entities in radius {@effect-radius} around projectile:
+	loop all entities in radius {@effect-radius} around {_proj}:
 		kitCheckTeam({_player}, loop-entity, false) is true
 
-		set {_dis} to distance between projectile and loop-entity
+		set {_dis} to distance between {_proj} and loop-entity
 		set {_mul} to ({@effect-radius} - {_dis}) / {@effect-radius}
 		set {_sub} to {@sub-damage} * (1 - {_mul})
 		set {_damage} to {_damage.base} - {_sub}
@@ -86,12 +86,13 @@ local function kitParticle_ForceSnipe_Launch(player: player):
 
 local function kitParticle_ForceSnipe_Apply(player: player):
 	set {_now} to {Stats.%{_player}%::ForceSnipe}
-	set {_baseloc} to location 1 meter above {_player}
-	set pitch of {_baseloc} to 0
 
 	loop {@effect-tick} times:
 		if {Stats.%{_player}%::ForceSnipe} is not {_now}:
 			stop
+
+		set {_baseloc} to location 1 meter above {_player}
+		set pitch of {_baseloc} to 0
 
 		chance of 10%:
 			set {_el} to {_baseloc}
@@ -110,21 +111,21 @@ local function kitParticle_ForceSnipe_Aura(loc: location):
 
 	set {_loopnum} to 5
 	set {_m} to 0
-	set {_addm} to 1 / 10
+	set {_addm} to 2 / {_loopnum}
 
 	loop {_loopnum} times:
 		set {_el} to location {_m} meters in front of {_loc}
 		set {_color} to a random element out of {_colors::*}
 		spawnParticle_Dust({_color}, 0.85, {_el})
 
-		add {_addm} to 0
+		add {_addm} to {_m}
 		wait a tick
 
 local function kitParticle_ForceSnipe_Arrow(proj: projectile, time: number):
 	startTrackProjectile({_proj})
 
-	set {_pitch} to 2 - {_time}
-	playSound("entity.breeze.shoot", 1, {_pitch}, location of {_proj})]
+	set {_pitch} to 1.5 - ({_time} / 24)
+	playSound("entity.breeze.shoot", 1, {_pitch}, location of {_proj})
 
 	set {_colors::1} to rgb(24, 234, 223)
 	set {_colors::2} to rgb(111, 221, 248)
@@ -137,12 +138,13 @@ local function kitParticle_ForceSnipe_Arrow(proj: projectile, time: number):
 		if metadata value "force snipe - arrow" of {_proj} is not set:
 			stop
 
+		set {_proloc} to getProjectilePreviousLocation({_proj})
 		wait a tick
 		set {_loc} to location of {_proj}
 
-		set {_proloc} to getProjectilePreviousLocation({_proj})
 		if {_proloc} is not set:
 			continue
+		set {_proloc} to setDirToVec({_proloc}, setVector({_proloc}, {_loc}))
 		
 		set {_distance} to distance between {_loc} and {_proloc}
 		set {_FM} to 0.5
@@ -162,7 +164,7 @@ local function kitParticle_ForceSnipe_Arrow(proj: projectile, time: number):
 			rotate {_vector} around {_vector.base} by {_rad}
 			set {_el.2} to location 0.5 meters in front of setDirToVec({_el}, {_vector})
 			set {_color.2} to a random element out of {_colors::*}
-			spawnParticle_Color(entity_effect, {_color}, {_el.2})
+			spawnParticle_Color(entity_effect, {_color.2}, {_el.2})
 
 			add {_addrad} to {_rad}
 
@@ -174,7 +176,7 @@ local function kitParticle_ForceSnipe_Impact(loc: location, power: number):
 		spawnParticle_Vector(enchanted_hit, randomVector(1), 5, {_loc})
 	
 	loop 50 times:
-		set {_el} to location 5 meters in front of setDirToVec({_loc}, randomVector)
+		set {_el} to location 5 meters in front of setDirToVec({_loc}, randomVector())
 		spawnParticle_Block(cyan concrete, {_el})
 	
 	set {_R} to 255 - (255 * ({_power} / 24))
