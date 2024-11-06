@@ -2,9 +2,15 @@
 
 function kitSkill_Warrior_3(player: player):
 	toolCT({_player}, "Warrior", 3)
+	kitEffect_ForceRush({_player})
+
+
+
+local function kitEffect_ForceRush(player: player):
 	kitMsg({_player}, "§4渾身の突進!")
-	playSound("entity.blaze.hurt", 1, 0.75, {_player})
 	push {_player} forward at speed 1.5
+	playSound("entity.blaze.hurt", 1, 0.75, {_player})
+
 	loop 20 times:
 		loop all entities in radius 2 around {_player}:
 			{_hitplayer} is not set
@@ -12,17 +18,52 @@ function kitSkill_Warrior_3(player: player):
 			set {_hitplayer} to loop-entity
 			set {_stoploc} to location of {_player}
 		if {_hitplayer} is not set:
-			spawnParticle(lava, location of {_player})
+			kitParticle_ForceRush_Trail({_player})
 			wait a tick
+
 	if {_hitplayer} is set:
 		teleport {_player} to {_stoploc}
 		kitDamage({_player}, {_hitplayer}, 2)
-		make a fake explosion at {_hitplayer}
 		kitMsg({_player}, "§5%{_hitplayer}%に激突!")
 		message "§4突進攻撃を受けた!" to {_hitplayer}
 		kitEffectDescription({_hitplayer}, "§4❤2")
+		kitParticle_ForceRush_Hit({_hitplayer})
 	else:
-		playSound("entity.blaze.death", 1, 0.75, {_player})
 		kitMsg({_player}, "§1激突失敗...")
 		kitFreeze({_player}, 60, false)
 		damage {_player} by 2 hearts
+		kitParticle_ForceRush_Fail({_player})
+
+
+
+local function kitParticle_ForceRush_Trail(player: player):
+	set {_baseloc} to location of {_player}
+	set {_vector} to setVector({_baseloc}, location 10 meters in front of {_baseloc}) * vector(-1, -1, -1)
+
+	set {_addm} to 0.25
+	set {_loopnum} to 9
+	set {_m} to 0
+
+	loop {_loopnum} times:
+		set {_el} to location {_m} meters above {_baseloc}
+		spawnParticle(lava, {_el})
+		spawnParticle_Vector(large_smoke, {_vector}, 0.5, {_el})
+
+		add {_addm} to {_m}
+
+local function kitParticle_ForceRush_Hit(entity: entity):
+	playSound("entity.generic.explode", 1, 1.8, location of {_entity})
+
+	set {_baseloc} to location 1 meters above {_entity}
+	loop 30 times:
+		spawnParticle_Vector(smoke, randomVector(), 2, {_baseloc})
+		spawnParticle_Vector(flame, randomVector(), 2, {_baseloc})
+	
+	spawnParticle_Block(magma block, particleLocation_Sphere({_baseloc}, 10, 3))
+
+local function kitParticle_ForceRush_Fail(player: player):
+	playSound("entity.blaze.death", 1, 0.75, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 50 times:
+		spawnParticle(dripping_water, moveRandomLocation({_baseloc}, 1))
