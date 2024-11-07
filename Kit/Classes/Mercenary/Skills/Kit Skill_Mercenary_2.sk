@@ -1,40 +1,88 @@
 # Wimp Stymie
 
+options:
+	effect-radius: 5
+
+
+
 function kitSkill_Mercenary_2(player: player):
 	toolCT({_player}, "Mercenary", 2)
-	playSound("entity.wither.spawn", 1, 1, {_player})
+	kitEffect_WimpStymie({_player})
+
+
+
+local function kitEffect_WimpStymie(player: player):
 	kitMsg({_player}, "§5弱った敵を殲滅します...")
-	set {_bl} to location of {_player}
-	loop all entities in radius 5 around {_player}:
+	loop all entities in radius {@effect-radius} around {_player}:
 		kitCheckTeam({_player}, loop-entity, false) is true
 		set {_true} to false
 		if loop-entity's health <= 3:  # 体力が3以下の敵に対する効果
 			if {Class::%loop-entity%} is "Ghost":
 				message formatted "§4...?" to loop-entity
-			else:
-				loop 10 times:
-					set {_el} to aroundEffect(loop-entity)
-					spawnParticle(smoke, {_el})
-				if getShield(loop-entity) > 0:
-					deleteShield(loop-entity)
-				kitDamage({_player}, loop-entity, 10000, true)
-				message formatted "§0強制的に殺されてしまった..." to loop-entity
+				continue
+			if getShield(loop-entity) > 0:
+				deleteShield(loop-entity)
+			kitDamage({_player}, loop-entity, 10000, true)
+			message formatted "§0強制的に殺されてしまった..." to loop-entity
+			kitParticle_WimpStymie_Hit(loop-entity)
 		else if getDebuffs(loop-entity, "Blood") is true:
-			loop 10 times:
-				set {_el} to aroundEffect(loop-entity)
-				spawnParticle(smoke, {_el})
 			kitDamage({_player}, loop-entity, 3, true)
 			message formatted "§4体力を削られた..." to loop-entity
-			kitEffectDescription(loop-entity, "§4❤3")		
+			kitEffectDescription(loop-entity, "§4❤3")
+			kitParticle_WimpStymie_Hit(loop-entity)
+	kitParticle_WimpStymie_Aura({_player})
+
+
+
+local function kitParticle_WimpStymie_Aura(player: player):
+	playSound("entity.wither.spawn", 1, 1, {_player})
+
+	add rgb(100, 0, 50) to {_colors::*}
+	add rgb(75, 15, 15) to {_colors::*}
+	add rgb(48, 15, 63) to {_colors::*}
+
+	set {_bl} to location of {_player}
 	set {_y} to 0
+	set {_loopnum} to 90
+	set {_addrad} to 360 / {_loopnum}
+
+	loop 100 times:
+		set {_el} to {_bl}
+		set pitch of {_el} to 0
+		set {_m} to a random number between 0 and {@effect-radius}
+		set {_el} to location {_m} meters in front of setDirToVec({_el}, randomVector())
+		spawnParticle_BlockData(dust_pillar, redstone block, {_el})
+
+
 	loop 5 times:
 		set {_rad} to 0
-		loop 36 times:
+		loop {_loopnum} times:
 			set {_effectloc} to {_bl}
-			add 10 to {_rad}
-			add 10 * sin({_rad}) to x-coordinate of {_effectloc}
-			add 10 * cos({_rad}) to z-coordinate of {_effectloc}
+			add {_addrad} to {_rad}
+			add {@effect-radius} * sin({_rad}) to x-coordinate of {_effectloc}
+			add {@effect-radius} * cos({_rad}) to z-coordinate of {_effectloc}
 			add {_y} to y-coordinate of {_effectloc}
-			spawnParticle_Color(entity_effect, rgb(100, 0, 50), {_effectloc})
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Color(entity_effect, {_color}, {_effectloc})
 		add 0.25 to {_y}
+		wait a tick
+
+local function kitParticle_WimpStymie_Hit(entity: entity):
+	set {_baseloc} to location of {_entity}
+	playSound("entity.wither.hurt", 0.9, 0.7, {_baseloc})
+
+	loop 30 times:
+		set {_el} to location 1 meters above {_baseloc}
+		spawnParticle_Vector(large_smoke, randomVector(), 1.5, {_el})
+
+	add rgb(124, 23, 23) to {_colors::*}
+	add rgb(53, 10, 70) to {_colors::*}
+	add rgb(85, 26, 3) to {_colors::*}
+
+	set {_y} to 0
+	loop 9 times:
+		add 0.25 to {_y}
+		set {_el} to location {_y} meters above {_baseloc}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_DustTransition({_color}, rgb(0, 0, 0), 2, particleLocation_Circle({_el}, 10, 0.5))
 		wait a tick
