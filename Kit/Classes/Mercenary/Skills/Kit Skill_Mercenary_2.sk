@@ -15,9 +15,8 @@ function kitSkill_Mercenary_2(player: player):
 				loop 10 times:
 					set {_el} to aroundEffect(loop-entity)
 					spawnParticle(smoke, {_el})
-				if {Kit-Shield::%loop-entity%} is set:
-					delete {Kit-Shield::%loop-entity%}
-					delete {Kit-ShieldTime::%loop-entity%}
+				if getShield(loop-entity) > 0:
+					deleteShield(loop-entity)
 				kitDamage({_player}, loop-entity, 10000, true)
 				message formatted "§0強制的に殺されてしまった..." to loop-entity
 		else if getDebuffs(loop-entity, "Blood") is true:
