@@ -4,16 +4,15 @@ function kitSkill_Knocker_6(player: player):
 	subtract 1 from item amount of tool of {_player}
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
 	shoot a snowball from {_player} at speed 0.9
-	set metadata value "shockgrenade" of shot projectile to "true"
+	set metadata value "shockgrenade" of shot projectile to true
 	set item of shot projectile to beacon
 	set {_shotproj} to shot projectile
-	loop 20 times:
-		spawnParticle(end_rod, {_shotproj})
-		wait a tick
+	kitParticle_ShockGrenade_Projectile({_shotproj})
 
 on projectile hit:
 	projectile is a snowball
-	metadata value "shockgrenade" of projectile is "true"
+	metadata value "shockgrenade" of projectile is true
+	set metadata value "shockgrenade" of projectile to false
 	set {_now} to now
 	set {_from} to location of projectile 
 	playSound("entity.breeze.jump", 1, 0.75, {_from})
@@ -36,3 +35,14 @@ on projectile hit:
 	loop all players:
 		{Stats.%loop-player%::FallRemove} is {_now}
 		delete {Stats.%loop-player%::FallRemove}
+
+
+
+local function kitParticle_ShockGrenade_Projectile(proj: projectile):
+	loop 200 times:
+		if metadata value "shockgrenade" of {_proj} is false:
+			stop
+		
+		set {_loc} to location of {_proj}
+		spawnParticle(end_rod, {_loc})
+		wait a tick
