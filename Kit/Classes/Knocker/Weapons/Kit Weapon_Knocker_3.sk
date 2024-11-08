@@ -19,15 +19,15 @@ on projectile hit:
 on damage with priority LOW:
 	damage was caused by projectile
 	metadata value "cyclone-bow-blast" of projectile is set
-	setDamageModification_SET(victim, 4)
+	setDamageModification_SET(victim, 3)
 	kitParticle_CycloneBow_BlastHit(victim)
 
 function kitEffect_CycloneBow_Blast(player: player, proj: projectile):
 	# 矢の数確認
 	set {_arrow} to amount of arrow in {_player}'s inventory
-	if {_arrow} < 3:
+	if {_arrow} < 2:
 		stop
-	loop 2 times:
+	loop 1 times:
 		remove an arrow from {_player}
 	set metadata value "cyclone-bow-blast" of {_proj} to true
 	kitParticle_CycloneBow_Blast({_player}, {_proj})
@@ -44,11 +44,11 @@ function kitEffect_CycloneBow_Cyclone(player: player, proj: projectile):
 		stop
 	# 矢の数確認
 	set {_arrow} to amount of arrow in {_player}'s inventory
-	if {_arrow} < 2:
+	if {_arrow} < 3:
 		stop
-	loop 1 times:
+	loop 2 times:
 		remove an arrow from {_player}
-	set {_dmg} to 2
+	set {_dmg} to 1
 	set metadata value "cyclone-bow" of {_proj} to true
 	kitParticle_CycloneBow_Cyclone({_player}, {_proj})
 	loop 100 times:
