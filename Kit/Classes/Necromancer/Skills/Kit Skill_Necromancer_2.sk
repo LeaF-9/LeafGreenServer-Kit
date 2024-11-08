@@ -2,11 +2,26 @@
 
 function kitSkill_Necromancer_2(player: player):
 	toolCT({_player}, "Necromancer", 2)
+	kitEffect_DumpSoul({_player})
+
+
+
+local function kitEffect_DumpSoul(player: player):
 	kitMsg({_player}, "§8自分の魂を§5§lゴースト§8に変換しました...")
 	set {Stats.%{_player}%::DumpSoul} to true
 	set {Stats.%{_player}%::NoCorpse} to true
 	set {_loc} to location of {_player}
 	set health of {_player} to 0
-	playSound("entity.zombie.death", 1, 1, {_player})
+	kitParticle_DumpSoul({_player})
 	loop 5 times:
 		kitSpawn_Necromancer_Ghost({_player}, {_loc}, false)
+
+
+
+local function kitParticle_DumpSoul(player: player):
+	playSound("entity.zombie.death", 1, 0.8, {_player})
+	set {_baseloc} to location 1 meters above {_player}
+
+	loop 30 times:
+		spawnParticle_Vector(soul, randomVector(), 1, {_baseloc})
+		spawnParticle_Vector(sculk_soul, randomVector(), 1, {_baseloc})
