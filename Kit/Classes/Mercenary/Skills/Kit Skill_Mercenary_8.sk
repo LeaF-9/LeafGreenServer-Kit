@@ -2,20 +2,26 @@
 
 function kitSkill_Mercenary_8(player: player):
 	toolCT({_player}, "Mercenary", 8)
+	kitEffect_HemogenicWave({_player})
+
+local function kitEffect_HemogenicWave(player: player):
 	kitMsg({_player}, "§4§l血の刃§5を展開します...")
 	set {_baseloc} to location of {_player}
 	add 1 to y-coordinate of {_baseloc}
 	set pitch of {_baseloc} to 0
+	kitParticle_HemogenicWave_Edge({_baseloc})
+
 	set {_rad} to 0
 	loop 60 times:
 		set {_loc} to location loop-number / 2 meters in front of {_baseloc}
-		playSound("entity.guardian.attack", 0.75, 2, {_loc})
 		loop all players in radius 5 around {_loc}:
 			kitCheckTeam({_player}, loop-player, false) is true
+			kitParticle_HemogenicWave_Hit(loop-player)
 			if getDebuffs(loop-player, "Blood") is true:
 				kitDamage({_player}, loop-player, 3)
 				apply wither 1 to loop-player for 3 seconds replacing existing effect
 				kitEffectDescription(loop-player, "§4❤3")
+
 			else:
 				kitDamage({_player}, loop-player, 1)
 				kitEffectDescription(loop-player, "§4❤1")
@@ -25,13 +31,25 @@ function kitSkill_Mercenary_8(player: player):
 				chance of {_c}%:
 					kitBlood(loop-player)
 					kitEffectDescription(loop-player, "§4出血")
-			loop 3 times:
-				set {_ae} to aroundEffect(loop-player)
-				spawnParticle_Dust(rgb(255, 0, 120), 1, {_ae})
+
 		loop {_ct::*}:
 			subtract 1 from {_ct::%loop-index%}
 			if {_ct::%loop-index%} <= 0:
 				delete {_ct::%loop-index%}
+		wait a tick
+
+
+
+local function kitParticle_HemogenicWave_Edge(baseloc: location):
+	add rgb(150, 0, 0) to {_colors::*}
+	add rgb(177, 43, 43) to {_colors::*}
+	add rgb(122, 44, 30) to {_colors::*}
+
+	set {_rad} to 0
+	loop 60 times:
+		set {_loc} to location loop-number / 2 meters in front of {_baseloc}
+		playSound("entity.guardian.attack", 0.75, 2, {_loc})
+
 		add 6 to {_rad}
 		set {_bl} to {_loc}
 		loop 4 times:
@@ -42,7 +60,16 @@ function kitSkill_Mercenary_8(player: player):
 				add 0.1 to {_mt}
 				add {_mt} * sin({_tmprad}) to x-coordinate of {_el}
 				add {_mt} * cos({_tmprad}) to z-coordinate of {_el}
-				spawnParticle_Dust(rgb(150, 0, 0), 1, {_el})
+
+				set {_color} to a random element out of {_colors::*}
+				spawnParticle_DustTransition({_color}, rgb(50, 0, 0), 1, {_el})
 				set {_sub} to loop-number-3 * loop-number-3 / 5
 				subtract {_sub} from {_tmprad}
 		wait a tick
+
+local function kitParticle_HemogenicWave_Hit(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+
+	spawnParticle_BlockData(falling_dust, redstone block, moveRandomLocation({_baseloc}, 0.5))
+	spawnParticle_BlockData(falling_dust, red wool, moveRandomLocation({_baseloc}, 0.5))
+	spawnParticle_BlockData(falling_dust, black wool, moveRandomLocation({_baseloc}, 0.5))
