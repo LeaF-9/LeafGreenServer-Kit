@@ -1,12 +1,62 @@
 # Ischemia Curse
 
+on damage of player with priority LOW:
+	metadata value "gametype" of victim is "Kit"
+	{Stats.%victim%::IschemiaCurse} is true
+	setDamageModification_MUL(victim, 2)
+	send action bar "§5§l血痕魔法陣が傷を増幅する..." to victim
+	kitEffectDescription(victim, "§4x2")
+	playSound("item.axe.strip", 1, 0.9, victim)
+	set {_el} to location of victim
+	add 1 to y-coordinate of {_el}
+	loop 10 times:
+		spawnParticle_Vector(end_rod, randomVector(), 1, {_el})
+
+
+
 function kitSkill_Mercenary_6(player: player):
 	toolCT({_player}, "Mercenary", 6)
+	kitEffect_IschemiaCurse({_player})
+
+
+
+local function kitEffect_IschemiaCurse(player: player):
 	kitMsg({_player}, "§4§l血痕魔法陣§cを展開します...")
 	sendTimeBossbar_GREEN({_player}, "Ischemia Curse", 200)
-	playSound("entity.phantom.ambient", 1, 0.8, {_player})
 	set {_point} to location of {_player}
-# 弧を描く
+	kitParticle_IschemiaCurse_Square({_point})
+
+	loop 200 times:
+		delete {_eg::*}
+		loop all players in radius 6 around {_point}:
+			kitCheckTeam({_player}, loop-player, false) is true
+			getDebuffs(loop-player, "Blood") is true
+			kitParticle_IschemiaCurse_Apply(loop-player)
+			set {_eg::%loop-player%} to true
+			if {_jb::%loop-player%} is not set:
+				set {_jb::%loop-player%} to true
+				set {Stats.%loop-player%::IschemiaCurse} to true
+				kitParticle_IschemiaCurse_Start(loop-player)
+
+		loop all players:
+			metadata value "gametype" of loop-entity is "Kit"
+			{_eg::%loop-player%} is not set
+			{_jb::%loop-player%} is true
+			delete {_jb::%loop-player%}
+			delete {Stats.%loop-player%::IschemiaCurse}
+
+		wait a tick
+	kitMsg({_player}, "§5血痕魔法陣は消滅しました...")
+	loop all players:
+		{_eg::%loop-player%} is true
+		{_jb::%loop-player%} is true
+		delete {Stats.%loop-player%::IschemiaCurse}
+
+
+
+local function kitParticle_IschemiaCurse_Square(point: location):
+	playSound("entity.phantom.ambient", 1, 0.8, {_point})
+	# 弧を描く
 	set {_n.k} to 0
 	loop 30 times:
 		set {_effbaseloc} to {_point}
@@ -14,7 +64,7 @@ function kitSkill_Mercenary_6(player: player):
 		add 6 * cos({_n.k}) to z-coordinate of {_effbaseloc}
 		kitParticle_IschemiaCurse_Magic({_effbaseloc})
 		add 12 to {_n.k}
-# 弦を描く
+	# 弦を描く
 		if {_l.A} is not set:
 			set {_l.A} to {_point}
 			set yaw of {_l.A} to 120
@@ -44,43 +94,38 @@ function kitSkill_Mercenary_6(player: player):
 #	C-A
 		set {_loc.g} to location {_n.g} meters in front of {_l.C}
 		kitParticle_IschemiaCurse_Magic({_loc.g})
-	loop 200 times:
-		delete {_eg::*}
-		loop all players in radius 6 around {_point}:
-			kitCheckTeam({_player}, loop-player, false) is true
-			getDebuffs(loop-player, "Blood") is true
-			spawnParticle_Color(entity_effect, rgb(100, 1, 37), location of loop-player)
-			set {_eg::%loop-player%} to true
-			if {_jb::%loop-player%} is not set:
-				set {_jb::%loop-player%} to true
-				set {Stats.%loop-player%::IschemiaCurse} to true
-				playSound("entity.zombie.infect", 1, 0.5, {_player})
-		loop all players:
-			metadata value "gametype" of loop-entity is "Kit"
-			{_eg::%loop-player%} is not set
-			{_jb::%loop-player%} is true
-			delete {_jb::%loop-player%}
-			delete {Stats.%loop-player%::IschemiaCurse}
-		wait a tick
-	kitMsg({_player}, "§5血痕魔法陣は消滅しました...")
-	loop all players:
-		{_eg::%loop-player%} is true
-		{_jb::%loop-player%} is true
-		delete {Stats.%loop-player%::IschemiaCurse}
 
-function kitParticle_IschemiaCurse_Magic(loc: location):
+local function kitParticle_IschemiaCurse_Magic(loc: location):
 	loop 200 times:
 		spawnParticle_Dust(rgb(100, 1, 37), 1, {_loc})
 		wait a tick
 
-on damage of player with priority LOW:
-	metadata value "gametype" of victim is "Kit"
-	{Stats.%victim%::IschemiaCurse} is true
-	setDamageModification_MUL(victim, 2)
-	send action bar "§5§l血痕魔法陣が傷を増幅する..." to victim
-	kitEffectDescription(victim, "§4x2")
-	playSound("item.axe.strip", 1, 0.9, victim)
-	set {_el} to location of victim
-	add 1 to y-coordinate of {_el}
-	loop 10 times:
-		spawnParticle_Vector(end_rod, randomVector(), 1, {_el})
+local function kitParticle_IschemiaCurse_Apply(player: player):
+	set {_baseloc} to location 1 meters above {_player}
+	set pitch of {_baseloc} to 0
+
+	add rgb(100, 1, 37) to {_colors::*}
+	add rgb(88, 29, 29) to {_colors::*}
+	add rgb(152, 13, 13) to {_colors::*}
+
+	set {_radius} to 0.5
+	set {_loopnum} to 10
+	set {_addrad} to 360 / {_loopnum}
+	set {_rad} to 0
+
+	loop {_loopnum} times:
+		set {_el} to {_baseloc}
+		set yaw of {_el} to {_rad}
+		set {_el} to location {_radius} meters in front of {_el}
+
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(entity_effect, {_color}, {_el})
+		add {_addrad} to {_rad}
+
+local function kitParticle_IschemiaCurse_Start(player: player):
+	playSound("entity.zombie.infect", 1, 0.5, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+
+	loop 50 times:
+		spawnParticle_Vector(smoke, randomVector(), 1, {_baseloc})
