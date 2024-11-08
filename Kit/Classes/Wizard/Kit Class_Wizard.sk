@@ -80,13 +80,60 @@ function kitParticle_Wizard_Magic(proj: projectile, R: number, G: number, B: num
 		wait a tick
 
 function kitParticle_Wizard_Circle(baseloc: location, color: color):
-	loop 20 times:
-		loop 72 times:
-			add 5 to {_rad}
+	set pitch of {_baseloc} to 0
+
+	set {_loopnum} to 20
+	set {_radius} to 5
+	set {_circle} to 90
+	set {_addrad} to 360 / {_circle}
+
+	set {_rad} to 0
+	loop 8 times:
+		add 45 to {_rad}
+		set {_el} to {_baseloc}
+		set yaw of {_el} to {_rad}
+		set {_el} to location {_radius} meters in front of {_el}
+		if mod({_rad}, 90) = 0:
+			add {_el} to {_square.1::*}
+		if mod(({_rad} + 45), 90) = 0:
+			add {_el} to {_square.2::*}
+
+	loop {_loopnum} times:
+		# circles
+		set {_rad} to 0
+
+		loop {_circle} times:
+			add {_addrad} to {_rad}
 			set {_el} to {_baseloc}
-			add 5 * sin({_rad}) to x-pos of {_el}
-			add 5 * cos({_rad}) to z-pos of {_el}
+			set yaw of {_el} to {_rad}
+			set {_el} to location {_radius} meters in front of {_el}
 			spawnParticle_Dust({_color}, 1.5, {_el})
+
+		set {_ln.2} to 0
+		loop 2 times:
+			add 1 to {_ln.2}
+
+			set {_ln.3} to 0
+			loop {_square.%{_ln.2}%::*}:
+				add 1 to {_ln.3}
+				set {_ln.next} to {_ln.3} + 1
+				if {_ln.next} is 5:
+					set {_ln.next} to 1
+				
+				set {_loc.pres} to {_square.%{_ln.2}%::%{_ln.3}%}
+				set {_loc.next} to {_square.%{_ln.2}%::%{_ln.next}%}
+				set {_loc.direct} to setDirToVec({_loc.pres}, setVector({_loc.pres}, {_loc.next}))
+
+				set {_distance} to distance between {_loc.pres} and {_loc.next}
+				set {_amount} to 10
+				set {_addm} to {_distance} / {_amount}
+
+				set {_m} to 0
+				loop {_amount} times:
+					set {_el} to location {_m} meters in front of {_loc.direct}
+					spawnParticle_Dust({_color}, 1.5, {_el})
+					add {_addm} to {_m}
+
 		wait a tick
 
 on projectile hit:
