@@ -129,6 +129,10 @@ local function kitParticle_SanguineBog_Bleed(player: player):
 			spawnParticle_Color(entity_effect, rgb(200, 1, 37), {_plel})
 
 local function kitParticle_SanguineBog_Red(loc: location):
+	add rgb(200, 1, 37) to {_colors::*}
+	add rgb(231, 46, 80) to {_colors::*}
+	add rgb(212, 33, 33) to {_colors::*}
+
 	loop 60 times:
 		if mod(61 - loop-number, 20) = 0:
 			playSound("block.lava.ambient", 1, 2, {_loc})
@@ -140,7 +144,9 @@ local function kitParticle_SanguineBog_Red(loc: location):
 				set {_el} to {_loc}
 				add {_m} * sin({_rad}) to x-coordinate of {_el}
 				add {_m} * cos({_rad}) to z-coordinate of {_el}
-				spawnParticle_Dust(rgb(200, 1, 37), 1, {_el})
+
+				set {_color} to a random element out of {_colors::*}
+				spawnParticle_Dust({_color}, 2, {_el})
 				add {_drad} to {_rad}
 		wait a tick
 
