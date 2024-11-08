@@ -1,5 +1,10 @@
 # Sprite Talisman
 
+options:
+	effect-tick: 200
+
+
+
 on damage of player with priority NORMAL:
 	if {Stats.%victim%::SpriteTalisman} is set:
 		set {_dmg} to damage - {Stats.%victim%::SpriteTalisman}
@@ -14,6 +19,12 @@ on damage of player with priority NORMAL:
 
 function kitSkill_Paladin_4(player: player):
 	toolCT({_player}, "Paladin", 4)
+	kitEffect_SpriteTalisman({_player})
+
+
+
+local function kitEffect_SpriteTalisman(player: player):
+	set {_now} to now
 	kitMsg({_player}, "<##65ab31>守護の力を分け与えます...")
 	kitParticle_SpriteTalisman_Launch({_player})
 	loop all players in radius 10 around {_player}:
@@ -21,13 +32,24 @@ function kitSkill_Paladin_4(player: player):
 		setSupporter(loop-player, {_player})
 		message formatted "<##c6ff4a>ダメージを受け持つ<##98ff4a>守護の妖精<##c6ff4a>が付与された!" to loop-player
 		set {Stats.%loop-player%::SpriteTalisman} to 2.5
+		set {Stats.%loop-player%::SpriteTalisman-Time} to {_now}
 		kitParticle_SpriteTalisman_Apply(loop-player)
 		kitParticle_SpriteTalisman_Aura(loop-player)
+
+	loop {@effect-tick} times:
+		wait a tick
+	
+	loop all players:
+		{Stats.%loop-player%::SpriteTalisman-Time} is {_now}
+		delete {Stats.%loop-player%::SpriteTalisman}
+		delete {Stats.%loop-player%::SpriteTalisman-Time}
+		message formatted "<##98ff4a>守護の妖精<##1d6e1b>は去っていきました..." to loop-player
 
 # 効果終了時
 local function kitEffect_SpriteTalisman_Explode(player: player):
 	kitParticle_SpriteTalisman_Explode({_player})
 	delete {Stats.%{_player}%::SpriteTalisman}
+	delete {Stats.%{_player}%::SpriteTalisman-Time}
 	message formatted "<##005243>守護の妖精は役割を終えました..." to {_player}
 
 local function kitParticle_SpriteTalisman_Explode(player: player):
@@ -94,7 +116,11 @@ local function kitParticle_SpriteTalisman_Apply(player: player):
 			wait a tick
 
 local function kitParticle_SpriteTalisman_Aura(player: player):
-	while {Stats.%{_player}%::SpriteTalisman} is set:
+	set {_now} to {Stats.%{_player}%::SpriteTalisman-Time}
+	loop {@effect-tick} times:
+		if {Stats.%{_player}%::SpriteTalisman-TIme} is not {_now}:
+			stop
+
 		set {_loc} to location of {_player}
 		set {_vector} to {_loc}
 #		座標の設定　主軸{_loc}{_w}{_vw}
@@ -119,7 +145,7 @@ local function kitParticle_SpriteTalisman_Aura(player: player):
 		set x-coordinate of {_vector} to {_x} + {_ax}
 		set y-coordinate of {_vector} to {_y} + {_t}
 		set z-coordinate of {_vector} to {_z} + {_az}
-		spawnParticle_Dust(rgb(160, 255, 160), 0.85, {_vector})
+		spawnParticle_Dust(rgb(160, 255, 160), 2, {_vector})
 		wait a tick
 
 local function kitParticle_SpriteTalisman_Damage(player: player):
