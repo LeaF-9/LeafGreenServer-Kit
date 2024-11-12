@@ -1,9 +1,34 @@
 # King Shield
 
 options:
-	distance: 0.6
+	width: 7
+	height: 3
+
+
+
+on damage of slime:
+	metadata value "King Shield" of victim is set
+	set {_name} to metadata value "King Shield" of victim parsed as player
+	set {_attacker} to getAttacker(victim)
+	if kitCheckTeam({_name}, {_attacker}, false) is true:
+		if checkDamagable(victim) is true:
+			playSound("entity.armor_stand.hit", 1, 1, victim)
+			set {_dmg} to damage
+			setDamageModification_SET(victim, 0)
+			subtract {_dmg} from {Stats.%{_name}%::King Shield}
+		else:
+			cancel event
+	else:
+		cancel event
+
+
 
 function kitSkill_Defender_5(player: player):
+	kitEffect_KingShield({_player})
+
+
+
+local function kitEffect_KingShield(player: player):
 	wait 6 ticks
 	if {Stats.%{_player}%::King Shield} is not set:
 		set {Stats.%{_player}%::King Shield} to 200
@@ -12,157 +37,154 @@ function kitSkill_Defender_5(player: player):
 			name of loop-item is "§1King Shield"
 			delete loop-item
 		stop
+
 	playSound("item.armor.equip_netherite", 1, 1, {_player})
-	set {_l} to location of {_player}
-	set {_pitch} to pitch of {_l}
-	set {_height} to {@distance} * cos({_pitch})
-	set {_width} to {@distance} * sin({_pitch})
-	set {_l1} to location 2 meters in front of {_l}
-	set pitch of {_l1} to 0
-	set {_l2} to location {_height} meters below {_l1}
-	set {_l3} to location {_height} * 2 meters below {_l1}
-	set {_l4} to location {@distance} meters to the left of {_l1}
-	set {_l5} to location {_height} meters below {_l4}
-	set {_l6} to location {_height} * 2 meters below {_l4}
-	set {_l7} to location {@distance} meters to the right of {_l1}
-	set {_l8} to location {_height} meters below {_l7}
-	set {_l9} to location {_height} * 2 meters below {_l7}
-	set {_l10} to location {@distance} * 2 meters to the left of {_l1}
-	set {_l11} to location {_height} meters below {_l10}
-	set {_l12} to location {_height} * 2 meters below {_l10}
-	set {_l13} to location {@distance} * 2 meters to the right of {_l1}
-	set {_l14} to location {_height} meters below {_l13}
-	set {_l15} to location {_height} * 2 meters below {_l13}
-	set {_l16} to location {@distance} * 3 meters to the left of {_l1}
-	set {_l17} to location {_height} meters below {_l16}
-	set {_l18} to location {_height} * 2 meters below {_l16}
-	set {_l19} to location {@distance} * 3 meters to the right of {_l1}
-	set {_l20} to location {_height} meters below {_l19}
-	set {_l21} to location {_height} * 2 meters below {_l19}
-	loop 21 times:
-		if loop-number is 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 20 or 21:
-			set pitch of {_l%loop-number%} to 0
-			if loop-number is 2, 5, 8, 11, 14, 17 or 20:
-				set {_x} to -1
-			else:
-				set {_x} to -2
-			set {_l%loop-number%} to location {_width} * {_x} meters in front of {_l%loop-number%}
-		set pitch of {_l%loop-number%} to {_pitch}
-	loop 21 times:
-		spawn an armor stand at {_l%loop-number%} with nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Pose:{Head:[%{_pitch}%f,0f,0f]},ArmorItems:[{},{},{},{id:""minecraft:blue_stained_glass_pane"",Count:1b}],HandItems:[{},{}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}"
-		set metadata value "%{_player}%-shield" of spawned armor stand to "%loop-number%"
-		set metadata value "gametype" of spawned armor stand to "Kit"
-		if {Stats.%{_player}%::King Shield} < 50:
-			set helmet of spawned armor stand to white glass pane
-		else if {Stats.%{_player}%::King Shield} < 100:
-			set helmet of spawned armor stand to light blue glass pane
-		else if {Stats.%{_player}%::King Shield} < 150:
-			set helmet of spawned armor stand to cyan glass pane
-		set {_sl} to {_l%loop-number%}
-		add 1.2 + 0.8 * cos({_pitch}) to y-coordinate of {_sl}
-		set pitch of {_sl} to 0
-		set {_fm} to 0.8 * sin({_pitch})
-		set {_sl} to location {_fm} meters in front of {_sl}
-		spawn a slime at {_sl} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-		set metadata value "%{_player}%-shield" of spawned slime to "%loop-number%"
-		set metadata value "gametype" of spawned slime to "Kit"
-		set spawned slime's display name to "%{_player}%"
+	set {_now} to now
+	set {_baseloc} to location of head of {_player}
+	set {_pitch} to pitch of {_baseloc}
+	set {_loc.shield} to location 1.5 meters in front of {_baseloc}
+	set {_groundloc} to location 1.5 meters above {_player}
+	set {_groundloc} to location 1.5 meters in front of {_groundloc}
+
+	# 見た目
+	set {_item} to "minecraft:blue_stained_glass_pane"
+	if {Stats.%{_player}%::King Shield} < 50:
+		set {_item} to "minecraft:white_stained_glass_pane"
+	else if {Stats.%{_player}%::King Shield} < 100:
+		set {_item} to "minecraft:light_blue_stained_glass_pane"
+		set helmet of spawned armor stand to light blue glass pane
+	else if {Stats.%{_player}%::King Shield} < 150:
+		set {_item} to "minecraft:cyan_stained_glass_pane"
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[{@width}f,{@height}f,1f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},brightness:{block:15,sky:15},teleport_duration:1}"
+	spawn an item display at {_loc.shield} with nbt {_nbt}
+	set {_itemdisplay} to spawned item display
+	set metadata value "gametype" of {_itemdisplay} to "Kit"
+	set metadata value "King Shield" of {_itemdisplay} to "%{_player}%"
+
+	# 当たり判定 (左上ベース)
+	set {_height.mul} to cos({_pitch})
+	set {_width.mul} to sin({_pitch})
+
+	set {_height} to {@height} * {_height.mul}
+	set {_width} to {@width} * {_width.mul}
+
+	set {_loc.hit} to {_groundloc}
+	add {_height.mul} * 1 to y-pos of {_loc.hit}
+	set pitch of {_loc.hit} to 0
+	set {_loc.hit} to location {@width} / 2 - 0.25 meters to the left of {_loc.hit}
+	set {_front} to 0.6 * {_width.mul}
+	set {_loc.hit} to location {_front} meters in front of {_loc.hit}
+
+
+	# 高さ分ループ (大きさ0.5のため2倍)
+	set {_subfront} to 0.5 * {_width.mul}
+	set {_h} to 0
+	set {_h.count} to 0
+	loop {@height} * 2 times:
+		set {_loc.hit.height} to location {_h} meters below {_loc.hit}
+		set {_loc.hit.height} to location {_front} meters in front of {_loc.hit.height}
+
+		# 幅分ループ (大きさ0.5のため2倍)
+		set {_w} to 0
+		set {_w.count} to 0
+		loop {@width} * 2 times:
+			set {_loc.slime} to location {_w} meters to the right of {_loc.hit.height}
+			spawn a slime at {_loc.slime} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
+			set {_slime} to spawned slime
+			set {_slime::%{_h.count}%::%{_w.count}%} to {_slime}
+			set metadata value "gametype" of {_slime} to "Kit"
+			set metadata value "King Shield" of {_slime} to "%{_player}%"
+			set display name of {_slime} to "%{_player}%"
+			add 0.5 to {_w}
+			add 1 to {_w.count}
+		subtract {_subfront} from {_front}
+		add 0.5 * {_height.mul} to {_h}
+		add 1 to {_h.count}
+	
 	while {_player} is blocking with shield:
-		set {_l} to location of {_player}
-		set {_pitch} to pitch of {_l}
-		set {_height} to {@distance} * cos({_pitch})
-		set {_width} to {@distance} * sin({_pitch})
-		set {_l1} to location 2 meters in front of {_l}
-		set pitch of {_l1} to 0
-		set {_l2} to location {_height} meters below {_l1}
-		set {_l3} to location {_height} * 2 meters below {_l1}
-		set {_l4} to location {@distance} meters to the left of {_l1}
-		set {_l5} to location {_height} meters below {_l4}
-		set {_l6} to location {_height} * 2 meters below {_l4}
-		set {_l7} to location {@distance} meters to the right of {_l1}
-		set {_l8} to location {_height} meters below {_l7}
-		set {_l9} to location {_height} * 2 meters below {_l7}
-		set {_l10} to location {@distance} * 2 meters to the left of {_l1}
-		set {_l11} to location {_height} meters below {_l10}
-		set {_l12} to location {_height} * 2 meters below {_l10}
-		set {_l13} to location {@distance} * 2 meters to the right of {_l1}
-		set {_l14} to location {_height} meters below {_l13}
-		set {_l15} to location {_height} * 2 meters below {_l13}
-		set {_l16} to location {@distance} * 3 meters to the left of {_l1}
-		set {_l17} to location {_height} meters below {_l16}
-		set {_l18} to location {_height} * 2 meters below {_l16}
-		set {_l19} to location {@distance} * 3 meters to the right of {_l1}
-		set {_l20} to location {_height} meters below {_l19}
-		set {_l21} to location {_height} * 2 meters below {_l19}
-		loop 21 times:
-			if loop-number is 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 20 or 21:
-				set pitch of {_l%loop-number%} to 0
-				if loop-number is 2, 5, 8, 11, 14, 17 or 20:
-					set {_x} to -1
-				else:
-					set {_x} to -2
-				set {_l%loop-number%} to location {_width} * {_x} meters in front of {_l%loop-number%}
-			set pitch of {_l%loop-number%} to {_pitch}
-		loop all entities:
-			if type of loop-entity is an armor stand:
-				metadata value "%{_player}%-shield" of loop-entity is set
-				set {_num} to metadata value "%{_player}%-shield" of loop-entity parsed as number
-				if {Stats.%{_player}%::King Shield} > 0:
-					teleport loop-entity to {_l%{_num}%}
-					add nbt compound of "{Pose:{Head:[%{_pitch}%f,0f,0f]}}" to nbt compound of loop-entity
-				else:
-					delete loop-entity
-			else if type of loop-entity is a slime:
-				metadata value "%{_player}%-shield" of loop-entity is set
-				set {_num} to metadata value "%{_player}%-shield" of loop-entity parsed as number
-				if {Stats.%{_player}%::King Shield} > 0:
-					set {_sl} to {_l%{_num}%}
-					add 1.2 + 0.8 * cos({_pitch}) to y-coordinate of {_sl}
-					set pitch of {_sl} to 0
-					set {_fm} to 0.8 * sin({_pitch})
-					set {_sl} to location {_fm} meters in front of {_sl}
-					teleport loop-entity to {_sl}
-				else:
-					delete loop-entity
+		set {_baseloc} to location of head of {_player}
+		set {_pitch} to pitch of {_baseloc}
+		set {_loc.shield} to location 1.5 meter in front of {_baseloc}
+		set {_groundloc} to location 1.5 meters above {_player}
+		set {_groundloc} to location 1.5 meters in front of {_groundloc}
+
+		# 見た目
+		set {_item.check} to "minecraft:blue_stained_glass_pane"
+
 		if {Stats.%{_player}%::King Shield} <= 0:
+			#壊れる処理
+			loop all entities:
+				metadata value "King Shield" of loop-entity is "%{_player}%"
+				delete loop-entity
 			loop all items in {_player}'s inventory:
 				name of loop-item is "§1King Shield"
 				delete loop-item
-#			loop {Stats.%player%::*}:
-#				loop-index contains "KingShield"
-#				delete {Stats.%player%::%loop-index%}
+			playSound("entity.item.break", 1, 0.7, {_player})
+			stop	
+
+		else if {Stats.%{_player}%::King Shield} < 50:
+			set {_item.check} to "minecraft:white_stained_glass_pane"
+		else if {Stats.%{_player}%::King Shield} < 100:
+			set {_item.check} to "minecraft:light_blue_stained_glass_pane"
+			set helmet of spawned armor stand to light blue glass pane
+		else if {Stats.%{_player}%::King Shield} < 150:
+			set {_item.check} to "minecraft:cyan_stained_glass_pane"
+		
+		if {_item.check} is not {_item}:
+			set {_item} to {_item.check}
+			loop all entities:
+				loop-entity is {_itemdisplay}
+				delete loop-entity
+			
+			set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[{@width}f,{@height}f,1f]")
+			set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},brightness:{block:15,sky:15},teleport_duration:1}"
+			spawn an item display at {_loc.shield} with nbt {_nbt}
+			set {_itemdisplay} to spawned item display
+			set metadata value "gametype" of {_itemdisplay} to "Kit"
+			set metadata value "King Shield" of {_itemdisplay} to "%{_player}%"
+		
 		else:
-			chargeActionBar({_player}, {Stats.%{_player}%::King Shield} * 0.25, 50)
+			teleport {_itemdisplay} to {_loc.shield}
+
+		# 当たり判定 (左上ベース)
+		set {_height.mul} to cos({_pitch})
+		set {_width.mul} to sin({_pitch})
+
+		set {_height} to {@height} * {_height.mul}
+		set {_width} to {@width} * {_width.mul}
+
+		set {_loc.hit} to {_groundloc}
+		set pitch of {_loc.hit} to 0
+		add {_height.mul} * 1 to y-pos of {_loc.hit}
+		set {_loc.hit} to location {@width} / 2 - 0.25 meters to the left of {_loc.hit}
+		set {_front} to 0.6 * {_width.mul}
+		set {_loc.hit} to location {_front} meters in front of {_loc.hit}
+
+		# 高さ分ループ (大きさ0.5のため2倍)
+		set {_subfront} to 0.5 * {_width.mul}
+		set {_h} to 0
+		set {_h.count} to 0
+		loop {@height} * 2 times:
+			set {_loc.hit.height} to location {_h} meters below {_loc.hit}
+			set {_loc.hit.height} to location {_front} meters in front of {_loc.hit.height}
+
+			# 幅分ループ (大きさ0.5のため2倍)
+			set {_w} to 0
+			set {_w.count} to 0
+			loop {@width} * 2 times:
+				set {_loc.slime} to location {_w} meters to the right of {_loc.hit.height}
+				teleport {_slime::%{_h.count}%::%{_w.count}%} to {_loc.slime}
+				add 0.5 to {_w}
+				add 1 to {_w.count}
+			subtract {_subfront} from {_front}
+			add 0.5 * {_height.mul} to {_h}
+			add 1 to {_h.count}
+
+		chargeActionBar({_player}, {Stats.%{_player}%::King Shield} * 0.25, 50)
 		wait a tick
 	playSound("item.armor.equip_generic", 1, 1, {_player})
 	loop all entities:
-		if type of loop-entity is an armor stand:
-			metadata value "%{_player}%-shield" of loop-entity is set
-			delete loop-entity
-		else if type of loop-entity is a slime:
-			metadata value "%{_player}%-shield" of loop-entity is set
-			delete loop-entity
-
-on damage of slime:
-	set {_name} to victim's display name parsed as player
-	metadata value "%{_name}%-shield" of victim is set
-	if kitCheckTeam({_name}, attacker, false) is true:
-		if damage was caused by attack, projectile or void:
-			playSound("entity.armor_stand.hit", 1, 1, victim)
-			set {_dmg} to damage
-			set damage to 0
-			set {_num} to metadata value "%{_name}%-shield" of victim parsed as number
-			subtract {_dmg} from {Stats.%{_name}%::King Shield}
-			loop all entities:
-				type of loop-entity is armor stand
-				metadata value "%{_name}%-shield" of loop-entity is set
-				if {Stats.%{_name}%::King Shield} < 50:
-					set helmet of loop-entity to white glass pane
-				else if {Stats.%{_name}%::King Shield} < 100:
-					set helmet of loop-entity to light blue glass pane
-				else if {Stats.%{_name}%::King Shield} < 150:
-					set helmet of loop-entity to cyan glass pane
-		else:
-			cancel event
-	else:
-		cancel event
+		metadata value "King Shield" of loop-entity is "%{_player}%"
+		delete loop-entity
