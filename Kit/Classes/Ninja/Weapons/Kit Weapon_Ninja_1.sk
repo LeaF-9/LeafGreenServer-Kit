@@ -1,24 +1,20 @@
 # Katana
 
-function kitWeapon_Ninja_1(player: player):
-	name of {_player}'s offhand tool contains "Shuriken"
-	subtract 1 from item amount of offhand tool of {_player}
-	shoot a snowball from {_player} at speed 5
-	set metadata value "shuriken" of shot projectile to "true"
-	set item of shot projectile to prismarine crystal
-	kitParticle_Shuriken_Trail(shot projectile)
-	playSound("entity.arrow.shoot", 1, 2, {_player})
+options:
+	give-amount: 3
 
-function kitParticle_Shuriken_Trail(proj: entity):
-	loop 10 times:
-		spawnParticle_Dust(rgb(176, 196, 222), 1, location of {_proj})
-		wait a tick
 
-on damage of player:
-	set {_attacker} to getAttacker(victim)
+
+on death of player:
+	set {_attacker} to {LastKiller::%victim%}
 	{Class::%{_attacker}%} is "Ninja"
-	damage was caused by projectile
-	projectile is a snowball
-	metadata value "shuriken" of projectile is "true"
-	set damage to 0.5
-	apply poison 1 to the victim for 3 second replacing existing effect
+	set {_tool} to tool of {_attacker}
+	kitItemAllChecker({_tool}, "Ninja", "Weapon.main", 1) is true
+
+	load yml "plugins/skript-yaml/Kit Classes/Ninja.yml" as "shuriken.%{_attacker}%"
+	set {_Shuriken} to yml value "kititems.Shuriken" from "shuriken.%{_attacker}%"
+	unload yml "shuriken.%{_attacker}%"
+
+	loop {@give-amount} times:
+		give {_potion} to {_attacker}'s inventory
+	send action bar "§b§lShuriken§9を獲得しました!" to {_attacker}

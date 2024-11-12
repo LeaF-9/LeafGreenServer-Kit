@@ -6,9 +6,7 @@ function kitWeaponNinja(player: player):
 	set {_item.num} to kitItemNumberChecker({_tool})
 	checkCT({_player}, name of {_tool}) is true
 	checkItemCT({_player}, {_tool}) is true
-	if {_item.num} is 1:
-		kitWeapon_Ninja_1({_player})
-	else if {_item.num} is 2:
+	if {_item.num} is 2:
 		kitWeapon_Ninja_2({_player})
 	else if {_item.num} is 3:
 		kitWeapon_Ninja_3({_player})
@@ -33,6 +31,30 @@ function kitSkillNinja(player: player) :: boolean:
 		else if {_item.num} is 8:
 			kitSkill_Ninja_8({_player})
 	return true
+
+# Shuriken
+on rightclick holding prismarine crystal:
+	name of player's tool contains "Shuriken"
+	subtract 1 from item amount of tool of player
+	shoot a snowball from player at speed 5
+	set metadata value "shuriken" of shot projectile to "true"
+	set item of shot projectile to prismarine crystal
+	kitParticle_Shuriken_Trail(shot projectile)
+	playSound("entity.arrow.shoot", 1, 2, player)
+
+on damage:
+	set {_attacker} to getAttacker(victim)
+	{Class::%{_attacker}%} is "Ninja"
+	damage was caused by projectile
+	projectile is a snowball
+	metadata value "shuriken" of projectile is "true"
+	setDamageModification_SET(victim, 0.5)
+	apply poison 1 to the victim for 3 second replacing existing effect
+
+local function kitParticle_Shuriken_Trail(proj: entity):
+	loop 20 times:
+		spawnParticle_Dust(rgb(176, 196, 222), 1, location of {_proj})
+		wait a tick
 
 # Abilities
 on damage of player:
