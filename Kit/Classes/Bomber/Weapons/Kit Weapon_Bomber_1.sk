@@ -6,3 +6,37 @@ on shoot:
 	set {_tool} to shooter's tool
 	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is true
 	set metadata value "firework" of projectile to true
+
+
+
+function kitWeapon_Bomber_1(player: player):
+	if {_player} has arrow:
+		load yml "plugins/skript-yaml/Kit Classes/Bomber.yml" as "firework.%{_player}%"
+		set {_Firework} to yml value "kititems.Firework" from "firework.%{_player}%"
+		unload yml "firework.%{_player}%"
+		set {_amoarrow} to amount of arrow in {_player}'s inventory
+		set {_hasFire} to offhand tool of {_player}
+		if {_hasFire} is not set:
+			set {_amofire} to 0
+		else:
+			set {_amofire} to item amount of {_hasFire}
+		if {_amofire} >= 64:
+			stop
+
+		# 花火充填数
+		# 2倍処理時
+		# set {_loop.firework} to {_amoarrow} * 2 + {_amofire}
+		set {_loop.firework} to {_amoarrow} + {_amofire}
+		if {_loop.firework} >= 64:
+			set {_loop.firework} to 64
+
+		set item amount of {_Firework} to {_loop.firework}
+		set offhand tool of {_player} to {_Firework}
+
+		# arrow消費数
+		# 2倍処理時
+		# set {_loop.subtract} to 64 - ({_amofire} * 0.5)
+		set {_loop.subtract} to 64 - {_amofire}
+
+		loop {_loop.subtract} times:
+			remove an arrow from {_player}'s inventory
