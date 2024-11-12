@@ -51,8 +51,15 @@ on projectile hit:
 			else if loop-entity is shooter:
 				loop-entity does not have glowing
 				set {_jc} to true
-				getInvisibleRepeats(shooter) is false
-				kitInvisibleRepeat_Start(shooter)
+				if getInvisibleRepeats(shooter) is true:
+					set {_notInvTimer} to 20
+				else:
+					if {_notInvTimer} is not set:
+						kitInvisibleRepeat_Start(shooter)
+					else:
+						subtract 1 from {_notInvTimer}
+						if {_notInvTimer} <= 0:
+							delete {_notInvTimer}
 		if {_jc} is not set:
 			if getInvisibleRepeats(shooter) is true:
 				kitInvisibleRepeat_Stop(shooter)
