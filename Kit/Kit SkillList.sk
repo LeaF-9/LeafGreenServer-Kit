@@ -390,25 +390,35 @@ function openKitSkillCustom(player: player, kit: text):
 
 function openKitWeaponCustom(player: player, kit: text):
 	wait a tick
-	open chest with 2 row named "§bKit: §6%{_kit}%§c's Weapon" to {_player}
+	open chest with 3 row named "§bKit: §6%{_kit}%§c's Weapon" to {_player}
 	wait a tick
-	set slot 0 of {_player}'s current inventory to a red glass pane named "§4§lMain Weapon" with lore "§fKitのメインとなる武器です" and "§aこの列のアイテムを選択して下さい"
-	set slot 9 of {_player}'s current inventory to a yellow glass pane named "§e§lSub Weapon" with lore "§fKitのオフハンドに装備する武器です" and "§cこの列のアイテムは選択できません"
-	set {_slot} to 2
+	# set slot 0 of {_player}'s current inventory to a red glass pane named "§4§lMain Weapon" with lore "§fKitのメインとなる武器です" and "§aこの列のアイテムを選択して下さい"
+	# set slot 9 of {_player}'s current inventory to a yellow glass pane named "§e§lSub Weapon" with lore "§fKitのオフハンドに装備する武器です" and "§cこの列のアイテムは選択できません"
+
+	set {_num} to -1
+	loop 27 times:
+		add 1 to {_num}
+		if {_num} is 0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25 or 26:
+			set slot {_num} of {_player}'s current inventory to a white glass pane named " "
+		else if {_num} is 1, 4 or 7:
+			set slot {_num} of {_player}'s current inventory to a red glass pane named "§4§l⇩ §c§lWeapon Select §4§l⇩"
+
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "weapon" from "class.custom.%{_kit}%":
 		set {_main} to yml value "%loop-node%.main" from "class.custom.%{_kit}%"
 		add {_main} to {_main-weapon::*}
-		set {_sub} to yml value "%loop-node%.sub" from "class.custom.%{_kit}%"
-		add {_sub} to {_sub-weapon::*}
+		# set {_sub} to yml value "%loop-node%.sub" from "class.custom.%{_kit}%"
+		# add {_sub} to {_sub-weapon::*}
 	unload yml "class.custom.%{_kit}%"
+
+	set {_slot} to 10
 	loop {_main-weapon::*}:
 		set slot {_slot} of {_player}'s current inventory to loop-value
-		add 1 to {_slot}
-	set {_slot} to 11
-	loop {_sub-weapon::*}:
-		set slot {_slot} of {_player}'s current inventory to loop-value
-		add 1 to {_slot}
+		add 3 to {_slot}
+	# set {_slot} to 11
+	# loop {_sub-weapon::*}:
+	# 	set slot {_slot} of {_player}'s current inventory to loop-value
+	# 	add 1 to {_slot}
 
 
 
