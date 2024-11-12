@@ -245,9 +245,16 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
 				if loop-player does not have regeneration:
 					applyEffect(loop-player, regeneration, 1, 5 seconds)
-				if getInvisibleStatus(loop-player) is false:
-					kitInvisible(loop-player, 100)
-					kitEffectDescription(loop-player, "§b§l透明化")
+				if getInvisibleStatus(loop-player) is true:
+					set {_noInvTimer.%loop-player%} to 20
+				else:
+					if {_noInvTimer.%loop-player%} is set:
+						subtract 1 from {_noInvTimer.%loop-player%}
+						if {_noInvTimer.%loop-player%} <= 0:
+							delete {_noInvTimer.%loop-player%}
+					else:
+						kitInvisible(loop-player, 100)
+						kitEffectDescription(loop-player, "§b§l透明化")
 			else:
 				add loop-player to {_nowentering::*}
 				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
@@ -327,20 +334,40 @@ function kitNinjutsu_MIZU(player: player, l: location):
 	# --------------------
 	# --- 展開中の処理 ---
 	loop 100 times:
+		delete {_joins::*}
 		# --- 味方プレイヤーへの効果付与 ---
 		loop all entities in radius 5 around {_l}:
 			kitCheckTeam(loop-entity, {_player}, true) is true
+			add loop-entity to {_joins::*}
+			if {_joined::*} does not contain loop-entity:
+				add loop-entity to {_joined::*}
 			extinguish loop-entity
 			if loop-entity does not have regeneration:
-				applyEffect(loop-entity, regeneration, 2, 1 second)
+				applyEffect(loop-entity, regeneration, 2, 5 seconds)
 				kitEffectDescription(loop-entity, "§d§l再生能力")
 		# ------------------------------
+
+		# --- 範囲外に出たエンティティの再生能力削除 ---
+		loop {_joined::*}:
+			set {_loop-entity} to loop-value-2
+			if {_joins::*} does not contain {_loop-entity}:
+				remove regeneration from {_loop-entity}
+				remove {_loop-entity} from {_joined::*}
+		# -------------------------------------------
+
 		# ---ブロック表示 ---
 		loop {_locations::*}:
 			make all players see block at loop-value-2 as water
 		# -----------------
 		wait a tick
 	# ------------------
+
+	# --- エンティティの再生能力削除 ---
+	loop {_joined::*}:
+		set {_loop-entity} to loop-value
+		remove regeneration from {_loop-entity}
+	# -------------------------------------------
+
 	# --- ブロックを戻す処理 ---
 	playSound("ambient.underwater.exit", 1, 2, {_l})
 	loop {_locations::*}:
