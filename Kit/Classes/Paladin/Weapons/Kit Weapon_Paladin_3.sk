@@ -22,8 +22,13 @@ on damage with priority LOW:
 	setDamageModification_SET(victim, 100)
 	set {_now} to now
 	set {Stats.%{_attacker}%::HolyLance-Charged} to {_now}
+
+	set {_ln.1} to 0
 	loop 100 times:
 		{Stats.%{_attacker}%::HolyLance-Charged} is {_now}
+		add 1 to {_ln.1}
+		chargeActionBar_TimeDisplay({_attacker}, 50 - floor({_ln.1} * 0.5), 50, 100 - ({_ln.1} - 1))
+
 		kitParticle_HolyLance_Charged({_attacker})
 		wait a tick
 	{Stats.%{_attacker}%::HolyLance-Charged} is {_now}
