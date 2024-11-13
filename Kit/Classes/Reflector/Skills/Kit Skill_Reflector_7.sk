@@ -1,5 +1,10 @@
 # skill-name: Mistify Haze
 
+options:
+	effect-tick: 140
+
+
+
 function kitSkill_Reflector_7(player: player):
 	toolCT({_player}, "Reflector", 7)
 	kitEffect_MistifyHaze({_player})
@@ -12,7 +17,7 @@ local function kitEffect_MistifyHaze(player: player):
 	kitParticle_MistifyHaze_Launch({_player})
 	set {_baseloc} to location of head of {_player}
 	set {_m} to 0
-	loop 200 times:
+	loop {@effect-tick} times:
 		add 0.15 to {_m}
 		set {_effloc} to location {_m} meters in front of {_baseloc}
 		kitParticle_MistifyHaze_Bulb({_effloc})
