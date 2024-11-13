@@ -1,4 +1,6 @@
 # Fortunate Pixie
+options:
+	delay-tick: 10
 
 on damage of player:
 	{Stats.%victim%::FortunatePixie} is set
@@ -6,7 +8,8 @@ on damage of player:
 	set {Stats.%victim%::FortunatePixie-Time} to {_now}
 	set {_dmg} to damage
 	kitParticle_FortunatePixie_Damage(victim)
-	wait a seconds
+	loop {@delay-tick} times:
+		wait a tick
 	{Stats.%victim%::FortunatePixie-Time} is {_now}
 	kitEffectDescription(victim, "§d§l回復")
 	kitParticle_FortunatePixie_Heal(victim)
