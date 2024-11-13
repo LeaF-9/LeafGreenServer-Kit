@@ -2,7 +2,13 @@ on rightclick:
 	metadata value "gametype" of player is "Kit"
 	set {_item} to player's tool
 	set {_itemkit} to kitItemKitChecker({_item})
+	if {_itemkit} is not set:
+		stop
+
 	set {_itemtype} to kitItemTypeChecker({_item})
+	if {_itemtype} is not set:
+		stop
+
 	if {_itemkit} is "Knight":
 		if {_itemtype} is "Skill":
 			if kitSkillKnight(player) is true:
