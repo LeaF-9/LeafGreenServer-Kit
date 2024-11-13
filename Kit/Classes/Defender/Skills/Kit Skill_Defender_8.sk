@@ -10,7 +10,7 @@ options:
 on damage with priority HIGH:
 	metadata value {@metadata-name} of victim is set
 	setDamageModification_SET(victim, 0)
-	kitEffectDescription(victim "§4❤0")
+	kitEffectDescription(victim, "§4❤0")
 	kitParticle_NeutralTruce_Damage(victim)
 
 
@@ -41,6 +41,7 @@ local function kitEffect_NeutralTruce(player: player):
 			add loop-entity to {_join.exp::*}
 			set metadata value {@metadata-name} of loop-entity to {_now}
 			kitParticle_NeutralTruce_Join(loop-entity, location 1 meter above {_baseloc})
+			send action bar "<##8fe3f1>このフィールド内<##c8f1f4>では<##eb3d11>ダメージ<##c8f1f4>が<##00eeff>§l0<##c8f1f4>になります!" to loop-entity
 
 		loop {_join.exp::*}:
 			set {_loop-entity} to loop-value-2
@@ -103,11 +104,15 @@ local function kitParticle_NeutralTruce_Field(loc: location):
 				continue
 			set {_color.b} to a random element out of {_colors.dust::*}
 			set {_color.a} to a random element out of {_colors.field::*}
-			spawnParticle_DustTransition({_color.b}, {_color.a}, 3, moveRandomLocation({_baseloc}, {@effect-radius}))
+			set {_el} to setDirToVec({_loc}, randomVector())
+			set {_rm} to a random number between 0 and {@effect-radius}
+			spawnParticle_DustTransition({_color.b}, {_color.a}, 3, location {_rm} meters in front of {_el})
 
 		# sphere particles
 		set {_color} to a random element out of {_colors.dust::*}
 		spawnParticle_Dust({_color}, 1, particleLocation_Sphere({_loc}, 6, 1, 70))
+		loop 5 times:
+			spawnParticle_Speed(ominous_spawning, 3, {_loc})
 
 		# field particles
 		set {_ln.2} to 0
@@ -115,19 +120,22 @@ local function kitParticle_NeutralTruce_Field(loc: location):
 			add 1 to {_ln.2}
 			set {_rad} to {_baserad} + ((360 / {_field.count}) * ({_ln.2} - 1))
 
-			set {_el} to {_baseloc}
+			set {_el} to {_loc}
 			set yaw of {_el} to {_rad}
 			set {_el} to location {@effect-radius} meters in front of {_el}
 			set {_color} to a random element out of {_colors.field::*}
 			spawnParticle_Dust({_color}, 1.5, {_el})
 
 			set {_ln.3} to 0
+			set {_baseel} to {_el}
 			loop 2 times:
 				add 1 to {_ln.3}
 				set {_rad} to {_baserad} + ((360 / 2) * ({_ln.3} - 1))
+				set {_el} to {_baseel}
 				add 90 to yaw of {_el}
+				set pitch of {_el} to 0
 				set {_basevec} to setVector({_el}, location 10 meters in front of {_el})
-				set {_directvec} to vector(0, 1, 0)
+				set {_directvec} to vector(0, 0.5, 0)
 				rotate {_directvec} around {_basevec} by {_rad}
 				set {_el} to setDirToVec({_el}, {_directvec})
 				set {_el} to location 0.5 meters in front of {_el}
@@ -140,12 +148,14 @@ local function kitParticle_NeutralTruce_Join(entity: entity, baseloc: location):
 	set {_loc} to location 1 meter above {_entity}
 	playSound("entity.allay.item_thrown", 1, 1.4, {_loc})
 
+	if {_baseloc} = {_loc}:
+		stop
 	set {_vector} to setVector({_baseloc}, {_loc})
 	set {_baseloc} to setDirToVec({_baseloc}, {_vector})
-	set {_loopnum} to {@distance} * 2
+	set {_loopnum} to {@effect-radius} * 2
 	set {_addm} to 0.5
 	set {_m} to 0
-	loop {_loop-num} times:
+	loop {_loopnum} times:
 		add {_addm} to {_m}
 		set {_el} to location {_m} meters in front of {_baseloc}
 		spawnParticle(end_rod, {_el})
