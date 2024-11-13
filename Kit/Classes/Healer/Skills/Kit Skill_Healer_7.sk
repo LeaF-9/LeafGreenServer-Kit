@@ -1,5 +1,10 @@
 # Moon Luster
 
+options:
+	heal-amount: 0.075  # 1.5 / 20
+
+
+
 function kitSkill_Healer_7(player: player):
 	if {Kit-Odo::%{_player}%} < 30:
 		kitMsg({_player}, "§cオドが足りません! 必要オドは §330 §cです!")
@@ -36,7 +41,7 @@ local function kitEffect_MoonLuster_Moonlight(player: player, loc: location):
 		loop all players in radius 10 around {_loc}:
 			loop-player is not {_player}
 			kitCheckTeam(loop-player, {_player}, true) is true
-			kitHeal(loop-player, 0.1, 1)
+			kitHeal(loop-player, {@heal-amount}, 1)
 			kitEffectDescription(loop-player, "§d§l回復")
 			applyEffect(loop-player, glowing, 1, 1 tick)
 		if mod(201 - loop-number, 20) is 0:
