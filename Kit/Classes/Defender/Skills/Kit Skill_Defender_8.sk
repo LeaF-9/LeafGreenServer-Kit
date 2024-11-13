@@ -1,79 +1,177 @@
-# Guard Crash
+# Neutral Truce
+
+options:
+	effect-tick: 100
+	effect-radius: 7
+	metadata-name: "neutral truce"
+
+
+
+on damage with priority HIGH:
+	metadata value {@metadata-name} of victim is set
+	setDamageModification_SET(victim, 0)
+	kitEffectDescription(victim "§4❤0")
+	kitParticle_NeutralTruce_Damage(victim)
+
+
 
 function kitSkill_Defender_8(player: player):
-	set {_armor::helmet} to helmet of {_player}
-	set {_armor::chestplate} to chestplate of {_player}
-	set {_armor::leggings} to leggings of {_player}
-	set {_armor::boots} to boots of {_player}
-	loop {_armor::*}:
-		if loop-value is not air:
-			set {_ok} to true
-	if {_ok} is true:
-		toolCT({_player}, "Defender", 8)
-		set {Stats.%{_player}%::GuardCrash} to true
-		kitShield({_player}, 10)
-		kitMsg({_player}, "<##b22222>防具を壊して<##20b2aa>シールドを張ります!")
-		set helmet of {_player} to air
-		set chestplate of {_player} to air
-		set leggings of {_player} to air
-		set boots of {_player} to air
-		playSound("block.enchantment_table.use", 1, 1.5, {_player})
-		loop all players in radius 5 around {_player}:
-			loop-player is not {_player}
-			kitCheckTeam(loop-player, {_player}, true) is true
-			{Stats.%loop-player%::NoSupport} is not set
-			apply resistance 2 to loop-player for 5 seconds
-			message "§5%{_player}% §eに耐性を貰った!" to loop-player
-		remove slowness from {_player}
-		apply speed 2 to {_player} for 5 seconds
-		set {_baseloc} to location of {_player}
-		loop 100 times:
-			if loop-number is between 1 and 5:
-				add 0.5 to {_y}
-				set {_rad} to 0
-				loop 72 times:
-					set {_el} to {_baseloc}
-					add 18 to {_rad}
-					add 5 * sin({_rad}) to x-coordinate of {_el}
-					add 5 * cos({_rad}) to z-coordinate of {_el}
-					add {_y} to y-coordinate of {_el}
-					spawnParticle_Dust(rgb(178, 34, 34), 1, {_el})
-				wait a tick
-			if {Stats.%{_player}%::GuardCrash} is true:
-				if {Kit-Shield::%{_player}%} is set:
-					set {_loc} to location of {_player}
-					add 0.02 to {_dy}
-					if {_dy} >= 4:
-						set {_dy} to 0
-					if {_dy} > 2:
-						set {_y.f} to 2 - ({_dy} - 2)
-					else:
-						set {_y.f} to {_dy}
-					add {_y.f} to y-coordinate of {_loc}
-					add 9 to {_rad}
-					add 0.5 * sin({_rad}) to x-coordinate of {_loc}
-					add 0.5 * cos({_rad}) to z-coordinate of {_loc}
-					spawnParticle(flame, {_loc})
-				else:
-					set {Stats.%{_player}%::GuardCrash} to false
-					playSound("block.respawn_anchor.deplete", 1.5, 1, {_player})
-					apply strength 2 to {_player} for 5 seconds
-					kitMsg({_player}, "§9シールド§cの崩壊で§4§l暴走した!")
-					set {_gl} to location of {_player}
-					add 1 to y-coordinate of {_gl}
-					loop 50 times:
-						spawnParticle_Vector(flame, randomVector(), 0.5, {_gl})
-			wait a tick
-		{Stats.%{_player}%::GuardCrash} is set
-		kitMsg({_player}, "§4Guard Crash§eの効果が終了しました")
-		remove strength from {_player}
-		delete {Kit-Shield::%{_player}%}
-		delete {Kit-ShieldTime::%{_player}%}
-		apply ambient slowness 3 to {_player} for 10000000000 seconds
-		set helmet of {_player} to {_armor::helmet}
-		set chestplate of {_player} to {_armor::chestplate}
-		set leggings of {_player} to {_armor::leggings}
-		set boots of {_player} to {_armor::boots}
-		delete {Stats.%{_player}%::GuardCrash}
-	else:
-		send action bar "§c防具がないため発動できません" to {_player}
+	toolCT({_player}, "Defender", 8)
+	kitEffect_NeutralTruce({_player})
+
+
+
+local function kitEffect_NeutralTruce(player: player):
+	set {_baseloc} to location of {_player}
+	set {_now} to now
+	kitMsg({_player}, "§cダメージ<##e4e283>を<##c8f1f4>§l0<##e4e283>に変換する<##8fe3f1>§l中立フィールド<##e4e283>を展開します!")
+	sendTimeBossbar_GREEN({_player}, "Neutral Truce", {@effect-tick})
+	kitParticle_NeutralTruce_Launch({_player})
+
+	loop {@effect-tick} times:
+		delete {_join.now::*}
+
+		loop all entities in radius {@effect-radius} around {_baseloc}:
+			metadata value "gametype" of loop-entity is "Kit"
+			add loop-entity to {_join.now::*}
+			if {_join.exp::*} contains loop-entity:
+				kitParticle_NeutralTruce_Aura(loop-entity)
+				continue
+			
+			add loop-entity to {_join.exp::*}
+			set metadata value {@metadata-name} of loop-entity to {_now}
+			kitParticle_NeutralTruce_Join(loop-entity, location 1 meter above {_baseloc})
+
+		loop {_join.exp::*}:
+			set {_loop-entity} to loop-value-2
+			if metadata value {@metadata-name} of {_loop-entity} is not {_now}:
+				remove {_loop-entity} from {_join.exp::*}
+				continue
+			if {_join.now::*} contains {_loop-entity}:
+				continue
+			
+			remove {_loop-entity} from {_join.exp::*}
+			delete metadata value {@metadata-name} of {_loop-entity}
+			kitParticle_NeutralTruce_Leave({_loop-entity})
+
+		wait a tick
+	kitMsg({_player}, "<##8fe3f1>§l中立フィールド<##daa1a1>は消滅しました...")
+	loop {_join.exp::*}:
+		set {_loop-entity} to loop-value
+		metadata value {@metadata-name} of {_loop-entity} is {_now}
+		delete metadata value {@metadata-name} of {_loop-entity}
+
+
+
+local function kitParticle_NeutralTruce_Launch(player: player):
+	playSound("block.beacon.power_select", 1, 0.8, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	kitParticle_NeutralTruce_Field({_baseloc})
+
+	add rgb(154, 221, 239) to {_colors::*}
+	add rgb(126, 235, 243) to {_colors::*}
+	add rgb(108, 225, 240) to {_colors::*}
+
+	set {_ln} to 0
+	loop 5 times:
+		add 1 to {_ln}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 1.1, particleLocation_Sphere({_baseloc}, 10, {_ln}, 70))
+		wait a tick
+
+local function kitParticle_NeutralTruce_Field(loc: location):
+	set yaw of {_loc} to 0
+	set pitch of {_loc} to 0
+
+	add rgb(200, 238, 248) to {_colors.field::*}
+	add rgb(235, 242, 242) to {_colors.field::*}
+	add rgb(222, 244, 247) to {_colors.field::*}
+
+	add rgb(154, 221, 239) to {_colors.dust::*}
+	add rgb(126, 235, 243) to {_colors.dust::*}
+	add rgb(108, 225, 240) to {_colors.dust::*}
+
+	set {_baserad} to 0
+	set {_addrad} to 90 / 20
+	set {_field.count} to 8
+	set {_ln.1} to 0
+	loop {@effect-tick} times:
+		add 1 to {_ln.1}
+		# random dust particles
+		loop 10 times:
+			chance of 90%:
+				continue
+			set {_color.b} to a random element out of {_colors.dust::*}
+			set {_color.a} to a random element out of {_colors.field::*}
+			spawnParticle_DustTransition({_color.b}, {_color.a}, 3, moveRandomLocation({_baseloc}, {@effect-radius}))
+
+		# sphere particles
+		set {_color} to a random element out of {_colors.dust::*}
+		spawnParticle_Dust({_color}, 1, particleLocation_Sphere({_loc}, 6, 1, 70))
+
+		# field particles
+		set {_ln.2} to 0
+		loop {_field.count} times:
+			add 1 to {_ln.2}
+			set {_rad} to {_baserad} + ((360 / {_field.count}) * ({_ln.2} - 1))
+
+			set {_el} to {_baseloc}
+			set yaw of {_el} to {_rad}
+			set {_el} to location {@effect-radius} meters in front of {_el}
+			set {_color} to a random element out of {_colors.field::*}
+			spawnParticle_Dust({_color}, 1.5, {_el})
+
+			set {_ln.3} to 0
+			loop 2 times:
+				add 1 to {_ln.3}
+				set {_rad} to {_baserad} + ((360 / 2) * ({_ln.3} - 1))
+				add 90 to yaw of {_el}
+				set {_basevec} to setVector({_el}, location 10 meters in front of {_el})
+				set {_directvec} to vector(0, 1, 0)
+				rotate {_directvec} around {_basevec} by {_rad}
+				set {_el} to setDirToVec({_el}, {_directvec})
+				set {_el} to location 0.5 meters in front of {_el}
+				spawnParticle(electric_spark, {_el})
+		
+		add {_addrad} to {_baserad}
+		wait a tick
+
+local function kitParticle_NeutralTruce_Join(entity: entity, baseloc: location):
+	set {_loc} to location 1 meter above {_entity}
+	playSound("entity.allay.item_thrown", 1, 1.4, {_loc})
+
+	set {_vector} to setVector({_baseloc}, {_loc})
+	set {_baseloc} to setDirToVec({_baseloc}, {_vector})
+	set {_loopnum} to {@distance} * 2
+	set {_addm} to 0.5
+	set {_m} to 0
+	loop {_loop-num} times:
+		add {_addm} to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		spawnParticle(end_rod, {_el})
+
+local function kitParticle_NeutralTruce_Aura(entity: entity):
+	chance of 50%:
+		stop
+	
+	set {_baseloc} to location 1 meters above {_entity}
+	spawnParticle_BlockData(falling_dust, white concrete, moveRandomLocation({_baseloc}, 1))
+
+local function kitParticle_NeutralTruce_Leave(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+	playSound("block.amethyst_block.break", 1, 0.8, {_baseloc})
+
+	loop 15 times:
+		spawnParticle_Block(sea lantern, moveRandomLocation({_baseloc}, 1))
+		spawnParticle_Vector(firework, randomVector(), 0.9, {_baseloc})
+
+local function kitParticle_NeutralTruce_Damage(entity: entity):
+	set {_baseloc} to location of {_entity}
+	playSound("block.chain.break", 1, 1.35, {_baseloc})
+
+	set {_ln.1} to 0
+	loop 5 times:
+		add 1 to {_ln.1}
+		set {_baseloc} to location 1 meter above {_entity}
+		spawnParticle(electric_spark, particleLocation_Circle({_baseloc}, 10, {_ln.1} * 0.5))
+		wait a tick
