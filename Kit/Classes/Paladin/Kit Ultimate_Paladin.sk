@@ -9,23 +9,43 @@ function kitUltPaladin(player: player):
 			message formatted "<##e95388>§l%{_player}% <##ea618e>§lより妖精の加護を受け取りました!" to loop-player
 		add loop-player to {_palult::*}
 		set {Stats.%loop-player%::Ult_Paladin} to 10
+		set {_uuid} to UUID of loop-player
+		set {_id} to "Mischevous Fairies-%{_uuid}%"
+		set {_timer.title} to "§d§l妖精の加護§r §4❤10"
+		create bossbar titled {_timer.title} and id {_id} for loop-player with progress 100 with colors pink with style solid
 	loop 200 times:
 		loop {_palult::*}:
-			if {Stats.%loop-value-2%::Ult_Paladin} is set:
+			set {_loop-player} to loop-value-2
+			set {_uuid} to UUID of {_loop-player}
+
+			if {Stats.%{_loop-player}%::Ult_Paladin} is set:
 				chance of 20%:
-					playSound("entity.bee.sting", 0.6, 2, loop-value-2)
+					playSound("entity.bee.sting", 0.6, 2, {_loop-player})
 				set {_num} to 0
 				loop 3 times:
 					add 1 to {_num}
 					set {_color::%{_num}%} to a random integer between 0 and 255
-				set {_el} to aroundEffect(loop-value-2)
+				set {_el} to aroundEffect({_loop-player})
 				spawnParticle_Color(entity_effect, rgb({_color::1}, {_color::2}, {_color::3}), {_el})
+
+				set {_id} to "Mischevous Fairies-%{_uuid}%"
+				set {_timer.title} to "§d§l妖精の加護§r §4❤%{Stats.%{_loop-player}%::Ult_Paladin}%"
+				set bossbar {_id} title to {_timer.title}
+
+				set {_timer.prog} to {Stats.%{_loop-player}%::Ult_Paladin} * 10
+				set bossbar {_id} value to {_timer.prog}
 			else:
-				remove loop-value-2 from {_palult::*}
+				set {_id} to "Mischevous Fairies-%{_uuid}%"
+				remove bossbar {_id}
+				remove {_loop-player} from {_palult::*}
 		wait a tick
 	loop {_palult::*}:
-		delete {Stats.%loop-value%::Ult_Paladin}
-		message formatted "<##915da3>妖精の加護は消滅しました" to loop-value
+		set {_loop-player} to loop-value
+		set {_uuid} to UUID of {_loop-player}
+		delete {Stats.%{_loop-player}%::Ult_Paladin}
+		message formatted "<##915da3>妖精の加護は消滅しました" to {_loop-player}
+		set {_id} to "Mischevous Fairies-%{_uuid}%"
+		remove bossbar {_id}
 
 on damage of player:
 	if {Stats.%victim%::Ult_Paladin} is set:
