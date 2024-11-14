@@ -21,12 +21,21 @@ function kitSkill_Reflector_2(player: player):
 local function kitEffect_DamageAbsorption(player: player):
 	kitMsg({_player}, "§8ダメージを溜め込みます...!")
 	set {Stats.%{_player}%::DamageAbsorption} to true
+	set {Stats.%{_player}%::DamageAbsorption-Point} to 0
 	applyEffect({_player}, mining fatigue, 2, 3 seconds)
 	sendTimeBossbar_GREEN({_player}, "Damage Absorption", 60)
 	kitParticle_DamageAbsorption_Launch({_player})
-	wait 54 ticks
-	kitParticle_DamageAbsorption_Explode({_player})
-	wait 6 ticks
+
+	loop 60 times:
+		set {_point} to {Stats.%{_player}%::DamageAbsorption-Point}
+		if {_point} > 5:
+			set {_point} to 5
+
+		send action bar "<##2d4635>§l吸収量<##b9b9b9>: §4❤%{_point}%" to {_player}
+		if loop-number is 54:
+			kitParticle_DamageAbsorption_Explode({_player})
+		wait a tick
+
 	delete {Stats.%{_player}%::DamageAbsorption}
 	if {Stats.%{_player}%::DamageAbsorption-Point} > 5:
 		set {Stats.%{_player}%::DamageAbsorption-Point} to 5
