@@ -3,12 +3,12 @@
 on damage of player with priority NORMAL:
 	{Class::%victim%} is "Reflector"
 	victim is sneaking
-	attacker is set
+	set {_attacker} to getAttacker(victim)
 	set {_tool} to victim's tool
 	kitItemAllChecker({_tool}, "Reflector", "Weapon.main", 3) is true
-	setDamageModification_ADD(victim, -1)
-	kitMsg(victim, "§cダメージ§5をチャージした!")
-	add 1 to {Stats.%victim%::TolleStone}
+	setDamageModification_ADD(victim, -1.5)
+	kitMsg(victim, "§cダメージ<##f068d2>を<##bf23e6>§lチャージ<##f068d2>した!")
+	add 1.5 to {Stats.%victim%::TolleStone}
 	kitParticle_TolleStone_Charge(victim)
 
 function kitWeapon_Reflector_3(player: player):
@@ -18,18 +18,18 @@ function kitWeapon_Reflector_3(player: player):
 
 
 local function kitEffect_TolleStone(player: player):
-	set {_dmg} to 2
-	if {Stats.%{_player}%::TolleStone} is set:
-		if {Stats.%{_player}%::TolleStone} <= 3:
-			set {_adddmg} to {Stats.%{_player}%::TolleStone}
-			set {Stats.%{_player}%::TolleStone} to 0
-		else:
-			set {_adddmg} to 3
-			subtract 3 from {Stats.%{_player}%::TolleStone}
+	set {_dmg} to 1.5
+	if {Stats.%{_player}%::TolleStone} >= 1.5:
+		set {_adddmg} to 1.5
+		subtract 1.5 from {Stats.%{_player}%::TolleStone}
+
+	set {_baseloc} to location of head of {_player}
+	kitParticle_TolleStone_Launch(location 0.5 meters in front of {_baseloc})
+
 	if {_adddmg} is set:
 		set {_dmg} to {_dmg} + {_adddmg}
-	set {_baseloc} to location of head of {_player}
-	kitParticle_TolleStone_Launch(location 0.5 meters in front of {_baseloc}, {_dmg})
+		kitParticle_TolleStone_Power({_baseloc})
+
 	set {_m} to 0
 	loop 20 times:
 		add 0.5 to {_m}
@@ -50,11 +50,38 @@ local function kitParticle_TolleStone_Charge(player: player):
 		set {_loc} to aroundEffect({_player})
 		spawnParticle_Block(amethyst block, {_loc})
 
-local function kitParticle_TolleStone_Launch(loc: location, count: number):
+local function kitParticle_TolleStone_Launch(loc: location):
 	playSound("entity.illusioner.mirror_move", 0.9, 1.7, {_loc})
+
+	kitParticle_TolleStone_Circle({_loc})
+	wait a tick
+
+local function kitParticle_TolleStone_Power(loc: location):
+	playSound("block.amethyst_cluster.break", 0.9, 0.7, {_loc})
+	set {_basevec} to setVector({_loc}, location 10 meters in front of {_loc})
+	set {_vecloc} to {_loc}
+	add -90 to pitch of {_vecloc}
+	set {_directvec} to setVector({_vecloc}, location 10 meters in front of {_vecloc})
+
+	set {_length} to 10
+	set {_count} to 50
+	set {_m} to 0
+	set {_addm} to {_length} / {_count}
+	set {_rad} to 0
+	set {_addrad} to 90 / ({_count} * 0.1)
+
 	loop {_count} times:
-		kitParticle_TolleStone_Circle({_loc})
-		wait a tick
+		add {_addm} to {_m}
+
+		set {_effbaseloc} to location {_m} meters in front of {_loc}
+		set {_dirvec} to {_directvec}
+		rotate {_dirvec} around {_basevec} by {_rad}
+		set {_effloc} to setDirToVec({_effbaseloc}, {_dirvec})
+		set {_el} to location 0.5 meters in front of {_effloc}
+		spawnParticle(reverse_portal, {_el})
+
+		add {_addrad} to {_rad}
+		
 
 local function kitParticle_TolleStone_Circle(loc: location):
 	set {_m} to 0
