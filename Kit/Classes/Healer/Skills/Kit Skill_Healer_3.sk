@@ -1,10 +1,14 @@
 # Field Hospital
 
+options:
+	required-odo: 20
+
+
 function kitSkill_Healer_3(player: player):
 	if {Stats.%{_player}%::SkillLocation} is set:
-		if {Kit-Odo::%{_player}%} is more than 29:
+		if {Kit-Odo::%{_player}%} >= {@required-odo}:
 			toolCT({_player}, "Healer", 3)
-			subtract 30 from {Kit-Odo::%{_player}%}
+			subtract {@required-odo} from {Kit-Odo::%{_player}%}
 			set {_now} to now
 			set {Stats.%{_player}%::FieldHospital-Time} to {_now}
 			kitFakeDeleteData({_player}, "Field Hospital")
@@ -38,7 +42,7 @@ function kitSkill_Healer_3(player: player):
 						kitParticle_FieldHospital_Field({_el})
 			delete {Stats.%{_player}%::FieldHospital-Time}
 		else:
-			kitMsg({_player}, "§cオドが足りません! 必要オドは §340 §cです!")
+			kitMsg({_player}, "§cオドが足りません! 必要オドは §3{@required-odo} §cです!")
 	else:
 		send action bar "§c§l地点を指定してください" to {_player}
 
