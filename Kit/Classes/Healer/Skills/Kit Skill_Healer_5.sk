@@ -29,8 +29,8 @@ local function kitEffect_FightSupporter(player: player):
 
 		applyEffect(loop-entity, resistance, 3, {@effect-second})
 		kitParticle_FightSupporter_Player({_player}, loop-entity)
-		message formatted "<##ffd700>%{_player}% <##d2691e>に戦闘強化の効果を貰った!" to loop-player
-		kitEffectDescription(loop-player, "§e§l耐性")
+		message formatted "<##ffd700>%{_player}% <##d2691e>に戦闘強化の効果を貰った!" to loop-entity
+		kitEffectDescription(loop-entity, "§e§l耐性")
 		sendTimeBossbar_YELLOW(loop-entity, "耐性 III", {@effect-tick})
 
 
@@ -43,7 +43,7 @@ local function kitParticle_FightSupporter(player: player):
 	add rgb(194, 220, 22) to {_colors::*}
 	add rgb(243, 233, 143) to {_colors::*}
 
-	spawnParticle(wax_off, particleLocation_Circle({_baseloc}, 50, {@effect-radius}))
+	spawnParticle(wax_on, particleLocation_Circle({_baseloc}, 50, {@effect-radius}))
 
 	loop 50 times:
 		set {_baseel} to setDirToVec({_baseloc}, randomVector())
@@ -72,7 +72,7 @@ function kitParticle_FightSupporter_Player(player: player, entity: entity):
 
 	loop {_count} times:
 		add {_addm} to {_m}
-		set {_el} to location 0.5 meters in front of {_loc.direct}
+		set {_el} to location {_m} meters in front of {_loc.direct}
 		spawnParticle(end_rod, {_el})
 
 	add rgb(232, 195, 73) to {_colors::*}
