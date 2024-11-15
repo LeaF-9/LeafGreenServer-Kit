@@ -1,46 +1,68 @@
 # Dealing Staff
 
-function kitWeapon_Healer_3(player: player):
-	if health of {_player} > 1:
-		toolCT({_player}, "Healer", 3, "Weapon.main")
-		kitMsg({_player}, "§5命の取引を行います...")
-		set {_true} to true
-		# --- 音の演出 ---
-		playSound("entity.warden.listening", 1, 0.9, {_player})
-		# ---------------
-		# --- パーティクルの演出 ---
-		kitEffect_DealingStaff({_player})
-		# -----------------------
-		loop all entities in radius 10 around {_player}:
-			loop-entity is not {_player}
-			kitCheckTeam(loop-entity, {_player}, true) is true
-			add loop-entity to {_targets::*}
-			if checkEntityType(loop-entity, player) is true:
-				setSupporter(loop-entity, {_player})
-				message formatted "<##ba55d3>取引により<##9932cc>命<##ba55d3>を頂いた..." to loop-entity
-			# --- ヒット時のパーティクルの演出 ---
-			kitEffect_DealingStaff_Hitting(loop-entity)
-			# -------------------------------
-		set {_health} to health of {_player}
-		while {_true} is true:
-			delete {_max}
-			if {_health} <= 1:
-				delete {_true}
-			else:
-				loop {_targets::*}:
-					if max health of loop-value is health of loop-value:
-						set {_max} to true
-					else:
-						delete {_max}
-						kitHeal(loop-value, 1)
-						healEffect(loop-value, 1)
-			if {_max} is true:
-				delete {_true}
-			if {_true} is true:
-				subtract 1 from {_health}
-		set health of {_player} to {_health}
+options:
+	effect-radius: 10
+	heal-amount: 0.1
 
-function kitEffect_DealingStaff(player: player):
+
+
+on sneak toggle:
+	metadata value "gametype" of player is "Kit"
+	{Class::%player%} is "Healer"
+	player is not sneaking
+	set {_tool} to player's tool
+	kitItemAllChecker({_tool}, "Healer", "Weapon.main", 3) is true
+	wait a tick
+	kitEffect_DealingStaff(player)
+
+
+
+local function kitEffect_DealingStaff(player: player):
+	set {_health} to health of {_player}
+	if {_health} <= 1:
+		send action bar "§c§l体力が不足しています!" to {_player}
+		playSound("block.note_block.bass", 1, 1.2, {_player}, true)
+		stop
+
+	send action bar "<##0c1062>命の取引を開始します..." to {_player}
+	kitParticle_DealingStaff_Launch({_player})
+	set {_true} to true
+	while {_true} is true:
+		if {_player} is not sneaking:
+			set {_true} to false
+			continue
+		set {_tool} to {_player}'s tool
+		if kitItemAllChecker({_tool}, "Healer", "Weapon.main", 3) is false:
+			set {_true} to false
+			continue
+		set {_health} to health of {_player}
+		if {_health} <= 1:
+			set {_true} to false
+			continue
+		
+		set {_baseloc} to location of {_player}
+		delete {_exist}
+		loop all players in radius {@effect-radius} around {_baseloc}:
+			loop-player is not {_player}
+			kitCheckTeam(loop-player, {_player}, true, true) is true
+			(health of loop-player) is not (max health of loop-player)
+			set {_exist} to true
+			kitHeal(loop-player, {@heal-amount})
+			setSupporter(loop-player, {_player})
+			kitParticle_DealingStaff_Hitting({_baseloc}, loop-player)
+		
+		if {_exist} is true:
+			subtract {@heal-amount} from {_health}
+			set health of {_player} to {_health}
+		kitParticle_DealingStaff_Aura({_player})
+
+		wait a tick
+	kitParticle_DealingStaff_Fade({_player})
+
+
+
+local function kitParticle_DealingStaff_Launch(player: player):
+	playSound("entity.warden.listening", 1, 0.9, {_player})
 	set {_baseloc} to location of {_player}
 	set {_y} to 5.16
 	set {_baserad} to 0
@@ -58,11 +80,70 @@ function kitEffect_DealingStaff(player: player):
 		if mod(loop-number, 3) is 0:
 			wait a tick
 
-function kitEffect_DealingStaff_Hitting(target: entity):
+local function kitParticle_DealingStaff_Hitting(loc: location, target: player):
+	healEffect({_target}, 1)
 	set {_el} to location 1 meter above {_target}
-	loop 10 times:
-		loop 3 times:
-			set {_rn} to a random number between 0.01 and 0.1
-			set {_vn::%loop-number-2%} to {_rn}
-		set {_v} to vector({_vn::1}, {_vn::2}, {_vn::3})
-		spawnParticle_Vector(sculk_soul, {_v}, 1, {_el})
+	loop 3 times:
+		set {_rn} to a random number between 0.01 and 0.1
+		set {_vn::%loop-number-2%} to {_rn}
+	set {_v} to vector({_vn::1}, {_vn::2}, {_vn::3})
+	spawnParticle_Vector(sculk_soul, {_v}, 1, {_el})
+	
+	add 1 to y-pos of {_loc}
+	set {_distance} to distance between {_loc} and {_el}
+	set {_count} to round({_distance} * 2)
+	set {_m} to 0
+	set {_addm} to 0.5
+	set {_dirloc} to setDirToVec({_loc}, setVector({_loc}, {_el}))
+	loop {_count} times:
+		add {_addm} to {_m}
+		set {_el.2} to location {_m} meters in front of {_dirloc}
+		spawnParticle_Dust(rgb(17, 19, 114), 0.6, {_el.2})
+
+local function kitParticle_DealingStaff_Aura(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set pitch of {_player} to 0
+
+	set {_count} to 100
+	set {_rad} to 0
+	set {_addrad} to 360 / {_count}
+	loop 180 times:
+		set {_el} to {_baseloc}
+		set yaw of {_el} to {_rad}
+		set {_el} to location {@effect-radius} meters in front of {_el}
+		spawnParticle(enchant, {_el})
+
+		add {_addrad} to {_rad}
+	
+	add rgb(74, 15, 91) to {_colors::*}
+	add rgb(107, 38, 133) to {_colors::*}
+	add rgb(54, 22, 105) to {_colors::*}
+
+	loop 3 times:
+		chance of 30%:
+			set {_el} to setDirToVec({_baseloc}, randomVector())
+			set {_rm} to a random number between 0 and {@effect-radius}
+			set {_el} to location {_rm} meters in front of {_el}
+			spawnParticle(sculk_charge_pop, {_el})
+		chance of 10%:
+			set {_el} to setDirToVec({_baseloc}, randomVector())
+			set {_rm} to a random number between 0 and {@effect-radius}
+			set {_el} to location {_rm} meters in front of {_el}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_DustTransition({_color}, rgb(24, 26, 51), 2, {_el})
+
+local function kitParticle_DealingStaff_Fade(player: player):
+	playSound("entity.warden.step", 1, 0.7, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+
+	loop 100 times:
+		set {_el} to setDirToVec({_baseloc}, randomVector())
+		set {_rm} to a random number between 0 and {@effect-radius}
+		set {_el} to location {_rm} meters in front of {_el}
+		set {_d} to dice(3)
+		if {_d} is 1:
+			spawnParticle_block(deepslate, {_el})
+		else if {_d} is 2:
+			spawnParticle_block(black concrete, {_el})
+		else:
+			spawnParticle_block(crying obsidian, {_el})
