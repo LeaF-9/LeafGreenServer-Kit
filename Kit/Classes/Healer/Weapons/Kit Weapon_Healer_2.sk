@@ -12,14 +12,22 @@ function kitWeapon_Healer_2(player: player):
 		# --- 効果の処理 ---
 		loop all entities in radius 2 around {_loc}:
 			loop-entity is not {_player}
-			kitCheckTeam(loop-entity, {_player}, true) is true
 			{_hit.%id of loop-entity%} is not set
-			set {_hit.%id of loop-entity%} to true
-			applyEffect(loop-entity, regeneration, 1, 5 seconds)
-			healEffect(loop-entity)
-			if checkEntityType(loop-entity, player) is true:
-				setSupporter(loop-entity, {_player})
-			playSound("block.amethyst_block.chime", 1, 1.2, loop-entity)
+			if kitCheckTeam(loop-entity, {_player}, true, true) is true:
+				set {_hit.%id of loop-entity%} to true
+				applyEffect(loop-entity, regeneration, 1, 5 seconds)
+				healEffect(loop-entity)
+				if checkEntityType(loop-entity, player) is true:
+					setSupporter(loop-entity, {_player})
+				playSound("block.amethyst_block.chime", 1, 1.2, loop-entity)
+			else if kitCheckTeam(loop-entity, {_player}, false, true) is true:
+				set {_hit.%id of loop-entity%} to true
+				applyEffect(loop-entity, poison, 1, 5 seconds)
+				playSound("block.amethyst_block.chime", 1, 0.8, loop-entity)
+				set {_el} to location 1 meter above loop-entity
+				loop 5 times:
+					spawnParticle_Vector(damage_indicator, randomVector(), 1, {_el})
+
 		# ----------------
 		# --- パーティクルの演出 ---
 		spawnParticle_DustTransition(rgb(238, 130, 238), rgb(221, 160, 221), 1, {_loc})
