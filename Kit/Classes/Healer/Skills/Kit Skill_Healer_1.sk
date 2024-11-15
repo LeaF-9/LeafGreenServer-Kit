@@ -1,30 +1,55 @@
 # Healing Gift
 
+options:
+	required-odo: 3
+
+
+
 function kitSkill_Healer_1(player: player):
-	if {Stats.%{_player}%::SkillTarget} is set:
-		set {_target} to {Stats.%{_player}%::SkillTarget}
-		if {Kit-Odo::%{_player}%} >= 3:
-			if max health of {_target} is not health of {_target}:
-				toolItemCT({_player}, "Healer", 1, "Skill")
-				subtract 3 from {Kit-Odo::%{_player}%}
-				setSupporter({_target}, {_player})
-				kitHeal({_target}, 0.5, 1)
-				kitEffectDescription({_target}, "§d❤0.5")
-				playSound("ambient.underwater.loop.additions", 1, 2, {_target})
-				set {_from} to vector of {_player}
-				set {_to} to vector of {_target}
-				set {_vector} to {_to} - {_from}
-				set {_vector} to normalized {_vector}
-				set {_baseloc} to location of head of {_player}
-				set yaw of {_baseloc} to yaw of {_vector}
-				set pitch of {_baseloc} to pitch of {_vector}
-				set {_count} to distance between {_baseloc} and {_target} * 0.1
-				loop 10 times:
-					set {_el} to location {_count} * loop-number meters in front of {_baseloc}
-					spawnParticle(end_rod, {_el})
-			else:
-				send action bar "§c§l対象は既に体力が満タンです" to {_player}
-		else:
-			kitMsg({_player}, "§cオドが足りません! 必要オドは §33 §cです!")
-	else:
+	if {Stats.%{_player}%::SkillTarget} is not set:
 		send action bar "§c§l対象を指定してください" to {_player}
+		stop
+	if {Kit-Odo::%{_player}%} < {@required-odo}:
+		kitMsg({_player}, "§cオドが足りません! 必要オドは §3{@required-odo} §cです!")
+		stop
+	
+	toolItemCT({_player}, "Healer", 1, "Skill")
+	kitEffect_HealingGift({_player})
+
+
+
+local function kitEffect_HealingGift(player: player):
+	set {_target} to {Stats.%{_player}%::SkillTarget}
+	if max health of {_target} is health of {_target}:
+		send action bar "§c§l対象は回復する必要がありません" to {_player}
+		stop
+
+	subtract {@required-odo} from {Kit-Odo::%{_player}%}
+	setSupporter({_target}, {_player})
+	kitHeal({_target}, 0.5, 1)
+	kitEffectDescription({_target}, "§d❤0.5")
+	kitParticle_HealingGift({_player}, {_target})
+
+
+
+local function kitParticle_HealingGift(player: player, target: player):
+	playSound("ambient.underwater.loop.additions", 1, 2, {_target})
+
+	add rgb(245, 166, 225) to {_colors::*}
+	add rgb(240, 196, 226) to {_colors::*}
+	add rgb(230, 38, 182) to {_colors::*}
+
+	set {_loc.head} to location of head of {_player}
+	set {_loc.from} to location 1 meter above {_player}
+	set {_loc.to} to location 1 meter above {_target}
+	set {_baseloc} to setDirToVec({_loc.head}, setVector({_loc.from}, {_loc.to}))
+
+	set {_count} to distance between {_loc.from} and {_loc.to} * 0.1
+	loop 10 times:
+		set {_el} to location ({_count} * loop-number) meters in front of {_baseloc}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.6, {_el})
+
+		chance of 50%:
+			set {_el.2} to moveRandomLocation({_el}, 0.5)
+			spawnParticle_BlockData(falling_dust, white concrete, {_el.2})
