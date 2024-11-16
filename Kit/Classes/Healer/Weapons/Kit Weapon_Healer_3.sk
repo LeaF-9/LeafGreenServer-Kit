@@ -38,6 +38,7 @@ local function kitEffect_DealingStaff(player: player):
 		set {_health} to health of {_player}
 		if {_health} <= 1:
 			set {_true} to false
+			send action bar "<##c50000>§lストップ! §c取引に必要な§d生命力§cがありません" to {_player}
 			continue
 		
 		set {_baseloc} to location of {_player}
@@ -47,7 +48,7 @@ local function kitEffect_DealingStaff(player: player):
 			kitCheckTeam(loop-player, {_player}, true, true) is true
 			(health of loop-player) is not (max health of loop-player)
 			set {_exist} to true
-			kitHeal(loop-player, {@heal-amount})
+			kitHeal(loop-player, {@heal-amount}, 1)
 			setSupporter(loop-player, {_player})
 			kitParticle_DealingStaff_Hitting({_baseloc}, loop-player)
 		
@@ -73,7 +74,7 @@ local function kitParticle_DealingStaff_Launch(player: player):
 		loop 4 times:
 			set {_el} to {_baseloc}
 			add 90 to {_rad}
-			add {_y} to y-coordinate of {_y}
+			add {_y} to y-coordinate of {_el}
 			add 10 * sin({_rad}) to x-coordinate of {_el}
 			add 10 * cos({_rad}) to z-coordinate of {_el}
 			spawnParticle(witch, {_el})
@@ -81,11 +82,10 @@ local function kitParticle_DealingStaff_Launch(player: player):
 			wait a tick
 
 local function kitParticle_DealingStaff_Hitting(loc: location, target: player):
-	healEffect({_target}, 1)
 	set {_el} to location 1 meter above {_target}
 	loop 3 times:
-		set {_rn} to a random number between 0.01 and 0.1
-		set {_vn::%loop-number-2%} to {_rn}
+		set {_rn} to a random number between -0.1 and 0.1
+		set {_vn::%loop-number%} to {_rn}
 	set {_v} to vector({_vn::1}, {_vn::2}, {_vn::3})
 	spawnParticle_Vector(sculk_soul, {_v}, 1, {_el})
 	
