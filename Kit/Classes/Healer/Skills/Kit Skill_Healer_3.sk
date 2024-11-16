@@ -2,56 +2,121 @@
 
 options:
 	required-odo: 20
+	effect-radius: 5
+	heal-per-second: 0.5
 
 
 function kitSkill_Healer_3(player: player):
-	if {Stats.%{_player}%::SkillLocation} is set:
-		if {Kit-Odo::%{_player}%} >= {@required-odo}:
-			toolCT({_player}, "Healer", 3)
-			subtract {@required-odo} from {Kit-Odo::%{_player}%}
-			set {_now} to now
-			set {Stats.%{_player}%::FieldHospital-Time} to {_now}
-			kitFakeDeleteData({_player}, "Field Hospital")
-			set {_loc1} to {Stats.%{_player}%::SkillLocation}
-			set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
-			kitFakeBlock({_player}, {_loc1}, "minecraft:oak_fence", {_transformation}, "Field Hospital")
-			set {_loc2} to {Stats.%{_player}%::SkillLocation}
-			add 1 to y-coordinate of {_loc2}
-			kitFakeBlock({_player}, {_loc2}, "minecraft:torch", {_transformation}, "Field Hospital")
-			kitMsg({_player}, "§d周辺の味方を回復する装置を設置しました...")
-			send action bar "§d現在のオド: §c%{Kit-Odo::%{_player}%}%" to {_player}
-			playSound("block.portal.travel", 0.5, 1.5, {_loc1})
-			while {Stats.%{_player}%::FieldHospital-Time} is {_now}:
-				wait a second
-				set {_exist} to kitFakeCheck({_player}, "Field Hospital")
-				if {_exist} is true:
-					loop all players in radius 5 around {_loc1}:
-						if {team::%loop-player%} is {team::%{_player}%}:
-							loop-player is not {_player}
-							{Stats.%loop-player%::NoSupport} is not set
-							setSupporter(loop-player, {_player})
-							apply regeneration 1 to loop-player for 1 second
-							kitParticle_FieldHospital_Player(loop-player)
-					set {_baseloc} to {_loc1}
-					set {_rad} to 0
-					loop 36 times:
-						set {_el} to {_baseloc}
-						add 10 to {_rad}
-						add 5 * sin({_rad}) to x-coordinate of {_el}
-						add 5 * cos({_rad}) to z-coordinate of {_el}
-						kitParticle_FieldHospital_Field({_el})
-			delete {Stats.%{_player}%::FieldHospital-Time}
-		else:
-			kitMsg({_player}, "§cオドが足りません! 必要オドは §3{@required-odo} §cです!")
-	else:
+	if {Stats.%{_player}%::SkillLocation} is not set:
 		send action bar "§c§l地点を指定してください" to {_player}
+		stop
+	if {Kit-Odo::%{_player}%} < {@required-odo}:
+		kitMsg({_player}, "§cオドが足りません! 必要オドは §3{@required-odo} §cです!")
+		stop
+	toolCT({_player}, "Healer", 3)
+	kitEffect_FieldHospital({_player})
 
-function kitParticle_FieldHospital_Player(player: player):
-	loop 20 times:
-		spawnParticle_Color(entity_effect, rgb(255, 102, 255), {_player})
-		wait a tick
 
-function kitParticle_FieldHospital_Field(loc: location):
-	loop 20 times:
-		spawnParticle_Color(entity_effect, rgb(255, 255, 153), {_loc})
+local function kitEffect_FieldHospital(player: player):
+	subtract {@required-odo} from {Kit-Odo::%{_player}%}
+	set {_now} to now
+	set {Stats.%{_player}%::FieldHospital-Time} to {_now}
+	set {_loc.target} to {Stats.%{_player}%::SkillLocation}
+
+	kitFakeDeleteData({_player}, "Field Hospital")
+
+	set {_loc.mark} to {_loc.target}
+	add 1.2 to y-coordinate of {_loc.mark}
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.15f,0f,-0.15f]", "[0.3f,1.2f,0.3f]")
+	kitFakeBlock({_player}, {_loc.mark}, "minecraft:pink_concrete_powder", {_transformation}, "Field Hospital")
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.6f,0.45f,-0.15f]", "[1.2f,0.3f,0.3f]")
+	kitFakeBlock({_player}, {_loc.mark}, "minecraft:pink_concrete_powder", {_transformation}, "Field Hospital")
+	loop all block displays:
+		metadata value "kit-block" of loop-block display is "Field Hospital"
+		metadata value "Field Hospital" of loop-block display is "%{_player}%"
+		add loop-block display to {_markers::*}
+
+	set {_loc.base} to {_loc.target}
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:crimson_fence", {_transformation}, "Field Hospital")
+
+	kitMsg({_player}, "§d周辺の味方を回復する装置を設置しました...")
+	send action bar "§d現在のオド: §c%{Kit-Odo::%{_player}%}%" to {_player}
+	playSound("block.portal.travel", 0.5, 1.5, {_loc.base})
+
+	set {_y} to 0
+	set {_maxy} to 0.5
+	set {_cycley} to 20
+	set {_addy} to {_maxy} / {_cycley}
+
+	set {_rad} to 0
+	set {_addrad} to 60 / 20
+
+	set {_ln} to 0
+	set {_heal} to {@heal-per-second} / 20
+	while {Stats.%{_player}%::FieldHospital-Time} is {_now}:
 		wait a tick
+		add 1 to {_ln}
+		set {_exist} to kitFakeCheck({_player}, "Field Hospital")
+		if {_exist} is false:
+			delete {Stats.%{_player}%::FieldHospital-Time}
+			continue
+		
+		kitParticle_FieldHospital_Field({_loc.base})
+		add {_addy} to {_y}
+		if {_y} >= {_maxy}:
+			set {_addy} to {_addy} * -1
+		if {_y} <= 0:
+			set {_addy} to {_addy} * -1	
+		add {_addrad} to {_rad}
+
+		set {_loc.move} to {_loc.mark}
+		add {_y} to y-pos of {_loc.move}
+		add {_rad} to yaw of {_loc.move}
+		teleport {_markers::*} to {_loc.move}
+
+		set {_loc.center} to {_loc.move}
+		add -1.2 to y-pos of {_loc.center}
+		loop all entities in radius {@effect-radius} around {_loc.base}:
+			loop-entity is not {_player}
+			kitCheckTeam(loop-entity, {_player}, true) is true
+			setSupporter(loop-entity, {_player})
+			kitHeal(loop-entity, {_heal}, 0)
+			kitParticle_FieldHospital_Player({_loc.center}, loop-entity)
+			if mod({_ln}, 5) = 0:
+				healEffect(loop-entity, 1)
+				kitSound_FieldHospital_Player(loop-entity)
+
+	delete {Stats.%{_player}%::FieldHospital-Time}
+
+local function kitParticle_FieldHospital_Player(baseloc: location, entity: entity):
+	add 1.8 to y-pos of {_baseloc}
+	set {_loc.target} to location 1 meter above {_entity}
+	set {_loc.direct} to setDirToVec({_baseloc}, setVector({_baseloc}, {_loc.target}))
+
+	add rgb(236, 169, 231) to {_colors::*}
+	add rgb(255, 210, 244) to {_colors::*}
+	add rgb(243, 115, 185) to {_colors::*}
+
+	set {_distance} to distance between {_baseloc} and {_loc.target}
+	set {_density} to 5
+	set {_count} to round({_distance} * {_density})
+	set {_m} to 0
+	set {_addm} to 1 / {_density}
+	set {_chance} to 20 / {_density}
+	loop {_count} times:
+		add {_addm} to {_m}
+		set {_el} to location {_m} meters in front of {_loc.direct}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.5, {_el})
+		chance of {_chance}%:
+			spawnParticle(electric_spark, moveRandomLocation({_el}, 0.5))
+
+local function kitParticle_FieldHospital_Field(loc: location):
+	spawnParticle_Color(entity_effect, rgb(240, 117, 240), particleLocation_Circle({_loc}, 50, {@effect-radius}))
+
+
+
+local function kitSound_FieldHospital_Player(entity: entity):
+	set {_loc} to location of {_entity}
+	playSound("block.amethyst_block.chime", 1, 1.45, {_loc})
