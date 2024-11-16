@@ -2,17 +2,27 @@
 
 function kitSkill_Engineer_2(player: player, loc: location):
 	toolCT({_player}, "Engineer", 2)
+	kitEffect_RestoreFaster({_player}, {_loc})
+
+local function kitEffect_RestoreFaster(player: player, loc: location):
 	set {_now} to now
 	set {Stats.%{_player}%::RestoreFaster-Time} to {_now}
 	kitFakeDeleteData({_player}, "Machine-Restore Faster")
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
-	add 1 to y-coordinate of {_loc.core}
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
-	kitFakeBlock({_player}, {_loc.base}, "minecraft:oak_fence", {_transformation}, "Machine-Restore Faster")
+	add 1.55 to y-coordinate of {_loc.core}
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.45f,-0.45f,-0.45f]", "[0.9f,0.9f,0.9f]")
 	kitFakeBlock({_player}, {_loc.core}, "minecraft:glowstone", {_transformation}, "Machine-Restore Faster")
+	loop all block displays:
+		metadata value "kit-block" of loop-block display is "Machine-Restore Faster"
+		metadata value "Machine-Restore Faster" of loop-block display is "%{_player}%"
+		set {_coredisplay} to loop-block display
+
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:birch_fence", {_transformation}, "Machine-Restore Faster")
 	kitMsg({_player}, "<##FFF352>Restore Faster§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
+
 	set {_skill} to kitSkillItem("Engineer", 2)
 	set {_lore::*} to lore of {_skill}
 	loop {_lore::*}:
@@ -20,76 +30,134 @@ function kitSkill_Engineer_2(player: player, loc: location):
 		set {_fuel} to loop-value
 	replace every "§8Fuel§7: §4" with "" in {_fuel}
 	set {_fuel} to {_fuel} parsed as number
+
+	# coreを回転させる関数
+	kitEffect_RestoreFaster_Core({_player}, {_coredisplay})
 	while {Stats.%{_player}%::RestoreFaster-Time} is {_now}:
 		wait a second
 		# 現在範囲内の味方リストをリセット
 		delete {_enter.now::*}
 		# fuel check(最低でも消費Fuel以上存在しない場合は効果を発揮しない)
 		delete {_execute}
-		if {_nofuel} is true:
-			set {_execute} to true
-		else if {Kit-Fuel::%{_player}%} >= {_fuel}:
+		if {Kit-Fuel::%{_player}%} >= {_fuel}:
 			set {_execute} to true
 		# 効果発動時
 		if {_execute} is true:
-			loop all players in radius 30 around {_loc}:
+			loop all players:
 				{_execute} is true
 				loop-player is not {_player}
 				kitCheckTeam(loop-player, {_player}, true) is true
 				{Stats.%loop-player%::NoSupport} is not set
+
+				# 範囲外に出てから再度有効化するまでの時間
+				if {_timer::%loop-player%} is set:
+					subtract 1 from {_timer::%loop-player%}
+					# 範囲外に立ってから5秒以上が経過した際の処理
+					if {_timer::%loop-player%} <= 0:
+						delete {_timer::%loop-player%}
+					continue
+
+				set {_distance} to distance between {_loc} and loop-player
+				if {_distance} > 30:
+					continue
+
+				# ボスバー設定
+				set {_uuid} to UUID of loop-player
+				set {_id} to "Restore Faster-%{_uuid}%"
+
 				# もし入った履歴がなければFuel消費
 				if {_enter.hist::*} does not contain loop-player:
-					if {_nofuel} is not set:
-						set {_checkfuel} to 0
-					else if {_timer::%loop-player%} is set:
-						set {_checkfuel} to 0
-					else:
-						set {_checkfuel} to {_fuel}
-						setFuelCT({_player})
-					subtract {_checkfuel} from {Kit-Fuel::%{_player}%}
 					if {Kit-Fuel::%{_player}%} < {_fuel}:
-						delete {_execute}
+						continue
+					setFuelCT({_player})
+					subtract {_fuel} from {Kit-Fuel::%{_player}%}
+
 					add loop-player to {_enter.hist::*}
 					setSupporter(loop-player, {_player})
 					message formatted "§bクールタイム短縮時間§eが短くなります!" to loop-player
 					kitEffectDescription(loop-player, "§b§lCT§e§l加速")
-					kitEffect_RestoreFaster(loop-player, true)
-				# 現在入っている記録 & 効果とタイマー設定
+					kitParticle_RestoreFaster(loop-player, true)
+
+					set {_timer.title} to "§bCool Time§e§l加速"
+					create bossbar titled {_timer.title} and id {_id} for loop-player with progress 0 with colors yellow with style solid
+				# 現在入っている記録 & 効果
 				add loop-player to {_enter.now::*}
-				set {_timer::%loop-player%} to 5
 				set {Stats.%loop-player%::FastCT} to true
-			# 入った履歴内で現在いないプレイヤーのタイマー消費
+
+				# ボスバー設定
+				set {_prog} to 100 - (({_distance} / 30) * 100)
+				set bossbar {_id} value to {_prog}
+
+			# 入った履歴内で現在いないプレイヤーの処理
 			loop {_enter.hist::*}:
 				{_enter.now::*} does not contain loop-value
+				set {_uuid} to UUID of loop-value
+				set {_id} to "Restore Faster-%{_uuid}%"
 				# 効果発動中であれば効果削除
 				if {Stats.%loop-value%::FastCT} is true:
 					delete {Stats.%loop-value%::FastCT}
 					message formatted "§bクールタイム短縮§c効果が切れました" to loop-value
-					kitEffect_RestoreFaster(loop-value, false)
-				subtract 1 from {_timer::%loop-value%}
-				# 範囲外に立ってから5秒以上が経過した際の処理
-				if {_timer::%loop-value%} <= 0:
-					delete {_timer::%loop-value%}
+					kitParticle_RestoreFaster(loop-value, false)
+					set {_timer::%loop-value%} to 5
+					remove bossbar {_id}
 					remove loop-value from {_enter.hist::*}
+
 		# 効果未発動時
 		else:
 			loop {_enter.hist::*}:
+				set {_uuid} to UUID of loop-value
+				set {_id} to "Restore Faster-%{_uuid}%"
 				# 効果発動中であれば効果削除
 				if {Stats.%loop-value%::FastCT} is true:
 					delete {Stats.%loop-value%::FastCT}
 					message formatted "§bクールタイム短縮§c効果が切れました" to loop-value
-					kitEffect_RestoreFaster(loop-value, false)
+					kitParticle_RestoreFaster(loop-value, false)
+					remove bossbar {_id}
 		# 機械存在のチェック
 		set {_exist} to kitFakeCheck({_player}, "Machine-Restore Faster")
 		if {_exist} is false:
 			delete {Stats.%{_player}%::RestoreFaster-Time}
 			loop {_enter.hist::*}:
 				{Stats.%loop-value%::FastCT} is true
+				set {_uuid} to UUID of loop-value
+				set {_id} to "Restore Faster-%{_uuid}%"
 				delete {Stats.%loop-value%::FastCT}
 				message "§bクールタイム短縮§c効果が切れました" to loop-value
-				kitEffect_RestoreFaster(loop-value, false)
+				kitParticle_RestoreFaster(loop-value, false)
+				remove bossbar {_id}
 
-function kitEffect_RestoreFaster(player: player, bool: boolean):
+local function kitEffect_RestoreFaster_Core(player: player, display: entity):
+	set {_now} to {Stats.%{_player}%::RestoreFaster-Time}
+	set {_yaw} to yaw of {_display}
+	set {_rotate.yaw} to 100
+	set {_add.yaw} to {_rotate.yaw} / 20 * -1
+
+	set {_ln} to 0
+	while {Stats.%{_player}%::RestoreFaster-Time} is {_now}:
+		delete {_exist}
+		loop all block displays:
+			loop-block display is {_display}
+			set {_exist} to true
+		if {_exist} is not set:
+			stop
+
+		set {_baseloc} to location of {_display}
+		set {_tploc} to {_baseloc}
+		add {_add.yaw} to {_yaw}
+		set yaw of {_tploc} to {_yaw}
+		teleport {_display} to {_tploc}
+
+		add 1 to {_ln}
+		if mod({_ln}, 20) = 0:
+			set {_soundpitch} to a random number between 0.5 and 0.8
+			playSound("item.lodestone_compass.lock", 0.05, {_soundpitch}, {_tploc})
+
+		kitParticle_RestoreFaster_Clock({_tploc})
+		wait a tick
+
+
+
+local function kitParticle_RestoreFaster(player: player, bool: boolean):
 	set {_up} to -0.5
 	loop 5 times:
 		set {_loc} to location of {_player}
@@ -110,3 +178,7 @@ function kitEffect_RestoreFaster(player: player, bool: boolean):
 			else:
 				spawnParticle_Color(entity_effect, rgb(0, 255, 255), {_el})
 		wait a tick
+
+local function kitParticle_RestoreFaster_Clock(baseloc: location):
+	set {_yaw} to (yaw of {_baseloc}) * 2
+	spawnParticle_DustTransition(rgb(243, 243, 57), rgb(243, 243, 179), 1, particleLocation_Circle({_baseloc}, 4, 1.2, {_yaw}))
