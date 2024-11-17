@@ -1,5 +1,26 @@
 # skill-name: Fanfare Rhapsody
 
+options:
+	effect-radius: 6
+	strength-tier: 3
+	fortissimo-tier: 5
+	strength-second: 3 seconds
+	strength-tick: 60
+	max-health-second: 5 seconds
+	max-health-tick: 100
+	heal-per-second: 1
+
+
+
+on damage of player with priority MONITOR:
+	{Stats.%victim%::FanfareRhapsody} is set
+	wait a tick
+	{Stats.%victim%::FanfareRhapsody} is set
+	set {_dmg} to damage
+	add {_dmg} to {Stats.%victim%::FanfareRhapsody}
+
+
+
 function kitSkill_Bard_4(player: player):
 	toolCT({_player}, "Bard", 4)
 	kitEffect_FanfareRhapsody({_player})
@@ -7,29 +28,59 @@ function kitSkill_Bard_4(player: player):
 local function kitEffect_FanfareRhapsody(player: player):
 	kitMsg({_player}, "§4戦闘の士気を上げる§6ファンファーレ§4を送ります!")
 	kitParticle_FanfareRhapsody_Launch({_player})
-	set {_tier} to 1
+	set {_tier} to {@strength-tier}
 	if {Stats.%{_player}%::Fortissimo} is true:
-		set {_tier} to 2
+		set {_tier} to {@fortissimo-tier}
 		kitParticle_Fortissimo({_player})
-	loop all players in radius 6 around {_player}:
+
+	loop all players in radius {@effect-radius} around {_player}:
 		loop-player is not {_player}
 		kitCheckTeam({_player}, loop-player, true) is true
+		{Stats.%loop-player%::FanfareRhapsody} is not set
+		set {Stats.%loop-player%::FanfareRhapsody} to 0
 		message formatted "§d%{_player}% §4にファンファーレを貰った!" to loop-player
 		setSupporter(loop-player, {_player})
 		kitParticle_FanfareRhapsody_Apply(loop-player)
 		if health of loop-player is max health of loop-player:
-			set {_time} to 5 seconds
-			set health of loop-player to health of loop-player - 3
+			set {_time} to {@max-health-second}
 			kitParticle_FanfareRhapsody_Explode(loop-player)
+			kitEffect_FanfareRhapsody_Buff(loop-player, {@max-health-tick})
 		else:
-			set {_time} to 1 seconds
+			set {_time} to {@strength-second}
+			kitEffect_FanfareRhapsody_Buff(loop-player, {@strength-tick})
 		applyEffect(loop-player, strength, {_tier}, {_time})
+
+local function kitEffect_FanfareRhapsody_Buff(player: player, time: number):
+	kitEffectDescription({_player}, "§4§l攻撃力上昇")
+	sendTimeBossbar_GREEN({_player}, "§4攻撃力上昇", {_time})
+	loop {_time} times:
+		if {Stats.%{_player}%::FanfareRhapsody} is not set:
+			stop
+		wait a tick
+	if {Stats.%{_player}%::FanfareRhapsody} is not set:
+		stop
+	
+	message formatted "<##b31f1f>戦闘で傷ついた身体<##b1b1b1>が<##fda0e9>癒やされていく...!" to {_player}
+	kitParticle_FanfareRhapsody_Heal({_player})
+	set {_healing} to {Stats.%{_player}%::FanfareRhapsody}
+	delete {Stats.%{_player}%::FanfareRhapsody}
+	kitEffectDescription({_player}, "§d§l❤%{_healing}%")
+
+	set {_count} to ({_healing} * 20) * {@heal-per-second}
+	sendTimeBossbar_PINK({_player}, "治癒", {_count})
+	set {_healtick} to {_healing} / {_count}
+	loop {_count} times:
+		if kitCheckAlive({_player}) is false:
+			stop
+
+		kitHeal({_player}, {_healtick}, 1)
+		wait a tick
 
 
 
 local function kitParticle_FanfareRhapsody_Launch(player: player):
 	set {_baseloc} to location of {_player}
-	playSound("entity.blaze.shoot", 1, 0.85, {_baseloc})
+	kitSound_FanfareRhapsody_Launch({_baseloc})
 	set {_y} to 0
 	loop 11 times:
 		add 0.5 to {_y}
@@ -65,3 +116,36 @@ local function kitParticle_FanfareRhapsody_Explode(player: player):
 	set {_baseloc} to location 1 meter above {_player}
 	loop 10 times:
 		spawnParticle_Vector(flame, randomVector(), 0.75, {_baseloc})
+
+local function kitParticle_FanfareRhapsody_Heal(player: player):
+	kitSound_FanfareRhapsody_Heal({_player})
+
+	add rgb(247, 182, 233) to {_colors::*}
+	add rgb(250, 202, 240) to {_colors::*}
+	add rgb(243, 158, 186) to {_colors::*}
+
+	set {_y} to 0
+	set {_addy} to 0.5
+	loop 5 times:
+		set {_baseloc} to location of {_player}
+		add {_y} to y-pos of {_baseloc}
+		set {_count} to a random integer between 5 and 10
+		loop {_count} times:
+			set {_el} to moveRandomLocation({_baseloc}, 1)
+			set y-pos of {_el} to y-pos of {_baseloc}
+			set {_size} to a random number between 1 and 2
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, {_size}, {_el})
+
+		add {_addy} to {_y} 
+		wait a tick
+
+
+
+local function kitSound_FanfareRhapsody_Launch(loc: location):
+	playSound("item.goat_horn.sound.2", 1.5, 1, {_loc})
+	playSound("entity.ender_dragon.growl", 0.85, 1.65, {_loc})
+
+local function kitSound_FanfareRhapsody_Heal(player: player):
+	playSound("item.goat_horn.sound.1", 1, 1.07, {_player})
+	playSound("block.amethyst_block.resonate", 1.5, 1.2, {_player})
