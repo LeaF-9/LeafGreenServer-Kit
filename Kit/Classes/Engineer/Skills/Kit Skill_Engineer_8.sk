@@ -10,6 +10,7 @@ function kitSkill_Engineer_8(player: player, loc: location):
 	add 1 to y-coordinate of {_loc.core}
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,-0.5f,-0.5f]", "[1f,1f,1f]")
 	kitFakeBlock({_player}, {_loc.base}, "minecraft:diamond_block", {_transformation}, "Machine-Shield Crystal")
+	kitFakeBlock({_player}, {_loc.core}, "minecraft:barrier", {_transformation}, "Machine-Shield Crystal")
 	spawn end crystal at {_loc.core} with nbt compound from "{ShowBottom:false}"
 	set metadata value "gametype" of spawned end crystal to "Kit"
 	set metadata value "shield crystal" of spawned end crystal to "%{_player}%"
@@ -31,7 +32,7 @@ function kitSkill_Engineer_8(player: player, loc: location):
 							continue
 					setSupporter(loop-player, {_player})
 					kitShield(loop-player, 3)
-					kitEffectDescription(loop-player, "§3§lシールド")
+					kitEffectDescription(loop-player, "§3§l❤3")
 #					set {_nosh::%loop-value%} to 10
 					message formatted "§3§lShield Crystal§9のシールドが付与された!" to loop-player
 					playSound("block.beacon.power_select", 1, 2, {_loc.core})
@@ -51,11 +52,22 @@ function kitSkill_Engineer_8(player: player, loc: location):
 		set {_exist} to kitFakeCheck({_player}, "Machine-Shield Crystal")
 		if {_exist} is false:
 			delete {Stats.%{_player}%::ShieldCrystal-Time}
+			continue
 #			loop {_pl::*}:
 #				{Kit-Shield::%loop-value%} is set
 #				delete {Kit-ShieldTime::%loop-value%}
 #				delete {Kit-Shield::%loop-value%}
 #				message formatted "§3§lShield Crystal§1の効果が消滅しました" to loop-value
+
+		# end crystal存在確認
+		set {_exist.crystal} to false
+		loop all end crystals:
+			metadata value "shield crystal" of loop-end crystal is "%{_player}%"
+			set {_exist.crystal} to true
+		if {_exist.crystal} is false:
+			spawn end crystal at {_loc.core} with nbt compound from "{ShowBottom:false}"
+			set metadata value "gametype" of spawned end crystal to "Kit"
+			set metadata value "shield crystal" of spawned end crystal to "%{_player}%"
 	loop all entities:
 		metadata value "shield crystal" of loop-entity is "%{_player}%"
 		delete loop-entity
