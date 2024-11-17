@@ -1,5 +1,9 @@
 function kitFakeBlock(player: player, location: location, block: text, transformation: text, metadata: text):
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},teleport_duration:1}"
+	set {_team} to getTeam({_player}, true)
+	set {_rgb} to kitTeamRGB({_team})
+	set {_color} to convertColorToDataColor({_rgb})
+
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},glow_color_override:%{_color}%,teleport_duration:1}"
 	spawn a block display at {_location} with nbt {_nbt}
 	set {_blockdisplay} to spawned block display
 	set metadata value "gametype" of {_blockdisplay} to "Kit"
@@ -7,7 +11,11 @@ function kitFakeBlock(player: player, location: location, block: text, transform
 	set metadata value {_metadata} of {_blockdisplay} to "%{_player}%"
 
 function kitFakeItem(player: player, location: location, item: text, transformation: text, metadata: text):
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},brightness:{block:15,sky:15},teleport_duration:1}"
+	set {_team} to getTeam({_player}, true)
+	set {_rgb} to kitTeamRGB({_team})
+	set {_color} to convertColorToDataColor({_rgb})
+
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},brightness:{block:15,sky:15},glow_color_override:%{_color}%,teleport_duration:1}"
 	spawn an item display at {_location} with nbt {_nbt}
 	set {_itemdisplay} to spawned item display
 	set metadata value "gametype" of {_itemdisplay} to "Kit"
@@ -74,6 +82,10 @@ function kitFakeDelete(player: offline player):
 	loop all block displays:
 		metadata value "kit-block" of loop-block display is set
 		set {_metadata} to metadata value "kit-block" of loop-block display
+		# EngineerのUltは破壊しない
+		if {_metadata} is "Machine-Transport Lift":
+			continue
+
 		metadata value {_metadata} of loop-block display is "%{_player}%"
 		delete loop-block display
 	loop all item displays:
