@@ -17,6 +17,11 @@ function kitUltEngineer(player: player):
 	set pitch of {_mecloc} to -180
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,-0.5f,-0.5f]", "[1f,0.5f,1f]")
 	kitFakeBlock({_player}, {_mecloc}, "minecraft:sculk_shrieker", {_transformation}, "Machine-Transport Lift")
+	loop all block displays:
+		metadata value "kit-block" of loop-block display is "Machine-Transport Lift"
+		metadata value "Machine-Transport Lift" of loop-block display is "%{_player}%"
+		set {_transporter} to loop-block display
+
 	loop {_fromloc::*}:
 		set {_armloc} to loop-value
 		add 2 to y-coordinate of {_armloc}
@@ -39,16 +44,29 @@ function kitUltEngineer(player: player):
 			else:
 				set {_ct::%loop-index%} to {_rect}
 #	テレポート動作
+		# 機械の発光除去
+		loop {_machineGlowing::*}:
+			set {_loop-player} to loop-value
+			packetUnglowing({_loop-player}, {_transporter})
+		delete {_machineGlowing::*}
+
 		# リスポーンから機械へ
 		loop {_fromloc::*}:
 			set {_temploc} to loop-value
 			loop all players in radius 3 around {_temploc}:
 				kitCheckTeam({_player}, loop-player, true) is true
-				loop-player is sneaking
+				# スニークしていない場合は通知のみ
+				if loop-player is not sneaking:
+					sendSubtitle(loop-player, "§3§lスニーク§7で§e機械§7に§b§lテレポート§7します", 0.1 seconds, 0 seconds, 0 seconds)
+					if {_machineGlowing::*} does not contain loop-player:
+						packetGlowing(loop-player, {_transporter})
+						add loop-player to {_machineGlowing::*}
+					continue
+
 				{_ct::%loop-player%} is not set
 				set {_ct::%loop-player%} to 20
 				teleport loop-player to {_tploc}
-				message formatted "§5§lテレポートしました!" to loop-player
+				send action bar "§5§lテレポートしました!" to loop-player
 				playSound("entity.enderman.teleport", 1, 0.5, {_tploc})
 				set {_beloc} to {_tploc}
 				add 1 to y-coordinate of {_beloc}
@@ -57,12 +75,16 @@ function kitUltEngineer(player: player):
 		# 機械からランダムなリスポーンへ
 		loop all players in radius 0.5 around {_tploc}:
 			kitCheckTeam({_player}, loop-player, true) is true
-			loop-player is sneaking
+			# スニークしていない場合は通知のみ
+			if loop-player is not sneaking:
+				sendSubtitle(loop-player, "§3§lスニーク§7で§e復活地点§7に§b§lテレポート§7します", 0.1 seconds, 0 seconds, 0 seconds)
+				continue
+
 			{_ct::%loop-player%} is not set
 			set {_ct::%loop-player%} to 20
 			set {_fromtp} to a random location out of {_fromloc::*}
 			teleport loop-player to {_fromtp}
-			message formatted "§5§lテレポートしました!" to loop-player
+			send action bar "§5§lテレポートしました!" to loop-player
 			playSound("entity.enderman.teleport", 1, 0.5, {_fromtp})
 			set {_beloc} to {_fromtp}
 			add 1 to y-coordinate of {_beloc}
