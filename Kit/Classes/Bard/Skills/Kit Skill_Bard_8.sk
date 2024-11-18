@@ -15,13 +15,13 @@ local function kitEffect_CalmLullaby(player: player):
 		set {_m} to 10
 		kitParticle_Fortissimo({_player})
 	kitParticle_CalmLullaby({_player}, {_m})
-	sendTimeBossbar_GREEN({_player}, "Calm Lullaby", 100)
-	loop 100 times:
+	sendTimeBossbar_GREEN({_player}, "Calm Lullaby", 60)
+	loop 60 times:
 		if {Stats.%{_player}%::CalmLullabby} is not {_now}:
 			continue
 		loop all players in radius {_m} around {_player}:
 			kitCheckTeam(loop-player, {_player}, false) is true
-			add 1 to {_sleepy::%loop-player%}
+			add 2 to {_sleepy::%loop-player%}
 			kitParticle_CalmLullaby_Sleepy(loop-player)
 		wait a tick
 	if {Stats.%{_player}%::CalmLullabby} is not {_now}:
@@ -42,7 +42,7 @@ local function kitEffect_CalmLullaby(player: player):
 local function kitParticle_CalmLullaby(player: player, meter: number):
 	kitSound_CalmLullaby({_player})
 	set {_baserad} to 0
-	loop 100 times:
+	loop 60 times:
 		set {_baseloc} to location 1 meter above {_player}
 		set {_ln} to 0
 		loop 8 times:
@@ -71,12 +71,25 @@ local function kitParticle_CalmLullaby_Burst(player: player, meter: number):
 	playSound("block.brewing_stand.brew", 1, 0.73, {_player})
 	set {_baseloc} to location of {_player}
 	loop 100 times:
-		set {_el} to {_baseloc}
-		add a random number between {_meter} * -1 and {_meter} to x-pos of {_el}
-		add a random number between {_meter} * -1 and {_meter} to y-pos of {_el}
-		add a random number between {_meter} * -1 and {_meter} to z-pos of {_el}
-		if distance between {_baseloc} and {_el} <= {_meter}:
-			spawnParticle_BlockData(falling_dust, cyan wool, {_el})
+		set {_el} to setDirToVec({_baseloc}, randomVector())
+		set {_rm} to a random number between 0 and {_meter}
+		set {_el} to location {_rm} meters in front of {_el}
+		spawnParticle_BlockData(falling_dust, cyan wool, {_el})
+		chance of 30%:
+			set {_el} to setDirToVec({_baseloc}, randomVector())
+			set {_rm} to a random number between 0 and {_meter}
+			set {_el} to location {_rm} meters in front of {_el}
+			spawnParticle_BlockData(falling_dust, blue wool, {_el})
+		chance of 30%:
+			set {_el} to setDirToVec({_baseloc}, randomVector())
+			set {_rm} to a random number between 0 and {_meter}
+			set {_el} to location {_rm} meters in front of {_el}
+			spawnParticle_BlockData(falling_dust, light blue wool, {_el})
+		chance of 10%:
+			set {_el} to setDirToVec({_baseloc}, randomVector())
+			set {_rm} to a random number between 0 and {_meter}
+			set {_el} to location {_rm} meters in front of {_el}
+			spawnParticle_Block(diamond block, {_el})
 	loop 5 times:
 		set {_y} to loop-number
 		set {_ln} to 0
@@ -94,31 +107,27 @@ local function kitParticle_CalmLullaby_Burst(player: player, meter: number):
 
 
 local function kitSound_CalmLullaby(player: player):
-	loop 5 times:
+	loop 4 times:
 		if loop-number is 1:
-			set {_pitch.1} to 0.891
-			set {_pitch.2} to 1.12
-			set {_pitch.3} to 1.33
+			set {_pitch.1} to 1.06
+			set {_pitch.2} to 1.33
+			set {_pitch.3} to 1.59
 		else if loop-number is 2:
-			set {_pitch.1} to 1
-			set {_pitch.2} to 1.26
-			set {_pitch.3} to 1.5
+			set {_pitch.1} to 0.667
+			set {_pitch.2} to 1.06
+			set {_pitch.3} to 1.59
 		else if loop-number is 3:
-			set {_pitch.1} to 0.944
-			set {_pitch.2} to 1.12
-			set {_pitch.3} to 1.33
+			set {_pitch.1} to 0.707
+			set {_pitch.2} to 1.06
+			set {_pitch.3} to 1.59
 		else if loop-number is 4:
-			set {_pitch.1} to 1.12
-			set {_pitch.2} to 1.33
-			set {_pitch.3} to 1.68
-		else:
-			set {_pitch.1} to 1
-			set {_pitch.2} to 1.33
-			set {_pitch.3} to 1.68
+			set {_pitch.1} to 0.794
+			set {_pitch.2} to 1.06
+			set {_pitch.3} to 1.41
 		set {_ln} to 0
 		loop 3 times:
 			add 1 to {_ln}
 			playSound("block.note_block.bell", 1, {_pitch.%{_ln}%}, {_player})
 			wait 2 ticks
-		loop 20 - 3 * 2 times:
+		loop ((20 * (3 / 4)) - (3 * 2)) times:
 			wait a tick
