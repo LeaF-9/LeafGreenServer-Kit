@@ -2,11 +2,24 @@
 
 options:
 	effect-tick: 200
+	metadata-nodamage: "Sprite Talisman - No Damage"
 
 
 
 on damage of player with priority NORMAL:
 	if {Stats.%victim%::SpriteTalisman} is set:
+		# 重複確認
+		set {_metadata} to metadata value {@metadata-nodamage} of victim
+		if {_metadata} is set:
+			set {_delay} to 10 ticks
+			set {_now} to now
+			set {_dif} to difference between {_metadata} and {_now}
+			if {_dif} < {_delay}:
+				setDamageModification_SET(victim, 0)
+				stop
+			delete metadata value {@metadata-nodamage} of victim
+			
+
 		set {_dmg} to damage - {Stats.%victim%::SpriteTalisman}
 		if {_dmg} < 0:  # ゼロ以下になった場合はノックバックのみ
 			set {_dmg} to 0
@@ -16,6 +29,12 @@ on damage of player with priority NORMAL:
 		if {Stats.%victim%::SpriteTalisman} <= 0:  # ダメージ減衰の効果終了時
 			kitEffect_SpriteTalisman_Explode(victim)
 		kitParticle_SpriteTalisman_Damage(victim)
+
+		# 効果が重複して消滅する問題の解決策
+		if {_dmg} < 0.5:
+			set {_now} to now
+			set metadata value {@metadata-nodamage} of victim to {_now}
+
 
 function kitSkill_Paladin_4(player: player):
 	toolCT({_player}, "Paladin", 4)
