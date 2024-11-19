@@ -1,34 +1,106 @@
 # Sacrifice Heal
 
+options:
+	sacrifice-hearts: 3
+	effect-radius: 10
+
+
+
 function kitSkill_Paladin_2(player: player):
 	if {_player}'s health <= 3:
 		send action bar "§c§l体力が少なすぎます!" to {_player}
-	else:
-		toolCT({_player}, "Paladin", 2)
-		subtract 3 from {_player}'s health
-		loop all players in radius 10 around {_player}:
-			loop-player is not {_player}
-			kitCheckTeam(loop-player, {_player}, true) is true
-			kitCheckAlive(loop-player) is true
-			kitHeal(loop-player, 3)
-			kitEffectDescription(loop-player, "§d❤3")
-			setSupporter(loop-player, {_player})
-			message formatted "§a%{_player}% §cが体力を回復してくれました!" to loop-player
-		kitMsg({_player}, "§c体力を削って周辺の味方の体力を回復しました!")
-		kitParticle_SacrificeHeal({_player})
+		stop
+	# check healable
+	loop all players in radius {@effect-radius} around {_player}:
+		loop-player is not {_player}
+		kitCheckTeam(loop-player, {_player}, true) is true
+		(max health of loop-player) is not (health of loop-player)
+		add loop-player to {_targets::*}
+	if size of {_targets::*} = 0:
+		send action bar "§d回復§cを必要とする§6§lプレイヤー§cがいません!" to {_player}
+		stop
 
-function kitParticle_SacrificeHeal(player: player):
+	toolCT({_player}, "Paladin", 2)
+	kitEffect_SacrificeHeal({_player}, {_targets::*})
+
+
+
+local function kitEffect_SacrificeHeal(player: player, targets: players):
+	set {_health} to (health of {_player}) - 3	
+	set health of {_player} to {_health}
+	loop {_targets::*}:
+		set {_loop-player} to loop-value
+		kitHeal({_loop-player}, 3)
+		kitEffectDescription({_loop-player}, "§d❤3")
+		setSupporter({_loop-player}, {_player})
+		message formatted "§a%{_player}% §cが体力を回復してくれました!" to {_loop-player}
+		kitParticle_SacrificeHeal_Target({_player}, {_loop-player})
+	kitMsg({_player}, "§c体力を削って周辺の味方の体力を回復しました!")
+	kitParticle_SacrificeHeal({_player})
+
+
+
+local function kitParticle_SacrificeHeal(player: player):
 	playSound("entity.vex.hurt", 1, 0.5, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 50 times:
+		spawnParticle_Block(redstone block, moveRandomLocation({_baseloc}, 1))
+
+	add rgb(139, 7, 29) to {_colors::*}
+	add rgb(172, 13, 13) to {_colors::*}
+	add rgb(143, 12, 51) to {_colors::*}
+
 	set {_baseloc} to location of {_player}
-	set {_count} to 10
+	set pitch of {_baseloc} to 0
+	set {_m} to 1
+	set {_basecount} to 10
 	loop 10 times:
 		add 1 to {_m}
-		set {_rad} to 0
+		set {_count} to {_basecount} * {_m}
 		loop {_count} times:
-			add 360 / (40 - {_count}) to {_rad}
-			set {_el} to {_baseloc}
-			add {_m} * sin({_rad}) to x-pos of {_el}
-			add {_m} * cos({_rad}) to z-pos of {_el}
-			spawnParticle_DustTransition(rgb(200, 81, 121), rgb(235, 110, 165), 3, {_el})
-		add 3 to {_count}
+			set {_rm} to a random number between 0 and {_m}
+			set yaw of {_baseloc} to a random number between 0 and 360
+			set {_el} to location {_rm} meters in front of {_baseloc}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_DustTransition({_color}, rgb(48, 4, 4), 2, {_el})
 		wait a tick
+
+local function kitParticle_SacrificeHeal_Target(player: player, target: player):
+	playSound("entity.witch.drink", 1, 0.8, {_target})
+	set {_loc.player} to location 1 meter above {_player}
+	set {_loc.target} to location 1 meter above {_target}
+	set {_basevec} to setVector({_loc.player}, {_loc.target})
+	set {_baseloc} to setDirToVec({_loc.player}, {_basevec})
+
+	set {_rotateloc} to {_baseloc}
+	subtract 90 from pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 10 meters in front of {_rotateloc})
+
+	add rgb(199, 55, 168) to {_colors.trail::*}
+	add rgb(190, 30, 105) to {_colors.trail::*}
+	add rgb(167, 31, 160) to {_colors.trail::*}
+
+	add rgb(139, 7, 29) to {_colors.tornado::*}
+	add rgb(172, 13, 13) to {_colors.tornado::*}
+	add rgb(143, 12, 51) to {_colors.tornado::*}
+
+
+	set {_distance} to distance between {_loc.player} and {_loc.target}
+	set {_count} to round({_distance} * 2)
+	set {_m} to 0
+	set {_addm} to 0.5
+
+	set {_rad} to 0
+	set {_addrad} to 20
+	set {_radius} to 0.5
+	loop {_count} times:
+		add {_addm} to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		set {_color} to a random element out of {_colors.trail::*}
+		spawnParticle_Dust({_color}, 1, {_el})
+
+		rotate {_rotatevec} around {_basevec} by {_rad}
+		set {_el.2} to location {_radius} meters in front of setDirToVec({_el}, {_rotatevec})
+		set {_color} to a random element out of {_colors.tornado::*}
+		spawnParticle_Color(entity_effect, {_color}, {_el.2})
+		add {_addrad} to {_rad}
