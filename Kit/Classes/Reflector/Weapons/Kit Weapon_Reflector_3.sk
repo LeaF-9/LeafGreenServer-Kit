@@ -6,7 +6,10 @@ on damage of player with priority NORMAL:
 	set {_attacker} to getAttacker(victim)
 	set {_tool} to victim's tool
 	kitItemAllChecker({_tool}, "Reflector", "Weapon.main", 3) is true
+	set {_dmg} to damage
 	setDamageModification_ADD(victim, -1.5)
+	if {_dmg} < 1.5:
+		stop
 	kitMsg(victim, "§cダメージ<##f068d2>を<##bf23e6>§lチャージ<##f068d2>した!")
 	add 1.5 to {Stats.%victim%::TolleStone}
 	kitParticle_TolleStone_Charge(victim)
