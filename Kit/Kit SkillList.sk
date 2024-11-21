@@ -453,6 +453,21 @@ local function saveCustomKitSkill(player: player, kit: text):
 			add 1 to {_con}
 			set {_skillslot-3} to loop-index parsed as number
 	if {_con} is 3:
+		# 重複チェック
+		set {_doubled} to false
+		set {_ln} to 0
+		loop 3 times:
+			add 1 to {_ln}
+			set {_ln.next} to {_ln} + 1
+			if {_ln.next} > 3:
+				set {_ln.next} to 1
+			
+			if {_skillslot-%{_ln}%} is {_skillslot-%{_ln.next}%}:
+				set {_doubled} to true
+		if {_doubled} is true:
+			message formatted "{@prefix} §c選択アイテムが§4§l重複§cしています!" to {_player}	
+			stop
+
 		set {_uuid} to UUID of {_player}
 		load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%{_player}%.custom"
 		set yml value "custom.%{_kit}%.skill.1" from "player.%{_player}%.custom" to {_skillslot-1}
