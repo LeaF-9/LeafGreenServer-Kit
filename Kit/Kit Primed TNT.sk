@@ -28,6 +28,9 @@ on explode:
 on damage of player:
 	if damage was caused by block explosion or entity explosion:
 		if metadata value "firework" of projectile is true:
+			set {_attacker} to metadata value "firework - shooter" of projectile
+			if kitCheckTeam({_attacker}, victim, true, true) is true:
+				cancel event
 			stop
 		cancel event
 
