@@ -16,13 +16,13 @@ local function kitEffect_RouladeChime(player: player):
 
 local function kitEffect_RouladeChime_Beam(player: player, loc: location):
 	set {_dis} to 100
-	loop all players in radius 10 around {_loc}:
-		kitCheckTeam({_player}, loop-player, false) is true
-		set {_playerloc} to location 1 meter above loop-player
+	loop all entities in radius 10 around {_loc}:
+		kitCheckTeam({_player}, loop-entity, false, true) is true
+		set {_playerloc} to location 1 meter above loop-entity
 		set {_d} to distance between {_loc} and {_playerloc}
 		if {_d} < {_dis}:
 			set {_dis} to {_d}
-			set {_target} to loop-player
+			set {_target} to loop-entity
 	if {_target} is not set:
 		stop
 	playSound("block.amethyst_block.chime", 1, 1.5, {_loc})
@@ -33,6 +33,7 @@ local function kitEffect_RouladeChime_Beam(player: player, loc: location):
 		set {_hit::*} to checkHitEntities({_el})
 		loop {_hit::*}:
 			set {_t} to loop-value-2
+			kitCheckTeam({_t}, {_player}, false, true) is true
 			{_damaged.%id of {_t}%} is not set
 			set {_damaged.%id of {_t}%} to true
 			kitDamage({_player}, {_t}, 1)
