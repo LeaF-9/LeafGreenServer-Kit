@@ -37,6 +37,8 @@ local function kitEffect_NeutralTruce(player: player):
 			if {_join.exp::*} contains loop-entity:
 				kitParticle_NeutralTruce_Aura(loop-entity)
 				continue
+			if metadata value {@metadata-name} of loop-entity is set:
+				continue
 			
 			add loop-entity to {_join.exp::*}
 			set metadata value {@metadata-name} of loop-entity to {_now}
@@ -65,7 +67,7 @@ local function kitEffect_NeutralTruce(player: player):
 
 
 local function kitParticle_NeutralTruce_Launch(player: player):
-	playSound("block.beacon.power_select", 1, 0.8, {_player})
+	playSound("block.trial_spawner.about_to_spawn_item", 1, 1.3, {_player})
 	set {_baseloc} to location 1 meter above {_player}
 	kitParticle_NeutralTruce_Field({_baseloc})
 
