@@ -2,10 +2,11 @@
 
 function kitUltKnight(player: player):
 	loop 200 times:
+		kitParticle_BraveFighters_Area({_player})
 		loop all players in radius 10 around {_player}:
-			{TrueTeam::%{_player}%} is {TrueTeam::%loop-player%}
-			{Stats.%loop-player%::NoSupport} is not set
-			spawnParticle_Color(entity_effect, rgb(255, 125, 0), loop-player)
+			kitCheckTeam({_player}, loop-player, true, true) is true
+
+			kitParticle_BraveFighters_Apply(loop-player)
 			if loop-player's health > 3:
 				applyEffect(loop-player, strength, 1, 1 tick)
 				applyEffect(loop-player, resistance, 1, 1 tick)
@@ -13,4 +14,45 @@ function kitUltKnight(player: player):
 				applyEffect(loop-player, strength, 2, 1 tick)
 				applyEffect(loop-player, resistance, 2, 1 tick)
 			kitEffectDescription(loop-player, "§c戦闘強化")
+		wait a tick
+
+
+
+local function kitParticle_BraveFighters_Area(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+
+	add rgb(238, 153, 25) to {_colors::*}
+	add rgb(247, 124, 23) to {_colors::*}
+	add rgb(247, 171, 6) to {_colors::*}
+
+	set {_count} to 100
+	set {_rad} to 0
+	set {_addrad} to 360 / {_count}
+	set {_rotatevector} to vector(0, 0, 10)
+	loop {_count} times:
+		set {_vector} to {_rotatevector}
+		rotate {_vector} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_vector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(entity_effect, {_color}, {_el})
+		add {_addrad} to {_rad}
+
+local function kitParticle_BraveFighters_Apply(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_baseloc} to moveRandomLocation({_baseloc}, 1)
+
+	set {_count} to 5
+
+	loop {_count} times:
+		set {_vector} to randomVector(0.3)
+		if y of {_vector} < 0:
+			set y of {_vector} to (y of {_vector}) * (-1)
+		
+		set {_el} to {_baseloc} ~ {_vector}
+		spawnParticle(flame, {_el})
+
+		chance of 20%:
+			set {_el.2} to moveRandomLocation({_el}, 0.1)
+			spawnParticle_Dust(rgb(207, 98, 9), 0.5, {_el.2})
+		
 		wait a tick
