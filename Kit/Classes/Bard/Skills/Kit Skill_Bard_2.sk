@@ -81,19 +81,25 @@ local function kitEffect_HarmonyNotes(player: player):
 		set {_tier} to 1
 		if {Stats.%{_player}%::Fortissimo} is true:
 			set {_tier} to 2
-		loop all players in radius 5 around {_loc.notes}:
-			set {_loc.player} to location 1 meter above loop-player
-			if kitCheckTeam(loop-player, {_player}, true) is true:
-				setSupporter(loop-player, {_player})
+		
+		set {_limit} to 5
+		loop all entities in radius 5 around {_loc.notes}:
+			if {_limit} <= 0:
+				continue
+
+			set {_loc.player} to location 1 meter above loop-entity
+			if kitCheckTeam(loop-entity, {_player}, true) is true:
+				setSupporter(loop-entity, {_player})
 				kitParticle_HarmonyNotes_Beam({_loc.notes}, {_loc.player}, true)
-				kitEffectDescription(loop-player, "§d§l再生能力")
+				kitEffectDescription(loop-entity, "§d§l再生能力")
 				set {_potiontype} to regeneration
-			else if kitCheckTeam(loop-player, {_player}, false) is true:
+			else if kitCheckTeam(loop-entity, {_player}, false) is true:
 				kitParticle_HarmonyNotes_Beam({_loc.notes}, {_loc.player}, false)
-				add {_player} to {damager.%loop-player%::*}
+				add {_player} to {damager.%loop-entity%::*}
 				set {_potiontype} to poison
-				kitEffectDescription(loop-player, "§2§l毒")
-			applyEffect(loop-player, {_potiontype}, {_tier}, 0.1 seconds)
+				kitEffectDescription(loop-entity, "§2§l毒")
+			subtract 1 from {_limit}
+			applyEffect(loop-entity, {_potiontype}, {_tier}, 0.1 seconds)
 		wait a tick
 	kitParticle_HarmonyNotes_Explode({_loc.notes})
 
