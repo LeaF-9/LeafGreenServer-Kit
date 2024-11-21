@@ -53,7 +53,14 @@ function kitEffect_CycloneBow_Cyclone(player: player, proj: projectile):
 	kitParticle_CycloneBow_Cyclone({_player}, {_proj})
 	loop 100 times:
 		if metadata value "cyclone-bow" of {_proj} is false:
-			continue
+			stop
+		set {_exist} to false
+		loop all projectiles:
+			loop-projectile is {_proj}
+			set {_exist} to true
+		if {_exist} is false:
+			stop
+
 		loop all entities in radius 3 around {_proj}:
 			kitCheckTeam({_player}, loop-entity, false) is true
 			kitDamage({_player}, loop-entity, {_dmg})
