@@ -38,12 +38,12 @@ local function kitEffect_MoonLuster_Moonlight(player: player, loc: location):
 	kitMsg({_player}, "<##fcc800>月光が傷を癒やします...")
 	sendTimeBossbar_GREEN({_player}, "Moon Luster", 200)
 	loop 200 times:
-		loop all players in radius 10 around {_loc}:
-			loop-player is not {_player}
-			kitCheckTeam(loop-player, {_player}, true) is true
-			kitHeal(loop-player, {@heal-amount}, 1)
-			kitEffectDescription(loop-player, "§d§l回復")
-			applyEffect(loop-player, glowing, 1, 1 tick)
+		loop all entities in radius 10 around {_loc}:
+			loop-entity is not {_player}
+			kitCheckTeam(loop-entity, {_player}, true) is true
+			kitHeal(loop-entity, {@heal-amount}, 1)
+			kitEffectDescription(loop-entity, "§d§l回復")
+			applyEffect(loop-entity, glowing, 1, 1 tick)
 		if mod(201 - loop-number, 20) is 0:
 			kitParticle_MoonLuster_Moonlight({_loc})
 		wait a tick
