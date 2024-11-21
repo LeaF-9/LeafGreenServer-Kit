@@ -1,5 +1,24 @@
 function checkHitEntities(loc: location) :: entities:
 	loop all entities in radius 3 around {_loc}:
+		delete {_continue}
+		if checkEntityType(loop-entity, armor stand) is true:
+			continue
+		if checkEntityType(loop-entity, block display) is true:
+			continue
+		if checkEntityType(loop-entity, item display) is true:
+			continue
+		if checkEntityType(loop-entity, text display) is true:
+			continue
+		if checkEntityType(loop-entity, falling block) is true:
+			continue
+
+		if checkEntityType(loop-entity, slime) is true:
+			if {_slimed} is set:
+				continue
+			set {_slimed} to true
+		
+		if {_continue} is true:
+			continue
 		checkHitting(loop-entity, {_loc}) is true
 		add loop-entity to {_entities::*}
 	return {_entities::*}
