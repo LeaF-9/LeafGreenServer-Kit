@@ -30,7 +30,7 @@ local function shieldParticles(player: player, now: date):
 		else:
 			set {_y} to {_dy}
 
-		add {_y} to y-coordinate of {_loc}
+		add {_y} to y-coordinate of {_baseloc}
 		add 9 to {_baserad}
 		set {_ln} to -1
 		loop 8 times:
@@ -42,18 +42,19 @@ local function shieldParticles(player: player, now: date):
 				continue
 			
 			set {_rad} to {_baserad} + (45 * {_ln})
-			add 0.5 * sin({_rad}) to x-coordinate of {_loc}
-			add 0.5 * cos({_rad}) to z-coordinate of {_loc}
-			spawnParticle_Dust(colorRandomizer(0, 163, 175, 0, 0, 10), 0.8, {_loc})
+			add 0.5 * sin({_rad}) to x-coordinate of {_baseloc}
+			add 0.5 * cos({_rad}) to z-coordinate of {_baseloc}
+			spawnParticle_Dust(colorRandomizer(0, 163, 175, 0, 0, 10), 0.8, {_baseloc})
 		wait a tick
 
 
 
 function ShieldDamageEvent(player: player, damage: number, cause: damage cause):
-	if {_cause} is fall:
+	if "%{_cause}%" contains "fall":
 		set {_damage} to 0
 	subtractShield({_player}, {_damage})
 	kitEffectDescription({_player}, "§3§lシールド")
+	shieldDamageParticles({_player})
 	if getShield({_player}) <= 0:
 		deleteShield({_player})
 		message formatted "§3§lシールド§cが崩壊した!" to {_player}
@@ -61,6 +62,13 @@ function ShieldDamageEvent(player: player, damage: number, cause: damage cause):
 		playSound("entity.item.break", 0.7, 1, {_player})
 		stop
 	playSound("block.anvil.land", 0.7, 2, {_player})
+
+local function shieldDamageParticles(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_rn} to a random integer between 10 and 30
+	loop 30 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_Block(prismarine, {_el})
 
 local function shieldBreakParticles(player: player):
 	set {_loopnum} to a random integer between 4 and 6
