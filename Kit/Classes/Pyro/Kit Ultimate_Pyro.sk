@@ -14,6 +14,12 @@ options:
 on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	{Stats.%{_attacker}%::EternalPhoenix} is true
+	set {_now} to now
+	set {_hit} to metadata value "eternal phoenix - hit" of victim
+	delete metadata value "eternal phoenix - hit" of victim
+	if {_hit} is {_now}:
+		stop
+
 	set {_firetick} to victim.getFireTicks()
 	if {_firetick} > 0:
 		setDamageModification_MUL(victim, 2)
@@ -62,6 +68,8 @@ local function kitEffect_EternalPhoenix_Fire(player: player):
 			{_hit} is not set
 			kitCheckTeam(loop-entity, {_player}, false, true) is true
 			set {_hit} to true
+			set {_now} to now
+			set metadata value "eternal phoenix - hit" of loop-entity to {_now}
 			kitDamage({_player}, loop-entity, {@fire-damage})
 			ignite loop-entity for convertTickTime({@fire-ignite-time})
 			set {_igniteSeconds} to {@fire-ignite-time} / 20
