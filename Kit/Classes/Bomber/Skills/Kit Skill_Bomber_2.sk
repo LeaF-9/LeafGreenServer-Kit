@@ -9,7 +9,7 @@ options:
 
 function kitSkill_Bomber_2(player: player):
 	if {Stats.%{_player}%::BlastAssault} is set:
-		kitEffect_BlastAssault_Boom({_player})
+		kitEffect_BlastAssault_Boom({_player}, true)
 		stop
 	kitEffect_BlastAssault({_player})
 
@@ -19,7 +19,7 @@ local function kitEffect_BlastAssault(player: player):
 	set {_now} to now
 	set {Stats.%{_player}%::BlastAssault} to {_now}
 	kitMsg({_player}, "<##b5073b>§l時限爆弾<##eaa00d>を抱えました...")
-	applyEffect({_player}, slowness, 3, {@effect-seconds}, true)
+	applyEffect({_player}, slowness, 3, {@effect-second}, true)
 	kitParticle_BlastAssault_Launch({_player})
 
 	set {_uuid} to UUID of {_player}
@@ -30,7 +30,7 @@ local function kitEffect_BlastAssault(player: player):
 	set {Stats.%{_player}%::BlastAssault-Power} to 0
 	set {_exp} to 0
 	set {_addexp} to {@max-explosion} / {@effect-tick}
-	set {_ln} to 0
+	set {_ln} to -1
 	loop {@effect-tick} times:
 		if {Stats.%{_player}%::BlastAssault} is not {_now}:
 			stop
@@ -53,22 +53,31 @@ local function kitEffect_BlastAssault(player: player):
 	{Stats.%{_player}%::BlastAssault} is {_now}
 	kitEffect_BlastAssault_Boom({_player})
 
-local function kitEffect_BlastAssault_Boom(player: player):
+local function kitEffect_BlastAssault_Boom(player: player, click: boolean = false):
 	toolCT({_player}, "Bomber", 2)
+	if {_click} is false:
+		set {_sneaking} to true
 	if {_player} is sneaking:
 		set {_sneaking} to true
 	
 	set {_baseloc} to location 1 meter above {_player}
-	set {_exp} to {Stats.%{_player}%::BlastAssault-Power}
+	set {_baseexp} to {Stats.%{_player}%::BlastAssault-Power}
+	set {_exp} to {_baseexp}
+	if {_click} is true:
+		set {_exp} to {_baseexp} * 0.5
 	delete {Stats.%{_player}%::BlastAssault}
 	delete {Stats.%{_player}%::BlastAssault-Power}
 	kitExplosion({_player}, {_exp}, {_baseloc})
 	remove slowness from {_player}
-	apply infinite slowness 1 to {_player}
+	apply infinite slowness 1 without particles to {_player}
+
+	set {_uuid} to UUID of {_player}
+	set {_id} to "Blast Assault-%{_uuid}%"
+	remove bossbar {_id}
 
 	if {_sneaking} is true:
 		stop
-	set {_up} to 3 + ({_exp} * 0.5)
+	set {_up} to 0.5 + ({_baseexp} * 0.25)
 	set {_vector} to vector(0, {_up}, 0)
 	set velocity of {_player} to {_vector}
 	kitParticle_BlastAssault_Upwind({_player})
@@ -84,7 +93,7 @@ local function kitParticle_BlastAssault_Launch(player: player):
 
 local function kitParticle_BlastAssault_Charge(player: player):
 	set {_baseloc} to location 0.5 meters above {_player}
-	spawnParticle(campfire_cosy_smoke, moveRandomLocation({_baseloc}, 0.5))
+	spawnParticle_Vector(campfire_cosy_smoke, vector(0, 0.35, 0), 0.25, moveRandomLocation({_baseloc}, 0.5))
 	chance of 30%:
 		spawnParticle(small_flame, moveRandomLocation({_baseloc}, 1))
 
@@ -94,7 +103,7 @@ local function kitParticle_BlastAssault_Upwind(player: player):
 	loop 5 times:
 		set {_rn} to a random integer between 1 and 5
 		loop {_rn} times:
-			kitParticle_BlastAssault_Wind({_player}, moveLocation({_baseloc}, 1))
+			kitParticle_BlastAssault_Wind({_player}, moveRandomLocation({_baseloc}, 1))
 		wait a tick
 
 local function kitParticle_BlastAssault_Wind(player: player, loc: location):
