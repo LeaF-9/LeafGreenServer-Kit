@@ -1,17 +1,139 @@
-# Bomb Attack
+# Blast Assault
+
+options:
+	effect-tick: 60
+	effect-second: 3 seconds
+	max-explosion: 4.5
+
+
 
 function kitSkill_Bomber_2(player: player):
-	toolCT({_player}, "Bomber", 2)
-	kitMsg({_player}, "§6Bomb Attack §7の発動準備をします...")
-	apply slowness 3 to {_player} for 3 seconds replacing existing effect
-	loop 3 times:
-		if gamemode of {_player} is survival:
-			playSound("ui.button.click", 1.5, 1, {_player})
-			wait a second
-		else:
-			kitMsg({_player}, "§d発動がキャンセルされました")
+	if {Stats.%{_player}%::BlastAssault} is set:
+		kitEffect_BlastAssault_Boom({_player})
+		stop
+	kitEffect_BlastAssault({_player})
+
+
+
+local function kitEffect_BlastAssault(player: player):
+	set {_now} to now
+	set {Stats.%{_player}%::BlastAssault} to {_now}
+	kitMsg({_player}, "<##b5073b>§l時限爆弾<##eaa00d>を抱えました...")
+	applyEffect({_player}, slowness, 3, {@effect-seconds}, true)
+	kitParticle_BlastAssault_Launch({_player})
+
+	set {_uuid} to UUID of {_player}
+	set {_id} to "Blast Assault-%{_uuid}%"
+	set {_bar.title} to "§6§lBlast Assault §7- §4§l0"
+	create bossbar titled {_bar.title} and id {_id} for {_player} with progress 0 with colors red with style segmented 6
+
+	set {Stats.%{_player}%::BlastAssault-Power} to 0
+	set {_exp} to 0
+	set {_addexp} to {@max-explosion} / {@effect-tick}
+	set {_ln} to 0
+	loop {@effect-tick} times:
+		if {Stats.%{_player}%::BlastAssault} is not {_now}:
 			stop
-	gamemode of {_player} is survival
-	kitExplosion({_player}, 5, location of {_player})
-	if {Class::%{_player}%} is "Bomber":
-		apply slowness 1 to {_player} for 10000000000 seconds replacing existing effect
+		
+		add 1 to {_ln}
+		add {_addexp} to {_exp}
+		set {Stats.%{_player}%::BlastAssault-Power} to {_exp}
+
+		set {_prog} to ({_exp} / {@max-explosion}) * 100
+		set bossbar {_id} value to {_prog}
+		set bossbar {_id} title to "§6§lBlast Assault §7- §4§l%{_exp}%"
+
+		if mod({_ln}, 20) = 0:
+			kitSound_BlastAssault_Click({_player})
+		else if mod({_ln}, 2) = 0:
+			kitSound_BlastAssault_Tick({_player})
+
+		kitParticle_BlastAssault_Charge({_player})
+		wait a tick
+	{Stats.%{_player}%::BlastAssault} is {_now}
+	kitEffect_BlastAssault_Boom({_player})
+
+local function kitEffect_BlastAssault_Boom(player: player):
+	toolCT({_player}, "Bomber", 2)
+	if {_player} is sneaking:
+		set {_sneaking} to true
+	
+	set {_baseloc} to location 1 meter above {_player}
+	set {_exp} to {Stats.%{_player}%::BlastAssault-Power}
+	delete {Stats.%{_player}%::BlastAssault}
+	delete {Stats.%{_player}%::BlastAssault-Power}
+	kitExplosion({_player}, {_exp}, {_baseloc})
+	remove slowness from {_player}
+	apply infinite slowness 1 to {_player}
+
+	if {_sneaking} is true:
+		stop
+	set {_up} to 3 + ({_exp} * 0.5)
+	set {_vector} to vector(0, {_up}, 0)
+	set velocity of {_player} to {_vector}
+	kitParticle_BlastAssault_Upwind({_player})
+
+
+
+local function kitParticle_BlastAssault_Launch(player: player):
+	playSound("entity.creeper.primed", 1, 0.7, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 30 times:
+		spawnParticle_Vector(cloud, randomVector(), 0.3, {_baseloc})
+		spawnParticle(flame, moveRandomLocation({_baseloc}, 1))
+
+local function kitParticle_BlastAssault_Charge(player: player):
+	set {_baseloc} to location 0.5 meters above {_player}
+	spawnParticle(campfire_cosy_smoke, moveRandomLocation({_baseloc}, 0.5))
+	chance of 30%:
+		spawnParticle(small_flame, moveRandomLocation({_baseloc}, 1))
+
+local function kitParticle_BlastAssault_Upwind(player: player):
+	playSound("entity.breeze.deflect", 1, 0.9, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop 5 times:
+		set {_rn} to a random integer between 1 and 5
+		loop {_rn} times:
+			kitParticle_BlastAssault_Wind({_player}, moveLocation({_baseloc}, 1))
+		wait a tick
+
+local function kitParticle_BlastAssault_Wind(player: player, loc: location):
+	add rgb(186, 238, 248) to {_colors::*}
+	add rgb(202, 243, 250) to {_colors::*}
+	add rgb(167, 231, 232) to {_colors::*}
+
+	set {_loc.base} to {_loc}
+	wait a tick
+	set {_loc.targ} to location 1 meter above {_player}
+	set {_loc.targ} to moveRandomLocation({_loc.targ}, 1)
+	set x-pos of {_loc.targ} to x-pos of {_loc.base}
+	set z-pos of {_loc.targ} to z-pos of {_loc.base}
+	set {_vector} to setVector({_loc.base}, {_loc.targ})
+	set {_distance} to (y-pos of {_loc.targ}) - (y-pos of {_loc.base})
+
+	set {_loopnum} to round({_distance} * 5)
+	set {_basevector} to vector(0.25, 0, 0)
+	set {_rad} to 0
+	set {_addrad} to 180 / 5
+	set {_y} to 0
+	set {_addy} to 1 / 5
+
+	loop {_loopnum} times:
+		add {_addy} to {_y}
+		add {_addrad} to {_rad}
+
+		set {_el} to {_loc}
+		add {_y} to y-pos of {_el}
+		set {_rotatevector} to {_basevector}
+		rotate {_rotatevector} around {_vector} by {_rad}
+		set {_el} to {_el} ~ {_rotatevector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.5, {_el})
+
+
+
+local function kitSound_BlastAssault_Click(player: player):
+	playSound("ui.button.click", 1.5, 1, {_player})
+
+local function kitSound_BlastAssault_Tick(player: player):
+	playSound("item.flintandsteel.use", 0.75, 1, {_player})
