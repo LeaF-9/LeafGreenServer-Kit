@@ -1,120 +1,183 @@
 # Bomb Kart
 
+options:
+	effect-tick: 100
+	move-per-tick: 0.35
+	discover-per-tick: 0.5
+	explosion-power: 3
+	search-radius: 5
+	hit-radius: 1
+	max-vector-length: 0.1
+
+
+
 function kitSkill_Bomber_3(player: player):
 	toolCT({_player}, "Bomber", 3)
+	kitEffect_BombKart({_player})
+
+
+
+local function kitEffect_BombKart(player: player):
 	kitMsg({_player}, "§6敵を追尾するカート爆弾を投擲します!")
+	set {_now} to now
+	set {Stats.%{_player}%::BombKart} to {_now}
 	set {_baseloc} to location of {_player}
 	set pitch of {_baseloc} to 0
-	set {_loc.b} to {_baseloc}
-	subtract 1.5 from y-coordinate of {_loc.b}
-	set {_loc.s} to {_baseloc}
-	subtract 0.5 from y-coordinate of {_loc.s}
-	spawn an armor stand at {_loc.b} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""iron_block"",Count:1b}],HandItems:[{},{}]}"
-	set metadata value "bombkart-big" of spawned armor stand to "%{_player}%"
-	set metadata value "gametype" of spawned armor stand to "Kit"
-	spawn an armor stand at {_loc.s} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Small:1b,Marker:1b,ArmorItems:[{},{},{},{id:""tnt"",Count:1b}],HandItems:[{},{}]}"
-	set metadata value "bombkart-small" of spawned armor stand to "%{_player}%"
-	set metadata value "gametype" of spawned armor stand to "Kit"
+	set {_moveloc} to {_baseloc}
+	add 0.5 to y-pos of {_baseloc}
+
+	set {_block} to "minecraft:blast_furnace"
+	set {_transformation} to "[-1.0000f,-0.0000f,-0.0000f,0.5000f,-0.0000f,-0.5000f,0.0000f,0.5000f,-0.0000f,0.0000f,1.2000f,-0.6250f,0.0000f,0.0000f,0.0000f,1.0000f]"
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},teleport_duration:1}"
+	spawn a block display at {_baseloc} with nbt {_nbt}
+	set metadata value "gametype" of spawned block display to "Kit"
+	set metadata value "bomb kart" of spawned block display to {_player}
+	set metadata value "bomb kart - time" of spawned block display to {_now}
+	add spawned block display to {_kartEntities::*}
+
+	set {_block} to "minecraft:tnt"
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.45f,0.05f,-0.45f]", "[0.9f,0.9f,0.9f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},teleport_duration:1}"
+	spawn a block display at {_baseloc} with nbt {_nbt}
+	set metadata value "gametype" of spawned block display to "Kit"
+	set metadata value "bomb kart" of spawned block display to {_player}
+	set metadata value "bomb kart - time" of spawned block display to {_now}
+	add spawned block display to {_kartEntities::*}
+
 	playSound("ui.button.click", 1, 0.8, {_player})
-	loop 100 times:
-		{_bomb} is not set
-		if {_target} is not set:
-			loop all entities:
-				type of loop-entity is an armor stand
-				metadata value "bombkart-big" of loop-entity is "%{_player}%"
-				set {_baseloc} to location of loop-entity
-			add 1.5 to y-coordinate of {_baseloc}
-			set {_loc} to location 0.3 meters in front of {_baseloc}
-			if block below {_loc} is not passable:
-				set {_num.b} to 1.5
-				set {_num.s} to 0.5
-			else:
-				set {_num.b} to 1.8
-				set {_num.s} to 0.8
-			set {_loc.b} to {_loc}
-			subtract {_num.b} from y-coordinate of {_loc.b}
-			set {_loc.s} to {_loc}
-			subtract {_num.s} from y-coordinate of {_loc.s}
-			loop all entities:
-				type of loop-entity is an armor stand
-				if metadata value "bombkart-big" of loop-entity is "%{_player}%":
-					teleport loop-entity to {_loc.b}
-				else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
-					teleport loop-entity to {_loc.s}
-#		衝突判定
-			if block at {_loc} is not passable:
-				set {_bomb} to true
-				loop all entities:
-					type of loop-entity is an armor stand
-					if metadata value "bombkart-big" of loop-entity is "%{_player}%":
-						delete loop-entity
-					else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
-						delete loop-entity
-				kitExplosion({_player}, 3, {_baseloc})
-#		前方敵サーチ
-			set {_sl} to location 5 meters in front of {_loc}
-			loop all entities in radius 5 around {_loc}:
-				{_target} is not set
-				kitCheckTeam(loop-entity, {_player}, false) is true
-				set {_dis} to distance between loop-entity and {_player}
-				{_dis} > distance between {_loc} and {_player}
-				set {_target} to loop-entity
-				playSound("ui.button.click", 1, 2, {_loc})
+	set {_pushing} to false
+	loop {@effect-tick} times:
+		# 条件確認
+		if {Stats.%{_player}%::BombKart} is not {_now}:
+			continue
+		if {_bombhit} is set:
+			continue
+
+		# スニーク時の処理
+		if {_pushing} is false:
+			if {_player} is sneaking:
+				set {_pushing} to true
+				playSound("item.lodestone_compass.lock", 1, 1.45, {_moveloc})
+				playSound("item.lodestone_compass.lock", 1, 1.45, {_player}, true)
 		else:
-			set {_from} to vector of {_target}
-			set {_to} to vector of {_loc}
-			set {_vector} to {_from} - {_to}
-			set {_vector} to normalized {_vector}
-			set {_yaw} to yaw of {_vector}
-			loop all entities:
-				type of loop-entity is an armor stand
-				metadata value "bombkart-big" of loop-entity is "%{_player}%"
-				set {_baseloc} to location of loop-entity
-			add 1.5 to y-coordinate of {_baseloc}
-			set yaw of {_baseloc} to {_yaw}
-			set {_loc} to location 0.5 meters in front of {_baseloc}
-			if block below {_loc} is not passable:
-				set {_num.b} to 1.5
-				set {_num.s} to 0.5
+			if {_player} is not sneaking:
+				set {_pushing} to false
+				playSound("entity.zombie.infect", 1, 1.45, {_moveloc})
+				playSound("entity.zombie.infect", 1, 1.45, {_player}, true)
+				kitParticle_BombKart_Cancel({_moveloc})
+			
+		if {_pushing} is true:
+			set {_playeryaw} to yaw of {_player}
+			set {_betaloc} to {_moveloc}
+			set yaw of {_betaloc} to {_playeryaw}
+			set {_basevec} to setVector({_moveloc}, location 1 meter in front of {_moveloc})  # movelocから前方に向けたvector
+			set {_plusvec} to setVector({_betaloc}, location 1 meter in front of {_betaloc}, 0)
+			set vector length of {_plusvec} to {@max-vector-length} if vector length of {_plusvec} > {@max-vector-length}
+			set {_vec} to {_basevec} + {_plusvec}
+
+			set {_moveloc} to setDirToVec({_moveloc}, {_vec})
+			set {_frontloc} to location {@move-per-tick} meters in front of {_moveloc}
+			kitParticle_BombKart_Control({_frontloc})
+
+		# そうでない場合
+		else:
+			# 既に敵を見つけている場合の処理
+			if {_target} is set:
+				set {_targetloc} to location of {_target}
+				set y-pos of {_targetloc} to y-pos of {_moveloc}
+				set {_movevec} to setVector({_moveloc}, {_targetloc}, {@discover-per-tick})
+				set {_moveloc} to setDirToVec({_moveloc}, {_movevec})
+				set {_frontloc} to {_moveloc} ~ {_movevec}
+
+			# 索敵状態の処理
 			else:
-				set {_num.b} to 1.8
-				set {_num.s} to 0.8
-			set {_loc.b} to {_loc}
-			subtract {_num.b} from y-coordinate of {_loc.b}
-			set {_loc.s} to {_loc}
-			subtract {_num.s} from y-coordinate of {_loc.s}
-			loop all entities:
-				type of loop-entity is an armor stand
-				if metadata value "bombkart-big" of loop-entity is "%{_player}%":
-					teleport loop-entity to {_loc.b}
-				else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
-					teleport loop-entity to {_loc.s}
-#		衝突判定
-			if block at {_loc} is not passable:
-				set {_bomb} to true
-				loop all entities:
-					type of loop-entity is an armor stand
-					if metadata value "bombkart-big" of loop-entity is "%{_player}%":
-						delete loop-entity
-					else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
-						delete loop-entity
-				kitExplosion({_player}, 3, {_baseloc})
-#		敵衝突判定
-			if distance between {_target} and {_loc} <= 1:
-				set {_bomb} to true
-				loop all entities:
-					type of loop-entity is an armor stand
-					if metadata value "bombkart-big" of loop-entity is "%{_player}%":
-						delete loop-entity
-					else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
-						delete loop-entity
-				kitExplosion({_player}, 3, {_baseloc})
+				set {_frontloc} to location {@move-per-tick} meters in front of {_moveloc}
+
+				# 索敵処理
+				set {_searchbase} to location {@search-radius} meters in front of {_moveloc}
+				loop all entities in radius {@search-radius} around {_searchbase}:
+					{_target} is not set
+					kitCheckTeam(loop-entity, {_player}, false) is true
+					set {_dis} to distance between loop-entity and {_player}
+					{_dis} > distance between {_searchbase} and {_player}
+					set {_target} to loop-entity
+					playSound("ui.button.click", 1, 2, {_moveloc})
+
+		# 壁にぶつかっている場合の処理 & 段差を登る処理
+		set {_frontblock} to block at {_frontloc}
+		if {_frontblock} is not passable:
+			# 2段以上のブロックである場合 乗り越えずに壁に沿って動く
+			if block above {_frontblock} is not passable:
+				set {_checkvector} to setVector({_moveloc}, {_frontloc}, 0)
+				set {_checkvec.x} to x of {_checkvector}
+				set {_checkvec.z} to z of {_checkvector}
+
+				set {_checkloc.x} to {_moveloc} ~ vector({_checkvec.x}, 0, 0)
+				set {_vecpower.x} to {_checkvec.x}
+				if block at {_checkloc.x} is not passable:
+					set {_vecpower.x} to 0
+				
+				set {_checkloc.z} to {_moveloc} ~ vector(0, 0, {_checkvec.z})
+				set {_vecpower.z} to {_checkvec.z}
+				if block at {_checkloc.z} is not passable:
+					set {_vecpower.z} to 0
+				
+				set {_frontvector} to vector({_vecpower.x}, 0, {_vecpower.z})
+				set {_frontloc} to {_moveloc} ~ {_frontvector}
+			
+			# 1段のブロックである場合 乗り越える
+			else:
+				add 1 to y-pos of {_frontloc}
+		
+		# 浮いている場合の処理
+		set {_belowblock} to block 0.1 meters below {_frontloc}
+		if {_belowblock} is passable:
+			subtract 0.1 from y-pos of {_frontloc}
+
+		# 敵にヒットした際の処理
+		loop all entities in radius {@hit-radius} around {_frontloc}:
+			{_bombhit} is not set
+			kitCheckTeam({_player}, loop-entity, false) is true
+			set {_bombhit} to true
+
+		# カートテレポート処理
+		loop {_kartEntities::*}:
+			set {_loop-entity} to loop-value-2
+			teleport {_loop-entity} to {_frontloc}
+		set {_moveloc} to {_frontloc}
+		kitParticle_BombKart_Run({_moveloc})
+		if mod((loop-number - 1), 20) = 0:
+			kitSound_BombKart_Run({_player}, {_moveloc})
+
 		wait a tick
-	if {_bomb} is not set:
-		loop all entities:
-			type of loop-entity is an armor stand
-			if metadata value "bombkart-big" of loop-entity is "%{_player}%":
-				delete loop-entity
-			else if metadata value "bombkart-small" of loop-entity is "%{_player}%":
-				delete loop-entity
-		kitExplosion({_player}, 3, {_baseloc})
+	if {Stats.%{_player}%::BombKart} is {_now}:
+		delete {Stats.%{_player}%::BombKart}
+	loop all block displays:
+		metadata value "bomb kart" of loop-block display is {_player}
+		metadata value "bomb kart - time" of loop-block display is {_now}
+		delete loop-block display
+	kitExplosion({_player}, {@explosion-power}, {_moveloc})
+
+
+
+local function kitParticle_BombKart_Run(loc: location):
+	spawnParticle(lava, {_loc})
+
+local function kitParticle_BombKart_Control(loc: location):
+	set {_baseloc} to location 1 meters above {_loc}
+	set {_rn} to a random integer between 1 and 3
+	loop {_rn} times:
+		spawnParticle(witch, moveRandomLocation({_baseloc}, 1))
+
+local function kitParticle_BombKart_Cancel(loc: location):
+	loop 10 times:
+		set {_vector} to randomVector()
+		if (y of {_vector}) < 0:
+			set y of {_vector} to (y of {_vector}) * -1
+		spawnParticle_Vector(cloud, {_vector}, 0.5, {_loc})
+
+
+
+local function kitSound_BombKart_Run(player: player, loc: location):
+	playSound("entity.minecart.riding", 0.1, 1.45, {_player}, true)
+	playSound("entity.minecart.riding", 0.3, 1.45, {_loc})
