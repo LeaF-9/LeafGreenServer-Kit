@@ -1,95 +1,123 @@
 # Sticky Grenade
 
+options:
+	explosion-power: 3
+	hit-entity-radius: 2
+	hit-block-radius: 1
+
+
+
 function kitSkill_Bomber_3(player: player):
 	toolCT({_player}, "Bomber", 3)
+	kitEffect_StickyGrenade({_player})
+
+
+
+local function kitEffect_StickyGrenade(player: player):
 	kitMsg({_player}, "§2粘着ボムを投擲します...")
 	set {_loc} to location of {_player}
 	add 1.2 to y-coordinate of {_loc}
 	shoot a falling slime block from {_loc} at speed 1.5
-	set metadata value "sticky-bomb" of shot entity to "%{_player}%"
-	kitParticle_StickyBomb_Slime(shot entity)
+	set {_grenade} to shot entity
+	set metadata value "sticky-bomb" of {_grenade} to "%{_player}%"
+
 	playSound("entity.slime.jump", 1, 1, {_player})
 	loop 100 times:
-		{_target} is not set
+		if {_target} is set:
+			continue
+		set {_exist} to false
 		loop all falling blocks:
-			metadata value "sticky-bomb" of loop-falling block is "%{_player}%"
-			set {_bl} to location of block at loop-falling block
-			loop all entities in radius 2 around loop-falling block:
-				{_target} is not set
-				kitCheckTeam(loop-entity-2, {_player}, false) is true
-				set {_target} to loop-entity-2
-				set {_type} to "player"
-				set {_loc} to location of {_target}
-				playSound("entity.slime.squish", 1, 1, {_loc})
-			loop all blocks in radius 1 around {_bl}:
-				{_target} is not set
-				loop-block is not passable
-				if y-coordinate of loop-block = y-coordinate of {_bl}:
-					if location of loop-block = {_bl}:
-						set {_target} to location of loop-block
-					else if location of loop-block = location 1 meters north of {_bl}:
-						set {_target} to location 0.5 meters north of {_bl}
-					else if location of loop-block = location 1 meters south of {_bl}:
-						set {_target} to location 0.5 meters south of {_bl}
-					else if location of loop-block = location 1 meters east of {_bl}:
-						set {_target} to location 0.5 meters east of {_bl}
-					else if location of loop-block = location 1 meters west of {_bl}:
-						set {_target} to location 0.5 meters west of {_bl}
-					subtract 1 from y-coordinate of {_target}
-					set {_loc} to {_target}
-				else if y-coordinate of loop-block > y-coordinate of {_bl}:
-					set {_target} to location of {_bl}
-					subtract 1.2 from y-coordinate of {_target}
-					set {_loc} to {_target}
-				else:
-					set {_target} to location of {_bl}
-					subtract 2 from y-coordinate of {_target}
-					set {_loc} to {_target}
-				set {_type} to "block"
-				playSound("entity.slime.squish", 1, 1, {_loc})
-		wait a tick
-	loop all falling blocks:
-		metadata value "sticky-bomb" of loop-falling block is "%{_player}%"
-		delete loop-falling block
-	spawn an armor stand at {_loc} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b,ArmorItems:[{},{},{},{id:""slime_block"",Count:1b}],HandItems:[{},{}]}"
-	set metadata value "gametype" of spawned armor stand to "Kit"
-	set metadata value "sticky-armor" of spawned armor stand to "%{_player}%"
-	if {_target} is set:
-		if {_type} is "player":
-			loop 40 times:
-				if loop-number is 1, 11, 21 or 31:
-					playSound("ui.button.click", 1, 2, {_loc})
-				if {_target} is set:
-					if kitCheckAlive({_target}) is true:
-						set {_bl} to location of {_target}
-						add 0.5 to y-coordinate of {_bl}
-						set {_loc} to location of {_target}
-						subtract 0.7 from y-coordinate of {_loc}
-						loop all entities:
-							type of loop-entity is an armor stand
-							metadata value "sticky-armor" of loop-entity is "%{_player}%"
-							teleport loop-entity to {_loc}
-					else:
-						delete {_target}
-#			落ちる演出作る時頑張ってね
-#				else:
-				wait a tick
-		else:
-			loop all entities:
-				type of loop-entity is an armor stand
-				metadata value "sticky-armor" of loop-entity is "%{_player}%"
-				teleport loop-entity to {_target}
-			loop 40 times:
-				if loop-number is 1, 11, 21 or 31:
-					playSound("ui.button.click", 1, 2, {_loc})
-				wait a tick
-		loop all entities:
-			type of loop-entity is an armor stand
-			metadata value "sticky-armor" of loop-entity is "%{_player}%"
-			delete loop-entity
-		kitExplosion({_player}, 3, {_bl})
+			loop-falling block is {_grenade}
+			set {_exist} to true
+		if {_exist} is false:
+			continue
 
-function kitParticle_StickyBomb_Slime(entity: entity):
-	loop 60 times:
-		spawnParticle(item_slime, {_entity})
+		kitParticle_StickyGrenade_Slime({_grenade})
+		set {_gl} to location of {_grenade}
+		# エンティティヒット確認
+		loop all entities in radius {@hit-entity-radius} around {_grenade}:
+			{_target} is not set
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_target} to loop-entity
+			set {_type} to "player"
+			set {_loc} to location 1 meter above {_target}
+			playSound("entity.slime.squish", 1, 1, {_loc})
+
+		# ブロックヒット確認
+		loop all blocks in radius {@hit-block-radius} around {_gl}:
+			{_target} is not set
+			loop-block is not passable
+
+			set {_target} to location of loop-block
+			set {_vector} to setVector({_target}, {_gl}, 0.71)
+			set {_loc} to {_target} ~ {_vector}
+
+			set {_type} to "block"
+			playSound("entity.slime.squish", 1, 1, {_loc})
+
 		wait a tick
+
+	set {_gl} to location of {_grenade}
+	loop all falling blocks:
+		loop-falling block is {_grenade}
+		delete loop-falling block
+	if {_target} is not set:
+		stop
+
+	set yaw of {_loc} to 0
+	set pitch of {_loc} to 0
+
+	set {_now} to now
+	set {_block} to "minecraft:slime_block"
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[0.75f,0.75f,0.75f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_block}%"",Count:1b},brightness:{block:15,sky:15},teleport_duration:1}"
+	spawn a item display at {_loc} with nbt {_nbt}
+	set {_sticked} to spawned item display
+	set metadata value "gametype" of {_sticked} to "Kit"
+	set metadata value "Sticky Grenade" of {_sticked} to {_player}
+	set metadata value "Sticky Grenade - Time" of {_sticked} to {_now}
+
+	loop 40 times:
+		if {_target} is not set:
+			continue
+
+		if loop-number is 1, 11, 21 or 31:
+			playSound("ui.button.click", 1, 2, {_loc})
+
+		if {_type} is "player":
+			if checkEntityType({_target}, player) is true:
+				if kitCheckAlive({_target}) is false:
+					delete {_target}
+					continue
+			else:
+				if {_target} is dead:
+					delete {_target}
+					continue
+			set {_loc} to location 1 meter above {_target}
+			set yaw of {_loc} to 0
+			set pitch of {_loc} to 0
+			teleport {_sticked} to {_loc}
+		
+		kitParticle_StickyGrenade_Sticked({_loc})
+		wait a tick
+
+	loop all item displays:
+		metadata value "Sticky Grenade" of loop-item display is {_player}
+		metadata value "Sticky Grenade - Time" of loop-item display is {_now}
+		delete loop-item display
+	if {_target} is set:
+		kitExplosion({_player}, {@explosion-power}, {_loc})
+
+
+
+local function kitParticle_StickyGrenade_Slime(entity: entity):
+	spawnParticle(item_slime, {_entity})
+
+local function kitParticle_StickyGrenade_Sticked(loc: location):
+	add rgb(45, 190, 118) to {_colors::*}
+	add rgb(26, 202, 41) to {_colors::*}
+	add rgb(66, 184, 19) to {_colors::*}
+
+	set {_color} to a random element out of {_colors::*}
+	set {_rn} to a random integer between 1 and 3
+	spawnParticle_Color(entity_effect, {_color}, moveRandomLocation({_loc}, 0.5))
