@@ -20,6 +20,7 @@ function kitSkill_Bomber_4(player: player):
 local function kitEffect_BombKart(player: player):
 	kitMsg({_player}, "§6敵を追尾するカート爆弾を投擲します!")
 	set {_now} to now
+	set {_skilltool} to tool of {_player}
 	set {Stats.%{_player}%::BombKart} to {_now}
 	set {_baseloc} to location of {_player}
 	set pitch of {_baseloc} to 0
@@ -54,14 +55,20 @@ local function kitEffect_BombKart(player: player):
 			continue
 
 		# スニーク時の処理
+		set {_hastool} to tool of {_player}
 		if {_pushing} is false:
 			if {_player} is sneaking:
+				{_hastool} is {_skilltool}
 				set {_pushing} to true
 				playSound("item.lodestone_compass.lock", 1, 1.45, {_moveloc})
 				playSound("item.lodestone_compass.lock", 1, 1.45, {_player}, true)
 		else:
 			if {_player} is not sneaking:
 				set {_pushing} to false
+			if {_hastool} is not {_skilltool}:
+				set {_pushing} to false
+
+			if {_pushing} is false:
 				playSound("entity.zombie.infect", 1, 1.45, {_moveloc})
 				playSound("entity.zombie.infect", 1, 1.45, {_player}, true)
 				kitParticle_BombKart_Cancel({_moveloc})
