@@ -1,52 +1,180 @@
 # Gas Spray
 
-function kitSkill_Bomber_6(player: player):
-	detectCT({_player}, kitSkillItem("Bomber", 6))
-	kitMsg({_player}, "<##808080>ガス爆弾を投擲します...")
-	playSound("entity.arrow.shoot", 1, 0.5, {_player})
-	shoot a thrown potion of mundane from {_player} at speed 1.2
-	set metadata value "gas-spray" of shot thrown potion to "true"
-	set {_shotentity} to shot thrown potion
-	loop 20 times:
-		spawnParticle_Color(entity_effect, rgb(100, 100, 100), {_shotentity})
-		wait a tick
+options:
+	effect-tick: 200
+	effect-radius: 5
+	induction-radius: 10
+	metadata-projectile: "gas spray - flint"
+	explosion-power: 3
+
+custom event "GasSprayInduction":
+	pattern: GasSprayInduction
+	event-values: player, location
+
+on GasSprayInduction:
+	loop all block displays in radius {@induction-radius} around event-location:
+		metadata value "gas spray - marker" of loop-block display is event-player
+		set {_exploc} to metadata value "gas spray - marker location" of loop-block display
+		kitEffect_GasSpray_Explosion(event-player, {_exploc})
 
 on projectile hit:
 	projectile is a thrown potion of mundane
-	metadata value "gas-spray" of projectile is "true"
-	playSound("block.fire.extinguish", 1, 1, projectile)
-	set {_l} to location of projectile
-	loop 200 times:
-		{_bomb} is not set
+	metadata value "gas spray" of projectile is true
+	set metadata value "gas spray" of projectile to false
+	kitEffect_GasSpray_Gas(shooter, projectile)
+
+
+
+function kitSkill_Bomber_6(player: player):
+	toolCT({_player}, "Bomber", 6)
+	kitEffect_GasSpray({_player})
+
+
+
+local function kitEffect_GasSpray(player: player):
+	kitMsg({_player}, "<##808080>ガス爆弾を投擲します...")
+	playSound("entity.arrow.shoot", 1, 0.5, {_player})
+	shoot a thrown potion of mundane from {_player} at speed 1.2
+	set metadata value "gas spray" of shot thrown potion to true
+	set {_shotentity} to shot thrown potion
+	kitParticle_GasSpray_Launch({_shotentity})
+
+
+
+local function kitEffect_GasSpray_Gas(player: player, proj: projectile):
+	set {_l} to location of {_proj}
+	kitParticle_GasSpray_Gas({_l})
+
+	set {_block} to "minecraft:barrier"
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[1f,1f,1f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},teleport_duration:1}"
+	spawn a block display at {_l} with nbt {_nbt}
+	set {_marker} to spawned block display
+	set metadata value "gametype" of {_marker} to "Kit"
+	set metadata value "gas spray - marker" of {_marker} to {_player}
+	set metadata value "gas spray - marker location" of {_marker} to {_l}
+
+	loop {@effect-tick} times:
 		delete {_eg::*}
-		loop all blocks in radius 5 around {_l}:
-			loop-block is passable
-			chance of 10%:
-				spawnParticle_Color(entity_effect, rgb(100, 100, 100), location of loop-block)
-		loop all entities in radius 5 around {_l}:
-			if kitCheckTeam(loop-entity, shooter, false) is true:
-				spawnParticle_Color(entity_effect, rgb(80, 80, 80), location of loop-entity)
-				set {_eg::%id of loop-entity%} to true
-				if {_jb::%id of loop-entity%} is not set:
-					set {_jb::%id of loop-entity%} to true
-					apply poison 1 to loop-entity for 10 seconds replacing existing effect
+
+		loop all entities in radius {@effect-radius} around {_l}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			kitParticle_GasSpray_Stay(loop-entity)
+			set {_eg::%id of loop-entity%} to true
+			if {_jb::%id of loop-entity%} is not set:
+				set {_jb::%id of loop-entity%} to true
+				apply poison 1 to loop-entity for 10 seconds replacing existing effect
+
 		loop all entities:
 			{_eg::%id of loop-entity%} is not set
 			{_jb::%id of loop-entity%} is true
 			remove poison from loop-entity
 			delete {_jb::%id of loop-entity%}
-		loop all projectiles in radius 5 around {_l}:
-			loop-projectile is an arrow
-			loop-projectile is not projectile
-			{_bomb} is not set
-			set {_bomb} to true
+
+		loop all projectiles in radius {@effect-radius} around {_l}:
+			loop-projectile is not {_proj}
+			metadata value {@metadata-projectile} of loop-projectile is not set
+			set metadata value {@metadata-projectile} of loop-projectile to true
+			kitEffect_GasSpray_Explosion({_player}, {_l})
+
 		wait a tick
+
 	loop all entities:
+		if loop-entity is {_marker}:
+			delete loop-entity
+			continue
 		{_eg::%id of loop-entity%} is true
 		{_jb::%id of loop-entity%} is true
 		remove poison from loop-entity
-	kitExplosion(shooter, 4, {_l})
-	loop all blocks in radius 5 around {_l}:
-		loop-block is passable
-		chance of 5%:
-			kitExplosion(shooter, 2, location of loop-block)
+	kitEffect_GasSpray_Explosion({_player}, {_l})
+
+local function kitEffect_GasSpray_Explosion(player: player, loc: location):
+	kitEffect_GasSpray_Burst({_player}, {@explosion-power}, {_loc})
+
+	loop 5 times:
+		set {_passable} to false
+		loop 30 times:
+			if {_passable} is true:
+				continue
+
+			set {_m} to a random number between 0 and {@effect-radius}
+			set {_vector} to randomVector({_m})
+			set {_checkloc} to {_loc} ~ {_vector}
+			if block at {_checkloc} is passable:
+				set {_passable} to true
+			
+		kitEffect_GasSpray_Burst({_player}, {@explosion-power}, {_loc})
+
+local function kitEffect_GasSpray_Burst(attacker: player, power: number, loc: location):
+	set {_round} to {_power} * 2
+	playSound("entity.generic.explode", 0.5, 1, {_loc})
+	spawnParticle(explosion_emitter, {_loc})
+
+	loop all entities in radius {_round} around {_loc}:
+		kitCheckTeam(loop-entity, {_attacker}, false, {_bool}) is true
+		if checkEntityType(loop-entity, player) is false:
+			set {_distance} to distance between {_loc} and loop-entity
+			set {_impact} to ({_round} - {_distance})
+			set {_damage} to {_impact} + 0.1
+			kitDamage({_attacker}, loop-entity, {_damage}, true)
+			continue
+		# ダメージ処理
+		set {_distance} to distance between {_loc} and loop-entity  # 距離
+		set {_expose} to kitCalcExpose(loop-entity, {_loc})
+		set {_impact} to ({_round} - {_distance}) / 2 * {_expose}
+		set {_damage} to {_impact} + 0.1
+		kitDamage({_attacker}, loop-entity, {_damage}, true)
+		set {_hit} to true
+	if {_hit} is true:
+		playSound("entity.experience_orb.pickup", 1, 2, {_attacker}, true)
+
+
+
+local function kitParticle_GasSpray_Launch(proj: projectile):
+	add rgb(100, 100, 100) to {_colors::*}
+	add rgb(60, 60, 61) to {_colors::*}
+	add rgb(85, 89, 92) to {_colors::*}
+
+	loop 100 times:
+		if metadata value "gas spray" of {_proj} is false:
+			stop
+		set {_loc} to location of {_proj}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(entity_effect, {_color}, {_loc})
+		wait a tick
+
+local function kitParticle_GasSpray_Gas(loc: location):
+	playSound("block.fire.extinguish", 1, 1, {_loc})
+
+	add rgb(100, 100, 100) to {_colors::*}
+	add rgb(60, 60, 61) to {_colors::*}
+	add rgb(85, 89, 92) to {_colors::*}
+
+	loop {@effect-tick} times:
+		set {_rn} to a random integer between 3 and 5
+		loop {_rn} times:
+			set {_vector} to randomVector()
+			set y of {_vector} to 0 if (y of {_vector}) < 0
+			spawnParticle_Vector(cloud, {_vector}, 0.2, {_loc})
+		
+		loop 100 times:
+			set {_rm} to a random number between 0 and {@effect-radius}
+			set {_vector} to randomVector({_rm})
+			set {_el} to {_loc} ~ {_vector}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Color(entity_effect, {_color}, {_el})
+
+		wait a tick
+
+local function kitParticle_GasSpray_Stay(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+
+	add rgb(92, 98, 102) to {_colors::*}
+	add rgb(65, 82, 87) to {_colors::*}
+	add rgb(59, 68, 75) to {_colors::*}
+
+	loop 5 times:
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(entity_effect, {_color}, moveRandomLocation({_baseloc}, 1))
+		chance of 30%:
+			spawnParticle_BlockData(falling dust, light gray concrete powder, moveRandomLocation({_baseloc}, 0.5))

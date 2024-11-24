@@ -35,6 +35,10 @@ on damage of player:
 		cancel event
 
 function kitExplosion(attacker: player, power: number, loc: location, bool: boolean = false):
+	set {_values::player} to {_attacker}
+	set {_values::location} to {_loc}
+	call a custom event "GasSprayInduction" with {_values::*}
+
 	set {_round} to {_power} * 2
 	playSound("entity.generic.explode", {_power}, 1, {_loc})
 	if {_power} < 2:
@@ -59,7 +63,7 @@ function kitExplosion(attacker: player, power: number, loc: location, bool: bool
 	if {_hit} is true:
 		playSound("entity.experience_orb.pickup", 1, 2, {_attacker}, true)
 
-local function kitCalcExpose(player: player, center: location) :: number:
+function kitCalcExpose(player: player, center: location) :: number:
 	set {_playerloc} to location of {_player}
 	if location of block at {_player} is location of block at {_center}:
 		set {_expose} to 1
