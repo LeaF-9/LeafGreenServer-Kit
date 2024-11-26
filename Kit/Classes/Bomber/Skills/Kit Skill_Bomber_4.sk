@@ -19,6 +19,11 @@ function kitSkill_Bomber_4(player: player):
 
 local function kitEffect_BombKart(player: player):
 	kitMsg({_player}, "§6敵を追尾するカート爆弾を投擲します!")
+
+	set {_id} to a random UUID
+	set {_bar.title} to "§c§lBomb Kart"
+	create bossbar titled {_bar.title} and id {_id} for {_player} with progress 100 with colors red with style segmented 10
+
 	set {_now} to now
 	set {_skilltool} to tool of {_player}
 	set {Stats.%{_player}%::BombKart} to {_now}
@@ -47,6 +52,7 @@ local function kitEffect_BombKart(player: player):
 
 	playSound("ui.button.click", 1, 0.8, {_player})
 	set {_pushing} to false
+	set {_ln} to 0
 	loop {@effect-tick} times:
 		# 条件確認
 		if {Stats.%{_player}%::BombKart} is not {_now}:
@@ -156,7 +162,12 @@ local function kitEffect_BombKart(player: player):
 		if mod((loop-number - 1), 20) = 0:
 			kitSound_BombKart_Run({_player}, {_moveloc})
 
+		# ボスバー処理
+		set {_prog} to (({@effect-tick} - {_ln}) / {@effect-tick}) * 100
+		set bossbar {_id} value to {_prog}
+		add 1 to {_ln}
 		wait a tick
+	remove bossbar {_id}
 	if {Stats.%{_player}%::BombKart} is {_now}:
 		delete {Stats.%{_player}%::BombKart}
 	loop all block displays:
