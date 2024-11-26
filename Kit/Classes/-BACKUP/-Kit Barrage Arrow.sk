@@ -1,0 +1,141 @@
+# Barrage Arrow
+
+on rightclick holding a bow:
+	{Stats.%player%::BarrageArrow} is true
+	kitSound_BarrageArrow_Charge(player)
+
+on shoot:
+	{Stats.%shooter%::BarrageArrow} is true
+	set {_time} to getBowDrawTime(shooter, 25)
+	cancel event
+	kitEffect_BarrageArrow_Shoot(shooter, {_time})
+
+
+
+function kitSkill_Archer_5(player: player):
+	toolCT({_player}, "Archer", 5)
+	kitEffect_BarrageArrow({_player})
+
+
+
+local function kitEffect_BarrageArrow(player: player):
+	set {Stats.%{_player}%::BarrageArrow} to true
+	kitMsg({_player}, "§e矢§dの§6放つ§l本数§dと§6§l速度§dが§c§l急増加§cします!")
+	kitParticle_BarrageArrow_Start({_player})
+	wait 5 seconds
+	{Stats.%{_player}%::BarrageArrow} is set
+	delete {Stats.%{_player}%::BarrageArrow}
+	kitMsg({_player}, "§cBarrage Arrow§dの効果が切れました")
+	kitSound_BarrageArrow_End({_player})
+
+local function kitEffect_BarrageArrow_Shoot(player: player, time: number):
+	set {_count} to 1
+	set {_greater} to 10
+	loop 4 times:
+		if {_time} >= {_greater}:
+			add 1 to {_count}
+		add 5 to {_greater}
+	set {_pitch} to 1.5 - {_count} * 0.1
+	playSound("entity.zombie.attack_iron_door", 1, {_pitch}, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	loop {_count} times:
+		set {_vector} to kitEffect_BarrageArrow_Direction({_baseloc}, loop-number, {_count})
+		kitEffect_BarrageArrow_Arrow({_player}, {_vector}, {_count})
+
+local function kitEffect_BarrageArrow_Direction(loc: location, num: number, max: number) :: vector:
+	set {_power} to 3
+	set {_pitch} to pitch of {_loc}
+	set pitch of {_loc} to 0
+	if {_max} is 1:
+		set pitch of {_loc} to {_pitch}
+		set {_v} to setVector({_loc}, location 10 meters in front of {_loc}, {_power})
+	else if {_max} is 2:
+		set {_leftm} to 2.5
+		if {_num} is 1:
+			set {_dirloc} to location {_leftm} meters to the left of {_loc}
+		else:
+			set {_dirloc} to location {_leftm} meters to the right of {_loc}
+		set pitch of {_dirloc} to {_pitch}
+		set {_dirloc} to location 10 meters in front of {_dirloc}
+		set {_v} to setVector({_loc}, {_dirloc}, {_power})
+	else if {_max} is 3:
+		set {_leftm} to 5
+		if {_num} is 1:
+			set {_dirloc} to location {_leftm} meters to the left of {_loc}
+		else if {_num} is 2:
+			set {_dirloc} to location {_leftm} meters to the right of {_loc}
+		else:
+			set {_dirloc} to {_loc}
+		set pitch of {_dirloc} to {_pitch}
+		set {_dirloc} to location 10 meters in front of {_dirloc}
+		set {_v} to setVector({_loc}, {_dirloc}, {_power})
+	else if {_max} is 4:
+		set {_leftm} to 5
+		if {_num} is 1:
+			set {_dirloc} to location {_leftm} - 2.5 meters to the left of {_loc}
+		else if {_num} is 2:
+			set {_dirloc} to location {_leftm} + 2.5 meters to the left of {_loc}
+		else if {_num} is 3:
+			set {_dirloc} to location {_leftm} - 2.5 meters to the right of {_loc}
+		else:
+			set {_dirloc} to location {_leftm} + 2.5 meters to the right of {_loc}
+		set pitch of {_dirloc} to {_pitch}
+		set {_dirloc} to location 10 meters in front of {_dirloc}
+		set {_v} to setVector({_loc}, {_dirloc}, {_power})
+	else:
+		set {_leftm} to 5
+		if {_num} is 1:
+			set {_dirloc} to location {_leftm} meters to the left of {_loc}
+		else if {_num} is 2:
+			set {_dirloc} to location {_leftm} * 2 meters to the left of {_loc}
+		else if {_num} is 3:
+			set {_dirloc} to location {_leftm} meters to the right of {_loc}
+		else if {_num} is 4:
+			set {_dirloc} to location {_leftm} * 2 meters to the right of {_loc}
+		else:
+			set {_dirloc} to {_loc}
+		set pitch of {_dirloc} to {_pitch}
+		set {_dirloc} to location 10 meters in front of {_dirloc}
+		set {_v} to setVector({_loc}, {_dirloc}, {_power})
+	return {_v}
+
+local function kitEffect_BarrageArrow_Arrow(player: player, vector: vector, count: number):
+	set {_damage} to 1 + 0.5 * ({_count} - 1)
+	set {_from} to location of head of {_player}
+	shoot an arrow from {_from} at speed 1
+	set {_shot} to shot arrow
+	set velocity of {_shot} to {_vector}
+	set metadata value "arrowdamage" of {_shot} to {_damage}
+	kitParticle_BarrageArrow_Arrow({_shot})
+
+
+
+local function kitParticle_BarrageArrow_Start(player: player):
+	playSound("block.iron_door.open", 1, 0.65, {_player})
+	loop 50 times:
+		set {_v} to randomVector(0.5)
+		spawnParticle_Vector(flame, {_v}, 1, location 1 meter above {_player})
+		wait 2 ticks
+
+local function kitParticle_BarrageArrow_Arrow(proj: projectile):
+	loop 10 times:
+		spawnParticle(lava, location of {_proj})
+		wait a tick
+
+
+
+local function kitSound_BarrageArrow_Charge(player: player):
+	playSound("block.iron_trapdoor.open", 1, 0.85, {_player})
+	wait a tick
+	set {_start} to getBowDrawStart({_player})
+	wait 9 ticks
+	set {_pitch} to 1
+	loop 4 times:
+		if getBowDrawStart({_player}) is not {_start}:
+			stop
+		playSound("block.iron_trapdoor.close", 1, {_pitch}, {_player})
+		add 0.25 to {_pitch}
+		wait 5 ticks
+
+local function kitSound_BarrageArrow_End(player: player):
+	playSound("block.iron_door.close", 1, 0.65, {_player})
