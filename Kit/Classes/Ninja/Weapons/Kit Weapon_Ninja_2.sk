@@ -3,7 +3,7 @@
 function kitWeapon_Ninja_2(player: player):
 	set {_tool} to {_player}'s tool
 	if name of {_tool} contains "Kunai":
-		toolCT({_player}, "Ninja", 2, "Weapon.main")
+		toolItemCT({_player}, "Ninja", 2)
 		# --- Fudaの付与 ---
 		set {_fuda} to a name tag named "<##698AAB>Fuda" with lore lore of {_tool}
 		set {_fuda} to kitItemTagChanger({_fuda}, "Ninja", "Weapon.main", 2)
@@ -24,9 +24,8 @@ function kitWeapon_Ninja_2(player: player):
 				wait a tick
 		if {_player} has {_fuda}:
 			delete {_remain}
-			loop all entities:
-				type of loop-entity is armor stand
-				metadata value "kunai-remaining" of loop-entity is "%{_player}%"
+			loop all item displays:
+				metadata value "kunai-remaining" of loop-item display is "%{_player}%"
 				set {_remaining} to true
 			if {_remaining} is not set:
 				delete {Stats.%{_player}%::Kunai-Shooting}
@@ -37,10 +36,9 @@ function kitWeapon_Ninja_2(player: player):
 	else if name of {_tool} contains "Fuda":
 		if {Stats.%{_player}%::Kunai-Remaining} is set:
 			delete {Stats.%{_player}%::Kunai-Remaining}
-			loop all entities:
-				type of loop-entity is armor stand
-				metadata value "kunai-remaining" of loop-entity is "%{_player}%"
-				delete loop-entity
+			loop all item displays:
+				metadata value "kunai-remaining" of loop-item display is "%{_player}%"
+				delete loop-item display
 			# --- クナイの返還 --
 			set {_kunai} to kitPlayerWeaponItem({_player}, "Ninja", "main")
 			remove {_tool} from {_player}
@@ -66,27 +64,29 @@ on projectile hit:
 		distance between {_baseloc} and location of loop-block < {_d}
 		set {_d} to distance between {_baseloc} and location of loop-block
 		set {_baseblock} to loop-block
-	if {_baseblock} is set:
-		set {_v} to setVector({_baseloc}, {_baseblock})
-		# --- armor stand 置く処理 ---
-		set {_yaw} to yaw of {_v}
-		set {_pitch} to pitch of {_v}
-		set {_kunailoc} to location of {_baseblock}
-		subtract 0.5 from y-coordinate of {_kunailoc}
-		set yaw of {_kunailoc} to {_yaw}
-		set {_p} to 315 + {_p}
-		set {Stats.%shooter%::Kunai-Remaining} to {_kunailoc}
-		set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,ArmorItems:[{},{},{},{}],HandItems:[{id:""arrow"",Count:1b},{}],Pose:{RightArm:[0f,%{_p}%f,270f]}}"
-		spawn an armor stand at {_kunailoc} with nbt {_nbt}
-		set metadata value "gametype" of spawned entity to "Kit"
-		set metadata value "kunai-remaining" of spawned entity to "%shooter%"
-		# ---------------------------
+	if {_baseblock} is not set:
+		stop
+
+	# 座標確認
+	set {_v} to setVector({_baseloc}, {_baseblock}, 0.1)
+	set {_dirloc} to setDirToVec({_baseloc}, {_v})
+	set {_kunailoc} to {_dirloc} ~ {_v}
+	set {Stats.%shooter%::Kunai-Remaining} to {_kunailoc}
+
+	set {_item} to "minecraft:arrow"
+	set {_transformation} to "[0.7071f,0.7071f,0.0000f,0.0000f,0.0000f,0.0000f,-1.0000f,0.0000f,-0.7071f,0.7071f,0.0000f,0.0000f,0.0000f,0.0000f,0.0000f,1.0000f]"
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},teleport_duration:1}"
+	spawn an item display at {_kunailoc} with nbt {_nbt}
+	set {_itemdisplay} to spawned item display
+	set metadata value "gametype" of {_itemdisplay} to "Kit"
+	set metadata value "kunai-remaining" of {_itemdisplay} to "%shooter%"
+	packetGlowing(shooter, {_itemdisplay})
 
 on death of player:
 	{Stats.%victim%::Kunai-Remaining} is set
-	loop all entities:
-		metadata value "kunai-remaining" of loop-entity is "%victim%"
-		delete loop-entity
+	loop all item displays:
+		metadata value "kunai-remaining" of loop-item display is "%victim%"
+		delete loop-item display
 
 function kunaiNinjutsu(player: player, type: text):
 	if {Stats.%{_player}%::Kunai-Remaining} is set:
