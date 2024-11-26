@@ -4,6 +4,7 @@ function kitSkill_Knocker_3(player: player):
 	toolCT({_player}, "Knocker", 3)
 	kitMsg({_player}, "§b突風が吹き荒れる!")
 	set {_baseloc} to location of head of {_player}
+	set {_vector} to setVector({_baseloc}, (location 10 meters in front of {_baseloc}))
 	set {_now} to now
 	playSound("entity.wither.hurt", 0.5, 0.5, {_baseloc})
 	set {_m} to 0
@@ -59,13 +60,6 @@ function kitSkill_Knocker_3(player: player):
 				{_hit::*} does not contain id of loop-entity
 				add id of loop-entity to {_hit::*}
 				LastKiller(loop-entity, {_player})
-				set {_to} to location of loop-entity
-				set {_dv} to setVector({_to}, {_baseloc})
-				set {_dl} to {_to}
-				set yaw of {_dl} to yaw of {_dv}
-				set pitch of {_dl} to pitch of {_dv}
-				set {_from} to location 1 meters in front of {_dl}
-				set {_vector} to setVector({_from}, {_to})
 				set velocity of loop-entity to {_vector}
 				if checkEntityType(loop-entity, player) is true:
 					set {Stats.%loop-entity%::FallRemove} to {_now}
