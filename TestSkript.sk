@@ -955,3 +955,14 @@ command /test-color <number> <number> <number>:
 		set {_g} to {_color}.getGreen()
 		set {_b} to {_color}.getBlue()
 		message formatted "§4%{_r}% §2%{_g}% §1%{_b}%" to player
+
+command /test-tag-checker:
+	permission: sk.admin
+	trigger:
+		loop all sheeps in radius 5 around player:
+			set {_nbt} to nbt compound of loop-sheep
+			set string tag "custom;test" of {_nbt} to "yes"
+		loop all sheeps in radius 5 around player:
+			set {_nbt} to nbt compound of loop-sheep
+			set {_test} to string tag "custom;test" of {_nbt}
+			broadcast "%{_test}%"
