@@ -54,6 +54,11 @@ function kitExplosion(attacker: player, power: number, loc: location, bool: bool
 			kitDamage({_attacker}, loop-entity, {_damage}, true)
 			continue
 		# ダメージ処理
+		if metadata value "shield entity" of loop-entity is true:
+			if {_shield} is set:
+				continue
+			set {_shield} to true
+
 		set {_distance} to distance between {_loc} and loop-entity  # 距離
 		set {_expose} to kitCalcExpose(loop-entity, {_loc})
 		set {_impact} to ({_round} - {_distance}) / 2 * {_expose}
