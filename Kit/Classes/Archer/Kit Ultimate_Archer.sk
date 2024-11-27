@@ -1,29 +1,58 @@
-# Impact Shot
+# Helical Luminary
 
-function kitUltArcher(player: player):
-	set {Stats.%{_player}%::UltArcher} to true
-	loop 200 times:
-		if {Stats.%{_player}%::UltArcher} is true:
-			set {_el} to aroundEffect({_player})
-			spawnParticle_Color(entity_effect, rgb(255, 255, 0), {_el})
-		wait a tick
-	if {Stats.%{_player}%::UltArcher} is true:
-		delete {Stats.%{_player}%::UltArcher}
+options:
+	force-count: 3
+	damage-amount: 6
+	glowing-time: 5 seconds
+	glowing-tick: 100
+
+
+
+on rightclick holding a bow:
+	{Stats.%player%::HelicalLuminary} is set
+	kitParticle_HelicalLuminary_Charge(player)
+
+
 
 on shoot:
+	{Stats.%shooter%::HelicalLuminary} is set
 	projectile is an arrow or a spectral arrow
-	{Stats.%shooter%::UltArcher} is true
+	set {_draw} to getBowDrawTime(shooter, 30)
+	if {_draw} < 30:
+		kitParticle_HelicalLuminary_Cancel(shooter)
+		stop
+
 	cancel event
-	delete {Stats.%shooter%::UltArcher}
-	playSound("item.trident.thunder", 1, 1, shooter)
-	set {_loc} to location of shooter
-	add 1.6 to y-coordinate of {_loc}
+	kitEffect_HelicalLuminary_Shoot(shooter)
+
+
+
+function kitUltArcher(player: player):
+	kitEffect_HelicalLuminary({_player})
+
+
+
+local function kitEffect_HelicalLuminary(player: player):
+	set {Stats.%{_player}%::HelicalLuminary} to 3
+	kitParticle_HelicalLuminary_Force({_player})
+
+local function kitEffect_HelicalLuminary_Shoot(player: player):
+	# forceの消費
+	subtract 1 from {Stats.%{_player}%::HelicalLuminary}
+	delete {Stats.%{_player}%::HelicalLuminary} if {Stats.%{_player}%::HelicalLuminary} <= 0
+	# 音
+	playSound("item.trident.thunder", 100, 1, {_player})
+
+	# 座標確認 (emerald作)
+	set {_loc} to location of {_player}
+	add 1.6 to y-pos of {_loc}
 	set {_vector0} to {_loc}
 	set {_vector1} to {_loc}
-	set {_x} to x-coordinate of {_loc}
-	set {_y} to y-coordinate of {_loc}
-	set {_z} to z-coordinate of {_loc}
+	set {_x} to x-pos of {_loc}
+	set {_y} to y-pos of {_loc}
+	set {_z} to z-pos of {_loc}
 	set {_alpha} to 0
+
 	loop 37 time:
 		set {_vx1} to {_loc}
 		set pitch of {_vx1} to 0
@@ -41,36 +70,189 @@ on shoot:
 		set pitch of {_vy} to {_y2p}
 		set {_vy} to location 1 meters in front of {_vy}
 		set {_vz} to location 1 meters in front of {_loc}
+
 		set {_vector0} to location (3 * {_alpha}) meters in front of {_loc}
-		set {_v0x} to x-coordinate of {_vector0}
-		set {_v0y} to y-coordinate of {_vector0}
-		set {_v0z} to z-coordinate of {_vector0}
+		set {_v0x} to x-pos of {_vector0}
+		set {_v0y} to y-pos of {_vector0}
+		set {_v0z} to z-pos of {_vector0}
 		if ({_v0x} - {_x}) ^ 2 + ({_v0y} - {_y}) ^ 2 + ({_v0z} - {_z}) ^ 2 < 10201:
-			kitParticle_ImpactShot({_vector0})
+			kitParticle_HelicalLuminary_Dust({_vector0})
 			playSound("item.trident.return", 1.5, 1.25, {_vector0})
+
 		set {_s} to 0
 		set {_t} to 0
 		loop 8 time:
 			add 1 to {_t}
 			loop 5 time:
-				set x-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-coordinate of {_vx} - {_x}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-coordinate of {_vy} - {_x}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (x-coordinate of {_vz} - {_x}) + {_x}
-				set y-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-coordinate of {_vx} - {_y}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-coordinate of {_vy} - {_y}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (y-coordinate of {_vz} - {_y}) + {_y}
-				set z-coordinate of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-coordinate of {_vx} - {_z}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-coordinate of {_vy} - {_z}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (z-coordinate of {_vz} - {_z}) + {_z}
-				spawnParticle_Dust(rgb(255, 255, 32 * {_t}), 2, {_vector1})
+				set x-pos of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-pos of {_vx} - {_x}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-pos of {_vy} - {_x}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (x-pos of {_vz} - {_x}) + {_x}
+				set y-pos of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-pos of {_vx} - {_y}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-pos of {_vy} - {_y}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (y-pos of {_vz} - {_y}) + {_y}
+				set z-pos of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-pos of {_vx} - {_z}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-pos of {_vy} - {_z}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (z-pos of {_vz} - {_z}) + {_z}
+
+				spawnParticle_Dust(rgb(255, 255, 32 * {_t}), 1, {_vector1})
 				loop all entities in radius 1 around {_vector1}:
 					{_hit::%id of loop-entity%} is not set
-					kitCheckTeam(loop-entity, shooter, false, true) is true
+					kitCheckTeam(loop-entity, {_player}, false, true) is true
+
 					set {_hit::%id of loop-entity%} to true
-					kitDamage(shooter, loop-entity, 7, true)
-					apply glowing 1 to loop-entity for 10 seconds
-					playSound("entity.experience_orb.pickup", 1, 0.5, shooter, true)
-					kitEffectDescription(loop-entity, "§4§l❤7 §8& §e§l発光")
-					sendTimeBossbar_RED(loop-entity, "Impact Shot", 200)
+					kitDamage({_player}, loop-entity, {@damage-amount}, true)
+					applyEffect(loop-entity, glowing, 1, {@glowing-time})
+
+					playSound("entity.experience_orb.pickup", 1, 0.5, {_player}, true)
+					kitEffectDescription(loop-entity, "§4§l❤6 §8& §e§l発光")
+					sendTimeBossbar_RED(loop-entity, "§e§l発光", {@glowing-tick})
 				add 1 to {_s}
 		add 3 to {_alpha}
 		wait a tick
 
-function kitParticle_ImpactShot(loc: location):
-	loop 20 times:
-		spawnParticle_Dust(rgb(255, 255, 0), 2, {_loc})
+
+
+local function kitParticle_HelicalLuminary_Force(player: player):
+	add rgb(248, 247, 190) to {_colors::*}
+	add rgb(243, 247, 36) to {_colors::*}
+	add rgb(250, 246, 26) to {_colors::*}
+
+	add rgb(250, 250, 238) to {_colors.aura::*}
+	add rgb(240, 240, 236) to {_colors.aura::*}
+	add rgb(250, 250, 233) to {_colors.aura::*}
+
+	set {_enable} to true
+	set {_baserad} to 0
+	set {_addbaserad} to 50 / 20
+	while {_enable} is true:
+		if {Stats.%{_player}%::HelicalLuminary} is not set:
+			stop
+
+		set {_baseloc} to location 1 meter above {_player}
+		set pitch of {_baseloc} to 0
+		set {_basevec} to setVector({_baseloc}, (location 10 meters in front of {_baseloc}), 1)
+
+		set {_count} to {Stats.%{_player}%::HelicalLuminary}
+		set {_rad} to {_baserad}
+		set {_addrad} to 360 / {_count}
+		loop {_count} times:
+
+			set {_rotatevec} to {_basevec}
+			rotate {_rotatevec} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_rotatevec}
+
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 2.5, {_el})
+
+			set {_rn} to a random integer between 1 and 3
+			loop {_rn} times:
+				set {_color} to a random element out of {_colors.aura::*}
+				spawnParticle_Color(entity_effect, {_color}, moveRandomLocation({_el}, 0.5))
+			
+			add {_addrad} to {_rad}
+		add {_addbaserad} to {_baserad}
 		wait a tick
+
+local function kitParticle_HelicalLuminary_Charge(player: player):
+	set {_rad.s} to 0
+	set {_addrad.s} to 90 / 20
+	set {_meter.s} to 0.5
+	add rgb(240, 236, 26) to {_colors.s::*}
+	add rgb(252, 236, 21) to {_colors.s::*}
+	add rgb(252, 248, 7) to {_colors.s::*}
+
+	set {_rad.m} to 0
+	set {_addrad.m} to (60 / 20) * (-1)
+	set {_meter.m} to 1
+	add rgb(240, 241, 134) to {_colors.m::*}
+	add rgb(246, 248, 139) to {_colors.m::*}
+	add rgb(233, 245, 131) to {_colors.m::*}
+
+	set {_rad.l} to 0
+	set {_addrad.l} to 30 / 20
+	set {_meter.l} to 1.5
+	add rgb(247, 248, 205) to {_colors.l::*}
+	add rgb(245, 241, 183) to {_colors.l::*}
+	add rgb(255, 253, 223) to {_colors.l::*}
+
+	set {_count} to {Stats.%{_player}%::HelicalLuminary}
+	set {_enable} to true
+	while {_enable} is true:
+		wait a tick
+
+		set {_draw} to getBowDrawTime({_player}, 31)
+		if {_draw} is not set:
+			stop
+		if type of (tool of {_player}) is not a bow:
+			stop
+		if {Stats.%{_player}%::HelicalLuminary} is not {_count}:
+			stop
+		
+		set {_baseloc} to location of (head of {_player})
+		if {_draw} >= 10:
+			if {_draw} = 10:
+				kitSound_HelicalLuminary_Charge({_player}, 1)
+			kitParticle_HelicalLuminary_Square({_baseloc}, {_meter.s}, {_rad.s}, {_colors.s::*})
+			add {_addrad.s} to {_rad.s}
+
+		if {_draw} >= 20:
+			if {_draw} = 20:
+				kitSound_HelicalLuminary_Charge({_player}, 2)
+			kitParticle_HelicalLuminary_Square({_baseloc}, {_meter.m}, {_rad.m}, {_colors.m::*})
+			add {_addrad.m} to {_rad.m}
+
+		if {_draw} >= 30:
+			if {_draw} = 30:
+				kitSound_HelicalLuminary_Charge({_player}, 3)
+			kitParticle_HelicalLuminary_Square({_baseloc}, {_meter.l}, {_rad.l}, {_colors.l::*})
+			add {_addrad.l} to {_rad.l}
+
+local function kitParticle_HelicalLuminary_Square(loc: location, meter: number, arad: number, colors: colors):
+	set {_baseloc} to location 1 meter in front of {_loc}
+	set {_basevec} to setVector({_loc}, {_baseloc})
+	set {_rotateloc} to {_loc}
+	add -90 to pitch of {_rotateloc}
+	set {_rotateloc} to location 1 meter in front of {_rotateloc}
+	set {_rotatevec} to setVector({_loc}, {_rotateloc}, {_meter})
+
+	set {_count} to 4
+	set {_rad} to {_arad}
+	set {_addrad} to 90
+	set {_count.2} to 20 * {_meter}
+	loop {_count} times:
+		set {_vec.a} to {_rotatevec}
+		rotate {_vec.a} around {_basevec} by {_rad}
+		set {_nextrad} to {_rad} + {_addrad}
+		set {_vec.b} to {_rotatevec}
+		rotate {_vec.b} around {_basevec} by {_nextrad}
+
+		set {_loc.a} to {_baseloc} ~ {_vec.a}
+		set {_loc.b} to {_baseloc} ~ {_vec.b}
+		set {_lineloc} to setDirToVec({_loc.a}, setVector({_loc.a}, {_loc.b}))
+
+		set {_distance} to distance between {_loc.a} and {_loc.b}
+		set {_m} to 0
+		set {_addm} to {_distance} / {_count.2}
+		loop {_count.2} times:
+			set {_el} to location {_m} meters in front of {_lineloc}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 0.5, {_el})
+
+			add {_addm} to {_m}
+		add {_addrad} to {_rad}
+
+local function kitParticle_HelicalLuminary_Cancel(player: player):
+	playSound("block.beacon.deactivate", 1, 1.1, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+
+	loop 30 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		set {_d} to dice(3)
+		spawnParticle_BlockData(falling_dust, yellow terracotta, {_el}) if ({_d} = 1)
+		spawnParticle_BlockData(falling_dust, yellow wool, {_el}) if ({_d} = 2)
+		spawnParticle_BlockData(falling_dust, glowstone, {_el}) if ({_d} = 3)
+
+local function kitParticle_HelicalLuminary_Dust(loc: location):
+	loop 10 times:
+		spawnParticle_Dust(rgb(255, 255, 0), 1.5, {_loc})
+		wait a tick
+
+
+
+local function kitSound_HelicalLuminary_Charge(player: player, pitchnum: number):
+	set {_pitch} to 1 + (0.5 * ({_pitchnum} - 1))
+	playSound("block.cherry_wood_button.click_on", 1, {_pitch}, {_player})
