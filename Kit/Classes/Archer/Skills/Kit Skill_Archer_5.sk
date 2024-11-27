@@ -1,141 +1,155 @@
-# Barrage Arrow
+# Cloud Barrage
 
-on rightclick holding a bow:
-	{Stats.%player%::BarrageArrow} is true
-	kitSound_BarrageArrow_Charge(player)
+options:
+	shoot-radius: 45
+	shoot-power: 2
+	arrow-metadata: "cloud barrage"
+	arrow-damage: 3
+	cloud-radius: 5
+	cloud-tick: 200
 
-on shoot:
-	{Stats.%shooter%::BarrageArrow} is true
-	set {_time} to getBowDrawTime(shooter, 25)
-	cancel event
-	kitEffect_BarrageArrow_Shoot(shooter, {_time})
+
+
+on projectile hit:
+	metadata value {@arrow-metadata} of projectile is set
+	delete metadata value {@arrow-metadata} of projectile
+	set {_loc} to location of projectile
+	kitEffect_CloudBarrage_Hit(shooter, {_loc})
 
 
 
 function kitSkill_Archer_5(player: player):
 	toolCT({_player}, "Archer", 5)
-	kitEffect_BarrageArrow({_player})
+	kitEffect_CloudBarrage({_player})
 
 
 
-local function kitEffect_BarrageArrow(player: player):
-	set {Stats.%{_player}%::BarrageArrow} to true
-	kitMsg({_player}, "§e矢§dの§6放つ§l本数§dと§6§l速度§dが§c§l急増加§cします!")
-	kitParticle_BarrageArrow_Start({_player})
-	wait 5 seconds
-	{Stats.%{_player}%::BarrageArrow} is set
-	delete {Stats.%{_player}%::BarrageArrow}
-	kitMsg({_player}, "§cBarrage Arrow§dの効果が切れました")
-	kitSound_BarrageArrow_End({_player})
+local function kitEffect_CloudBarrage(player: player):
+	kitMsg({_player}, "<##ccf5f5>雲を発生させる矢<##deeeee>を発射します...")
+	set {_baseloc} to location of head of {_player}
+	kitParticle_CloudBarrage_Launch({_baseloc})
+	set {_toloc} to {_baseloc}
+	add -90 to pitch of {_toloc}
+	set {_toloc} to location 1 meter in front of {_toloc}
+	set {_basevec} to setVector({_baseloc}, {_toloc})
 
-local function kitEffect_BarrageArrow_Shoot(player: player, time: number):
-	set {_count} to 1
-	set {_greater} to 10
-	loop 4 times:
-		if {_time} >= {_greater}:
-			add 1 to {_count}
-		add 5 to {_greater}
-	set {_pitch} to 1.5 - {_count} * 0.1
-	playSound("entity.zombie.attack_iron_door", 1, {_pitch}, {_player})
-	set {_baseloc} to location 1 meter above {_player}
-	loop {_count} times:
-		set {_vector} to kitEffect_BarrageArrow_Direction({_baseloc}, loop-number, {_count})
-		kitEffect_BarrageArrow_Arrow({_player}, {_vector}, {_count})
+	set {_rad} to {@shoot-radius} * -1
+	set {_addrad} to {@shoot-radius}
+	set {_loopnum} to 3
+	loop {_loopnum} times:
+		set {_rotatevec} to setVector({_baseloc}, (location 1 meter in front of {_baseloc}), {@shoot-power})
+		rotate {_rotatevec} around {_basevec} by {_rad}
 
-local function kitEffect_BarrageArrow_Direction(loc: location, num: number, max: number) :: vector:
-	set {_power} to 3
-	set {_pitch} to pitch of {_loc}
-	set pitch of {_loc} to 0
-	if {_max} is 1:
-		set pitch of {_loc} to {_pitch}
-		set {_v} to setVector({_loc}, location 10 meters in front of {_loc}, {_power})
-	else if {_max} is 2:
-		set {_leftm} to 2.5
-		if {_num} is 1:
-			set {_dirloc} to location {_leftm} meters to the left of {_loc}
-		else:
-			set {_dirloc} to location {_leftm} meters to the right of {_loc}
-		set pitch of {_dirloc} to {_pitch}
-		set {_dirloc} to location 10 meters in front of {_dirloc}
-		set {_v} to setVector({_loc}, {_dirloc}, {_power})
-	else if {_max} is 3:
-		set {_leftm} to 5
-		if {_num} is 1:
-			set {_dirloc} to location {_leftm} meters to the left of {_loc}
-		else if {_num} is 2:
-			set {_dirloc} to location {_leftm} meters to the right of {_loc}
-		else:
-			set {_dirloc} to {_loc}
-		set pitch of {_dirloc} to {_pitch}
-		set {_dirloc} to location 10 meters in front of {_dirloc}
-		set {_v} to setVector({_loc}, {_dirloc}, {_power})
-	else if {_max} is 4:
-		set {_leftm} to 5
-		if {_num} is 1:
-			set {_dirloc} to location {_leftm} - 2.5 meters to the left of {_loc}
-		else if {_num} is 2:
-			set {_dirloc} to location {_leftm} + 2.5 meters to the left of {_loc}
-		else if {_num} is 3:
-			set {_dirloc} to location {_leftm} - 2.5 meters to the right of {_loc}
-		else:
-			set {_dirloc} to location {_leftm} + 2.5 meters to the right of {_loc}
-		set pitch of {_dirloc} to {_pitch}
-		set {_dirloc} to location 10 meters in front of {_dirloc}
-		set {_v} to setVector({_loc}, {_dirloc}, {_power})
-	else:
-		set {_leftm} to 5
-		if {_num} is 1:
-			set {_dirloc} to location {_leftm} meters to the left of {_loc}
-		else if {_num} is 2:
-			set {_dirloc} to location {_leftm} * 2 meters to the left of {_loc}
-		else if {_num} is 3:
-			set {_dirloc} to location {_leftm} meters to the right of {_loc}
-		else if {_num} is 4:
-			set {_dirloc} to location {_leftm} * 2 meters to the right of {_loc}
-		else:
-			set {_dirloc} to {_loc}
-		set pitch of {_dirloc} to {_pitch}
-		set {_dirloc} to location 10 meters in front of {_dirloc}
-		set {_v} to setVector({_loc}, {_dirloc}, {_power})
-	return {_v}
+		shoot an arrow from {_baseloc} at speed 1
+		set {_shot} to shot arrow
+		setShooter({_shot}, {_player})
+		set velocity of {_shot} to {_rotatevec}
+		set metadata value {@arrow-metadata} of {_shot} to true
+		set metadata value "arrowdamage" of {_shot} to {@arrow-damage}
+		kitParticle_CloudBarrage_Arrow({_shot})
+		add {_addrad} to {_rad}
 
-local function kitEffect_BarrageArrow_Arrow(player: player, vector: vector, count: number):
-	set {_damage} to 1 + 0.5 * ({_count} - 1)
-	set {_from} to location of head of {_player}
-	shoot an arrow from {_from} at speed 1
-	set {_shot} to shot arrow
-	set velocity of {_shot} to {_vector}
-	set metadata value "arrowdamage" of {_shot} to {_damage}
-	kitParticle_BarrageArrow_Arrow({_shot})
+local function kitEffect_CloudBarrage_Hit(player: player, loc: location):
+	kitParticle_CloudBarrage_Hit({_loc})
+	loop {@cloud-tick} times:
+		loop all entities in radius {@cloud-radius} around {_loc}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			applyEffect(loop-entity, slowness, 1, 5 ticks, true)
+			kitEffectDescription(loop-entity, "§8鈍足")
+			kitParticle_CloudBarrage_Slow(loop-entity)
 
-
-
-local function kitParticle_BarrageArrow_Start(player: player):
-	playSound("block.iron_door.open", 1, 0.65, {_player})
-	loop 50 times:
-		set {_v} to randomVector(0.5)
-		spawnParticle_Vector(flame, {_v}, 1, location 1 meter above {_player})
-		wait 2 ticks
-
-local function kitParticle_BarrageArrow_Arrow(proj: projectile):
-	loop 10 times:
-		spawnParticle(lava, location of {_proj})
+		kitParticle_CloudBarrage_Cloud({_loc})
 		wait a tick
+	kitSound_CloudBarrage_End({_loc})
 
 
 
-local function kitSound_BarrageArrow_Charge(player: player):
-	playSound("block.iron_trapdoor.open", 1, 0.85, {_player})
-	wait a tick
-	set {_start} to getBowDrawStart({_player})
-	wait 9 ticks
-	set {_pitch} to 1
-	loop 4 times:
-		if getBowDrawStart({_player}) is not {_start}:
+local function kitParticle_CloudBarrage_Launch(loc: location):
+	playSound("entity.breeze.deflect", 1, 1.1, {_loc})
+	set {_basevec} to setVector({_loc}, location 1 meter in front of {_loc})
+
+	set {_count} to 50
+	set {_rad} to 0
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		set {_rotatevec} to setVector({_loc}, (location 1 meter to the right of {_loc}), 1)
+		rotate {_rotatevec} around {_basevec} by {_rad}
+		spawnParticle_Vector(cloud, {_rotatevec}, 0.25, {_loc})
+		add {_addrad} to {_rad}
+
+
+local function kitParticle_CloudBarrage_Arrow(proj: projectile):
+	startTrackProjectile({_proj})
+
+	add rgb(189, 208, 209) to {_colors::*}
+	add rgb(130, 150, 161) to {_colors::*}
+	add rgb(177, 210, 214) to {_colors::*}
+
+	loop 200 times:
+		delete {_metadata}
+		set {_metadata} to metadata value {@arrow-metadata} of {_proj}
+		if {_metadata} is not set:
 			stop
-		playSound("block.iron_trapdoor.close", 1, {_pitch}, {_player})
-		add 0.25 to {_pitch}
-		wait 5 ticks
+		
+		wait a tick
+		set {_loc} to location of {_proj}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 2.5, {_loc})
+		set {_proloc} to getProjectilePreviousLocation({_proj})
+		if {_proloc} is not set:
+			continue
+		
+		set {_distance} to distance between {_loc} and {_proloc}
+		set {_FM} to 0.5
+		set {_loopnum} to round({_distance} / {_FM})
+		set {_frontMeter} to 0
+		loop {_loopnum} times:
+			add {_FM} to {_frontMeter}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 2.5, {_el})
 
-local function kitSound_BarrageArrow_End(player: player):
-	playSound("block.iron_door.close", 1, 0.65, {_player})
+local function kitParticle_CloudBarrage_Hit(loc: location):
+	playSound("entity.generic.explode", 1, 1.8, {_loc})
+	
+	loop 100 times:
+		spawnParticle_Vector(cloud, randomVector(1), 0.35, {_loc})
+
+local function kitParticle_CloudBarrage_Cloud(loc: location):
+	chance of 10%:
+		playSound("entity.breeze.slide", 1, 1.4, {_loc})
+
+	add rgb(189, 208, 209) to {_colors::*}
+	add rgb(130, 150, 161) to {_colors::*}
+	add rgb(177, 210, 214) to {_colors::*}
+
+	set {_aftercolor} to rgb(63, 71, 73)
+
+	set {_mid} to {@cloud-radius} * 0.3
+	loop 20 times:
+		set {_pow} to a random number between 0 and {_mid}
+		set {_vector} to randomVector({_pow})
+		set {_el} to {_loc} ~ {_vector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_DustTransition({_color}, {_aftercolor}, 3, {_el})
+	
+	loop 50 times:
+		set {_pow} to a random number between {_mid} and {@cloud-radius}
+		set {_vector} to randomVector({_pow})
+		set {_el} to {_loc} ~ {_vector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_DustTransition({_color}, {_aftercolor}, 5, {_el})
+
+local function kitParticle_CloudBarrage_Slow(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+
+	loop 5 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		set {_dice} to dice(3)
+		spawnParticle_BlockData(falling_dust, light gray concrete, {_el}) if {_dice} is 1
+		spawnParticle_BlockData(falling_dust, gray concrete, {_el}) if {_dice} is 2
+		spawnParticle_BlockData(falling_dust, cyan terracotta, {_el}) if {_dice} is 3
+
+
+
+local function kitSound_CloudBarrage_End(loc: location):
+	playSound("block.fire.extinguish", 1, 1.45, {_loc})
