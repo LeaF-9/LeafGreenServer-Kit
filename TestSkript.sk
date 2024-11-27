@@ -966,3 +966,32 @@ command /test-tag-checker:
 			set {_nbt} to nbt compound of loop-sheep
 			set {_test} to string tag "custom;test" of {_nbt}
 			broadcast "%{_test}%"
+
+command /test-confuse:
+	permission: sk.admin
+	trigger:
+		set {_count} to 200
+		set {_l} to location of player
+		set {_vec.past} to setVector({_l}, (location 10 meters in front of {_l}))
+		loop {_count} times:
+			wait a tick
+			set {_l} to location of player
+			set {_vec.now} to setVector({_l}, (location 10 meters in front of {_l}))
+
+			set {_dir.vec} to {_vec.now} - {_vec.past}
+			set {_dir.vec} to {_vec.past} - {_dir.vec}
+			set {_dir.vec} to normalized {_dir.vec}
+
+			set yaw of player to yaw of {_dir.vec}
+			set pitch of player to pitch of {_dir.vec}
+			set {_vec.past} to {_dir.vec}
+
+command /test-get-hitbox:
+	permission: sk.admin
+	trigger:
+		set {_target} to target entity of player
+		if {_target} is not set:
+			set {_target} to player
+		
+		set {_box} to {_target}.getBoundingBox()
+		broadcast "%{_box}%"
