@@ -30,7 +30,7 @@ on projectile hit:
 	if kitCheckTeam({_victim}, shooter, true, true) is true:
 		stop
 	
-	kitDamage(shooter, {_victim}, 0.01)
+	kitDamage(shooter, {_victim}, 0.01, "釣竿")
 	set {_velocity} to hookKnockback(location of projectile, location 1 meter above {_victim})
 	set velocity of {_victim} to {_velocity}
 
@@ -68,7 +68,7 @@ on damage of player:
 			cancel event
 			playSound("item.shield.block", 1, 1, victim)
 			set {_attacker} to getAttacker(victim)
-			kitDamageNull({_attacker}, victim, {_damage.base} / 4, true)
+			kitDamageNull({_attacker}, victim, {_damage.base} / 4, "防御", true)
 			stop
 
 	event.setDamage(DamageModifier.BLOCKING, {_damagereduction})

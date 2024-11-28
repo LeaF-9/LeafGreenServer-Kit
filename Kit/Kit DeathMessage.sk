@@ -1,14 +1,33 @@
 ﻿options:
 	prefix: <##00bfff>[<##00FF7F>PvP<##00bfff>]
 
+on load:
+	delete {DamageCause::*}
+	load yml "plugins/skript-yaml/General Options/Damage Causes.yml" as "damagecauses"
+	loop yaml node keys "causes" from "damagecauses":
+		set {_cause} to yml value "%loop-node%" from "damagecauses"
+		set {-DamageCause::%loop-key%} to {_cause}
+	unload yml "damagecauses"
+	log "§c§lDamageCause§aの読込が完了しました"
+
+on damage of player:
+	wait a tick
+	deleteLastDamage(victim)
+
 on death of player:
 	if {Join::%victim%} is "Kit":
 		set death message to ""
-		kitDeathMessage(victim, {DamageCause::%damage cause%})
-		if {DamageCause::%damage cause%} is not set:
+
+		set {_cause} to getLastDamage(victim)
+		deleteLastDamage(victim)
+		if {_cause} is not set:
+			set {_damagecause} to damage cause
+			set {_cause} to {-DamageCause::%{_damagecause}%}
+		kitDeathMessage(victim, {_cause})
+		if {_cause} is not set:
 			loop all players:
 				loop-player has permission "sk.admin"
-				message "§e[§6デバッグ§e] §c未知のDamage cause: §d%damage cause% §cです。" to loop-player
+				message "§e[§6デバッグ§e] §c未知のDamage cause: §d%{_cause}% §cです。" to loop-player
 
 function kitDeathMessage(vtm: player, cause: text):
 # victim fake checher
@@ -67,8 +86,12 @@ function kitDeathMessage(vtm: player, cause: text):
 			if {Join::%loop-player%} is "Kit":
 				message formatted "{@prefix} §1Suicide %{_damagecause}% %{_prefix.victim}%%{_display.victim}%" to loop-player
 
-command /damagecause <text> <damage cause>:
-	permission: sk.admin
-	trigger:
-		set {DamageCause::%arg 2%} to arg 1
-		message "{@prefix} §c%arg 2%§7のメッセージを§a%arg 1%§7に設定しました"
+function setLastDamage(victim: player, cause: text):
+	set metadata value "Last Damage" of {_victim} to {_cause}
+
+function getLastDamage(victim: player) :: text:
+	set {_cause} to metadata value "Last Damage" of {_victim}
+	return {_cause}
+
+function deleteLastDamage(victim: player):
+	delete metadata value "Last Damage" of {_victim}

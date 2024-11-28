@@ -104,9 +104,10 @@ on damage with priority MONITOR:
 
 
 
-function kitDamage(attacker: player, victim: entity, damage: number, fix: boolean = false):
+function kitDamage(attacker: player, victim: entity, damage: number, cause: text, fix: boolean = false):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
+		setLastDamage({_victim}, {_cause})
 	setAttacker({_victim}, {_attacker})
 
 	set {_now} to now
@@ -132,9 +133,10 @@ function kitDamage(attacker: player, victim: entity, damage: number, fix: boolea
 		damage {_victim} by {_truedamage} hearts
 
 # checkDamagableを通さないダメージ関数
-function kitDamageNull(attacker: player, victim: entity, damage: number, fix: boolean = false):
+function kitDamageNull(attacker: player, victim: entity, damage: number, cause: text, fix: boolean = false):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
+		setLastDamage({_victim}, {_cause})
 	setAttacker({_victim}, {_attacker})
 
 	if {_fix} is true:
@@ -156,9 +158,10 @@ function kitDamageNull(attacker: player, victim: entity, damage: number, fix: bo
 		set {_truedamage} to {_truedamage} * 0.5
 		damage {_victim} by {_truedamage} hearts
 
-function kitDamageInstant(attacker: player, victim: entity, damage: number, fix: boolean = false):
+function kitDamageInstant(attacker: player, victim: entity, damage: number, cause: text, fix: boolean = false):
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
+		setLastDamage({_victim}, {_cause})
 	setAttacker({_victim}, {_attacker})
 
 	set {_now} to now
