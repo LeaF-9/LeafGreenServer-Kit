@@ -3,10 +3,13 @@ options:
 
 on death of player:
 	{LastKiller::%victim%} is set
-	set {_damagecause} to last damage cause of victim
-	kitDeathEvent(victim, {LastKiller::%victim%}, {_damagecause})
+	set {_cause} to getLastDamage(victim)
+	if {_cause} is not set:
+		set {_damagecause} to damage cause
+		set {_cause} to {-DamageCause::%{_damagecause}%}
+	kitDeathEvent(victim, {LastKiller::%victim%}, {_cause})
 
-function kitDeathEvent(victim: player, attacker: player, damagecause: damage cause):
+function kitDeathEvent(victim: player, attacker: player, damagecause: text):
 # 自殺であるかどうかの確認
 	{_attacker} is not {_victim}
 # 試合進行中、試合参加中であるかどうかの確認
