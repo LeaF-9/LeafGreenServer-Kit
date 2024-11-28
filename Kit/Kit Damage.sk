@@ -48,16 +48,34 @@ function removeDamageModification_SET(entity: entity):
 
 
 
+function setDamageModification_FIX(entity: entity, num: number):
+	set metadata value "damage modification - fix" of {_entity} to {_num}
+
+function getDamageModification_FIX(entity: entity) :: number:
+	set {_num} to metadata value "damage modification - fix" of {_entity}
+	if {_num} is not set:
+		set {_num} to -1
+	return {_num}
+
+function removeDamageModification_FIX(entity: entity):
+	delete metadata value "damage modification - fix" of {_entity}
+
+
+
 # Damage Modificationを適用するイベント
 on damage with priority MONITOR:
 
 	# ダメージ量取得
 	set {_damage} to damage
-	if getDamageModification_SET(victim) is not -1:
-		set {_damage} to getDamageModification_SET(victim)
+
+	if getDamageModification_FIX(victim) is not -1:
+		set {_damage} to getDamageModification_FIX(victim)
 		set {_fix} to true
-	
+
 	else:
+		if getDamageModification_SET(victim) is not -1:
+			set {_damage} to getDamageModification_SET(victim)
+		
 		set {_dm.add} to getDamageModification_ADD(victim)
 		set {_dm.mul} to getDamageModification_MUL(victim)
 		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
@@ -66,6 +84,7 @@ on damage with priority MONITOR:
 	removeDamageModification_ADD(victim)
 	removeDamageModification_MUL(victim)
 	removeDamageModification_SET(victim)
+	removeDamageModification_FIX(victim)
 
 	# attacker消去
 	deleteAttacker(victim)

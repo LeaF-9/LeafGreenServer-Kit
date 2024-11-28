@@ -190,9 +190,9 @@ function kitSpawn_Necromancer_BabyZombie(player: player, loc: location):
 on damage with priority HIGHEST:
 	set {_attacker} to getAttacker(victim)
 	if metadata value "necromancer-entity-babyzombie" of victim is true:
-		setDamageModification_SET(victim, 100)
+		setDamageModification_FIX(victim, 100)
 	else if metadata value "necromancer-entity-babyzombie" of {_attacker} is true:
-		setDamageModification_SET(victim, 1)
+		setDamageModification_FIX(victim, 1)
 
 function kitSpawn_Necromancer_Grudge(player: player, loc: location):
 	set {_nbt} to "{Silent:1,IsBaby:0,ArmorItems:[{},{},{},{id:""minecraft:player_head"",components:{profile:{id:[I;907160796,1821854615,-1727336627,-176309982],properties:[{name:""textures"",value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGFhOGZjOGRlNjQxN2I0OGQ0OGM4MGI0NDNjZjUzMjZlM2Q5ZGE0ZGJlOWIyNWZjZDQ5NTQ5ZDk2MTY4ZmMwIn19fQ==""}]}},Count:1b}],HandItems:[{},{}],active_effects:[{id:slowness,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
@@ -238,12 +238,12 @@ on damage with priority HIGHEST:
 		set {_hp} to metadata value "necromancer-entity-vengefulspirit" of victim
 		subtract 1 from {_hp}
 		if {_hp} <= 0:
-			setDamageModification_SET(victim, 100)
+			setDamageModification_FIX(victim, 100)
 		else:
-			setDamageModification_SET(victim, 0.1)
+			setDamageModification_FIX(victim, 0.1)
 			set metadata value "necromancer-entity-vengefulspirit" of victim to {_hp}
 	else if metadata value "necromancer-entity-vengefulspirit" of {_attacker} is set:
-		setDamageModification_SET(victim, 0)
+		setDamageModification_FIX(victim, 0)
 		applyEffect(victim, wither, 3, 1 seconds, true)
 
 function kitSpawn_Necromancer_Ghost(player: player, loc: location, head: boolean):
