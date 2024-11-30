@@ -3,9 +3,20 @@ function updateTablist(player: player):
 		updateTablist_Kit({_player})
 
 function updateTablist_Kit(player: player):
+	set {_header.1} to "<##37f1e8>Welcome to <##7fff00>§lLeaf <##32cd32>§lGreen <##00923f>§lServer<##37f1e8>!"
+	set {_header.2} to "<##98dff5>§m===============§r <##1886ec>§lKit PvP <##98dff5>§m===============§r"
+
 	if {Kit-tochu} is true:
-		set tab list header of {_player} to "<##00bfff>§lKit PvP §7- <##00ff00>§lGame going on now!"
-		set tab list footer of {_player} to "<##ffd700>Map§b: <##ffa500>§l%{Kit-GameStage::name}% <##ff0000>Rule§b: <##b22222>§l%{Kit-GameStage::rule}%"
+		set {_rule} to kitRuleVariable({Kit-GameStage::rule})
+		set {_footer.1} to "<##eeea07>GAME§7: <##16f85a>§lONLINE"
+		set {_footer.2} to "<##ffae00>MAP§7: <##fcc03f>§l%{Kit-GameStage::name}% §7| <##d43232>§l%{_rule}%"
+
 	else:
-		set tab list header of {_player} to "<##00bfff>§lKit PvP §7- <##ff0000>§lGame is not holden"
-		set tab list footer of {_player} to "<##ffd700>Currently Joining§b: <##ffff00>%{Kit-Join}%"
+		set {_footer.1} to "<##eeea07>GAME§7: <##f81616>§lOFFLINE"
+		set {_footer.2} to "<##7ac8f5>JOINING§7: <##45f7ee>§l%{Kit-Join}%"
+	
+	set {_header} to "%{_header.1}%%nl%%{_header.2}%%nl%"
+	set {_footer} to "%nl%%{_footer.1}%%nl%%{_footer.2}%"
+
+	set tab list header of {_player} to {_header}
+	set tab list footer of {_player} to {_footer}
