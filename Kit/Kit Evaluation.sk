@@ -64,7 +64,7 @@ on inventory click:
 		close player's inventory
 		set {_stagename} to name of {_clickinv.item}
 		replace "§6" with "" in {_stagename}
-		kitMapRate({_player}, {_stagename})
+		kitMapRate(player, {_stagename})
 
 		
 
@@ -85,7 +85,7 @@ local function kitMapRateRule(player: player, rule: text):
 	wait a tick
 	open chest with 6 row named "§b%{_rule}% §7の§6Map評価一覧" to {_player}
 	wait a tick
-	if {_player}.getOpenInventory().getTitle() is not "§b%{_rule}% §eのMap評価一覧":
+	if {_player}.getOpenInventory().getTitle() is not "§b%{_rule}% §7の§6Map評価一覧":
 		stop
 	
 	set {_slot} to 0
@@ -149,7 +149,7 @@ command /kit-rate <number>:
 		set {_uuid} to UUID of player
 		load yml "plugins/skript-yaml/Kit Stages/%{Kit-MapEvaluation}%.yml" as "MapEvaluation.%player%"
 		set yml value "evaluations.%{_uuid}%" from "MapEvaluation.%player%" to arg 1
-		unload yml "MapEvaluation.%player%"
+		save yml "MapEvaluation.%player%"
 
 		set {_msg} to ""
 		loop arg 1 times:
