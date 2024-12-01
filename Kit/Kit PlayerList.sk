@@ -1,3 +1,6 @@
+on load:
+	savePlayerNames()
+
 on join:
 	set {_uuid} to UUID of player
 	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player"
@@ -5,3 +8,16 @@ on join:
 	if yml value "last-join" from "player" is not set:
 		set yml value "last-join" from "player" to "no data"
 	save yml "player"
+
+function savePlayerNames():
+	set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Players"
+	loop {_files::*}:
+		load yml "%loop-value%" as "playerdata"
+		set {_name} to yml value "name" from "playerdata"
+		unload yml "playerdata"
+		if {_name} is not set:
+			continue
+		
+		set {_uuid} to file name of loop-value
+		replace ".yml" with "" in {_uuid}
+		set {-UUID::%{_uuid}%} to {_name}
