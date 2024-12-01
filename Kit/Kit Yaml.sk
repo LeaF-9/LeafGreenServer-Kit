@@ -71,7 +71,7 @@ function kitStoreGameLogs():
 	set yml value "%{_id.game}%.duration" from "database.storegame" to {_duration.game}
 	loop {Kit-GamePlayTime::*}:
 		set {_uuid} to loop-index
-		set {_player} to {UUID::%{_uuid}%}
+		set {_player} to {-UUID::%{_uuid}%}
 		set {_team} to {TrueTeam::%{_player}%}
 		if {Kit-GameStage::rule} is "DTC":
 			set {_action-1} to {Kit-Break.personal::%{_player}%}
@@ -86,6 +86,20 @@ function kitStoreGameLogs():
 		set yml value "%{_id.game}%.players.%{_uuid}%.action-1" from "database.storegame" to {_action-1}
 		set yml value "%{_id.game}%.players.%{_uuid}%.playtime" from "database.storegame" to {_playtime}
 	save yml "database.storegame"
+
+function kitStoreCountLogs():
+	load yml "plugins/skript-yaml/Kit Databases/Counts.yml" as "database.storecount"
+	loop {Kit-GameInfo.Counts::*}:
+		set {_id.count} to loop-value
+		set yml value "%{_id.count}%.game" from "database.storecount" to {Kit-GameID}
+		set yml value "%{_id.count}%.player" from "database.storecount" to {Kit-GameInfo.count-player::%{_id.kill}%}
+		set yml value "%{_id.count}%.kit" from "database.storecount" to {Kit-GameInfo.count-kit::%{_id.kill}%}
+		set yml value "%{_id.count}%.time" from "database.storecount" to {Kit-GameInfo.count-time::%{_id.kill}%}
+	save yml "database.storecount"
+	delete {Kit-GameInfo.Counts::*}
+	delete {Kit-GameInfo.count-player::*}
+	delete {Kit-GameInfo.count-kit::*}
+	delete {Kit-GameInfo.count-time::*}
 
 # # test
 #
