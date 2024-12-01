@@ -1,0 +1,261 @@
+on inventory click:
+	type of event-inventory is chest inventory
+	set {_invname} to inventory name of event-inventory
+	set {_clickitem} to clicked item
+
+	# period stats
+	if {_invname} contains "§6§lPvP Stats§r §7- §b":
+		cancel event
+		if {_clickitem} is not set:
+			stop
+		set {_itemname} to name of {_clickitem}
+		if {_itemname} is " ":
+			stop
+		
+		if {_itemname} is "§b§l集計期間の変更":
+			close player's inventory
+			kitChangeStatsPeriod(player)
+			kitCheckMyStats(player)
+			stop
+		
+		if {_itemname} is "§6§lクラス毎のステータス":
+			close player's inventory
+			openKitGenre(player, "Stats")
+			stop
+
+		close player's inventory
+		set {_period} to {_invname}
+		replace "§6§lPvP Stats§r §7- §b" with "" in {_period}
+		set {_lores::*} to lore of {_clickitem}
+		set {_stats} to {_lores::1}
+		replace "§7§o" with "" in {_stats}
+		kitViewRankings(player, {_stats}, "period", {_period})
+	
+	# Kit Select
+	else if {_invname} is "§bKit: §6Genre-Stats":
+		cancel event
+		if type of clicked item is a concrete:
+			set {_genre} to name of clicked item
+			replace "§6§l" with "" in {_genre}
+			close player's inventory
+			openKitStats(player, {_genre}, "Kill")
+	
+	else if {_invname} contains "§6Kit Stats §7- §c§l":
+		cancel event
+		if {_clickitem} is not set:
+			stop
+		set {_itemname} to name of {_clickitem}
+		if {_itemname} is " ":
+			stop
+
+		if type of clicked item is a concrete:
+			set {_genre} to {_invname}
+			replace "§6Kit Stats §7- §c§l" with "" in {_genre}
+
+			set {_lores::*} to lore of {_clickitem}
+			set {_stats} to {_lores::1}
+			replace "§7§o" with "" in {_stats}
+			close player's inventory
+			openKitStats(player, {_genre}, {_stats})
+			stop
+		
+		if {_itemname} is "§9戻る":
+			close player's inventory
+			openKitGenre(player, "Stats")
+			stop
+		
+		close player's inventory
+		set {_period} to kitGetStatsPeriod(player)
+
+		set {_kit} to {_itemname}
+		replace "§6§l" with "" in {_kit}
+
+		set {_lores::*} to lore of {_clickitem}
+		set {_stats} to {_lores::8}
+		replace "§6§nクリックで§c§l" with "" in {_stats}
+		replace "§6§n上位10プレイヤーを確認できます" with "" in {_stats}
+		set {_stats} to "Count" if {_stats} is "Usage"
+		kitViewRankings(player, {_stats}, "Kit", {_kit}, {_period})
+
+
+
+function kitChangeStatsPeriod(player: player):
+	set {_now} to {-KitStatsPeriod::%{_player}%}
+	if {_now} is not set:
+		set {_now} to "all"
+	
+	if {_now} is "all":
+		set {_next} to "week"
+	else if {_now} is "week":
+		set {_next} to "month"
+	else:
+		set {_next} to "all"
+	
+	set {-KitStatsPeriod::%{_player}%} to {_next}
+	message formatted "§9ステータスの集計期間§7を §b§l%{_next}% §7に変更しました" to {_player}
+
+
+function kitGetStatsPeriod(player: player) :: text:
+	set {_period} to {-KitStatsPeriod::%{_player}%}
+	if {_period} is not set:
+		set {_period} to "all"
+	return {_period}
+
+function kitCheckMyStats(player: player):
+	lobbySidebar_Kit({_player})
+	wait a tick
+	set {_period} to kitGetStatsPeriod({_player})
+	open chest with 3 row named "§6§lPvP Stats§r §7- §b%{_period}%" to {_player}
+	wait a tick
+
+	add "Death" to {_stats::*}
+	set {_item::Death} to a blue concrete named "§1Deaths"
+	add "Assist" to {_stats::*}
+	set {_item::Assist} to a pink concrete named "§d§lAssists"
+	add "Kill" to {_stats::*}
+	set {_item::Kill} to a red concrete named "§c§lKills"
+	add "KD" to {_stats::*}
+	set {_item::KD} to a yellow concrete named "§e§lK/D"
+	add "Win" to {_stats::*}
+	set {_item::Win} to a lime concrete named "§a§lWins"
+
+	set {_uuid} to UUID of {_player}
+
+	set {_slot} to 2
+	loop {_stats::*}:
+		set {_stats} to loop-value
+		set {_item} to {_item::%{_stats}%}
+
+		set {_playerstats} to {Kit-%{_stats}%.%{_period}%::%{_uuid}%}
+		set {_playerstats} to 0 if {_playerstats} is not set
+		set {_playerrank} to {Kit-Rank.%{_stats}%.%{_period}%::%{_uuid}%}
+		set {_playerrank} to 0 if {_playerrank} is not set
+
+		set {_lore::1} to "§7§o%{_stats}%"
+		set {_lore::2} to ""
+		set {_lore::3} to "§f§l%{_playerstats}%"
+		set {_lore::4} to "§b§n%{_playerrank}%位"
+		set {_lore::5} to ""
+		set {_lore::6} to "§6§nクリックで上位10プレイヤーを確認できます"
+
+		set lore of {_item} to {_lore::*}
+		set slot {_slot} of {_player}'s current inventory to {_item}
+
+		add 1 to {_slot}
+	
+	set {_slot} to 9
+	loop 9 times:
+		set {_item} to a white stained glass pane named " "
+		set slot {_slot} of {_player}'s current inventory to {_item}
+		add 1 to {_slot}
+	
+	set {_item} to a book named "§6§lクラス毎のステータス" with lore "§7クラス別のステータスを確認することができます"
+	set slot 22 of {_player}'s current inventory to {_item}
+	set {_item} to a clock named "§b§l集計期間の変更" with lore "§7ステータスの集計期間を変更します", "" and "§e現在の集計期間§7: §b§o%{_period}%" 
+	set slot 26 of {_player}'s current inventory to {_item}
+
+local function openKitStats(player: player, genre: text, type: text = "Kill"):
+	wait a tick
+	open chest with 3 row named "§6Kit Stats §7- §c§l%{_genre}%" to {_player}
+	wait a tick
+
+	add "Death" to {_stats::*}
+	set {_item::Death} to a blue concrete named "§1Deaths"
+	add "Assist" to {_stats::*}
+	set {_item::Assist} to a pink concrete named "§d§lAssists"
+	add "Kill" to {_stats::*}
+	set {_item::Kill} to a red concrete named "§c§lKills"
+	add "KD" to {_stats::*}
+	set {_item::KD} to a yellow concrete named "§e§lK/D"
+	add "Count" to {_stats::*}
+	set {_item::Count} to a lime concrete named "§a§lUsage"
+
+	set {_slot} to 0
+	load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "class.all"
+	set {_classes::*} to yml list "Classes" from "class.all"
+	unload yml "class.all"
+	loop {_classes::*}:
+		set {_class} to loop-value
+		load yml "plugins/skript-yaml/Kit Classes/%loop-value%.yml" as "classcheck"
+		yml value "type" from "classcheck" is {_genre}
+		yml value "enable" from "classcheck" is true
+
+		set {_uuid} to UUID of {_player}
+		set {_item.%loop-value%} to yml value "item" from "classcheck"
+		unload yml "classcheck"
+
+		set {_lore::1} to ""
+		set {_period} to kitGetStatsPeriod({_player})
+		# Kill
+		set {_playerstats} to {Kit-Kill.%{_period}%.%{_class}%::%{_uuid}%}
+		set {_playerstats} to 0 if {_playerstats} is not set
+		set {_playerrank} to {Kit-Rank.Kill.%{_period}%.%{_class}%::%{_uuid}%}
+		set {_playerrank} to 0 if {_playerrank} is not set
+		set {_lore::2} to "§cKill§7: §f§l%{_playerstats}% §b§n%{_playerrank}%位"
+
+		# Assist
+		set {_playerstats} to {Kit-Assist.%{_period}%.%{_class}%::%{_uuid}%}
+		set {_playerstats} to 0 if {_playerstats} is not set
+		set {_playerrank} to {Kit-Rank.Assist.%{_period}%.%{_class}%::%{_uuid}%}
+		set {_playerrank} to 0 if {_playerrank} is not set
+		set {_lore::3} to "§dAssist§7: §f§l%{_playerstats}% §b§n%{_playerrank}%位"
+
+		# K/D
+		set {_playerstats} to {Kit-KD.%{_period}%.%{_class}%::%{_uuid}%}
+		set {_playerstats} to 0 if {_playerstats} is not set
+		set {_playerrank} to {Kit-Rank.KD.%{_period}%.%{_class}%::%{_uuid}%}
+		set {_playerrank} to 0 if {_playerrank} is not set
+		set {_lore::4} to "§eK/D§7: §f§l%{_playerstats}% §b§n%{_playerrank}%位"
+
+		# Count
+		set {_playerstats} to {Kit-Count.%{_period}%.%{_class}%::%{_uuid}%}
+		set {_playerstats} to 0 if {_playerstats} is not set
+		set {_playerrank} to {Kit-Rank.Count.%{_period}%.%{_class}%::%{_uuid}%}
+		set {_playerrank} to 0 if {_playerrank} is not set
+		set {_lore::5} to "§aUsage§7: §f§l%{_playerstats}% §b§n%{_playerrank}%位"
+
+		# Death
+		set {_playerstats} to {Kit-Death.%{_period}%.%{_class}%::%{_uuid}%}
+		set {_playerstats} to 0 if {_playerstats} is not set
+		set {_playerrank} to {Kit-Rank.Death.%{_period}%.%{_class}%::%{_uuid}%}
+		set {_playerrank} to 0 if {_playerrank} is not set
+		set {_lore::6} to "§1Death§7: §f§l%{_playerstats}% §b§n%{_playerrank}%位"
+
+		set {_lore::7} to ""
+		set {_typeview} to {_type}
+		set {_typeview} to "Usage" if {_type} is "Count"
+		set {_lore::8} to "§6§nクリックで§c§l%{_typeview}%§6§n上位10プレイヤーを確認できます"
+
+		set name of {_item.%loop-value%} to "§6§l%loop-value%"
+		set lore of {_item.%loop-value%} to {_lore::*}
+		set slot {_slot} of {_player}'s current inventory to {_item.%loop-value%}
+		add 1 to {_slot}
+	
+	set {_slot} to 9
+	loop 9 times:
+		set {_item} to a white stained glass pane named " "
+		set slot {_slot} of {_player}'s current inventory to {_item}
+		add 1 to {_slot}
+	
+	set {_slot} to 20
+	loop {_stats::*}:
+		set {_stats} to loop-value
+		set {_item} to {_item::%{_stats}%}
+
+		delete {_lore::*}
+		set {_lore::1} to "§7§o%{_stats}%"
+		set {_lore::2} to ""
+		set {_lore::3} to "§e§nクリックで表示するランキングの種類を変更します"
+		set {_lore::4} to "§8§mINACTIVE"
+		if {_type} is {_stats}:
+			set {_lore::4} to "§a§lACTIVE"
+			set {_item} to {_item} with nbt from "{enchantments:{levels:{unbreaking:1},show_in_tooltip:false}}"
+
+		set lore of {_item} to {_lore::*}
+		set slot {_slot} of {_player}'s current inventory to {_item}
+
+		add 1 to {_slot}
+	
+	set {_slot} to 26
+	set {_item} to an arrow named "§9戻る"
+	set slot {_slot} of {_player}'s current inventory to {_item}

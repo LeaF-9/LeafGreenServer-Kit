@@ -123,7 +123,7 @@ command /kitclearplayerstats <offline player> <text>:
 		delete {%arg 2%-Assist.StW::%arg 1's UUID%}
 		delete {%arg 2%-Assist.EmJ::%arg 1's UUID%}
 		delete {%arg 2%-Assist.CPA::%arg 1's UUID%}
-		loop {Kits::*}:
+		loop {-Kits::*}:
 			delete {%arg 2%-Kill.%loop-value%::%arg 1's UUID%}
 			delete {%arg 2%-Death.%loop-value%::%arg 1's UUID%}
 			delete {%arg 2%-KD.%loop-value%::%arg 1's UUID%}
@@ -177,28 +177,69 @@ function kitClearStats():
 	delete {Kit-Kill.all::*}
 	delete {Kit-Kill.month::*}
 	delete {Kit-Kill.week::*}
+
 	delete {Kit-Death.all::*}
 	delete {Kit-Death.month::*}
 	delete {Kit-Death.week::*}
+
 	delete {Kit-KD.all::*}
 	delete {Kit-KD.month::*}
 	delete {Kit-KD.week::*}
-	delete {Kit-Win.all::*}
-	delete {Kit-Win.month::*}
-	delete {Kit-Win.week::*}
-	delete {Kit-Win.TDM::*}
-	delete {Kit-Win.DTC::*}
-	delete {Kit-Win.CTF::*}
-	delete {Kit-Win.SH::*}
-	delete {Kit-Win.CP::*}
+
 	delete {Kit-Assist.all::*}
 	delete {Kit-Assist.month::*}
 	delete {Kit-Assist.week::*}
+
+	delete {Kit-Win.all::*}
+	delete {Kit-Win.all.TDM::*}
+	delete {Kit-Win.all.DTC::*}
+	delete {Kit-Win.all.CTF::*}
+	delete {Kit-Win.all.SH::*}
+	delete {Kit-Win.all.CP::*}
+
+	delete {Kit-Win.month::*}
+	delete {Kit-Win.month.TDM::*}
+	delete {Kit-Win.month.DTC::*}
+	delete {Kit-Win.month.CTF::*}
+	delete {Kit-Win.month.SH::*}
+	delete {Kit-Win.month.CP::*}
+
+	delete {Kit-Win.week::*}
+	delete {Kit-Win.week.TDM::*}
+	delete {Kit-Win.week.DTC::*}
+	delete {Kit-Win.week.CTF::*}
+	delete {Kit-Win.week.SH::*}
+	delete {Kit-Win.week.CP::*}
+
+	load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "stages"
+	set {_stages::*} to yml list "Stages" from "stages"
+	unload yml "stages"
+	loop {_stages::*}:
+		set {_stage} to loop-value
+		delete {Kit-Win.all.%{_stage}%::*}
+		delete {Kit-Win.month.%{_stage}%::*}
+		delete {Kit-Win.week.%{_stage}%::*}
+
 	load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "classes"
 	set {_kits::*} to yml list "Classes" from "classes"
 	unload yml "classes"
 	loop {_kits::*}:
-		delete {Kit-Kill.%loop-value%::*}
-		delete {Kit-Death.%loop-value%::*}
-		delete {Kit-KD.%loop-value%::*}
-		delete {Kit-Assist.%loop-value%::*}
+		delete {Kit-Kill.all.%loop-value%::*}
+		delete {Kit-Kill.month.%loop-value%::*}
+		delete {Kit-Kill.week.%loop-value%::*}
+
+		delete {Kit-Death.all.%loop-value%::*}
+		delete {Kit-Death.month.%loop-value%::*}
+		delete {Kit-Death.week.%loop-value%::*}
+
+		delete {Kit-KD.all.%loop-value%::*}
+		delete {Kit-KD.month.%loop-value%::*}
+		delete {Kit-KD.week.%loop-value%::*}
+
+		delete {Kit-Assist.all.%loop-value%::*}
+		delete {Kit-Assist.month.%loop-value%::*}
+		delete {Kit-Assist.week.%loop-value%::*}
+
+		delete {Kit-Count.all.%loop-value%::*}
+		delete {Kit-Count.month.%loop-value%::*}
+		delete {Kit-Count.week.%loop-value%::*}

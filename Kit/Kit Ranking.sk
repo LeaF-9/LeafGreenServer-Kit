@@ -140,12 +140,12 @@ function kitRankingUpdate(stats: text):
 		set {_hdnum} to {_num} + 1
 		loop {_list::*}:
 			loop-value-2 > {_high}
-			{UUID::%loop-index%} is set
+			{-UUID::%loop-index%} is set
 			set {_high} to loop-value-2
 			set {_highplayer} to loop-index
 		if {_high} is 0:
 			delete {_high}
-		set {_display::%{_hdnum}%} to "§a%{_num}%§e. §f§l%{UUID::%{_highplayer}%}% §7 - §b%{_high}%"
+		set {_display::%{_hdnum}%} to "§a%{_num}%§e. §f§l%{-UUID::%{_highplayer}%}% §7 - §b%{_high}%"
 		set {_high} to 0
 		delete {_list::%{_highplayer}%}
 		delete {_highplayer}
@@ -178,12 +178,12 @@ function kitChangeRankingDisplay(stats: text, displays: texts):
 
 # 着手中(後回し)
 # ランキングディスプレイを削除する関数
-function kitDeleteRankingDisplay(stats: text):
-	loop all entities:
-		type of loop-entity is armor stand
-		set {_nbt} to nbt compound of loop-entity
-		string tag "RankingDisplay" of {_nbt} is {_stats}
-		delete loop-entity
+# function kitDeleteRankingDisplay(stats: text):
+# 	loop all entities:
+# 		type of loop-entity is armor stand
+# 		set {_nbt} to nbt compound of loop-entity
+# 		string tag "RankingDisplay" of {_nbt} is {_stats}
+# 		delete loop-entity
 
 # 着手中
 # いらなそう
@@ -351,6 +351,182 @@ function getMonthDays(month: number, year: number) :: number:
 			set {_day} to 29
 	return {_day}
 
+
+
+# ランクの確認と変数更新を行う関数
+local function kitSettingRank():
+	log "kitSettingRank() 実行開始"
+	kitDeleteRank()
+
+	add "Kill" to {_stats.period::*}
+	add "Death" to {_stats.period::*}
+	add "Assist" to {_stats.period::*}
+	add "KD" to {_stats.period::*}
+	add "Win" to {_stats.period::*}
+
+	add "Kill" to {_stats.kit::*}
+	add "Death" to {_stats.kit::*}
+	add "Assist" to {_stats.kit::*}
+	add "KD" to {_stats.kit::*}
+	add "Count" to {_stats.kit::*}
+
+	add "all" to {_period::*}
+	add "month" to {_period::*}
+	add "week" to {_period::*}
+
+	# 通常Stats
+	log "通常Stats ランク処理開始"
+	loop {_stats.period::*}:
+		set {_stats} to loop-value
+
+		loop {_period::*}:
+			set {_period} to loop-value-2
+			set {_allstats::*} to sorted indices of {Kit-%{_stats}%.%{_period}%::*} in descending order
+
+			set {_rank} to 0
+			loop {_allstats::*}:
+				add 1 to {_rank}
+				set {_uuid} to loop-value-3
+				set {Kit-Rank.%{_stats}%.%{_period}%::%{_uuid}%} to {_rank}
+	log "通常Stats ランク処理終了"
+	
+	# Kit Stats
+	log "Kit Stats ランク処理開始"
+	loop {_stats.kit::*}:
+		set {_stats} to loop-value
+
+		loop {_period::*}:
+			set {_period} to loop-value-2
+
+			loop {-Kits::*}:
+				set {_kit} to loop-value-3
+				set {_allstats::*} to sorted indices of {Kit-%{_stats}%.%{_period}%.%{_kit}%::*} in descending order
+
+				set {_rank} to 0
+				loop {_allstats::*}:
+					add 1 to {_rank}
+					set {_uuid} to loop-value-4
+					set {Kit-Rank.%{_stats}%.%{_period}%.%{_kit}%::%{_uuid}%} to {_rank}
+	log "Kit Stats ランク処理終了"
+	
+	# Map Stats
+	log "Map Stats ランク処理開始"
+	set {_stats} to "Win"
+
+	load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "stages"
+	set {_stages::*} to yml list "Stages" from "stages"
+	unload yml "stages"
+	loop {_stages::*}:
+		set {_stage} to loop-value
+
+		loop {_period::*}:
+			set {_period} to loop-value-2
+			set {_allstats::*} to sorted indices of {Kit-%{_stats}%.%{_period}%.%{_stage}%::*} in descending order
+
+			set {_rank} to 0
+			loop {_allstats::*}:
+				add 1 to {_rank}
+				set {_uuid} to loop-value-3
+				set {Kit-Rank.%{_stats}%.%{_period}%.%{_stage}%::%{_uuid}%} to {_rank}
+	log "Map Stats ランク処理終了"
+	
+	# Rule Stats
+	log "Rule Stats ランク処理開始"
+	add "TDM" to {_rules::*}
+	add "DTC" to {_rules::*}
+	add "CTF" to {_rules::*}
+	add "SH" to {_rules::*}
+	add "CP" to {_rules::*}
+
+	loop {_rules::*}:
+		set {_rule} to loop-value
+
+		loop {_period::*}:
+			set {_period} to loop-value-2
+			set {_allstats::*} to sorted indices of {Kit-%{_stats}%.%{_period}%.%{_rule}%::*} in descending order
+
+			set {_rank} to 0
+			loop {_allstats::*}:
+				add 1 to {_rank}
+				set {_uuid} to loop-value-3
+				set {Kit-Rank.%{_stats}%.%{_period}%.%{_rule}%::%{_uuid}%} to {_rank}
+	log "Rule Stats ランク処理終了"
+	log "kitSettingRank() 実行完了"
+
+
+local function kitDeleteRank():
+	delete {Kit-Rank.Kill.all::*}
+	delete {Kit-Rank.Kill.month::*}
+	delete {Kit-Rank.Kill.week::*}
+
+	delete {Kit-Rank.Death.all::*}
+	delete {Kit-Rank.Death.month::*}
+	delete {Kit-Rank.Death.week::*}
+
+	delete {Kit-Rank.KD.all::*}
+	delete {Kit-Rank.KD.month::*}
+	delete {Kit-Rank.KD.week::*}
+
+	delete {Kit-Rank.Assist.all::*}
+	delete {Kit-Rank.Assist.month::*}
+	delete {Kit-Rank.Assist.week::*}
+
+	delete {Kit-Rank.Win.all::*}
+	delete {Kit-Rank.Win.all.TDM::*}
+	delete {Kit-Rank.Win.all.DTC::*}
+	delete {Kit-Rank.Win.all.CTF::*}
+	delete {Kit-Rank.Win.all.SH::*}
+	delete {Kit-Rank.Win.all.CP::*}
+
+	delete {Kit-Rank.Win.month::*}
+	delete {Kit-Rank.Win.month.TDM::*}
+	delete {Kit-Rank.Win.month.DTC::*}
+	delete {Kit-Rank.Win.month.CTF::*}
+	delete {Kit-Rank.Win.month.SH::*}
+	delete {Kit-Rank.Win.month.CP::*}
+
+	delete {Kit-Rank.Win.week::*}
+	delete {Kit-Rank.Win.week.TDM::*}
+	delete {Kit-Rank.Win.week.DTC::*}
+	delete {Kit-Rank.Win.week.CTF::*}
+	delete {Kit-Rank.Win.week.SH::*}
+	delete {Kit-Rank.Win.week.CP::*}
+
+	load yml "plugins/skript-yaml/Kit Stages/All Stages.yml" as "stages"
+	set {_stages::*} to yml list "Stages" from "stages"
+	unload yml "stages"
+	loop {_stages::*}:
+		set {_stage} to loop-value
+		delete {Kit-Rank.Win.all.%{_stage}%::*}
+		delete {Kit-Rank.Win.month.%{_stage}%::*}
+		delete {Kit-Rank.Win.week.%{_stage}%::*}
+
+	load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "classes"
+	set {_kits::*} to yml list "Classes" from "classes"
+	unload yml "classes"
+	loop {_kits::*}:
+		delete {Kit-Rank.Kill.all.%loop-value%::*}
+		delete {Kit-Rank.Kill.month.%loop-value%::*}
+		delete {Kit-Rank.Kill.week.%loop-value%::*}
+
+		delete {Kit-Rank.Death.all.%loop-value%::*}
+		delete {Kit-Rank.Death.month.%loop-value%::*}
+		delete {Kit-Rank.Death.week.%loop-value%::*}
+
+		delete {Kit-Rank.KD.all.%loop-value%::*}
+		delete {Kit-Rank.KD.month.%loop-value%::*}
+		delete {Kit-Rank.KD.week.%loop-value%::*}
+
+		delete {Kit-Rank.Assist.all.%loop-value%::*}
+		delete {Kit-Rank.Assist.month.%loop-value%::*}
+		delete {Kit-Rank.Assist.week.%loop-value%::*}
+
+		delete {Kit-Rank.Count.all.%loop-value%::*}
+		delete {Kit-Rank.Count.month.%loop-value%::*}
+		delete {Kit-Rank.Count.week.%loop-value%::*}
+
+
+
 # 試合終了時に変数更新&ランキングを更新する関数
 function rankingEnding():
 	updateBaseDate()
@@ -379,17 +555,23 @@ function rankingEnding():
 		set {_time} to yml value "%{_id}%.time" from "updatestats.kill"
 		# All / Kit
 		add 1 to {Kit-Kill.all::%{_uuid.killer}%}
-		add 1 to {Kit-Kill.%{_kit.killer}%::%{_uuid.killer}%}
+		add 1 to {Kit-Kill.all.%{_kit.killer}%::%{_uuid.killer}%}
 		add 1 to {Kit-Death.all::%{_uuid.victim}%}
-		add 1 to {Kit-Death.%{_kit.victim}%::%{_uuid.victim}%}
+		add 1 to {Kit-Death.all.%{_kit.victim}%::%{_uuid.victim}%}
 		# Month
 		if checkMonthing({_time}, {_date-month.month}, {_date-month.year}) is true:
 			add 1 to {Kit-Kill.month::%{_uuid.killer}%}
 			add 1 to {Kit-Death.month::%{_uuid.victim}%}
+			# Kit
+			add 1 to {Kit-Kill.month.%{_kit.killer}%::%{_uuid.killer}%}
+			add 1 to {Kit-Death.month.%{_kit.victim}%::%{_uuid.victim}%}
 		# Week
 		if checkWeeking({_time}, {_date.week}) is true:
 			add 1 to {Kit-Kill.week::%{_uuid.killer}%}
 			add 1 to {Kit-Death.week::%{_uuid.victim}%}
+			# Kit
+			add 1 to {Kit-Kill.week.%{_kit.killer}%::%{_uuid.killer}%}
+			add 1 to {Kit-Death.week.%{_kit.victim}%::%{_uuid.victim}%}
 	unload yml "updatestats.kill"
 	log "§aKills Deaths 読込終了"
 
@@ -397,8 +579,8 @@ function rankingEnding():
 	load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "classes"
 	set {_kits::*} to yml list "Classes" from "classes"
 	unload yml "classes"
-	loop all offline players:
-		set {_uuid} to UUID of loop-offline player
+	loop {-UUID::*}:
+		set {_uuid} to loop-index
 		if {Kit-Kill.all::%{_uuid}%} is not set:
 			if {Kit-Death.all::%{_uuid}%} is not set:
 				continue
@@ -414,11 +596,18 @@ function rankingEnding():
 		# Kit
 		loop {_kits::*}:
 			set {_kit} to loop-value-2
-			if {Kit-Kill.%{_kit}%::%{_uuid}%} is not set:
-				if {Kit-Kill.%{_kit}%::%{_uuid}%} is not set:
-					continue
-			set {_kd.%{_kit}%} to {Kit-Kill.%{_kit}%::%{_uuid}%} / {Kit-Death.%{_kit}%::%{_uuid}%}
-			set {Kit-KD.%{_kit}%::%{_uuid}%} to {_kd.%{_kit}%} if {_kd.%{_kit}%} is set
+			if {Kit-Kill.all.%{_kit}%::%{_uuid}%} is not set:
+				continue
+			set {_kd.%{_kit}%} to {Kit-Kill.all.%{_kit}%::%{_uuid}%} / {Kit-Death.all.%{_kit}%::%{_uuid}%}
+			set {Kit-KD.all.%{_kit}%::%{_uuid}%} to {_kd.%{_kit}%} if {_kd.%{_kit}%} is set
+
+			# Month
+			set {_kd.month.%{_kit}%} to {Kit-Kill.month.%{_kit}%::%{_uuid}%} / {Kit-Death.month.%{_kit}%::%{_uuid}%}
+			set {Kit-KD.month.%{_kit}%::%{_uuid}%} to {_kd.month.%{_kit}%} if {_kd.month.%{_kit}%} is set
+
+			# Week
+			set {_kd.week.%{_kit}%} to {Kit-Kill.week.%{_kit}%::%{_uuid}%} / {Kit-Death.week.%{_kit}%::%{_uuid}%}
+			set {Kit-KD.week.%{_kit}%::%{_uuid}%} to {_kd.week.%{_kit}%} if {_kd.week.%{_kit}%} is set
 
 	# Assists
 	log "§bAssists 読込開始"
@@ -432,14 +621,17 @@ function rankingEnding():
 		set {_kit.assist} to yml value "%{_id}%.assist-kit" from "updatestats.assist"
 		# All / Kit
 		add 1 to {Kit-Assist.all::%{_uuid.assist}%}
-		add 1 to {Kit-Assist.%{_kit.assist}%::%{_uuid.assist}%}
+		add 1 to {Kit-Assist.all.%{_kit.assist}%::%{_uuid.assist}%}
 		# Month
 		set {_time} to yml value "%{_killid.assist}%.time" from "updatestats.assisttime"
 		if checkMonthing({_time}, {_date-month.month}, {_date-month.year}) is true:
 			add 1 to {Kit-Assist.month::%{_uuid.assist}%}
+			# Kit
+			add 1 to {Kit-Assist.month.%{_kit.assist}%::%{_uuid.assist}%}
 		# Week
 		if checkWeeking({_time}, {_date.week}) is true:
-			add 1 to {Kit-Assist.week::%{_uuid.killer}%}
+			add 1 to {Kit-Assist.week::%{_uuid.assist}%}
+			add 1 to {Kit-Assist.week.%{_kit.assist}%::%{_uuid.assist}%}
 	unload yml "updatestats.assist"
 	unload yml "updatestats.assisttime"
 	log "§aAssists 読込終了"
@@ -467,16 +659,44 @@ function rankingEnding():
 				continue
 			# All / Map / Rule
 			add 1 to {Kit-Win.all::%{_uuid}%}
-			add 1 to {Kit-Win.%{_map}%::%{_uuid}%}
-			add 1 to {Kit-Win.%{_rule}%::%{_uuid}%}
+			add 1 to {Kit-Win.all.%{_map}%::%{_uuid}%}
+			add 1 to {Kit-Win.all.%{_rule}%::%{_uuid}%}
 			# Month
 			if checkMonthing({_time}, {_date-month.month}, {_date-month.year}) is true:
 				add 1 to {Kit-Win.month::%{_uuid}%}
+				add 1 to {Kit-Win.month.%{_map}%::%{_uuid}%}
+				add 1 to {Kit-Win.month.%{_rule}%::%{_uuid}%}
 			# Week
 			if checkWeeking({_time}, {_date.week}) is true:
 				add 1 to {Kit-Win.week::%{_uuid}%}
+				add 1 to {Kit-Win.week.%{_map}%::%{_uuid}%}
+				add 1 to {Kit-Win.week.%{_rule}%::%{_uuid}%}
 	unload yml "updatestats.game"
 	log "§aWins 読込終了"
+
+	# Counts
+	log "§bCounts 読込開始"
+	load yml "plugins/skript-yaml/Kit Databases/Counts.yml" as "updatestats.count"
+	loop yaml node keys "" from "updatestats.count":
+		set {_ids::*} to loop-key
+		set {_id} to {_ids::1}
+
+		set {_uuid.count} to yml value "%{_id}%.player" from "updatestats.count"
+		set {_kit.count} to yml value "%{_id}%.kit" from "updatestats.count"
+		# All
+		add 1 to {Kit-Count.all.%{_kit.count}%::%{_uuid.count}%}
+		# Month
+		set {_time} to yml value "%{_killid.count}%.time" from "updatestats.count"
+		if checkMonthing({_time}, {_date-month.month}, {_date-month.year}) is true:
+			add 1 to {Kit-Count.month.%{_kit.count}%::%{_uuid.count}%}
+		# Week
+		if checkWeeking({_time}, {_date.week}) is true:
+			add 1 to {Kit-Count.week.%{_kit.count}%::%{_uuid.count}%}
+	unload yml "updatestats.count"
+	log "§aCounts 読込終了"
+
+	# Player Ranking Setting
+	kitSettingRank()
 
 	# Update Rankings
 	loop 5 times:
@@ -499,11 +719,37 @@ command /rankingending:
 	trigger:
 		rankingEnding()
 
-command /test-checkstats:
-	permission: sk.admin
-	trigger:
-		set {_uuid} to UUID of player
-		broadcast "%{Kit-Win.all::%{_uuid}%}%"
+
+
+# 個人でランキングを確認するための関数
+function kitViewRankings(player: player, stats: text, genre: text, arg: text, period: text = "none"):
+	if {_period} is "none":
+		set {_ranklistname} to "Kit-Rank.%{_stats}%.%{_arg}%"
+		set {_statsname} to "Kit-%{_stats}%.%{_arg}%"
+	else:
+		set {_ranklistname} to "Kit-Rank.%{_stats}%.%{_period}%.%{_arg}%"
+		set {_statsname} to "Kit-%{_stats}%.%{_period}%.%{_arg}%"
+
+	message formatted "§9§m==========§6§l%{_stats}% §eRanking §aTop10§7: §b%{_arg}% §9§m==========" to {_player}
+	set {_rank} to 0
+	loop 10 times:
+		add 1 to {_rank}
+
+		delete {_uuid}
+		delete {_playername}
+		delete {_rankstats}
+		loop {%{_ranklistname}%::*}:
+			if {_rank} is not loop-value-2:
+				continue
+
+			set {_uuid} to loop-index
+			set {_playername} to {-UUID::%{_uuid}%}
+			set {_rankstats} to {%{_statsname}%::%{_uuid}%}
+		if {_uuid} is not set:
+			continue
+		message formatted "§b%{_rank}%位§7. §6§l%{_playername}%§7: §f%{_rankstats}%" to {_player}
+
+	# message formatted "§9§m=============================================" to {_player}
 
 #command /updateranking <text>:
 #	usage: /updateranking <Class...etc(kit)>

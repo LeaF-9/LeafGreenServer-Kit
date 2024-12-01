@@ -5,13 +5,40 @@ function lobbySidebar_Check(player: player):
 
 function lobbySidebar_Kit(player: player):
 	set {_uuid} to UUID of {_player}
+	set {_period} to kitGetStatsPeriod({_player})
 	scoreboard_UpdateTitle({_player}, "§a§lKit PvP")
-	scoreboard_UpdateLine({_player}, "§2§lWins", 9)
-	scoreboard_UpdateLine({_player}, "§6§lTDM§7: %{Kit-Win.TDM::%{_uuid}%}%", 8)
-	scoreboard_UpdateLine({_player}, "§6§lDTC§7: %{Kit-Win.DTC::%{_uuid}%}%", 7)
-	scoreboard_UpdateLine({_player}, "§6§lCTF§7: %{Kit-Win.CTF::%{_uuid}%}%", 6)
-	scoreboard_UpdateLine({_player}, "§6§lSH§7: %{Kit-Win.SH::%{_uuid}%}%", 5)
-	scoreboard_UpdateLine({_player}, "§6§lCP§7: %{Kit-Win.CP::%{_uuid}%}%", 4)
+	scoreboard_UpdateLine({_player}, "§6§lStats §7- §9%{_period}%", 9)
+
+	set {_stats.kill} to {Kit-Kill.%{_period}%::%{_uuid}%}
+	set {_stats.kill} to 0 if {_stats.kill} is not set
+	set {_rank.kill} to {Kit-Rank.Kill.%{_period}%::%{_uuid}%}
+	set {_rank.kill} to 0 if {_rank.kill} is not set
+	scoreboard_UpdateLine({_player}, "§c§lKills§7: §f%{_stats.kill}% §b§n%{_rank.kill}%位", 8)
+
+	set {_stats.assist} to {Kit-Assist.%{_period}%::%{_uuid}%}
+	set {_stats.assist} to 0 if {_stats.assist} is not set
+	set {_rank.assist} to {Kit-Rank.Assist.%{_period}%::%{_uuid}%}
+	set {_rank.assist} to 0 if {_rank.assist} is not set
+	scoreboard_UpdateLine({_player}, "§d§lAssists§7: §f%{_stats.assist}% §b§n%{_rank.assist}%位", 7)
+
+	set {_stats.kd} to {Kit-KD.%{_period}%::%{_uuid}%}
+	set {_stats.kd} to 0 if {_stats.kd} is not set
+	set {_rank.kd} to {Kit-Rank.KD.%{_period}%::%{_uuid}%}
+	set {_rank.kd} to 0 if {_rank.kd} is not set
+	scoreboard_UpdateLine({_player}, "§e§lK/D§7: §f%{_stats.kd}% §b§n%{_rank.kd} %位", 6)
+
+	set {_stats.win} to {Kit-Win.%{_period}%::%{_uuid}%}
+	set {_stats.win} to 0 if {_stats.win} is not set
+	set {_rank.win} to {Kit-Rank.Win.%{_period}%::%{_uuid}%}
+	set {_rank.win} to 0 if {_rank.win} is not set
+	scoreboard_UpdateLine({_player}, "§a§lWins§7: §f%{_stats.win}% §b§n%{_rank.win}%位", 5)
+
+	set {_stats.death} to {Kit-Death.%{_period}%::%{_uuid}%}
+	set {_stats.death} to 0 if {_stats.death} is not set
+	set {_rank.death} to {Kit-Rank.Death.%{_period}%::%{_uuid}%}
+	set {_rank.death} to 0 if {_rank.death} is not set
+	scoreboard_UpdateLine({_player}, "§1§lDeaths§7: §f%{_stats.death}% §b§n%{_rank.death}%位", 4)
+
 	scoreboard_UpdateLine({_player}, " ", 3)
 	scoreboard_UpdateLine({_player}, "§5§lSouls§7: §b%{Kit-Soul::%{_uuid}%}%", 2)
 	scoreboard_UpdateLine({_player}, "§a§lLeafs§7: §b%{Coin::%{_uuid}%}%", 1)
