@@ -19,8 +19,8 @@ on damage of player with priority NORMAL:
 				stop
 			delete metadata value {@metadata-nodamage} of victim
 			
-
-		set {_dmg} to damage - {Stats.%victim%::SpriteTalisman}
+		set {_rawdamage} to getDamageModification_ALL(victim, damage)
+		set {_dmg} to {_rawdamage} - {Stats.%victim%::SpriteTalisman}
 		if {_dmg} < 0:  # ゼロ以下になった場合はノックバックのみ
 			set {_dmg} to 0
 		setDamageModification_SET(victim, {_dmg})

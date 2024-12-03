@@ -39,7 +39,8 @@ on damage of player with priority NORMAL:
 		set {_per} to kitPercent(loop-player, 50)
 		chance of {_per}%:
 			setSupporter(victim, loop-player)
-			set {_dl} to damage * 0.8
+			set {_rawdamage} to getDamageModification_ALL(victim, damage)
+			set {_dl} to {_rawdamage} * 0.8
 			cancel the event
 			playSound("entity.iron_golem.hurt", 1, 1, victim)
 			kitDamageNull({_attacker}, loop-player, {_dl}, "護衛")

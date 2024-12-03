@@ -6,14 +6,14 @@ options:
 
 
 
-on damage of slime:
+on damage of slime with priority HIGHEST:
 	metadata value "King Shield" of victim is set
 	set {_name} to metadata value "King Shield" of victim parsed as player
 	set {_attacker} to getAttacker(victim)
 	if kitCheckTeam({_name}, {_attacker}, false) is true:
 		if checkDamagable(victim) is true:
 			playSound("entity.armor_stand.hit", 1, 1, victim)
-			set {_dmg} to damage
+			set {_dmg} to getDamageModification_ALL(victim, damage)
 			setDamageModification_FIX(victim, 0)
 			subtract {_dmg} from {Stats.%{_name}%::King Shield}
 		else:

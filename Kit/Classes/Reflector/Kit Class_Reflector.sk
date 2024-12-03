@@ -41,7 +41,8 @@ on damage of player with priority NORMAL:
 	kitReflector_DamageChecker(victim) is "none"
 	set {_c} to kitPercentDuel(victim, {_attacker}, 20)
 	chance of {_c}%:
-		set {_dm} to damage / 4
+		set {_rawdamage} to getDamageModification_ALL(victim, damage)
+		set {_dm} to {_rawdamage} / 4
 		kitDamageNull(victim, {_attacker}, {_dm}, "反射")
 		playSound("entity.experience_orb.pickup", 1, 1.5, victim)
 
