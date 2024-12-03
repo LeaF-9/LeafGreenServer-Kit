@@ -47,17 +47,17 @@ on damage of skeleton with priority MONITOR:
 	add a random number between -1 and 1 to x-coordinate of {_l}
 	add a random number between -1 and 1 to z-coordinate of {_l}
 	add a random number between 0.5 and 3 to y-coordinate of {_l}
-	spawn an armor stand at {_l} with nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,Marker:1b}"
-	set display name of spawned armor stand to "§4❤%{_damage}%"
+	spawn a text display at {_l}
+	set {_textDisplay} to spawned text display
+	set display name of {_textDisplay} to "§4❤%{_damage}%"
 	set {_uuid} to a random uuid
-	set metadata value "damage-check-uuid" of spawned armor stand to {_uuid}
+	set metadata value "damage-check-uuid" of {_textDisplay} to {_uuid}
 	loop all projectiles in radius 3 around victim:
 		delete loop-projectile
 	wait a second
-	loop all entities:
-		type of loop-entity is armor stand
-		metadata value "damage-check-uuid" of loop-entity is {_uuid}
-		delete loop-entity
+	loop all text displays:
+		metadata value "damage-check-uuid" of loop-text display is {_uuid}
+		delete loop-text display
 
 on rightclick on a sign:
 	if line 1 of target block is "§a[§e§lKit§a]":
