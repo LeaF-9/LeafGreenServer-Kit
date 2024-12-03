@@ -1,5 +1,10 @@
 # skill-name: Health Suction
 
+options:
+	metadata-name: "health suction - cool time"
+
+
+
 function kitSkill_Berserker_3(player: player):
 	toolCT({_player}, "Berserker", 3)
 	kitEffect_HealthSuction({_player})
@@ -9,7 +14,13 @@ function kitSkill_Berserker_3(player: player):
 on damage of player with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	{Stats.%{_attacker}%::HealthSuction} is set
-	max health of {_attacker} is not health of {_attacker}
+	set {_now} to now
+	set {_metadata} to metadata value {@metadata-name} of {_attacker}
+	if (difference between {_now} and {_metadata}) < (10 ticks):
+		stop
+
+	(max health of {_attacker}) is not (health of {_attacker})
+	set metadata value {@metadata-name} of {_attacker} to {_now}
 	setDamageModification_SET(victim, 1)
 	kitEffect_HealthSuction_Heal({_attacker}, victim)
 
@@ -28,6 +39,7 @@ local function kitEffect_HealthSuction(player: player):
 	wait 10 seconds
 	{Stats.%{_player}%::HealthSuction} is {_now}
 	delete {Stats.%{_player}%::HealthSuction}
+	delete metadata value {@metadata-name} of {_player}
 	kitMsg({_player}, "§cHealth Suction§dの効果が切れました")
 
 local function kitEffect_HealthSuction_Heal(player: player, target: player):
