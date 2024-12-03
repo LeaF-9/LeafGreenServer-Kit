@@ -1,3 +1,8 @@
+options:
+	metadata-nodamage: "Shield - no damage"
+
+
+
 function kitShield(player: player, shield: number):
 	kitCheckAlive({_player}) is true
 	set {_shielded} to getShield({_player})
@@ -50,6 +55,18 @@ local function shieldParticles(player: player, now: date):
 
 
 function ShieldDamageEvent(player: player, damage: number, cause: damage cause):
+	set {_metadata} to metadata value {@metadata-nodamage} of {_player}
+	if {_metadata} is set:
+		set {_delay} to 10 ticks
+		set {_now} to now
+		set {_dif} to difference between {_metadata} and {_now}
+		if {_dif} < {_delay}:
+			stop
+		delete metadata value {@metadata-nodamage} of {_player}
+
+	set {_now} to now
+	set metadata value {@metadata-nodamage} of {_player} to {_now}
+
 	if "%{_cause}%" contains "fall":
 		set {_damage} to 0
 	subtractShield({_player}, {_damage})

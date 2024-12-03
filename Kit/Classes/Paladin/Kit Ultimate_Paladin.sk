@@ -1,4 +1,9 @@
-# Mischevous Fairies
+# Mischievous Fairies
+
+options:
+	metadata-nodamage: "Mischievous Fairies - no damage"
+
+
 
 function kitUltPaladin(player: player):
 	loop all players:
@@ -10,7 +15,7 @@ function kitUltPaladin(player: player):
 		add loop-player to {_palult::*}
 		set {Stats.%loop-player%::Ult_Paladin} to 10
 		set {_uuid} to UUID of loop-player
-		set {_id} to "Mischevous Fairies-%{_uuid}%"
+		set {_id} to "Mischievous Fairies-%{_uuid}%"
 		set {_timer.title} to "§d§l妖精の加護§r §4❤10"
 		create bossbar titled {_timer.title} and id {_id} for loop-player with progress 100 with colors pink with style solid
 	loop 200 times:
@@ -28,14 +33,14 @@ function kitUltPaladin(player: player):
 				set {_el} to aroundEffect({_loop-player})
 				spawnParticle_Color(entity_effect, rgb({_color::1}, {_color::2}, {_color::3}), {_el})
 
-				set {_id} to "Mischevous Fairies-%{_uuid}%"
+				set {_id} to "Mischievous Fairies-%{_uuid}%"
 				set {_timer.title} to "§d§l妖精の加護§r §4❤%{Stats.%{_loop-player}%::Ult_Paladin}%"
 				set bossbar {_id} title to {_timer.title}
 
 				set {_timer.prog} to {Stats.%{_loop-player}%::Ult_Paladin} * 10
 				set bossbar {_id} value to {_timer.prog}
 			else:
-				set {_id} to "Mischevous Fairies-%{_uuid}%"
+				set {_id} to "Mischievous Fairies-%{_uuid}%"
 				remove bossbar {_id}
 				remove {_loop-player} from {_palult::*}
 		wait a tick
@@ -44,38 +49,54 @@ function kitUltPaladin(player: player):
 		set {_uuid} to UUID of {_loop-player}
 		delete {Stats.%{_loop-player}%::Ult_Paladin}
 		message formatted "<##915da3>妖精の加護は消滅しました" to {_loop-player}
-		set {_id} to "Mischevous Fairies-%{_uuid}%"
+		set {_id} to "Mischievous Fairies-%{_uuid}%"
 		remove bossbar {_id}
 
-on damage of player:
-	if {Stats.%victim%::Ult_Paladin} is set:
-		cancel event
-		playSound("entity.iron_golem.repair", 1, 2, victim)
-		if damage cause is not fall:
-			set {_ulthp} to {Stats.%victim%::Ult_Paladin} - damage
-		if {_ulthp} <= 0:
-			set {_attacker} to getAttacker(victim)
-			delete {Stats.%victim%::Ult_Paladin}
-			message formatted "<##4d4398>加護が崩れた! <##dc6b9a>妖精の回復魔法が付与されます...!" to victim
-			apply regeneration 1 to victim for 10 seconds
-			if {_attacker} exists:
-				apply poison 1 to {_attacker} for 10 seconds
-				message formatted "<##8d93c8>妖精のいたずらが身体を蝕む..." to {_attacker}
-			loop 5 times:
-				set {_baseloc} to location of victim
-				set {_rad} to 0
-				add 0.4 to {_high}
-				loop 10 times:
-					add 36 to {_rad}
-					set {_el} to {_baseloc}
-					add 0.5 * sin({_rad}) to x-coordinate of {_el}
-					add 0.5 * cos({_rad}) to z-coordinate of {_el}
-					add {_high} to y-coordinate of {_el}
-					set {_num} to 0
-					loop 3 times:
-						add 1 to {_num}
-						set {_color::%{_num}%} to a random integer between 0 and 255
-						spawnParticle_Color(entity_effect, rgb({_color::1}, {_color::2}, {_color::3}), {_el})
-				wait a tick
-		else:
-			set {Stats.%victim%::Ult_Paladin} to {_ulthp}
+on damage of player with priority HIGHEST:
+	{Stats.%victim%::Ult_Paladin} is set
+	cancel event
+	playSound("entity.iron_golem.repair", 1, 2, victim)
+
+	# 重複確認
+	set {_metadata} to metadata value {@metadata-nodamage} of victim
+	if {_metadata} is set:
+		set {_delay} to 10 ticks
+		set {_now} to now
+		set {_dif} to difference between {_metadata} and {_now}
+		if {_dif} < {_delay}:
+			setDamageModification_FIX(victim, 0)
+			stop
+		delete metadata value {@metadata-nodamage} of victim
+
+	set {_now} to now
+	set metadata value {@metadata-nodamage} of victim to {_now}
+
+	if damage cause is not fall:
+		set {_rawdamage} to getDamageModification_ALL(victim, damage)
+		set {_ulthp} to {Stats.%victim%::Ult_Paladin} - {_rawdamage}
+	if {_ulthp} <= 0:
+		set {_attacker} to getAttacker(victim)
+		delete {Stats.%victim%::Ult_Paladin}
+		message formatted "<##4d4398>加護が崩れた! <##dc6b9a>妖精の回復魔法が付与されます...!" to victim
+		apply regeneration 1 to victim for 10 seconds
+		if {_attacker} exists:
+			apply poison 1 to {_attacker} for 10 seconds
+			message formatted "<##8d93c8>妖精のいたずらが身体を蝕む..." to {_attacker}
+		loop 5 times:
+			set {_baseloc} to location of victim
+			set {_rad} to 0
+			add 0.4 to {_high}
+			loop 10 times:
+				add 36 to {_rad}
+				set {_el} to {_baseloc}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				add {_high} to y-coordinate of {_el}
+				set {_num} to 0
+				loop 3 times:
+					add 1 to {_num}
+					set {_color::%{_num}%} to a random integer between 0 and 255
+					spawnParticle_Color(entity_effect, rgb({_color::1}, {_color::2}, {_color::3}), {_el})
+			wait a tick
+	else:
+		set {Stats.%victim%::Ult_Paladin} to {_ulthp}
