@@ -62,6 +62,23 @@ function removeDamageModification_FIX(entity: entity):
 
 
 
+function getDamageModification_ALL(entity: entity, damage: num) :: number:
+	if getDamageModification_FIX({_entity}) is not -1:
+		set {_damage} to getDamageModification_FIX({_entity})
+		set {_fix} to true
+
+	else:
+		if getDamageModification_SET({_entity}) is not -1:
+			set {_damage} to getDamageModification_SET({_entity})
+		
+		set {_dm.add} to getDamageModification_ADD({_entity})
+		set {_dm.mul} to getDamageModification_MUL({_entity})
+		set {_damage} to ({_damage} + {_dm.add}) * {_dm.mul}
+	
+	return {_damage}
+
+
+
 # Damage Modificationを適用するイベント
 on damage with priority MONITOR:
 
