@@ -19,7 +19,10 @@ on damage with priority LOW:
 	{_undeads::*} contains {_victimtype}
 	kitCheckTeam({_attacker}, victim, false) is true
 	playSound("block.beacon.activate", 1, 1.3, {_attacker})
-	setDamageModification_FIX(victim, 100)
+	set {_damage} to 100
+	if metadata value "necromancer-entity-abyss" of victim is true:
+		set {_damage} to 10
+	setDamageModification_FIX(victim, {_damage})
 	set {_now} to now
 	set {Stats.%{_attacker}%::HolyLance-Charged} to {_now}
 
