@@ -111,7 +111,7 @@ local function stopEffectPacket(player: player, effect: potion effect type):
 
 
 
-on damage:
+on damage with priority LOW:
 	if checkEntityType(attacker, player) is false:
 		stop
 	set {_player} to attacker
@@ -133,8 +133,7 @@ on damage:
 	else:
 		set {_percent} to 1 + 0.1 * {_remain}
 	
-	set {_damage} to damage * {_percent}
-	set damage to {_damage}
+	setDamageModification_MUL(victim, {_percent})
 	
 
 

@@ -37,8 +37,8 @@ on damage of player:
 			distance between victim and loop-value <= 10
 			set {_ok} to true
 		if {_ok} is true:
-			set {_teambuff} to {Kit-TeamBuff::%{TrueTeam::%victim%}%}
-			set damage to damage / {_teambuff}
+			set {_teambuff} to 1 / {Kit-TeamBuff::%{TrueTeam::%victim%}%}
+			setDamageModification_MUL(victim, {_teambuff})
 	if {Join::%attacker%} is "Kit":
 		# Core周辺のTeamBuff適用
 		delete {_ok}
@@ -47,7 +47,7 @@ on damage of player:
 			set {_ok} to true
 		if {_ok} is true:
 			set {_teambuff} to {Kit-TeamBuff::%{TrueTeam::%attacker%}%}
-			set damage to damage * {_teambuff}
+			setDamageModification_MUL(victim, {_teambuff})
 
 on break:
 	{Kit-tochu} is true

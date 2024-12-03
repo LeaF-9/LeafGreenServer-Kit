@@ -65,13 +65,15 @@ on damage of player:
 		loop {Kit-GameStage.Areas::*}:
 			set {_ok} to kitCheckInPlayer_CP(victim, loop-index)
 		if {_ok} is true:
-			set damage to damage / {Kit-TeamBuff::%{TrueTeam::%victim%}%}
+			set {_mul} to 1 / {Kit-TeamBuff::%{TrueTeam::%victim%}%}
+			setDamageModification_MUL(victim, {_mul})
 	if {Join::%attacker%} is "Kit":
 		delete {_ok}
 		loop {Kit-GameStage.Areas::*}:
 			set {_ok} to kitCheckInPlayer_CP(attacker, loop-index)
 		if {_ok} is true:
-			set damage to damage * {Kit-TeamBuff::%{TrueTeam::%attacker%}%}
+			set {_mul} to {Kit-TeamBuff::%{TrueTeam::%victim%}%}
+			setDamageModification_MUL(victim, {_mul})
 
 function kitDeathEvent_CP(attacker: player, victim: player, supporters: players):
 	# Death情報の更新
