@@ -35,6 +35,29 @@ local function kitWraithTimer(player: player, wraith: entity):
 		set {_dis} to 1000000
 		loop all players:
 			kitCheckTeam({_player}, loop-player, false) is true
+			delete {_nearRespawn.%loop-player%}
+			if {_forceEnable.%loop-player%} is not set:
+
+				set {_team} to {team::%loop-player%}
+				set {_loc.player} to location of loop-player
+				set {_dis.respawn} to 1000000000
+				loop {Kit-GameStageRespawns.%{_team}%::*}:
+					set {_loc.respawn} to loop-value-3
+					set {_distance.p-r} to distance between {_loc.player} and {_loc.respawn}
+					if {_distance.p-r} < {_dis.respawn}:
+						set {_dis.respawn} to {_distance.p-r}
+				
+				if {_dis.respawn} <= 15:
+					set {_nearRespawn.%loop-player%} to true
+					set {_disableTimer.%loop-player%} to 11 if {_disableTimer.%loop-player%} is not set
+
+			if {_nearRespawn.%loop-player%} is set:
+				subtract 1 from {_disableTimer.%loop-player%}
+				if {_disableTimer.%loop-player%} <= 0:
+					set {_forceEnable.%loop-player%} to true
+					delete {_disableTimer.%loop-player%}
+				continue
+
 			if {_dis} > distance between {_player} and loop-player:
 				set {_dis} to distance between {_player} and loop-player
 				set {_target} to loop-player
