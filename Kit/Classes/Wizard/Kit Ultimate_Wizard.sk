@@ -1,7 +1,10 @@
 # Arcane Sorcery
 
 options:
-	itemname: "§5§lArcane Staff"
+	itemname: "<##1beee3>§lArcane Staff"
+	max-vector-length: 0.05
+	beam-damage: 0.5
+	beam-distance: 50
 
 function kitUltWizard(player: player):
 	wait a tick
@@ -10,245 +13,289 @@ function kitUltWizard(player: player):
 on rightclick holding a netherite hoe:
 	name of player's tool is {@itemname}
 	cancel event
-	remove a netherite hoe named {@itemname} from player
+	{Stats.%player%::ArcaneSorcery} is not set
 	kitEffect_ArcaneSorcery(player)
 
 
 
 local function kitEffect_ArcaneSorcery(player: player):
-	set {_baseloc} to location of head of {_player}
-	kitParticle_ArcaneSorcery_Launch({_baseloc})
-	loop 2000 times:
-		if {_hitloc} is set:
-			continue
-		set {_effloc} to location loop-number * 0.3 meters in front of {_baseloc}
-		kitParticle_ArcaneSorcery_Sphere({_effloc})
-		loop all entities in radius 3 around {_effloc}:
-			kitCheckTeam(loop-entity, {_player}, false, true) is true
-			{_hit.%id of loop-entity%} is not set
-			set {_entityloc} to location 1 meter above loop-entity
-			distance between loop-entity and {_effloc} <= 1
-			set {_hit.%id of loop-entity%} to true
-			kitEffect_ArcaneSorcery_HitEntity({_player}, loop-entity)
-		set {_preloc} to location 0.3 meters in front of {_effloc}
-		if block at {_preloc} is not passable:
-			set {_hitloc} to {_effloc}
-			continue
-		wait a tick
-	if {_hitloc} is set:
-		kitEffect_ArcaneSorcery_Ground({_player}, {_hitloc})
+	set {_now} to now
+	set {Stats.%{_player}%::ArcaneSorcery} to {_now}
+	set {_slot} to {_player}.getInventory().getHeldItemSlot()
 
-local function kitEffect_ArcaneSorcery_HitEntity(player: player, target: entity):
-	kitParticle_ArcaneSorcery_HitEntity({_target})
-	kitDamage({_player}, {_target}, 5, "神秘の大魔法")
-	ignite {_target} for 10 seconds
-
-local function kitEffect_ArcaneSorcery_Ground(player: player, loc: location):
-	kitParticle_ArcaneSorcery_Magical({_loc})
-	wait 3 seconds
-	kitParticle_ArcaneSorcery_Beam({_loc})
-	loop 100 times:
-		loop all entities in radius 15 around {_loc}:
-			kitCheckTeam(loop-entity, {_player}, false, true) is true
-			set {_el} to location of loop-entity
-			set y-pos of {_el} to y-pos of {_loc}
-			distance between {_loc} and {_el} <= 10
-			kitParticle_ArcaneSorcery_Burn(loop-entity)
-			kitDamageInstant({_player}, loop-entity, 0.5, "神秘の大魔法")
-			kitEffectDescription(loop-entity, "§4❤0.5")
-		wait a tick
-
-
-
-local function kitParticle_ArcaneSorcery_Launch(loc: location):
-	playSound("entity.ghast.warn", 1, 0.7, {_loc})
-	playSound("entity.ghast.shoot", 1, 0.65, {_loc})
-	set {_loc} to location 1 meter in front of {_loc}
-	set {_count} to 60
-	set {_rad} to 0
-	loop {_count} times:
-		set {_el} to {_loc}
-		set {_m1} to {_el}
-		set pitch of {_m1} to pitch of {_m1} - 90
-		set {_test1} to {_radius} * cos({_rad})
-		set {_t1} to location {_test1} meters in front of {_m1}
-		set {_m2} to {_el}
-		set pitch of {_m2} to 0
-		set {_test2} to {_radius} * sin({_rad})
-		set {_t2} to location {_test2} meters to the right of {_m2}
-		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
-		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
-		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
-		if mod({_rad}, 60) is 0 or 60:
-			add {_el} to {_triangles::*}
-		spawnParticle_Dust(rgb(162, 32, 65), 0.6, {_el})
-		add 360 / {_count} to {_rad}
-	set {_ln} to 0
-	loop {_triangles::*}:
-		add 1 to {_ln}
-		set {_dot.1} to {_triangles::%{_ln}%}
-		set {_tgn} to {_ln} + 2
-		if {_tgn} > 6:
-			set {_tgn} to {_tgn} - 6
-		set {_dot.2} to {_triangles::%{_tgn}%}
-		set {_disn} to distance between {_dot.1} and {_dot.2} / 30
-		set {_linebase} to setDirToVec({_dot.1}, setVector({_dot.1}, {_dot.2}))
-		set {_m} to 0
-		loop 30 times:
-			add 1 to {_m}
-			set {_el} to location {_disn} * {_m} meters in front of {_linebase}
-			spawnParticle_Dust(rgb(162, 32, 65), 0.6, {_el})
-
-local function kitParticle_ArcaneSorcery_Sphere(loc: location):
-	spawnParticle_Dust(rgb(162, 32, 65), 3, {_loc})
-	set {_locs::*} to particleLocation_Sphere({_loc}, 10, 1, 5)
-	loop {_locs::*}:
-		spawnParticle(flame, loop-value)
-
-local function kitParticle_ArcaneSorcery_HitEntity(entity: entity):
-	playSound("entity.blaze.shoot", 1, 0.65, {_entity})
-	set {_baseloc} to location 1 meter above {_entity}
-	loop 20 times:
-		spawnParticle_Vector(flame, randomVector(), 0.4, {_baseloc})
-
-local function kitParticle_ArcaneSorcery_Magical(loc: location):
-	playSound("item.trident.return", 1.5, 0.5, {_loc})
-	kitParticle_ArcaneSorcery_Star({_loc})
+	# 準備フェーズ
+	kitParticle_ArcaneSorcery_Circle({_player}, {_now})
 	loop 60 times:
-		set {_loopnum} to loop-number
-		# 円
-		set {_count} to 60
-		set {_rad} to 0
-		set {_radius} to 10
-		loop {_count} times:
-			set {_el} to {_loc}
-			add {_radius} * sin({_rad}) to x-pos of {_el}
-			add {_radius} * cos({_rad}) to z-pos of {_el}
-			if mod({_rad}, 72) is 0 or 72:
-				add {_el} to {_hexagons::*}
-			spawnParticle_Dust(rgb(240, 131, 0), 1.5, {_el})
-			add 360 / {_count} to {_rad}
+		if {Stats.%{_player}%::ArcaneSorcery} is not {_now}:
+			stop
+
+		{_player}.getInventory().setHeldItemSlot({_slot})  # 武器スロット固定化
+		set velocity of {_player} to vector(0, 0, 0)
+		kitParticle_ArcaneSorcery_Charge({_player})
 		wait a tick
+	
+	# 発射フェーズ
+	# ビームエンティティ召喚
+	set {_backloc} to location 1 meter in front of (head of {_player})
+	set {_item} to "minecraft:sea_lantern"
+	set {_color} to convertColorToDataColor(rgb(125, 250, 219))
+	set {_translate.z} to ({@beam-distance} / 2) + 1
+	set {_transformation} to kitTransformation("[0f,0f,0f,180f]", "[0f,0f,0f,1f]", "[0f,0f,%{_translate.z}%f]", "[3f,3f,{@beam-distance}f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},brightness:{block:15,sky:15},glow_color_override:%{_color}%}"
+	spawn a item display at {_backloc} with nbt {_nbt}
+	set {_display} to spawned item display
+	set metadata value "gametype" of {_display} to "Kit"
+	set metadata value "Arcane Sorcery" of {_display} to {_player}
+	set metadata value "Arcane Sorcery - Time" of {_display} to {_now}
+	set glowing of {_display} to true
+
+	kitParticle_ArcaneSorcery_Explode({_player})
+	set {_rad} to 0
+	set {_addrad} to 200 / 20
+	set {_maxrad} to 180
 	loop 100 times:
+		wait a tick
+		# 条件確認
+		if {Stats.%{_player}%::ArcaneSorcery} is not {_now}:
+			continue
+		
+		kitSound_ArcaneSorcery_Beam({_player})
+		{_player}.getInventory().setHeldItemSlot({_slot})  # 武器スロット固定化
+		# Playerの視点操作
+		set velocity of {_player} to vector(0, 0, 0)
+
+		set {_nowloc} to location 1 meter in front of (head of {_player})
+		set {_basevec} to setVector({_backloc}, location 1 meter in front of {_backloc})  # movelocから前方に向けたvector
+		set {_plusvec} to setVector({_nowloc}, location 1 meter in front of {_nowloc}, 0)
+		set vector length of {_plusvec} to {@max-vector-length} if vector length of {_plusvec} > {@max-vector-length}
+		set {_vec} to {_basevec} + {_plusvec}
+		# set yaw of {_player} to yaw of {_vec}
+		# set pitch of {_player} to pitch of {_vec}
+
+		set {_nextloc} to setDirToVec({_nowloc}, {_vec})
+		set {_backloc} to {_nextloc}
+
+		# ビームエンティティの状態操作
+		kitParticle_ArcaneSorcery_Magic({_nextloc})
+		kitParticle_ArcaneSorcery_Beam({_nextloc})
+		teleport {_display} to {_nextloc}
+
+		add {_addrad} to {_rad}
+		if {_rad} > {_maxrad}:
+			set {_rad} to {_rad} - {_maxrad}
+		
+		set {_nbt} to nbt compound of {_display}
+		set {_broadcast} to compound tag "transformation" of {_nbt}
+		set {_transformation} to kitTransformation("[0f,0f,%{_rad}%f,180f]", "[0f,0f,0f,1f]", "[0f,0f,%{_translate.z}%f]", "[3f,3f,{@beam-distance}f]")
+		set compound tag "transformation" of {_nbt} to nbt from {_transformation}
+
+		# ヒット確認
+		set {_m} to 1
+		set {_count} to 50
+		set {_addm} to {@beam-distance} / {_count}
+		set {_hitradius} to 3
+		loop {_count} times:
+			set {_hitloc} to location {_m} meters in front of {_nextloc}
+			loop all entities in radius {_hitradius} around {_hitloc}:
+				kitCheckTeam(loop-entity, {_player}, false, true) is true
+				kitDamageInstant({_player}, loop-entity, {@beam-damage}, "神秘の大魔法", true)
+				kitParticle_ArcaneSorcery_HitEntity({_player}, loop-entity)
+			add {_addm} to {_m}
+	
+	# 終了処理
+	loop all item displays:
+		loop-item display is {_display}
+		delete loop-item display
+	if {Stats.%{_player}%::ArcaneSorcery} is {_now}:
+		delete {Stats.%{_player}%::ArcaneSorcery}
+		remove a netherite hoe named {@itemname} from {_player}
+
+
+
+local function kitParticle_ArcaneSorcery_Circle(player: player, now: date):
+	playSound("block.respawn_anchor.set_spawn", 100, 0.9, {_player})
+	add rgb(204, 239, 241) to {_colors::*}
+	add rgb(192, 250, 252) to {_colors::*}
+	add rgb(183, 236, 225) to {_colors::*}
+
+	loop 60 times:
+		if {Stats.%{_player}%::ArcaneSorcery} is not {_now}:
+			stop
+		
+		set {_pitch} to 0.5 + (1.5 * ((loop-number) / 60))
+		playSound("entity.allay.item_thrown", 3, {_pitch}, {_player})
+		
+		set {_baseloc} to location 1 meter in front of (head of {_player})
+		set {_basevec} to setVector({_baseloc}, location 10 meters in front of  {_baseloc})
+		set {_rotateloc} to {_baseloc}
+		add 90 to pitch of {_rotateloc}
+		set {_rotatevec} to setVector({_rotateloc}, location 10 meters in front of {_rotateloc}, 2)
+
 		set {_loopnum} to loop-number
 		# 円
-		set {_count} to 60
+		delete {_hexagons::*}
+		set {_count} to 120
+		set {_straightmeter} to {_count} / 5
 		set {_rad} to 0
-		set {_radius} to 10
+		set {_radius} to 2
 		loop {_count} times:
-			set {_el} to {_loc}
-			add {_radius} * sin({_rad}) to x-pos of {_el}
-			add {_radius} * cos({_rad}) to z-pos of {_el}
+			set {_rotate} to {_rotatevec}
+			rotate {_rotate} around {_basevec} by {_rad}
+			set {_el} to {_baseloc} ~ {_rotate}
+
 			if mod({_rad}, 72) is 0 or 72:
 				add {_el} to {_hexagons::*}
-			spawnParticle_Dust(rgb(201, 23, 30), 1.5, {_el})
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 0.5, {_el})
 			add 360 / {_count} to {_rad}
+		
+		# 星
+		set {_dis.hex} to distance between {_hexagons::1} and {_hexagons::2} / {_straightmeter}  # 1 countに進むmeter(hex)
+		set {_dis.star} to distance between {_hexagons::1} and {_hexagons::3} / {_straightmeter}  # 1 countに進むmeter(star)
+		loop ({_loopnum} * 2) times:
+			set {_loopnum.2} to loop-number-2
+			set {_count.star} to mod({_loopnum.2}, {_straightmeter})
+			if {_loopnum.2} < ({_straightmeter} * 1):
+				set {_loc.hex} to setDirToVec({_hexagons::1}, setVector({_hexagons::1}, {_hexagons::2}))
+				set {_loc.star} to setDirToVec({_hexagons::1}, setVector({_hexagons::1}, {_hexagons::3}))
+			else if {_loopnum.2} < ({_straightmeter} * 2):
+				set {_loc.hex} to setDirToVec({_hexagons::2}, setVector({_hexagons::2}, {_hexagons::3}))
+				set {_loc.star} to setDirToVec({_hexagons::3}, setVector({_hexagons::3}, {_hexagons::5}))
+			else if {_loopnum.2} < ({_straightmeter} * 3):
+				set {_loc.hex} to setDirToVec({_hexagons::3}, setVector({_hexagons::3}, {_hexagons::4}))
+				set {_loc.star} to setDirToVec({_hexagons::5}, setVector({_hexagons::5}, {_hexagons::2}))
+			else if {_loopnum.2} < ({_straightmeter} * 4):
+				set {_loc.hex} to setDirToVec({_hexagons::4}, setVector({_hexagons::4}, {_hexagons::5}))
+				set {_loc.star} to setDirToVec({_hexagons::2}, setVector({_hexagons::2}, {_hexagons::4}))
+			else:
+				set {_loc.hex} to setDirToVec({_hexagons::5}, setVector({_hexagons::5}, {_hexagons::1}))
+				set {_loc.star} to setDirToVec({_hexagons::4}, setVector({_hexagons::4}, {_hexagons::1}))
+			set {_el.hex} to location {_count.star} * {_dis.hex} meters in front of {_loc.hex}
+			set {_el.star} to location {_count.star} * {_dis.star} meters in front of {_loc.star}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 0.5, {_el.hex})
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 0.5, {_el.star})
 		wait a tick
 
-local function kitParticle_ArcaneSorcery_Star(loc: location):
-	# 五角形の頂点決め
+local function kitParticle_ArcaneSorcery_Charge(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	loop 10 times:
+		spawnParticle_Speed(ominous_spawning, 5, {_baseloc})
+
+local function kitParticle_ArcaneSorcery_Explode(player: player):
+	kitSound_ArcaneSorcery_Launch({_player})
+	set {_baseloc} to location 1 meter above {_player}
+	spawnParticle(flash, {_baseloc})
+
+	loop 50 times:
+		spawnParticle_Vector(end_rod, randomVector(), 0.25, {_baseloc})
+		spawnParticle_Vector(glow_squid_ink, randomVector(), 0.5, {_baseloc})
+
+local function kitParticle_ArcaneSorcery_Magic(loc: location):
+	add rgb(21, 241, 230) to {_colors::*}
+	add rgb(12, 235, 243) to {_colors::*}
+	add rgb(19, 247, 217) to {_colors::*}
+		
+	set {_baseloc} to {_loc}
+	set {_basevec} to setVector({_baseloc}, location 10 meters in front of  {_baseloc})
+	set {_rotateloc} to {_baseloc}
+	add 90 to pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 10 meters in front of {_rotateloc}, 2)
+
+	# 円
+	set {_count} to 120
+	set {_straightmeter} to {_count} / 5
 	set {_rad} to 0
-	loop 5 times:
-		set {_loc.decide} to {_loc}
-		add 10 * sin({_rad}) to x-pos of {_loc.decide}
-		add 10 * cos({_rad}) to z-pos of {_loc.decide}
-		set {_locs::%loop-number%} to {_loc.decide}
-		add 72 to {_rad}
-	# 準備描写
-	set {_dis.hex} to distance between {_locs::1} and {_locs::2} / 12 # 1 countに進むmeter(hex)
-	set {_dis.star} to distance between {_locs::1} and {_locs::3} / 12  # 1 countに進むmeter(star)
-	loop 60 times:  # 3秒
-		set {_loopnum.1} to loop-number
-		loop {_loopnum.1} times:
-			set {_loopnum.2} to loop-number-2
-			set {_count} to mod({_loopnum.2}, 12)
-			if {_loopnum.2} < 12:
-				set {_loc.hex} to setDirToVec({_locs::1}, setVector({_locs::1}, {_locs::2}))
-				set {_loc.star} to setDirToVec({_locs::1}, setVector({_locs::1}, {_locs::3}))
-			else if {_loopnum.2} < 24:
-				set {_loc.hex} to setDirToVec({_locs::2}, setVector({_locs::2}, {_locs::3}))
-				set {_loc.star} to setDirToVec({_locs::3}, setVector({_locs::3}, {_locs::5}))
-			else if {_loopnum.2} < 36:
-				set {_loc.hex} to setDirToVec({_locs::3}, setVector({_locs::3}, {_locs::4}))
-				set {_loc.star} to setDirToVec({_locs::5}, setVector({_locs::5}, {_locs::2}))
-			else if {_loopnum.2} < 48:
-				set {_loc.hex} to setDirToVec({_locs::4}, setVector({_locs::4}, {_locs::5}))
-				set {_loc.star} to setDirToVec({_locs::2}, setVector({_locs::2}, {_locs::4}))
-			else:
-				set {_loc.hex} to setDirToVec({_locs::5}, setVector({_locs::5}, {_locs::1}))
-				set {_loc.star} to setDirToVec({_locs::4}, setVector({_locs::4}, {_locs::1}))
-			set {_el.hex} to location {_count} * {_dis.hex} meters in front of {_loc.hex}
-			set {_el.star} to location {_count} * {_dis.star} meters in front of {_loc.star}
-			spawnParticle_Dust(rgb(240, 131, 0), 1.5, {_el.hex})
-			spawnParticle_Dust(rgb(240, 131, 0), 1.5, {_el.star})
-		wait a tick
-	loop 100 times:  # 5秒
-		loop 60 times:
-			set {_loopnum.2} to loop-number-2
-			set {_count} to mod({_loopnum.2}, 12)
-			if {_loopnum.2} < 12:
-				set {_loc.hex} to setDirToVec({_locs::1}, setVector({_locs::1}, {_locs::2}))
-				set {_loc.star} to setDirToVec({_locs::1}, setVector({_locs::1}, {_locs::3}))
-			else if {_loopnum.2} < 24:
-				set {_loc.hex} to setDirToVec({_locs::2}, setVector({_locs::2}, {_locs::3}))
-				set {_loc.star} to setDirToVec({_locs::3}, setVector({_locs::3}, {_locs::5}))
-			else if {_loopnum.2} < 36:
-				set {_loc.hex} to setDirToVec({_locs::3}, setVector({_locs::3}, {_locs::4}))
-				set {_loc.star} to setDirToVec({_locs::5}, setVector({_locs::5}, {_locs::2}))
-			else if {_loopnum.2} < 48:
-				set {_loc.hex} to setDirToVec({_locs::4}, setVector({_locs::4}, {_locs::5}))
-				set {_loc.star} to setDirToVec({_locs::2}, setVector({_locs::2}, {_locs::4}))
-			else:
-				set {_loc.hex} to setDirToVec({_locs::5}, setVector({_locs::5}, {_locs::1}))
-				set {_loc.star} to setDirToVec({_locs::4}, setVector({_locs::4}, {_locs::1}))
-			set {_el.hex} to location {_count} * {_dis.hex} meters in front of {_loc.hex}
-			set {_el.star} to location {_count} * {_dis.star} meters in front of {_loc.star}
-			spawnParticle_Dust(rgb(201, 23, 30), 1.5, {_el.hex})
-			spawnParticle_Dust(rgb(201, 23, 30), 1.5, {_el.star})
-		wait a tick
+	set {_radius} to 2
+	loop {_count} times:
+		set {_rotate} to {_rotatevec}
+		rotate {_rotate} around {_basevec} by {_rad}
+		set {_el} to {_baseloc} ~ {_rotate}
+
+		if mod({_rad}, 72) is 0 or 72:
+			add {_el} to {_hexagons::*}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.5, {_el})
+		add 360 / {_count} to {_rad}
+	
+	# 星
+	set {_dis.hex} to distance between {_hexagons::1} and {_hexagons::2} / {_straightmeter}  # 1 countに進むmeter(hex)
+	set {_dis.star} to distance between {_hexagons::1} and {_hexagons::3} / {_straightmeter}  # 1 countに進むmeter(star)
+	loop {_count} times:
+		set {_loopnum.2} to loop-number-2
+		set {_count.star} to mod({_loopnum.2}, {_straightmeter})
+		if {_loopnum.2} < ({_straightmeter} * 1):
+			set {_loc.hex} to setDirToVec({_hexagons::1}, setVector({_hexagons::1}, {_hexagons::2}))
+			set {_loc.star} to setDirToVec({_hexagons::1}, setVector({_hexagons::1}, {_hexagons::3}))
+		else if {_loopnum.2} < ({_straightmeter} * 2):
+			set {_loc.hex} to setDirToVec({_hexagons::2}, setVector({_hexagons::2}, {_hexagons::3}))
+			set {_loc.star} to setDirToVec({_hexagons::3}, setVector({_hexagons::3}, {_hexagons::5}))
+		else if {_loopnum.2} < ({_straightmeter} * 3):
+			set {_loc.hex} to setDirToVec({_hexagons::3}, setVector({_hexagons::3}, {_hexagons::4}))
+			set {_loc.star} to setDirToVec({_hexagons::5}, setVector({_hexagons::5}, {_hexagons::2}))
+		else if {_loopnum.2} < ({_straightmeter} * 4):
+			set {_loc.hex} to setDirToVec({_hexagons::4}, setVector({_hexagons::4}, {_hexagons::5}))
+			set {_loc.star} to setDirToVec({_hexagons::2}, setVector({_hexagons::2}, {_hexagons::4}))
+		else:
+			set {_loc.hex} to setDirToVec({_hexagons::5}, setVector({_hexagons::5}, {_hexagons::1}))
+			set {_loc.star} to setDirToVec({_hexagons::4}, setVector({_hexagons::4}, {_hexagons::1}))
+		set {_el.hex} to location {_count.star} * {_dis.hex} meters in front of {_loc.hex}
+		set {_el.star} to location {_count.star} * {_dis.star} meters in front of {_loc.star}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.5, {_el.hex})
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.5, {_el.star})
+	wait a tick
 
 local function kitParticle_ArcaneSorcery_Beam(loc: location):
-	playSound("item.trident.thunder", 1.5, 0.5, {_loc})
-	set {_baserad} to 0
-	loop 100 times:
-		set {_basey} to 0
-		set {_startrad} to {_baserad}
-		loop 30 times:  # 30m
-			set {_rad} to {_startrad}
-			loop 15 times:  # circles
-				add 24 to {_rad}
-				set {_el} to {_loc}
-				add 10 * sin({_rad}) to x-pos of {_el}
-				add 10 * cos({_rad}) to z-pos of {_el}
-				add {_basey} to y-pos of {_el}
-				set {_color} to kitParticle_ArcaneSorcery_Color()
-				spawnParticle_Dust({_color}, 1.5, {_el})
-			loop 10 times:
-				chance of 50%:
-					set {_el} to {_loc}
-					set {_rrad} to a random number between 0 and 360
-					set {_rmet} to a random number between 0 and 10
-					add {_rmet} * sin({_rrad}) to x-pos of {_el}
-					add {_rmet} * cos({_rrad}) to z-pos of {_el}
-					add {_basey} to y-pos of {_el}
-					spawnParticle_Vector(trial_spawner_detection, vector(0, -1, 0), 0.75, {_el})
-			add 1 to {_basey}
-			add 15 to {_startrad}
-		add 10 to {_baserad}
-		wait a tick
+	add rgb(21, 241, 230) to {_colors::*}
+	add rgb(12, 235, 243) to {_colors::*}
+	add rgb(19, 247, 217) to {_colors::*}
 
-local function kitParticle_ArcaneSorcery_Color() :: color:
-	set {_rn} to dice(3)
-	if {_rn} is 1:
-		set {_color} to rgb(211, 56, 28)
-	else if {_rn} is 2:
-		set {_color} to rgb(167, 56, 54)
-	else:
-		set {_color} to rgb(234, 85, 6)
-	return {_color}
+	set {_baseloc} to {_loc}
+	set {_basevec} to setVector({_baseloc}, location 1 meter in front of {_baseloc})
+	set {_rotateloc} to {_baseloc}
+	add 90 to pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 1 meter in front of {_rotateloc}, 2)
 
-local function kitParticle_ArcaneSorcery_Burn(entity: entity):
-	set {_baseloc} to location 1 meter above {_entity}
-	set {_count} to a random integer between 1 and 5
+	set {_count} to 10
+	set {_m} to 0
+	set {_addm} to {@beam-distance} / {_count}
+	set {_circlecount} to 30
+	set {_addrad} to 360 / {_circlecount}
 	loop {_count} times:
-		spawnParticle_Vector(flame, randomVector(), 1, {_baseloc})
+		add {_addm} to {_m}
+
+		set {_base} to location {_m} meters in front of {_baseloc}
+		set {_rad} to 0
+		loop {_circlecount} times:
+			set {_rotate} to {_rotatevec}
+			rotate {_rotate} around {_basevec} by {_rad}
+			set {_el} to {_base} ~ {_rotate}
+
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 1, {_el})
+
+			add {_addrad} to {_rad}
+
+local function kitParticle_ArcaneSorcery_HitEntity(player: player, entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+	playSound("entity.allay.hurt", 0.1, 2, {_baseloc})
+	playSound("entity.allay.hurt", 0.1, 2, {_player}, true)
+
+	set {_rc} to a random integer between 3 and 5
+	loop {_rc} times:
+		set {_d} to dice(3)
+		spawnParticle_BlockData(falling_dust, cyan wool, moveRandomLocation({_baseloc}, 1)) if {_d} is 1
+		spawnParticle_BlockData(falling_dust, warped wart block, moveRandomLocation({_baseloc}, 1)) if {_d} is 2
+		spawnParticle_BlockData(falling_dust, light blue wool, moveRandomLocation({_baseloc}, 1)) if {_d} is 1
+
+
+
+local function kitSound_ArcaneSorcery_Launch(player: player):
+	playSound("block.respawn_anchor.deplete", 100, 0.65, {_player})
+
+local function kitSound_ArcaneSorcery_Beam(player: player):
+	set {_pitch} to a random number between 0.5 and 2
+	playSound("item.flintandsteel.use", 10, {_pitch}, {_player})
