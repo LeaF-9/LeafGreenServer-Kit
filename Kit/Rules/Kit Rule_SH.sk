@@ -42,10 +42,50 @@ on damage of sheep:
 		else:
 			delete victim
 
+# タイマーはじめにのみ実行する関数
+function kitFirstSpawn_SH():
+	set {_baseloc} to {Kit-GameStage.Spawns::1}
+	set {_index} to "1"
+	
+	set {_loc.min} to {Kit-GameStage.Spawns::%{_index}%::min}
+	set {_loc.max} to {Kit-GameStage.Spawns::%{_index}%::max}
+	loop all blocks within {_loc.min} and {_loc.max}:
+		loop-block is passable
+		block below loop-block is not passable
+		add location of loop-block to {_sheepspawnlocs::*}
+	set {_spawn} to true
+	if {_sheepspawnlocs::1} is not set:
+		set {_sheepspawnlocs::1} to {_baseloc}
+	set {_spawnloc} to a random location out of {_sheepspawnlocs::*}
+	kitSpawnSheep_SH({_spawnloc})
+	# --- 線状のパーティクル演出 ---
+	set {_v} to setVector({_baseloc}, {_spawnloc})
+	set yaw of {_baseloc} to yaw of {_v}
+	set pitch of {_baseloc} to pitch of {_v}
+	set {_dis} to distance between {_baseloc} and {_spawnloc}
+	set {_m} to 0
+	loop 10 times:
+		add {_dis} / 10 to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		spawnParticle(end_rod, {_el})
+	# ---------------------------
+	loop all players:
+		if {Join::%loop-player%} is "Kit":
+			send title "§f§l羊 §6§lがスポーンしました!" with subtitle "§b羊毛を陣地に連れて行こう!" to loop-player for 3 seconds
+
+# 試合中に羊をスポーンさせる関数
 function kitSpawnCheck_SH():
-	loop {Kit-GameStage.Spawns::*}:
-		set {_baseloc} to loop-value
-		set {_index} to loop-index
+	set {_checkcount} to size of {Kit-GameStage.Spawns::*}
+	loop {_checkcount} times:
+		add "%loop-number%" to {_indexs::*}
+	
+	loop {_checkcount} times:
+		if {_spawn} is true:
+			continue
+
+		set {_index} to a random element out of {_indexs::*}
+		remove {_index} from {_indexs::*}
+		set {_baseloc} to {Kit-GameStage.Spawns::%{_index}%}
 
 		# 羊スポーン数が多い場合はキャンセル
 		loop all sheeps in radius 5 around {_baseloc}:
@@ -65,7 +105,8 @@ function kitSpawnCheck_SH():
 			set {_sheepspawnlocs::1} to {_baseloc}
 		set {_spawnloc} to a random location out of {_sheepspawnlocs::*}
 		kitSpawnSheep_SH({_spawnloc})
-		# --- 線状のパーティクル演出 ---
+
+		# 線状のパーティクル演出
 		set {_v} to setVector({_baseloc}, {_spawnloc})
 		set yaw of {_baseloc} to yaw of {_v}
 		set pitch of {_baseloc} to pitch of {_v}
@@ -75,7 +116,7 @@ function kitSpawnCheck_SH():
 			add {_dis} / 10 to {_m}
 			set {_el} to location {_m} meters in front of {_baseloc}
 			spawnParticle(end_rod, {_el})
-		# ---------------------------
+
 	if {_spawn} is true:
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
@@ -122,12 +163,12 @@ function kitCheckAvailable_SH(player: player, sheep: entity):
 		if {_count} < 1:
 			kitTakingSheep_SH({_player}, {_sheep})
 		else:
-			send subtitle "§e⚠️ §c§l既に羊の最大所持数を超えています! §e⚠️" to {_player} for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
+			sendSubtitle({_player}, "§e⚠️ §c§l既に羊の最大所持数を超えています! §e⚠️", 1 second, 0.25 seconds, 0.25 seconds)
 	else if metadata value "sh-age" of {_sheep} is "baby":
 		if {_count} < 3:
 			kitTakingSheep_SH({_player}, {_sheep}, {_count})
 		else:
-			send subtitle "§e⚠️ §c§l既に羊の最大所持数を超えています! §e⚠️" to {_player} for 1 seconds with fadein 0.25 seconds and fadeout 0.25 seconds
+			sendSubtitle({_player}, "§e⚠️ §c§l既に羊の最大所持数を超えています! §e⚠️", 1 second, 0.25 seconds, 0.25 seconds)
 
 # Sheepをいくつ持っているかのチェック
 function kitCheckHolding_SH(player: player) :: number:
@@ -205,7 +246,7 @@ function kitGetSheepEffects_SH(player: player, sheep: entity, color: color):
 		{Join::%loop-player%} is "Kit"
 		playSound("entity.firework_rocket.blast", 1, 1, loop-player, true)
 		if {TrueTeam::%loop-player%} is "%{_color}%":
-			send title "§9%{_player}% §bが§f§l羊§bを獲得しました!" with subtitle "§e現在のポイントは §6§l%{_shcount}% §eです" to loop-player for 1.5 seconds with fadein 0.5 seconds and fadeout 0.5 seconds
+			send title "§6%{_player}% §bが§f§l羊§bを獲得しました!" with subtitle "§e現在のポイントは §6§l%{_shcount}% §eです" to loop-player for 1.5 seconds with fadein 0.5 seconds and fadeout 0.5 seconds
 	loop 15 times:
 		set {_base} to location 0.5 meters above {_sheep}
 		spawnParticle_Vector(firework, randomVector(), 0.5, {_base})
