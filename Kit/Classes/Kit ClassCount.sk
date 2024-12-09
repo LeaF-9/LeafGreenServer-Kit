@@ -1,10 +1,21 @@
-function kitUseCounting(player: player, kit: text):
+function kitUseCounting(player: player, kit: text, weapon: item, skills: items):
 	set {_countid} to a random UUID
 	add {_countid} to {Kit-GameInfo.Counts::*}
 
 	set {_count.UUID} to uuid of {_player}
 	set {_count.kit} to {_kit}
 	set {_count.now} to now
+	set {_count.weapon} to name of {_num.weapon}
+	set {_ln} to 0
+	loop 3 times:
+		add 1 to {_ln}
+		set {_count.skill-%{_ln}%} to name of {_skills::%{_ln}%}
+
 	set {Kit-GameInfo.count-player::%{_countid}%} to {_count.UUID}
 	set {Kit-GameInfo.count-kit::%{_countid}%} to {_count.kit}
 	set {Kit-GameInfo.count-time::%{_countid}%} to {_count.now}
+	set {Kit-GameInfo.count-weapon::%{_countid}%} to {_count.weapon}
+	set {_ln} to 0
+	loop 3 times:
+		add 1 to {_ln}
+		set {Kit-GameInfo.count-skill-%{_ln}%::%{_countid}%} to {_count.skill-%{_ln}%}

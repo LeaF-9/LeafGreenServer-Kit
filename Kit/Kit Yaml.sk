@@ -92,9 +92,14 @@ function kitStoreCountLogs():
 	loop {Kit-GameInfo.Counts::*}:
 		set {_id.count} to loop-value
 		set yml value "%{_id.count}%.game" from "database.storecount" to {Kit-GameID}
-		set yml value "%{_id.count}%.player" from "database.storecount" to {Kit-GameInfo.count-player::%{_id.kill}%}
-		set yml value "%{_id.count}%.kit" from "database.storecount" to {Kit-GameInfo.count-kit::%{_id.kill}%}
-		set yml value "%{_id.count}%.time" from "database.storecount" to {Kit-GameInfo.count-time::%{_id.kill}%}
+		set yml value "%{_id.count}%.player" from "database.storecount" to {Kit-GameInfo.count-player::%{_id.count}%}
+		set yml value "%{_id.count}%.kit" from "database.storecount" to {Kit-GameInfo.count-kit::%{_id.count}%}
+		set yml value "%{_id.count}%.time" from "database.storecount" to {Kit-GameInfo.count-time::%{_id.count}%}
+		set yml value "%{_id.count}%.weapon" from "database.storecount" to {Kit-GameInfo.count-weapon::%{_id.count}%}
+		set {_ln} to 0
+		loop 3 times:
+			add 1 to {_ln}
+			set yml value "%{_id.count}%.skill-%{_ln}%" from "database.storecount" to {Kit-GameInfo.count-skill-%{_ln}%::%{_id.count}%}
 	save yml "database.storecount"
 	delete {Kit-GameInfo.Counts::*}
 	delete {Kit-GameInfo.count-player::*}

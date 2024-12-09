@@ -204,11 +204,6 @@ command /class <text> <player=%player%> <boolean=true>:
 				set {Class::%arg 2%} to arg 1
 				set {CLS::%arg 2%} to "SUM"
 			execute console command "/skclass %arg 2% Kit-%arg 1%"
-			# add arg 1 to {Kit-AllowClass.%arg 2%::*}
-			if {Kit-tochu} is true:
-				kitUseCounting(arg 2, arg 1)
-#				add 1 to {AllCount::%arg 1%}
-#				add 1 to {WeekCount::%arg 1%}
 			set {_uuid} to UUID of arg 2
 			load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%arg 2%.select"
 			if yml value "custom.%arg 1%.weapon" from "player.%arg 2%.select" is not set:
@@ -220,14 +215,21 @@ command /class <text> <player=%player%> <boolean=true>:
 			if yml value "custom.%arg 1%.skill.3" from "player.%arg 2%.select" is not set:
 				set yml value "custom.%arg 1%.skill.3" from "player.%arg 2%.select" to 3
 			save yml "player.%arg 2%.select"
+
 			set {_weapon.main} to kitPlayerWeaponItem(arg 2, arg 1, "main")
 			give {_weapon.main} to arg 2
-			set {_weapon.sub} to kitPlayerWeaponItem(arg 2, arg 1, "sub")
-			set arg 2's offhand tool to {_weapon.sub}
+			# set {_weapon.sub} to kitPlayerWeaponItem(arg 2, arg 1, "sub")
+			# set arg 2's offhand tool to {_weapon.sub}
 			loop 3 times:
 				set {_skill} to kitPlayerSkillItem(arg 2, arg 1, loop-number)
 				give {_skill} to arg 2
 				add {_skill} to {_skills::*}
+
+			# Counting
+			if {Kit-tochu} is true:
+				{Join::%arg 2%} is "Kit"
+				kitUseCounting(arg 2, arg 1, {_weapon.main}, {_skills::*})
+
 			# Ultimate Skill Slot
 			give a structure void named "§7§oUltimate Skill" to arg 2
 			set metadata value "gametype" of arg 2 to "Kit"
