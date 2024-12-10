@@ -9,10 +9,18 @@ function kitSkill_Engineer_5(player: player, loc: location):
 	set {_loc.core} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
-	kitFakeBlock({_player}, {_loc.base}, "minecraft:cobblestone_wall", {_transformation}, "Machine-Dowsing Machine")
 	kitFakeBlock({_player}, {_loc.core}, "minecraft:sea_lantern", {_transformation}, "Machine-Dowsing Machine")
+	loop all block displays:
+		metadata value "kit-block" of loop-block display is "Machine-Dowsing Machine"
+		metadata value "Machine-Dowsing Machine" of loop-block display is "%{_player}%"
+		set {_coredisplay} to loop-block display
+	
+	kitFakeBlock({_player}, {_loc.base}, "minecraft:cobblestone_wall", {_transformation}, "Machine-Dowsing Machine")
 	kitMsg({_player}, "<##00FFFF>Dowsing Machine§9を設置しました!")
 	playSound("block.conduit.activate", 1, 2, {_loc.base})
+
+	# coreを回転させる関数
+	kitEffect_DowsingMachine_Core({_player}, {_coredisplay})
 	while {Stats.%{_player}%::DowsingMachine-Time} is {_now}:
 		wait a second
 		loop all players in radius 20 around {_loc.core}:
@@ -41,7 +49,32 @@ function kitSkill_Engineer_5(player: player, loc: location):
 		if {_exist} is false:
 			delete {Stats.%{_player}%::DowsingMachine-Time}
 
-function kitParticle_DowsingMachine_Beam(loc: location):
+local function kitEffect_DowsingMachine_Core(player: player, display: entity):
+	set {_now} to {Stats.%{_player}%::DowsingMachine-Time}
+	set {_yaw} to yaw of {_display}
+	set {_rotate.yaw} to 40
+	set {_add.yaw} to {_rotate.yaw} / 20
+
+	set {_ln} to 0
+	while {Stats.%{_player}%::DowsingMachine-Time} is {_now}:
+		delete {_exist}
+		loop all block displays:
+			loop-block display is {_display}
+			set {_exist} to true
+		if {_exist} is not set:
+			stop
+
+		set {_baseloc} to location of {_display}
+		set {_tploc} to {_baseloc}
+		add {_add.yaw} to {_yaw}
+		set yaw of {_tploc} to {_yaw}
+		teleport {_display} to {_tploc}
+
+		wait a tick
+
+
+
+local function kitParticle_DowsingMachine_Beam(loc: location):
 	loop 20 times:
 		spawnParticle(enchanted_hit, {_loc})
 		wait a tick
