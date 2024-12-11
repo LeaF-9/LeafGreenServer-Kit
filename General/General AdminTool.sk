@@ -9,7 +9,7 @@ on inventory click:
 	if inventory name of event-inventory is "§bAdmin Tools":
 		cancel event
 		set {_slot} to "%clicked slot%" parsed as number
-		executeAdminTool(player, clicked item, {_slot})
+		executeAdminTool(player, event)
 
 function openAdminTool(player: player):
 	wait a ticks
@@ -25,7 +25,10 @@ function openAdminTool(player: player):
 		add 1 to {_slot}
 	openAdminTool_Check({_player})
 
-function executeAdminTool(player: player, item: item, slot: number):
+function executeAdminTool(player: player, event: object):
+	set {_item} to {_event}.getCurrentItem()
+	set {_slot} to {_event}.getSlot()
+
 	if {_item} is not air:
 		close {_player}'s inventory
 	if {_slot} is 1:

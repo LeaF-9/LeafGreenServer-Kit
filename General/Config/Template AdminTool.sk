@@ -9,8 +9,13 @@ function openAdminTool_Check(player: player):
 function openAdminTool_Kit(player: player):
 	if {_player}.getOpenInventory().getTitle() is not {@invname}:
 		stop
-	set slot 21 of {_player}'s current inventory to feather named "§b/joinset 4"
-	set slot 23 of {_player}'s current inventory to diamond named "§6/gamestart"
+	set slot 18 of {_player}'s current inventory to feather named "§b/joinset 4"
+	set slot 20 of {_player}'s current inventory to diamond named "§6/gamestart"
+
+	if {-TestMode::Kit} is not set:
+		set {-TestMode::Kit} to false
+	set {_enable.test} to {-TestMode::Kit}
+	set slot 23 of {_player}'s current inventory to paper named "§3§lTEST MODE" with lore " " and "§6enabled§7: §e§o%{_enable.test}%"
 	set slot 26 of {_player}'s current inventory to book named "§9§lDetail Settings"
 
 function executeAdminTool_Check(player: player, item: item, slot: number):
@@ -23,5 +28,16 @@ function executeAdminTool_Kit(player: player, item: item, slot: number):
 		make {_player} execute command "/joinset 4"
 	else if name of {_item} contains "/gamestart":
 		make {_player} execute command "/gamestart"
+	else if name of {_item} contains "§3§lTEST MODE":
+		set {_test.before} to {-TestMode::Kit}
+		set {_test.before} to false if {_test.before} is not set
+
+		if {_test.before} is true:
+			set {_test.after} to false
+		else:
+			set {_test.after} to true
+		
+		set {-TestMode::Kit} to {_test.after}
+		message formatted "§a[§e§lKit§a]§r §3§lTEST MODE<##d0e8ec>を <##ebc958>%{_test.after}% <##d0e8ec>に設定しました" to {_player}
 	else if name of {_item} contains "Detail Settings":
 		openAdminTool_KitDetail({_player})

@@ -26,18 +26,23 @@ function kitSaveAssistInfo(player: player, killid: text):
 	set {Kit-GameInfo.assist-kit::%{_assistid}%} to {_assist.kit}
 
 function kitStoreKillLogs():
-	# Kills
-	load yml "plugins/skript-yaml/Kit Databases/Kills.yml" as "database.storekill"
-	loop {Kit-GameInfo.Kills::*}:
-		set {_id.kill} to loop-value
-		set yml value "%{_id.kill}%.game" from "database.storekill" to {Kit-GameID}
-		set yml value "%{_id.kill}%.killer-player" from "database.storekill" to {Kit-GameInfo.killer-player::%{_id.kill}%}
-		set yml value "%{_id.kill}%.killer-kit" from "database.storekill" to {Kit-GameInfo.killer-kit::%{_id.kill}%}
-		set yml value "%{_id.kill}%.victim-player" from "database.storekill" to {Kit-GameInfo.victim-player::%{_id.kill}%}
-		set yml value "%{_id.kill}%.victim-kit" from "database.storekill" to {Kit-GameInfo.victim-kit::%{_id.kill}%}
-		set yml value "%{_id.kill}%.cause" from "database.storekill" to {Kit-GameInfo.cause::%{_id.kill}%}
-		set yml value "%{_id.kill}%.time" from "database.storekill" to {Kit-GameInfo.time::%{_id.kill}%}
-	save yml "database.storekill"
+	set {_testmode} to {-TestMode::Kit}
+	set {_testmode} to false if {_testmode} is not set
+
+	if {_testmode} is false:
+		# Kills
+		load yml "plugins/skript-yaml/Kit Databases/Kills.yml" as "database.storekill"
+		loop {Kit-GameInfo.Kills::*}:
+			set {_id.kill} to loop-value
+			set yml value "%{_id.kill}%.game" from "database.storekill" to {Kit-GameID}
+			set yml value "%{_id.kill}%.killer-player" from "database.storekill" to {Kit-GameInfo.killer-player::%{_id.kill}%}
+			set yml value "%{_id.kill}%.killer-kit" from "database.storekill" to {Kit-GameInfo.killer-kit::%{_id.kill}%}
+			set yml value "%{_id.kill}%.victim-player" from "database.storekill" to {Kit-GameInfo.victim-player::%{_id.kill}%}
+			set yml value "%{_id.kill}%.victim-kit" from "database.storekill" to {Kit-GameInfo.victim-kit::%{_id.kill}%}
+			set yml value "%{_id.kill}%.cause" from "database.storekill" to {Kit-GameInfo.cause::%{_id.kill}%}
+			set yml value "%{_id.kill}%.time" from "database.storekill" to {Kit-GameInfo.time::%{_id.kill}%}
+		save yml "database.storekill"
+
 	delete {Kit-GameInfo.Kills::*}
 	delete {Kit-GameInfo.killer-player::*}
 	delete {Kit-GameInfo.killer-kit::*}
@@ -45,14 +50,17 @@ function kitStoreKillLogs():
 	delete {Kit-GameInfo.victim-kit::*}
 	delete {Kit-GameInfo.cause::*}
 	delete {Kit-GameInfo.time::*}
-	# Assists
-	load yml "plugins/skript-yaml/Kit Databases/Assists.yml" as "database.storeassist"
-	loop {Kit-GameInfo.Assists::*}:
-		set {_id.assist} to loop-value
-		set yml value "%{_id.assist}%.kill-id" from "database.storeassist" to {Kit-GameInfo.assist-killid::%{_id.assist}%}
-		set yml value "%{_id.assist}%.assist-player" from "database.storeassist" to {Kit-GameInfo.assist-player::%{_id.assist}%}
-		set yml value "%{_id.assist}%.assist-kit" from "database.storeassist" to {Kit-GameInfo.assist-kit::%{_id.assist}%}
-	save yml "database.storeassist"
+
+	if {_testmode} is false:
+		# Assists
+		load yml "plugins/skript-yaml/Kit Databases/Assists.yml" as "database.storeassist"
+		loop {Kit-GameInfo.Assists::*}:
+			set {_id.assist} to loop-value
+			set yml value "%{_id.assist}%.kill-id" from "database.storeassist" to {Kit-GameInfo.assist-killid::%{_id.assist}%}
+			set yml value "%{_id.assist}%.assist-player" from "database.storeassist" to {Kit-GameInfo.assist-player::%{_id.assist}%}
+			set yml value "%{_id.assist}%.assist-kit" from "database.storeassist" to {Kit-GameInfo.assist-kit::%{_id.assist}%}
+		save yml "database.storeassist"
+
 	delete {Kit-GameInfo.Assists::*}
 	delete {Kit-GameInfo.assist-killid::*}
 	delete {Kit-GameInfo.assist-player::*}
@@ -64,6 +72,12 @@ function kitStoreGameLogs():
 	set {_duration.game} to {Kit-GameTime}
 	delete {Kit-GameID}
 	delete {Kit-GameTimestamp}
+
+	set {_testmode} to {-TestMode::Kit}
+	set {_testmode} to false if {_testmode} is not set
+	if {_testmode} is true:
+		stop
+
 	load yml "plugins/skript-yaml/Kit Databases/Games.yml" as "database.storegame"
 	set yml value "%{_id.game}%.map" from "database.storegame" to {Kit-GameStage::name}
 	set yml list "%{_id.game}%.win-team" from "database.storegame" to {Kit-WinTeam::*}
@@ -88,19 +102,24 @@ function kitStoreGameLogs():
 	save yml "database.storegame"
 
 function kitStoreCountLogs():
-	load yml "plugins/skript-yaml/Kit Databases/Counts.yml" as "database.storecount"
-	loop {Kit-GameInfo.Counts::*}:
-		set {_id.count} to loop-value
-		set yml value "%{_id.count}%.game" from "database.storecount" to {Kit-GameID}
-		set yml value "%{_id.count}%.player" from "database.storecount" to {Kit-GameInfo.count-player::%{_id.count}%}
-		set yml value "%{_id.count}%.kit" from "database.storecount" to {Kit-GameInfo.count-kit::%{_id.count}%}
-		set yml value "%{_id.count}%.time" from "database.storecount" to {Kit-GameInfo.count-time::%{_id.count}%}
-		set yml value "%{_id.count}%.weapon" from "database.storecount" to {Kit-GameInfo.count-weapon::%{_id.count}%}
-		set {_ln} to 0
-		loop 3 times:
-			add 1 to {_ln}
-			set yml value "%{_id.count}%.skill-%{_ln}%" from "database.storecount" to {Kit-GameInfo.count-skill-%{_ln}%::%{_id.count}%}
-	save yml "database.storecount"
+	set {_testmode} to {-TestMode::Kit}
+	set {_testmode} to false if {_testmode} is not set
+
+	if {_testmode} is false:
+		load yml "plugins/skript-yaml/Kit Databases/Counts.yml" as "database.storecount"
+		loop {Kit-GameInfo.Counts::*}:
+			set {_id.count} to loop-value
+			set yml value "%{_id.count}%.game" from "database.storecount" to {Kit-GameID}
+			set yml value "%{_id.count}%.player" from "database.storecount" to {Kit-GameInfo.count-player::%{_id.count}%}
+			set yml value "%{_id.count}%.kit" from "database.storecount" to {Kit-GameInfo.count-kit::%{_id.count}%}
+			set yml value "%{_id.count}%.time" from "database.storecount" to {Kit-GameInfo.count-time::%{_id.count}%}
+			set yml value "%{_id.count}%.weapon" from "database.storecount" to {Kit-GameInfo.count-weapon::%{_id.count}%}
+			set {_ln} to 0
+			loop 3 times:
+				add 1 to {_ln}
+				set yml value "%{_id.count}%.skill-%{_ln}%" from "database.storecount" to {Kit-GameInfo.count-skill-%{_ln}%::%{_id.count}%}
+		save yml "database.storecount"
+
 	delete {Kit-GameInfo.Counts::*}
 	delete {Kit-GameInfo.count-player::*}
 	delete {Kit-GameInfo.count-kit::*}
