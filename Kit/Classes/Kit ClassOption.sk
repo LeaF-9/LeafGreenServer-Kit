@@ -204,6 +204,10 @@ command /class <text> <player=%player%> <boolean=true>:
 				set {Class::%arg 2%} to arg 1
 				set {CLS::%arg 2%} to "SUM"
 			execute console command "/skclass %arg 2% Kit-%arg 1%"
+
+			set {LastClass::%arg 2%} to {Class::%arg 2%}
+			set {LastCLS::%arg 2%} to {CLS::%arg 2%}
+
 			set {_uuid} to UUID of arg 2
 			load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%arg 2%.select"
 			if yml value "custom.%arg 1%.weapon" from "player.%arg 2%.select" is not set:
