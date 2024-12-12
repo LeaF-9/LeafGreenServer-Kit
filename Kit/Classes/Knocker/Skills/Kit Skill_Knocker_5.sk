@@ -4,7 +4,7 @@ function kitSkill_Knocker_5(player: player):
 	toolCT({_player}, "Knocker", 5)
 	kitMsg({_player}, "§c地面に衝撃を与えて敵を吹き飛ばします!")
 	set {Stats.%{_player}%::DiveImpact} to true
-	set velocity of {_player} to vector(0, 2.5, 0)
+	set velocity of {_player} to vector(0, 1.65, 0)
 	playSound("entity.wither.shoot", 1, 0.8, {_player})
 	loop 5 times:
 		spawnParticle_BlockData(falling_dust, light blue concrete powder, {_player})
@@ -22,11 +22,11 @@ function kitSkill_Knocker_5(player: player):
 				spawnParticle_BlockData(falling_dust, white wool, {_player})
 				wait a tick
 	loop all entities in radius 5 around {_player}:
-		kitCheckTeam(loop-entity, {_player}, false)
+		kitCheckTeam(loop-entity, {_player}, false) is true
 		block below loop-entity is not passable
 		make a fake explosion at loop-entity
 		kitDamage({_player}, loop-entity, 2, "落下の衝撃")
-		set velocity of loop-entity to vector(0, 1.5, 0)
+		set velocity of loop-entity to vector(0, 1.1, 0)
 		kitEffectDescription(loop-entity, "§4❤2")
 
 function kitParticle_DiveImpact(loc: location):
