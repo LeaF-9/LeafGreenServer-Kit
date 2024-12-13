@@ -57,10 +57,6 @@ local function kitEffect_FieldHospital(player: player):
 	while {Stats.%{_player}%::FieldHospital-Time} is {_now}:
 		wait a tick
 		add 1 to {_ln}
-		set {_exist} to kitFakeCheck({_player}, "Field Hospital")
-		if {_exist} is false:
-			delete {Stats.%{_player}%::FieldHospital-Time}
-			continue
 		
 		kitParticle_FieldHospital_Field({_loc.base})
 		add {_addy} to {_y}
@@ -87,7 +83,11 @@ local function kitEffect_FieldHospital(player: player):
 				healEffect(loop-entity, 1)
 				kitSound_FieldHospital_Player(loop-entity)
 
-	delete {Stats.%{_player}%::FieldHospital-Time}
+		set {_exist} to kitFakeCheck({_player}, "Field Hospital")
+		if {_exist} is false:
+			delete {Stats.%{_player}%::FieldHospital-Time}
+
+
 
 local function kitParticle_FieldHospital_Player(baseloc: location, entity: entity):
 	add 1.8 to y-pos of {_baseloc}
