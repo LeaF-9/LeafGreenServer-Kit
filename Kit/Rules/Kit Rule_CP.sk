@@ -158,7 +158,8 @@ local function kitExecuteArea_CP(team: text, pa: text):
 				kitCheckInPlayer_CP(loop-player, {_pa}) is true
 				kitCheckAlive(loop-player) is true
 
-				set {_personPoint} to {Kit-TeamBuff::%{_team}%}
+				set {_team.areaplayer} to {TrueTeam::%loop-player%}
+				set {_personPoint} to {Kit-TeamBuff::%{_team.areaplayer}%}
 
 				if {TrueTeam::%loop-player%} is {_team}:
 					add {_personPoint} to {_true}
@@ -221,7 +222,8 @@ local function kitExecuteArea_CP(team: text, pa: text):
 				kitCheckInPlayer_CP(loop-player, {_pa}) is true
 				kitCheckAlive(loop-player) is true
 
-				set {_personPoint} to {Kit-TeamBuff::%{_team}%}
+				set {_team.areaplayer} to {TrueTeam::%loop-player%}
+				set {_personPoint} to {Kit-TeamBuff::%{_team.areaplayer}%}
 
 				if {TrueTeam::%loop-player%} is {_team}:
 					add {_personPoint} to {_true}
@@ -385,8 +387,8 @@ local function kitSetAreaTime_CP(time: number, fatigue: boolean, buff: number) :
 	# TeamBuffを半分にして換算する形式
 	set {_sub} to 1 - {_buff}
 	set {_mul} to {_sub} * 0.5
-	set {_timemul} to 1 - {_mul}
-	set {_time} to {_time} * {_mul}
+	set {_timemul} to 1 + {_mul}
+	set {_time} to {_time} * {_timemul}
 
 	if {_fatigue} is true:
 		set {_time} to {_time} * 0.75
