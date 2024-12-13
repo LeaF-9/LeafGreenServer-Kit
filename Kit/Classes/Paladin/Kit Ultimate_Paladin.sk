@@ -64,16 +64,17 @@ on damage of player with priority HIGHEST:
 		set {_now} to now
 		set {_dif} to difference between {_metadata} and {_now}
 		if {_dif} < {_delay}:
-			setDamageModification_FIX(victim, 0)
 			stop
 		delete metadata value {@metadata-nodamage} of victim
 
 	set {_now} to now
 	set metadata value {@metadata-nodamage} of victim to {_now}
 
-	if damage cause is not fall:
-		set {_rawdamage} to getDamageModification_ALL(victim, damage)
-		set {_ulthp} to {Stats.%victim%::Ult_Paladin} - {_rawdamage}
+	if damage cause is fall:
+		stop
+
+	set {_rawdamage} to getDamageModification_ALL(victim, damage)
+	set {_ulthp} to {Stats.%victim%::Ult_Paladin} - {_rawdamage}
 	if {_ulthp} <= 0:
 		set {_attacker} to getAttacker(victim)
 		delete {Stats.%victim%::Ult_Paladin}
