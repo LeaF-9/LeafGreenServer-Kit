@@ -5,8 +5,7 @@ on inventory click:
 	type of event-inventory is chest inventory
 	if inventory name of event-inventory is {@invname}:
 		cancel event
-		set {_slot} to "%clicked slot%" parsed as number
-		executeAdminTool_KitDetail(player, clicked item, {_slot})
+		executeAdminTool_KitDetail(player, event)
 
 function openAdminTool_KitDetail(player: player):
 	wait a tick
@@ -27,7 +26,10 @@ function openAdminTool_KitDetail(player: player):
 	set slot 20 of {_player}'s current inventory to bottle o' enchanting named "§estage option: §a§lVote" with lore "§8Current§7: §6§l%{Kit-StageVote}%"
 	set slot 22 of {_player}'s current inventory to paper named "§estage option: §a§lListing" with lore "§8Current§7: §6§l%{Kit-StageListing}%"
 
-function executeAdminTool_KitDetail(player: player, item: item, slot: number):
+function executeAdminTool_KitDetail(player: player, event: object):
+	set {_item} to {_event}.getCurrentItem()
+	set {_slot} to {_event}.getSlot()
+
 	close {_player}'s inventory
 	set {_itemname} to name of {_item}
 	if {_itemname} contains "§erule:":
