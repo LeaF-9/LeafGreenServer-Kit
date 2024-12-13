@@ -31,6 +31,7 @@ local function kitEffect_RestoreFaster(player: player, loc: location):
 	replace every "§8Fuel§7: §4" with "" in {_fuel}
 	set {_fuel} to {_fuel} parsed as number
 
+	set {_randomid} to a random UUID
 	# coreを回転させる関数
 	kitEffect_RestoreFaster_Core({_player}, {_coredisplay})
 	while {Stats.%{_player}%::RestoreFaster-Time} is {_now}:
@@ -63,7 +64,7 @@ local function kitEffect_RestoreFaster(player: player, loc: location):
 
 				# ボスバー設定
 				set {_uuid} to UUID of loop-player
-				set {_id} to "Restore Faster-%{_uuid}%"
+				set {_id} to "%{_randomid}%-%{_uuid}%"
 
 				# もし入った履歴がなければFuel消費
 				if {_enter.hist::*} does not contain loop-player:
@@ -92,7 +93,7 @@ local function kitEffect_RestoreFaster(player: player, loc: location):
 			loop {_enter.hist::*}:
 				{_enter.now::*} does not contain loop-value
 				set {_uuid} to UUID of loop-value
-				set {_id} to "Restore Faster-%{_uuid}%"
+				set {_id} to "%{_randomid}%-%{_uuid}%"
 				# 効果発動中であれば効果削除
 				if {Stats.%loop-value%::FastCT} is true:
 					delete {Stats.%loop-value%::FastCT}
@@ -106,7 +107,7 @@ local function kitEffect_RestoreFaster(player: player, loc: location):
 		else:
 			loop {_enter.hist::*}:
 				set {_uuid} to UUID of loop-value
-				set {_id} to "Restore Faster-%{_uuid}%"
+				set {_id} to "%{_randomid}%-%{_uuid}%"
 				# 効果発動中であれば効果削除
 				if {Stats.%loop-value%::FastCT} is true:
 					delete {Stats.%loop-value%::FastCT}
@@ -119,11 +120,12 @@ local function kitEffect_RestoreFaster(player: player, loc: location):
 			delete {Stats.%{_player}%::RestoreFaster-Time}
 			loop {_enter.hist::*}:
 				{Stats.%loop-value%::FastCT} is true
-				set {_uuid} to UUID of loop-value
-				set {_id} to "Restore Faster-%{_uuid}%"
 				delete {Stats.%loop-value%::FastCT}
 				message "§bクールタイム短縮§c効果が切れました" to loop-value
 				kitParticle_RestoreFaster(loop-value, false)
+			loop all players:
+				set {_uuid} to UUID of loop-player
+				set {_id} to "%{_randomid}%-%{_uuid}%"
 				remove bossbar {_id}
 
 local function kitEffect_RestoreFaster_Core(player: player, display: entity):
