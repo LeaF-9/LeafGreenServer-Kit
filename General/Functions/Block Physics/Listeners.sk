@@ -1,0 +1,55 @@
+on physics:  # BlockPhysicsEvent
+	{-BlockPhysics} is false
+	eventBlockPhysics(event)
+
+on entity block change:  # EntityBlockFormEvent
+	{-BlockPhysics} is false
+	eventBlockPhysics(event)
+
+on flow:  # BlockFromToEvent
+	{-BlockPhysics} is false
+	eventBlockPhysics(event)
+
+on fade:  # BlockFadeEvent
+	cancel event
+
+on form:  # BlockFormEvent
+	cancel event
+
+on grow:  # BlockGrowEvent
+	cancel event
+
+on burn:  # BlockBurnEvent
+	cancel event
+
+on leaves decay:  # LeavesDecayEvent
+	cancel event
+
+
+
+import:
+	org.bukkit.event.block.BlockExplodeEvent
+	org.bukkit.event.block.BlockIgniteEvent
+	org.bukkit.event.block.FluidLevelChangeEvent
+	org.bukkit.event.block.MoistureChangeEvent
+	org.bukkit.event.block.SculkBloomEvent
+	org.bukkit.event.block.TNTPrimeEvent
+
+on BlockExplodeEvent:
+	event.setCancelled(true)
+
+on BlockIgniteEvent:
+	event.setCancelled(true)
+
+on FluidLevelChangeEvent:
+	{-BlockPhysics} is false
+	eventBlockPhysics(event)
+
+on MoistureChangeEvent:
+	event.setCancelled(true)
+
+on SculkBloomEvent:
+	event.setCancelled(true)
+
+on TNTPrimeEvent:
+	event.setCancelled(true)

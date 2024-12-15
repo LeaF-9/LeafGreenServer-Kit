@@ -1,0 +1,34 @@
+function eventBlockPhysics(event: object):
+	set {_eventString} to "%{_event}%"
+	set {_block} to {_event}.getBlock()
+	set {_loc} to {_block}.getLocation()
+	set {_world} to "%world of {_loc}%"
+
+	if {-BlockPhysics.worlds::%{_world}%::%{_eventString}%} is not set:
+		{_event}.setCancelled(true)
+
+	# other-events
+	if {-BlockPhysics.worlds::%{_world}%::%{_eventString}%::no-options} is true:
+		stop
+
+	# EntityChangeBlockEvent
+	add "EntityChangeBlockEvent" to {_entityevents::*}
+	add "EntityBlockFormEvent" to {_entityevents::*}
+	add "EntityEnterBlockEvent" to {_entityevents::*}
+
+	# BlockPhysicsEvent
+	if {_eventString} is "BlockPhysicsEvent":
+		{-BlockPhysics.worlds::%{_world}%::%{_eventString}%} is true
+		set {_blockdata} to "%block data of {_block}%"
+		loop {-BlockPhysics.worlds::%{_world}%::BlockPhysicsEvent::*}:
+			set {_checkblock} to loop-index
+			if {_blockdata} contains {_checkblock}:
+				stop
+
+	else if {_entityevents::*} contains {_eventString}:
+		set {_entity} to {_event}.getEntity()
+		set {_entity} to "%{_entity}%"
+		loop {-BlockPhysics.worlds::%{_world}%::EntityChangeBlockEvent::*}:
+			set {_checkentity} to loop-index
+			if {_entity} is {_checkentity}:
+				stop

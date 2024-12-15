@@ -1,0 +1,42 @@
+on load:
+	loadConfigBlockPhysics()
+
+function loadConfigBlockPhysics():
+	delete {BlockPhysics}
+	set {-BlockPhysics} to false
+
+	load yml "plugins/Skript/scripts/General/Functions/Block Physics/config.yml" as "config.blockphysics"
+
+	loop yaml node keys "disable-worlds" from "config.blockphysics":
+		set {_worlds::*} to loop-key
+		set {_world} to {_worlds::1}
+		set {-BlockPhysics.worlds::%{_world}%} to true
+		log "[BlockPhysics] WORLD: %{_world}%"
+
+		# BlockPhysicsEvent
+		set {_blocklist::*} to yml list "disable-worlds.%{_world}%.BlockPhysicsEvent.blocks" from "config.blockphysics"
+		loop {_blocklist::*}:
+			set {_block} to loop-value-2
+			set {-BlockPhysics.worlds::%{_world}%::BlockPhysicsEvent::%{_block}%} to true
+		set {-BlockPhysics.worlds::%{_world}%::BlockPhysicsEvent} to true if {_entitylist::1} is set
+		log "[BlockPhysics] %{_world}%-BlockPhysics: %{_blocklist::*}%" if {_blocklist::1} is set
+
+		# EntityChangeBlockEvent
+		set {_entitylist::*} to yml list "disable-worlds.%{_world}%.EntityChangeBlockEvent.entities" from "config.blockphysics"
+		loop {_entitylist::*}:
+			set {_entity} to loop-value-2
+			set {-BlockPhysics.worlds::%{_world}%::EntityChangeBlockEvent::%{_entity}%} to true
+		set {-BlockPhysics.worlds::%{_world}%::EntityChangeBlockEvent} to true if {_entitylist::1} is set
+		set {-BlockPhysics.worlds::%{_world}%::EntityBlockFormEvent} to true if {_entitylist::1} is set
+		set {-BlockPhysics.worlds::%{_world}%::EntityEnterBlockEvent} to true if {_entitylist::1} is set
+		log "[BlockPhysics] %{_world}%-EntityBlock: %{_entitylist::*}%" if {_entitylist::1} is set
+
+		# other-events
+		set {_eventlist::*} to yml list "disable-worlds.%{_world}%.other-events" from "config.blockphysics"
+		loop {_eventlist::*}:
+			set {_event} to loop-value-2
+			set {-BlockPhysics.worlds::%{_world}%::%{_event}%} to true
+			set {-BlockPhysics.worlds::%{_world}%::%{_event}%::no-options} to true
+		log "[BlockPhysics] %{_world}%-Events: %{_eventlist::*}%" if {_eventlist::*} is set
+
+	unload yml "config.blockphysics"
