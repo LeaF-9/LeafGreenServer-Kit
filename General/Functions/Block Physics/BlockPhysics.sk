@@ -1,11 +1,20 @@
+aliases:
+	redsignal1 = minecraft:dispenser, minecraft:note_block, minecraft:sticky_piston, minecraft:piston, minecraft:lever, minecraft:stone_pressure_plate, minecraft:oak_pressure_plate, minecraft:spruce_pressure_plate, minecraft:birch_pressure_plate, minecraft:jungle_pressure_plate, minecraft:acacia_pressure_plate, minecraft:dark_oak_pressure_plate, minecraft:redstone_torch, minecraft:redstone_wall_torch, minecraft:stone_button, minecraft:oak_button, minecraft:spruce_button, minecraft:birch_button, minecraft:jungle_button, minecraft:acacia_button, minecraft:dark_oak_button, minecraft:oak_trapdoor, minecraft:spruce_trapdoor, minecraft:birch_trapdoor, minecraft:jungle_trapdoor, minecraft:acacia_trapdoor, minecraft:dark_oak_trapdoor, minecraft:oak_fence_gate, minecraft:spruce_fence_gate, minecraft:birch_fence_gate, minecraft:jungle_fence_gate, minecraft:acacia_fence_gate, minecraft:dark_oak_fence_gate
+	redsignal2 = minecraft:oak_door, minecraft:spruce_door, minecraft:birch_door, minecraft:jungle_door, minecraft:acacia_door, minecraft:dark_oak_door, minecraft:redstone_lamp, minecraft:tripwire_hook, minecraft:tripwire, minecraft:trapped_chest, minecraft:light_weighted_pressure_plate, minecraft:heavy_weighted_pressure_plate, minecraft:daylight_detector, minecraft:hopper, minecraft:dropper, minecraft:iron_trapdoor, minecraft:observer, minecraft:iron_door, minecraft:repeater, minecraft:comparator, minecraft:redstone_wire, minecraft:lectern, minecraft:powered_rail, minecraft:detector_rail, minecraft:activator_rail, minecraft:redstone_block, minecraft:command_block, minecraft:chain_command_block, minecraft:repeating_command_block
+
 function eventBlockPhysics(event: object):
 	set {_eventString} to "%{_event}%"
 	set {_block} to {_event}.getBlock()
 	set {_loc} to {_block}.getLocation()
 	set {_world} to "%world of {_loc}%"
 
+	# redstone signals
+	if {_block} is redsignal1 or redsignal2:
+		stop if {_eventString} is "BlockPhysicsEvent"
+
 	if {-BlockPhysics.worlds::%{_world}%::%{_eventString}%} is not set:
 		{_event}.setCancelled(true)
+		stop
 
 	# other-events
 	if {-BlockPhysics.worlds::%{_world}%::%{_eventString}%::no-options} is true:
