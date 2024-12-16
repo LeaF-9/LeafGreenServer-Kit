@@ -7,11 +7,16 @@ command /checkuuid <offline player>:
 command /checkitem:
 	permission: sk.admin
 	trigger:
-		message "%type of player's tool%" to player
-		message "%display name of player's tool%" to player
-		set {_tool} to display name of player's tool
-		replace every "§" with "&" in {_tool}
-		message "%{_tool}%" to player
+		set {_item} to player's tool
+		message formatted "%type of {_item}%" to player
+		message formatted "%raw name of {_item}%" to player
+		set {_name} to display name of {_item}
+		if {_name} is not set:
+			stop
+
+		message formatted "%{_name}%" to player
+		replace every "§" with "&" in {_name}
+		message formatted "%{_name}%" to player
 
 command /checkblock:
 	permission: sk.admin
