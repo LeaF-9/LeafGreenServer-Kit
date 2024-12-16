@@ -50,6 +50,13 @@ function stopTimer(prop: text):
 	delete {BossBarTimer::%{_prop}%}
 	executeEndTimer({_prop})
 
+# タイマー終了時の処理 サーバごとに変更が必要
+local function executeEndTimer(prop: text):
+	if {_prop} contains "Kit":
+		kitTimer_End()
+
+
+
 function displayTimer(sec: number) :: text:
 	set {_minute} to 0
 	set {_second} to 0
