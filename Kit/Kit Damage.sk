@@ -151,6 +151,9 @@ function kitDamage(attacker: player, victim: entity, damage: number, cause: text
 
 # checkDamagableを通さないダメージ関数
 function kitDamageNull(attacker: player, victim: entity, damage: number, cause: text, fix: boolean = false):
+	delete metadata value "raw damage" of {_victim}
+	delete metadata value "kit damage" of {_victim}
+
 	if checkEntityType({_victim}, player) is true:
 		LastKiller({_victim}, {_attacker})
 		setLastDamage({_victim}, {_cause})
