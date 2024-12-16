@@ -1,9 +1,19 @@
-function lobbySidebar_Check(player: player):
-	set {Sidebar::%{_player}%} to "Lobby"
-	if {Server} is "Kit":
-		lobbySidebar_Kit({_player})
+on join:
+	delete {Sidebar::%player%}
+	lobbySidebar_Kit(player)
+
+every a second:
+	loop all players:
+		if scoreboard of loop-player is false:
+			toggle scoreboard of loop-player to true
+		{Join::%loop-player%} is not set
+		{-Sidebar::%loop-player%} is not "Lobby"
+		scoreboard_Wipe({_player})
+		lobbySidebar_Kit(loop-player)
 
 function lobbySidebar_Kit(player: player):
+	set {-Sidebar::%{_player}%} to "Lobby"
+
 	set {_uuid} to UUID of {_player}
 	set {_period} to kitGetStatsPeriod({_player})
 	scoreboard_UpdateTitle({_player}, "§a§lKit PvP")
