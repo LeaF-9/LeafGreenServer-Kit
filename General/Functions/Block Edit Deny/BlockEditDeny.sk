@@ -32,8 +32,13 @@ on rightclick:
 	set {_action} to event.getAction().toString()
 
 	if {_action} is "RIGHT_CLICK_AIR":
-		set {_item} to raw name of (tool of player)
+		set {_tool} to tool of player
+		set {_item} to raw name of {_tool}
 		if {_item} is "minecraft:shield":
+			stop
+
+		set {_always} to {_tool}.getItemMeta().getFood().canAlwaysEat()
+		if {_always} is true:
 			stop
 
 	if {_action} is "RIGHT_CLICK_BLOCK":
