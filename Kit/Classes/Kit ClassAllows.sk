@@ -1,3 +1,6 @@
+import:
+    java.lang.Runnable
+
 on rightclick:
 	metadata value "gametype" of player is "Kit"
 	set {_item} to player's tool
@@ -9,107 +12,6 @@ on rightclick:
 	if {_itemtype} is not set:
 		stop
 
-	if {_itemkit} is "Knight":
-		if {_itemtype} is "Skill":
-			if kitSkillKnight(player) is true:
-				cancel event
-	if {_itemkit} is "Wizard":
-		if {_itemtype} contains "Weapon":
-			kitWeaponWizard(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillWizard(player) is true:
-				cancel event
-	if {_itemkit} is "Archer":
-		if {_itemtype} contains "Weapon":
-			kitWeaponArcher(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillArcher(player) is true:
-				cancel event
-	if {_itemkit} is "Assassin":
-		if {_itemtype} is "Skill":
-			if kitSkillAssassin(player) is true:
-				cancel event
-	if {_itemkit} is "Defender":
-		if {_itemtype} is "Skill":
-			if kitSkillDefender(player) is true:
-				cancel event
-	if {_itemkit} is "Healer":
-		if {_itemtype} contains "Weapon":
-			kitWeaponHealer(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillHealer(player) is true:
-				cancel event
-	if {_itemkit} is "Warrior":
-		if {_itemtype} is "Skill":
-			if kitSkillWarrior(player) is true:
-				cancel event
-	if {_itemkit} is "Necromancer":
-		if {_itemtype} is "Skill":
-			if kitSkillNecromancer(player) is true:
-				cancel event
-	if {_itemkit} is "Bomber":
-		if {_itemtype} contains "Weapon":
-			kitWeaponBomber(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillBomber(player) is true:
-				cancel event
-	if {_itemkit} is "Ninja":
-		if {_itemtype} contains "Weapon":
-			kitWeaponNinja(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillNinja(player) is true:
-				cancel event
-	if {_itemkit} is "Paladin":
-		if {_itemtype} is "Skill":
-			if kitSkillPaladin(player) is true:
-				cancel event
-	if {_itemkit} is "Engineer":
-		if {_itemtype} contains "Weapon":
-			kitWeaponEngineer(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillEngineer(player) is true:
-				cancel event
-	if {_itemkit} is "Mercenary":
-		if {_itemtype} is "Skill":
-			if kitSkillMercenary(player) is true:
-				cancel event
-	if {_itemkit} is "Ghost":
-		if {_itemtype} contains "Weapon":
-			kitWeaponGhost(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillGhost(player) is true:
-				cancel event
-	if {_itemkit} is "Knocker":
-		if {_itemtype} contains "Weapon":
-			kitWeaponKnocker(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillKnocker(player) is true:
-				cancel event
-	if {_itemkit} is "Thief":
-		if {_itemtype} contains "Weapon":
-			kitWeaponThief(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillThief(player) is true:
-				cancel event
-	if {_itemkit} is "Reflector":
-		if {_itemtype} contains "Weapon":
-			kitWeaponReflector(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillReflector(player) is true:
-				cancel event
-	if {_itemkit} is "Bard":
-		if {_itemtype} contains "Weapon":
-			kitWeaponBard(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillBard(player) is true:
-				cancel event
-	if {_itemkit} is "Berserker":
-		if {_itemtype} is "Skill":
-			if kitSkillBerserker(player) is true:
-				cancel event
-	if {_itemkit} is "Pyro":
-		if {_itemtype} contains "Weapon":
-			kitWeaponPyro(player)
-		else if {_itemtype} is "Skill":
-			if kitSkillPyro(player) is true:
-				cancel event
+	set {_func::run} to function reference "kit%{_itemtype}%%{_itemkit}%" called with (player)
+	set {_interact} to new proxy instance of Runnable using {_func::*}
+	{_interact}.run()
