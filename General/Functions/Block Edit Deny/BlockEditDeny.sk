@@ -24,6 +24,11 @@ on rightclick:
 			if block above clicked block is not passable:
 				stop
 
+	set {_eventString} to "%event%"
+	if {_eventString} is "PlayerInteractEntityEvent":
+		cancel event
+		stop
+
 	set {_action} to event.getAction().toString()
 
 	if {_action} is "RIGHT_CLICK_AIR":
@@ -39,6 +44,7 @@ on rightclick:
 		set {_blockString} to {_strings::1}
 		if {-BlockEditDeny.allow-click::%{_blockString}%} is true:
 			stop
+	
 	cancel event
 
 on bed enter:
