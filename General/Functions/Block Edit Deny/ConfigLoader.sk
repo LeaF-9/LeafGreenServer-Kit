@@ -1,0 +1,14 @@
+on load:
+	loadConfigBlockEditDeny()
+
+function loadConfigBlockEditDeny():
+	delete {BlockEnable::*}
+	delete {-BlockEditDeny.allow-click::*}
+
+	load yml "plugins/Skript/scripts/General/Functions/Block Edit Deny/config.yml" as "config.blockeditdeny"
+	set {_allow-click::*} to yml list "allow-click" from "config.blockeditdeny"
+	unload yml "config.blockeditdeny"
+
+	loop {_allow-click::*}:
+		set {_block} to loop-value
+		set {-BlockEditDeny.allow-click::%{_block}%} to true

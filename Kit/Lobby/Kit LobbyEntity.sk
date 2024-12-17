@@ -1,0 +1,28 @@
+options:
+	world-lobby: "Lobby"
+	name-join: "§6§lゲーム§a§lに参加"
+	name-spec: "§6§lゲーム§b§lを観戦"
+	name-test: "§6§nSkill Check"
+
+
+on rightclick on vindicator:
+	set {_entity} to clicked entity
+	set {_world} to "%world of {_entity}%"
+	stop if {_world} is not {@world-lobby}
+
+	set {_name} to display name of {_entity}
+	stop if {_name} is not {@name-join}
+
+	make player execute command "/join"
+
+on rightclick on villager:
+	set {_entity} to clicked entity
+	set {_world} to "%world of {_entity}%"
+	stop if {_world} is not {@world-lobby}
+
+	set {_name} to display name of {_entity}
+	if {_name} is {@name-spec}:
+		make player execute command "/spec"
+	
+	else if {_name} is {@name-test}:
+		make player execute command "/skilltest"

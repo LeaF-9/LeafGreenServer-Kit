@@ -1,0 +1,82 @@
+on join:
+	set {-BlockEnable::%player%} to false
+
+on break:
+	if {-BlockEnable::%player%} is true:
+		stop
+	if event-block is fire:
+		stop
+	cancel event
+
+on place:
+	if {-BlockEnable::%player%} is true:
+		stop
+	if player's tool is flint and steel:
+		stop
+	cancel the event
+
+on rightclick:
+	if {-BlockEnable::%player%} is true:
+		stop
+
+	if "%world of player%" is "Kit-SkillCheck":
+		if clicked block is note block:
+			if block above clicked block is not passable:
+				stop
+
+	set {_action} to event.getAction().toString()
+
+	if {_action} is "RIGHT_CLICK_AIR":
+		set {_item} to raw name of (tool of player)
+		if {_item} is "minecraft:shield":
+			stop
+
+	if {_action} is "RIGHT_CLICK_BLOCK":
+		set {_block} to event.getClickedBlock()
+		set {_blockString} to "%block data of {_block}%"
+		replace "minecraft:" with "" in {_blockString}
+		set {_strings::*} to split {_blockString} at "["
+		set {_blockString} to {_strings::1}
+		if {-BlockEditDeny.allow-click::%{_blockString}%} is true:
+			stop
+	cancel event
+
+on bed enter:
+	if {-BlockEnable::%player%} is true:
+		stop
+	cancel event
+
+on drop:
+	if {-BlockEnable::%player%} is true:
+		stop
+	cancel event
+
+on craft:
+	if {-BlockEnable::%player%} is true:
+		stop
+	cancel event
+
+on damage of armor stand:
+	if {-BlockEnable::%attacker%} is true:
+		stop
+	cancel event
+
+on rightclick on armor stand:
+	if {-BlockEnable::%player%} is true:
+		stop
+	cancel event
+
+on damage of item frame:
+	if {-BlockEnable::%attacker%} is true:
+		stop
+	cancel event
+
+on rightclick on item frame:
+	if {-BlockEnable::%player%} is true:
+		stop
+	cancel event
+
+on damage of painting:
+	if {-BlockEnable::%attacker%} is true:
+		stop
+	cancel event
