@@ -66,10 +66,8 @@ command /kitweaponlist <text> <text>:
 			message "{@prefix} §c%arg 2%§a's Weapon§7:" to player
 			load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class.%arg 2%"
 			loop yaml node keys "weapon" from "class.%arg 2%":
-				set {_main} to yml value "%loop-node%.main" from "class.%arg 2%"
+				set {_main} to yml value "%loop-node%" from "class.%arg 2%"
 				message "{@prefix} §7- §d%display name of {_main}%" to player
-				set {_sub} to yml value "%loop-node%.sub" from "class.%arg 2%"
-				message "{@prefix}   §7- §5%display name of {_sub}%" to player
 				message "§7----------" to player
 			unload yml "class.%arg 2%"
 
@@ -89,26 +87,22 @@ command /kitskilladd <text>:
 		save yml "class.save.%arg 1%"
 		message "§a%arg 1% §bのSkillを再設定しました" to player
 
-command /kitweaponadd <text> <text>:
-	usage: /kitweaponadd <type> <kit>
+command /kitweaponadd <text>:
+	usage: /kitweaponadd <kit>
 	permission: sk.admin
 	executable by: player
 	trigger:
-		if arg 1 is "main" or "sub":
-			set {_type} to arg 1
-		else:
-			stop
 		set {_l} to 3
 		set {_num} to 0
-		load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class.save.%arg 2%"
+		load yml "plugins/skript-yaml/Kit Classes/%arg 1%.yml" as "class.save.%arg 1%"
 		loop {_l} times:
 			set {_item} to slot {_num} of player
 			set {_ymlnum} to {_num} + 1
-			set {_item} to kitItemTagChanger({_item}, arg 2, "Weapon.%{_type}%", {_ymlnum})
-			set yml value "weapon.%{_ymlnum}%.%{_type}%" from "class.save.%arg 2%" to {_item}
+			set {_item} to kitItemTagChanger({_item}, arg 1, "Weapon", {_ymlnum})
+			set yml value "weapon.%{_ymlnum}%" from "class.save.%arg 1%" to {_item}
 			add 1 to {_num}
-		save yml "class.save.%arg 2%"
-		message "§a%arg 2% §bのWeaponを再設定しました" to player
+		save yml "class.save.%arg 1%"
+		message "§a%arg 1% §bのWeaponを再設定しました" to player
 
 command /kitskillgive <text>:
 	usage: /kitskillgive <kit>
@@ -125,15 +119,10 @@ command /kitweapongive <text>:
 	permission: sk.admin
 	executable by: player
 	trigger:
-		set {_weapons::*} to kitWeaponList(arg 1, "main")
-		set {_subs::*} to kitWeaponList(arg 1, "sub")
+		set {_weapons::*} to kitWeaponList(arg 1)
 		remove all items from player's inventory
 		loop {_weapons::*}:
 			give loop-value to player
-		set {_slot} to 27
-		loop {_subs::*}:
-			set slot {_slot} of player to loop-value
-			add 1 to {_slot}
 
 # #####################################################################
 
@@ -249,10 +238,8 @@ on inventory click:
 				set {_weapon} to clicked item
 				load yml "plugins/skript-yaml/Kit Classes/%loop-value%.yml" as "class.%loop-value%"
 				loop yaml node keys "weapon" from "class.%loop-value%":
-					set {_main} to yml value "%loop-node%.main" from "class.%loop-value-1%"
+					set {_main} to yml value "%loop-node%" from "class.%loop-value-1%"
 					add {_main} to {_main-weapon::*}
-					set {_sub} to yml value "%loop-node%.sub" from "class.%loop-value-1%"
-					add {_sub} to {_sub-weapon::*}
 				unload yml "class.%loop-value%"
 				loop {_main-weapon::*}:
 					if loop-value-2 is {_weapon}:
@@ -266,9 +253,6 @@ on inventory click:
 						message "{@prefix} §a選択したWeaponをセーブしました" to player
 						if {Kit-Testing::%player%} is true:
 							execute console command "/class %loop-value-1% %player% false"
-				loop {_sub-weapon::*}:
-					if loop-value-2 is {_weapon}:
-						message "{@prefix} §cそのアイテムは§aSub Weapon§cです" to player
 			# Skill Custom
 			else if inventory name of event-inventory is "§bKit: §6%loop-value%§e's Skill":
 				set {_skill} to clicked item
@@ -361,7 +345,7 @@ function openKitCustom(player: player, type: text, genre: text, special: boolean
 		set {_item.%loop-value%} to yml value "item" from "class.%{_player}%.check"
 		unload yml "class.%{_player}%.check"
 		delete {_use::*}
-		set {_use::weapon} to kitPlayerWeaponItem({_player}, loop-value, "main")
+		set {_use::weapon} to kitPlayerWeaponItem({_player}, loop-value)
 		set {_use::skill-1} to kitPlayerSkillItem({_player}, loop-value, 1)
 		set {_use::skill-2} to kitPlayerSkillItem({_player}, loop-value, 2)
 		set {_use::skill-3} to kitPlayerSkillItem({_player}, loop-value, 3)
@@ -409,7 +393,7 @@ function openKitWeaponCustom(player: player, kit: text):
 
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "weapon" from "class.custom.%{_kit}%":
-		set {_main} to yml value "%loop-node%.main" from "class.custom.%{_kit}%"
+		set {_main} to yml value "%loop-node%" from "class.custom.%{_kit}%"
 		add {_main} to {_main-weapon::*}
 		# set {_sub} to yml value "%loop-node%.sub" from "class.custom.%{_kit}%"
 		# add {_sub} to {_sub-weapon::*}
@@ -523,7 +507,7 @@ command /kitweaponusage <text>:
 		message formatted "{@prefix} §c§l%arg 1%§2's Weapon Usage:" to player
 		load yml "plugins/skript-yaml/Kit Classes/%arg 1%.yml" as "weapon.use.item"
 		loop yaml node keys "weapon" from "weapon.use.item":
-			set {_weapon} to yml value "%loop-node%.main" from "weapon.use.item"
+			set {_weapon} to yml value "%loop-node%" from "weapon.use.item"
 			add {_weapon} to {_weapons::*}
 		loop all offline players:
 			set {_uuid} to loop-offline player's UUID
@@ -531,7 +515,7 @@ command /kitweaponusage <text>:
 			yml value "custom.%arg 1%.weapon" from "weapon.use.player" is set
 			add 1 to {_sum}
 			set {_slotnum} to yml value "custom.%arg 1%.weapon" from "weapon.use.player"
-			set {_weapon} to yml value "weapon.%{_slotnum}%.main" from "weapon.use.item"
+			set {_weapon} to yml value "weapon.%{_slotnum}%" from "weapon.use.item"
 			set {_name} to display name of {_weapon}
 			add 1 to {_U-%{_name}%}
 		unload yml "weapon.use.player"
@@ -549,9 +533,9 @@ function kitSkillItem(kit: text, num: number) :: item:
 	unload yml "class.%{_kit}%"
 	return {_item}
 
-function kitWeaponItem(kit: text, num: number, type: text) :: item:
+function kitWeaponItem(kit: text, num: number) :: item:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_kit}%"
-	set {_item} to yml value "weapon.%{_num}%.%{_type}%" from "class.%{_kit}%"
+	set {_item} to yml value "weapon.%{_num}%" from "class.%{_kit}%"
 	unload yml "class.%{_kit}%"
 	return {_item}
 
@@ -563,10 +547,10 @@ function kitSkillList(kit: text) :: items:
 	unload yml "class.%{_kit}%"
 	return {_skills::*}
 
-function kitWeaponList(kit: text, type: text) :: items:
+function kitWeaponList(kit: text) :: items:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_kit}%"
 	loop yaml node keys "weapon" from "class.%{_kit}%":
-		set {_weapon} to yml value "%loop-node%.%{_type}%" from "class.%{_kit}%"
+		set {_weapon} to yml value "%loop-node%" from "class.%{_kit}%"
 		add {_weapon} to {_weapons::*}
 	unload yml "class.%{_kit}%"
 	return {_weapons::*}
@@ -581,12 +565,12 @@ function kitPlayerSkillItem(player: player, kit: text, slot: number) :: item:
 	unload yml "player.%{_player}%.kit"
 	return {_item}
 
-function kitPlayerWeaponItem(player: player, kit: text, type: text) :: item:
+function kitPlayerWeaponItem(player: player, kit: text) :: item:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_player}%.kit"
 	set {_uuid} to UUID of {_player}
 	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%{_player}%.kit"
 	set {_num} to yml value "custom.%{_kit}%.weapon" from "player.%{_player}%.kit"
-	set {_item} to yml value "weapon.%{_num}%.%{_type}%" from "class.%{_player}%.kit"
+	set {_item} to yml value "weapon.%{_num}%" from "class.%{_player}%.kit"
 	unload yml "class.%{_player}%.kit"
 	unload yml "player.%{_player}%.kit"
 	return {_item}

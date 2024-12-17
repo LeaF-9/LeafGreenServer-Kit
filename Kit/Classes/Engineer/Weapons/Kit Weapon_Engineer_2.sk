@@ -5,10 +5,10 @@ on sneak toggle:
 	{Class::%player%} is "Engineer"
 	player is not sneaking
 	set {_tool} to player's tool
-	if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
+	if kitItemAllChecker({_tool}, "Engineer", "Weapon", 2) is false:
 		stop
 	# Fuel Check
-	if checkFuel(player, 2, "Weapon.main") is false:
+	if checkFuel(player, 2, "Weapon") is false:
 		stop
 	if {Stats.%player%::GearyCog} is true:
 		stop
@@ -20,7 +20,7 @@ on damage with priority LOW:
 	# Geary Cogでの攻撃時
 	if {Class::%{_attacker}%} is "Engineer":
 		set {_tool} to {_attacker}'s tool
-		if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
+		if kitItemAllChecker({_tool}, "Engineer", "Weapon", 2) is false:
 			stop
 		if {Stats.%{_attacker}%::GearyCog} is true:
 			setDamageModification_MUL(victim, 2)

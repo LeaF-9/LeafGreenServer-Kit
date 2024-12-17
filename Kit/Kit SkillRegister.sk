@@ -138,8 +138,7 @@ on inventory click:
 				message formatted "{@prefix} §9ユニット§7: §b§l%{_unitname}% §cの§4Weapon§cを削除しました" to player
 			else:
 				set {_weapon} to clicked item
-				set {_main-weapon::*} to kitWeaponList({_kit}, "main")
-				set {_sub-weapon::*} to kitWeaponList({_kit}, "sub")
+				set {_main-weapon::*} to kitWeaponList({_kit})
 				loop {_main-weapon::*}:
 					if loop-value is {_weapon}:
 						close player's inventory
@@ -151,9 +150,6 @@ on inventory click:
 						set yml value "unit.%{_kit}%.%{_unit}%.weapon" from "player.%player%" to {_index}
 						save yml "player.%player%"
 						message "{@prefix} §9ユニット§7: §b§l%{_unitname}% §aの§4Weapon§aをセットしました" to player
-				loop {_sub-weapon::*}:
-					if loop-value-2 is {_weapon}:
-						message "{@prefix} §cそのアイテムは§aSub Weapon§cです" to player
 
 function openKitUnitGenre(player: player, genre: text):
 	wait a tick
@@ -202,7 +198,7 @@ function openKitUnitList(player: player, kit: text):
 		set {_unit::skill-2} to kitSkillItem({_kit}, {_slot-2})
 		set {_unit::skill-3} to kitSkillItem({_kit}, {_slot-3})
 		if {_slot-w} is not 0:
-			set {_unit::weapon} to kitWeaponItem({_kit}, {_slot-w}, "main")
+			set {_unit::weapon} to kitWeaponItem({_kit}, {_slot-w})
 			set slot {_slot} of {_player}'s current inventory to chest named "§9§l%{_name}%" with lore "§b§lUnit %{_listnum}%", "§4Weapon: §r%display name of {_unit::weapon}%", "§6Skill 1: §r%display name of {_unit::skill-1}%", "§6Skill 2: §r%display name of {_unit::skill-2}%", "§6Skill 3: §r%display name of {_unit::skill-3}%", "§5§m------------------------------", "§e§l左クリック §6でユニット詳細", "§e§l右クリック §6でユニット変更" and "§e§lマウスクリック §6で§cユニット削除"
 		else:
 			set slot {_slot} of {_player}'s current inventory to chest named "§9§l%{_name}%" with lore "§b§lUnit %{_listnum}%", "§6Skill 1: §r%display name of {_unit::skill-1}%", "§6Skill 2: §r%display name of {_unit::skill-2}%", "§6Skill 3: §r%display name of {_unit::skill-3}%", "§5§m------------------------------", "§e§l左クリック §6でユニット詳細", "§e§l右クリック §6でユニット変更" and "§e§lマウスクリック §6で§cユニット削除"
@@ -225,7 +221,7 @@ function openKitUnitDetail(player: player, kit: text, num: number):
 	wait a tick
 	set slot 0 of {_player}'s current inventory to red stained glass pane named "§4§lWeapon:"
 	if {_slot-w} is not 0:
-		set {_weapon} to kitWeaponItem({_kit}, {_slot-w}, "main")
+		set {_weapon} to kitWeaponItem({_kit}, {_slot-w})
 		set slot 1 of {_player}'s current inventory to {_weapon}
 	else:
 		set slot 1 of {_player}'s current inventory to structure void named "§e§lセットされていません"
@@ -280,7 +276,7 @@ function openKitUnitCustom(player: player, kit: text, num: number):
 		add 1 to {_num}
 	set slot 36 of {_player}'s current inventory to an iron sword named "§4§lWeapon Set" with lore "§eUnitにWeaponを含めることが出来ます", "§eオプション機能なので,セットしないことも可能です" and "§6現在セット中の§4Weapon§6が右のスロットに表示されます"
 	if {_slot-w} is not 0:
-		set {_weapon} to kitWeaponItem({_kit}, {_slot-w}, "main")
+		set {_weapon} to kitWeaponItem({_kit}, {_slot-w})
 		set slot 37 of {_player}'s current inventory to {_weapon}
 	else:
 		set slot 37 of {_player}'s current inventory to structure void named "§4Weapon§eがセットされていません"
@@ -485,7 +481,7 @@ command /kit-unitlist <text> <player>:
 			set {_unit::skill-2} to kitSkillItem({_kit}, {_slot-2})
 			set {_unit::skill-3} to kitSkillItem({_kit}, {_slot-3})
 			if {_slot-w} is not 0:
-				set {_unit::weapon} to kitWeaponItem({_kit}, {_slot-w}, "main")
+				set {_unit::weapon} to kitWeaponItem({_kit}, {_slot-w})
 				set slot {_slot} of {_player}'s current inventory to chest named "§9§l%{_name}%" with lore "§b§lUnit %{_listnum}%", "§4Weapon: §r%display name of {_unit::weapon}%", "§6Skill 1: §r%display name of {_unit::skill-1}%", "§6Skill 2: §r%display name of {_unit::skill-2}%" and "§6Skill 3: §r%display name of {_unit::skill-3}%"
 			else:
 				set slot {_slot} of {_player}'s current inventory to chest named "§9§l%{_name}%" with lore "§b§lUnit %{_listnum}%", "§6Skill 1: §r%display name of {_unit::skill-1}%", "§6Skill 2: §r%display name of {_unit::skill-2}%" and "§6Skill 3: §r%display name of {_unit::skill-3}%"

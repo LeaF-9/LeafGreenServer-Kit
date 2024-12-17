@@ -95,7 +95,7 @@ on rightclick:
 	set {_tool} to player's tool
 	set {_item.type} to kitItemTypeChecker({_tool})
 	set {_item.num} to kitItemNumberChecker({_tool})
-	{_item.type} is "Weapon.main"
+	{_item.type} is "Weapon"
 	loop all entities:
 		metadata value "targetdead.%player%" of loop-entity is true
 		set {_tg} to loop-entity
@@ -273,7 +273,7 @@ function kitRemoveNecromance(player: player, skill: item):
 		set {_nec} to loop-value
 	replace every "§5Necromance§8: §4" with "" in {_nec}
 	set {_nec} to {_nec} parsed as number
-	if kitPlayerWeaponItem({_player}, "Necromancer", "main") is kitWeaponItem("Necromancer", 3, "main"):
+	if kitPlayerWeaponItem({_player}, "Necromancer") is kitWeaponItem("Necromancer", 3):
 		set {_nec} to round({_nec} * 0.9)
 	subtract {_nec} from {Kit-Necromance::%{_player}%}
 
