@@ -1,0 +1,43 @@
+on leftclick holding a compass:
+	player has permission "sk.admin"
+	set {_tb} to target block
+	{_tb} is set
+	set {_loc.player} to location of head of player
+	set {_block} to false
+	while {_block} is not true:
+		add 1 to {_bn}
+		if block {_bn} above {_tb} is passable:
+			set {_bl} to location of block {_bn} above {_tb}
+			set {_block} to true
+	set yaw of {_bl} to yaw of {_loc.player}
+	set pitch of {_bl} to pitch of {_loc.player}
+	subtract 0.5 from y-pos of {_bl}
+	teleport player to {_bl}
+
+on rightclick holding a compass:
+	player has permission "sk.compass"
+	set {_tb} to target block
+	{_tb} is set
+	set {_loc.player} to location of head of player
+	set {_dis} to the distance between the player and {_tb}
+	set {_block} to false
+	while {_block} is not true:
+		add 1 to {_bn}
+		set {_dis} to {_dis} + {_bn}
+		if block {_dis} meters in front of {_loc.player} is passable:
+			set {_bl1} to block {_dis} meters in front of {_loc.player}
+			set {_block} to true
+			delete {_bn}
+	set {_block2} to false
+	while {_block2} is not true:
+		add 1 to {_bn}
+		if block {_bn} meters under {_bl1} is not passable:
+			set {_tbn} to {_bn} - 1
+			set {_bl2} to location of block {_tbn} meters under {_bl1}
+			set {_block2} to true
+		if {_bn} is more than 255:
+			stop
+	set yaw of {_bl2} to yaw of {_loc.player}
+	set pitch of {_bl2} to pitch of {_loc.player}
+	subtract 0.5 from y-pos of {_bl2}
+	teleport player to {_bl2}
