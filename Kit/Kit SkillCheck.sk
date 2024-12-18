@@ -97,6 +97,21 @@ on death of player:
 		if {_class} is set:
 			execute console command "/class %{_class}% %victim% false"
 
+on teleport:
+	{Kit-Testing::%player%} is true
+	set {_world} to "%world of player%"
+	{_world} is not {@world-skillcheck}
+
+	message formatted "§6§lSkillTest§c§lが中断されました" to player
+	delete {team::%player%}
+	delete {TrueTeam::%player%}
+	delete {ClassChose::%player%}
+	delete {Class::%player%}
+	delete {CLS::%player%}
+	delete {Kit-Testing::%player%}
+	delete {Kit-Lich::%player%}
+	delete {Kit-Necromance::%player%}
+
 on quit:
 	if {Kit-Testing::%player%} is true:
 		delete {Kit-Testing::%player%}
