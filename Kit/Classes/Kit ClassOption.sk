@@ -208,40 +208,84 @@ command /class <text> <player=%player%> <boolean=true>:
 			set {LastClass::%arg 2%} to {Class::%arg 2%}
 			set {LastCLS::%arg 2%} to {CLS::%arg 2%}
 
-			set {_uuid} to UUID of arg 2
-			load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%arg 2%.select"
-			if yml value "custom.%arg 1%.weapon" from "player.%arg 2%.select" is not set:
-				set yml value "custom.%arg 1%.weapon" from "player.%arg 2%.select" to 1
-			if yml value "custom.%arg 1%.skill.1" from "player.%arg 2%.select" is not set:
-				set yml value "custom.%arg 1%.skill.1" from "player.%arg 2%.select" to 1
-			if yml value "custom.%arg 1%.skill.2" from "player.%arg 2%.select" is not set:
-				set yml value "custom.%arg 1%.skill.2" from "player.%arg 2%.select" to 2
-			if yml value "custom.%arg 1%.skill.3" from "player.%arg 2%.select" is not set:
-				set yml value "custom.%arg 1%.skill.3" from "player.%arg 2%.select" to 3
-			save yml "player.%arg 2%.select"
-
-			set {_weapon.main} to kitPlayerWeaponItem(arg 2, arg 1)
-			give {_weapon.main} to arg 2
-			# set {_weapon.sub} to kitPlayerWeaponItem(arg 2, arg 1, "sub")
-			# set arg 2's offhand tool to {_weapon.sub}
-			loop 3 times:
-				set {_skill} to kitPlayerSkillItem(arg 2, arg 1, loop-number)
-				give {_skill} to arg 2
-				add {_skill} to {_skills::*}
+			kitUnitSetting(arg 2, arg 1)
 
 			# Counting
 			if {Kit-tochu} is true:
 				{Join::%arg 2%} is "Kit"
 				kitUseCounting(arg 2, arg 1, {_weapon.main}, {_skills::*})
 
-			# Ultimate Skill Slot
-			give a structure void named "§7§oUltimate Skill" to arg 2
 			set metadata value "gametype" of arg 2 to "Kit"
 			kitCheckUltimate(arg 2)
 			kitTargetTimer(arg 2)
 			ocmAttackSpeed(arg 2)
 			if arg 1 is not set:
 				message "§cクラス名を入力して下さい"
+
+local function kitUnitSetting(player: player, kit: text):
+	if {Kit-Testing::%{_player}%} is true:
+		set {_weapons::*} to kitWeaponList({_kit})
+		set {_skills::*} to kitSkillList({_kit})
+		# Weapons
+		set slot 0 of inventory of {_player} to {_weapons::1}
+		set slot 18 of inventory of {_player} to {_weapons::2}
+		set slot 27 of inventory of {_player} to {_weapons::3}
+		# Skills
+		set {_slot} to 1
+		if slot {_slot} of inventory of {_player} is not air:
+			set {_slot} to 2
+		
+		set {_index} to 1
+		loop 5 times:
+			set {_moveitem} to slot {_slot} of inventory of {_player}
+			if {_moveitem} is not air:
+				set slot 6 of inventory of {_player} to {_moveitem}
+			set slot {_slot} of inventory of {_player} to {_skills::%{_index}%}
+			add 1 to {_slot}
+			add 1 to {_index}
+		
+		add 22 to {_slot}
+		loop 3 times:
+			set slot {_slot} of inventory of {_player} to {_skills::%{_index}%}
+			add 1 to {_slot}
+			add 1 to {_index}
+		
+		# Ultimate Skill
+		set {_ultitem} to a nether star named "§b§lUltimate Skill"
+		set {_moveitem} to slot 8 of inventory of {_player}
+		if {_moveitem} is not air:
+			set slot 35 of inventory of {_player} to {_moveitem}
+		set slot 8 of inventory of {_player} to {_ultitem}
+
+		set {_text.main} to "<##15a1cc>§lKitアイテム一式§6を付与しました"
+		set {_text.sub} to "<##a6dd10>インベントリを開いてご確認ください"
+		sendTitle({_player}, {_text.main}, {_text.sub}, 3 seconds, 0.5 seconds, 0.5 seconds)
+		stop
+	set {_uuid} to UUID of {_player}
+	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%{_player}%.select"
+	if yml value "custom.%{_kit}%.weapon" from "player.%{_player}%.select" is not set:
+		set yml value "custom.%{_kit}%.weapon" from "player.%{_player}%.select" to 1
+	if yml value "custom.%{_kit}%.skill.1" from "player.%{_player}%.select" is not set:
+		set yml value "custom.%{_kit}%.skill.1" from "player.%{_player}%.select" to 1
+	if yml value "custom.%{_kit}%.skill.2" from "player.%{_player}%.select" is not set:
+		set yml value "custom.%{_kit}%.skill.2" from "player.%{_player}%.select" to 2
+	if yml value "custom.%{_kit}%.skill.3" from "player.%{_player}%.select" is not set:
+		set yml value "custom.%{_kit}%.skill.3" from "player.%{_player}%.select" to 3
+	save yml "player.%{_player}%.select"
+
+	set {_weapon.main} to kitPlayerWeaponItem({_player}, {_kit})
+	give {_weapon.main} to {_player}
+	# set {_weapon.sub} to kitPlayerWeaponItem(arg 2, arg 1, "sub")
+	# set arg 2's offhand tool to {_weapon.sub}
+	loop 3 times:
+		set {_skill} to kitPlayerSkillItem({_player}, {_kit}, loop-number)
+		give {_skill} to {_player}
+		add {_skill} to {_skills::*}
+	
+	# Ultimate Skill Slot
+	give a structure void named "§7§oUltimate Skill" to {_player}
+
+
 
 command /classreset <player=%player%>:
 	permission: sk.admin
