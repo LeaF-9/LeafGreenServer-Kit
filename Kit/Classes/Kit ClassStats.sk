@@ -1,0 +1,36 @@
+function kitStats_SET(player: player, key: text, value: object):
+	set {-Stats.%{_player}%::%{_key}%} to {_value}
+
+	set {-hasStats::%{_player}%} to true if {-hasStats::%{_player}%} is not set
+
+function kitStats_GET(player: player, key: text) :: object:
+	set {_value} to {-Stats.%{_player}%::%{_key}%}
+	return {_value}
+
+function kitStats_DELETE(player: player, key: text):
+	delete {-Stats.%{_player}%::%{_key}%}
+
+	set {_size} to size of {-Stats.%{_player}%::*}
+	delete {-hasStats::%{_player}%} if {_size} is 0
+
+function kitStats_DELETEALL(player: player):
+	delete {-Stats.%{_player}%::*}
+	delete {-hasStats::%{_player}%}
+
+function kitStats_DELETEEVERYONE():
+	loop {-hasStats::*}:
+		set {_index} to loop-index
+		delete {-Stats.%{_index}%::*}
+	delete {-hasStats::*}
+
+
+
+function kitMetadata_SET(entity: entity, key: text, value: object):
+	set metadata value {_key} of {_entity} to {_value}
+
+function kitMetadata_GET(entity: entity, key: text) :: object:
+	set {_value} to metadata value {_key} of {_entity}
+	return {_value}
+
+function kitMetadata_DELETE(entity: entity, key: text):
+	delete metadata value {_key} of {_entity}
