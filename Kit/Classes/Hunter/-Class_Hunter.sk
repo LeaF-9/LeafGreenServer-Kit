@@ -17,101 +17,24 @@ on damage of player:
 	metadata value "ult-turret" of projectile is not set
 	apply poison 1 to victim for 3 second
 	set {_now} to now
-	if {Stats.%victim%::HuntRapid} is not set:
-		set {Stats.%victim%::HuntRapid} to 1
-		set {Stats.%victim%::HuntTime} to {_now}
+	if {-Stats.%victim%::HuntRapid} is not set:
+		set {-Stats.%victim%::HuntRapid} to 1
+		set {-Stats.%victim%::HuntTime} to {_now}
 		set damage to damage * 0.75
 		wait a second
-		if {Stats.%victim%::HuntTime} is {_now}:
-			delete {Stats.%victim%::HuntRapid}
-			delete {Stats.%victim%::HuntTime}
+		if {-Stats.%victim%::HuntTime} is {_now}:
+			delete {-Stats.%victim%::HuntRapid}
+			delete {-Stats.%victim%::HuntTime}
 	else:
-		if {Stats.%victim%::HuntRapid} > 0:
-			subtract 0.2 from {Stats.%victim%::HuntRapid}
-		set {Stats.%victim%::HuntTime} to {_now}
-		set {_x} to 0.75 * {Stats.%victim%::HuntRapid}
+		if {-Stats.%victim%::HuntRapid} > 0:
+			subtract 0.2 from {-Stats.%victim%::HuntRapid}
+		set {-Stats.%victim%::HuntTime} to {_now}
+		set {_x} to 0.75 * {-Stats.%victim%::HuntRapid}
 		set damage to damage * {_x}
 		wait a second
-		if {Stats.%victim%::HuntTime} is {_now}:
-			delete {Stats.%victim%::HuntRapid}
-			delete {Stats.%victim%::HuntTime}
-
-on rightclick holding a lead:
-	name of player's tool is "§1Trap"
-	if {CT.%player%::%name of player's tool%} is not set:
-		execute console command "/trapopen %player%"
-	else:
-		set action bar of player to "§c§lクールタイムが終わっていません!"
-
-command /trapopen <player>:
-	trigger:
-		open chest with 1 row named "§1Trap" to arg 1
-		wait a tick
-		format slot 1 of arg 1 with raw pufferfish named "§4Poison" with lore "§6=効果=||§d- 毒 I 10s" to close then run [make arg 1 execute command "trap poison"]
-		format slot 3 of arg 1 with eye of ender named "§4Blindness" with lore "§6=効果=||§d- 盲目 10s" to close then run [make arg 1 execute command "trap blind"]
-		format slot 5 of arg 1 with cobweb named "§4Stiffness" with lore "§6=効果=||§d- 移動速度低下 X 10s||§d- 跳躍力上昇 -10 10s" to close then run [make arg 1 execute command "trap stiff"]
-		format slot 7 of arg 1 with melon seeds named "§4Fatigue" with lore "§6=効果=||§d- 採掘速度低下 I 10s" to close then run [make arg 1 execute command "trap fatigue"]
-
-command /trap <text>:
-	trigger:
-		if {Stats.%player%::Trap} is true:
-			message "{@prefix} §3以前の罠が撤去されました"
-		set {Stats.%player%::Trap} to true
-		set {Stats.%player%::TrapType} to arg 1
-		set {Stats.%player%::TrapLocate} to location of block at player
-		message "{@prefix} §cトラップを仕掛けました!"
-		message "{@prefix} §e設置場所 §a%{Stats.%player%::TrapLocate}%"
-		set {CT.%player%::§1Trap} to 50
-
-every a second:
-	loop all players:
-		{Stats.%loop-player-1%::Trap} is true
-		set {_pn} to 0
-		loop all players in radius 3 around location of {Stats.%loop-player-1%::TrapLocate}:
-			{team::%loop-player-2%} is not {team::%loop-player-1%}
-			{CLS::%loop-player-2%} is not "ENG"
-			add 1 to {_pn}
-			set {_trapped.%loop-player-1%::%loop-player-2%} to true
-		{_pn} is more than 0
-		if {Stats.%loop-player-1%::TrapType} is "poison":
-			loop all players:
-				{_trapped.%loop-player-1%::%loop-player-2%} is true
-				make loop-player-1 damage loop-player-2 by 4
-				apply poison 1 to loop-player-2 for 10 seconds
-				create a fake explosion at {Stats.%loop-player-1%::TrapLocate}
-				message "§5罠に掛かってしまった!" to loop-player-2
-				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-		else if {Stats.%loop-player-1%::TrapType} is "blind":
-			loop all players:
-				{_trapped.%loop-player-1%::%loop-player-2%} is true
-				make loop-player-1 damage loop-player-2 by 4
-				apply blindness 1 to loop-player-2 for 10 seconds
-				create a fake explosion at {Stats.%loop-player-1%::TrapLocate}
-				message "§5罠に掛かってしまった!" to loop-player-2
-				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-		else if {Stats.%loop-player-1%::TrapType} is "stiff":
-			loop all players:
-				{_trapped.%loop-player-1%::%loop-player-2%} is true
-				make loop-player-1 damage loop-player-2 by 4
-				remove slowness from loop-player-2
-				remove jump boost from loop-player-2
-				apply slowness 10 to loop-player-2 for 10 seconds
-				apply jump boost -10 to loop-player-2 for 10 seconds
-				create a fake explosion at {Stats.%loop-player-1%::TrapLocate}
-				message "§5罠に掛かってしまった!" to loop-player-2
-				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-		else if {Stats.%loop-player-1%::TrapType} is "fatigue":
-			loop all players:
-				{_trapped.%loop-player-1%::%loop-player-2%} is true
-				make loop-player-1 damage loop-player-2 by 4
-				apply mining fatigue 1 to loop-player-2 for 10 seconds
-				create a fake explosion at {Stats.%loop-player-1%::TrapLocate}
-				message "§5罠に掛かってしまった!" to loop-player-2
-				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-		message "§2罠が発動した！" to loop-player-1
-		delete {Stats.%loop-player-1%::Trap}
-		delete {Stats.%loop-player-1%::TrapType}
-		delete {Stats.%loop-player-1%::TrapLocate}
+		if {-Stats.%victim%::HuntTime} is {_now}:
+			delete {-Stats.%victim%::HuntRapid}
+			delete {-Stats.%victim%::HuntTime}
 
 on place of brewing stand block:
 	name of player's tool is "§3Turret"
@@ -121,27 +44,27 @@ on place of brewing stand block:
 		if type of block at event-location is air:
 			if type of block above event-location is air:
 				set {CT.%player%::§3Turret} to 60
-				if {Stats.%player%::Turret} is true:
-					set the block at {Stats.%player%::BaseTurret} to air
-					set the block at {Stats.%player%::UnderTurret} to air
-					remove {Stats.%player%::BaseTurret} from {Block.%player%::*}
-					remove {Stats.%player%::UnderTurret} from {Block.%player%::*}
-					play raw sound "random.break" at {Stats.%player%::BaseTurret} with pitch 0.5 volume 1
+				if {-Stats.%player%::Turret} is true:
+					set the block at {-Stats.%player%::BaseTurret} to air
+					set the block at {-Stats.%player%::UnderTurret} to air
+					remove {-Stats.%player%::BaseTurret} from {Block.%player%::*}
+					remove {-Stats.%player%::UnderTurret} from {Block.%player%::*}
+					play raw sound "random.break" at {-Stats.%player%::BaseTurret} with pitch 0.5 volume 1
 					message "{@prefix} §6既に設置してあるタレットを壊しました"
 				message "{@prefix} §aタレットを設置しました！"
-				set {Stats.%player%::Turret} to true
-				set {Stats.%player%::UnderTurret} to location of block at event-location
-				set {Stats.%player%::BaseTurret} to location of block above event-location
-				set {Stats.%player%::TurretLocate} to location of block 2 above event-location
+				set {-Stats.%player%::Turret} to true
+				set {-Stats.%player%::UnderTurret} to location of block at event-location
+				set {-Stats.%player%::BaseTurret} to location of block above event-location
+				set {-Stats.%player%::TurretLocate} to location of block 2 above event-location
 				add location of block at event-location to {Block.%player%::*}
 				add location of block above event-location to {Block.%player%::*}
 				wait 5 ticks
-				set block at {Stats.%player%::BaseTurret} to 144:9
-				set block at {Stats.%player%::UnderTurret} to fence
-				loop all blocks in radius 1 around location of {Stats.%player%::BaseTurret}:
+				set block at {-Stats.%player%::BaseTurret} to 144:9
+				set block at {-Stats.%player%::UnderTurret} to fence
+				loop all blocks in radius 1 around location of {-Stats.%player%::BaseTurret}:
 					loop-block is 144:9
-					set {Stats.%player%::BaseTurret} to location of loop-block
-				play raw sound "random.anvil_use" at {Stats.%player%::BaseTurret} with pitch 0.5 volume 10
+					set {-Stats.%player%::BaseTurret} to location of loop-block
+				play raw sound "random.anvil_use" at {-Stats.%player%::BaseTurret} with pitch 0.5 volume 10
 			else:
 				set action bar of player to "§c§lその地点には置けません"
 		else:
@@ -151,16 +74,16 @@ on place of brewing stand block:
 
 every 5 seconds:
 	loop all players:
-		{Stats.%loop-player-1%::Turret} is true
+		{-Stats.%loop-player-1%::Turret} is true
 		set {_ln} to 0
-		loop all players in radius 50 around location of {Stats.%loop-player-1%::TurretLocate}:
+		loop all players in radius 50 around location of {-Stats.%loop-player-1%::TurretLocate}:
 			{team::%loop-player-2%} is not {team::%loop-player-1%}
 			add 1 to {_ln}
 			add loop-player-2 to {_target.%loop-player-1%::*}
 		{_ln} is more than 0
 		set {_sp} to a random player out of {_target.%loop-player-1%::*}
 		set {_to} to location of {_sp} to vector
-		shoot an arrow from block at {Stats.%loop-player-1%::TurretLocate} at speed 0.5 upwards
+		shoot an arrow from block at {-Stats.%loop-player-1%::TurretLocate} at speed 0.5 upwards
 		set shooter of shot arrow to loop-player-1
 		set metadata value "turret" of shot arrow to "true"
 		drawDot count 5, particle "smoke", center shot projectile, visibleRange 30, keepFor 20 ticks
@@ -171,19 +94,19 @@ every 5 seconds:
 
 on leftclick on 144:9:
 	loop all players:
-		location of target block is {Stats.%loop-player%::BaseTurret}
+		location of target block is {-Stats.%loop-player%::BaseTurret}
 		if {team::%loop-player%} is not {team::%player%}:
-			set the block at {Stats.%loop-player%::BaseTurret} to air
-			set the block at {Stats.%loop-player%::UnderTurret} to air
-			remove {Stats.%loop-player%::BaseTurret} from {Block.%loop-player%::*}
-			remove {Stats.%loop-player%::UnderTurret} from {Block.%loop-player%::*}
-			play raw sound "random.break" at {Stats.%loop-player%::BaseTurret} with pitch 0.5 volume 1
+			set the block at {-Stats.%loop-player%::BaseTurret} to air
+			set the block at {-Stats.%loop-player%::UnderTurret} to air
+			remove {-Stats.%loop-player%::BaseTurret} from {Block.%loop-player%::*}
+			remove {-Stats.%loop-player%::UnderTurret} from {Block.%loop-player%::*}
+			play raw sound "random.break" at {-Stats.%loop-player%::BaseTurret} with pitch 0.5 volume 1
 			message "§cタレットが壊された！" to loop-player
 			message "§bタレットを壊した！"
-			delete {Stats.%loop-player%::Turret}
-			delete {Stats.%loop-player%::BaseTurret}
-			delete {Stats.%loop-player%::UnderTurret}
-			delete {Stats.%loop-player%::TurretLocate}
+			delete {-Stats.%loop-player%::Turret}
+			delete {-Stats.%loop-player%::BaseTurret}
+			delete {-Stats.%loop-player%::UnderTurret}
+			delete {-Stats.%loop-player%::TurretLocate}
 		else:
 			message "§cこれは味方のタレットです！"
 
@@ -192,19 +115,19 @@ on projectile hit:
 	loop all blocks in radius 3 around {_pl}:
 		loop-block is 144:9
 		loop all players:
-			location of loop-block is {Stats.%loop-player%::BaseTurret}
+			location of loop-block is {-Stats.%loop-player%::BaseTurret}
 			if {team::%loop-player%} is not {team::%shooter%}:
-				set the block at {Stats.%loop-player%::BaseTurret} to air
-				set the block at {Stats.%loop-player%::UnderTurret} to air
-				remove {Stats.%loop-player%::BaseTurret} from {Block.%loop-player%::*}
-				remove {Stats.%loop-player%::UnderTurret} from {Block.%loop-player%::*}
-				play raw sound "random.break" at {Stats.%loop-player%::BaseTurret} with pitch 0.5 volume 1
+				set the block at {-Stats.%loop-player%::BaseTurret} to air
+				set the block at {-Stats.%loop-player%::UnderTurret} to air
+				remove {-Stats.%loop-player%::BaseTurret} from {Block.%loop-player%::*}
+				remove {-Stats.%loop-player%::UnderTurret} from {Block.%loop-player%::*}
+				play raw sound "random.break" at {-Stats.%loop-player%::BaseTurret} with pitch 0.5 volume 1
 				message "§cタレットが壊された！" to loop-player
 				message "§bタレットを壊した！" to shooter
-				delete {Stats.%loop-player%::Turret}
-				delete {Stats.%loop-player%::BaseTurret}
-				delete {Stats.%loop-player%::UnderTurret}
-				delete {Stats.%loop-player%::TurretLocate}
+				delete {-Stats.%loop-player%::Turret}
+				delete {-Stats.%loop-player%::BaseTurret}
+				delete {-Stats.%loop-player%::UnderTurret}
+				delete {-Stats.%loop-player%::TurretLocate}
 			else:
 				message "§cこれは味方のタレットです！" to shooter
 
