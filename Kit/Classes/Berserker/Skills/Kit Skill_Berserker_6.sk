@@ -7,7 +7,8 @@ function kitSkill_Berserker_6(player: player):
 
 
 on damage of player with priority NORMAL:
-	{-Stats.%victim%::CrazyPatience} is set
+	set {_CrazyPatience} to kitStats_GET(victim, "CrazyPatience")
+	{_CrazyPatience} is set
 	setDamageModification_MUL(victim, 0.8)
 	kitParticle_CrazyPatience_Damage(victim)
 
@@ -15,28 +16,29 @@ on damage of player with priority NORMAL:
 
 local function kitEffect_CrazyPatience(player: player):
 	set {_now} to now
-	set {-Stats.%{_player}%::CrazyPatience} to {_now}
-	delete {-Stats.%{_player}%::NoSupport}
-	delete {-Stats.%{_player}%::Berserk}
+	kitStats_SET({_player}, "CrazyPatience", {_now})
+	kitStats_DELETE({_player}, "NoSupport")
+	kitStats_DELETE({_player}, "Berserk")
 	kitParticle_CrazyPatience({_player})
 	kitMsg({_player}, "§8§l狂気の我慢§7により§6§lノックバック§7を§e§l無効化§7します...")
 	sendTimeBossbar_GREEN({_player}, "Crazy Patience", 100)
 	set knockback resistance attribute of {_player} to 1
 	wait 5 seconds
-	{-Stats.%{_player}%::CrazyPatience} is {_now}
+	set {_CrazyPatience} to kitStats_GET({_player}, "CrazyPatience")
+	{_CrazyPatience} is {_now}
 	set knockback resistance attribute of {_player} to 0
-	delete {-Stats.%{_player}%::CrazyPatience}
-	set {-Stats.%{_player}%::NoSupport} to true
-	set {-Stats.%{_player}%::Berserk} to true
+	kitStats_DELETE({_player}, "CrazyPatience")
+	kitStats_SET({_player}, "NoSupport", true)
+	kitStats_SET({_player}, "Berserk", true)
 	kitMsg({_player}, "§8§lCrazy Patience§5の効果が終了しました")
 
 
 
 local function kitParticle_CrazyPatience(player: player):
 	playSound("entity.iron_golem.death", 1, 1.35, {_player})
-	set {_now} to {-Stats.%{_player}%::CrazyPatience}
+	set {_now} to kitStats_GET({_player}, "CrazyPatience")
 	loop 100 times:
-		if {-Stats.%{_player}%::CrazyPatience} is not {_now}:
+		if kitStats_GET({_player}, "CrazyPatience") is not {_now}:
 			stop
 		
 		set {_el} to aroundEffect({_player})

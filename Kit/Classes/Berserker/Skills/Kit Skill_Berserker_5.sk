@@ -7,43 +7,46 @@ function kitSkill_Berserker_5(player: player):
 
 on damage of player with priority LOW:
 	set {_attacker} to getAttacker(victim)
-	if {-Stats.%victim%::Rampage} is set:
-		set {-Stats.%victim%::Rampage-Combo} to 0
+	if kitStats_GET(victim, "Rampage") is set:
+		kitStats_SET(victim, "Rampage-Combo", 0)
 		kitParticle_Rampage_Reset(victim)
-	if {-Stats.%{_attacker}%::Rampage} is set:
-		set {_damage} to 3 + {-Stats.%{_attacker}%::Rampage-Combo}
+	if kitStats_GET({_attacker}, "Rampage") is set:
+		set {_Rampage-Combo} to kitStats_GET({_attacker}, "Rampage-Combo")
+		set {_damage} to 3 + {_Rampage-Combo}
 		setDamageModification_SET(victim, {_damage})
 		kitEffectDescription(victim, "§4❤%{_damage}%")
-		add 1 to {-Stats.%{_attacker}%::Rampage-Combo}
-		kitParticle_Rampage_Combo({_attacker}, victim, {-Stats.%{_attacker}%::Rampage-Combo})
+		add 1 to {_Rampage-Combo}
+		kitStats_SET({_attacker}, "Rampage-Combo", {_Rampage-Combo})
+		kitParticle_Rampage_Combo({_attacker}, victim, {_Rampage-Combo})
 
 
 
 local function kitEffect_Rampage(player: player):
 	set {_now} to now
-	set {-Stats.%{_player}%::Rampage} to {_now}
-	set {-Stats.%{_player}%::Rampage-Combo} to 0
+	kitStats_SET({_player}, "Rampage", {_now})
+	kitStats_SET({_player}, "Rampage-Combo", 0)
 	kitMsg({_player}, "§6§lRampage §eを発動します...")
 	sendTimeBossbar_GREEN({_player}, "Rampage", 200)
 	kitParticle_Rampage({_player})
 	loop 200 times:
-		if {-Stats.%{_player}%::Rampage} is not {_now}:
+		if kitStats_GET({_player}, "Rampage") is not {_now}:
 			continue
-		send action bar "§6§lRampage Combo§b: §e§l%{-Stats.%{_player}%::Rampage-Combo}%" to {_player}
+		set {_Rampage-Combo} to kitStats_GET({_player}, "Rampage-Combo")
+		send action bar "§6§lRampage Combo§b: §e§l%{_Rampage-Combo}%" to {_player}
 		wait a tick
-	{-Stats.%{_player}%::Rampage} is {_now}
-	delete {-Stats.%{_player}%::Rampage}
-	delete {-Stats.%{_player}%::Rampage-Combo}
+	kitStats_GET({_player}, "Rampage") is {_now}
+	kitStats_DELETE({_player}, "Rampage")
+	kitStats_DELETE({_player}, "Rampage-Combo")
 	kitMsg({_player}, "§6Rampage §bが終了しました")
 
 
 
 local function kitParticle_Rampage(player: player):
 	playSound("entity.ender_dragon.growl", 1, 1.55, {_player})
-	set {_now} to {-Stats.%{_player}%::Rampage}
+	set {_now} to kitStats_GET({_player}, "Rampage")
 	set {_rad} to 0
 	loop 200 times:
-		if {-Stats.%{_player}%::Rampage} is not {_now}:
+		if kitStats_GET({_player}, "Rampage") is not {_now}:
 			stop
 		
 		set {_el} to location of {_player}

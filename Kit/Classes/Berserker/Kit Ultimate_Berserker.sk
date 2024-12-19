@@ -8,11 +8,12 @@ function kitUltBerserker(player: player):
 on damage of player with priority LOW:
 	damage was caused by attack
 	set {_attacker} to getAttacker(victim)
-	{-Stats.%{_attacker}%::AdrenalinRage} is set
+	set {_AdrenalinRage} to kitStats_GET({_attacker}, "AdrenalinRage")
+	{_AdrenalinRage} is set
 	set {_now} to now
-	set {-Stats.%{_attacker}%::AdrenalinRage-Time} to {_now}
+	kitStats_SET({_attacker}, "AdrenalinRage-Time", {_now})
 
-	set {_damage} to {-Stats.%{_attacker}%::AdrenalinRage}
+	set {_damage} to {_AdrenalinRage}
 	loop all players in radius 10 around {_attacker}:
 		loop-player is not {_attacker}
 		add 1 to {_damage}
@@ -22,24 +23,26 @@ on damage of player with priority LOW:
 			kitParticle_AdrenalinRage_Around(loop-player)
 	
 	setDamageModification_SET(victim, {_damage})
-	add 1 to {-Stats.%{_attacker}%::AdrenalinRage}
-	send action bar "§4§lコンボ§5: §6§l%{-Stats.%{_attacker}%::AdrenalinRage}%" to {_attacker}
+	add 1 to {_AdrenalinRage}
+	kitStats_SET({_attacker}, "AdrenalinRage", {_AdrenalinRage})
+	send action bar "§4§lコンボ§5: §6§l%{_AdrenalinRage}%" to {_attacker}
 	kitParticle_AdrenalinRage_Damage(victim)
 
 	wait a second
-	{-Stats.%{_attacker}%::AdrenalinRage-Time} is {_now}
-	delete {-Stats.%{_attacker}%::AdrenalinRage-Time}
-	set {-Stats.%{_attacker}%::AdrenalinRage} to 0
+	set {_AdrenalinRage-Time} to kitStats_GET({_attacker}, "AdrenalinRage-Time")
+	{_AdrenalinRage-Time} is {_now}
+	kitStats_DELETE({_attacker}, "AdrenalinRage-Time")
+	kitStats_SET({_attacker}, "AdrenalinRage", 0)
 
 
 
 local function kitEffect_AdrenalinRage(player: player):
-	set {-Stats.%{_player}%::AdrenalinRage} to 0
+	kitStats_SET({_player}, "AdrenalinRage", 0)
 	applyEffect({_player}, speed, 3, 10 seconds, true)
 	kitParticle_AdrenalinRage({_player})
 
 	loop 200 times:
-		if {-Stats.%{_player}%::AdrenalinRage} is not set:
+		if kitStats_GET({_player}, "AdrenalinRage") is not set:
 			stop
 
 		delete {_eg::*}
@@ -61,8 +64,8 @@ local function kitEffect_AdrenalinRage(player: player):
 
 		wait a tick
 	
-	delete {-Stats.%{_player}%::AdrenalinRage}
-	delete {-Stats.%{_player}%::AdrenalinRage-Time}
+	kitStats_DELETE({_player}, "AdrenalinRage")
+	kitStats_DELETE({_player}, "AdrenalinRage-Time")
 	loop all players:
 		{_jb::%loop-player%} is true
 		set maximum damage delay of loop-player to 20 ticks
@@ -72,7 +75,7 @@ local function kitEffect_AdrenalinRage(player: player):
 local function kitParticle_AdrenalinRage(player: player):
 	set {_baserad} to 0
 	loop 200 times:
-		if {-Stats.%{_player}%::AdrenalinRage} is not set:
+		if kitStats_GET({_player}, "AdrenalinRage") is not set:
 			stop
 		
 		set {_baseloc} to location 1 meter above {_player}
