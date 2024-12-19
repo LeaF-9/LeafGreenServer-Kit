@@ -1,6 +1,11 @@
 # Shield Crystal
 
-function kitSkill_Engineer_8(player: player, loc: location):
+function kitSkill_Engineer_8(player: player):
+	set {_loc} to {Stats.%{_player}%::SkillLocation}
+	if {_loc} is not set:
+		nullEngineerPlacePosition({_player})
+		stop
+
 	toolCT({_player}, "Engineer", 8)
 	set {_now} to now
 	set {Stats.%{_player}%::ShieldCrystal-Time} to {_now}

@@ -1,10 +1,15 @@
 # Restore Faster
 
-function kitSkill_Engineer_2(player: player, loc: location):
+function kitSkill_Engineer_2(player: player):
+	set {_loc} to {Stats.%{_player}%::SkillLocation}
+	if {_loc} is not set:
+		nullEngineerPlacePosition({_player})
+		stop
+
 	toolCT({_player}, "Engineer", 2)
 	kitEffect_RestoreFaster({_player}, {_loc})
 
-local function kitEffect_RestoreFaster(player: player, loc: location):
+local function kitEffect_RestoreFaster(player: player):
 	set {_now} to now
 	set {Stats.%{_player}%::RestoreFaster-Time} to {_now}
 	kitFakeDeleteData({_player}, "Machine-Restore Faster")

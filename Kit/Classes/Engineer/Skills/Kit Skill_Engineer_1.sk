@@ -1,6 +1,11 @@
 # Launch Pad
 
-function kitSkill_Engineer_1(player: player, loc: location):
+function kitSkill_Engineer_1(player: player):
+	set {_loc} to {Stats.%{_player}%::SkillLocation}
+	if {_loc} is not set:
+		nullEngineerPlacePosition({_player})
+		stop
+
 	toolCT({_player}, "Engineer", 1)
 	set {_now} to now
 	set {Stats.%{_player}%::LaunchPad-Time} to {_now}

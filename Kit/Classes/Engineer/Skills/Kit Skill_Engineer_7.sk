@@ -1,6 +1,11 @@
 # Hacking Device
 
-function kitSkill_Engineer_7(player: player, loc: location):
+function kitSkill_Engineer_7(player: player):
+	set {_loc} to {Stats.%{_player}%::SkillLocation}
+	if {_loc} is not set:
+		nullEngineerPlacePosition({_player})
+		stop
+
 	toolCT({_player}, "Engineer", 7)
 	set {_now} to now
 	set {Stats.%{_player}%::HackingDevice-Time} to {_now}

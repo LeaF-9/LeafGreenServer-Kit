@@ -1,6 +1,11 @@
 # Respawn Controller
 
-function kitSkill_Engineer_6(player: player, loc: location):
+function kitSkill_Engineer_6(player: player):
+	set {_loc} to {Stats.%{_player}%::SkillLocation}
+	if {_loc} is not set:
+		nullEngineerPlacePosition({_player})
+		stop
+
 	toolCT({_player}, "Engineer", 6)
 	# 時間設定
 	set {_now} to now

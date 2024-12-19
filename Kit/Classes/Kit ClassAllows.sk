@@ -5,13 +5,17 @@ on rightclick:
 	metadata value "gametype" of player is "Kit"
 	set {_item} to player's tool
 	set {_itemkit} to kitItemKitChecker({_item})
-	if {_itemkit} is not set:
-		stop
+	stop if {_itemkit} is not set
 
 	set {_itemtype} to kitItemTypeChecker({_item})
-	if {_itemtype} is not set:
-		stop
+	stop if {_itemtype} is not set
+	
+	set {_itemnum} to kitItemNumberChecker({_item})
+	stop if {_itemnum} is not set
 
-	set {_func::run} to function reference "kit%{_itemtype}%%{_itemkit}%" called with (player)
+	checkCT(player, name of {_item}) is true
+	checkItemCT(player, {_item}) is true
+
+	set {_func::run} to function reference "kit%{_itemtype}%_%{_itemkit}%_%{_itemnum}%" called with (player)
 	set {_interact} to new proxy instance of Runnable using {_func::*}
 	{_interact}.run()

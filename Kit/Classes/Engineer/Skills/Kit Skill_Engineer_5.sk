@@ -1,6 +1,11 @@
 # Dowsing Machine
 
-function kitSkill_Engineer_5(player: player, loc: location):
+function kitSkill_Engineer_5(player: player):
+	set {_loc} to {Stats.%{_player}%::SkillLocation}
+	if {_loc} is not set:
+		nullEngineerPlacePosition({_player})
+		stop
+
 	toolCT({_player}, "Engineer", 5)
 	set {_now} to now
 	set {Stats.%{_player}%::DowsingMachine-Time} to {_now}
