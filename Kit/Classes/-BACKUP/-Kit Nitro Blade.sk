@@ -6,9 +6,9 @@ on damage:
 	{Class::%attacker%} is "Bomber"
 	set {_tool} to attacker's tool
 	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is true
-	{Stats.%attacker%::NitroBlade} is true
+	{-Stats.%attacker%::NitroBlade} is true
 	cancel event
-	delete {Stats.%attacker%::NitroBlade}
+	delete {-Stats.%attacker%::NitroBlade}
 	kitExplosion(attacker, 2, location of victim)
 
 on sneak toggle:
@@ -16,7 +16,7 @@ on sneak toggle:
 	player is not sneaking
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is true
-	{Stats.%player%::NitroBlade} is not set
+	{-Stats.%player%::NitroBlade} is not set
 	set {_num} to 0
 	wait a tick
 	set {_true} to false
@@ -43,7 +43,7 @@ on sneak toggle:
 	if {_true} is not true:
 		send action bar "§8チャージに失敗しました" to player
 		stop
-	set {Stats.%player%::NitroBlade} to true
+	set {-Stats.%player%::NitroBlade} to true
 	# --- チャージ完了時の音の演出 ---
 	playSound("entity.creeper.primed", 1, 1.5, player)
 	# ---------------------------
@@ -51,7 +51,7 @@ on sneak toggle:
 		set {_tool} to player's tool
 		if kitItemAllChecker({_tool}, "Bomber", "Weapon.main", 1) is false:
 			delete {_true}
-		else if {Stats.%player%::NitroBlade} is not set:
+		else if {-Stats.%player%::NitroBlade} is not set:
 			set {_true} to false
 		else:
 			send action bar "§4§lNitro Blade §bのチャージが完了しました!" to player
@@ -62,7 +62,7 @@ on sneak toggle:
 			wait a tick
 	if {_true} is not set:
 		send action bar "§cチャージが中断されました" to player
-		delete {Stats.%player%::NitroBlade}
+		delete {-Stats.%player%::NitroBlade}
 
 function kitParticle_NitroBlade_1(player: player):
 	set {_el} to aroundEffect({_player})

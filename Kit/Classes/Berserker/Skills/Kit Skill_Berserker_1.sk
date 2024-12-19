@@ -6,26 +6,26 @@ function kitSkill_Berserker_1(player: player):
 
 local function kitEffect_BerserkTime(player: player):
 	set {_now} to now
-	set {Stats.%{_player}%::BerserkTime} to {_now}
+	set {-Stats.%{_player}%::BerserkTime} to {_now}
 	kitMsg({_player}, "<##A22041>§lBerserk Time§5を開始します...")
 	kitParticle_BerserkTime({_player})
 	applyEffect({_player}, speed, 1, 10 seconds, true)
 	sendTimeBossbar_GREEN({_player}, "Berserk Time", 200)
 	wait 10 seconds
-	if {Stats.%{_player}%::BerserkTime} is not {_now}:
+	if {-Stats.%{_player}%::BerserkTime} is not {_now}:
 		stop
-	delete {Stats.%{_player}%::BerserkTime}
+	delete {-Stats.%{_player}%::BerserkTime}
 	kitMsg({_player}, "<##A22041>Berserk Time§dが終了しました")
 
 
 
 local function kitParticle_BerserkTime(player: player):
 	playSound("entity.blaze.ambient", 1, 0.9, {_player})
-	set {_now} to {Stats.%{_player}%::BerserkTime}
+	set {_now} to {-Stats.%{_player}%::BerserkTime}
 	set {_y} to 0
 	set {_rad} to 0
 	loop 200 times:
-		if {Stats.%{_player}%::BerserkTime} is not {_now}:
+		if {-Stats.%{_player}%::BerserkTime} is not {_now}:
 			stop
 
 		add 0.1 to {_y}

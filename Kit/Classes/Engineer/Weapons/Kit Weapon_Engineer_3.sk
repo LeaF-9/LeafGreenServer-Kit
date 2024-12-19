@@ -8,25 +8,25 @@ on leftclick:
 
 function kitWeapon_Engineer_3(player: player):
 	if {_player} is sneaking:
-		if {Stats.%{_player}%::BotNumber} is not set:
-			set {Stats.%{_player}%::BotNumber} to 0
-			set {Stats.%{_player}%::BotCharge} to 0
-			set {Stats.%{_player}%::BotPattern} to "Defence"
+		if {-Stats.%{_player}%::BotNumber} is not set:
+			set {-Stats.%{_player}%::BotNumber} to 0
+			set {-Stats.%{_player}%::BotCharge} to 0
+			set {-Stats.%{_player}%::BotPattern} to "Defence"
 			engineerBotAI({_player})
-		if {Stats.%{_player}%::BotNumber} < 5:
-			if {Stats.%{_player}%::BotCharge} < 20:
+		if {-Stats.%{_player}%::BotNumber} < 5:
+			if {-Stats.%{_player}%::BotCharge} < 20:
 				set {_now} to now
-				set {Stats.%{_player}%::BotChargeNow} to {_now}
+				set {-Stats.%{_player}%::BotChargeNow} to {_now}
 				playSound("entity.blaze.burn", 1, 2, {_player})
 				loop 5 times:
-					if {Stats.%{_player}%::BotCharge} < 20:
-						add 1 to {Stats.%{_player}%::BotCharge}
-					loop {Stats.%{_player}%::BotCharge} times:
+					if {-Stats.%{_player}%::BotCharge} < 20:
+						add 1 to {-Stats.%{_player}%::BotCharge}
+					loop {-Stats.%{_player}%::BotCharge} times:
 						if loop-number-2 is 1:
 							set {_ok.line} to "|"
 						else:
 							set {_ok.line} to "%{_ok.line}%|"
-					set {_ngtime} to 20 - {Stats.%{_player}%::BotCharge}
+					set {_ngtime} to 20 - {-Stats.%{_player}%::BotCharge}
 					set {_ng.line} to ""
 					if {_ngtime} is not 0:
 						loop {_ngtime} times:
@@ -40,20 +40,20 @@ function kitWeapon_Engineer_3(player: player):
 						spawnParticle(smoke, {_el})
 					wait a tick
 				wait a tick
-				if {Stats.%{_player}%::BotChargeNow} is {_now}:
-					if {Stats.%{_player}%::BotCharge} >= 20:
+				if {-Stats.%{_player}%::BotChargeNow} is {_now}:
+					if {-Stats.%{_player}%::BotCharge} >= 20:
 						engineerBotGenerator({_player})
-						delete {Stats.%{_player}%::BotChargeNow}
-						set {Stats.%{_player}%::BotCharge} to 0
+						delete {-Stats.%{_player}%::BotChargeNow}
+						set {-Stats.%{_player}%::BotCharge} to 0
 					else:
-						delete {Stats.%{_player}%::BotChargeNow}
-						set {Stats.%{_player}%::BotCharge} to 0
+						delete {-Stats.%{_player}%::BotChargeNow}
+						set {-Stats.%{_player}%::BotCharge} to 0
 						playSound("block.fire.extinguish", 1, 1, {_player})
 	else:
 		playSound("ui.button.click", 1, 1, {_player}, true)
 		load yml "plugins/skript-yaml/Kit Classes/Engineer.yml" as "bot.%{_player}%"
-		if {Stats.%{_player}%::BotPattern} is "Defence":
-			set {Stats.%{_player}%::BotPattern} to "Attack"
+		if {-Stats.%{_player}%::BotPattern} is "Defence":
+			set {-Stats.%{_player}%::BotPattern} to "Attack"
 			kitMsg({_player}, "§6行動パターンを変更しました§a: §4§l襲撃モード")
 			set {_BotHead} to yml value "kititems.Bot Red" from "bot.%{_player}%"
 			loop all skeletons:
@@ -61,7 +61,7 @@ function kitWeapon_Engineer_3(player: player):
 				set metadata value "Bot Pattern" of loop-skeleton to "Attack"
 				set spawned skeleton's helmet to {_BotHead}
 		else:
-			set {Stats.%{_player}%::BotPattern} to "Defence"
+			set {-Stats.%{_player}%::BotPattern} to "Defence"
 			kitMsg({_player}, "§6行動パターンを変更しました§a: §1§l防衛モード")
 			set {_BotHead} to yml value "kititems.Bot Blue" from "bot.%{_player}%"
 			loop all skeletons:
@@ -75,7 +75,7 @@ function kitSub_Engineer_3(player: player):
 	if {_player} is sneaking:
 		if {_tg} is set:
 			if distance between {_tg} and {_player} <= 30:
-				set {Stats.%{_player}%::BotAttack} to location of {_tg}
+				set {-Stats.%{_player}%::BotAttack} to location of {_tg}
 				playSound("entity.bee.sting", 1, 2, {_player})
 				kitMsg({_player}, "§4襲撃場所§6を指定しました")
 				set {_dis} to round(distance between {_tg} and {_player})
@@ -94,9 +94,9 @@ on damage of skeleton:
 		else:
 			set {_num} to metadata value "Bot Number" of victim
 			set {_uuid} to metadata value "Bot UUID" of victim
-			subtract 1 from {Stats.%{_player}%::BotNumber}
-			delete {Stats.%{_player}%::BotList_%{_num}%}
-			delete {Stats.%{_player}%::Bot_UUID_%{_uuid}%}
+			subtract 1 from {-Stats.%{_player}%::BotNumber}
+			delete {-Stats.%{_player}%::BotList_%{_num}%}
+			delete {-Stats.%{_player}%::Bot_UUID_%{_uuid}%}
 			delete victim
 			playSound("entity.iron_golem.damage", 1, 2, victim)
 			set {_baseloc} to location of victim
@@ -122,7 +122,7 @@ function engineerBotAI(player: player):
 		delete {_target}
 
 		# Defence Mode
-		if {Stats.%{_player}%::BotPattern} is "Defence":
+		if {-Stats.%{_player}%::BotPattern} is "Defence":
 			loop 5 times:
 				delete {_aloc.%loop-number%}
 			
@@ -176,8 +176,8 @@ function engineerBotAI(player: player):
 		# Attack Mode
 		else:
 			# check attack location
-			if {Stats.%{_player}%::BotAttack} is set:
-				if distance between {_player} and {Stats.%{_player}%::BotAttack} <= 30:
+			if {-Stats.%{_player}%::BotAttack} is set:
+				if distance between {_player} and {-Stats.%{_player}%::BotAttack} <= 30:
 
 					# location checker
 					loop 5 times:
@@ -185,7 +185,7 @@ function engineerBotAI(player: player):
 							loop all skeletons:
 								metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
 								metadata value "Bot Number" of loop-skeleton is loop-number-1
-								set {_to} to vector of location 3 meters above {Stats.%{_player}%::BotAttack}
+								set {_to} to vector of location 3 meters above {-Stats.%{_player}%::BotAttack}
 								set {_from} to vector of location 1.5 meters above loop-skeleton
 								set {_vector} to {_to} - {_from}
 								set {_vector} to normalized {_vector}
@@ -196,7 +196,7 @@ function engineerBotAI(player: player):
 								set pitch of {_aloc.%loop-number-1%} to {_pitch}
 					
 					# target detection
-					loop all entities in radius 10 around {Stats.%{_player}%::BotAttack}:
+					loop all entities in radius 10 around {-Stats.%{_player}%::BotAttack}:
 						{_target} is not set
 						loop-entity is not {_player}
 						kitCheckTeam(loop-entity, {_player}, false) is true
@@ -206,8 +206,8 @@ function engineerBotAI(player: player):
 					loop 5 times:
 
 						# far from attack location
-						if distance between {Stats.%{_player}%::BotAttack} and {_aloc.%loop-number%} > 8:
-							set {_to} to vector of location 3 meters above {Stats.%{_player}%::BotAttack}
+						if distance between {-Stats.%{_player}%::BotAttack} and {_aloc.%loop-number%} > 8:
+							set {_to} to vector of location 3 meters above {-Stats.%{_player}%::BotAttack}
 							set {_from} to vector of {_aloc.%loop-number%}
 							set {_vector} to {_to} - {_from}
 							set {_vector} to normalized {_vector}
@@ -248,14 +248,14 @@ function engineerBotAI(player: player):
 							# moving bots
 							else:
 								delete {_ng}
-								if distance between {_aloc.%loop-number%} and {Stats.%{_player}%::BotAttack} >= 8:
+								if distance between {_aloc.%loop-number%} and {-Stats.%{_player}%::BotAttack} >= 8:
 									set {_ng} to true
 								if block at {_aloc.%loop-number%} is not passable:
 									set {_ng} to true
 								chance of 5%:
 									set {_ng} to false
 								if {_ng} is true:
-									set {_to} to vector of location 3 meters above {Stats.%{_player}%::BotAttack}
+									set {_to} to vector of location 3 meters above {-Stats.%{_player}%::BotAttack}
 									set {_from} to vector of {_aloc.%loop-number%}
 									set {_vector} to {_to} - {_from}
 									set {_vector} to normalized {_vector}
@@ -326,19 +326,19 @@ function engineerBotBeam(player: player, loc: location, attack: boolean):
 				set {_ng} to true
 
 function engineerBotGenerator(player: player):
-	if {Stats.%{_player}%::BotNumber} < 5:
+	if {-Stats.%{_player}%::BotNumber} < 5:
 		if checkFuel({_player}, 3, "Weapon") is true:
-			add 1 to {Stats.%{_player}%::BotNumber}
+			add 1 to {-Stats.%{_player}%::BotNumber}
 			loop 8 times:
 				set {_num} to a random integer between 0 and 9
 				set {_n.%loop-number%} to {_num}
 			set {_uuid} to "%{_n.1}%%{_n.2}%%{_n.3}%%{_n.4}%%{_n.5}%%{_n.6}%%{_n.7}%%{_n.8}%"
 			loop 5 times:
 				{_ok} is not set
-				if {Stats.%{_player}%::BotList_%loop-number%} is not set:
+				if {-Stats.%{_player}%::BotList_%loop-number%} is not set:
 					set {_ok} to true
-					set {Stats.%{_player}%::BotList_%loop-number%} to {_uuid}
-					set {Stats.%{_player}%::Bot_UUID_%{_uuid}%} to loop-number
+					set {-Stats.%{_player}%::BotList_%loop-number%} to {_uuid}
+					set {-Stats.%{_player}%::Bot_UUID_%{_uuid}%} to loop-number
 					set {_number} to loop-number
 			spawn a skeleton at {_player} with nbt compound from "{NoGravity:1b,ArmorItems:[{},{},{},{}],HandItems:[{},{}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F],CanPickUpLoot:0b,NoAI:1,Silent:1,Team:""noCollision"",active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
 			set spawned skeleton's display name to "%{_player}%"

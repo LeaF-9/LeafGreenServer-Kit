@@ -9,13 +9,13 @@ options:
 
 on damage:
 	# 火属性
-	if {Stats.%attacker%::SolarTrack} is set:
+	if {-Stats.%attacker%::SolarTrack} is set:
 		ignite victim for convertTickTime({@fire-tick})
 		set {_fireSeconds} to {@fire-tick} / 20
 		kitEffectDescription(victim, "§4§l炎上")
 	
 	# 火炎耐性
-	if {Stats.%victim%::SolarTrack} is set:
+	if {-Stats.%victim%::SolarTrack} is set:
 		damage cause is fire, burning, campfire, magma or lava
 		cancel event
 
@@ -36,7 +36,7 @@ local function kitEffect_SolarTrack(player: player):
 	loop all players in radius {@radius} around {_baseloc}:
 		kitCheckTeam(loop-player, {_player}, true) is true
 		setSupporter(loop-player, {_player})
-		set {Stats.%loop-player%::SolarTrack} to {_now}
+		set {-Stats.%loop-player%::SolarTrack} to {_now}
 		set {_effectseconds} to {@effect-time} / 20
 		kitEffectDescription(loop-player, "§6§l太陽の加護")
 		sendTimeBossbar_GREEN(loop-player, "太陽の加護", {@effect-time})
@@ -48,7 +48,7 @@ local function kitEffect_SolarTrack(player: player):
 	loop {@effect-time} times:
 		loop {_players::*}:
 			set {_loop-player} to loop-value-2
-			if {Stats.%{_loop-player}%::SolarTrack} is not {_now}:
+			if {-Stats.%{_loop-player}%::SolarTrack} is not {_now}:
 				remove {_loop-player} from {_players::*}
 				continue
 			
@@ -60,8 +60,8 @@ local function kitEffect_SolarTrack(player: player):
 	
 	loop {_players::*}:
 		set {_loop-player} to loop-value
-		{Stats.%{_loop-player}%::SolarTrack} is {_now}
-		delete {Stats.%{_loop-player}%::SolarTrack}
+		{-Stats.%{_loop-player}%::SolarTrack} is {_now}
+		delete {-Stats.%{_loop-player}%::SolarTrack}
 		message formatted "§c§l太陽の加護§9の効果が終了しました" to {_loop-player}
 
 # 一定期間炎を設置する関数
@@ -105,7 +105,7 @@ local function kitParticle_SolarTrack_Launch(loc: location):
 # 付与したプレイヤーの演出・効果中の演出
 local function kitParticle_SolarTrack_Apply(player: player):
 	set {_baseloc} to location of {_player}
-	set {_checkstats} to {Stats.%{_player}%::SolarTrack}
+	set {_checkstats} to {-Stats.%{_player}%::SolarTrack}
 	playSound("item.trident.return", 1, 1.65, {_baseloc})
 	set {_options.applycount} to 50
 	set {_options.applytime} to 5
@@ -130,7 +130,7 @@ local function kitParticle_SolarTrack_Apply(player: player):
 	
 	set {_rad} to 0
 	loop {_options.effecttime} times:
-		if {Stats.%{_player}%::SolarTrack} is not {_checkstats}:
+		if {-Stats.%{_player}%::SolarTrack} is not {_checkstats}:
 			stop
 
 		loop {_options.effectcycle} times:

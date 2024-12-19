@@ -13,7 +13,7 @@ function kitSkill_Berserker_3(player: player):
 
 on damage of player with priority LOW:
 	set {_attacker} to getAttacker(victim)
-	{Stats.%{_attacker}%::HealthSuction} is set
+	{-Stats.%{_attacker}%::HealthSuction} is set
 	set {_now} to now
 	set {_metadata} to metadata value {@metadata-name} of {_attacker}
 	if (difference between {_now} and {_metadata}) < (10 ticks):
@@ -25,20 +25,20 @@ on damage of player with priority LOW:
 	kitEffect_HealthSuction_Heal({_attacker}, victim)
 
 on death of player:
-	{Stats.%attacker%::HealthSuction} is set
+	{-Stats.%attacker%::HealthSuction} is set
 	kitEffect_HealthSuction_Health(attacker)
 
 
 
 local function kitEffect_HealthSuction(player: player):
 	set {_now} to now
-	set {Stats.%{_player}%::HealthSuction} to {_now}
+	set {-Stats.%{_player}%::HealthSuction} to {_now}
 	kitMsg({_player}, "§4敵の血を奪うことで§d回復§4します...")
 	sendTimeBossbar_GREEN({_player}, "Health Suction", 200)
 	kitParticle_HealthSuction({_player})
 	wait 10 seconds
-	{Stats.%{_player}%::HealthSuction} is {_now}
-	delete {Stats.%{_player}%::HealthSuction}
+	{-Stats.%{_player}%::HealthSuction} is {_now}
+	delete {-Stats.%{_player}%::HealthSuction}
 	delete metadata value {@metadata-name} of {_player}
 	kitMsg({_player}, "§cHealth Suction§dの効果が切れました")
 
@@ -56,9 +56,9 @@ local function kitEffect_HealthSuction_Health(player: player):
 
 local function kitParticle_HealthSuction(player: player):
 	playSound("entity.ghast.warn", 1, 1.2, {_player})
-	set {_now} to {Stats.%{_player}%::HealthSuction}
+	set {_now} to {-Stats.%{_player}%::HealthSuction}
 	loop 200 times:
-		if {Stats.%{_player}%::HealthSuction} is not {_now}:
+		if {-Stats.%{_player}%::HealthSuction} is not {_now}:
 			stop
 
 		set {_el} to aroundEffect({_player})

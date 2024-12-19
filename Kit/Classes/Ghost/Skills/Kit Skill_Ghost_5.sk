@@ -1,12 +1,12 @@
 # Death Curse
 
 function kitSkill_Ghost_5(player: player):
-	if {Stats.%{_player}%::SkillTarget} is set:
+	if {-Stats.%{_player}%::SkillTarget} is set:
 		if health of {_player} = max health of {_player}:
 			if block at {_player} is passable:
 				if kitCheckSpirit({_player}, 5) is true:
 					toolCT({_player}, "Ghost", 5)
-					set {_tg} to {Stats.%{_player}%::SkillTarget}
+					set {_tg} to {-Stats.%{_player}%::SkillTarget}
 					set {_memsg1} to kitGhostMessage("§4%{_tg}% §5に死の呪いをかけた...")
 					set {_memsg2} to kitGhostMessage("§5呪術に体力を捧げます...", true)
 					set {_youmsg} to kitGhostMessage("§5%{_player}% §4に死の呪いをかけられてしまった!", true)
@@ -16,10 +16,10 @@ function kitSkill_Ghost_5(player: player):
 					kitPalsy({_player}, 200, false)
 					apply glowing 1 to {_player} for 10 seconds
 					apply slowness 3 to {_player} for 10 seconds
-					set {Stats.%{_player}%::DeathCursing} to true
+					set {-Stats.%{_player}%::DeathCursing} to true
 					set {_health} to 10
 					loop 11 times:
-						if {Stats.%{_player}%::DeathCursing} is set:
+						if {-Stats.%{_player}%::DeathCursing} is set:
 							kitParticle_DeathCurse_Targeting({_player}, {_tg})
 							if {_health} is 0:
 								set {_ok} to true
@@ -90,8 +90,8 @@ function kitSkill_Ghost_5(player: player):
 
 on damage of player:
 	metadata value "gametype" of victim is "Kit"
-	if {Stats.%victim%::DeathCursing} is true:
-		delete {Stats.%victim%::DeathCursing}
+	if {-Stats.%victim%::DeathCursing} is true:
+		delete {-Stats.%victim%::DeathCursing}
 
 
 

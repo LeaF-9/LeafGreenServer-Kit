@@ -1,19 +1,19 @@
 # Mind Dependent
 
 function kitSkill_Ghost_2(player: player):
-	if {Stats.%{_player}%::SkillTarget} is set:
+	if {-Stats.%{_player}%::SkillTarget} is set:
 		if kitCheckSpirit({_player}, 2) is true:
 			toolCT({_player}, "Ghost", 2)
-			set {_tg} to {Stats.%{_player}%::SkillTarget}
-			if {Stats.%{Stats.%{_player}%::MindDependence}%::MindDependence} is {_player}:
-				delete {Stats.%{Stats.%{_player}%::MindDependence}%::MindDependence}
-				delete {Stats.%{_player}%::MindDependence}
+			set {_tg} to {-Stats.%{_player}%::SkillTarget}
+			if {-Stats.%{-Stats.%{_player}%::MindDependence}%::MindDependence} is {_player}:
+				delete {-Stats.%{-Stats.%{_player}%::MindDependence}%::MindDependence}
+				delete {-Stats.%{_player}%::MindDependence}
 			set {_memsg} to kitGhostMessage("§5%{_tg}% §4と痛覚の共有を行いました...")
 			set {_youmsg} to kitGhostMessage("§5%{_player}% §cとのダメージが共有される!")
 			kitMsg({_player}, {_memsg})
 			message formatted {_youmsg} to {_tg}
-			set {Stats.%{_tg}%::MindDependence} to {_player}
-			set {Stats.%{_player}%::MindDependence} to {_tg}
+			set {-Stats.%{_tg}%::MindDependence} to {_player}
+			set {-Stats.%{_player}%::MindDependence} to {_tg}
 			playSound("entity.iron_golem.death", 1, 0.5, {_player}, true)
 			playSound("entity.iron_golem.death", 1, 0.5, {_tg}, true)
 	else:
@@ -22,10 +22,10 @@ function kitSkill_Ghost_2(player: player):
 on damage of player with priority HIGHEST:
 	metadata value "gametype" of victim is "Kit"
 	checkDamagable(victim) is true
-	if {Stats.%victim%::MindDependence} is set:
+	if {-Stats.%victim%::MindDependence} is set:
 		set {_dmg} to getDamageModification_ALL(victim, damage)
 		loop all players:
-			{Stats.%victim%::MindDependence} is loop-player
+			{-Stats.%victim%::MindDependence} is loop-player
 			kitDamageNull(victim, loop-player, {_dmg}, "痛覚共有")
 			kitEffectDescription(loop-player, "§4§l痛覚共有")
 			loop 10 times:
@@ -36,7 +36,7 @@ on damage of player with priority HIGHEST:
 
 on death:
 	metadata value "gametype" of victim is "Kit"
-	{Stats.%victim%::MindDependence} is set
+	{-Stats.%victim%::MindDependence} is set
 	loop all players:
-		{Stats.%loop-player%::MindDependence} is victim
-		delete {Stats.%loop-player%::MindDependence}
+		{-Stats.%loop-player%::MindDependence} is victim
+		delete {-Stats.%loop-player%::MindDependence}

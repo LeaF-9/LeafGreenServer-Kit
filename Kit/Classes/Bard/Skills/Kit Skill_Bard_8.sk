@@ -9,23 +9,23 @@ function kitSkill_Bard_8(player: player):
 local function kitEffect_CalmLullaby(player: player):
 	kitMsg({_player}, "§7泣く子も鎮まる§b§l子守唄§7を演奏します...")
 	set {_now} to now
-	set {Stats.%{_player}%::CalmLullabby} to {_now}
+	set {-Stats.%{_player}%::CalmLullabby} to {_now}
 	set {_m} to 7
-	if {Stats.%{_player}%::Fortissimo} is true:
+	if {-Stats.%{_player}%::Fortissimo} is true:
 		set {_m} to 10
 		kitParticle_Fortissimo({_player})
 	kitParticle_CalmLullaby({_player}, {_m})
 	sendTimeBossbar_GREEN({_player}, "Calm Lullaby", 60)
 	loop 60 times:
-		if {Stats.%{_player}%::CalmLullabby} is not {_now}:
+		if {-Stats.%{_player}%::CalmLullabby} is not {_now}:
 			continue
 		loop all players in radius {_m} around {_player}:
 			kitCheckTeam(loop-player, {_player}, false) is true
 			add 2 to {_sleepy::%loop-player%}
 			kitParticle_CalmLullaby_Sleepy(loop-player)
 		wait a tick
-	if {Stats.%{_player}%::CalmLullabby} is not {_now}:
-		if {Stats.%{_player}%::CalmLullabby} is not set:
+	if {-Stats.%{_player}%::CalmLullabby} is not {_now}:
+		if {-Stats.%{_player}%::CalmLullabby} is not set:
 			kitMsg({_player}, "§b子守唄 §1は中断されました...")
 		stop
 	kitParticle_CalmLullaby_Burst({_player}, {_m})

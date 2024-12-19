@@ -3,23 +3,23 @@
 on leftclick holding a emerald:
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Paladin", "Skill", 1) is true
-	{Stats.%player%::Guarding} is true
+	{-Stats.%player%::Guarding} is true
 	loop all players:
-		{Stats.%loop-player%::AllySafeguard} is player
+		{-Stats.%loop-player%::AllySafeguard} is player
 		set {_tp} to loop-player
-	delete {Stats.%{_tp}%::AllySafeguard}
-	delete {Stats.%player%::Guarding}
+	delete {-Stats.%{_tp}%::AllySafeguard}
+	delete {-Stats.%player%::Guarding}
 	kitMsg(player, "§e護衛状態を解除しました")
 	send action bar "§e§l%player% §6§lの護衛が解除されました" to {_tp}
 
 function kitSkill_Paladin_1(player: player):
-	if {Stats.%{_player}%::SkillTarget} is set:
+	if {-Stats.%{_player}%::SkillTarget} is set:
 		toolCT({_player}, "Paladin", 1)
-		set {_tp} to {Stats.%{_player}%::SkillTarget}
-		set {Stats.%{_player}%::Guarding} to true
-		set {Stats.%{_tp}%::AllySafeguard} to {_player}
+		set {_tp} to {-Stats.%{_player}%::SkillTarget}
+		set {-Stats.%{_player}%::Guarding} to true
+		set {-Stats.%{_tp}%::AllySafeguard} to {_player}
 		kitMsg({_player}, "§a守る相手を§6%{_tp}%§aに設定しました!")
-		send action bar "§a%{Stats.%{_tp}%::AllySafeguard}% §7が護衛してくれるそうです!" to {_tp}
+		send action bar "§a%{-Stats.%{_tp}%::AllySafeguard}% §7が護衛してくれるそうです!" to {_tp}
 		kitEffectDescription({_tp}, "§2§l護衛")
 		loop 5 times:
 			set {_el} to aroundEffect({_tp})
@@ -28,13 +28,13 @@ function kitSkill_Paladin_1(player: player):
 		send action bar "§c§l対象のプレイヤーがいません" to {_player}
 
 on damage of player with priority NORMAL:
-	{Stats.%victim%::AllySafeguard} is set
+	{-Stats.%victim%::AllySafeguard} is set
 	checkDamagable(victim) is true
 	damage cause is not fall, void, lava, flame or suffocation
 
 	set {_attacker} to getAttacker(victim)
 	loop all players:
-		{Stats.%victim%::AllySafeguard} is loop-player
+		{-Stats.%victim%::AllySafeguard} is loop-player
 		distance between loop-player and victim <= 15
 		set {_per} to kitPercent(loop-player, 50)
 		chance of {_per}%:
@@ -54,5 +54,5 @@ on damage of player with priority NORMAL:
 
 on death of player:
 	loop all players:
-		{Stats.%loop-player%::AllySafeguard} is victim
-		delete {Stats.%loop-player%::AllySafeguard}
+		{-Stats.%loop-player%::AllySafeguard} is victim
+		delete {-Stats.%loop-player%::AllySafeguard}

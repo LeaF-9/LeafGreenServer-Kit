@@ -10,7 +10,7 @@ on damage of player:
 	if damage was caused by attack:
 		give an arrow to the attacker
 	else if damage was caused by projectile:
-		if {Stats.%attacker%::ArrowEffect} is not set:
+		if {-Stats.%attacker%::ArrowEffect} is not set:
 			projectile is arrow
 			set {_y} to y-coordinate of projectile
 			if {_y} - y-coordinate of victim is bigger than 1.70:
@@ -45,18 +45,18 @@ on rightclick holding a eye of ender:
 		set {_tg} to target player
 		if {_tg} is set:
 			if {team::%{_tg}%} is not {team::%player%}:
-				if {Stats.%player%::ArrowEffect} is not set:
+				if {-Stats.%player%::ArrowEffect} is not set:
 					set {CT.%player%::%name of player's tool%} to 50
-					set {Stats.%player%::ArrowEffect} to "LockOn"
-					set {Stats.%player%::LockOn} to {_tg}
+					set {-Stats.%player%::ArrowEffect} to "LockOn"
+					set {-Stats.%player%::LockOn} to {_tg}
 					execute console command "/freeze %player% 3 seconds"
 					message "{@prefix} §e%{_tg}% §cをロックオンしました..."
 					message "§b%player% §4に§6ロックオン§4された!" to {_tg}
 					play raw sound "random.door_open" at {_tg} with pitch 0.5 volume 1
 					wait 3 seconds
-					if {Stats.%player%::ArrowEffect} is set:
-						delete {Stats.%player%::ArrowEffect}
-						delete {Stats.%player%::LockOn}
+					if {-Stats.%player%::ArrowEffect} is set:
+						delete {-Stats.%player%::ArrowEffect}
+						delete {-Stats.%player%::LockOn}
 						message "{@prefix} §8ロックオンが外れました"
 						message "§9ロックオンが外された!" to {_tg}
 						play raw sound "random.door_close" at {_tg} with pitch 0.5 volume 1
@@ -73,13 +73,13 @@ on rightclick holding a fire charge:
 	name of player's tool is "§cBlaster"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::ArrowEffect} is not set:
+		if {-Stats.%player%::ArrowEffect} is not set:
 			set {CT.%player%::%name of player's tool%} to 50
-			set {Stats.%player%::ArrowEffect} to "Blaster"
+			set {-Stats.%player%::ArrowEffect} to "Blaster"
 			message "{@prefix} §b放った矢の機動が§c平行に真っ直ぐ飛ぶようになります!"
 			play raw sound "random.chestopen" at the player with pitch 2 volume 1
 			wait 5 seconds
-			delete {Stats.%player%::ArrowEffect}
+			delete {-Stats.%player%::ArrowEffect}
 			message "{@prefix} §dBlasterの効果が切れました"
 			play raw sound "random.chestclosed" at the player with pitch 2 volume 1
 		else:
@@ -91,13 +91,13 @@ on rightclick holding a nether star:
 	name of player's tool is "§dHoming"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::ArrowEffect} is not set:
+		if {-Stats.%player%::ArrowEffect} is not set:
 			set {CT.%player%::%name of player's tool%} to 50
-			set {Stats.%player%::ArrowEffect} to "Homing"
+			set {-Stats.%player%::ArrowEffect} to "Homing"
 			message "{@prefix} §d放った矢の周辺に敵が居たら§6追尾§dします!"
 			play raw sound "random.click" at the player with pitch 5 volume 1
 			wait 5 seconds
-			delete {Stats.%player%::ArrowEffect}
+			delete {-Stats.%player%::ArrowEffect}
 			message "{@prefix} §5Homingの効果が切れました"
 		else:
 			set action bar of player to "§c§l他のSkill使用中には使えません"
@@ -108,13 +108,13 @@ on rightclick holding a slimeball:
 	name of player's tool is "§aBounce"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::ArrowEffect} is not set:
+		if {-Stats.%player%::ArrowEffect} is not set:
 			set {CT.%player%::%name of player's tool%} to 30
-			set {Stats.%player%::ArrowEffect} to "Bounce"
+			set {-Stats.%player%::ArrowEffect} to "Bounce"
 			message "{@prefix} §a着弾した際に跳ねる効果を矢に付与します!"
 			play raw sound "mob.slime.small" at the player with pitch 1.5 volume 1
 			wait 5 seconds
-			delete {Stats.%player%::ArrowEffect}
+			delete {-Stats.%player%::ArrowEffect}
 			message "{@prefix} §5Bounceの効果が切れました"
 		else:
 			set action bar of player to "§c§l他のSkill使用中には使えません"
@@ -125,13 +125,13 @@ on rightclick holding a feather:
 	name of player's tool is "§bRapid"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::ArrowEffect} is not set:
+		if {-Stats.%player%::ArrowEffect} is not set:
 			set {CT.%player%::%name of player's tool%} to 40
-			set {Stats.%player%::ArrowEffect} to "Rapid"
+			set {-Stats.%player%::ArrowEffect} to "Rapid"
 			message "{@prefix} §b複数の矢を一気に放出します!"
 			play raw sound "mob.chicken.hurt" at the player with pitch 1.5 volume 1
 			wait 5 seconds
-			delete {Stats.%player%::ArrowEffect}
+			delete {-Stats.%player%::ArrowEffect}
 			message "{@prefix} §5Rapidの効果が切れました"
 		else:
 			set action bar of player to "§c§l他のSkill使用中には使えません"
@@ -139,39 +139,39 @@ on rightclick holding a feather:
 		set action bar of player to "§c§lクールタイムが終わっていません!"
 
 on rightclick holding a bow:
-	{Stats.%player%::ArrowEffect} is "Rapid"
-	set {Stats.%player%::PullTime} to 0
-	while {Stats.%player%::PullTime} is set:
-		if {Stats.%player%::PullTime} >= 3:
+	{-Stats.%player%::ArrowEffect} is "Rapid"
+	set {-Stats.%player%::PullTime} to 0
+	while {-Stats.%player%::PullTime} is set:
+		if {-Stats.%player%::PullTime} >= 3:
 			stop
 		else:
-			if {Stats.%player%::ArrowEffect} is "Rapid":
-				add 0.125 to {Stats.%player%::PullTime}
+			if {-Stats.%player%::ArrowEffect} is "Rapid":
+				add 0.125 to {-Stats.%player%::PullTime}
 				wait a tick
 			else:
-				delete {Stats.%player%::PullTime}
+				delete {-Stats.%player%::PullTime}
 
 on shoot:
-	if {Stats.%shooter%::ArrowEffect} is "Blaster":
+	if {-Stats.%shooter%::ArrowEffect} is "Blaster":
 		drawDot count 1, particle "lava", center projectile, visibleRange 32, keepFor 1 seconds
 		set {_to} to location of block 100 blocks in front of shooter to vector
 		set {_from} to location of shooter to vector
 		set {_vector} to vector {_to} - {_from}
 		set {_vector} to vector {_vector} normalized * 7
 		set velocity of projectile to {_vector}
-	if {Stats.%shooter%::ArrowEffect} is "LockOn":
+	if {-Stats.%shooter%::ArrowEffect} is "LockOn":
 		drawDot count 5, particle "redstone", XYZ 255, 215, 0, center projectile, visibleRange 32, keepFor 1 seconds
-		set {_to} to location of {Stats.%shooter%::LockOn} to vector
+		set {_to} to location of {-Stats.%shooter%::LockOn} to vector
 		set {_from} to location of shooter to vector
 		set {_vector} to vector {_to} - {_from}
 		set {_vector} to vector {_vector} normalized * 5
 		set velocity of projectile to {_vector}
-	if {Stats.%shooter%::ArrowEffect} is "Bounce":
+	if {-Stats.%shooter%::ArrowEffect} is "Bounce":
 		drawDot count 1, particle "slime", center projectile, visibleRange 32, keepFor 1 seconds
 		set metadata value "bounce" of projectile to "0"
-	if {Stats.%shooter%::ArrowEffect} is "Rapid":
+	if {-Stats.%shooter%::ArrowEffect} is "Rapid":
 		drawDot count 1, particle "mobspell", XYZ 0, 191, 255, center projectile, visibleRange 32, keepFor 1 seconds
-		set {_speed} to {Stats.%shooter%::PullTime}
+		set {_speed} to {-Stats.%shooter%::PullTime}
 		wait 2 ticks
 		metadata value "rapid" of projectile is not set
 		loop 4 times:
@@ -181,7 +181,7 @@ on shoot:
 			push shot arrow to the left at speed random number from -0.3 to 0.3
 			push shot arrow upwards at speed random number from -0.3 to 0.3
 			wait 2 ticks
-	if {Stats.%shooter%::ArrowEffect} is "Homing":
+	if {-Stats.%shooter%::ArrowEffect} is "Homing":
 		set {_hm} to true
 		loop 120 times:
 			wait 0.5 tick
@@ -250,9 +250,9 @@ on projectile hit:
 
 on death of player:
 	loop all players:
-		{Stats.%loop-player%::LockOn} is victim
-		delete {Stats.%loop-player%::LockOn}
-		delete {Stats.%loop-player%::ArrowEffect}
+		{-Stats.%loop-player%::LockOn} is victim
+		delete {-Stats.%loop-player%::LockOn}
+		delete {-Stats.%loop-player%::ArrowEffect}
 		message "{@loop-prefix} §8ロックオンが外れました" to loop-player
 		message "§9ロックオンが外された!" to victim
 		play raw sound "random.door_close" at victim with pitch 0.5 volume 1

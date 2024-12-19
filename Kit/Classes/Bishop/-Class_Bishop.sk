@@ -17,11 +17,11 @@ on rightclick holding a ghast tear:
 				if distance between {_tg} and player <= 10:
 					if {CLS::%{_tg}%} is not "BSK":
 						if {Resurrection::%{_tg}%} is not set:
-							if {Stats.%player%::GodMercy} is set:
-								delete {Resurrection::%{Stats.%player%::GodMercy}%}
-								message "§c蘇生能力が消え去りました..." to {Stats.%player%::GodMercy}
-								delete {Stats.%player%::GodMercy}
-							set {Stats.%player%::GodMercy} to {_tg}
+							if {-Stats.%player%::GodMercy} is set:
+								delete {Resurrection::%{-Stats.%player%::GodMercy}%}
+								message "§c蘇生能力が消え去りました..." to {-Stats.%player%::GodMercy}
+								delete {-Stats.%player%::GodMercy}
+							set {-Stats.%player%::GodMercy} to {_tg}
 							add player to {supporter.%{_tg}%::*}
 							set {CT.%player%::%name of player's tool%} to 40
 							set {Resurrection::%{_tg}%} to true
@@ -43,11 +43,11 @@ on rightclick holding a ghast tear:
 		set action bar of player to "§c§lクールタイムが終わっていません!"
 
 on death of player:
-	{Stats.%victim%::GodMercy} is set
-	{Resurrection::%{Stats.%victim%::GodMercy}%} is set
-	delete {Resurrection::%{Stats.%victim%::GodMercy}%}
-	message "§c蘇生能力が消え去りました..." to {Stats.%victim%::GodMercy}
-	delete {Stats.%victim%::GodMercy}
+	{-Stats.%victim%::GodMercy} is set
+	{Resurrection::%{-Stats.%victim%::GodMercy}%} is set
+	delete {Resurrection::%{-Stats.%victim%::GodMercy}%}
+	message "§c蘇生能力が消え去りました..." to {-Stats.%victim%::GodMercy}
+	delete {-Stats.%victim%::GodMercy}
 
 on rightclick holding a fermented spider eye:
 	name of player's tool is "§dGrant Blessing"
@@ -91,19 +91,19 @@ on rightclick holding a nether star:
 			{team::%loop-player%} is {team::%player%}
 			loop-player is not player
 			{CLS::%loop-player%} is not "BSK"
-			set {Stats.%loop-player%::RefineEvil} to true
+			set {-Stats.%loop-player%::RefineEvil} to true
 			message "§dダメージを受けた際に回復能力が付与されます!" to loop-player
 			drawDot count 5, particle "mobspell", RGB 255, 105, 180, center loop-player, visibleRange 30, keepFor 10 seconds
 			add loop-player to {_TEN::*}
 		wait 7 seconds
 		loop {_TEN::*}:
-			delete {Stats.%loop-value%::RefineEvil}
+			delete {-Stats.%loop-value%::RefineEvil}
 			message "§5回復能力が削除されました" to loop-value
 	else:
 		set action bar of player to "§c§lクールタイムが終わっていません!"
 
 on damage of player:
-	{Stats.%victim%::RefineEvil} is true
+	{-Stats.%victim%::RefineEvil} is true
 	apply regeneration 2 to victim for 3 seconds
 
 on rightclick holding a eye of ender:
@@ -137,9 +137,9 @@ on rightclick holding a feather:
 		drawWings style 6, particle1 "redstone", RGB 255, 255, 255, particle2 "redstone", RGB2 179, 255, 255, particle3 "mobspell", RGB3 255, 244, 148, center player, id "%player%", angle 110, height 0, space 0.2, visibleRange 30, tps 0, second 3
 		set max health of player to 3
 		apply mining fatigue 3 to player for 10 seconds
-		set {Stats.%player%::AngelVow} to true
+		set {-Stats.%player%::AngelVow} to true
 		loop 200 times:
-			if {Stats.%player%::AngelVow}:
+			if {-Stats.%player%::AngelVow}:
 				loop all players in radius 7 around player:
 					{team::%loop-player%} is {team::%player%}
 					loop-player is not player
@@ -152,20 +152,20 @@ on rightclick holding a feather:
 			set max health of player to 10
 			heal player by 10 hearts
 		disallow fly for player
-		delete {Stats.%player%::AngelVow}
+		delete {-Stats.%player%::AngelVow}
 		stopEffect "%player%"
 		message "{@prefix} §8天使の加護は消滅した!"
 	else:
 		set action bar of player to "§c§lクールタイムが終わっていません!"
 
 on damage:
-	if {Stats.%victim%::AngelVow} is true:
+	if {-Stats.%victim%::AngelVow} is true:
 		cancel event
-	if {Stats.%attacker%::AngelVow} is true:
+	if {-Stats.%attacker%::AngelVow} is true:
 		cancel event
 	type of victim is a player
 	loop all players in radius 5 around victim:
 		{team::%loop-player%} is {team::%victim%}
 		victim is not loop-player
-		{Stats.%loop-player%::AngelVow} is true
+		{-Stats.%loop-player%::AngelVow} is true
 		subtract 1 from loop-player's health

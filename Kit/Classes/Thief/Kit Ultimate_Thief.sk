@@ -7,18 +7,18 @@ function kitUltThief(player: player):
 			kitParticle_HeinousLarceny_Hit(loop-player)
 			add loop-player to {_hit::*}
 			if {Class::%loop-player%} is "Werewolf":
-				if {Stats.%loop-player%::Instinct} is true:
+				if {-Stats.%loop-player%::Instinct} is true:
 					set {_class} to "Werewolf_Instinct"
 				else:
 					set {_class} to {Class::%loop-player%}
 			else if {Class::%loop-player%} is "Vampire":
-				if {Stats.%loop-player%::BatMode} is true:
+				if {-Stats.%loop-player%::BatMode} is true:
 					set {_class} to "Vampire_Bat"
 				else:
 					set {_class} to {Class::%loop-player%}
 			else:
 				set {_class} to {Class::%loop-player%}
-			set {Stats.%loop-player%::ThiefUlt} to {_class}
+			set {-Stats.%loop-player%::ThiefUlt} to {_class}
 			set {_th} to loop-player's health
 			execute console command "/skclass %loop-player% Kit-Needy"
 			set loop-player's health to {_th}
@@ -27,11 +27,11 @@ function kitUltThief(player: player):
 			heal {_player} by 1 heart
 	wait 10 seconds
 	loop {_hit::*}:
-		{Stats.%loop-value%::ThiefUlt} is set
+		{-Stats.%loop-value%::ThiefUlt} is set
 		set {_th} to loop-value's health
-		execute console command "/class %{Stats.%loop-value%::ThiefUlt}% %loop-value% false"
+		execute console command "/class %{-Stats.%loop-value%::ThiefUlt}% %loop-value% false"
 		set loop-value's health to {_th}
-		delete {Stats.%loop-value%::ThiefUlt}
+		delete {-Stats.%loop-value%::ThiefUlt}
 
 function kitParticle_HeinousLarceny_Hit(player: player):
 	loop 100 times:

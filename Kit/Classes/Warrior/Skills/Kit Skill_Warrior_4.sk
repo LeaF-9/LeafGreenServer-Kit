@@ -11,7 +11,7 @@ function kitSkill_Warrior_4(player: player):
 
 
 local function kitEffect_SonicRevolution(player: player):
-	set {Stats.%{_player}%::SonicRevolution} to true
+	set {-Stats.%{_player}%::SonicRevolution} to true
 	kitMsg({_player}, "§b回転斬りをします...")
 	sendTimeBossbar_GREEN({_player}, "Sonic Revolution", 60)
 	apply speed 2 to {_player} for 3 seconds
@@ -56,8 +56,8 @@ local function kitEffect_SonicRevolution(player: player):
 	loop all entities:
 		metadata value "sonic-revolution" of loop-entity is "%{_player}%"
 		delete loop-entity
-	if {Stats.%{_player}%::SonicRevolution} is true:
+	if {-Stats.%{_player}%::SonicRevolution} is true:
 		set slot 0 of {_player} to {_weapon}
 		apply nausea 1 to {_player} for 10 seconds
 	set generic jump strength attribute of {_player} to 0.42
-	delete {Stats.%{_player}%::SonicRevolution}
+	delete {-Stats.%{_player}%::SonicRevolution}

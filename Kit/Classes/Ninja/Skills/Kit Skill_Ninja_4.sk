@@ -1,35 +1,35 @@
 # Zanzo
 
 function kitSkill_Ninja_4(player: player):
-	if {Stats.%{_player}%::Zanzo} is not set:
+	if {-Stats.%{_player}%::Zanzo} is not set:
 		set {_skill} to name of {_player}'s tool
 		setCT({_player}, {_skill}, 10)
-		set {Stats.%{_player}%::Zanzo} to 100
+		set {-Stats.%{_player}%::Zanzo} to 100
 		kitMsg({_player}, "§0忍法・残像の術!")
 		sendTimeBossbar_GREEN({_player}, "Zanzo", 100)
 		playSound("entity.bat.takeoff", 1, 1.5, {_player})
 		delete {_player}'s tool
 		kunaiNinjutsu({_player}, "Zanzo")
 		wait 5 seconds
-		if {Stats.%{_player}%::Zanzo} is set:
-			delete {Stats.%{_player}%::Zanzo}
+		if {-Stats.%{_player}%::Zanzo} is set:
+			delete {-Stats.%{_player}%::Zanzo}
 			send action bar "§7§l残像は解除された!" to {_player}
 	else:
 		send action bar "§c§l現在発動中です" to {_player}
 
 on damage of player:
-	{Stats.%victim%::Zanzo} is set
+	{-Stats.%victim%::Zanzo} is set
 	getInvisibleStatus(victim) is false
-	set {_chance} to {Stats.%victim%::Zanzo}
+	set {_chance} to {-Stats.%victim%::Zanzo}
 	chance of {_chance}%:
 		cancel event
 		kitInvisible(victim, 20)
 		playSound("entity.zombie_villager.converted", 1, 2, victim)
 		kitParticle_Zanzo_Execute(victim)
 		send action bar "§0§l残像が働いた!" to victim
-		subtract 20 from {Stats.%victim%::Zanzo}
-		if {Stats.%victim%::Zanzo} <= 0:
-			delete {Stats.%victim%::Zanzo}
+		subtract 20 from {-Stats.%victim%::Zanzo}
+		if {-Stats.%victim%::Zanzo} <= 0:
+			delete {-Stats.%victim%::Zanzo}
 			send action bar "§7§l残像は解除された!" to victim
 
 

@@ -111,8 +111,8 @@ on rightclick holding a nether star:
 #		message "§c暗い場所に居る際,透明化が付与されます!"
 #		message "§c全てのスキルのCTが1/10になります!"
 #		set {Ult.%player%::Werewolf} to true
-#		if {Stats.%player%::Instinct} is not set:
-#			set {Stats.%player%::Instinct} to true
+#		if {-Stats.%player%::Instinct} is not set:
+#			set {-Stats.%player%::Instinct} to true
 #			message "{@prefix} §4野生解放を行った..."
 #			set {_hp} to health of player
 #			if {Stagerule::%{KitPvP_Stage}%} is "EmJ":
@@ -129,10 +129,10 @@ on rightclick holding a nether star:
 #				give a sheep spawn egg named "§7Wool" to player
 #			drawDot count 3, particle "mobspell", RGB 100, 0, 0, center player, visibleRange 30, keepFor 60 ticks
 #			play raw sound "mob.wolf.growl" at player with pitch 0.5 volume 1
-#			set {Stats.%player%::InstinctPower} to 1
+#			set {-Stats.%player%::InstinctPower} to 1
 #			loop all wolves:
 #				loop-wolf's display name is "%player%"
-#				add 0.1 to {Stats.%player%::InstinctPower}
+#				add 0.1 to {-Stats.%player%::InstinctPower}
 #				delete loop-wolf
 #		set time to 00:00
 #		execute console command "/od %player% wolf"
@@ -410,7 +410,7 @@ on rightclick holding a nether star:
 #		message "§c透明化した味方が敵を殴ると,10秒の盲目を付与して透明化を解除します!"
 #		message "§c自身は,透明化が敵に解除されるまではこの効果が継続されます!!"
 #		set {Ult.%player%::Ambush} to true
-#		set {Stats.%player%::AmbushUlt} to true
+#		set {-Stats.%player%::AmbushUlt} to true
 #		play raw sound "mob.wither.shoot" at the player with pitch 2 volume 0.5
 #		drawWarpRings style 0, particle "redstone", RGB 255, 255, 255, center player, id "%player%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
 #		set {Invisible::%player%} to true
@@ -424,7 +424,7 @@ on rightclick holding a nether star:
 #				play raw sound "mob.wither.shoot" at the player with pitch 2 volume 0.5
 #				drawWarpRings style 0, particle "redstone", RGB 255, 255, 255, center loop-player, id "%loop-player%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
 #				set {Invisible::%loop-player%} to true
-#				set {Stats.%loop-player%::AmbushUlt} to true
+#				set {-Stats.%loop-player%::AmbushUlt} to true
 #				add loop-player to {_list::*}
 #				hide loop-player from all players
 #		wait 5 ticks
@@ -433,7 +433,7 @@ on rightclick holding a nether star:
 #		wait 195 ticks
 #		delete {Ult.%player%::Ambush}
 #		loop {_list::*}:
-#			delete {Stats.%loop-value%::AmbushUlt}
+#			delete {-Stats.%loop-value%::AmbushUlt}
 #			if {Invisible::%loop-value%} is true:
 #				reveal loop-value from all players
 #				delete {Invisible::%loop-value%}
@@ -729,7 +729,7 @@ on rightclick holding a nether star:
 #
 # # Ambush's Ult
 #on damage of player:
-#	if {Stats.%attacker%::AmbushUlt} is true:
+#	if {-Stats.%attacker%::AmbushUlt} is true:
 #		if {Invisible::%attacker%} is true:
 #			if victim does not have blindness:
 #				drawWarpRings style 0, particle "redstone", RGB 0, 0, 0, center victim, id "%victim%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
@@ -738,7 +738,7 @@ on rightclick holding a nether star:
 #				message "§8§l盲目を付与しました!" to attacker
 #				message "§0§l光が失われてしまった!" to victim
 #				if {Ult.%attacker%::Ambush} is not set:
-#					delete {Stats.%attacker%::AmbushUlt}
+#					delete {-Stats.%attacker%::AmbushUlt}
 #					if {Invisible::%attacker%} is true:
 #						reveal attacker from all players
 #						delete {Invisible::%attacker%}

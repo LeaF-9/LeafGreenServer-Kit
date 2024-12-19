@@ -1,11 +1,11 @@
 # Light Wand
 
 function kitWeapon_Wizard_5(player: player):
-	if {Stats.%{_player}%::LightWand} is true:
+	if {-Stats.%{_player}%::LightWand} is true:
 		set {_mana} to kitManaCalc({_player}, 10)
 		if {Kit-Mana::%{_player}%} >= {_mana}:
 			toolCT({_player}, "Wizard", 5, "Weapon.main")
-			delete {Stats.%{_player}%::LightWand}
+			delete {-Stats.%{_player}%::LightWand}
 			subtract {_mana} from {Kit-Mana::%{_player}%}
 			playSound("block.respawn_anchor.deplete", 1, 2, {_player})
 			set {_baseloc} to location of {_player}
@@ -54,7 +54,7 @@ function kitWeaponSub_Wizard_5(player: player):
 				# ------------------------------------
 				wait a tick
 		if {_true} is true:
-			set {Stats.%{_player}%::LightWand} to true
+			set {-Stats.%{_player}%::LightWand} to true
 			# --- チャージ完了時の音の演出 ---
 			playSound("entity.lightning_bolt.thunder", 1, 2, {_player})
 			# ----------------------------
@@ -62,7 +62,7 @@ function kitWeaponSub_Wizard_5(player: player):
 				set {_tool} to {_player}'s tool
 				if kitItemAllChecker({_tool}, "Wizard", "Weapon.main", 5) is false:
 					delete {_true}
-				else if {Stats.%{_player}%::LightWand} is not set:
+				else if {-Stats.%{_player}%::LightWand} is not set:
 					set {_true} to false
 				else:
 					send action bar "§e§lLight Wand §bのチャージが完了しました!" to {_player}
@@ -73,7 +73,7 @@ function kitWeaponSub_Wizard_5(player: player):
 				wait a tick
 			if {_true} is not set:
 				send action bar "§cチャージが中断されました!" to {_player}
-				delete {Stats.%{_player}%::LightWand}
+				delete {-Stats.%{_player}%::LightWand}
 		else:
 			send action bar "§cチャージが中断されました!" to {_player}
 	else:

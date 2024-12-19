@@ -36,9 +36,9 @@ on projectile hit:
 function kitWeapon_Thief_2(player: player):
 	if {_player} is not sneaking:
 		stop
-	if {Stats.%{_player}%::GemStinger} <= 0:
+	if {-Stats.%{_player}%::GemStinger} <= 0:
 		stop
-	subtract 1 from {Stats.%{_player}%::GemStinger}
+	subtract 1 from {-Stats.%{_player}%::GemStinger}
 	kitEffect_GemStinger_Launch({_player})
 
 function kitEffect_GemStinger_Drop(attacker: player, victim: player):
@@ -60,7 +60,7 @@ function kitEffect_GemStinger_Drop(attacker: player, victim: player):
 function kitEffect_GemStinger_Pickup(player: player):
 	kitParticle_GemStinger_Pickup({_player})
 	applyEffect({_player}, resistance, 1, 1.5 seconds)
-	add 1 to {Stats.%{_player}%::GemStinger}
+	add 1 to {-Stats.%{_player}%::GemStinger}
 
 function kitEffect_GemStinger_Launch(player: player):
 	kitParticle_GemStinger_Launch({_player})

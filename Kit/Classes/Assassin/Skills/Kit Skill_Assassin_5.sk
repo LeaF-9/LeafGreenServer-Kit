@@ -28,8 +28,8 @@ function kitSkill_Assassin_5(player: player):
 	playSound("entity.player.attack.sweep", 1, 0.6, {_tgloc})
 	if {_tgplayer} is set:
 		set {_damage} to 2
-		if {Stats.%{_tgplayer}%::Pursuit} is set:
-			add 2 * {Stats.%{_tgplayer}%::Pursuit} to {_damage}
+		if {-Stats.%{_tgplayer}%::Pursuit} is set:
+			add 2 * {-Stats.%{_tgplayer}%::Pursuit} to {_damage}
 		kitDamage({_player}, {_tgplayer}, {_damage}, "追斬撃", true)
 		kitMsg({_player}, "§1%{_tgplayer}% §4にクリーンヒット!")
 		message formatted "§4§l痛い! §5斬撃がヒットした..." to {_tgplayer}
@@ -82,9 +82,9 @@ function kitEffect_Pursuit_2(player: player, target: player):
 
 function kitSkillSub_Assassin_5(victim: player, asn: number):
 	set {_now} to now
-	set {Stats.%{_victim}%::Pursuit} to {_asn}
-	set {Stats.%{_victim}%::PursuitTime} to {_now}
+	set {-Stats.%{_victim}%::Pursuit} to {_asn}
+	set {-Stats.%{_victim}%::PursuitTime} to {_now}
 	wait 3 seconds
-	if {Stats.%{_victim}%::PursuitTime} is {_now}:
-		delete {Stats.%{_victim}%::Pursuit}
-		delete {Stats.%{_victim}%::PursuitTime}
+	if {-Stats.%{_victim}%::PursuitTime} is {_now}:
+		delete {-Stats.%{_victim}%::Pursuit}
+		delete {-Stats.%{_victim}%::PursuitTime}

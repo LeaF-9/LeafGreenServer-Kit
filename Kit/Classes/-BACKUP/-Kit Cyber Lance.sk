@@ -5,11 +5,11 @@ on damage:
 	set {_tool} to attacker's tool
 	if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
 		stop
-	if {Stats.%attacker%::CyberLance-Energy} is not set:
+	if {-Stats.%attacker%::CyberLance-Energy} is not set:
 		stop
-	set {_energy} to {Stats.%attacker%::CyberLance-Energy}
-	delete {Stats.%attacker%::CyberLance-Energy}
-	delete {Stats.%attacker%::CyberLance-Saving}
+	set {_energy} to {-Stats.%attacker%::CyberLance-Energy}
+	delete {-Stats.%attacker%::CyberLance-Energy}
+	delete {-Stats.%attacker%::CyberLance-Saving}
 	set {_energy.calc} to {_energy} / 20
 	set {_fuel} to round({_energy.calc} * 10)
 	if {Kit-Fuel::%{_player}%} < {_fuel}:
@@ -31,10 +31,10 @@ on sneak toggle:
 	if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
 		stop
 	# Energyセット
-	if {Stats.%player%::CyberLance-Energy} is not set:
-		set {Stats.%player%::CyberLance-Energy} to 0
+	if {-Stats.%player%::CyberLance-Energy} is not set:
+		set {-Stats.%player%::CyberLance-Energy} to 0
 	set {_now} to now
-	set {Stats.%player%::CyberLance-Saving} to {_now}
+	set {-Stats.%player%::CyberLance-Saving} to {_now}
 	wait a tick
 	set {_true} to false
 	while {_true} is false:
@@ -48,23 +48,23 @@ on sneak toggle:
 			delete {_true}
 			continue
 		# Energy満タン (Energy保持)
-		else if {Stats.%player%::CyberLance-Energy} >= 100:
-			set {Stats.%player%::CyberLance-Energy} to 100
+		else if {-Stats.%player%::CyberLance-Energy} >= 100:
+			set {-Stats.%player%::CyberLance-Energy} to 100
 			set {_true} to true
 			continue
 		# Energy処理
-		add 1 to {Stats.%player%::CyberLance-Energy}
+		add 1 to {-Stats.%player%::CyberLance-Energy}
 		# Action Bar処理
-		set {_linenum} to round({Stats.%player%::CyberLance-Energy} / 2)
+		set {_linenum} to round({-Stats.%player%::CyberLance-Energy} / 2)
 		chargeActionBar(player, {_linenum}, 50)
 		# チャージ中サウンド
-		set {_soundpitch} to {Stats.%player%::CyberLance-Energy} / 75 + 0.5
+		set {_soundpitch} to {-Stats.%player%::CyberLance-Energy} / 75 + 0.5
 		playSound("item.armor.equip_chain", 0.5, {_soundpitch}, player)
 		# チャージ中のパーティクル
 		kitParticle_CyberLance_Charge(player)
 		wait a tick
 	if {_true} is not true:
-		delete {Stats.%player%::CyberLance-Energy}
+		delete {-Stats.%player%::CyberLance-Energy}
 		send action bar "§e§lEnergy§cは消滅しました" to player
 		stop
 	set {_savingtime} to 0
@@ -78,36 +78,36 @@ on sneak toggle:
 		set {_tool} to player's tool
 		# ツール変更 (Energy削除)
 		if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
-			delete {Stats.%player%::CyberLance-Energy}
-			delete {Stats.%player%::CyberLance-Saving}
+			delete {-Stats.%player%::CyberLance-Energy}
+			delete {-Stats.%player%::CyberLance-Saving}
 			stop
 		# 再チャージ (処理ストップ)
-		if {Stats.%player%::CyberLance-Saving} is not {_now}:
+		if {-Stats.%player%::CyberLance-Saving} is not {_now}:
 			stop
 		# savingtime超過
 		if {_savingtime} > 20:
 			set {_true} to false
 			continue
 		# Action Bar処理
-		set {_linenum} to round({Stats.%player%::CyberLance-Energy} / 2)
+		set {_linenum} to round({-Stats.%player%::CyberLance-Energy} / 2)
 		chargeActionBar(player, {_linenum}, 50)
 		# 保持中のパーティクル演出
 		kitParticle_CyberLance_Saving(player)
 		wait a tick
-	while {Stats.%player%::CyberLance-Energy} > 0:
+	while {-Stats.%player%::CyberLance-Energy} > 0:
 		# ツール変更 (Energy削除)
 		set {_tool} to player's tool
 		if kitItemAllChecker({_tool}, "Engineer", "Weapon.main", 2) is false:
-			delete {Stats.%player%::CyberLance-Energy}
-			delete {Stats.%player%::CyberLance-Saving}
+			delete {-Stats.%player%::CyberLance-Energy}
+			delete {-Stats.%player%::CyberLance-Saving}
 			stop
 		# 再チャージ (処理ストップ)
-		if {Stats.%player%::CyberLance-Saving} is not {_now}:
+		if {-Stats.%player%::CyberLance-Saving} is not {_now}:
 			stop
 		# 減少処理
-		subtract 1 from {Stats.%player%::CyberLance-Energy}
+		subtract 1 from {-Stats.%player%::CyberLance-Energy}
 		# Action Bar処理
-		set {_linenum} to round({Stats.%player%::CyberLance-Energy} / 2)
+		set {_linenum} to round({-Stats.%player%::CyberLance-Energy} / 2)
 		chargeActionBar(player, {_linenum}, 50)
 		wait a tick
 

@@ -7,7 +7,7 @@ options:
 
 
 function kitSkill_Healer_3(player: player):
-	if {Stats.%{_player}%::SkillLocation} is not set:
+	if {-Stats.%{_player}%::SkillLocation} is not set:
 		send action bar "§c§l地点を指定してください" to {_player}
 		stop
 	if {Kit-Odo::%{_player}%} < {@required-odo}:
@@ -20,8 +20,8 @@ function kitSkill_Healer_3(player: player):
 local function kitEffect_FieldHospital(player: player):
 	subtract {@required-odo} from {Kit-Odo::%{_player}%}
 	set {_now} to now
-	set {Stats.%{_player}%::FieldHospital-Time} to {_now}
-	set {_loc.target} to {Stats.%{_player}%::SkillLocation}
+	set {-Stats.%{_player}%::FieldHospital-Time} to {_now}
+	set {_loc.target} to {-Stats.%{_player}%::SkillLocation}
 
 	kitFakeDeleteData({_player}, "Field Hospital")
 
@@ -54,7 +54,7 @@ local function kitEffect_FieldHospital(player: player):
 
 	set {_ln} to 0
 	set {_heal} to {@heal-per-second} / 20
-	while {Stats.%{_player}%::FieldHospital-Time} is {_now}:
+	while {-Stats.%{_player}%::FieldHospital-Time} is {_now}:
 		wait a tick
 		add 1 to {_ln}
 		
@@ -85,7 +85,7 @@ local function kitEffect_FieldHospital(player: player):
 
 		set {_exist} to kitFakeCheck({_player}, "Field Hospital")
 		if {_exist} is false:
-			delete {Stats.%{_player}%::FieldHospital-Time}
+			delete {-Stats.%{_player}%::FieldHospital-Time}
 
 
 

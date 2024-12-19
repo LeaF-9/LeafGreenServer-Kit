@@ -181,21 +181,21 @@ on rightclick holding a packed ice:
 	name of player's tool is "§1Ice Guard"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		set {Stats.%player%::IceGuard} to true
+		set {-Stats.%player%::IceGuard} to true
 		message "{@prefix} §35秒間ダメージを半減して、攻撃者を1秒間§1凍らせます！"
 		play raw sound "random.orb" at player with pitch 5 volume 1
 		drawComplexSpiral particle "redstone", RGB 100, 100, 255, center player, id "%player%", clockwise true, scan true, radius 1, density 50, height 6, effectMod .05, start 0, visibleRange 30
 		apply slowness 3 to player for 5 seconds
 		set {CT.%player%::%name of player's tool%} to 30
 		wait 5 seconds
-		delete {Stats.%player%::IceGuard}
+		delete {-Stats.%player%::IceGuard}
 		message "{@prefix} §1効果が切れました"
 		stopEffect "%player%"
 	else:
 		set action bar of player to "§c§lクールタイムが終わっていません!"
 
 on damage of player:
-	{Stats.%victim%::IceGuard} is true
+	{-Stats.%victim%::IceGuard} is true
 	{CLS::%attacker%} is not "PYR"
 	set damage to damage * 0.5
 	attacker is not burning
@@ -219,22 +219,22 @@ on damage of player:
 
 every 10 ticks:
 	loop all players:
-		{Stats.%loop-player%::FreezeDry} is set
-		{Stats.%loop-player%::FreezeDry} < 30
-		add 1 to {Stats.%loop-player%::FreezeDry}
+		{-Stats.%loop-player%::FreezeDry} is set
+		{-Stats.%loop-player%::FreezeDry} < 30
+		add 1 to {-Stats.%loop-player%::FreezeDry}
 		if name of loop-player's tool is "§9Freeze Dry":
-			set action bar of loop-player to "§9Remains§b: §a%{Stats.%loop-player%::FreezeDry}%"
+			set action bar of loop-player to "§9Remains§b: §a%{-Stats.%loop-player%::FreezeDry}%"
 
 on rightclick holding a diamond sword:
 	name of player's tool is "§9Freeze Dry"
 	wait a tick
-	if {Stats.%player%::FreezeDry} is not set:
-		set {Stats.%player%::FreezeDry} to 30
+	if {-Stats.%player%::FreezeDry} is not set:
+		set {-Stats.%player%::FreezeDry} to 30
 	loop 30 times:
-		{Stats.%player%::FreezeDry} > 0
+		{-Stats.%player%::FreezeDry} > 0
 		if player is blocking:
-			subtract 1 from {Stats.%player%::FreezeDry}
-			set action bar of player to "§9Remains§b: §a%{Stats.%player%::FreezeDry}%"
+			subtract 1 from {-Stats.%player%::FreezeDry}
+			set action bar of player to "§9Remains§b: §a%{-Stats.%player%::FreezeDry}%"
 			shoot a snowball from player at speed 0.8
 			set metadata value "freezedry" of shot entity to "true"
 			push shot entity to the left at speed random number from -0.3 to 0.3
@@ -250,7 +250,7 @@ on damage of player:
 	metadata value "freezedry" of projectile is "true"
 	cancel event
 	set {_now} to now
-	set {Stats.%victim%::FreezeHit} to {_now}
+	set {-Stats.%victim%::FreezeHit} to {_now}
 	if walk speed of victim > 0:
 		set {_walk} to walk speed of victim
 		subtract 0.01 from {_walk}
@@ -259,7 +259,7 @@ on damage of player:
 			execute console command "/freeze %victim% 1 seconds"
 		else:
 			wait 3 seconds
-			if {Stats.%victim%::FreezeHit} is {_now}:
+			if {-Stats.%victim%::FreezeHit} is {_now}:
 				set walk speed of victim to 0.2
 
 on damage:

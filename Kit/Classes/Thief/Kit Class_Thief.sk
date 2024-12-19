@@ -88,10 +88,10 @@ function kitTimerThief(player: player):
 	set {_wn} to kitSelectChecker_Weapon({_player}, "Thief")
 	if {_wn} is not 2:
 		stop
-	set {Stats.%{_player}%::GemStinger} to 0
-	create bossbar titled "&a&lGem Bullets&e: &2&l%{Stats.%{_player}%::GemStinger}%" and id "%{_player}%-GemStinger" for {_player} with progress {Stats.%{_player}%::GemStinger} with colors green with style segmented 10
+	set {-Stats.%{_player}%::GemStinger} to 0
+	create bossbar titled "&a&lGem Bullets&e: &2&l%{-Stats.%{_player}%::GemStinger}%" and id "%{_player}%-GemStinger" for {_player} with progress {-Stats.%{_player}%::GemStinger} with colors green with style segmented 10
 	while {Class::%{_player}%} is "Thief":
-		set bossbar "%{_player}%-GemStinger" title to "&a&lGem Bullets&e: &2&l%{Stats.%{_player}%::GemStinger}%"
-		set bossbar "%{_player}%-GemStinger" value to {Stats.%{_player}%::GemStinger}
+		set bossbar "%{_player}%-GemStinger" title to "&a&lGem Bullets&e: &2&l%{-Stats.%{_player}%::GemStinger}%"
+		set bossbar "%{_player}%-GemStinger" value to {-Stats.%{_player}%::GemStinger}
 		wait a second
 	remove bossbar "%{_player}%-GemStinger"

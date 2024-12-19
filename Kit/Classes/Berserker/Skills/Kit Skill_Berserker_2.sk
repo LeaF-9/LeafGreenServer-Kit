@@ -8,13 +8,13 @@ function kitSkill_Berserker_2(player: player):
 
 local function kitEffect_RushAttack(player: player):
 	set {_now} to now
-	set {Stats.%{_player}%::RushAttack} to {_now}
+	set {-Stats.%{_player}%::RushAttack} to {_now}
 	applyEffect({_player}, speed, 2, 5 seconds, true)
 	kitParticle_RushAttack({_player})
 	kitMsg({_player}, "<##D66A35>周囲の生物を傷付け続けます...")
 	sendTimeBossbar_GREEN({_player}, "Rush Attack", 100)
 	loop 10 times:
-		if {Stats.%{_player}%::RushAttack} is not {_now}:
+		if {-Stats.%{_player}%::RushAttack} is not {_now}:
 			continue
 		
 		loop all entities in radius 5 around {_player}:
@@ -25,19 +25,19 @@ local function kitEffect_RushAttack(player: player):
 
 		wait 10 ticks
 	
-	if {Stats.%{_player}%::RushAttack} is not {_now}:
+	if {-Stats.%{_player}%::RushAttack} is not {_now}:
 		stop
-	delete {Stats.%{_player}%::RushAttack}
+	delete {-Stats.%{_player}%::RushAttack}
 	kitMsg({_player}, "§6Rush Attack §eの効果が切れました")
 
 
 
 local function kitParticle_RushAttack(player: player):
 	playSound("entity.blaze.hurt", 1, 0.5, {_player})
-	set {_now} to {Stats.%{_player}%::RushAttack}
+	set {_now} to {-Stats.%{_player}%::RushAttack}
 	set {_rad} to 0
 	loop 100 times:
-		if {Stats.%{_player}%::RushAttack} is not {_now}:
+		if {-Stats.%{_player}%::RushAttack} is not {_now}:
 			stop
 		
 		set {_baseloc} to location 1 meter above {_player}

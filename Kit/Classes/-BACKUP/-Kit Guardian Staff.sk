@@ -1,42 +1,42 @@
 # Guardian Staff
 
 on damage of player:
-	if {Stats.%victim%::GuardianStaff-Active} is true:
+	if {-Stats.%victim%::GuardianStaff-Active} is true:
 		set damage to damage * 5
 		kitParticle_GuardianStaff_Critical(victim)
 		stop
-	{Stats.%victim%::GuardianStaff-Received} is set
+	{-Stats.%victim%::GuardianStaff-Received} is set
 	set damage to damage * 0.5
 	kitParticle_GuardianStaff_Damage(victim)
 
 function kitWeapon_Paladin_5(player: player):
 	loop 5 times:
 		if {_player} is not sneaking:
-			if {Stats.%{_player}%::GuardianStaff-Active} is true:
+			if {-Stats.%{_player}%::GuardianStaff-Active} is true:
 				playSound("entity.armor_stand.break", 1, 0.5, {_player})
 				loop all players:
-					{Stats.%loop-player%::GuardianStaff-Received} is {_player}
-					delete {Stats.%loop-player%::GuardianStaff-Received}
-			delete {Stats.%{_player}%::GuardianStaff-Active}
+					{-Stats.%loop-player%::GuardianStaff-Received} is {_player}
+					delete {-Stats.%loop-player%::GuardianStaff-Received}
+			delete {-Stats.%{_player}%::GuardianStaff-Active}
 			stop
-		if {Stats.%{_player}%::GuardianStaff-Active} is not set:
+		if {-Stats.%{_player}%::GuardianStaff-Active} is not set:
 			playSound("item.armor.equip_diamond", 1, 0.5, {_player})
 		kitEffect_GuardianStaff({_player})
 		wait a tick
 
 function kitEffect_GuardianStaff(player: player):
-	set {Stats.%{_player}%::GuardianStaff-Active} to true
+	set {-Stats.%{_player}%::GuardianStaff-Active} to true
 	kitParticle_GuardianStaff_Active(location of {_player})
 	loop all players in radius 5 around {_player}:
 		loop-player is not {_player}
 		kitCheckTeam({_player}, loop-player, true) is true
 		add loop-player to {_allies::*}
-		set {Stats.%loop-player%::GuardianStaff-Received} to {_player}
+		set {-Stats.%loop-player%::GuardianStaff-Received} to {_player}
 		kitParticle_GuardianStaff_Received(loop-player)
 	loop all players:
 		{_allies::*} does not contain loop-player
-		{Stats.%loop-player%::GuardianStaff-Received} is {_player}
-		delete {Stats.%loop-player%::GuardianStaff-Received}
+		{-Stats.%loop-player%::GuardianStaff-Received} is {_player}
+		delete {-Stats.%loop-player%::GuardianStaff-Received}
 
 function kitParticle_GuardianStaff_Active(baseloc: location):
 	set {_rad} to 0

@@ -5,7 +5,7 @@ on sneak toggle:
 	set {_tool} to player's tool
 	if kitItemAllChecker({_tool}, "Warrior", "Skill", 8) is true:
 		checkCT(player, name of {_tool}) is true
-		{Stats.%player%::SonicBoom} is not set
+		{-Stats.%player%::SonicBoom} is not set
 		set {_num} to 0
 		wait a tick
 		set {_true} to false
@@ -32,7 +32,7 @@ on sneak toggle:
 				wait a tick
 		if {_true} is true:
 			set {_charge} to floor({_num} / 5)
-			set {Stats.%player%::SonicBoom} to {_charge}
+			set {-Stats.%player%::SonicBoom} to {_charge}
 			playSound("block.beacon.ambient", 1, 2, player)  # ボワーンみたいな音
 			# --- ボワーンみたいな演出 ---
 			set {_baseloc} to location of player
@@ -49,11 +49,11 @@ on sneak toggle:
 
 function kitSkill_Warrior_8(player: player):
 	toolCT({_player}, "Warrior", 8)
-	if {Stats.%{_player}%::SonicBoom} is not set:
-		set {Stats.%{_player}%::SonicBoom} to 1
+	if {-Stats.%{_player}%::SonicBoom} is not set:
+		set {-Stats.%{_player}%::SonicBoom} to 1
 	kitMsg({_player}, "<##f0ffff>ソニックブーム!")
 	set {_baseloc} to location of head of {_player}
-	loop {Stats.%{_player}%::SonicBoom} times:
+	loop {-Stats.%{_player}%::SonicBoom} times:
 		add 1 to {_metre}
 		set {_loc} to location {_metre} meters in front of {_baseloc}
 		add 1 to y-coordinate of {_loc}
@@ -66,7 +66,7 @@ function kitSkill_Warrior_8(player: player):
 			set {_hit::%id of loop-entity%} to true
 			kitDamage({_player}, loop-entity, 3)
 		wait a tick
-	delete {Stats.%{_player}%::SonicBoom}
+	delete {-Stats.%{_player}%::SonicBoom}
 
 function kitEffect_SonicBoom_1(from: location, to: location):
 	set {_vector} to setVector({_from}, {_to})
@@ -88,7 +88,7 @@ function kitEffect_SonicBoom_2(player: player):
 		set {_tool} to {_player}'s tool
 		if kitItemAllChecker({_tool}, "Warrior", "Skill", 8) is false:
 			set {_true} to false
-		else if {Stats.%{_player}%::SonicBoom} is not set:
+		else if {-Stats.%{_player}%::SonicBoom} is not set:
 			delete {_true}
 		# 持っている際のパーティクル演出とAction Bar表記
 		if {_true} is true:
@@ -105,5 +105,5 @@ function kitEffect_SonicBoom_2(player: player):
 			wait a tick
 	# 持っていなかった際の処理とAction Bar表記
 	if {_true} is false:
-		delete {Stats.%{_player}%::SonicBoom}
+		delete {-Stats.%{_player}%::SonicBoom}
 		send action bar "§c§lチャージが消滅しました" to {_player}

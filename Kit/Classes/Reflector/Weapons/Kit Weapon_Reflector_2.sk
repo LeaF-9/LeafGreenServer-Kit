@@ -5,8 +5,8 @@ on damage of player with priority NORMAL:
 	checkDamagable(victim) is true
 	set {_attacker} to getAttacker(victim)
 	{_attacker} is set
-	{Stats.%victim%::MirrorBlade} is true
-	delete {Stats.%victim%::MirrorBlade}
+	{-Stats.%victim%::MirrorBlade} is true
+	delete {-Stats.%victim%::MirrorBlade}
 	set {_dmg} to getDamageModification_ALL(victim, damage)
 	cancel event
 	kitMsg(victim, "§e§lパリィ§f成功!")
@@ -29,9 +29,9 @@ on sneak toggle:
 local function kitEffect_MirrorBlade(player: player):
 	kitParticle_MirrorBlade_Launch({_player})
 	sendTimeBossbar_GREEN({_player}, "Mirror Blade", 3)
-	set {Stats.%{_player}%::MirrorBlade} to true
+	set {-Stats.%{_player}%::MirrorBlade} to true
 	wait 3 ticks
-	delete {Stats.%{_player}%::MirrorBlade}
+	delete {-Stats.%{_player}%::MirrorBlade}
 
 
 

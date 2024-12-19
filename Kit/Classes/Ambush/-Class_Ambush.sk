@@ -19,13 +19,13 @@ on damage:
 
 on damage:
 	name of attacker's tool is "§5Dizzy Knife"
-	{Stats.%attacker%::LatentEscape} is not set
+	{-Stats.%attacker%::LatentEscape} is not set
 	apply blindness 1 to victim for 1 seconds
 
 on damage of player:
-	if {Stats.%attacker%::LatentEscape} is true:
+	if {-Stats.%attacker%::LatentEscape} is true:
 		cancel event
-	if {Stats.%victim%::LatentEscape} is true:
+	if {-Stats.%victim%::LatentEscape} is true:
 		cancel event
 
 on rightclick holding a firework star:
@@ -65,12 +65,12 @@ on sneak toggle:
 	{CLS::%player%} is "AMB"
 	if player is not sneaking:
 		message "{@prefix} §75秒お待ち下さい..."
-		set {Stats.%player%::SpyPrepare} to true
+		set {-Stats.%player%::SpyPrepare} to true
 		set {_Spy} to 20
-		while {Stats.%player%::SpyPrepare} is set:
+		while {-Stats.%player%::SpyPrepare} is set:
 			subtract 1 from {_Spy}
 			if {_Spy} is less than 0:
-				delete {Stats.%player%::SpyPrepare}
+				delete {-Stats.%player%::SpyPrepare}
 			wait 5 ticks
 		if {_Spy} is less than 0:
 			set {Invisible::%player%} to true
@@ -97,8 +97,8 @@ on sneak toggle:
 			delete {Invisible::%player%}
 			reveal player from all players
 			set action bar of player to "§b§l透明化が解除されました!"
-		else if {Stats.%player%::SpyPrepare} is true:
-			delete {Stats.%player%::SpyPrepare}
+		else if {-Stats.%player%::SpyPrepare} is true:
+			delete {-Stats.%player%::SpyPrepare}
 
 on rightclick holding a 409:
 	name of player's tool is "§bSwift Slay"
@@ -134,10 +134,10 @@ on rightclick holding a gray dye:
 		loop all players:
 			{CLS::%loop-player%} is not "THI"
 			hide player from loop-player
-		set {Stats.%player%::LatentEscape} to true
+		set {-Stats.%player%::LatentEscape} to true
 		set {CT.%player%::%name of player's tool%} to 30
 		wait 5 seconds
-		delete {Stats.%player%::LatentEscape}
+		delete {-Stats.%player%::LatentEscape}
 		reveal the player from all players
 		set action bar of player to "§b§l透明化が解除されました!"
 	else:

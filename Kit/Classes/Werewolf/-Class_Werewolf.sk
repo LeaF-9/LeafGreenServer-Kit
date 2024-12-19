@@ -8,7 +8,7 @@ on rightclick holding a wolf spawn egg:
 	Name of player's tool is "§7Tame Wolf"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::Instinct} is not set:
+		if {-Stats.%player%::Instinct} is not set:
 			set {CT.%player%::%name of player's tool%} to 50
 			set {_num} to 0
 			loop all wolves:
@@ -42,8 +42,8 @@ on damage of wolf:
 
 on damage:
 	{CLS::%attacker%} is "WLF"
-	if {Stats.%attacker%::Instinct} is true:
-		set damage to damage * {Stats.%attacker%::InstinctPower}
+	if {-Stats.%attacker%::Instinct} is true:
+		set damage to damage * {-Stats.%attacker%::InstinctPower}
 
 on death of player:
 	loop all wolves:
@@ -62,7 +62,7 @@ on rightclick holding a bone:
 	name of player's tool is "§8Leading Wolves"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::Instinct} is not set:
+		if {-Stats.%player%::Instinct} is not set:
 			loop all wolves:
 				loop-wolf's display name is "%player%"
 				set {_vs} to true
@@ -99,7 +99,7 @@ on rightclick holding a raw beef:
 	name of player's tool is "§dWolf Ferocity"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::Instinct} is not set:
+		if {-Stats.%player%::Instinct} is not set:
 			loop all wolves:
 				loop-wolf's display name is "%player%"
 				set {_vs} to true
@@ -122,7 +122,7 @@ on rightclick holding a egg:
 	name of player's tool is "§7Baby Birth"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::Instinct} is not set:
+		if {-Stats.%player%::Instinct} is not set:
 			set {CT.%player%::§7Baby Birth} to 50
 			loop 5 times:
 				spawn a baby wolf at player
@@ -156,7 +156,7 @@ on damage:
 	if type of attacker is wolf:
 		if metadata value "babybirth" of attacker is "true":
 			set damage to 1
-		if {Stats.%attacker's display name%::Gorging} is true:
+		if {-Stats.%attacker's display name%::Gorging} is true:
 			heal attacker by 1 heart
 			play raw sound "mob.zombie.wood" at attacker with pitch 1.2 volume 0.5
 			drawDot count 1, particle "heart", center attacker, visibleRange 30
@@ -168,13 +168,13 @@ on rightclick holding a blaze powder:
 	name of player's tool is "§5Gorging"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::Instinct} is not set:
+		if {-Stats.%player%::Instinct} is not set:
 			loop all wolves:
 				loop-wolf's display name is "%player%"
 				set {_vs} to true
 			if {_vs} is true:
 				set {CT.%player%::§5Gorging} to 30
-				set {Stats.%player%::Gorging} to true
+				set {-Stats.%player%::Gorging} to true
 				message "{@prefix} §c狼達が獲物めがけて飛びかかります...!"
 				loop 5 times:
 					loop all wolves:
@@ -189,7 +189,7 @@ on rightclick holding a blaze powder:
 							play raw sound "mob.wolf.howl" at loop-wolf with pitch 1.1 volume 0.2
 							drawDot count 1, particle "flame", center loop-wolf, visibleRange 30, keepFor 1 second
 					wait a second
-				delete {Stats.%player%::Gorging}
+				delete {-Stats.%player%::Gorging}
 			else:
 				set action bar of player to "§c§l狼がいないと発動できません!"
 		else:
@@ -201,10 +201,10 @@ on rightclick holding a redstone:
 	name of player's tool is "§4Instinct Release"
 	cancel event
 	if {CT.%player%::§4Instinct} is not set:
-		if {Stats.%player%::Instinct} is not set:
+		if {-Stats.%player%::Instinct} is not set:
 			wait a tick
 			set {CT.%player%::§4Instinct} to 10
-			set {Stats.%player%::Instinct} to true
+			set {-Stats.%player%::Instinct} to true
 			message "{@prefix} §4野生解放を行った..."
 			set {_hp} to health of player
 			if {Stagerule::%{KitPvP_Stage}%} is "EmJ":
@@ -224,14 +224,14 @@ on rightclick holding a redstone:
 				give a sheep spawn egg named "§7Wool" to player
 			drawDot count 3, particle "mobspell", RGB 100, 0, 0, center player, visibleRange 30, keepFor 60 ticks
 			play raw sound "mob.wolf.growl" at player with pitch 0.5 volume 1
-			set {Stats.%player%::InstinctPower} to 1
+			set {-Stats.%player%::InstinctPower} to 1
 			set {_lim} to 0
 			loop all wolves:
 				loop-wolf's display name is "%player%"
 				if {_lim} < 5:
 					metadata value "babybirth" of loop-wolf is not set
 					add 1 to {_lim}
-					add 0.1 to {Stats.%player%::InstinctPower}
+					add 0.1 to {-Stats.%player%::InstinctPower}
 				delete loop-wolf
 		else:
 			set action bar of player to "§c§l野性解放中は使用できないSkillです"
@@ -242,7 +242,7 @@ on rightclick holding a leather:
 	name of player's tool is "§6Feral Pounce"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::Instinct} is true:
+		if {-Stats.%player%::Instinct} is true:
 			if {Ult.%player%::Werewolf} is true:
 				set {CT.%player%::%name of player's tool%} to 3
 				message "{@prefix} §4噛み付こうと飛び出した!"
@@ -260,15 +260,15 @@ on rightclick holding a leather:
 					wait a tick
 			else:
 				set {CT.%player%::%name of player's tool%} to 30
-				set {Stats.%player%::Feral Pounce} to true
+				set {-Stats.%player%::Feral Pounce} to true
 				message "{@prefix} §b足の動きが早くなった!"
 				play raw sound "mob.wolf.bark" at player with pitch 2 volume 1
 				drawDot count 1, particle "mobspell", RGB 50, 255, 255, center player, visibleRange 32, keepFor 10 seconds
 				apply speed 1 to player for 10 seconds
-				subtract 0.1 from {Stats.%player%::InstinctPower}
+				subtract 0.1 from {-Stats.%player%::InstinctPower}
 				wait 10 seconds
-				{Stats.%player%::Feral Pounce} is set
-				add 0.1 to {Stats.%player%::InstinctPower}
+				{-Stats.%player%::Feral Pounce} is set
+				add 0.1 to {-Stats.%player%::InstinctPower}
 		else:
 			set action bar of player to "§c§l野性解放済でないと使用できないSkillです"
 	else:
@@ -278,7 +278,7 @@ on rightclick holding a bone:
 	name of player's tool is "§4Bestial Wolf"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::Instinct} is true:
+		if {-Stats.%player%::Instinct} is true:
 			if {Ult.%player%::Werewolf} is true:
 				set {CT.%player%::%name of player's tool%} to 3
 			else:
@@ -336,7 +336,7 @@ on rightclick holding a blaze powder:
 	name of player's tool is "§5Fearful Howling"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::Instinct} is true:
+		if {-Stats.%player%::Instinct} is true:
 			if {Ult.%player%::Werewolf} is true:
 				set {CT.%player%::%name of player's tool%} to 5
 			else:
@@ -371,7 +371,7 @@ on rightclick holding a fire charge:
 	name of player's tool is "§0Fiercely Bark"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::Instinct} is true:
+		if {-Stats.%player%::Instinct} is true:
 			if {Ult.%player%::Werewolf} is true:
 				set {CT.%player%::%name of player's tool%} to 5
 			else:
@@ -398,7 +398,7 @@ on rightclick holding a bonemeal:
 	name of player's tool is "§6Pack Assault"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::Instinct} is true:
+		if {-Stats.%player%::Instinct} is true:
 			if {Ult.%player%::Werewolf} is true:
 				set {CT.%player%::%name of player's tool%} to 4
 			else:
@@ -452,10 +452,10 @@ on rightclick holding a emerald:
 		if {Ult.%player%::Werewolf} is true:
 			message "{@prefix} §c§l必殺技発動中は理性が聞かない!"
 			stop
-		if {Stats.%player%::Instinct} is true:
+		if {-Stats.%player%::Instinct} is true:
 			wait a tick
 			set {CT.%player%::§4Instinct} to 10
-			delete {Stats.%player%::Instinct}
+			delete {-Stats.%player%::Instinct}
 			message "{@prefix} §2理性を取り戻した..."
 			set {_hp} to health of player
 			if {Stagerule::%{KitPvP_Stage}%} is "EmJ":
@@ -475,7 +475,7 @@ on rightclick holding a emerald:
 				give a sheep spawn egg named "§7Wool" to player
 			drawDot count 3, particle "mobspell", RGB 0, 100, 0, center player, visibleRange 30, keepFor 60 ticks
 			play raw sound "mob.wolf.whine" at player with pitch 1.1 volume 1
-			delete {Stats.%player%::InstinctPower}
+			delete {-Stats.%player%::InstinctPower}
 		else:
 			set action bar of player to "§c§l野性解放済でないと使用できないSkillです"
 	else:

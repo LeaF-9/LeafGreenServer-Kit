@@ -154,7 +154,7 @@ on damage:
 			stop
 	metadata value "deletemob" of victim is "true"
 	set {_d} to victim's display name
-	if {Stats.%{_d}%::Invincibly} is true:
+	if {-Stats.%{_d}%::Invincibly} is true:
 		cancel event
 	else:
 		if damage was caused by fall:
@@ -263,14 +263,14 @@ on rightclick holding a 405:
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
 		set {CT.%player%::%name of player's tool%} to 30
-		set {Stats.%player%::Invincibly} to true
+		set {-Stats.%player%::Invincibly} to true
 		message "{@prefix} §5全ての従者を5秒間無敵化した...!"
 		play raw sound "portal.travel" at player with pitch 1 volume 1
 		loop all entities:
 			loop-entity's display name is name of player
 			drawDot count 5, particle "mobspell", RGB 100, 50, 0, center loop-entity, visibleRange 30, keepFor 100 ticks
 		wait 5 seconds
-		delete {Stats.%player%::Invincibly}
+		delete {-Stats.%player%::Invincibly}
 	else:
 		set action bar of player to "§c§lクールタイムが終わっていません!"
 
@@ -312,10 +312,10 @@ on rightclick holding a 406:
 		if distance between location of {_tb} and player <= 5:
 			if block above {_tb} is air:
 				set {CT.%player%::%name of player's tool%} to 50
-				if {Stats.%player%::MonsterSpawner} is true:
-					set the block at {Stats.%player%::SpawnerLoc} to air
-					remove {Stats.%player%::SpawnerLoc} from {Block.%player%::*}
-					play raw sound "random.break" at {Stats.%player%::SpawnerLoc} with pitch 1 volume 1
+				if {-Stats.%player%::MonsterSpawner} is true:
+					set the block at {-Stats.%player%::SpawnerLoc} to air
+					remove {-Stats.%player%::SpawnerLoc} from {Block.%player%::*}
+					play raw sound "random.break" at {-Stats.%player%::SpawnerLoc} with pitch 1 volume 1
 					message "{@prefix} §6既に設置してあるスポナーを壊しました"
 				if {CLS::%player%} is "SUM":
 					set {_ti} to slot 1 of player
@@ -332,9 +332,9 @@ on rightclick holding a 406:
 				message "{@prefix} §5%{_type}% §4のスポナーを設置しました..."
 				set {_tg} to location of block above {_tb}
 				play raw sound "dig.stone" at location of {_tb} with pitch 1 volume 1
-				set {Stats.%player%::MonsterSpawner} to true
-				set {Stats.%player%::SpawnerLoc} to {_tg}
-				set {Stats.%player%::SpawnerType} to {_type}
+				set {-Stats.%player%::MonsterSpawner} to true
+				set {-Stats.%player%::SpawnerLoc} to {_tg}
+				set {-Stats.%player%::SpawnerType} to {_type}
 				add {_tg} to {Block.%player%::*}
 				set block at {_tg} to 153:0
 	else:
@@ -342,43 +342,43 @@ on rightclick holding a 406:
 
 on leftclick on 153:0:
 	loop all players:
-		location of target block is {Stats.%loop-player%::SpawnerLoc}
+		location of target block is {-Stats.%loop-player%::SpawnerLoc}
 		if {team::%loop-player%} is not {team::%player%}:
-			set the block at {Stats.%loop-player%::SpawnerLoc} to air
-			remove {Stats.%loop-player%::SpawnerLoc} from {Block.%loop-player%::*}
-			play raw sound "random.break" at {Stats.%loop-player%::SpawnerLoc} with pitch 1 volume 1
+			set the block at {-Stats.%loop-player%::SpawnerLoc} to air
+			remove {-Stats.%loop-player%::SpawnerLoc} from {Block.%loop-player%::*}
+			play raw sound "random.break" at {-Stats.%loop-player%::SpawnerLoc} with pitch 1 volume 1
 			message "§cスポナーが壊された!" to loop-player
 			message "§bスポナーを壊した!"
-			delete {Stats.%loop-player%::SpawnerLoc}
-			delete {Stats.%loop-player%::MonsterSpawner}
-			delete {Stats.%loop-player%::SpawnerType}
+			delete {-Stats.%loop-player%::SpawnerLoc}
+			delete {-Stats.%loop-player%::MonsterSpawner}
+			delete {-Stats.%loop-player%::SpawnerType}
 
 on projectile hit:
 	loop all blocks in radius 3 around projectile:
 		loop-block is 153:0
 		loop all players:
-			location of loop-block is {Stats.%loop-player%::SpawnerLoc}
+			location of loop-block is {-Stats.%loop-player%::SpawnerLoc}
 			if {team::%loop-player%} is not {team::%shooter%}:
-				set the block at {Stats.%loop-player%::SpawnerLoc} to air
-				remove {Stats.%loop-player%::SpawnerLoc} from {Block.%loop-player%::*}
-				play raw sound "random.break" at {Stats.%loop-player%::Spawnerloc} with pitch 1 volume 1
+				set the block at {-Stats.%loop-player%::SpawnerLoc} to air
+				remove {-Stats.%loop-player%::SpawnerLoc} from {Block.%loop-player%::*}
+				play raw sound "random.break" at {-Stats.%loop-player%::Spawnerloc} with pitch 1 volume 1
 				message "§cスポナーが壊された!" to loop-player
 				message "§bスポナーを壊した!" to shooter
-				delete {Stats.%loop-player%::SpawnerLoc}
-				delete {Stats.%loop-player%::MonsterSpawner}
-				delete {Stats.%loop-player%::SpawnerType}
+				delete {-Stats.%loop-player%::SpawnerLoc}
+				delete {-Stats.%loop-player%::MonsterSpawner}
+				delete {-Stats.%loop-player%::SpawnerType}
 
 every a second:
 	loop all players:
-		{Stats.%loop-player%::MonsterSpawner} is true
-		loop all blocks in radius 1.5 around location of {Stats.%loop-player%::SpawnerLoc}:
+		{-Stats.%loop-player%::MonsterSpawner} is true
+		loop all blocks in radius 1.5 around location of {-Stats.%loop-player%::SpawnerLoc}:
 			loop-block is air
 			chance of 50%:
 				drawDot count 1, particle "flame", center location of loop-block, visibleRange 30
 
 every 10 seconds:
 	loop all players:
-		{Stats.%loop-player%::MonsterSpawner} is true
+		{-Stats.%loop-player%::MonsterSpawner} is true
 		set {_num} to 0
 		loop all entities:
 			type of loop-entity-2 is a zombie pigman, a wither skeleton or a blaze
@@ -386,32 +386,32 @@ every 10 seconds:
 			loop-entity-2's display name is "%loop-player%"
 			add 1 to {_num}
 		{_num} < 10
-		loop all blocks in radius 3 around location of {Stats.%loop-player%::SpawnerLoc}:
-			y-coordinate of loop-block is y-coordinate of {Stats.%loop-player%::SpawnerLoc}
+		loop all blocks in radius 3 around location of {-Stats.%loop-player%::SpawnerLoc}:
+			y-coordinate of loop-block is y-coordinate of {-Stats.%loop-player%::SpawnerLoc}
 			loop-block is air
 			add location of loop-block to {_loc::*}
 		set {_num} to a random integer between 1 and 5
 		loop {_num} times:
 			set {_l} to a random location out of {_loc::*}
-			if {Stats.%loop-player%::SpawnerType} is "Zombie Pigman":
+			if {-Stats.%loop-player%::SpawnerType} is "Zombie Pigman":
 				spawn a adult zombie pigman at {_l}
 				set metadata value "deletemob" of spawned zombie pigman to "true"
 				set spawned zombie pigman's tool to golden sword
 				set spawned zombie pigman's display name to "%loop-player%"
 				drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned zombie pigman, visibleRange 30, keepFor 20 ticks
-			else if {Stats.%loop-player%::SpawnerType} is "Wither Skeleton":
+			else if {-Stats.%loop-player%::SpawnerType} is "Wither Skeleton":
 				spawn a wither skeleton at {_l}
 				set metadata value "deletemob" of spawned wither skeleton to "true"
 				set spawned wither skeleton's tool to bone
 				apply slowness 3 to spawned wither skeleton for 10000000000 seconds
 				set spawned wither skeleton's display name to "%loop-player%"
 				drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned wither skeleton, visibleRange 30, keepFor 20 ticks
-			else if {Stats.%loop-player%::SpawnerType} is "Blaze":
+			else if {-Stats.%loop-player%::SpawnerType} is "Blaze":
 				spawn a blaze at {_l}
 				set metadata value "deletemob" of spawned blaze to "true"
 				set spawned blaze's display name to "%loop-player%"
 				drawDot count 1, particle "mobspell", RGB 100, 0, 100, center spawned blaze, visibleRange 30, keepFor 20 ticks
-			else if {Stats.%loop-player%::SpawnerType} is "Silver Fish":
+			else if {-Stats.%loop-player%::SpawnerType} is "Silver Fish":
 				spawn a silverfish at {_l}
 				set metadata value "deletemob" of spawned silverfish to "true"
 				set spawned silverfish's display name to "%loop-player%"

@@ -1,7 +1,7 @@
 # Tracking System
 
 function kitSkill_Engineer_4(player: player):
-	set {_loc} to {Stats.%{_player}%::SkillLocation}
+	set {_loc} to {-Stats.%{_player}%::SkillLocation}
 	if {_loc} is not set:
 		nullEngineerPlacePosition({_player})
 		stop
@@ -16,7 +16,7 @@ function kitSkill_Engineer_4(player: player):
 		add 0.2 to {_allnum}
 	if {_allnum} >= 5:
 		set {_toptime} to 0	
-		loop {Stats.%{_player}%::*}:
+		loop {-Stats.%{_player}%::*}:
 			loop-index contains "TrackingSystem-Time"
 			set {_value} to loop-value
 			set {_ditime} to "%difference between {_value} and {_now}%"
@@ -26,16 +26,16 @@ function kitSkill_Engineer_4(player: player):
 				set {_index} to loop-index
 		replace "TrackingSystem-Time-" with "" in {_index}
 		kitFakeDeleteData({_player}, "Machine-Tracking System-%{_index}%")
-		delete {Stats.%{_player}%::TrackingSystem-Time-%{_index}%}
-	add 1 to {Stats.%{_player}%::TrackingSystem-Number}
-	set {_num} to {Stats.%{_player}%::TrackingSystem-Number}
+		delete {-Stats.%{_player}%::TrackingSystem-Time-%{_index}%}
+	add 1 to {-Stats.%{_player}%::TrackingSystem-Number}
+	set {_num} to {-Stats.%{_player}%::TrackingSystem-Number}
 	set {_blockdisplay} to kitEffect_TrackingSystem_Machine({_player}, {_num}, {_loc})
 	set {_baseloc} to {_loc}
 	add 0.5 to y-coordinate of {_baseloc}
-	set {Stats.%{_player}%::TrackingSystem-Time-%{_num}%} to {_now}
+	set {-Stats.%{_player}%::TrackingSystem-Time-%{_num}%} to {_now}
 	kitMsg({_player}, "<##0075C2>Tracking System§bを設置しました!")
 	playSound("block.respawn_anchor.charge", 1, 2, {_loc})
-	while {Stats.%{_player}%::TrackingSystem-Time-%{_num}%} is {_now}:
+	while {-Stats.%{_player}%::TrackingSystem-Time-%{_num}%} is {_now}:
 		wait a tick
 		delete {_true}
 		loop all entities in radius 5 around {_loc}:
@@ -80,7 +80,7 @@ function kitSkill_Engineer_4(player: player):
 			else:
 				set glowing of {_blockdisplay} to false
 		else:
-			delete {Stats.%{_player}%::TrackingSystem-Time-%{_num}%}
+			delete {-Stats.%{_player}%::TrackingSystem-Time-%{_num}%}
 
 local function kitEffect_TrackingSystem_Machine(player: player, num: number, loc: location) :: entity:
 	# foot

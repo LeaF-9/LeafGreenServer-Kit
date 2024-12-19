@@ -4,19 +4,19 @@ function kitUltGhost(player: player):
 	kitParticle_HellishOccultism_Form({_player})
 	remove invisibility from {_player}
 	allow fly for {_player}
-	set {Stats.%{_player}%::UltGhost} to true
+	set {-Stats.%{_player}%::UltGhost} to true
 	execute console command "/displayer %{_player}% Wither"
 	loop 200 times:
-		if {Stats.%{_player}%::UltGhost} is true:
+		if {-Stats.%{_player}%::UltGhost} is true:
 			wait a tick
-	delete {Stats.%{_player}%::UltGhost}
+	delete {-Stats.%{_player}%::UltGhost}
 	if gamemode of {_player} is survival:
 		disallow fly for {_player}
 		apply invisibility 1 to {_player} for 100000000000 seconds
 	execute console command "/undisplayer %{_player}%"
-	set {Stats.%{_player}%::UltGhostFalling} to true
+	set {-Stats.%{_player}%::UltGhostFalling} to true
 	wait 5 seconds
-	delete {Stats.%{_player}%::UltGhostFalling}
+	delete {-Stats.%{_player}%::UltGhostFalling}
 
 function kitParticle_HellishOccultism_Form(player: player):
 	loop 200 times:
@@ -25,13 +25,13 @@ function kitParticle_HellishOccultism_Form(player: player):
 
 on damage of player:
 	metadata value "gametype" of victim is "Kit"
-	{Stats.%victim%::UltGhostFalling} is true
-	delete {Stats.%victim%::UltGhostFalling}
+	{-Stats.%victim%::UltGhostFalling} is true
+	delete {-Stats.%victim%::UltGhostFalling}
 	cancel event
 
 on leftclick:
 	metadata value "gametype" of player is "Kit"
-	{Stats.%player%::UltGhost} is true
+	{-Stats.%player%::UltGhost} is true
 	checkCT(player, "Ghost Ult") is true
 	setCT(player, "Ghost Ult", 1)
 	set {_p} to location of head of player

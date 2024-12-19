@@ -3,7 +3,7 @@
 function kitSkill_Archer_3(player: player):
 	toolCT({_player}, "Archer", 3)
 	kitMsg({_player}, "§1矢の雨を降らせる卵を発射します...!")
-	set {Stats.%{_player}%::ArrowRain} to location of {_player}
+	set {-Stats.%{_player}%::ArrowRain} to location of {_player}
 	shoot an egg from {_player} at speed 1.5
 	set metadata value "arrowegg" of shot entity to "true"
 	set {_shotegg} to shot entity
@@ -15,9 +15,9 @@ function kitSkill_Archer_3(player: player):
 on projectile hit:
 	projectile is an egg
 	metadata value "arrowegg" of projectile is set
-	{Stats.%shooter%::ArrowRain} is set
+	{-Stats.%shooter%::ArrowRain} is set
 	playSound("entity.generic.burn", 1, 0.5, location of projectile)
-	set {_face} to {Stats.%shooter%::ArrowRain}
+	set {_face} to {-Stats.%shooter%::ArrowRain}
 	set {_baseloc} to location of block at projectile
 	set {_y} to y-coordinate of {_baseloc}
 	set y-coordinate of {_face} to {_y}

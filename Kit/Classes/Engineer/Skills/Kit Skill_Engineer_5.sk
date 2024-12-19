@@ -1,14 +1,14 @@
 # Dowsing Machine
 
 function kitSkill_Engineer_5(player: player):
-	set {_loc} to {Stats.%{_player}%::SkillLocation}
+	set {_loc} to {-Stats.%{_player}%::SkillLocation}
 	if {_loc} is not set:
 		nullEngineerPlacePosition({_player})
 		stop
 
 	toolCT({_player}, "Engineer", 5)
 	set {_now} to now
-	set {Stats.%{_player}%::DowsingMachine-Time} to {_now}
+	set {-Stats.%{_player}%::DowsingMachine-Time} to {_now}
 	kitFakeDeleteData({_player}, "Machine-Dowsing Machine")
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
@@ -26,7 +26,7 @@ function kitSkill_Engineer_5(player: player):
 
 	# coreを回転させる関数
 	kitEffect_DowsingMachine_Core({_player}, {_coredisplay})
-	while {Stats.%{_player}%::DowsingMachine-Time} is {_now}:
+	while {-Stats.%{_player}%::DowsingMachine-Time} is {_now}:
 		wait a second
 		loop all players in radius 20 around {_loc.core}:
 			kitCheckTeam({_player}, loop-player, false) is true
@@ -52,16 +52,16 @@ function kitSkill_Engineer_5(player: player):
 				kitParticle_DowsingMachine_Beam({_el})
 		set {_exist} to kitFakeCheck({_player}, "Machine-Dowsing Machine")
 		if {_exist} is false:
-			delete {Stats.%{_player}%::DowsingMachine-Time}
+			delete {-Stats.%{_player}%::DowsingMachine-Time}
 
 local function kitEffect_DowsingMachine_Core(player: player, display: entity):
-	set {_now} to {Stats.%{_player}%::DowsingMachine-Time}
+	set {_now} to {-Stats.%{_player}%::DowsingMachine-Time}
 	set {_yaw} to yaw of {_display}
 	set {_rotate.yaw} to 40
 	set {_add.yaw} to {_rotate.yaw} / 20
 
 	set {_ln} to 0
-	while {Stats.%{_player}%::DowsingMachine-Time} is {_now}:
+	while {-Stats.%{_player}%::DowsingMachine-Time} is {_now}:
 		delete {_exist}
 		loop all block displays:
 			loop-block display is {_display}

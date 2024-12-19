@@ -1,7 +1,7 @@
 # Death Blow
 
 function kitUltAssassin(player: player):
-	set {Stats.%{_player}%::UltAssassin} to true
+	set {-Stats.%{_player}%::UltAssassin} to true
 	loop 200 times:
 		delete {_enemy}
 		loop all players in radius 5 around {_player}:
@@ -18,12 +18,12 @@ function kitUltAssassin(player: player):
 			set {_eb} to aroundEffect({_player})
 			spawnParticle_Color(entity_effect, rgb(100, 0, 10), {_eb})
 		wait a tick
-	delete {Stats.%{_player}%::UltAssassin}
+	delete {-Stats.%{_player}%::UltAssassin}
 	if getInvisibleRepeats({_player}) is true:
 		kitInvisibleRepeat_Stop({_player})
 
 on rightclick:
-	if {Stats.%player%::UltAssassin} is true:
+	if {-Stats.%player%::UltAssassin} is true:
 		set {_tp} to target player
 		{_tp} is set
 		set {_dis} to the distance between player and {_tp}
@@ -38,7 +38,7 @@ on rightclick:
 on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	{Class::%{_attacker}%} is "Assassin"
-	if {Stats.%{_attacker}%::UltAssassin} is true:
+	if {-Stats.%{_attacker}%::UltAssassin} is true:
 		if victim's facing is {_attacker}'s facing:
 			setDamageModification_FIX(victim, 100)
 			send action bar "§0§l暗殺に成功した..." to {_attacker}

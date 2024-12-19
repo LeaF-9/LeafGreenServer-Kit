@@ -20,7 +20,7 @@ on rightclick holding a stone hoe:
 		block below loop-block is not air, crops, carrot plant or potato plant
 		add location of loop-block to {Block.%player%::*}
 		add location of loop-block to {_crops::*}
-	set {_ct} to {Stats.%player%::CropType}
+	set {_ct} to {-Stats.%player%::CropType}
 	loop {_crops::*}:
 		if {Ult.%player%::Farmer} is true:
 			if {_ct} is "wheat":
@@ -70,15 +70,15 @@ on rightclick:
 	if name of player's tool contains "Wheat":
 		remove a wheat item named "§6Crop Type §9[§aWheat§9]" from player
 		add a potato named "§6Crop Type §9[§cPotato§9]" to player
-		set {Stats.%player%::CropType} to "potato"
+		set {-Stats.%player%::CropType} to "potato"
 	else if name of player's tool contains "Potato":
 		remove a potato named "§6Crop Type §9[§cPotato§9]" from player
 		add a carrot named "§6Crop Type §9[§eCarrot§9]" to player
-		set {Stats.%player%::CropType} to "carrot"
+		set {-Stats.%player%::CropType} to "carrot"
 	else if name of player's tool contains "Carrot":
 		remove a carrot named "§6Crop Type §9[§eCarrot§9]" from player
 		add a wheat item named "§6Crop Type §9[§aWheat§9]" to player
-		set {Stats.%player%::CropType} to "wheat"
+		set {-Stats.%player%::CropType} to "wheat"
 	play raw sound "random.click" at the player with pitch 2 volume 0.2
 
 on rightclick holding a wheat seeds:
@@ -101,7 +101,7 @@ on rightclick holding a wheat seeds:
 				add location of loop-block to {_crops::*}
 		message "{@prefix} §aおおっ! 豊作だ!"
 		play raw sound "random.levelup" at {_b} with pitch 2 volume 1
-		set {_ct} to {Stats.%player%::CropType}
+		set {_ct} to {-Stats.%player%::CropType}
 		loop {_crops::*}:
 			if {Ult.%player%::Farmer} is true:
 				if {_ct} is "wheat":

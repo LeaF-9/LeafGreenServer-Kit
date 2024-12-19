@@ -1,11 +1,11 @@
 # Steal Skill
 
 function kitSkill_Thief_2(player: player):
-	if {Stats.%{_player}%::SkillTarget} is not set:
+	if {-Stats.%{_player}%::SkillTarget} is not set:
 		send action bar "§c§l対象が存在しません!" to {_player}
 		stop
 	set {_tool} to tool of {_player}
-	set {_tg} to {Stats.%{_player}%::SkillTarget}
+	set {_tg} to {-Stats.%{_player}%::SkillTarget}
 	if {Class::%{_tg}%} is "Thief":
 		set action bar of {_player} to "§c§lThiefからはスキルを盗むことが出来ません!"
 		stop
@@ -14,12 +14,12 @@ function kitSkill_Thief_2(player: player):
 		stop
 	toolCT({_player}, "Thief", 2)
 	if {Class::%{_tg}%} is "Werewolf":
-		if {Stats.%{_tg}%::Instinct} is true:
+		if {-Stats.%{_tg}%::Instinct} is true:
 			set {_type} to "Werewolf_Instinct"
 		else:
 			set {_type} to {Class::%{_tg}%}
 	else if {Class::%{_tg}%} is "Vampire":
-		if {Stats.%{_tg}%::BatMode} is true:
+		if {-Stats.%{_tg}%::BatMode} is true:
 			set {_type} to "Vampire_Bat"
 		else:
 			set {_type} to {Class::%{_tg}%}
@@ -35,8 +35,8 @@ function kitSkill_Thief_2(player: player):
 		kitMsg({_player}, "§8スキルを上手く盗めませんでした...")
 		stop
 	remove {_tool} from {_player}
-	set {Stats.%{_player}%::Stealing} to true
-	set {Stats.%{_tg}%::Stolen} to true
+	set {-Stats.%{_player}%::Stealing} to true
+	set {-Stats.%{_tg}%::Stolen} to true
 	set {_item} to a random item out of {_own::*}
 	kitItemTargetTimer({_player}, {_item})
 	set {_name} to name of {_item}
@@ -50,10 +50,10 @@ function kitSkill_Thief_2(player: player):
 	give {_item} to {_player}
 	remove all {_item} from {_tg}
 	wait 10 seconds
-	if {Stats.%{_player}%::Stealing} is true:
+	if {-Stats.%{_player}%::Stealing} is true:
 		remove all {_item} from {_player}
 		give {_tool} to {_player}
-		delete {Stats.%{_player}%::Stealing}
-	if {Stats.%{_tg}%::Stolen} is true:
+		delete {-Stats.%{_player}%::Stealing}
+	if {-Stats.%{_tg}%::Stolen} is true:
 		give {_item} to {_tg}
-		delete {Stats.%{_tg}%::Stolen}
+		delete {-Stats.%{_tg}%::Stolen}

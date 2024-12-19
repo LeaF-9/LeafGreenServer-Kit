@@ -1,11 +1,11 @@
 # Barrage Arrow
 
 on rightclick holding a bow:
-	{Stats.%player%::BarrageArrow} is true
+	{-Stats.%player%::BarrageArrow} is true
 	kitSound_BarrageArrow_Charge(player)
 
 on shoot:
-	{Stats.%shooter%::BarrageArrow} is true
+	{-Stats.%shooter%::BarrageArrow} is true
 	set {_time} to getBowDrawTime(shooter, 25)
 	cancel event
 	kitEffect_BarrageArrow_Shoot(shooter, {_time})
@@ -19,12 +19,12 @@ function kitSkill_Archer_5(player: player):
 
 
 local function kitEffect_BarrageArrow(player: player):
-	set {Stats.%{_player}%::BarrageArrow} to true
+	set {-Stats.%{_player}%::BarrageArrow} to true
 	kitMsg({_player}, "§e矢§dの§6放つ§l本数§dと§6§l速度§dが§c§l急増加§cします!")
 	kitParticle_BarrageArrow_Start({_player})
 	wait 5 seconds
-	{Stats.%{_player}%::BarrageArrow} is set
-	delete {Stats.%{_player}%::BarrageArrow}
+	{-Stats.%{_player}%::BarrageArrow} is set
+	delete {-Stats.%{_player}%::BarrageArrow}
 	kitMsg({_player}, "§cBarrage Arrow§dの効果が切れました")
 	kitSound_BarrageArrow_End({_player})
 

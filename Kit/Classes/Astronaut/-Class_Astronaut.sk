@@ -85,7 +85,7 @@ on rightclick holding a 11-disc:
 	name of player's tool is "§0Black Hole"
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
-		if {Stats.%player%::BlackHole} is true:
+		if {-Stats.%player%::BlackHole} is true:
 			message "{@prefix} §c現在発動中です..."
 		else:
 			set {_bhv} to location of block 2 above target block
@@ -97,7 +97,7 @@ on rightclick holding a 11-disc:
 			message "{@prefix} §5Black Holeを設置します..."
 			play raw sound "portal.portal" at {_tl} with pitch 5 volume 1
 			drawSphere style 1, particle "redstone", RGB 0, 0, 0, center {_bhv}, id "%player%", radius 1, density 50, visibleRange 30
-			set {Stats.%player%::BlackHole} to true
+			set {-Stats.%player%::BlackHole} to true
 			loop 60 times:
 				loop all players:
 					{team::%loop-player%} is not {team::%player%}
@@ -109,7 +109,7 @@ on rightclick holding a 11-disc:
 						set {_vector} to vector {_vector} normalized * 0.3
 						set velocity of loop-player to {_vector}
 				wait a tick
-			delete {Stats.%player%::BlackHole}
+			delete {-Stats.%player%::BlackHole}
 			stopEffect "%player%"
 			set {CT.%player%::§0Black Hole} to 50
 	else:

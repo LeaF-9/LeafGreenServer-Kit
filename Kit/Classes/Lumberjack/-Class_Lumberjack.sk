@@ -13,18 +13,18 @@ on rightclick holding a 336:
 	cancel event
 	if {CT.%player%::%name of player's tool%} is not set:
 		set {CT.%player%::%name of player's tool%} to 40
-		set {Stats.%player%::SoftenArmor} to true
+		set {-Stats.%player%::SoftenArmor} to true
 		message "{@prefix} §9防具が壊しやすくなります..."
 		play raw sound "random.pop" at player with pitch 0.5 volume 1
 		drawDot count 5, particle "redstone", RGB 255, 165, 0, center player, visibleRange 30, keepFor 10 seconds
 		wait 10 seconds
-		delete {Stats.%player%::SoftenArmor}
+		delete {-Stats.%player%::SoftenArmor}
 		message "{@prefix} §1効果が切れました"
 	else:
 		set action bar of player to "§c§lクールタイムが終わっていません!"
 
 on damage:
-	if {Stats.%attacker%::SoftenArmor} is true:
+	if {-Stats.%attacker%::SoftenArmor} is true:
 		drawDot count 5, particle "itemcrack", material helmet of victim, center victim, visibleRange 30
 		add 10 to data value of helmet of victim
 		drawDot count 5, particle "itemcrack", material chestplate of victim, center victim, visibleRange 30
@@ -123,7 +123,7 @@ on rightclick holding a 334:
 		if {_tg} is set:
 			if {team::%{_tg}%} is not {team::%player%}:
 				set {CT.%player%::%name of player's tool%} to 50
-				set {Stats.%{_tg}%::StripSkin} to true
+				set {-Stats.%{_tg}%::StripSkin} to true
 				message "{@prefix} §6%{_tg}% §eの防具を5秒間消去します!"
 				message "§c防具が消されてしまった!" to {_tg}
 				set {_he} to helmet of {_tg}
@@ -136,7 +136,7 @@ on rightclick holding a 334:
 				set boots of {_tg} to air
 				play raw sound "mob.irongolem.throw" at {_tg} with pitch 0.5 volume 1
 				wait 5 seconds
-				{Stats.%{_tg}%::StripSkin} is true
+				{-Stats.%{_tg}%::StripSkin} is true
 				set helmet of {_tg} to {_he}
 				set chestplate of {_tg} to {_ch}
 				set leggings of {_tg} to {_le}
@@ -245,7 +245,7 @@ on rightclick holding a 264:
 		set {CT.%player%::%name of player's tool%} to 50
 		message "{@prefix} §b泉の加護を受け,素晴らしい斧を受け取った!"
 		apply slowness 1 to player for 10 seconds
-		set {Stats.%player%::SpringFortune} to true
+		set {-Stats.%player%::SpringFortune} to true
 		play raw sound "random.splash" at player with pitch 1 volume 1
 		drawDot count 3, particle "mobspell", RGB 0, 255, 255, center player, visibleRange 30, keepFor 10 seconds
 		set {_tool} to slot 0 of player
@@ -254,7 +254,7 @@ on rightclick holding a 264:
 			if type of player's tool is diamond axe:
 				apply regeneration 1 to player for a tick
 			wait a tick
-		if {Stats.%player%::SpringFortune} is true:
+		if {-Stats.%player%::SpringFortune} is true:
 			if {Class::%player%} is "Lumberjack":
 				set slot 0 of player to {_tool}
 				message "{@prefix} §9泉の加護は消え去った..."

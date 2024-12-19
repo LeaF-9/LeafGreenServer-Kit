@@ -7,7 +7,7 @@ options:
 
 
 on damage of player with priority NORMAL:
-	if {Stats.%victim%::SpriteTalisman} is set:
+	if {-Stats.%victim%::SpriteTalisman} is set:
 		# 重複確認
 		set {_metadata} to metadata value {@metadata-nodamage} of victim
 		if {_metadata} is set:
@@ -20,13 +20,13 @@ on damage of player with priority NORMAL:
 			delete metadata value {@metadata-nodamage} of victim
 			
 		set {_rawdamage} to getDamageModification_ALL(victim, damage)
-		set {_dmg} to {_rawdamage} - {Stats.%victim%::SpriteTalisman}
+		set {_dmg} to {_rawdamage} - {-Stats.%victim%::SpriteTalisman}
 		if {_dmg} < 0:  # ゼロ以下になった場合はノックバックのみ
 			set {_dmg} to 0
 		setDamageModification_SET(victim, {_dmg})
-		send action bar "§4❤%{Stats.%victim%::SpriteTalisman}%§cダメージ §aを§2§l吸収§aしました!" to victim
-		set {Stats.%victim%::SpriteTalisman} to {Stats.%victim%::SpriteTalisman} - 0.5
-		if {Stats.%victim%::SpriteTalisman} <= 0:  # ダメージ減衰の効果終了時
+		send action bar "§4❤%{-Stats.%victim%::SpriteTalisman}%§cダメージ §aを§2§l吸収§aしました!" to victim
+		set {-Stats.%victim%::SpriteTalisman} to {-Stats.%victim%::SpriteTalisman} - 0.5
+		if {-Stats.%victim%::SpriteTalisman} <= 0:  # ダメージ減衰の効果終了時
 			kitEffect_SpriteTalisman_Explode(victim)
 		kitParticle_SpriteTalisman_Damage(victim)
 
@@ -51,8 +51,8 @@ local function kitEffect_SpriteTalisman(player: player):
 		setSupporter(loop-player, {_player})
 		message formatted "<##c6ff4a>ダメージを受け持つ<##98ff4a>守護の妖精<##c6ff4a>が付与された!" to loop-player
 		sendTimeBossbar_GREEN(loop-player, "<##98ff4a>§l守護の妖精", {@effect-tick})
-		set {Stats.%loop-player%::SpriteTalisman} to 2.5
-		set {Stats.%loop-player%::SpriteTalisman-Time} to {_now}
+		set {-Stats.%loop-player%::SpriteTalisman} to 2.5
+		set {-Stats.%loop-player%::SpriteTalisman-Time} to {_now}
 		kitParticle_SpriteTalisman_Apply(loop-player)
 		kitParticle_SpriteTalisman_Aura(loop-player)
 
@@ -60,16 +60,16 @@ local function kitEffect_SpriteTalisman(player: player):
 		wait a tick
 	
 	loop all players:
-		{Stats.%loop-player%::SpriteTalisman-Time} is {_now}
-		delete {Stats.%loop-player%::SpriteTalisman}
-		delete {Stats.%loop-player%::SpriteTalisman-Time}
+		{-Stats.%loop-player%::SpriteTalisman-Time} is {_now}
+		delete {-Stats.%loop-player%::SpriteTalisman}
+		delete {-Stats.%loop-player%::SpriteTalisman-Time}
 		message formatted "<##98ff4a>守護の妖精<##1d6e1b>は去っていきました..." to loop-player
 
 # 効果終了時
 local function kitEffect_SpriteTalisman_Explode(player: player):
 	kitParticle_SpriteTalisman_Explode({_player})
-	delete {Stats.%{_player}%::SpriteTalisman}
-	delete {Stats.%{_player}%::SpriteTalisman-Time}
+	delete {-Stats.%{_player}%::SpriteTalisman}
+	delete {-Stats.%{_player}%::SpriteTalisman-Time}
 	message formatted "<##005243>守護の妖精は役割を終えました..." to {_player}
 
 local function kitParticle_SpriteTalisman_Explode(player: player):
@@ -136,9 +136,9 @@ local function kitParticle_SpriteTalisman_Apply(player: player):
 			wait a tick
 
 local function kitParticle_SpriteTalisman_Aura(player: player):
-	set {_now} to {Stats.%{_player}%::SpriteTalisman-Time}
+	set {_now} to {-Stats.%{_player}%::SpriteTalisman-Time}
 	loop {@effect-tick} times:
-		if {Stats.%{_player}%::SpriteTalisman-TIme} is not {_now}:
+		if {-Stats.%{_player}%::SpriteTalisman-TIme} is not {_now}:
 			stop
 
 		set {_loc} to location of {_player}

@@ -7,7 +7,7 @@ options:
 on damage:
 	attacker is holding golden sword
 	name of attacker's tool is "§eRich Sword"
-	if {Stats.%attacker%::GoldBoost} is true:
+	if {-Stats.%attacker%::GoldBoost} is true:
 		chance of 30%:
 			drop a gold ingot named "%attacker%" at the victim
 			set {_drop} to true
@@ -64,9 +64,9 @@ on rightclick holding a blaze rod:
 		set {CT.%player%::%name of player's tool%} to 60
 		play raw sound "random.orb" at the player with pitch 0.5 volume 1
 		message "{@prefix} §e10秒間、ドロップするアイテムが§6金インゴット§eになります!"
-		set {Stats.%player%::GoldBoost} to true
+		set {-Stats.%player%::GoldBoost} to true
 		wait 10 seconds
-		delete {Stats.%player%::GoldBoost}
+		delete {-Stats.%player%::GoldBoost}
 		message "{@prefix} §e効果が切れました"
 	else:
 		set action bar of player to "§c§lクールタイムが終わっていません!"
@@ -87,7 +87,7 @@ on rightclick holding a gold block:
 					loop all players in radius 20 around location of {_gb}:
 						play raw sound "random.orb" at loop-player with pitch 2 volume 1
 						set {_lp} to location of block 2 above loop-player
-						if {Stats.%player%::GoldBoost} is true:
+						if {-Stats.%player%::GoldBoost} is true:
 							chance of 50%:
 								drop a gold ingot named "%player%" at {_lp}
 								drawDot count 1, particle "itemcrack", material gold ingot, center {_lp}, visibleRange 30, keepFor 10 ticks
@@ -122,7 +122,7 @@ on rightclick holding a gold nugget:
 			message "{@prefix} §e目先のブロック上空から金塊を降らせます!"
 			loop 10 times:
 				set {_p} to a random location out of {_gs::*}
-				if {Stats.%player%::GoldBoost} is true:
+				if {-Stats.%player%::GoldBoost} is true:
 					drop a gold ingot named "%player%" at {_p}
 					play raw sound "random.orb" at {_p} with pitch 0.5 volume 1
 				else:
@@ -157,7 +157,7 @@ on rightclick holding a blaze spawn egg:
 			make a fake explosion at {_l}
 			set {_n} to a random integer between 10 and 15
 			loop {_n} times:
-				if {Stats.%player%::GoldBoost} is true:
+				if {-Stats.%player%::GoldBoost} is true:
 					drop a gold ingot named "%player%" at {_l}
 				else:
 					drop a gold nugget named "%player%" at {_l}
@@ -191,7 +191,7 @@ on rightclick holding a glowstone dust:
 						loop {_n} times:
 							set {_p} to a random location out of {_gs::*}
 							remove {_p} from {_gs::*}
-							if {Stats.%player%::GoldBoost} is true:
+							if {-Stats.%player%::GoldBoost} is true:
 								drop a gold ingot named "%player%" at {_p}
 							else:
 								drop a gold nugget named "%player%" at {_p}
@@ -212,7 +212,7 @@ on rightclick holding a glowstone dust:
 on rightclick holding a gold ingot:
 	name of player's tool is "§eDrop Golds"
 	cancel event
-	if {Stats.%player%::GoldBoost} is true:
+	if {-Stats.%player%::GoldBoost} is true:
 		drop a gold ingot named "%player%" at player
 		play raw sound "random.orb" at the player with pitch 0.5 volume 1
 	else:
@@ -225,7 +225,7 @@ on rightclick holding a gold ingot:
 
 on player eating of 322:
 	{CLS::%player%} is "RCH"
-	if {Stats.%player%::GoldBoost} is true:
+	if {-Stats.%player%::GoldBoost} is true:
 		drop 1 gold ingot named "%player%" at the player
 	else:
 		drop 1 gold nugget named "%player%" at the player
@@ -242,7 +242,7 @@ every 3 seconds:
 	loop all players:
 		{CLS::%loop-player%} is "RCH"
 		loop-player's health is less than 3
-		if {Stats.%loop-player%::GoldBoost} is true:
+		if {-Stats.%loop-player%::GoldBoost} is true:
 			drop 1 gold ingot named "%loop-player%" at loop-player's location
 		else:
 			drop 1 gold nugget named "%loop-player%" at loop-player's location

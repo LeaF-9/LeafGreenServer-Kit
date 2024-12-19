@@ -139,7 +139,7 @@ on rightclick holding a 269:
 				set {CT.%player%::%name of player's tool%} to 30
 				message "{@prefix} §8目先ブロック周辺を掘り起こします!"
 				set {_bb} to block 1 below player
-				set {Stats.%player%::BuryCreature} to {_bb}
+				set {-Stats.%player%::BuryCreature} to {_bb}
 				shoot an egg from player at speed 0.8
 				set metadata value "bury" of shot egg to "true"
 				play raw sound "dig.gravel" at player with pitch 1 volume 1
@@ -159,8 +159,8 @@ on projectile hit:
 		set {CT.%shooter%::§2Bury Creature} to 10
 		message "§c§lリスポーン直後のプレイヤーが付近に居る為,発動がキャンセルされました" to shooter
 		stop
-	set {_block} to {Stats.%shooter%::BuryCreature}
-	delete {Stats.%shooter%::BuryCreature}
+	set {_block} to {-Stats.%shooter%::BuryCreature}
+	delete {-Stats.%shooter%::BuryCreature}
 	set {_cb} to location of block at projectile
 	play raw sound "dig.grass" at {_cb} with pitch 1 volume 1
 	drawSphere style 1, particle "redstone", RGB 100, 60, 0, center {_cb}, id "%shooter%", radius 4, density 50, visibleRange 30

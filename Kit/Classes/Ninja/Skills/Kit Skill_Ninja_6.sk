@@ -1,17 +1,17 @@
 # Kamaitachi
 
 function kitSkill_Ninja_6(player: player):
-	if {Stats.%{_player}%::Kamaitachi} is not set:
+	if {-Stats.%{_player}%::Kamaitachi} is not set:
 		set {_skill} to name of {_player}'s tool
 		setCT({_player}, {_skill}, 10)
-		set {Stats.%{_player}%::Kamaitachi} to true
+		set {-Stats.%{_player}%::Kamaitachi} to true
 		kitMsg({_player}, "§f忍法・鎌鼬の術!")
 		delete {_player}'s tool
 		kunaiNinjutsu({_player}, "Kamaitachi")
 		apply speed 3 to {_player} for 5 seconds replacing existing effect
 		sendTimeBossbar_GREEN({_player}, "Kamaitachi", 100)
 		loop 100 times:
-			if {Stats.%{_player}%::Kamaitachi} is set:
+			if {-Stats.%{_player}%::Kamaitachi} is set:
 				loop all entities in radius 5 around {_player}:
 					kitCheckTeam({_player}, loop-entity, false) is true
 					kitDamage({_player}, loop-entity, 0.25, "鎌鼬の術")
@@ -26,14 +26,14 @@ function kitSkill_Ninja_6(player: player):
 					chance of 1%:
 						spawnParticle(explosion, location of loop-block)
 				wait a tick
-		{Stats.%{_player}%::Kamaitachi} is set
+		{-Stats.%{_player}%::Kamaitachi} is set
 		apply speed 2 to {_player} for 10000000000 seconds
-		delete {Stats.%{_player}%::Kamaitachi}
+		delete {-Stats.%{_player}%::Kamaitachi}
 		send action bar "§7§l鎌鼬は解除された!" to {_player}
 	else:
 		send action bar "§c§l現在発動中です" to {_player}
 
 on damage of player:
 	set {_attacker} to getAttacker(victim)
-	if {Stats.%{_attacker}%::Kamaitachi} is true:
+	if {-Stats.%{_attacker}%::Kamaitachi} is true:
 		cancel event

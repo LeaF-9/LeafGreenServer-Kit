@@ -6,7 +6,7 @@ on sneak toggle:
 	player is not sneaking
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Archer", "Weapon.main", 3) is true
-	{Stats.%player%::MechanicalBow-OverHeat} is not set
+	{-Stats.%player%::MechanicalBow-OverHeat} is not set
 	enchant player's tool with flame
 	enchant player's tool with quick charge 5
 	# --- 音の演出 ---
@@ -39,11 +39,11 @@ on shoot:
 	{Class::%shooter%} is "Archer"
 	set {_tool} to shooter's tool
 	kitItemAllChecker({_tool}, "Archer", "Weapon.main", 3) is true
-	if {Stats.%shooter%::MechanicalBow-OverHeat} is not set:  # オーバーヒートしてない場合
+	if {-Stats.%shooter%::MechanicalBow-OverHeat} is not set:  # オーバーヒートしてない場合
 		{_tool} is enchanted with flame
 		# --- カウントの設定 ---
-		if {Stats.%shooter%::MechanicalBow-Count} is not set:
-			set {Stats.%shooter%::MechanicalBow-Count} to 0
+		if {-Stats.%shooter%::MechanicalBow-Count} is not set:
+			set {-Stats.%shooter%::MechanicalBow-Count} to 0
 		# --------------------
 		set metadata value "mechanicalbow" of projectile to "true"
 		set metadata value "arrowdamage" of projectile to 3
@@ -59,12 +59,12 @@ on shoot:
 		set z of {_vector} to z of {_vector} * 10
 		set velocity of projectile to {_vector}
 		set {_now} to now
-		set {Stats.%shooter%::MechanicalBow-Now} to {_now}
-		add 1 to {Stats.%shooter%::MechanicalBow-Count}
-		if {Stats.%shooter%::MechanicalBow-Count} > 5:
-			set {Stats.%shooter%::MechanicalBow-OverHeat} to true
-			delete {Stats.%shooter%::MechanicalBow-Now}
-			delete {Stats.%shooter%::MechanicalBow-Count}
+		set {-Stats.%shooter%::MechanicalBow-Now} to {_now}
+		add 1 to {-Stats.%shooter%::MechanicalBow-Count}
+		if {-Stats.%shooter%::MechanicalBow-Count} > 5:
+			set {-Stats.%shooter%::MechanicalBow-OverHeat} to true
+			delete {-Stats.%shooter%::MechanicalBow-Now}
+			delete {-Stats.%shooter%::MechanicalBow-Count}
 			ignite shooter for 10 seconds
 			kitMsg(shooter, "<##d70035>§lオーバーヒートした!")
 			playSound("entity.blaze.shoot", 1, 0.7, shooter)
@@ -74,18 +74,18 @@ on shoot:
 				enchant loop-item with quick charge 2
 			wait 10 seconds
 			playSound("block.fire.extinguish", 1, 0.7, shooter)
-			delete {Stats.%shooter%::MechanicalBow-OverHeat}
+			delete {-Stats.%shooter%::MechanicalBow-OverHeat}
 			kitMsg(shooter, "<##008080>武器の冷却が終了しました")
 			kitEffect_MechanicalBow_Cooldown(shooter)
 		else:
 			wait 3 seconds
-			{Stats.%shooter%::MechanicalBow-Now} is {_now}
+			{-Stats.%shooter%::MechanicalBow-Now} is {_now}
 			send action bar "<##008080>武器の冷却が終了しました" to shooter
 			playSound("block.fire.extinguish", 1, 1.8, shooter)
 			kitEffect_MechanicalBow_Cooldown(shooter)
-			{Stats.%shooter%::MechanicalBow-Now} is {_now}
-			delete {Stats.%shooter%::MechanicalBow-Now}
-			delete {Stats.%shooter%::MechanicalBow-Count}
+			{-Stats.%shooter%::MechanicalBow-Now} is {_now}
+			delete {-Stats.%shooter%::MechanicalBow-Now}
+			delete {-Stats.%shooter%::MechanicalBow-Count}
 	else:
 		cancel event
 		send action bar "<##ff6347>武器が熱すぎて扱えない!" to shooter

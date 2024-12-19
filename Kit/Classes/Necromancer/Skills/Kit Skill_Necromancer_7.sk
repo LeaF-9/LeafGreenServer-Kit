@@ -11,14 +11,14 @@ function kitSkill_Necromancer_7(player: player):
 		loop 30 times:
 			spawnParticle_Vector(witch, randomVector(), 0.3, location of {_player})
 		execute console command "/skclass %{_player}% Kit-Lich"
-		set {Stats.%{_player}%::Lich} to true
+		set {-Stats.%{_player}%::Lich} to true
 		wait 10 seconds
-		if {Stats.%{_player}%::Lich} is true:
-			delete {Stats.%{_player}%::Lich}
+		if {-Stats.%{_player}%::Lich} is true:
+			delete {-Stats.%{_player}%::Lich}
 			execute console command "/class Necromancer %{_player}% false"
 
 on damage of player:
 	{Class::%victim%} is "Necromancer"
-	{Stats.%victim%::Lich} is true
+	{-Stats.%victim%::Lich} is true
 	if damage was caused by potion or wither:
 		cancel event

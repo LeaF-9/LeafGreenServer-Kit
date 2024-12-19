@@ -1,14 +1,14 @@
 # Shield Crystal
 
 function kitSkill_Engineer_8(player: player):
-	set {_loc} to {Stats.%{_player}%::SkillLocation}
+	set {_loc} to {-Stats.%{_player}%::SkillLocation}
 	if {_loc} is not set:
 		nullEngineerPlacePosition({_player})
 		stop
 
 	toolCT({_player}, "Engineer", 8)
 	set {_now} to now
-	set {Stats.%{_player}%::ShieldCrystal-Time} to {_now}
+	set {-Stats.%{_player}%::ShieldCrystal-Time} to {_now}
 	kitFakeDeleteData({_player}, "Machine-Shield Crystal")
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
@@ -21,7 +21,7 @@ function kitSkill_Engineer_8(player: player):
 	set metadata value "shield crystal" of spawned end crystal to "%{_player}%"
 	kitMsg({_player}, "<##2CB4AD>Shield Crystal§1を設置しました!")
 	playSound("entity.ender_eye.death", 1, 0.5, {_loc.core})
-	while {Stats.%{_player}%::ShieldCrystal-Time} is {_now}:
+	while {-Stats.%{_player}%::ShieldCrystal-Time} is {_now}:
 		wait a second
 		delete {_tp::*}
 		loop all players in radius 10 around {_loc.core}:
@@ -56,7 +56,7 @@ function kitSkill_Engineer_8(player: player):
 #				delete {_shield::%loop-value%}
 		set {_exist} to kitFakeCheck({_player}, "Machine-Shield Crystal")
 		if {_exist} is false:
-			delete {Stats.%{_player}%::ShieldCrystal-Time}
+			delete {-Stats.%{_player}%::ShieldCrystal-Time}
 			continue
 #			loop {_pl::*}:
 #				{Kit-Shield::%loop-value%} is set

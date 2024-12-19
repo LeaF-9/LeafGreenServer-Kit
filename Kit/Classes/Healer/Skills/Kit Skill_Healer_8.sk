@@ -1,18 +1,18 @@
 # Natural Feeling
 
 function kitSkill_Healer_8(player: player):
-	if {Stats.%{_player}%::NaturalFeeling} is not set:
-		set {Stats.%{_player}%::NaturalFeeling} to 10
+	if {-Stats.%{_player}%::NaturalFeeling} is not set:
+		set {-Stats.%{_player}%::NaturalFeeling} to 10
 	loop 5 times:
-		{Stats.%{_player}%::NaturalFeeling} > 0
+		{-Stats.%{_player}%::NaturalFeeling} > 0
 		playSound("block.grass.step", 0.8, 2, {_player})
 		loop all players in radius 10 around {_player}:
-			{Stats.%{_player}%::NaturalFeeling} > 0
+			{-Stats.%{_player}%::NaturalFeeling} > 0
 			loop-player is not {_player}
 			kitCheckAlive(loop-player) is true
 			kitCheckTeam(loop-player, {_player}, true) is true
 			health of loop-player is not max health of loop-player
-			subtract 0.05 from {Stats.%{_player}%::NaturalFeeling}
+			subtract 0.05 from {-Stats.%{_player}%::NaturalFeeling}
 			setSupporter(loop-player, {_player})
 			kitHeal(loop-player, 0.05, 1)
 			kitEffectDescription(loop-player, "§d§l回復")
@@ -25,13 +25,13 @@ function kitSkill_Healer_8(player: player):
 			add 1 to y-coordinate of {_loc}
 			spawnParticle_Dust(rgb(121, 192, 110), 1, {_loc})
 			add 10 to {_angle}
-		if {Stats.%{_player}%::NaturalFeeling} <= 0:
+		if {-Stats.%{_player}%::NaturalFeeling} <= 0:
 			loop all items in {_player}'s inventory:
 				name of loop-item is "§aNatural Feeling"
 				delete loop-item
 			playSound("block.grass.break", 1, 1, {_player})
 		else:
-			set {_barcount} to round({Stats.%{_player}%::NaturalFeeling} * 4)
+			set {_barcount} to round({-Stats.%{_player}%::NaturalFeeling} * 4)
 			set {_bar} to 0
 			set {_bartext} to ""
 			loop 40 times:
