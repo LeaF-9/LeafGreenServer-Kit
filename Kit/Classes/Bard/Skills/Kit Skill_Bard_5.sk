@@ -8,7 +8,7 @@ function kitSkill_Bard_5(player: player):
 
 on damage of player with priority LOW:
 	metadata value "gametype" of victim is "Kit"
-	{-Stats.%victim%::MarkRequiem} is set
+	kitStats_GET(victim, "MarkRequiem") is set
 	setDamageModification_MUL(victim, 2)
 	kitParticle_MarkRequiem_Damage(victim)
 
@@ -37,12 +37,12 @@ local function kitEffect_MarkRequiem(player: player):
 local function kitEffect_MarkSound_Hit(player: player, target: player):
 	set {_time} to 4 seconds
 	set {_tick} to 80
-	if {-Stats.%{_player}%::Fortissimo} is true:
+	if kitStats_GET({_player}, "Fortissimo") is true:
 		set {_time} to 8 seconds
 		set {_tick} to 160
 		kitParticle_Fortissimo({_player})
 	kitParticle_MarkRequiem_Hit({_target}, {_tick})
-	set {-Stats.%{_target}%::MarkRequiem} to {_player}
+	kitStats_SET({_target}, "MarkRequiem", {_player})
 	message formatted "§4§lマークされた! §cマーク中§6ダメージが増大してしまう!" to {_target}
 	kitEffectDescription({_target}, "§5§lマーク")
 	sendTimeBossbar_RED({_target}, "§5§lマーク", {_tick})
@@ -50,8 +50,8 @@ local function kitEffect_MarkSound_Hit(player: player, target: player):
 		kitCheckTeam({_player}, loop-player, true) is true
 		message formatted "§6§l%{_target}% §eがマークされた! §aダメージが増大する!" to loop-player
 	wait {_time}
-	if {-Stats.%{_target}%::MarkRequiem} is {_player}:
-		delete {-Stats.%{_target}%::MarkRequiem}
+	if kitStats_GET({_target}, "MarkRequiem") is {_player}:
+		kitStats_DELETE({_target}, "MarkRequiem")
 		kitMsg({_player}, "§d%{_target}% §6へのマークが終了しました")
 		message formatted "§a§lマークが外された!" to {_target}
 	

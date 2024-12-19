@@ -2,28 +2,28 @@
 
 function kitSkill_Archer_7(player: player):
 	toolCT({_player}, "Archer", 7)
-	set {-Stats.%{_player}%::HawkBlast} to true
-	set {-Stats.%{_player}%::HawkBlastLoc} to location of head of {_player}
+	kitStats_SET({_player}, "HawkBlast", true)
+	kitStats_SET({_player}, "HawkBlastLoc", (location of (head of {_player})))
 	playSound("entity.phantom.bite", 1, 2, {_player})
 	kitMsg({_player}, "§f鷹を§b放出§fします...")
 	set {_count} to 0
 	# --- 炸裂までの挙動 ---
-	while {-Stats.%{_player}%::HawkBlast} is true:
+	while kitStats_GET({_player}, "HawkBlast") is true:
 		add 1 to {_count}
 		set {_tool} to {_player}'s tool
 		if {_count} >= 100:  # 100mを超えた際の挙動
-			delete {-Stats.%{_player}%::HawkBlast}
+			kitStats_DELETE({_player}, "HawkBlast")
 		else if kitItemAllChecker({_tool}, "Archer", "Skill", 7) is false:  # 持っているアイテムがスキルのものでは無い場合の挙動
-			delete {-Stats.%{_player}%::HawkBlast}
+			kitStats_DELETE({_player}, "HawkBlast")
 		else:
 			set {_locnow} to location of head of {_player}
-			set {_baseloc} to {-Stats.%{_player}%::HawkBlastLoc}
+			set {_baseloc} to kitStats_GET({_player}, "HawkBlastLoc")
 			set yaw of {_baseloc} to yaw of {_locnow}
 			set pitch of {_baseloc} to pitch of {_locnow}
 			set {_block} to location 1 meter in front of {_baseloc}
-			set {-Stats.%{_player}%::HawkBlastLoc} to {_block}
+			kitStats_SET({_player}, "HawkBlastLoc", {_block})
 			if block at {_block} is not passable:  # ブロックと衝突した際の挙動
-				delete {-Stats.%{_player}%::HawkBlast}
+				kitStats_DELETE({_player}, "HawkBlast")
 			kitParticle_HawkBlast_Trail({_block})
 			if mod({_count}, 5) is 0:
 				playSound("entity.phantom.flap", 1, 2, {_block})
@@ -31,11 +31,12 @@ function kitSkill_Archer_7(player: player):
 			wait a tick
 	# --------------------
 	# --- 炸裂時の挙動 ---
-	if {-Stats.%{_player}%::HawkBlastLoc} is set:
+	set {_HawkBlastLoc} to kitStats_GET({_player}, "HawkBlastLoc")
+	if {_HawkBlastLoc} is set:
 		kitMsg({_player}, "<##f0f8ff>鷹が<##00bfff>炸裂<##f0f8ff>した!")
-		set {_bloc} to {-Stats.%{_player}%::HawkBlastLoc}
-		delete {-Stats.%{_player}%::HawkBlast}
-		delete {-Stats.%{_player}%::HawkBlastLoc}
+		set {_bloc} to kitStats_GET({_player}, "HawkBlastLoc")
+		kitStats_DELETE({_player}, "HawkBlast")
+		kitStats_DELETE({_player}, "HawkBlastLoc")
 		playSound("entity.phantom.hurt", 1, 0.5, {_bloc})
 		set {_y} to 0
 		set {_rad} to 0
@@ -164,7 +165,8 @@ function drawHawkBlast(loc: location):
 
 on leftclick:
 	metadata value "gametype" of player is "Kit"
-	{-Stats.%player%::HawkBlast} is true
+	set {_HawkBlast} to kitStats_GET(player, "HawkBlast")
+	{_HawkBlast} is true
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Archer", "Skill", 7) is true
-	delete {-Stats.%player%::HawkBlast}
+	kitStats_DELETE(player, "HawkBlast")

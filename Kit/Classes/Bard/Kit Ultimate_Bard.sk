@@ -4,7 +4,7 @@ function kitUltBard(player: player):
 	kitParticle_FinaleSymphony_Wave({_player})
 	loop all players in radius 10 around {_player}:
 		kitCheckTeam(loop-player, {_player}, true, true) is true
-		set {-Stats.%loop-player%::FinaleSymphony} to {_player}
+		kitStats_SET(loop-player, "FinaleSymphony", {_player})
 		add loop-player to {_boosters::*}
 		setSupporter(loop-player, {_player})
 		set {_max} to max health of loop-player * 2
@@ -16,10 +16,11 @@ function kitUltBard(player: player):
 	loop 100 times:
 		wait 2 ticks
 		loop {_boosters::*}:
-			if {-Stats.%loop-value-2%::FinaleSymphony} is not {_player}:
+			set {_FinaleSymphony} to kitStats_GET(loop-value-2, "FinaleSymphony")
+			if {_FinaleSymphony} is not {_player}:
 				remove loop-value-2 from {_boosters::*}
 				continue
-			if {-Stats.%loop-value-2%::FinaleSymphony} is not set:
+			if {_FinaleSymphony} is not set:
 				remove loop-value-2 from {_boosters::*}
 				continue
 			kitParticle_FinaleSymphony_Apply(loop-value-2, loop-number)

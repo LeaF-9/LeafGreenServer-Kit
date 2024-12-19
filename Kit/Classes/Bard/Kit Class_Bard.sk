@@ -30,13 +30,13 @@ on inventory click:
 		set {_potiontype} to mining fatigue
 	else if name of {_item} contains "SLOWNESS":
 		set {_potiontype} to slowness
-	set {-Stats.%player%::MelodyEffect} to {_potiontype}
+	kitStats_SET(player, "MelodyEffect", {_potiontype})
 	kitMsg(player, "§aMelody Effect§eを %name of {_item}% §eに変更しました")
 
 # Timer
 function kitTimerBard(player: player):
 	while {Class::%{_player}%} is "Bard":
-		set {_potiontype} to {-Stats.%{_player}%::MelodyEffect}
+		set {_potiontype} to kitStats_GET({_player}, "MelodyEffect")
 		if {_potiontype} is regeneration:
 			set {_ally} to true
 			set {_color} to "red"
@@ -80,7 +80,8 @@ function kitTimerBard(player: player):
 			set {_pitch.low} to 1.19
 			set {_text} to "§8§l鈍足"
 		set {_tier} to 1
-		if {-Stats.%{_player}%::Fortissimo} is true:
+		set {_Fortissimo} to kitStats_GET({_player}, "Fortissimo")
+		if {_Fortissimo} is true:
 			set {_tier} to 2
 		kitParticle_MelodyEffect_Range({_player}, {_color})
 		delete {_play}

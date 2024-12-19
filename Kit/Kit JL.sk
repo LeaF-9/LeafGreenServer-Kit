@@ -137,13 +137,13 @@ command /kjclear:
 				teleport loop-player to {LobbyLocation}
 				execute console command "/skclass %loop-player% LobbyInv"
 				set gamemode of loop-player to survival
+		kitStats_DELETEEVERYONE()
 		loop all offline players:
 			set block at {Kit-Ult.%loop-offline player%::Teleport1} to air
 			set block at {Kit-Ult.%loop-offline player%::Base1} to air
 			set block at {Kit-Ult.%loop-offline player%::Teleport2} to air
 			set block at {Kit-Ult.%loop-offline player%::Base2} to air
 			delete {Ult.%loop-offline player%::*}
-			delete {-Stats.%loop-offline player%::*}
 			loop {Block.%loop-offline player%::*}:
 				set block at loop-value-2 to air
 			delete {Block.%loop-offline player%::*}
@@ -256,7 +256,7 @@ command /kjc <player>:
 	trigger:
 		reveal arg 1 from all players
 		disallow fly for arg 1
-		delete {-Stats.%arg 1%::*}
+		kitStats_DELeTeALL(arg 1)
 		delete {CTStop.%arg 1%::*}
 		delete {Kit-AllowClass.%arg 1%::*}
 		loop {Block.%arg 1%::*}:

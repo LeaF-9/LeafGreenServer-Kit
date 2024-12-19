@@ -30,9 +30,10 @@ on death of player:
 
 function kitDeathMessage(vtm: player, cause: text):
 # victim fake checher
-	if {-Stats.%{_vtm}%::FakePlayer} is set:
-		set {_victim} to {-Stats.%{_vtm}%::FakePlayer}
-		set {_cls.victim} to {-Stats.%{_vtm}%::FakeCLS}
+	set {_fakeVictim} to kitStats_GET({_vtm}, "FakePlayer")
+	if {_fakeVictim} is set:
+		set {_victim} to {_fakeVictim}
+		set {_cls.victim} to kitStats_GET({_vtm}, "FakeCLS")
 	else:
 		set {_victim} to {_vtm}
 		set {_cls.victim} to {CLS::%{_vtm}%}
@@ -54,9 +55,10 @@ function kitDeathMessage(vtm: player, cause: text):
 # attacker fake checker
 	if {LastKiller::%{_vtm}%} is set:
 		set {_atk} to {LastKiller::%{_vtm}%}
-		if {-Stats.%{_atk}%::FakePlayer} is set:
-			set {_attacker} to {-Stats.%{_atk}%::FakePlayer}
-			set {_cls.attack} to {-Stats.%{_atk}%::FakeCLS}
+		set {_fakeAttacker} to kitStats_GET({_atk}, "FakePlayer")
+		if {_fakeAttacker} is set:
+			set {_attacker} to {_fakeAttacker}
+			set {_cls.attack} to kitStats_GET({_atk}, "FakeCLS")
 		else:
 			set {_attacker} to {_atk}
 			set {_cls.attack} to {CLS::%{_atk}%}

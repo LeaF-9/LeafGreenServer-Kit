@@ -9,11 +9,11 @@ function kitSkill_Bard_3(player: player):
 local function kitEffect_Fortissimo(player: player):
 	kitMsg({_player}, "§a§l音の効果を高めます!")
 	sendTimeBossbar_GREEN({_player}, "Fortissimo", 200)
-	set {-Stats.%{_player}%::Fortissimo} to true
+	kitStats_SET({_player}, "Fortissimo", true)
 	kitParticle_Fortissimo({_player})
 	kitParticle_Fortissimo_Loop({_player})
 	wait 10 seconds
-	delete {-Stats.%{_player}%::Fortissimo}
+	kitStats_DELETE({_player}, "Fortissimo")
 	kitMsg({_player}, "§aFortissimo §2の効果が切れました")
 
 
@@ -31,7 +31,7 @@ function kitParticle_Fortissimo(player: player, num: number = 10, sound: boolean
 local function kitParticle_Fortissimo_Loop(player: player):
 	set {_rad} to 0
 	loop 200 times:
-		if {-Stats.%{_player}%::Fortissimo} is not set:
+		if kitStats_GET({_player}, "Fortissimo") is not set:
 			stop
 		set {_baseloc} to location 1 meter above {_player}
 		add 36 to {_rad}
