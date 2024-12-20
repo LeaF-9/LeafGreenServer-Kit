@@ -1,11 +1,11 @@
 # Perfect Barrier
 
 function kitUltDefender(player: player):
-	set {-Stats.%{_player}%::UltDefender} to true
+	kitStats_SET({_player}, "UltDefender", true)
 	loop 200 times:
 		loop all players:
 			metadata value "gametype" of loop-player is "Kit"
-			{-Stats.%loop-player%::UltDefender} is true
+			kitStats_GET(loop-player, "UltDefender") is true
 			set {_s} to 0
 			set {_t} to 0
 			set {_pl} to location of loop-player
@@ -26,15 +26,14 @@ function kitUltDefender(player: player):
 				add 10 to {_s}
 		loop all players in radius 2 around {_player}:
 			loop-player is not {_player}
-			{TrueTeam::%{_player}%} is {TrueTeam::%loop-player%}
-			{-Stats.%loop-player%::NoSupport} is not set
+			kitCheckTeam({_player}, loop-player, true, true) is true
 			if {_time::%loop-player%} is not set:
 				set {_time::%loop-player%} to 0
 				add loop-player to {_give::*}
 			if {_time::%loop-player%} is not 60:
 				playSound("entity.player.levelup", 1, 0.8, loop-player)
-			if {-Stats.%loop-player%::UltDefender} is not set:
-				set {-Stats.%loop-player%::UltDefender} to true
+			if kitStats_GET(loop-player, "UltDefender") is not set:
+				kitStats_SET(loop-player, "UltDefender", true)
 				kitEffectDescription(loop-player, "§9§lバリア")
 				sendTimeBossbar_GREEN(loop-player, "Perfect Bubble", 60)
 			set {_time::%loop-player%} to 60
@@ -43,16 +42,17 @@ function kitUltDefender(player: player):
 			{_hit::%loop-value-2%} is not set
 			subtract 1 from {_time::%loop-value-2%}
 			if {_time::%loop-value-2%} <= 0:
-				delete {-Stats.%loop-value-2%::UltDefender}
+				kitStats_DELETE(loop-value-2, "UltDefender")
 		delete {_hit::*}
 		wait a tick
-	delete {-Stats.%{_player}%::UltDefender}
+	kitStats_DELETE({_player}, "UltDefender")
 	loop {_give::*}:
-		if {-Stats.%loop-value%::UltDefender} is true:
-			delete {-Stats.%loop-value%::UltDefender}
+		if kitStats_GET(loop-value, "UltDefender") is true:
+			kitStats_DELETE(loop-value, "UltDefender")
 
 on damage of player with priority HIGH:
-	if {-Stats.%victim%::UltDefender} is set:
+	set {_UltDefender} to kitStats_GET(victim, "UltDefender")
+	if {_UltDefender} is set:
 		cancel event
 		playSound("entity.item.break", 1, 0.5, victim)
 		set {_attacker} to getAttacker(victim)

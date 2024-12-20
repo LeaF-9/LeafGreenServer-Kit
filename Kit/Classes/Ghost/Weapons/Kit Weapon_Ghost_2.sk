@@ -2,7 +2,7 @@
 
 on sneak toggle:
 	{Class::%player%} is "Ghost"
-	{-Stats.%player%::SpareSoul} is not set
+	kitStats_GET(player, "SpareSoul") is not set
 	player is not sneaking
 	set {_tool} to player's tool
 	if kitItemAllChecker({_tool}, "Ghost", "Weapon", 2) is false:
@@ -27,7 +27,7 @@ on sneak toggle:
 		if {Kit-Spirits::%player%} < {_spirit}:
 			delete {_true}
 			continue
-		if {-Stats.%player%::SpareSoul} is true:
+		if kitStats_GET(player, "SpareSoul") is true:
 			delete {_true}
 			continue
 		if {_num} is 200:
@@ -45,8 +45,8 @@ on sneak toggle:
 		stop
 	if kitCheckSpirit(player, 2, "Weapon") is false:
 		stop
-	set {-Stats.%player%::SpareSoul} to true
-	set {-Stats.%player%::Resurrection} to true
+	kitStats_SET(player, "SpareSoul", true)
+	kitStats_SET(player, "Resurrection", true)
 	set {_memsg} to kitGhostMessage("§5Spare Soul §8を獲得した...", true)
 	kitMsg(player, {_memsg})
 	kitParticle_AnimaMassa_Complete(player)

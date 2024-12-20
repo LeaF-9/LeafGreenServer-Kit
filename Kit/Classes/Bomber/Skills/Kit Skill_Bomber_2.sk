@@ -8,7 +8,8 @@ options:
 
 
 function kitSkill_Bomber_2(player: player):
-	if {-Stats.%{_player}%::BlastAssault} is set:
+	set {_BlastAssault} to kitStats_GET({_player}, "BlastAssault")
+	if {_BlastAssault} is set:
 		kitEffect_BlastAssault_Boom({_player}, true)
 		stop
 	kitEffect_BlastAssault({_player})
@@ -17,7 +18,7 @@ function kitSkill_Bomber_2(player: player):
 
 local function kitEffect_BlastAssault(player: player):
 	set {_now} to now
-	set {-Stats.%{_player}%::BlastAssault} to {_now}
+	kitStats_SET({_player}, "BlastAssault", {_now})
 	kitMsg({_player}, "<##b5073b>§l時限爆弾<##eaa00d>を抱えました...")
 	applyEffect({_player}, slowness, 3, {@effect-second}, true)
 	kitParticle_BlastAssault_Launch({_player})
@@ -27,18 +28,18 @@ local function kitEffect_BlastAssault(player: player):
 	set {_bar.title} to "§6§lBlast Assault §7- §4§l0"
 	create bossbar titled {_bar.title} and id {_id} for {_player} with progress 0 with colors red with style segmented 6
 
-	set {-Stats.%{_player}%::BlastAssault-Power} to 0
+	kitStats_SET({_player}, "BlastAssault-Power", 0)
 	set {_exp} to 0
 	set {_addexp} to {@max-explosion} / {@effect-tick}
 	set {_ln} to -1
 	loop {@effect-tick} times:
-		if {-Stats.%{_player}%::BlastAssault} is not {_now}:
+		if kitStats_GET({_player}, "BlastAssault") is not {_now}:
 			remove bossbar {_id}
 			stop
 		
 		add 1 to {_ln}
 		add {_addexp} to {_exp}
-		set {-Stats.%{_player}%::BlastAssault-Power} to {_exp}
+		kitStats_SET({_player}, "BlastAssault-Power", {_exp})
 
 		set {_prog} to ({_exp} / {@max-explosion}) * 100
 		set bossbar {_id} value to {_prog}
@@ -51,7 +52,7 @@ local function kitEffect_BlastAssault(player: player):
 
 		kitParticle_BlastAssault_Charge({_player})
 		wait a tick
-	{-Stats.%{_player}%::BlastAssault} is {_now}
+	kitStats_GET({_player}, "BlastAssault") is {_now}
 	kitEffect_BlastAssault_Boom({_player})
 
 local function kitEffect_BlastAssault_Boom(player: player, click: boolean = false):
@@ -62,12 +63,12 @@ local function kitEffect_BlastAssault_Boom(player: player, click: boolean = fals
 		set {_sneaking} to true
 	
 	set {_baseloc} to location 1 meter above {_player}
-	set {_baseexp} to {-Stats.%{_player}%::BlastAssault-Power}
+	set {_baseexp} to kitStats_GET({_player}, "BlastAssault-Power")
 	set {_exp} to {_baseexp}
 	if {_click} is true:
 		set {_exp} to {_baseexp} * 0.5
-	delete {-Stats.%{_player}%::BlastAssault}
-	delete {-Stats.%{_player}%::BlastAssault-Power}
+	kitStats_DELETE({_player}, "BlastAssault")
+	kitStats_DELETE({_player}, "BlastAssault-Power")
 	kitExplosion({_player}, {_exp}, {_baseloc})
 	remove slowness from {_player}
 	apply infinite slowness 1 without particles to {_player}

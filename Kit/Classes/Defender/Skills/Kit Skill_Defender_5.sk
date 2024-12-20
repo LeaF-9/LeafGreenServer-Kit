@@ -15,7 +15,9 @@ on damage of slime with priority HIGHEST:
 			playSound("entity.armor_stand.hit", 1, 1, victim)
 			set {_dmg} to getDamageModification_ALL(victim, damage)
 			setDamageModification_FIX(victim, 0)
-			subtract {_dmg} from {-Stats.%{_name}%::King Shield}
+			set {_King-Shield} to kitStats_GET(victim, "King Shield")
+			subtract {_dmg} from {_King-Shield}
+			kitStats_SET(victim, "King Shield", {_King-Shield})
 		else:
 			cancel event
 	else:
@@ -30,9 +32,10 @@ function kitSkill_Defender_5(player: player):
 
 local function kitEffect_KingShield(player: player):
 	wait 6 ticks
-	if {-Stats.%{_player}%::King Shield} is not set:
-		set {-Stats.%{_player}%::King Shield} to 200
-	else if {-Stats.%{_player}%::King Shield} <= 0:
+	set {_King-Shield} to kitStats_GET({_player}, "King Shield")
+	if {_King-Shield} is not set:
+		kitStats_SET({_player}, "King Shield", 200)
+	else if {_King-Shield} <= 0:
 		loop all items in {_player}'s inventory:
 			name of loop-item is "§1King Shield"
 			delete loop-item
@@ -48,11 +51,11 @@ local function kitEffect_KingShield(player: player):
 
 	# 見た目
 	set {_item} to "minecraft:blue_stained_glass_pane"
-	if {-Stats.%{_player}%::King Shield} < 50:
+	if {_King-Shield} < 50:
 		set {_item} to "minecraft:white_stained_glass_pane"
-	else if {-Stats.%{_player}%::King Shield} < 100:
+	else if {_King-Shield} < 100:
 		set {_item} to "minecraft:light_blue_stained_glass_pane"
-	else if {-Stats.%{_player}%::King Shield} < 150:
+	else if {_King-Shield} < 150:
 		set {_item} to "minecraft:cyan_stained_glass_pane"
 
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[{@width}f,{@height}f,1f]")
@@ -113,7 +116,9 @@ local function kitEffect_KingShield(player: player):
 		# 見た目
 		set {_item.check} to "minecraft:blue_stained_glass_pane"
 
-		if {-Stats.%{_player}%::King Shield} <= 0:
+		delete {_King-Shield}
+		set {_King-Shield} to kitStats_GET({_player}, "King Shield")
+		if {_King-Shield} <= 0:
 			#壊れる処理
 			loop all entities:
 				metadata value "King Shield" of loop-entity is "%{_player}%"
@@ -124,11 +129,11 @@ local function kitEffect_KingShield(player: player):
 			playSound("entity.item.break", 1, 0.7, {_player})
 			stop	
 
-		else if {-Stats.%{_player}%::King Shield} < 50:
+		else if {_King-Shield} < 50:
 			set {_item.check} to "minecraft:white_stained_glass_pane"
-		else if {-Stats.%{_player}%::King Shield} < 100:
+		else if {_King-Shield} < 100:
 			set {_item.check} to "minecraft:light_blue_stained_glass_pane"
-		else if {-Stats.%{_player}%::King Shield} < 150:
+		else if {_King-Shield} < 150:
 			set {_item.check} to "minecraft:cyan_stained_glass_pane"
 		
 		if {_item.check} is not {_item}:
@@ -181,7 +186,7 @@ local function kitEffect_KingShield(player: player):
 			add 0.5 * {_height.mul} to {_h}
 			add 1 to {_h.count}
 
-		chargeActionBar({_player}, {-Stats.%{_player}%::King Shield} * 0.25, 50)
+		chargeActionBar({_player}, ({_King-Shield} * 0.25), 50)
 		wait a tick
 	playSound("item.armor.equip_generic", 1, 1, {_player})
 	loop all entities:

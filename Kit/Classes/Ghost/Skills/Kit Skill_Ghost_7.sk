@@ -1,10 +1,11 @@
 # Phren Possession
 
 function kitSkill_Ghost_7(player: player):
-	if {-Stats.%{_player}%::SkillTarget} is set:
+	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	if {_SkillTarget} is set:
 		if kitCheckSpirit({_player}, 7) is true:
 			toolCT({_player}, "Ghost", 7)
-			set {_tg} to {-Stats.%{_player}%::SkillTarget}
+			set {_tg} to {_SkillTarget}
 			playSound("block.end_portal.spawn", 1, 2, {_tg})
 			set {_memsg} to kitGhostMessage("§5%{_tg}% §4の身体を乗っ取った...")
 			set {_youmsg} to kitGhostMessage("§5%{_player}% §4に身体を盗られた!", true)
@@ -17,8 +18,8 @@ function kitSkill_Ghost_7(player: player):
 			set {_playerbaseloc} to location of {_player}
 			kitPalsy({_player}, 60, false)
 			kitPalsy({_tg}, 60, false)
-			set {-Stats.%{_player}%::Invincible} to true
-			set {-Stats.%{_tg}%::Invincible} to true
+			kitStats_SET({_player}, "Invincible", true)
+			kitStats_SET({_tg}, "Invincible", true)
 			teleport {_player} to {_targetbaseloc}
 			loop 60 times:
 				hide {_player} from all players
@@ -34,8 +35,8 @@ function kitSkill_Ghost_7(player: player):
 					add 2 to y-coordinate of {_el}
 					spawnParticle_Color(entity_effect, rgb(50, 0, 0), {_el})
 				wait a tick
-			delete {-Stats.%{_player}%::Invincible}
-			delete {-Stats.%{_tg}%::Invincible}
+			kitStats_DELETE({_player}, "Invincible")
+			kitStats_DELETE({_tg}, "Invincible")
 			teleport {_player} to {_playerbaseloc}
 			reveal {_player} from all players
 			reveal {_tg} from {_player}

@@ -1,12 +1,13 @@
 # Defense Matrix
 
 function kitSkill_Defender_3(player: player):
-	if {-Stats.%{_player}%::SkillLocation} is set:
+	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+	if {_SkillLocation} is set:
 		toolCT({_player}, "Defender", 3)
 		set {_now} to now
-		set {-Stats.%{_player}%::DefenseMatrix-Time} to {_now}
+		kitStats_SET({_player}, "DefenseMatrix-Time", {_now})
 		kitFakeDeleteData({_player}, "Defense Matrix")
-		set {_loc} to {-Stats.%{_player}%::SkillLocation}
+		set {_loc} to {_SkillLocation}
 		set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
 		kitFakeBlock({_player}, {_loc}, "minecraft:cyan_stained_glass", {_transformation}, "Defense Matrix")
 		set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.45f,0f,-0.45f]", "[0.9f,0.1f,0.9f]")
@@ -16,11 +17,11 @@ function kitSkill_Defender_3(player: player):
 		kitMsg({_player}, "§9Defense Matrix§bを設置しました!")
 		playSound("block.anvil.land", 1, 0.5, {_loc})
 		set {_yaw} to 0
-		while {-Stats.%{_player}%::DefenseMatrix-Time} is {_now}:
+		while kitStats_GET({_player}, "DefenseMatrix-Time") is {_now}:
 			wait a tick
 			set {_exist} to kitFakeCheck({_player}, "Defense Matrix")
 			if {_exist} is false:
-				delete {-Stats.%{_player}%::DefenseMatrix-Time}
+				kitStats_DELETE({_player}, "DefenseMatrix-Time")
 				continue
 			add 10 to {_yaw}
 			if {_yaw} >= 360:
@@ -36,7 +37,7 @@ function kitSkill_Defender_3(player: player):
 		send action bar "§c§l発動地点が有効ではありません!" to {_player}
 
 on damage with priority NORMAL:
-	{-Stats.%victim%::NoSupport} is not set
+	kitStats_GET(victim, "NoSupport") is not set
 	metadata value "gametype" of victim is "Kit"
 	loop all block displays in radius 5 around victim:
 		{_a} is not set

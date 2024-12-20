@@ -43,14 +43,17 @@ function checkFuel(player: player, num: number, type: text = "Skill") :: boolean
 		return false
 
 function setFuelCT(player: player):
-	if {-Stats.%{_player}%::Fuel CT} is set:
-		set {-Stats.%{_player}%::Fuel CT} to 100
+	set {_Fuel-CT} to kitStats_GET({_player}, "Fuel CT")
+	if {_Fuel-CT} is set:
+		kitStats_SET({_player}, "Fuel CT", 100)
 	else:
-		set {-Stats.%{_player}%::Fuel CT} to 100
-		while {-Stats.%{_player}%::Fuel CT} > 0:
-			subtract 1 from {-Stats.%{_player}%::Fuel CT}
+		kitStats_SET({_player}, "Fuel CT", 100)
+		while kitStats_GET({_player}, "Fuel CT") > 0:
+			set {_Fuel-CT} to kitStats_GET({_player}, "Fuel CT")
+			subtract 1 from {_Fuel-CT}
+			kitStats_SET({_player}, "Fuel CT", {_Fuel-CT})
 			wait a tick
-		delete {-Stats.%{_player}%::Fuel CT}
+		kitStats_DELETE({_player}, "Fuel CT")
 
 function nullEngineerPlacePosition(player: player):
 	send action bar "§c§l対象地点がありません" to {_player}
@@ -70,7 +73,7 @@ function kitTimerEngineer(player: player):
 		if mod({_fuels}, 2) = 0:
 			set {_fuels} to 0
 			if {Kit-Fuel::%{_player}%} < 100:
-				if {-Stats.%{_player}%::Fuel CT} is not set:
+				if kitStats_GET({_player}, "Fuel CT") is not set:
 					add 1 to {Kit-Fuel::%{_player}%}
 		# ボスバー表示
 		set bossbar "%{_player}%-Fuel" title to "&8&lFuel&7: &4&l%{Kit-Fuel::%{_player}%}%"
@@ -78,8 +81,8 @@ function kitTimerEngineer(player: player):
 		# アクションバー表示
 		if {_item.type} is "Weapon":
 			if {_item.num} is 2:
-				if {-Stats.%{_player}%::GearyCog} is not set:
-					set {-Stats.%{_player}%::GearyCog} to true
+				if kitStats_GET({_player}, "GearyCog") is not set:
+					kitStats_SET({_player}, "GearyCog", true)
 				kitEffect_GearyCog_ActionBar({_player})
 		# Hover効果
 		delete {_true}

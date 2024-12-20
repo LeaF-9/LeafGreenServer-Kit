@@ -1,7 +1,7 @@
 # Skill-Name: Jump Beacon
 
 function kitSkill_Engineer_3(player: player):
-	set {_loc} to {-Stats.%{_player}%::SkillLocation}
+	set {_loc} to kitStats_GET({_player}, "SkillLocation")
 	if {_loc} is not set:
 		nullEngineerPlacePosition({_player})
 		stop
@@ -27,9 +27,11 @@ function kitSkill_Engineer_3(player: player):
 				set {_index} to loop-index
 		replace "JumpBeacon-Time-" with "" in {_index}
 		kitFakeDeleteData({_player}, "Machine-Jump Beacon-%{_index}%")
-		delete {-Stats.%{_player}%::JumpBeacon-Time-%{_index}%}
-	add 1 to {-Stats.%{_player}%::JumpBeacon-Number}
-	set {_num} to {-Stats.%{_player}%::JumpBeacon-Number}
+		kitStats_DELETE({_player}, "JumpBeacon-Time-%{_index}%")
+	set {_JumpBeacon-Number} to kitStats_GET({_player}, "JumpBeacon-Number")
+	add 1 to {_JumpBeacon-Number}
+	set {_num} to {_JumpBeacon-Number}
+	kitStats_SET({_player}, "JumpBeacon-Number", {_JumpBeacon-Number})
 
 	# 機械設置処理
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0f,-0.25f]", "[0.5f,0.5f,0.5f]")
@@ -42,13 +44,13 @@ function kitSkill_Engineer_3(player: player):
 	set {_spawned} to spawned block display
 	add {_spawned} to {_jumpbeacons::*}
 	
-	set {-Stats.%{_player}%::JumpBeacon-Time-%{_num}%} to {_now}
+	kitStats_SET({_player}, "JumpBeacon-Time-%{_num}%", {_now})
 	kitMsg({_player}, "<##E8383D>Jump Beacon§6を設置しました!")
 	loop all players:
 		kitCheckTeam({_player}, loop-player, true) is true
 		kitEffectDescription(loop-player, "§c§lJump Beacon§6§l設置")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
-	while {-Stats.%{_player}%::JumpBeacon-Time-%{_num}%} is {_now}:
+	while kitStats_GET({_player}, "JumpBeacon-Time-%{_num}%") is {_now}:
 		wait a tick
 		loop all players:
 			kitCheckTeam({_player}, loop-player, true) is true
@@ -67,8 +69,8 @@ function kitSkill_Engineer_3(player: player):
 						{_jumpbeacons::*} contains loop-block display
 						packetUnglowing(loop-player, loop-block display)
 		else:
-			delete {-Stats.%{_player}%::JumpBeacon-Time-%{_num}%}
-	if {-Stats.%{_player}%::JumpBeacon-Time-%{_num}%} is not set:
+			kitStats_DELETE({_player}, "JumpBeacon-Time-%{_num}%")
+	if kitStats_GET({_player}, "JumpBeacon-Time-%{_num}%") is not set:
 		loop all players:
 			kitCheckTeam({_player}, loop-player, true) is true
 			loop-player has a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします"
@@ -77,7 +79,7 @@ function kitSkill_Engineer_3(player: player):
 on rightclick holding a redstone item:
 	name of player's tool is "§cJump to Beacon"
 	cancel event
-	{-Stats.%player%::JumpBeacon-Using} is not set
+	kitStats_GET(player, "JumpBeacon-Using") is not set
 	kitEffect_JumpBeacon_Select(player)
 
 function kitEffect_JumpBeacon_Select(player: player):
@@ -100,7 +102,7 @@ function kitEffect_JumpBeacon_Select(player: player):
 	kitEffect_JumpBeacon_Jump({_player}, {_target})
 
 function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
-	set {-Stats.%{_jumper}%::JumpBeacon-Using} to true
+	kitStats_SET({_jumper}, "JumpBeacon-Using", true)
 	set {_loc} to location of {_jumper}
 	set {_time} to 3
 	loop 60 times:
@@ -109,7 +111,7 @@ function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
 			loop-entity is {_target}
 			set {_alive} to true
 		if {_alive} is not set:
-			delete {-Stats.%{_jumper}%::JumpBeacon-Using}
+			kitStats_DELETE({_jumper}, "JumpBeacon-Using")
 			message formatted "§cビーコン消滅によりジャンプが中断されました" to {_jumper}
 			stop
 		teleport {_jumper} to {_loc}
@@ -119,7 +121,7 @@ function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
 			playSound("ui.button.click", 1, 2, {_target})
 		subtract 0.05 from {_time}
 		wait a tick
-	delete {-Stats.%{_jumper}%::JumpBeacon-Using}
+	kitStats_DELETE({_jumper}, "JumpBeacon-Using")
 	set {_metadata} to metadata value "kit-block" of {_target}
 	set {_goaler} to metadata value {_metadata} of {_target} parsed as offline player
 	if checkFuel({_goaler}, 3) is false:
@@ -131,7 +133,7 @@ function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
 	kitFakeDeleteData({_goaler}, {_metadata})
 	set {_num} to {_metadata}
 	replace "Machine-Jump Beacon-" with "" in {_metadata}
-	delete {-Stats.%{_player}%::JumpBeacon-Time-%{_num}%}
+	kitStats_DELETE({_player}, "JumpBeacon-Time-%{_num}%")
 
 function kitParticle_JumpBeacon_Jumped(baseloc: location):
 	playSound("entity.wither.shoot", 1, 2, {_baseloc})

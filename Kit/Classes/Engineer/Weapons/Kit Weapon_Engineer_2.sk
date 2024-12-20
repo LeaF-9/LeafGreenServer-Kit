@@ -10,7 +10,7 @@ on sneak toggle:
 	# Fuel Check
 	if checkFuel(player, 2, "Weapon") is false:
 		stop
-	if {-Stats.%player%::GearyCog} is true:
+	if kitStats_GET(player, "GearyCog") is true:
 		stop
 	# ギアチェンジ
 	kitEffect_GearyCog_Change(player)
@@ -22,7 +22,7 @@ on damage with priority LOW:
 		set {_tool} to {_attacker}'s tool
 		if kitItemAllChecker({_tool}, "Engineer", "Weapon", 2) is false:
 			stop
-		if {-Stats.%{_attacker}%::GearyCog} is true:
+		if kitStats_GET({_attacker}, "GearyCog") is true:
 			setDamageModification_MUL(victim, 2)
 			kitParticle_GearyCog_Positive(location of {_attacker}, location of victim)
 			kitEffect_GearyCog_Change({_attacker})
@@ -32,18 +32,18 @@ on damage with priority LOW:
 	# Geary Cog選択時のダメージ
 	if {Class::%victim%} is "Engineer":
 		kitSelectChecker_Weapon(victim, "Engineer") is 2
-		{-Stats.%victim%::GearyCog} is true
+		kitStats_GET(victim, "GearyCog") is true
 		kitEffect_GearyCog_Change(victim)
 
 function kitEffect_GearyCog_Change(player: player):
-	if {-Stats.%{_player}%::GearyCog} is true:
-		set {-Stats.%{_player}%::GearyCog} to false
+	if kitStats_GET({_player}, "GearyCog") is true:
+		kitStats_SET({_player}, "GearyCog", false)
 	else:
-		set {-Stats.%{_player}%::GearyCog} to true
+		kitStats_SET({_player}, "GearyCog", true)
 	kitParticle_GearyCog_Change(location of {_player})
 
 function kitEffect_GearyCog_ActionBar(player: player):
-	if {-Stats.%{_player}%::GearyCog} is true:
+	if kitStats_GET({_player}, "GearyCog") is true:
 		set {_state} to "§a§lPositive"
 	else:
 		set {_state} to "§c§lNegative"

@@ -5,13 +5,13 @@ on death of player:
 	metadata value "gametype" of victim is "Kit"
 	if {Class::%{LastKiller::%victim%}%} is "Ghost":
 		{Class::%victim%} is not "Ghost"
-		{-Stats.%{LastKiller::%victim%}%::SpareSoul} is not set
+		kitStats_GET({LastKiller::%victim%}, "SpareSoul") is not set
 		checkCT({_player}, "Spare Soul") is true
-		set {-Stats.%{LastKiller::%victim%}%::SpareSoul} to true
-		set {-Stats.%{LastKiller::%victim%}%::Resurrection} to true
+		kitStats_SET({LastKiller::%victim%}, "SpareSoul", true)
+		kitStats_SET({LastKiller::%victim%}, "Resurrection", true)
 		set {_memsg} to kitGhostMessage("§5魂を補充しました...", true)
 		kitMsg({LastKiller::%victim%}, {_memsg})
-	if {-Stats.%victim%::SpareSoul} is true:
+	if kitStats_GET(victim, "SpareSoul") is true:
 		set {_memsg} to kitGhostMessage("§5魂の復活を行いました...", true)
 		kitMsg(victim, {_memsg})
 		playSound("entity.wither.death", 1, 0.5, victim)

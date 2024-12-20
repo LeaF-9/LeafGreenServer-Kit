@@ -1,7 +1,7 @@
 # Respawn Controller
 
 function kitSkill_Engineer_6(player: player):
-	set {_loc} to {-Stats.%{_player}%::SkillLocation}
+	set {_loc} to kitStats_GET({_player}, "SkillLocation")
 	if {_loc} is not set:
 		nullEngineerPlacePosition({_player})
 		stop
@@ -9,7 +9,7 @@ function kitSkill_Engineer_6(player: player):
 	toolCT({_player}, "Engineer", 6)
 	# 時間設定
 	set {_now} to now
-	set {-Stats.%{_player}%::RespawnController-Time} to {_now}
+	kitStats_SET({_player}, "RespawnController-Time", {_now})
 
 	# 機械削除
 	kitFakeDeleteData({_player}, "Machine-Respawn Controller")
@@ -33,21 +33,21 @@ function kitSkill_Engineer_6(player: player):
 
 	set {_loc.particle} to {_loc.base}
 	add 1.5 to y-pos of {_loc.particle}
-	set {-Stats.%{_player}%::RespawnController-Location} to {_loc.particle}  # 演出の基準となる地点を保存
+	kitStats_SET({_player}, "RespawnController-Location", {_loc.particle})  # 演出の基準となる地点を保存
 	kitMsg({_player}, "<##7F1184>Respawn Controller§cを設置しました!")
 	playSound("entity.evoker.prepare_attack", 1, 1.5, {_loc.base})
 
 	# coreを回転させる関数
 	kitEffect_RespawnController_Core({_player}, {_coredisplay})
-	while {-Stats.%{_player}%::RespawnController-Time} is {_now}:
+	while kitStats_GET({_player}, "RespawnController-Time") is {_now}:
 		wait 5 ticks
 		delete {_tp::*}
 
 		# 範囲内のプレイヤーに効果付与
 		loop all players in radius 10 around {_loc.base}:
 			kitCheckTeam(loop-player, {_player}, false) is true
-			if {-Stats.%loop-player%::RespawnController} is not set:  # 復活時間延長効果が付与されていない場合
-				set {-Stats.%loop-player%::RespawnController} to {_player}
+			if kitStats_GET(loop-player, "RespawnController") is not set:  # 復活時間延長効果が付与されていない場合
+				kitStats_SET(loop-player, "RespawnController", {_player})
 				# 演出
 				playSound("entity.evoker.cast_spell", 0.9, 1.4, loop-player)
 				set {_el} to location of loop-player
@@ -59,31 +59,32 @@ function kitSkill_Engineer_6(player: player):
 		
 		# 範囲内に入ったプレイヤーかつ現在範囲内にいないプレイヤーを検知
 		loop {_pl::*}:
-			{-Stats.%loop-value%::RespawnController} is {_player}
+			kitStats_GET(loop-value, "RespawnController") is {_player}
 			{_tp::%loop-value%} is not set
-			delete {-Stats.%loop-value%::RespawnController}
+			kitStats_DELETE(loop-value, "RespawnController")
 			delete {_pl::%loop-index%}
 
 		set {_exist} to kitFakeCheck({_player}, "Machine-Respawn Controller")
 		if {_exist} is false:
-			delete {-Stats.%{_player}%::RespawnController-Time}
-			delete {-Stats.%{_player}%::RespawnController-Location}
+			kitStats_DELETE({_player}, "RespawnController-Time")
+			kitStats_DELETE({_player}, "RespawnController-Location")
 			loop {_pl::*}:
-				{-Stats.%loop-value%::RespawnController} is {_player}
-				delete {-Stats.%loop-value%::RespawnController}
+				kitStats_GET(loop-value, "RespawnController") is {_player}
+				kitStats_DELETE(loop-value, "RespawnController")
 
 on death of player:
-	{-Stats.%victim%::RespawnController} is set
-	set {_player} to {-Stats.%victim%::RespawnController}
+	set {_RespawnController} to kitStats_GET(victim, "RespawnController")
+	{_RespawnController} is set
+	set {_player} to {_RespawnController}
 	if checkFuel({_player}, 6) is false:
 		stop
-	set {-Stats.%victim%::SpawnTime} to 15
+	kitStats_SET(victim, "SpawnTime", 15)
 	kitParticle_RespawnController_Launch({_player}, victim)
 
 
 
 local function kitEffect_RespawnController_Core(player: player, display: entity):
-	set {_now} to {-Stats.%{_player}%::RespawnController-Time}
+	set {_now} to kitStats_GET({_player}, "RespawnController-Time")
 	set {_yaw} to yaw of {_display}
 	set {_rotate.yaw} to 20
 	set {_add.yaw} to {_rotate.yaw} / 20
@@ -97,7 +98,7 @@ local function kitEffect_RespawnController_Core(player: player, display: entity)
 	set {_y.min} to -0.1
 
 	set {_ln} to 0
-	while {-Stats.%{_player}%::RespawnController-Time} is {_now}:
+	while kitStats_GET({_player}, "RespawnController-Time") is {_now}:
 		delete {_exist}
 		loop all block displays:
 			loop-block display is {_display}
@@ -125,7 +126,7 @@ local function kitEffect_RespawnController_Core(player: player, display: entity)
 
 
 local function kitParticle_RespawnController_Launch(player: player, target: player):
-	set {_baseloc} to {-Stats.%{_player}%::RespawnController-Location}
+	set {_baseloc} to kitStats_GET({_player}, "RespawnController-Location")
 
 	# ビームの照射
 	set {_targetloc} to location 1 meter above {_target}

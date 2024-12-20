@@ -4,13 +4,12 @@ function kitSkill_Defender_1(player: player):
 	toolCT({_player}, "Defender", 1)
 	loop all players in radius 10 around {_player}:
 		loop-player is not {_player}
-		if kitCheckTeam(loop-player, {_player}, true) is true:
-			if {-Stats.%loop-player%::NoSupport} is not set:
-				add {_player} to {supporter.%loop-player%::*}
-				kitShield(loop-player, 5)
-				kitMsg({_player}, "§a%loop-player% §7に§b強固なバリア§7を張りました!")
-				message formatted "§9%{_player}% §bにバリアを張ってもらいました!" to loop-player
-				kitEffectDescription(loop-player, "§3§lシールド")
+		kitCheckTeam({_player}, loop-player, true) is true
+		add {_player} to {supporter.%loop-player%::*}
+		kitShield(loop-player, 5)
+		kitMsg({_player}, "§a%loop-player% §7に§b強固なバリア§7を張りました!")
+		message formatted "§9%{_player}% §bにバリアを張ってもらいました!" to loop-player
+		kitEffectDescription(loop-player, "§3§lシールド")
 	kitMsg({_player}, "§b周りの味方プレイヤーに§l強固なバリア§bを張りました!")
 	playSound("entity.wither.ambient", 1, 2, {_player})
 	set {_baseloc} to location of {_player}

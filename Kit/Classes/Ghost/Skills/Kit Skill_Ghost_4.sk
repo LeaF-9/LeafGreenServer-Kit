@@ -1,10 +1,11 @@
 # Lethan Souvenir
 
 function kitSkill_Ghost_4(player: player):
-	if {-Stats.%{_player}%::SkillTarget} is set:
+	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	if {_SkillTarget} is set:
 		if kitCheckSpirit({_player}, 4) is true:
 			toolCT({_player}, "Ghost", 4)
-			set {_tg} to {-Stats.%{_player}%::SkillTarget}
+			set {_tg} to {_SkillTarget}
 			kitFear({_tg}, 20000)
 			set metadata value "Lethal Souvenir" of {_tg} to true
 			playSound("entity.elder_guardian.death", 1, 1, {_tg})
