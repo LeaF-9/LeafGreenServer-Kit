@@ -21,79 +21,79 @@ local function kitEffect_StealthTrap(player: player):
 
 
 
-on rightclick holding a lead:
-	name of player's tool is "§1Trap"
-	if {CT.%player%::%name of player's tool%} is not set:
-		execute console command "/trapopen %player%"
-	else:
-		set action bar of player to "§c§lクールタイムが終わっていません!"
+# on rightclick holding a lead:
+# 	name of player's tool is "§1Trap"
+# 	if {CT.%player%::%name of player's tool%} is not set:
+# 		execute console command "/trapopen %player%"
+# 	else:
+# 		set action bar of player to "§c§lクールタイムが終わっていません!"
 
-command /trapopen <player>:
-	trigger:
-		open chest with 1 row named "§1Trap" to arg 1
-		wait a tick
-		format slot 1 of arg 1 with raw pufferfish named "§4Poison" with lore "§6=効果=||§d- 毒 I 10s" to close then run [make arg 1 execute command "trap poison"]
-		format slot 3 of arg 1 with eye of ender named "§4Blindness" with lore "§6=効果=||§d- 盲目 10s" to close then run [make arg 1 execute command "trap blind"]
-		format slot 5 of arg 1 with cobweb named "§4Stiffness" with lore "§6=効果=||§d- 移動速度低下 X 10s||§d- 跳躍力上昇 -10 10s" to close then run [make arg 1 execute command "trap stiff"]
-		format slot 7 of arg 1 with melon seeds named "§4Fatigue" with lore "§6=効果=||§d- 採掘速度低下 I 10s" to close then run [make arg 1 execute command "trap fatigue"]
+# command /trapopen <player>:
+# 	trigger:
+# 		open chest with 1 row named "§1Trap" to arg 1
+# 		wait a tick
+# 		format slot 1 of arg 1 with raw pufferfish named "§4Poison" with lore "§6=効果=||§d- 毒 I 10s" to close then run [make arg 1 execute command "trap poison"]
+# 		format slot 3 of arg 1 with eye of ender named "§4Blindness" with lore "§6=効果=||§d- 盲目 10s" to close then run [make arg 1 execute command "trap blind"]
+# 		format slot 5 of arg 1 with cobweb named "§4Stiffness" with lore "§6=効果=||§d- 移動速度低下 X 10s||§d- 跳躍力上昇 -10 10s" to close then run [make arg 1 execute command "trap stiff"]
+# 		format slot 7 of arg 1 with melon seeds named "§4Fatigue" with lore "§6=効果=||§d- 採掘速度低下 I 10s" to close then run [make arg 1 execute command "trap fatigue"]
 
-command /trap <text>:
-	trigger:
-		if {-Stats.%player%::Trap} is true:
-			message "{@prefix} §3以前の罠が撤去されました"
-		set {-Stats.%player%::Trap} to true
-		set {-Stats.%player%::TrapType} to arg 1
-		set {-Stats.%player%::TrapLocate} to location of block at player
-		message "{@prefix} §cトラップを仕掛けました!"
-		message "{@prefix} §e設置場所 §a%{-Stats.%player%::TrapLocate}%"
-		set {CT.%player%::§1Trap} to 50
+# command /trap <text>:
+# 	trigger:
+# 		if {-Stats.%player%::Trap} is true:
+# 			message "{@prefix} §3以前の罠が撤去されました"
+# 		set {-Stats.%player%::Trap} to true
+# 		set {-Stats.%player%::TrapType} to arg 1
+# 		set {-Stats.%player%::TrapLocate} to location of block at player
+# 		message "{@prefix} §cトラップを仕掛けました!"
+# 		message "{@prefix} §e設置場所 §a%{-Stats.%player%::TrapLocate}%"
+# 		set {CT.%player%::§1Trap} to 50
 
-every a second:
-	loop all players:
-		{-Stats.%loop-player-1%::Trap} is true
-		set {_pn} to 0
-		loop all players in radius 3 around location of {-Stats.%loop-player-1%::TrapLocate}:
-			{team::%loop-player-2%} is not {team::%loop-player-1%}
-			{CLS::%loop-player-2%} is not "ENG"
-			add 1 to {_pn}
-			set {_trapped.%loop-player-1%::%loop-player-2%} to true
-		{_pn} is more than 0
-		if {-Stats.%loop-player-1%::TrapType} is "poison":
-			loop all players:
-				{_trapped.%loop-player-1%::%loop-player-2%} is true
-				make loop-player-1 damage loop-player-2 by 4
-				apply poison 1 to loop-player-2 for 10 seconds
-				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
-				message "§5罠に掛かってしまった!" to loop-player-2
-				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-		else if {-Stats.%loop-player-1%::TrapType} is "blind":
-			loop all players:
-				{_trapped.%loop-player-1%::%loop-player-2%} is true
-				make loop-player-1 damage loop-player-2 by 4
-				apply blindness 1 to loop-player-2 for 10 seconds
-				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
-				message "§5罠に掛かってしまった!" to loop-player-2
-				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-		else if {-Stats.%loop-player-1%::TrapType} is "stiff":
-			loop all players:
-				{_trapped.%loop-player-1%::%loop-player-2%} is true
-				make loop-player-1 damage loop-player-2 by 4
-				remove slowness from loop-player-2
-				remove jump boost from loop-player-2
-				apply slowness 10 to loop-player-2 for 10 seconds
-				apply jump boost -10 to loop-player-2 for 10 seconds
-				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
-				message "§5罠に掛かってしまった!" to loop-player-2
-				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-		else if {-Stats.%loop-player-1%::TrapType} is "fatigue":
-			loop all players:
-				{_trapped.%loop-player-1%::%loop-player-2%} is true
-				make loop-player-1 damage loop-player-2 by 4
-				apply mining fatigue 1 to loop-player-2 for 10 seconds
-				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
-				message "§5罠に掛かってしまった!" to loop-player-2
-				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-		message "§2罠が発動した！" to loop-player-1
-		delete {-Stats.%loop-player-1%::Trap}
-		delete {-Stats.%loop-player-1%::TrapType}
-		delete {-Stats.%loop-player-1%::TrapLocate}
+# every a second:
+# 	loop all players:
+# 		{-Stats.%loop-player-1%::Trap} is true
+# 		set {_pn} to 0
+# 		loop all players in radius 3 around location of {-Stats.%loop-player-1%::TrapLocate}:
+# 			{team::%loop-player-2%} is not {team::%loop-player-1%}
+# 			{CLS::%loop-player-2%} is not "ENG"
+# 			add 1 to {_pn}
+# 			set {_trapped.%loop-player-1%::%loop-player-2%} to true
+# 		{_pn} is more than 0
+# 		if {-Stats.%loop-player-1%::TrapType} is "poison":
+# 			loop all players:
+# 				{_trapped.%loop-player-1%::%loop-player-2%} is true
+# 				make loop-player-1 damage loop-player-2 by 4
+# 				apply poison 1 to loop-player-2 for 10 seconds
+# 				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
+# 				message "§5罠に掛かってしまった!" to loop-player-2
+# 				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
+# 		else if {-Stats.%loop-player-1%::TrapType} is "blind":
+# 			loop all players:
+# 				{_trapped.%loop-player-1%::%loop-player-2%} is true
+# 				make loop-player-1 damage loop-player-2 by 4
+# 				apply blindness 1 to loop-player-2 for 10 seconds
+# 				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
+# 				message "§5罠に掛かってしまった!" to loop-player-2
+# 				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
+# 		else if {-Stats.%loop-player-1%::TrapType} is "stiff":
+# 			loop all players:
+# 				{_trapped.%loop-player-1%::%loop-player-2%} is true
+# 				make loop-player-1 damage loop-player-2 by 4
+# 				remove slowness from loop-player-2
+# 				remove jump boost from loop-player-2
+# 				apply slowness 10 to loop-player-2 for 10 seconds
+# 				apply jump boost -10 to loop-player-2 for 10 seconds
+# 				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
+# 				message "§5罠に掛かってしまった!" to loop-player-2
+# 				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
+# 		else if {-Stats.%loop-player-1%::TrapType} is "fatigue":
+# 			loop all players:
+# 				{_trapped.%loop-player-1%::%loop-player-2%} is true
+# 				make loop-player-1 damage loop-player-2 by 4
+# 				apply mining fatigue 1 to loop-player-2 for 10 seconds
+# 				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
+# 				message "§5罠に掛かってしまった!" to loop-player-2
+# 				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
+# 		message "§2罠が発動した！" to loop-player-1
+# 		delete {-Stats.%loop-player-1%::Trap}
+# 		delete {-Stats.%loop-player-1%::TrapType}
+# 		delete {-Stats.%loop-player-1%::TrapLocate}
