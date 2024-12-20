@@ -23,11 +23,11 @@ on death of player:
 
 function kitWeapon_Necromancer_2(player: player):
 	set {_now} to now
-	set {-Stats.%{_player}%::Erasure Rapier} to {_now}
+	kitStats_SET({_player}, "Erasure Rapier", {_now})
 	playSound("block.enchantment_table.use", 1.1, 0.8, {_player})
 	set {_time} to 200
 	loop 200 times:
-		{-Stats.%{_player}%::Erasure Rapier} is {_now}
+		kitStats_GET({_player}, "Erasure Rapier")is {_now}
 		loop all items in {_player}'s inventory:
 			name of loop-item contains "Erasure Rapier"
 			loop-item is not enchanted
@@ -37,7 +37,7 @@ function kitWeapon_Necromancer_2(player: player):
 		chargeActionBar_TimeDisplay({_player}, {_active}, 50, {_time})
 		subtract 1 from {_time}
 		wait a tick
-	if {-Stats.%{_player}%::Erasure Rapier} is {_now}:
+	if kitStats_GET({_player}, "Erasure Rapier") is {_now}:
 		loop all items in {_player}'s inventory:
 			name of loop-item contains "Erasure Rapier"
 			disenchant loop-item

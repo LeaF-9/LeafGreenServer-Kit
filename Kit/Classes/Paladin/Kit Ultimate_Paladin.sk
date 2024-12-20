@@ -7,13 +7,12 @@ options:
 
 function kitUltPaladin(player: player):
 	loop all players:
-		{TrueTeam::%loop-player%} is {TrueTeam::%{_player}%}
-		{-Stats.%loop-player%::NoSupport} is not set
+		kitCheckTeam(loop-player, {_player}, true, true) is true
 		if loop-player is not {_player}:
 			setSupporter(loop-player, {_player})
 			message formatted "<##e95388>§l%{_player}% <##ea618e>§lより妖精の加護を受け取りました!" to loop-player
 		add loop-player to {_palult::*}
-		set {-Stats.%loop-player%::Ult_Paladin} to 10
+		kitStats_SET(loop-player, "Ult_Paladin", 10)
 		set {_uuid} to UUID of loop-player
 		set {_id} to "Mischievous Fairies-%{_uuid}%"
 		set {_timer.title} to "§d§l妖精の加護§r §4❤10"
@@ -23,7 +22,7 @@ function kitUltPaladin(player: player):
 			set {_loop-player} to loop-value-2
 			set {_uuid} to UUID of {_loop-player}
 
-			if {-Stats.%{_loop-player}%::Ult_Paladin} is set:
+			if kitStats_GET({_loop-player}, "Ult_Paladin") is set:
 				chance of 20%:
 					playSound("entity.bee.sting", 0.6, 2, {_loop-player})
 				set {_num} to 0
@@ -34,10 +33,11 @@ function kitUltPaladin(player: player):
 				spawnParticle_Color(entity_effect, rgb({_color::1}, {_color::2}, {_color::3}), {_el})
 
 				set {_id} to "Mischievous Fairies-%{_uuid}%"
-				set {_timer.title} to "§d§l妖精の加護§r §4❤%{-Stats.%{_loop-player}%::Ult_Paladin}%"
+				set {_UltPaladin} to kitStats_GET({_loop-player}, "Ult_Paladin")
+				set {_timer.title} to "§d§l妖精の加護§r §4❤%{_UltPaladin}%"
 				set bossbar {_id} title to {_timer.title}
 
-				set {_timer.prog} to {-Stats.%{_loop-player}%::Ult_Paladin} * 10
+				set {_timer.prog} to {_UltPaladin} * 10
 				set bossbar {_id} value to {_timer.prog}
 			else:
 				set {_id} to "Mischievous Fairies-%{_uuid}%"
@@ -47,13 +47,13 @@ function kitUltPaladin(player: player):
 	loop {_palult::*}:
 		set {_loop-player} to loop-value
 		set {_uuid} to UUID of {_loop-player}
-		delete {-Stats.%{_loop-player}%::Ult_Paladin}
+		kitStats_DELETE({_loop-player}, "Ult_Paladin")
 		message formatted "<##915da3>妖精の加護は消滅しました" to {_loop-player}
 		set {_id} to "Mischievous Fairies-%{_uuid}%"
 		remove bossbar {_id}
 
 on damage of player with priority HIGHEST:
-	{-Stats.%victim%::Ult_Paladin} is set
+	kitStats_GET(victim, "Ult_Paladin") is set
 	cancel event
 	playSound("entity.iron_golem.repair", 1, 2, victim)
 
@@ -74,10 +74,11 @@ on damage of player with priority HIGHEST:
 		stop
 
 	set {_rawdamage} to getDamageModification_ALL(victim, damage)
-	set {_ulthp} to {-Stats.%victim%::Ult_Paladin} - {_rawdamage}
+	set {_UltPaladin} to kitStats_GET(victim, "Ult_Paladin")
+	set {_ulthp} to {_UltPaladin} - {_rawdamage}
 	if {_ulthp} <= 0:
 		set {_attacker} to getAttacker(victim)
-		delete {-Stats.%victim%::Ult_Paladin}
+		kitStats_DELETE(victim, "Ult_Paladin")
 		message formatted "<##4d4398>加護が崩れた! <##dc6b9a>妖精の回復魔法が付与されます...!" to victim
 		apply regeneration 1 to victim for 10 seconds
 		if {_attacker} exists:
@@ -100,4 +101,4 @@ on damage of player with priority HIGHEST:
 					spawnParticle_Color(entity_effect, rgb({_color::1}, {_color::2}, {_color::3}), {_el})
 			wait a tick
 	else:
-		set {-Stats.%victim%::Ult_Paladin} to {_ulthp}
+		kitStats_SET(victim, "Ult_Paladin", {_ulthp})

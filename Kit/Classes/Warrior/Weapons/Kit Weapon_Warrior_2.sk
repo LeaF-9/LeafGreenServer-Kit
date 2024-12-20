@@ -6,7 +6,7 @@ on damage:
 	damage was caused by attack
 	{Class::%{_attacker}%} is "Warrior"
 	set {_tool} to {_attacker}'s tool
-	if {-Stats.%{_attacker}%::PlutoCharge} is true:
+	if kitStats_GET({_attacker}, "PlutoCharge") is true:
 		subtract 1 from {_attacker}'s health
 		kitStun(victim, 100)
 		playSound("entity.wither.break_block", 1, 0.9, victim)
@@ -16,13 +16,13 @@ on damage:
 			set {_loc} to location of loop-block
 			subtract 0.4 from y-coordinate of {_loc}
 			spawnParticle_Block(dirt, {_loc})
-		delete {-Stats.%{_attacker}%::PlutoCharge}
+		kitStats_DELETE({_attacker}, "PlutoCharge")
 
 on sneak toggle:
 	{Class::%player%} is "Warrior"
 	player is not sneaking
 	set {_tool} to player's tool
-	{-Stats.%player%::PlutoCharge} is not set
+	kitStats_GET(player, "PlutoCharge") is not set
 	if kitItemAllChecker({_tool}, "Warrior", "Weapon", 2) is true:
 		set {_num} to 0
 		wait a tick
@@ -48,7 +48,7 @@ on sneak toggle:
 				# ------------------------------------
 				wait a tick
 		if {_true} is true:
-			set {-Stats.%player%::PlutoCharge} to true
+			kitStats_SET(player, "PlutoCharge", true)
 			# --- チャージ完了時の音の演出 ---
 			playSound("entity.warden.roar", 1, 2, player)
 			# ------------------------------
@@ -56,7 +56,7 @@ on sneak toggle:
 				set {_tool} to player's tool
 				if kitItemAllChecker({_tool}, "Warrior", "Weapon", 2) is false:
 					delete {_true}
-				else if {-Stats.%player%::PlutoCharge} is not set:
+				else if kitStats_GET(player, "PlutoCharge") is not set:
 					set {_true} to false
 				else:
 					send action bar "§7§lPluto §bのチャージが完了しました!" to player
@@ -67,7 +67,7 @@ on sneak toggle:
 					wait a tick
 			if {_true} is not set:
 				send action bar "§cチャージが中断されました!" to player
-				delete {-Stats.%player%::PlutoCharge}
+				kitStats_DELETE(player, "PlutoCharge")
 		else:
 			send action bar "§8チャージに失敗しました" to player
 

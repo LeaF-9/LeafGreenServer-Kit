@@ -2,9 +2,9 @@
 
 on damage with priority NORMAL:
 	set {_attacker} to getAttacker(victim)
-	if {-Stats.%{_attacker}%::ReflecTickle} is true:
+	if kitStats_GET({_attacker}, "ReflecTickle") is true:
 		cancel event
-	if {-Stats.%victim%::ReflecTickle} is true:
+	if kitStats_GET(victim, "ReflecTickle") is true:
 		checkDamagable(victim) is true
 		cancel event
 		kitDamageNull({_attacker}, victim, 1, "反射の杖", true)
@@ -21,17 +21,17 @@ on sneak toggle:
 
 local function kitEffect_ReflecTickle(player: player):
 	kitParticle_ReflecTickle_Shield({_player})
-	set {-Stats.%{_player}%::ReflecTickle} to true
+	kitStats_SET({_player}, "ReflecTickle", true)
 	wait a tick
 	set {_ok} to true
 	while {_ok} is true:
 		if {_player} is not sneaking:
 			delete {_ok}
 			continue
-		if {-Stats.%{_player}%::ReflecTickle} is not set:
+		if kitStats_GET({_player}, "ReflecTickle") is not set:
 			stop
 		wait a tick
-	delete {-Stats.%{_player}%::ReflecTickle}
+	kitStats_DELETE({_player}, "ReflecTickle")
 
 
 
@@ -61,7 +61,7 @@ local function kitParticle_ReflecTickle_Shield(player: player):
 		if {_player} is not sneaking:
 			delete {_ok}
 			continue
-		if {-Stats.%{_player}%::ReflecTickle} is not set:
+		if kitStats_GET({_player}, "ReflecTickle") is not set:
 			delete {_ok}
 			continue
 		set {_baseloc} to location of {_player}

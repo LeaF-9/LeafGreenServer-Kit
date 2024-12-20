@@ -4,19 +4,19 @@ on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	set {_damage.mul} to 1
 
-	if {-Stats.%{_attacker}%::LimiterRemoval} is true:
+	if kitStats_GET({_attacker}, "LimiterRemoval") is true:
 		set {_per} to kitEffect_LimiterRemoval_CalcDamage({_damage.mul}, true)
 		add {_per} to {_damage.mul}
 		kitParticle_LimiterRemoval_BuffAttack(victim)
-	else if {-Stats.%{_attacker}%::LimiterRemoval} is false:
+	else if kitStats_GET({_attacker}, "LimiterRemoval") is false:
 		set {_per} to kitEffect_LimiterRemoval_CalcDamage({_damage.mul}, false)
 		add {_per} to {_damage.mul}
 		kitParticle_LimiterRemoval_DebuffAttack(victim)
-	if {-Stats.%victim%::LimiterRemoval} is true:
+	if kitStats_GET(victim, "LimiterRemoval") is true:
 		set {_per} to kitEffect_LimiterRemoval_CalcDamage({_damage.mul}, false)
 		add {_per} to {_damage.mul}
 		kitParticle_LimiterRemoval_BuffDamage(victim)
-	else if {-Stats.%victim%::LimiterRemoval} is false:
+	else if kitStats_GET(victim, "LimiterRemoval") is false:
 		set {_per} to kitEffect_LimiterRemoval_CalcDamage({_damage.mul}, true)
 		add {_per} to {_damage.mul}
 		kitParticle_LimiterRemoval_DebuffDamage(victim)
@@ -39,23 +39,23 @@ function kitSkill_Warrior_2(player: player):
 
 local function kitEffect_LimiterRemoval(player: player):
 	set {_now} to now
-	set {-Stats.%{_player}%::LimiterRemoval} to true
-	set {-Stats.%{_player}%::LimiterRemovalTime} to {_now}
+	kitStats_SET({_player}, "LimiterRemoval", true)
+	kitStats_SET({_player}, "LimiterRemovalTime", {_now})
 	kitMsg({_player}, "§5リミッターを外しました...")
 	sendTimeBossbar_GREEN({_player}, "Limiter Removal - Buff", 100)
 	apply speed 1 to {_player} for 5 seconds
 	kitParticle_LimiterRemoval_Launch({_player})
 
 	loop 100 times:
-		if {-Stats.%{_player}%::LimiterRemovalTime} is not {_now}:
+		if kitStats_GET({_player}, "LimiterRemovalTime") is not {_now}:
 			stop
 		kitParticle_LimiterRemoval_Buff({_player})
 		wait a tick
 
-	if {-Stats.%{_player}%::LimiterRemovalTime} is not {_now}:
+	if kitStats_GET({_player}, "LimiterRemovalTime") is not {_now}:
 		stop
 	
-	set {-Stats.%{_player}%::LimiterRemoval} to false
+	kitStats_SET({_player}, "LimiterRemoval", false)
 	kitMsg({_player}, "§1リミッターが戻り,疲れてしまった...")
 	remove slowness from {_player}
 	apply slowness 2 to {_player} for 5 seconds
@@ -63,13 +63,13 @@ local function kitEffect_LimiterRemoval(player: player):
 	kitParticle_LimiterRemoval_Fatigue({_player})
 
 	loop 100 times:
-		if {-Stats.%{_player}%::LimiterRemovalTime} is not {_now}:
+		if kitStats_GET({_player}, "LimiterRemovalTime") is not {_now}:
 			stop
 		kitParticle_LimiterRemoval_Debuff({_player})
 		wait a tick
 
-	delete {-Stats.%{_player}%::LimiterRemoval}
-	delete {-Stats.%{_player}%::LimiterRemovalTime}
+	kitStats_DELETE({_player}, "LimiterRemoval")
+	kitStats_DELETE({_player}, "LimiterRemovalTime")
 	kitMsg({_player}, "§2疲れがとれた!")
 	remove slowness from {_player}
 	apply infinite slowness 1 without particles to {_player}

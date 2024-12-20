@@ -8,7 +8,7 @@ on death of player:
 
 local function kitEffect_Ancience(player: player):
 	set {_now} to now
-	set {-Stats.%{_player}%::Ancience} to {_now}
+	set kitStats_GET({_player}, "Ancience") to {_now}
 	apply regeneration 1 to {_player} for 10 seconds replacing existing effect
 	playSound("block.enchantment_table.use", 1.1, 0.9, {_player})
 	set {_y} to y-coordinate of {_player} + 2
@@ -18,7 +18,7 @@ local function kitEffect_Ancience(player: player):
 		spawnParticle(totem_of_undying, {_loc})
 	set {_activenum} to 200
 	loop 200 times:
-		{-Stats.%{_player}%::Ancience} is {_now}
+		kitStats_GET({_player}, "Ancience") is {_now}
 		loop all items in {_player}'s inventory:
 			name of loop-item contains "Ancience"
 			loop-item is not enchanted
@@ -28,7 +28,7 @@ local function kitEffect_Ancience(player: player):
 		subtract 1 from {_activenum}
 		wait a tick
 	send action bar "" to {_player}
-	if {-Stats.%{_player}%::Ancience} is {_now}:
+	if kitStats_GET({_player}, "Ancience") is {_now}:
 		loop all items in {_player}'s inventory:
 			name of loop-item is "<##866629>Ancience"
 			disenchant loop-item

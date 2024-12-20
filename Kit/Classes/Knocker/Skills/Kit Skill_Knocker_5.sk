@@ -3,7 +3,7 @@
 function kitSkill_Knocker_5(player: player):
 	toolCT({_player}, "Knocker", 5)
 	kitMsg({_player}, "§c地面に衝撃を与えて敵を吹き飛ばします!")
-	set {-Stats.%{_player}%::DiveImpact} to true
+	kitStats_SET({_player}, "DiveImpact", true)
 	set velocity of {_player} to vector(0, 1.65, 0)
 	playSound("entity.wither.shoot", 1, 0.8, {_player})
 	loop 5 times:
@@ -37,6 +37,6 @@ function kitParticle_DiveImpact(loc: location):
 on damage of player:
 	metadata value "gametype" of victim is "Kit"
 	damage was caused by fall
-	{-Stats.%victim%::DiveImpact} is true
+	kitStats_GET(victim, "DiveImpact") is true
 	cancel event
-	delete {-Stats.%victim%::DiveImpact}
+	kitStats_DELETE(victim, "DiveImpact")

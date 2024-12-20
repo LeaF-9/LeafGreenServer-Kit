@@ -1,24 +1,24 @@
 # Overpowered Attack
 
 function kitUltWarrior(player: player):
-	delete {-Stats.%{_player}%::SonicRevolution}
-	delete {-Stats.%{_player}%::LegendaryAura}
+	kitStats_DELETE({_player}, "SonicRevolution")
+	kitStats_DELETE({_player}, "LegendaryAura")
 	set {_weapon} to kitPlayerWeaponItem({_player}, "Warrior")
 	load yml "plugins/skript-yaml/Kit Classes/Warrior.yml" as "ultwarrior.%{_player}%"
 	set {_SpecialSword} to yml value "kititems.Special Sword" from "ultwarrior.%{_player}%"
 	set slot 0 of {_player} to {_SpecialSword}
-	set {-Stats.%{_player}%::UltWarrior} to true
+	kitStats_SET({_player}, "UltWarrior", true)
 	wait 10 seconds
 	unload yml "ultwarrior.%{_player}%"
-	if {-Stats.%{_player}%::UltWarrior} is true:
+	if kitStats_GET({_player}, "UltWarrior") is true:
 		set slot 0 of {_player} to {_weapon}
-	delete {-Stats.%{_player}%::UltWarrior}
-	delete {-Stats.%{_player}%::UltWarrior-OK}
+	kitStats_DELETE({_player}, "UltWarrior")
+	kitStats_DELETE({_player}, "UltWarrior-OK")
 
 function kitEffect_UltWarrior(player: player):
-	while {-Stats.%{_player}%::UltWarrior-OK} is true:
-		if {-Stats.%{_player}%::UltWarrior} is not set:
-			delete {-Stats.%{_player}%::UltWarrior-OK}
+	while kitStats_GET({_player}, "UltWarrior-OK") is true:
+		if kitStats_GET({_player}, "UltWarrior") is not set:
+			kitStats_DELETE({_player}, "UltWarrior-OK")
 		set {_loc} to location of {_player}
 		add 0.02 to {_dy}
 		if {_dy} >= 4:
@@ -37,10 +37,10 @@ function kitEffect_UltWarrior(player: player):
 on sneak toggle:
 	{Class::%player%} is "Warrior"
 	player is not sneaking
-	if {-Stats.%player%::UltWarrior} is true:
+	if kitStats_GET(player, "UltWarrior") is true:
 		set {_SpecialSword} to yml value "kititems.Special Sword" from "ultwarrior.%player%"
 		player's tool is {_SpecialSword}
-		if {-Stats.%player%::UltWarrior-OK} is not set:
+		if kitStats_GET(player, "UltWarrior-OK") is not set:
 			set {_num} to 0
 			wait a tick
 			set {_true} to false
@@ -63,14 +63,14 @@ on sneak toggle:
 			if {_true} is true:
 				playSound("entity.player.levelup", 1.2, 0.5, player)
 				kitMsg(player, "§4§lパワーが貯まりました!")
-				set {-Stats.%player%::UltWarrior-OK} to true
+				kitStats_SET(player, "UltWarrior-OK", true)
 				kitEffect_UltWarrior(player)
 
 on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
-	if {-Stats.%{_attacker}%::UltWarrior-OK} is true:
+	if kitStats_GET({_attacker}, "UltWarrior-OK") is true:
 		setDamageModification_FIX(victim, 100)
-		delete {-Stats.%{_attacker}%::UltWarrior-OK}
+		kitStats_DELETE({_attacker}, "UltWarrior-OK")
 		strike lightning effect at victim
 		loop 10 times:
 			set {_loc} to aroundEffect(victim)

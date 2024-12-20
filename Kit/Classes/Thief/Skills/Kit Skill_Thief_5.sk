@@ -52,7 +52,7 @@ function kitSkill_Thief_5(player: player):
 	kitMsg({_player}, "§6%{_tg}% §aの職を奪った!")
 	message formatted "§3職を奪われてしまった!" to {_tg}
 	set {_class} to {Class::%{_tg}%}
-	set {-Stats.%{_tg}%::Stolen.Job Switch} to true
+	kitStats_SET({_tg}, "Stolen.Job Switch", true)
 	# Needyにする処理 ##############
 	set {_th} to health of {_tg}
 	execute console command "/skclass %{_tg}% Kit-Needy"
@@ -60,14 +60,14 @@ function kitSkill_Thief_5(player: player):
 	# Kitを変更する処理 ########
 	execute console command "/kjc %{_player}%"
 	execute console command "/class %{_class}% %{_player}% false"
-	set {-Stats.%{_player}%::Stealing.Job Switch} to true
+	kitStats_SET({_player}, "Stealing.Job Switch", true)
 	# #############################
 	wait 3 seconds
-	if {-Stats.%{_tg}%::Stolen.Job Switch} is true:
+	if kitStats_GET({_tg}, "Stolen.Job Switch") is true:
 		execute console command "/class %{_class}% %{_tg}% false"
-		delete {-Stats.%{_tg}%::Stolen.Job Switch}
+		kitStats_DELETE({_tg}, "Stolen.Job Switch")
 	wait 7 seconds
-	if {-Stats.%{_player}%::Stealing.Job Switch} is true:
+	if kitStats_GET({_player}, "Stealing.Job Switch") is true:
 		execute console command "/kjc %{_player}%"
 		execute console command "/class Thief %{_player}% false"
-		delete {-Stats.%{_player}%::Stealing.Job Switch}
+		kitStats_DELETE({_player}, "Stealing.Job Switch")

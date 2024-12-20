@@ -19,9 +19,7 @@ on projectile hit:
 	playSound("block.end_portal_frame.fill", 1, 1.5, {_loc})
 	loop all players in radius 5 around projectile:
 		loop-player is not shooter
-		kitCheckAlive(loop-player) is true
-		{team::%loop-player%} is {team::%shooter%}
-		{-Stats.%loop-player%::NoSupport} is not set
+		kitCheckTeam(loop-player, shooter, true) is true
 		setSupporter(loop-player, shooter)
 		kitHeal(loop-player, 3)
 		kitEffectDescription(loop-player, "§d❤3")

@@ -9,7 +9,7 @@ function kitSkill_Reflector_4(player: player):
 on damage of player:
 	damage cause is not sweep attack
 	checkDamagable(victim) is true
-	{-Stats.%victim%::MirrorBall} is set
+	kitStats_GET(victim, "MirrorBall") is set
 	set {_attacker} to getAttacker(victim)
 	set {_damage.origin} to getDamageModification_ALL(victim, damage)
 	set {_victim} to victim
@@ -22,11 +22,11 @@ on damage of player:
 		# log "[MirrorBall] attackerがplayerでない"
 		stop
 
-	set {_mirror} to {-Stats.%victim%::MirrorBall}  # Mirror Ball発動者の取得
+	set {_mirror} to kitStats_GET(victim, "MirrorBall")  # Mirror Ball発動者の取得
 	set {_member} to 0  # 範囲人数のカウント
 	loop all players:
 
-		{-Stats.%loop-player%::MirrorBall} is {_mirror}  # 同じMirror Ballに居るプレイヤーかどうか
+		kitStats_GET(loop-player, "MirrorBall") is {_mirror}  # 同じMirror Ballに居るプレイヤーかどうか
 		add loop-player to {_damaged::*}  # ダメージ共有者として追加
 		add 1 to {_member}
 	if {_member} <= 0:
@@ -79,17 +79,17 @@ local function kitEffect_MirrorBall(player: player):
 			if {_entried::%loop-player%} is not set:
 				kitParticle_MirrorBall_Entry(loop-player)
 			set {_entried::%loop-player%} to {_player}
-			set {-Stats.%loop-player%::MirrorBall} to {_player}
+			kitStats_SET(loop-player, "MirrorBall", {_player})
 		loop {_entried::*}:
 			if {_entrying::%loop-value-2%} is not {_player}:
 				delete {_entried::%loop-value-2%}
-				delete {-Stats.%loop-value-2%::MirrorBall}
+				kitStats_DELETE(loop-value-2, "MirrorBall")
 		wait a tick
 	kitParticle_MirrorBall_Break({_player})
 	kitMsg({_player}, "§7ミラーボールは弾けて消え去った...")
 	loop all players:
-		{-Stats.%loop-player%::MirrorBall} is {_player}
-		delete {-Stats.%loop-player%::MirrorBall}
+		kitStats_GET(loop-player, "MirrorBall") is {_player}
+		kitStats_DELETE(loop-player, "MirrorBall")
 
 
 

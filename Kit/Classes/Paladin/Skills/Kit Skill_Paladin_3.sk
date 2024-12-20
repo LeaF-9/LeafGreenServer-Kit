@@ -2,14 +2,14 @@
 
 function kitSkill_Paladin_3(player: player):
 	toolCT({_player}, "Paladin", 3)
-	set {-Stats.%{_player}%::FairyProtection} to true
-	set {-Stats.%{_player}%::Resurrection} to true
+	kitStats_SET({_player}, "FairyProtection", true)
+	kitStats_SET({_player}, "Resurrection", true)
 	kitMsg({_player}, "§d妖精の加護を受けました!")
 	apply regeneration 2 to {_player} for 5 seconds
 	sendTimeBossbar_GREEN({_player}, "Fairy Protection", 100)
 	playSound("entity.firework_rocket.twinkle", 1, 1.5, {_player})
 	loop 100 times:
-		if {-Stats.%{_player}%::FairyProtection} is true:
+		if kitStats_GET({_player}, "FairyProtection") is true:
 			set {_effloc} to location of {_player}
 			add 18 to {_rad}
 			add 0.02 to {_y}
@@ -18,13 +18,13 @@ function kitSkill_Paladin_3(player: player):
 			add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
 			spawnParticle_Color(entity_effect, rgb(255, 20, 147), {_effloc})
 			wait a tick
-	delete {-Stats.%{_player}%::Resurrection}
-	if {-Stats.%{_player}%::FairyProtection} is true:
-		delete {-Stats.%{_player}%::FairyProtection}
+	kitStats_DELETE({_player}, "Resurrection")
+	if kitStats_GET({_player}, "FairyProtection") is true:
+		kitStats_DELETE({_player}, "FairyProtection")
 		kitMsg({_player}, "§e妖精は去っていきました")
 
 on damage of player with priority LOW:
-	{-Stats.%victim%::FairyProtection} is true
+	kitStats_GET(victim, "FairyProtection") is true
 	set {_attacker} to getAttacker(victim)
 	{_attacker} is set
 	apply poison 2 to {_attacker} for 2 seconds replacing existing effect
@@ -32,7 +32,7 @@ on damage of player with priority LOW:
 	sendTimeBossbar_RED({_attacker}, "§2毒", 40)
 
 on death of player:
-	{-Stats.%victim%::FairyProtection} is true
+	kitStats_GET(victim, "FairyProtection") is true
 	kitMsg(victim, "§a妖精が命を分け与えてくれた!")
 	playSound("entity.player.levelup", 1, 0.5, victim)
 	wait 3 ticks

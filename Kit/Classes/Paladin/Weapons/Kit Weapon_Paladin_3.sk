@@ -5,7 +5,7 @@ on damage with priority LOW:
 	{Class::%attacker%} is "Paladin"
 	set {_tool} to {_attacker}'s tool
 	kitItemAllChecker({_tool}, "Paladin", "Weapon", 3) is true
-	if {-Stats.%{_attacker}%::HolyLance-Charged} is set:
+	if kitStats_GET({_attacker}, "HolyLance-Charged") is set:
 		playSound("entity.zombie_villager.cure", 1, 2, victim)
 		kitParticle_HolyLance_Damage(victim)
 		setDamageModification_MUL(victim, 2)
@@ -24,18 +24,18 @@ on damage with priority LOW:
 		set {_damage} to 10
 	setDamageModification_FIX(victim, {_damage})
 	set {_now} to now
-	set {-Stats.%{_attacker}%::HolyLance-Charged} to {_now}
+	kitStats_SET({_attacker}, "HolyLance-Charged", {_now})
 
 	set {_ln.1} to 0
 	loop 100 times:
-		{-Stats.%{_attacker}%::HolyLance-Charged} is {_now}
+		kitStats_GET({_attacker}, "HolyLance-Charged") is {_now}
 		add 1 to {_ln.1}
 		chargeActionBar_TimeDisplay({_attacker}, 50 - floor({_ln.1} * 0.5), 50, 100 - ({_ln.1} - 1))
 
 		kitParticle_HolyLance_Charged({_attacker})
 		wait a tick
-	{-Stats.%{_attacker}%::HolyLance-Charged} is {_now}
-	delete {-Stats.%{_attacker}%::HolyLance-Charged}
+	kitStats_GET({_attacker}, "HolyLance-Charged") is {_now}
+	kitStats_DELETE({_attacker}, "HolyLance-Charged")
 
 local function kitParticle_HolyLance_Damage(player: player):
 	set {_baseloc} to location 1 meter above {_player}

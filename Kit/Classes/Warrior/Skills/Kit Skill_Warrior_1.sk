@@ -3,17 +3,17 @@
 on damage with priority NORMAL:
 	set {_damage.mul} to 0
 	set {_attacker} to getAttacker(victim)
-	if {-Stats.%{_attacker}%::FocusEnergy} is true:
+	if kitStats_GET({_attacker}, "FocusEnergy") is true:
 		set {_focusenergy} to true
 		add 2 to {_damage.mul}
 		kitMsg({_attacker}, "§d力を思い切り振り絞った!")
-		delete {-Stats.%{_attacker}%::FocusEnergy}
+		kitStats_DELETE({_attacker}, "FocusEnergy")
 		playSound("entity.iron_golem.repair", 1, 0.75, {_attacker})
-	if {-Stats.%victim%::FocusEnergy} is true:
+	if kitStats_GET(victim, "FocusEnergy") is true:
 		set {_focusenergy} to true
 		add 2 to {_damage.mul}
 		kitMsg(victim, "§4おっと! 集中が切れてしまった!")
-		delete {-Stats.%victim%::FocusEnergy}
+		kitStats_DELETE(victim, "FocusEnergy")
 		playSound("entity.iron_golem.damage", 1, 0.75, victim)
 	
 	{_focusenergy} is true
@@ -24,7 +24,7 @@ on damage with priority NORMAL:
 
 
 function kitSkill_Warrior_1(player: player):
-	if {-Stats.%{_player}%::FocusEnergy} is true:
+	if kitStats_GET({_player}, "FocusEnergy") is true:
 		send action bar "§e§lまだ気合は入っています" to {_player}
 		stop
 	toolCT({_player}, "Warrior", 1)
@@ -34,13 +34,13 @@ function kitSkill_Warrior_1(player: player):
 
 local function kitEffect_FocusEnergy(player: player):
 	kitMsg({_player}, "§5§l気合を込めた....")
-	set {-Stats.%{_player}%::FocusEnergy} to true
+	kitStats_SET({_player}, "FocusEnergy", true)
 	kitParticle_FocusEnergy_Launch({_player})
 
 	playSound("entity.wolf.growl", 1, 0.5, {_player})
 	
 	set {_ln} to 0
-	while {-Stats.%{_player}%::FocusEnergy} is true:
+	while kitStats_GET({_player}, "FocusEnergy") is true:
 		add 1 to {_ln}
 		send action bar "§8§l集中しています..." to {_player}
 		kitParticle_FocusEnergy_Aura({_player}, {_ln})

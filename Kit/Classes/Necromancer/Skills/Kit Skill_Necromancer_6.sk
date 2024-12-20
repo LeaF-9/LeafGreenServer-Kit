@@ -1,14 +1,15 @@
 # Death Detector
 
 function kitSkill_Necromancer_6(player: player):
-	if {-Stats.%{_player}%::SkillLocation} is set:
+	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+	if {_SkillLocation} is set:
 		toolCT({_player}, "Necromancer", 6)
 		set {_now} to now
-		set {-Stats.%{_player}%::DeathDetector} to true
-		set {-Stats.%{_player}%::DeathDetector-Time} to {_now}
+		kitStats_SET({_player}, "DeathDetector", true)
+		kitStats_SET({_player}, "DeathDetector-Time", {_now})
 
 		kitFakeDeleteData({_player}, "Death Detector")
-		set {_baseloc} to {-Stats.%{_player}%::SkillLocation}
+		set {_baseloc} to {_SkillLocation}
 		set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0f,-0.25f]", "[0.5f,0.75f,0.5f]")
 		kitFakeBlock({_player}, {_baseloc}, "minecraft:bone_block", {_transformation}, "Death Detector")
 		set {_loc1} to {_baseloc}
@@ -26,13 +27,13 @@ function kitSkill_Necromancer_6(player: player):
 
 		kitMsg({_player}, "<##8b0000>死を感知して骨を召喚する装置を設置しました...")
 		playSound("block.end_portal_frame.fill", 1, 0.5, {_baseloc})
-		while {-Stats.%{_player}%::DeathDetector-Time} is {_now}:
+		while kitStats_GET({_player}, "DeathDetector-Time") is {_now}:
 			wait a second
 			set {_exist} to kitFakeCheck({_player}, "Death Detector")
 			if {_exist} is false:
-				delete {-Stats.%{_player}%::DeathDetector-Time}
-		if {-Stats.%{_player}%::DeathDetector-Time} is not set:
-			delete {-Stats.%{_player}%::DeathDetector}
+				kitStats_DELETE({_player}, "DeathDetector-Time")
+		if kitStats_GET({_player}, "DeathDetector-Time") is not set:
+			kitStats_DELETE({_player}, "DeathDetector")
 	else:
 		send action bar "§c§l地点が設定されていません!" to {_player}
 

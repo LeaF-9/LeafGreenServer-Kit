@@ -5,34 +5,38 @@ on leftclick holding a bonemeal:
 	kitItemAllChecker({_tool}, "Ninja", "Skill", 5) is true
 	cancel event
 	playSound("ui.button.click", 1, 1, player, true)
-	if {-Stats.%player%::Ninjutsu1} is not set:
-		set {-Stats.%player%::Ninjutsu1} to "L"
+	if kitStats_GET(player, "Ninjutsu1") is not set:
+		kitStats_SET(player, "Ninjutsu1", "L")
 		send action bar "§a§lL §6- §7§l? §6- §7§l?" to player
 		set {_now} to now
-		set {-Stats.%player%::NinTime} to {_now}
+		kitStats_SET(player, "NinTime", {_now})
 		wait 3 seconds
-		if {-Stats.%player%::NinTime} is {_now}:
-			delete {-Stats.%player%::Ninjutsu1}
-	else if {-Stats.%player%::Ninjutsu1} is set:
-		if {-Stats.%player%::Ninjutsu2} is not set:
-			set {-Stats.%player%::Ninjutsu2} to "L"
-			send action bar "§a§l%{-Stats.%player%::Ninjutsu1}% §6- §a§lL §6- §7§l?" to player
+		if kitStats_GET(player, "NinTime") is {_now}:
+			kitStats_DELETE(player, "Ninjutsu1")
+	else if kitStats_GET(player, "Ninjutsu1") is set:
+		if kitStats_GET(player, "Ninjutsu2") is not set:
+			kitStats_SET(player, "Ninjutsu2", "L")
+			set {_Nin1} to kitStats_GET(player, "Ninjutsu1")
+			send action bar "§a§l%{_Nin1}% §6- §a§lL §6- §7§l?" to player
 			set {_now} to now
-			set {-Stats.%player%::NinTime} to {_now}
+			kitStats_SET(player, "NinTime", {_now})
 			wait 3 seconds
-			if {-Stats.%player%::NinTime} is {_now}:
-				delete {-Stats.%player%::Ninjutsu1}
-				delete {-Stats.%player%::Ninjutsu2}
+			if kitStats_GET(player, "NinTime") is {_now}:
+				kitStats_DELETE(player, "Ninjutsu1")
+				kitStats_DELETE(player, "Ninjutsu2")
 		else:
-			delete {-Stats.%player%::NinTime}
-			set {-Stats.%player%::Ninjutsu3} to "L"
-			send action bar "§a§l%{-Stats.%player%::Ninjutsu1}% §6- §a§l%{-Stats.%player%::Ninjutsu2}% §6- §a§lL" to player
+			kitStats_DELETE(player, "NinTime")
+			kitStats_SET(player, "Ninjutsu3", "L")
+			set {_Nin1} to kitStats_GET(player, "Ninjutsu1")
+			set {_Nin2} to kitStats_GET(player, "Ninjutsu2")
+			set {_Nin3} to kitStats_GET(player, "Ninjutsu3")
+			send action bar "§a§l%{_Nin1}% §6- §a§l%{_Nin2}% §6- §a§lL" to player
 			kitMsg(player, "§f§l印を結びました!")
 			playSound("entity.item.pickup", 1, 0.5, player, true)
-			set {_nin} to "%{-Stats.%player%::Ninjutsu1}% - %{-Stats.%player%::Ninjutsu2}% - %{-Stats.%player%::Ninjutsu3}%"
-			delete {-Stats.%player%::Ninjutsu1}
-			delete {-Stats.%player%::Ninjutsu2}
-			delete {-Stats.%player%::Ninjutsu3}
+			set {_nin} to "%{_Nin1}% - %{_Nin2}% - %{_Nin3}%"
+			kitStats_DELETE(player, "Ninjutsu1")
+			kitStats_DELETE(player, "Ninjutsu2")
+			kitStats_DELETE(player, "Ninjutsu3")
 			if {_nin} is "L - L - L":
 				set player's tool to light blue dye named "§5Ninjutsu §9[§b風§9]" with lore "§f敵を吹き飛ばす風遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d現在地点§7に§e竜巻§7を§6§l設置 §b5秒", "§8- §d竜巻内§4の敵§7を§6§l吹き飛ばして§4❤0.5§c§lダメージ" and "§8- §3空中で発動時§7,§d上方向§7に§6§l大ジャンプ"
 			else if {_nin} is "L - R - L":
@@ -47,35 +51,39 @@ on rightclick holding a bonemeal:
 	kitItemAllChecker({_tool}, "Ninja", "Skill", 5) is true
 	cancel event
 	playSound("ui.button.click", 1, 1, player, true)
-	if {-Stats.%player%::Ninjutsu1} is not set:
-		set {-Stats.%player%::Ninjutsu1} to "R"
+	if kitStats_GET(player, "Ninjutsu1") is not set:
+		kitStats_SET(player, "Ninjutsu1", "R")
 		send action bar "§a§lR §6- §7§l? §6- §7§l?" to player
 		set {_now} to now
-		set {-Stats.%player%::NinTime} to {_now}
+		kitStats_SET(player, "NinTime", {_now})
 		wait 3 seconds
-		if {-Stats.%player%::NinTime} is {_now}:
-			delete {-Stats.%player%::Ninjutsu1}
-	else if {-Stats.%player%::Ninjutsu1} is set:
-		if {-Stats.%player%::Ninjutsu2} is not set:
-			set {-Stats.%player%::Ninjutsu2} to "R"
-			send action bar "§a§l%{-Stats.%player%::Ninjutsu1}% §6- §a§lR §6- §7§l?" to player
+		if kitStats_GET(player, "NinTime") is {_now}:
+			kitStats_DELETE(player, "Ninjutsu1")
+	else if kitStats_GET(player, "Ninjutsu1") is set:
+		if kitStats_GET(player, "Ninjutsu2") is not set:
+			kitStats_SET(player, "Ninjutsu2", "R")
+			set {_Nin1} to kitStats_GET(player, "Ninjutsu1")
+			send action bar "§a§l%{_Nin1}% §6- §a§lR §6- §7§l?" to player
 			set {_now} to now
-			set {-Stats.%player%::NinTime} to {_now}
+			kitStats_SET(player, "NinTime", {_now})
 			wait 3 seconds
-			if {-Stats.%player%::NinTime} is {_now}:
-				delete {-Stats.%player%::Ninjutsu1}
-				delete {-Stats.%player%::Ninjutsu2}
+			if kitStats_GET(player, "NinTime") is {_now}:
+				kitStats_DELETE(player, "Ninjutsu1")
+				kitStats_DELETE(player, "Ninjutsu2")
 		else:
-			delete {-Stats.%player%::NinTime}
-			set {-Stats.%player%::Ninjutsu3} to "R"
-			send action bar "§a§l%{-Stats.%player%::Ninjutsu1}% §6- §a§l%{-Stats.%player%::Ninjutsu2}% §6- §a§lR" to player
+			kitStats_DELETE(player, "NinTime")
+			kitStats_SET(player, "Ninjutsu3", "R")
+			set {_Nin1} to kitStats_GET(player, "Ninjutsu1")
+			set {_Nin2} to kitStats_GET(player, "Ninjutsu2")
+			set {_Nin3} to kitStats_GET(player, "Ninjutsu3")
+			send action bar "§a§l%{_Nin1}% §6- §a§l%{_Nin2}% §6- §a§lR" to player
 			kitMsg(player, "§f§l印を結びました!")
 			playSound("entity.item.pickup", 1, 0.5, player, true)
 			remove a bone meal named "§fNinjutsu" from the player
-			set {_nin} to "%{-Stats.%player%::Ninjutsu1}% - %{-Stats.%player%::Ninjutsu2}% - %{-Stats.%player%::Ninjutsu3}%"
-			delete {-Stats.%player%::Ninjutsu1}
-			delete {-Stats.%player%::Ninjutsu2}
-			delete {-Stats.%player%::Ninjutsu3}
+			set {_nin} to "%{_Nin1}% - %{_Nin2}% - %{_Nin3}%"
+			kitStats_DELETE(player, "Ninjutsu1")
+			kitStats_DELETE(player, "Ninjutsu2")
+			kitStats_DELETE(player, "Ninjutsu3")
 			wait a tick
 			if {_nin} is "L - L - R":
 				set player's tool to gray dye named "§5Ninjutsu §9[§8爆§9]" with lore "§f木っ端微塵にする爆遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §b3秒後§7に§6爆発§7する§eTNT§7を§d6方向§7に§6§l投擲 §d6個", "§8- §3TNT爆発時§7,§d爆発地点§7に§b1秒後§e爆発する小爆弾§7を§6§l展開 §d2個" and "§8- §3小爆弾爆発時§7,§b1秒後§e爆発する火薬§7を§6§l展開 §b3個"

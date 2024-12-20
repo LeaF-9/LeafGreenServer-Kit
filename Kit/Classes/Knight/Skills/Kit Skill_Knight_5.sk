@@ -10,12 +10,12 @@ options:
 on damage with priority NORMAL:
 	set {_attacker} to getAttacker(victim)
 	# Justice Power発動者がダメージを与える
-	if {-Stats.%{_attacker}%::JusticePower} is set:
+	if kitStats_GET({_attacker}, "JusticePower") is set:
 		set {_enable} to true
 	
 	# Justice Power発動者がダメージを受ける
-	else if {-Stats.%victim%::JusticePower} is set:
-		if {-Stats.%victim%::ReligiousShelter} is true:
+	else if kitStats_GET(victim, "JusticePower") is set:
+		if kitStats_GET(victim, "ReligiousShelter") is true:
 			delete {_enable}
 		set {_enable} to true
 	
@@ -36,7 +36,7 @@ function kitSkill_Knight_5(player: player):
 
 local function kitEffect_JusticePower(player: player):
 	set {_now} to now
-	set {-Stats.%{_player}%::JusticePower} to {_now}
+	kitStats_SET({_player}, "JusticePower", {_now})
 	kitMsg({_player}, "§c§l与ダメージ§9と§c§l被ダメージ§9を§4❤3§9にします...")
 	sendTimeBossbar_GREEN({_player}, "Justice Power", {@effect-tick})
 
@@ -44,11 +44,11 @@ local function kitEffect_JusticePower(player: player):
 	kitParticle_JusticePower_Apply({_player})
 
 	loop {@effect-tick} times:
-		if {-Stats.%{_player}%::JusticePower} is not {_now}:
+		if kitStats_GET({_player}, "JusticePower") is not {_now}:
 			stop
 		wait a tick
 
-	delete {-Stats.%{_player}%::JusticePower}
+	kitStats_DELETE({_player}, "JusticePower")
 	kitMsg({_player}, "§6Justice Power§cの効果が切れました")
 
 
@@ -93,14 +93,14 @@ local function kitParticle_JusticePower_Launch(player: player):
 		wait a tick
 
 local function kitParticle_JusticePower_Apply(player: player):
-	set {_now} to {-Stats.%{_player}%::JusticePower}
+	set {_now} to kitStats_GET({_player}, "JusticePower")
 	set {_baserad} to 0
 	set {_add.rad} to 90 / 20
 	set {_FM.center} to 1
 	set {_FM.side} to 0.5
 
 	loop {@effect-tick} times:
-		if {-Stats.%{_player}%::JusticePower} is not {_now}:
+		if kitStats_GET({_player}, "JusticePower") is not {_now}:
 			stop
 		
 		set {_baseloc} to location of {_player}

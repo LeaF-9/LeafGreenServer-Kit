@@ -8,13 +8,14 @@ on death of player:
 on damage of player with priority LOW:
 	metadata value "gametype" of victim is "Kit"
 	damage was caused by fall
-	if {-Stats.%victim%::FallTiming} is set:
-		setDamageModification_SET(victim, {-Stats.%victim%::FallDamage})
-		delete {-Stats.%victim%::FallTiming}
-		delete {-Stats.%victim%::FallDamage}
-	else if {-Stats.%victim%::FallRemove} is set:
+	if kitStats_GET(victim, "FallTiming") is set:
+		set {_FallDamage} to kitStats_GET(victim, "FallDamage")
+		setDamageModification_SET(victim, {_FallDamage})
+		kitStats_DELETE(victim, "FallTiming")
+		kitStats_DELETE(victim, "FallDamage")
+	else if kitStats_GET(victim, "FallRemove") is set:
 		setDamageModification_MUL(victim, 0.1)
-		delete {-Stats.%victim%::FallRemove}
+		kitStats_DELETE(victim, "FallRemove")
 
 # Timer
 function kitTimerKnocker(player: player):
@@ -26,9 +27,11 @@ function kitTimerKnocker(player: player):
 		if {_timer} >= 20:
 			set {_timer} to 0
 		if {_timer} = 0:
-			if {-Stats.%{_player}%::SpatialDistorter} is set:
-				if {-Stats.%{_player}%::SpatialDistorter} < 60:
-					add 1 to {-Stats.%{_player}%::SpatialDistorter}
+			if kitStats_GET({_player}, "SpatialDistorter") is set:
+				if kitStats_GET({_player}, "SpatialDistorter") < 60:
+					set {_SpatialDistorter} to kitStats_GET({_player}, "SpatialDistorter")
+					add 1 to {_SpatialDistorter}
+					kitStats_SET({_player}, "SpatialDistorter", {_SpatialDistorter})
 		if {_item.type} is "Weapon":
 			if {_item.num} is 2:
 				kitWeaponSub_Knocker_2({_player})

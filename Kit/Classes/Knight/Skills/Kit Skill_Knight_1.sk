@@ -12,7 +12,7 @@ on damage with priority LOW:
 		setDamageModification_SET(victim, 3)
 	else if damage was caused by attack:
 		set {_attacker} to getAttacker(victim)
-		{-Stats.%{_attacker}%::DeflectiveSweep} is set
+		kitStats_GET({_attacker}, "DeflectiveSweep") is set
 		cancel event
 
 on projectile hit:
@@ -29,7 +29,7 @@ function kitSkill_Knight_1(player: player):
 
 local function kitEffect_DeflectiveSweep(player: player):
 	set {_now} to now
-	set {-Stats.%{_player}%::DeflectiveSweep} to {_now}
+	kitStats_SET({_player}, "DeflectiveSweep", {_now}) 
 
 	set {_secondsText} to {@effect-tick} / 20
 	kitMsg({_player}, "§3%{_secondsText}%秒間§c汎ゆる遠距離攻撃を跳ね返します!")
@@ -38,7 +38,7 @@ local function kitEffect_DeflectiveSweep(player: player):
 
 	loop {@effect-tick} times:
 		# 条件確認
-		if {-Stats.%{_player}%::DeflectiveSweep} is not {_now}:
+		if kitStats_GET({_player}, "DeflectiveSweep") is not {_now}:
 			continue
 
 		# 武器スロット固定化
@@ -69,7 +69,7 @@ local function kitEffect_DeflectiveSweep(player: player):
 			set velocity of loop-projectile to {_v}
 
 		wait a tick
-	delete {-Stats.%{_player}%::DeflectiveSweep}
+	kitStats_DELETE({_player}, "DeflectiveSweep")
 	kitMsg({_player}, "§e剣舞状態§9が終了しました")
 
 

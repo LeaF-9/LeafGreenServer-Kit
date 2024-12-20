@@ -1,13 +1,14 @@
 # Disguise Team
 
 function kitSkill_Thief_1(player: player):
-	if {-Stats.%{_player}%::SkillTarget} is not set:
+	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	if {_SkillTarget} is not set:
 		send action bar "§c§l対象が存在しません!" to {_player}
 		stop
 	setCT({_player}, "Disguise Team", 20)
 	sendTimeBossbar_GREEN({_player}, "Disguise Team", 200)
-	set {-Stats.%{_player}%::DisguiseTeam} to true
-	set {_tg} to {-Stats.%{_player}%::SkillTarget}
+	kitStats_SET({_player}, "DisguiseTeam", true)
+	set {_tg} to {_SkillTarget}
 	set {_team} to {team::%{_tg}%}
 	set {_tool} to {_player}'s tool
 	remove {_tool} from {_player}
@@ -51,10 +52,10 @@ function kitSkill_Thief_1(player: player):
 	apply invisibility 1 to {_player} for 3 seconds replacing existing effect
 	give {_item} to {_player}
 	wait 10 seconds
-	if {-Stats.%{_player}%::DisguiseTeam} is not set:
+	if kitStats_GET({_player}, "DisguiseTeam") is not set:
 		stop
 	kitMsg({_player}, "§7チーム擬態§fの効果が終了しました")
-	delete {-Stats.%{_player}%::DisguiseTeam}
+	kitStats_DELETE({_player}, "DisguiseTeam")
 	remove {_item} from {_player}
 	give {_tool} to {_player}
 	equip {_player} with leather cap

@@ -23,8 +23,10 @@ local function kitEffect_FairyWand_Hit(player: player, target: player):
 	kitParticle_FairyWand_Hit({_target})
 	kitDamage({_player}, {_target}, 1, "妖精の杖")
 	applyEffect({_target}, poison, 2, 3 seconds)
-	add 3 to {-Stats.%{_player}%::FairyWand}
-	send action bar "§9次のマナ消費量が §b§l%{-Stats.%{_player}%::FairyWand}% §9減少します!" to {_player}
+	set {_FairyWand} to kitStats_GET({_player}, "FairyWand")
+	add 3 to {_FairyWand}
+	kitStats_SET({_player}, "FairyWand", {_FairyWand})
+	send action bar "§9次のマナ消費量が §b§l%{_FairyWand}% §9減少します!" to {_player}
 
 
 

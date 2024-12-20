@@ -2,7 +2,7 @@
 
 function kitUltMercenary(player: player):
 	kitParticle_SanguinaryMurder({_player})
-	set {-Stats.%{_player}%::UltMercenary} to true
+	kitStats_SET({_player}, "UltMercenary", true)
 	loop 30 times:
 		shoot a falling redstone block from block above {_player} at speed 1 upwards
 		set metadata value "kit-merult" of shot falling redstone block to "%{_player}%"
@@ -34,7 +34,7 @@ function kitUltMercenary(player: player):
 		loop {_lb::*}:
 			make all players see block at loop-value-2 as redstone wire
 		wait a tick
-	delete {-Stats.%{_player}%::UltMercenary}
+	kitStats_DELETE({_player}, "UltMercenary")
 	loop {_lb::*}:
 		make all players see block at loop-value as air
 
@@ -57,7 +57,7 @@ local function kitParticle_SanguinaryMurder_Kill(player: player):
 on damage of player with priority NORMAL:
 	metadata value "gametype" of victim is "Kit"
 	set {_attacker} to getAttacker(victim)
-	{-Stats.%{_attacker}%::UltMercenary} is true
+	kitStats_GET({_attacker}, "UltMercenary") is true
 	getDebuffs(victim, "Blood") is true
 	health of victim <= 3
 	setDamageModification_FIX(victim, 100)

@@ -55,13 +55,13 @@ on death:
 			if damage was caused by void:
 				if {LastKiller::%victim%} is not set:
 					stop
-			if {-Stats.%victim%::DumpSoul} is true:
+			if kitStats_GET(victim, "DumpSoul") is true:
 				stop
 			else:
 				kitAddNecromance(victim, 1)
 				kitSpawn_Necromancer_Ghost(victim, location of victim, true)
 		loop all players:
-			{-Stats.%loop-player%::DeathDetector} is true
+			kitStats_GET(loop-player, "DeathDetector") is true
 			kitSkill_DeathDetector(loop-player)
 
 on rightclick:

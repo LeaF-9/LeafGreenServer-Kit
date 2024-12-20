@@ -15,9 +15,9 @@ on damage of player with priority NORMAL:
 		playSound("entity.experience_orb.pickup", 1, 1.5, victim)
 
 function kitReflector_DamageChecker(victim: player) :: text:
-	if {-Stats.%{_victim}%::DamageAbsorption} is set:
+	if kitStats_GET({_victim}, "DamageAbsorption") is set:
 		return "Damage Absorption"
-	if {-Stats.%{_victim}%::PerfectReflection} is set:
+	if kitStats_GET({_victim}, "PerfectReflection") is set:
 		return "Perfect Reflection"
 	return "none"
 
@@ -26,9 +26,9 @@ function kitTimerReflector(player: player):
 	set {_wn} to kitSelectChecker_Weapon({_player}, "Reflector")
 	if {_wn} is not 3:
 		stop
-	set {-Stats.%{_player}%::TolleStone} to 0
+	kitStats_SET({_player}, "TolleStone",  )
 	while {Class::%{_player}%} is "Reflector":
 		set {_slot} to {_player}.getInventory().getHeldItemSlot()
 		if {_slot} is 0:
-			send action bar "<##ae5ec7>§l蓄積傷<##f9c7ff>取得済" to {_player} if {-Stats.%{_player}%::TolleStone} is true
+			send action bar "<##ae5ec7>§l蓄積傷<##f9c7ff>取得済" to {_player} if kitStats_GET({_player}, "TolleStone") is true
 		wait 5 ticks

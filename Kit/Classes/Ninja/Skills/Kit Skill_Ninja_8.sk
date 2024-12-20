@@ -5,13 +5,13 @@ function kitSkill_Ninja_8(player: player):
 		toolCT({_player}, "Ninja", 8)
 		kitMsg({_player}, "<##f0f8ff>瞑想を行います...")
 		playSound("block.beacon.ambient", 1, 1, {_player})
-		set {-Stats.%{_player}%::Meiso} to true
+		kitStats_SET({_player}, "Meiso", true)
 		kitFreeze({_player}, 100, false)
 		sendTimeBossbar_YELLOW({_player}, "Meiso", 100)
 		apply glowing 1 to {_player} for 5 seconds
 		set {_bl} to location of {_player}
 		loop 100 times:
-			if {-Stats.%{_player}%::Meiso} is true:
+			if kitStats_GET({_player}, "Meiso") is true:
 				add 0.02 to {_y}
 				set {_rad} to 0
 				loop 10 times:
@@ -22,7 +22,7 @@ function kitSkill_Ninja_8(player: player):
 					add {_y} to y-coordinate of {_el}
 					spawnParticle(end_rod, {_el})
 				wait a tick
-		{-Stats.%{_player}%::Meiso} is true
+		kitStats_GET({_player}, "Meiso") is true
 		playSound("block.portal.travel", 0.5, 2, {_player})
 		kitMsg({_player}, "<##80c4ff>悟りによって§6§l忍術<##80c4ff>を回収した!")
 		kitHeal({_player}, 3)

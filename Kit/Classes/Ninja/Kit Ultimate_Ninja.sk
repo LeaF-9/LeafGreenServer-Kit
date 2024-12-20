@@ -2,7 +2,7 @@
 
 function kitUltNinja(player: player):
 	set {Ult.%{_player}%::Ninja} to true
-	set {-Stats.%{_player}%::UltNinja} to true
+	kitStats_SET({_player}, "UltNinja", true)
 	set {_weapon} to kitPlayerWeaponItem({_player}, "Ninja")
 	load yml "plugins/skript-yaml/Kit Classes/Ninja.yml" as "ultninja.%{_player}%"
 	set {_UltKatana} to yml value "kititems.Katana [竜]" from "ultninja.%{_player}%"
@@ -10,12 +10,12 @@ function kitUltNinja(player: player):
 	wait 10 seconds
 	unload yml "ultninja.%{_player}%"
 	delete {Ult.%{_player}%::Ninja}
-	{-Stats.%{_player}%::UltNinja} is true
-	delete {-Stats.%{_player}%::UltNinja}
+	kitStats_GET({_player}, "UltNinja") is true
+	kitStats_DELETE({_player}, "UltNinja")
 	set slot 0 of {_player} to {_weapon}
 
 on rightclick holding a netherite sword:
-	{-Stats.%player%::UltNinja} is true
+	kitStats_GET(player, "UltNinja") is true
 	set {_UltKatana} to yml value "kititems.Katana [竜]" from "ultninja.%player%"
 	player's tool is {_UltKatana}
 	cancel event

@@ -65,7 +65,7 @@ function kitEffect_FreezeMagic(player: player, loc: location):
 			add {_loc} to {_lb::*}
 			make all players see block at {_loc} as ice
 		teleport loop-player to {_pl}
-		set {-Stats.%loop-player%::Invincible} to true
+		kitStats_SET(loop-player, "Invincible", true)
 		message formatted "§1凍結魔法を受けた!" to loop-player
 		kitMsg({_player}, "§5%loop-player% §dに§1凍結魔法§dを付与した!")
 		kitEffectDescription(loop-player, "§b凍結")
@@ -80,7 +80,7 @@ function kitEffect_FreezeMagic(player: player, loc: location):
 		make all players see block at loop-value as air
 		spawnParticle_Block(packed ice, loop-value)
 	loop {_hit::*}:
-		delete {-Stats.%loop-value%::Invincible}
+		kitStats_DELETE(loop-value, "Invincible")
 		playSound("block.glass.break", 1, 1, loop-value)
 
 function kitParticle_FreezeMagic_Hit(player: player):

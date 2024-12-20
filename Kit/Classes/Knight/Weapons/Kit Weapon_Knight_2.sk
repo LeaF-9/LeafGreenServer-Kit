@@ -10,7 +10,7 @@ on leftclick:
 
 local function kitEffect_Cutlass_Launch(player: player):
 	set {_tool} to offhand tool of {_player}
-	set {-Stats.%{_player}%::Cutlass} to true
+	kitStats_SET({_player}, "Cutlass", true)
 	setItemCT({_player}, {_tool})
 	set offhand tool of {_player} to air
 
@@ -44,9 +44,9 @@ local function kitEffect_Cutlass_Launch(player: player):
 	loop all item displays:
 		metadata value "cutlass" of loop-item display is "%{_player}%"
 		delete loop-item display
-	if {-Stats.%{_player}%::Cutlass} is true:
+	if kitStats_GET({_player}, "Cutlass") is true:
 		set offhand tool of {_player} to {_tool}
-	delete {-Stats.%{_player}%::Cutlass}
+	kitStats_DELETE({_player}, "Cutlass")
 
 on rightclick:
 	{Class::%player%} is "Knight"

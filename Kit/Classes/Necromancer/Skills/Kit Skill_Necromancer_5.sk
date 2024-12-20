@@ -3,11 +3,12 @@
 function kitSkill_Necromancer_5(player: player):
 	set {_tool} to kitNecromanceItem({_player}, 5)
 	if kitCheckNecromance({_player}, {_tool}) is true:
-		if {-Stats.%{_player}%::SkillLocation} is set:
+		set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+		if {_SkillLocation} is set:
 			toolCT({_player}, "Necromancer", 5)
 			kitRemoveNecromance({_player}, {_tool})
 			kitMsg({_player}, "§5§l収集した魂が死を運ぶ...")
-			set {_point} to {-Stats.%{_player}%::SkillLocation}
+			set {_point} to {_SkillLocation}
 			set {_ln} to 60
 			loop 60 times:
 				kitParticle_Necronomicon({_point})

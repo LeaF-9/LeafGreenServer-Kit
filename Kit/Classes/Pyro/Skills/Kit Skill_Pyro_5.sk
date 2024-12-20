@@ -12,10 +12,10 @@ options:
 
 on leftclick:
 	metadata value "gametype" of player is "Kit"
-	{-Stats.%player%::HeatFlash} is true
+	kitStats_GET(player, "HeatFlash") is true
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Pyro", "Skill", 5) is true
-	delete {-Stats.%player%::HeatFlash}
+	kitStats_DELETE(player, "HeatFlash")
 
 
 
@@ -28,12 +28,12 @@ function kitSkill_Pyro_5(player: player):
 local function kitEffect_HeatFlash(player: player):
 	set {_baseloc} to location of head of {_player}
 	kitMsg({_player}, "§e§l閃光弾§dを発射します!")
-	set {-Stats.%{_player}%::HeatFlash} to true
+	kitStats_SET({_player}, "HeatFlash", true)
 	kitSound_HeatFlash_Launch({_player})
 
 	set {_m} to 0
 	loop {@flash-max-tick} times:
-		if {-Stats.%{_player}%::HeatFlash} is not set:
+		if kitStats_GET({_player}, "HeatFlash") is not set:
 			continue
 		
 		add {@flash-tick-speed} to {_m}
