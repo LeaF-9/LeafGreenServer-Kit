@@ -15,6 +15,11 @@ on place:
 		stop
 	cancel the event
 
+
+
+import:
+	org.bukkit.event.Event$Result
+
 on rightclick:
 	if {-BlockEnable::%player%} is true:
 		stop
@@ -24,8 +29,12 @@ on rightclick:
 			if block above clicked block is not passable:
 				stop
 
+	set {_type} to kitItemTypeChecker({_tool})
+
 	set {_eventString} to "%event%"
 	if {_eventString} is "PlayerInteractEntityEvent":
+		if {_type} is "Weapon":
+			stop
 		cancel event
 		stop
 
@@ -41,7 +50,6 @@ on rightclick:
 		if {_always} is true:
 			stop
 		
-		set {_type} to kitItemTypeChecker({_tool})
 		if {_type} is "Weapon":
 			stop
 
@@ -53,6 +61,11 @@ on rightclick:
 		set {_blockString} to {_strings::1}
 		if {-BlockEditDeny.allow-click::%{_blockString}%} is true:
 			stop
+		
+		if {_type} is "Weapon":
+			event.setUseInteractedBlock(Result.DENY)
+			stop
+
 	
 	cancel event
 
