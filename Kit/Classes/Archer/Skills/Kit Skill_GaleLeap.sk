@@ -1,34 +1,28 @@
-# Leap Gale
+# Gale Leap
 
-function kitSkill_Archer_8(player: player):
-	toolCT({_player}, "Archer", 8)
-	kitEffect_LeapGale({_player})
-
-
-
-local function kitEffect_LeapGale(player: player):
+function kitEffect_GaleLeap(player: player):
 	kitMsg({_player}, "§b§l突風射撃!")
-	kitEffect_LeapGale_Leap({_player})
+	kitEffect_GaleLeap_Leap({_player})
 	wait 10 ticks
 	kitCheckAlive({_player}) is true
-	kitEffect_LeapGale_Gale({_player})
+	kitEffect_GaleLeap_Gale({_player})
 
-local function kitEffect_LeapGale_Leap(player: player):
-	kitParticle_LeapGale_Leap({_player})
+local function kitEffect_GaleLeap_Leap(player: player):
+	kitParticle_GaleLeap_Leap({_player})
 	set {_vector} to vector(0, 0.8, 0)
 	set velocity of {_player} to {_vector}
 
-local function kitEffect_LeapGale_Gale(player: player):
+local function kitEffect_GaleLeap_Gale(player: player):
 	set {_baseloc} to location of head of {_player}
 	# velocity
-	kitParticle_LeapGale_Gale(location 1 meter above {_player})
+	kitParticle_GaleLeap_Gale(location 1 meter above {_player})
 	set {_vector} to setVector(location of {_player}, location 10 meters behind {_player}, 0.5)
 	set velocity of {_player} to {_vector}
 	# arrow
 	loop 30 times:
-		kitEffect_LeapGale_Arrow({_player}, {_baseloc})
+		kitEffect_GaleLeap_Arrow({_player}, {_baseloc})
 
-local function kitEffect_LeapGale_Arrow(player: player, loc: location):
+local function kitEffect_GaleLeap_Arrow(player: player, loc: location):
 	set {_el} to {_loc}
 	set pitch of {_el} to 0
 	set {_leftm} to a random number between -3 and 3
@@ -42,11 +36,11 @@ local function kitEffect_LeapGale_Arrow(player: player, loc: location):
 	set velocity of {_arrow} to {_vector}
 	set shooter of {_arrow} to {_player}
 	set metadata value "arrowdamage" of {_arrow} to 3
-	kitParticle_LeapGale_Arrow({_arrow})
+	kitParticle_GaleLeap_Arrow({_arrow})
 
 
 
-local function kitParticle_LeapGale_Leap(player: player):
+local function kitParticle_GaleLeap_Leap(player: player):
 	playSound("entity.wither.shoot", 1, 1.7, {_player})
 	# 波紋
 	set {_baseloc} to location of {_player}
@@ -63,16 +57,16 @@ local function kitParticle_LeapGale_Leap(player: player):
 	loop 5 times:
 		loop 2 times:
 			set {_ae} to aroundEffect({_player})
-			kitParticle_LeapGale_Up({_ae})
+			kitParticle_GaleLeap_Up({_ae})
 		wait a tick
 
-local function kitParticle_LeapGale_Up(loc: location):
+local function kitParticle_GaleLeap_Up(loc: location):
 	loop 5 times:
 		set {_el} to location loop-number - 0.5 meters above {_loc}
 		spawnParticle_Dust(rgb(235, 246, 247), 0.5, {_el})
 		wait a tick
 
-local function kitParticle_LeapGale_Gale(loc: location):
+local function kitParticle_GaleLeap_Gale(loc: location):
 	playSound("entity.zombie.break_wooden_door", 1, 0.9, {_loc})
 	loop 5 times:
 		set {_els::*} to particleLocation_CircleV({_loc}, 10 + 5 * (loop-number - 1), loop-number * 0.2)
@@ -80,7 +74,7 @@ local function kitParticle_LeapGale_Gale(loc: location):
 			spawnParticle_DustTransition(rgb(160, 216, 239), rgb(187, 226, 241), 0.65, loop-value-2)
 		wait a tick
 
-local function kitParticle_LeapGale_Arrow(proj: projectile):
+local function kitParticle_GaleLeap_Arrow(proj: projectile):
 	loop 20 times:
 		spawnParticle(glow, location of {_proj})
 		wait a tick
