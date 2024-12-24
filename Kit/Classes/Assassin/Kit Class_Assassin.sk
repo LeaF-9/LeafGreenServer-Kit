@@ -1,5 +1,40 @@
 # Assassinのスキル Ver1.0.0
 
+# Weapons
+function kitWeapon_Assassin_1(player: player):
+	log "kitWeapon_Assassin_1(%{_player}%)"
+
+function kitWeapon_Assassin_2(player: player):
+	log "kitWeapon_Assassin_2(%{_player}%)"
+
+function kitWeapon_Assassin_3(player: player):
+	log "kitWeapon_Assassin_3(%{_player}%)"
+
+# Skills
+function kitSkill_Assassin_1(player: player):
+	kitEffect_SleepArrow({_player})
+
+function kitSkill_Assassin_2(player: player):
+	kitEffect_DeceiveDiamond({_player})
+
+function kitSkill_Assassin_3(player: player):
+	kitEffect_Leap({_player})
+
+function kitSkill_Assassin_4(player: player):
+	kitEffect_BlindSpot({_player})
+
+function kitSkill_Assassin_5(player: player):
+	kitEffect_CloudBarrage({_player})
+
+function kitSkill_Assassin_6(player: player):
+	kitEffect_PoisonMist({_player})
+
+function kitSkill_Assassin_7(player: player):
+	kitEffect_Psychopath({_player})
+
+function kitSkill_Assassin_8(player: player):
+	kitEffect_ShadowMurder({_player})
+
 # Abilities
 on damage of player:
 	damage was caused by fall
@@ -7,6 +42,7 @@ on damage of player:
 	cancel event
 
 on damage with priority LOW:
+	damage was caused by attack
 	set {_attacker} to getAttacker(victim)
 	{Class::%{_attacker}%} is "Assassin"
 	set {_UltAssassin} to kitStats_GET({_player}, "UltAssassin")
@@ -28,7 +64,7 @@ on damage with priority LOW:
 		add 1 to {_asn}
 	if {_asn} is set:
 		checkEntityType(victim, player) is true
-		kitSkillSub_Assassin_5(victim, {_asn})
+		kitEffect_Pursuit_Prepare(victim, {_asn})
 		if {_asn} >= 2:
-			kitWeapon_Assassin_2({_attacker}, victim) is true
+			kitEffect_AssassinDagger_Check({_attacker}, victim) is true
 			setDamageModification_FIX(victim, 100)

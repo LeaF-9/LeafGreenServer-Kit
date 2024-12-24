@@ -1,21 +1,6 @@
 # Assassin Dagger
 
-on damage with priority LOW:
-	set {_attacker} to getAttacker(victim)
-	metadata value "gametype" of {_attacker} is "Kit"
-	damage was caused by attack
-	{Class::%{_attacker}%} is "Assassin"
-	{_attacker} is sneaking
-	set {_tool} to {_attacker}'s tool
-	kitItemAllChecker({_tool}, "Assassin", "Weapon", 2) is true
-	if victim's health <= 5:
-		set {_per} to kitPercentDuel({_attacker}, victim, 5)
-		chance of {_per}%:
-			setDamageModification_FIX(victim, 100)
-			playSound("entity.phantom.bite", 1, 1, victim)
-			spawnParticle_Color(entity_effect, rgb(108, 36, 99), victim)
-
-function kitWeapon_Assassin_2(attacker: player, victim: player) :: boolean:
+function kitEffect_AssassinDagger_Check(attacker: player, victim: player) :: boolean:
 	set {_tool} to {_attacker}'s tool
 	if kitItemAllChecker({_tool}, "Assassin", "Weapon", 2) is true:
 		if {_attacker} is sneaking:
@@ -30,7 +15,7 @@ function kitWeapon_Assassin_2(attacker: player, victim: player) :: boolean:
 	else:
 		return false
 
-function kitEffect_AssassinDagger_Killed(victim: player):
+local function kitEffect_AssassinDagger_Killed(victim: player):
 	message formatted "<##630101>背後から抹殺の一撃を喰らってしまった..." to {_victim}
 	# --- 音の演出 ---
 	playSound("entity.phantom.bite", 1, 0.5, {_victim})

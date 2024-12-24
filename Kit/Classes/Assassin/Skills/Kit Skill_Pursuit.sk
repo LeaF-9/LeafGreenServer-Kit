@@ -1,7 +1,7 @@
 # Pursuit
 
-function kitSkill_Assassin_5(player: player):
-	toolCT({_player}, "Assassin", 5)
+function kitEffect_Pursuit(player: player):
+	nameCT({_player}, "Pursuit")
 	kitMsg({_player}, "§5追撃を放ちます...")
 	set {_baseloc} to location of {_player}
 	loop 15 times:
@@ -12,7 +12,7 @@ function kitSkill_Assassin_5(player: player):
 			set {_tgloc} to location loop-number - 1 meters in front of {_baseloc}
 		else:
 			# --- パーティクル演出 ---
-			kitEffect_Pursuit_1({_tgloc})
+			kitParticle_Pursuit_1({_tgloc})
 			# -----------------------
 			loop all players in radius 1.5 around {_tgloc}:
 				kitCheckTeam(loop-player, {_player}, false) is true
@@ -37,11 +37,23 @@ function kitSkill_Assassin_5(player: player):
 		kitEffectDescription({_player}, "§4❤%{_damage}%")
 		playSound("entity.zombie.break_wooden_door", 1, 2, {_tgplayer})
 		# --- ヒット時のパーティクル演出 ---
-		kitEffect_Pursuit_2({_player}, {_tgplayer})
+		kitParticle_Pursuit_2({_player}, {_tgplayer})
 		# --------------------------------
 
+function kitEffect_Pursuit_Prepare(victim: player, asn: number):
+	set {_now} to now
+	kitStats_SET({_victim}, "Pursuit", {_asn})
+	kitStats_SET({_victim}, "PursuitTime", {_now})
+	wait 3 seconds
+	set {_PursuitTime} to kitStats_GET({_victim}, "PursuitTime")
+	if {_PursuitTime} is {_now}:
+		kitStats_DELETE({_victim}, "Pursuit")
+		kitStats_DELETE({_victim}, "PursuitTime")
+
+
+
 # 斬撃(残像) 演出
-function kitEffect_Pursuit_1(loc: location):
+local function kitParticle_Pursuit_1(loc: location):
 	set {_baseel} to {_loc}
 	set pitch of {_baseel} to 0
 	set {_baseel} to location a random number between -0.5 and 0.5 to the left of {_baseel}
@@ -54,7 +66,7 @@ function kitEffect_Pursuit_1(loc: location):
 		add 0.5 to {_m}
 
 # ヒット時演出
-function kitEffect_Pursuit_2(player: player, target: player):
+local function kitParticle_Pursuit_2(player: player, target: player):
 	set {_baseloc} to location of {_target}
 	add 1 to y-coordinate of {_baseloc}
 	set pitch of {_baseloc} to 0
@@ -80,13 +92,3 @@ function kitEffect_Pursuit_2(player: player, target: player):
 						set {_el} to location {_sidem} * loop-number-5 meters in front of {_baseel}
 						spawnParticle_DustTransition(rgb(162, 32, 65), rgb(102, 20, 41), 1.5, {_el})
 				add 0.5 to {_m}
-
-function kitSkillSub_Assassin_5(victim: player, asn: number):
-	set {_now} to now
-	kitStats_SET({_victim}, "Pursuit", {_asn})
-	kitStats_SET({_victim}, "PursuitTime", {_now})
-	wait 3 seconds
-	set {_PursuitTime} to kitStats_GET({_victim}, "PursuitTime")
-	if {_PursuitTime} is {_now}:
-		kitStats_DELETE({_victim}, "Pursuit")
-		kitStats_DELETE({_victim}, "PursuitTime")
