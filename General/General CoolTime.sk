@@ -137,6 +137,20 @@ function toolCT(player: player, kit: text, num: number, type: text = "Skill"):
 			set {_cttool} to loop-item
 	detectCT({_player}, {_cttool})
 
+function nameCT(player: player, name: text):
+	set {_tool} to {_player}'s tool
+	set {_toolname} to display name of {_tool}
+	set {_toolname} to unformatted {_toolname}
+	set {_cttool} to {_tool} if {_toolname} is {_name}
+
+	if {_cttool} is not set:
+		loop all items in {_player}'s inventory:
+			set {_toolname} to display name of loop-item
+			set {_toolname} to unformatted {_toolname}
+			if {_toolname} is {_name}:
+				set {_cttool} to loop-item
+	detectCT({_player}, {_cttool}) if {_cttool} is set
+
 function checkCT(player: player, skill: text, only: boolean = false) :: boolean:
 	if getDebuffs({_player}, "Palsy") is true:
 		loop 30 times:
