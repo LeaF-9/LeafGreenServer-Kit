@@ -1,10 +1,5 @@
 # skill-name: Rampage
 
-function kitSkill_Berserker_5(player: player):
-	toolCT({_player}, "Berserker", 5)
-	kitEffect_Rampage({_player})
-
-
 on damage of player with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	if kitStats_GET(victim, "Rampage") is set:
@@ -21,7 +16,8 @@ on damage of player with priority LOW:
 
 
 
-local function kitEffect_Rampage(player: player):
+function kitEffect_Rampage(player: player):
+	nameCT({_player}, "Rampage")
 	set {_now} to now
 	kitStats_SET({_player}, "Rampage", {_now})
 	kitStats_SET({_player}, "Rampage-Combo", 0)

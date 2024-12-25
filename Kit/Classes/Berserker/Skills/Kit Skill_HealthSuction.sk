@@ -3,14 +3,6 @@
 options:
 	metadata-name: "health suction - cool time"
 
-
-
-function kitSkill_Berserker_3(player: player):
-	toolCT({_player}, "Berserker", 3)
-	kitEffect_HealthSuction({_player})
-
-
-
 on damage of player with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	set {_HealthSuction} to kitStats_GET({_attacker}, "HealthSuction")
@@ -32,7 +24,8 @@ on death of player:
 
 
 
-local function kitEffect_HealthSuction(player: player):
+function kitEffect_HealthSuction(player: player):
+	nameCT({_player}, "Health Suction")
 	set {_now} to now
 	kitStats_SET({_player}, "HealthSuction", {_now})
 	kitMsg({_player}, "§4敵の血を奪うことで§d回復§4します...")

@@ -1,13 +1,5 @@
 # skill-name: Lunatic Madness
 
-function kitSkill_Berserker_7(player: player):
-	set {_tool} to tool of {_player}
-	if {_tool} is enchanted:
-		toolCT({_player}, "Berserker", 7)
-		kitEffect_LunaticMadness_Execute({_player}, "Buff")
-		stop
-	kitEffect_LunaticMadness({_player})
-
 on leftclick:
 	set {_tool} to tool of player
 	{_tool} is enchanted
@@ -28,7 +20,14 @@ on projectile hit:
 	kitParticle_LunaticMadness_Splash(location of projectile)
 
 
-local function kitEffect_LunaticMadness(player: player):
+
+function kitEffect_LunaticMadness(player: player):
+	set {_tool} to tool of {_player}
+	if {_tool} is enchanted:
+		toolCT({_player}, "Berserker", 7)
+		kitEffect_LunaticMadness_Execute({_player}, "Buff")
+		stop
+
 	# save effects
 	set {_effects::*} to all potion effects of {_player}
 	set {_debuff effects::*} to kitEffect_LunaticMadness_DebuffEffects({_effects::*})
