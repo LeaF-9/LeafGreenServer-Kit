@@ -197,6 +197,20 @@ function toolItemCT(player: player, kit: text, num: number, type: text = "Weapon
 			set {_cttool} to loop-item
 	setItemCT({_player}, {_cttool})
 
+function nameItemCT(player: player, name: text):
+	set {_tool} to {_player}'s tool
+	set {_toolname} to display name of {_tool}
+	set {_toolname} to unformatted {_toolname}
+	set {_cttool} to {_tool} if {_toolname} is {_name}
+
+	if {_cttool} is not set:
+		loop all items in {_player}'s inventory:
+			set {_toolname} to display name of loop-item
+			set {_toolname} to unformatted {_toolname}
+			if {_toolname} is {_name}:
+				set {_cttool} to loop-item
+	setItemCT({_player}, {_cttool}) if {_cttool} is set
+
 function checkItemCT(player: player, item: item) :: boolean:
 	if item cooldown of {_item} for {_player} is 0 seconds:
 		return true
