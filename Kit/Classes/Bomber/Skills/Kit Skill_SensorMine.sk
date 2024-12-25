@@ -1,7 +1,7 @@
 # Sensor Mine
 
-function kitSkill_Bomber_7(player: player):
-	toolCT({_player}, "Bomber", 7)
+function kitEffect_SensorMine(player: player):
+	nameCT({_player}, "Sensor Mine")
 	set {_now} to now
 	# --- 過去の地雷の爆破 ---
 	set {_SensorMine-Amount} to kitStats_GET({_player}, "SensorMine-Amount")
@@ -23,7 +23,7 @@ function kitSkill_Bomber_7(player: player):
 		kitStats_SET({_player}, "SensorMine-Amount", {_SensorMine-Amount})
 		kitStats_DELETE({_player}, "SensorMine-%{_oldnum}%.Time")
 		kitStats_DELETE({_player}, "SensorMine-%{_oldnum}%.Location")
-		kitEffect_SensorMine({_player}, {_oldloc})
+		kitEffect_SensorMine_Boom({_player}, {_oldloc})
 	# ---------------------
 	kitMsg({_player}, "<##8b0000>地雷を設置します...")
 	playSound("ui.button.click", 1.2, 0.5, {_player})
@@ -52,10 +52,10 @@ function kitSkill_Bomber_7(player: player):
 			kitStats_SET({_player}, "SensorMine-Amount", {_SensorMine-Amount})
 			kitStats_DELETE({_player}, "SensorMine-%{_newnum}%.Time")
 			kitStats_DELETE({_player}, "SensorMine-%{_newnum}%.Location")
-			kitEffect_SensorMine({_player}, {_exloc})
+			kitEffect_SensorMine_Boom({_player}, {_exloc})
 		wait a tick
 
-function kitEffect_SensorMine(player: player, loc: location):
+function kitEffect_SensorMine_Boom(player: player, loc: location):
 	loop 20 times:
 		set {_soundnum} to 21 - loop-number
 		if mod({_soundnum}, 4) is 0:

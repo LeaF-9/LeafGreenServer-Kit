@@ -7,16 +7,12 @@ options:
 
 
 
-function kitSkill_Bomber_2(player: player):
+function kitEffect_BlastAssault(player: player):
 	set {_BlastAssault} to kitStats_GET({_player}, "BlastAssault")
 	if {_BlastAssault} is set:
 		kitEffect_BlastAssault_Boom({_player}, true)
 		stop
-	kitEffect_BlastAssault({_player})
 
-
-
-local function kitEffect_BlastAssault(player: player):
 	set {_now} to now
 	kitStats_SET({_player}, "BlastAssault", {_now})
 	kitMsg({_player}, "<##b5073b>§l時限爆弾<##eaa00d>を抱えました...")
@@ -56,7 +52,7 @@ local function kitEffect_BlastAssault(player: player):
 	kitEffect_BlastAssault_Boom({_player})
 
 local function kitEffect_BlastAssault_Boom(player: player, click: boolean = false):
-	toolCT({_player}, "Bomber", 2)
+	nameCT({_player}, "Blast Assault")
 	if {_click} is false:
 		set {_sneaking} to true
 	if {_player} is sneaking:
