@@ -1,18 +1,15 @@
 # skill-name: Mark Requiem
 
-function kitSkill_Bard_5(player: player):
-	toolCT({_player}, "Bard", 5)
-	kitEffect_MarkRequiem({_player})
-
-
-
 on damage of player with priority LOW:
 	metadata value "gametype" of victim is "Kit"
 	kitStats_GET(victim, "MarkRequiem") is set
 	setDamageModification_MUL(victim, 2)
 	kitParticle_MarkRequiem_Damage(victim)
 
-local function kitEffect_MarkRequiem(player: player):
+
+
+function kitEffect_MarkRequiem(player: player):
+	nameCT({_player}, "Mark Requiem")
 	kitMsg({_player}, "§5鎮魂歌を送ります...")
 	set {_baseloc} to location of head of {_player}
 	loop 20 times:

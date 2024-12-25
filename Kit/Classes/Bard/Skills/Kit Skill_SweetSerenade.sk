@@ -17,7 +17,7 @@ on damage of player:
 
 
 
-function kitSkill_Bard_1(player: player):
+function kitEffect_SweetSerenade(player: player):
 	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象を指定してください" to {_player}
@@ -27,12 +27,8 @@ function kitSkill_Bard_1(player: player):
 	if {_target} is {_SweetSerenade}:
 		kitMsg({_player}, "§c§l現在演奏中の味方に対して付与することはできません")
 		stop
-	toolCT({_player}, "Bard", 1)
-	kitEffect_SweetSerenade({_player}, {_target})
+	nameCT({_player}, "Sweet Serenade")
 
-
-
-local function kitEffect_SweetSerenade(player: player, target: player):
 	kitMsg({_player}, "§d%{_target}% §cに§4ハートの小夜曲§cを捧げます...")
 	message formatted "§b%{_player}% §dがハートの小夜曲を演奏してくれた!" to {_target}
 	kitParticle_SweetSerenade_Launch({_player}, {_target})

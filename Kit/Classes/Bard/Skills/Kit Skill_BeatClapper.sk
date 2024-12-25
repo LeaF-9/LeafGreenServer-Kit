@@ -1,16 +1,5 @@
 # skill-name: Beat Clapper
 
-function kitSkill_Bard_6(player: player):
-	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
-	if {_SkillLocation} is not set:
-		send action bar "§c§l発動地点が有効ではありません!" to {_player}
-		stop
-	set {_loc} to {_SkillLocation}
-	toolCT({_player}, "Bard", 6)
-	kitEffect_BeatClapper({_player}, {_loc})
-
-
-
 on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	{_attacker} is set
@@ -18,7 +7,14 @@ on damage with priority LOW:
 	setDamageModification_MUL(victim, 2)
 	kitParticle_BeatClapper_Damage({_attacker})
 
-local function kitEffect_BeatClapper(player: player, loc: location):
+function kitEffect_BeatClapper(player: player, loc: location):
+	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+	if {_SkillLocation} is not set:
+		send action bar "§c§l発動地点が有効ではありません!" to {_player}
+		stop
+	set {_loc} to {_SkillLocation}
+
+	nameCT({_player}, "Beat Clapper")
 	set {_now} to now
 	kitStats_SET({_player}, "BeatClapper-Time", {_now})
 	kitParticle_BeatClapper_Place({_loc})
