@@ -22,7 +22,7 @@ on damage with priority LOW:
 	setDamageModification_SET(victim, 3)
 	kitParticle_CycloneBow_BlastHit(victim)
 
-function kitEffect_CycloneBow_Blast(player: player, proj: projectile):
+local function kitEffect_CycloneBow_Blast(player: player, proj: projectile):
 	# 矢の数確認
 	set {_arrow} to amount of arrow in {_player}'s inventory
 	if {_arrow} < 2:
@@ -37,7 +37,7 @@ function kitEffect_CycloneBow_Blast(player: player, proj: projectile):
 		set velocity of {_proj} to {_vector}
 		wait a tick
 
-function kitEffect_CycloneBow_Cyclone(player: player, proj: projectile):
+local function kitEffect_CycloneBow_Cyclone(player: player, proj: projectile):
 	# フルチャージ確認
 	set {_pow} to getBowDrawTime({_player})
 	if {_pow} < 24:
@@ -68,7 +68,7 @@ function kitEffect_CycloneBow_Cyclone(player: player, proj: projectile):
 			set velocity of loop-entity to {_vector}
 		wait a tick
 
-function kitParticle_CycloneBow_Blast(player: player, proj: projectile):
+local function kitParticle_CycloneBow_Blast(player: player, proj: projectile):
 	playSound("entity.blaze.hurt", 1, 1.3, location of {_proj})
 	set {_yaw} to yaw of {_player}
 	set {_pitch} to pitch of {_player}
@@ -83,7 +83,7 @@ function kitParticle_CycloneBow_Blast(player: player, proj: projectile):
 			spawnParticle_Dust(rgb(174, 224, 230), 0.6, loop-value-2)
 		wait a tick
 
-function kitParticle_CycloneBow_Cyclone(player: player, proj: projectile):
+local function kitParticle_CycloneBow_Cyclone(player: player, proj: projectile):
 	playSound("entity.wither.shoot", 1, 1.6, location of {_proj})
 	set {_yaw} to yaw of {_player} + 180
 	set {_pitch} to pitch of {_player} * -1
@@ -100,6 +100,6 @@ function kitParticle_CycloneBow_Cyclone(player: player, proj: projectile):
 			spawnParticle_Dust(rgb(174, 224, 230), 0.85, loop-value-2)
 		wait a tick
 
-function kitParticle_CycloneBow_BlastHit(player: player):
+local function kitParticle_CycloneBow_BlastHit(player: player):
 	playSound("entity.dragon_fireball.explode", 1, 2, {_player})
 	spawnParticle(explosion_emitter, {_player})
