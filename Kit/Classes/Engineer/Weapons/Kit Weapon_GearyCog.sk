@@ -35,7 +35,7 @@ on damage with priority LOW:
 		kitStats_GET(victim, "GearyCog") is true
 		kitEffect_GearyCog_Change(victim)
 
-function kitEffect_GearyCog_Change(player: player):
+local function kitEffect_GearyCog_Change(player: player):
 	if kitStats_GET({_player}, "GearyCog") is true:
 		kitStats_SET({_player}, "GearyCog", false)
 	else:
@@ -50,7 +50,7 @@ function kitEffect_GearyCog_ActionBar(player: player):
 	send action bar "§6§lGear§7: %{_state}%" to {_player}
 
 # 渦が相手に迫る演出
-function kitParticle_GearyCog_Positive(fromloc: location, toloc: location):
+local function kitParticle_GearyCog_Positive(fromloc: location, toloc: location):
 	playSound("block.respawn_anchor.deplete", 1, 1.5, {_toloc})
 	set {_distance} to distance between {_fromloc} and {_toloc}
 	set {_vector} to setVector({_fromloc}, {_toloc})
@@ -76,7 +76,7 @@ function kitParticle_GearyCog_Positive(fromloc: location, toloc: location):
 		wait a tick
 	
 # 円が相手に迫る演出
-function kitParticle_GearyCog_Negative(fromloc: location, toloc: location):
+local function kitParticle_GearyCog_Negative(fromloc: location, toloc: location):
 	playSound("block.amethyst_block.fall", 1, 2, {_toloc})
 	set {_distance} to distance between {_fromloc} and {_toloc}
 	set {_vector} to setVector({_fromloc}, {_toloc})
@@ -97,7 +97,7 @@ function kitParticle_GearyCog_Negative(fromloc: location, toloc: location):
 		wait a tick
 
 # ギアが回るような演出
-function kitParticle_GearyCog_Change(baseloc: location):
+local function kitParticle_GearyCog_Change(baseloc: location):
 	playSound("item.lodestone_compass.lock", 1, 1, {_baseloc})
 	add 1 to y-pos of {_baseloc}
 	set pitch of {_baseloc} to 0
