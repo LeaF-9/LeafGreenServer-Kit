@@ -5,28 +5,21 @@ options:
 
 
 
-function kitSkill_Healer_1(player: player):
-	set {_tool} to tool of {_player}
-	checkItemCT({_player}, {_tool}) is true
-
-	if kitStats_GET({_player}, "SkillTarget") is not set:
+function kitEffect_HealingGift(player: player):
+	set {_target} to kitStats_GET({_player}, "SkillTarget")
+	if {_target} is not set:
 		send action bar "§c§l対象を指定してください" to {_player}
 		stop
+	
 	if {Kit-Odo::%{_player}%} < {@required-odo}:
 		kitMsg({_player}, "§cオドが足りません! 必要オドは §3{@required-odo} §cです!")
 		stop
-	
-	toolItemCT({_player}, "Healer", 1, "Skill")
-	kitEffect_HealingGift({_player})
 
-
-
-local function kitEffect_HealingGift(player: player):
-	set {_target} to kitStats_GET({_player}, "SkillTarget")
 	if max health of {_target} is health of {_target}:
 		send action bar "§c§l対象は回復する必要がありません" to {_player}
 		stop
 
+	nameItemCT({_player}, "Healing Gift")
 	subtract {@required-odo} from {Kit-Odo::%{_player}%}
 	setSupporter({_target}, {_player})
 	kitHeal({_target}, 0.5, 1)

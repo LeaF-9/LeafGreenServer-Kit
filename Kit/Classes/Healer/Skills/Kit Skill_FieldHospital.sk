@@ -6,22 +6,21 @@ options:
 	heal-per-second: 0.5
 
 
-function kitSkill_Healer_3(player: player):
-	if kitStats_GET({_player}, "SkillLocation") is not set:
+
+function kitEffect_FieldHospital(player: player):
+	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+	if {_SkillLocation} is not set:
 		send action bar "§c§l地点を指定してください" to {_player}
 		stop
 	if {Kit-Odo::%{_player}%} < {@required-odo}:
 		kitMsg({_player}, "§cオドが足りません! 必要オドは §3{@required-odo} §cです!")
 		stop
-	toolCT({_player}, "Healer", 3)
-	kitEffect_FieldHospital({_player})
 
-
-local function kitEffect_FieldHospital(player: player):
+	nameCT({_player}, "Field Hospital", 3)
 	subtract {@required-odo} from {Kit-Odo::%{_player}%}
 	set {_now} to now
 	kitStats_SET({_player}, "FieldHospital-Time", {_now})
-	set {_loc.target} to kitStats_GET({_player}, "SkillLocation")
+	set {_loc.target} to {_SkillLocation}
 
 	kitFakeDeleteData({_player}, "Field Hospital")
 

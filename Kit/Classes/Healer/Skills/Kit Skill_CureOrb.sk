@@ -1,16 +1,16 @@
 # Cure Orb
 
-function kitSkill_Healer_2(player: player):
-	if {Kit-Odo::%{_player}%} >= 10:
-		toolCT({_player}, "Healer", 2)
-		subtract 10 from {Kit-Odo::%{_player}%}
-		shoot a snowball from {_player} at speed 2
-		set item of shot entity to heart of the sea
-		set metadata value "cureorb" of shot entity to "true"
-		kitParticle_CureOrb_Projectile(shot entity)
-		playSound("entity.arrow.shoot", 1, 2, {_player})
-	else:
+function kitEffect_CureOrb(player: player):
+	if {Kit-Odo::%{_player}%} < 10:
 		kitMsg({_player}, "§cオドが足りません! 必要オドは §310 §cです!")
+
+	nameCT({_player}, "Cure Orb")
+	subtract 10 from {Kit-Odo::%{_player}%}
+	shoot a snowball from {_player} at speed 2
+	set item of shot entity to heart of the sea
+	set metadata value "cureorb" of shot entity to "true"
+	kitParticle_CureOrb_Projectile(shot entity)
+	playSound("entity.arrow.shoot", 1, 2, {_player})
 
 on projectile hit:
 	projectile is a snowball
