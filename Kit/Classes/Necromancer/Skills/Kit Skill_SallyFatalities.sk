@@ -1,9 +1,9 @@
 # Skill-Name: Sally Fatalities
 
-function kitSkill_Necromancer_3(player: player):
-	set {_tool} to kitNecromanceItem({_player}, 3)
+function kitEffect_SallyFatalities(player: player):
+	set {_tool} to kitNecromanceItem({_player}, "Sally Fatalities")
 	kitCheckNecromance({_player}, {_tool}) is true
-	toolCT({_player}, "Necromancer", 3)
+	nameCT({_player}, "Sally Fatalities")
 	sendTimeBossbar_GREEN({_player}, "Sally Fatalities", 200)
 	kitRemoveNecromance({_player}, {_tool})
 	kitMsg({_player}, "§4周辺のアンデッドに死霊馬を与える...")
@@ -34,7 +34,7 @@ function kitSkill_Necromancer_3(player: player):
 		kitParticle_SallyFatalities_Death(loop-entity)
 		delete loop-entity
 
-function kitParticle_SallyFatalities_Undead(horse: entity):
+local function kitParticle_SallyFatalities_Undead(horse: entity):
 	set {_baseloc} to location of {_horse}
 	set {_rad} to 0
 	set {_addy} to 0
@@ -52,7 +52,7 @@ function kitParticle_SallyFatalities_Undead(horse: entity):
 		add 0.175 to {_meter}
 		wait a tick
 
-function kitParticle_SallyFatalities_Skeleton(horse: entity):
+local function kitParticle_SallyFatalities_Skeleton(horse: entity):
 	set {_baseloc} to location of {_horse}
 	set {_rad} to 0
 	set {_addy} to 0
@@ -70,7 +70,7 @@ function kitParticle_SallyFatalities_Skeleton(horse: entity):
 		add 0.175 to {_meter}
 		wait a tick
 
-function kitParticle_SallyFatalities_Death(horse: entity):
+local function kitParticle_SallyFatalities_Death(horse: entity):
 	playSound("entity.horse.eat", 1, 0.5, {_horse})
 	loop 10 times:
 		set {_randomloc} to aroundEffect({_horse})
@@ -86,7 +86,7 @@ function kitParticle_SallyFatalities_Death(horse: entity):
 		subtract 0.025 from {_size}
 		wait a tick
 
-function kitSkill_SallyFatalities(victim: entity):  # 馬に乗ったアンデッドが死亡した際に発火する関数
+local function kitSkill_SallyFatalities(victim: entity):  # 馬に乗ったアンデッドが死亡した際に発火する関数
 	set {_uuid} to metadata value "sally-fatalities" of {_victim}
 	set {_player} to metadata value "summon-player" of {_victim}
 	loop all entities:

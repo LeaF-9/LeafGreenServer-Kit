@@ -1,56 +1,59 @@
 # Necronomicon
 
-function kitSkill_Necromancer_5(player: player):
-	set {_tool} to kitNecromanceItem({_player}, 5)
-	if kitCheckNecromance({_player}, {_tool}) is true:
-		set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
-		if {_SkillLocation} is set:
-			toolCT({_player}, "Necromancer", 5)
-			kitRemoveNecromance({_player}, {_tool})
-			kitMsg({_player}, "§5§l収集した魂が死を運ぶ...")
-			set {_point} to {_SkillLocation}
-			set {_ln} to 60
-			loop 60 times:
-				kitParticle_Necronomicon({_point})
-				if mod({_ln}, 20) = 0:
-					playSound("item.lodestone_compass.lock", 1, 0.5, {_point})
-				subtract 1 from {_ln}
-				loop all entities in radius 15 around {_point}:
-					kitCheckTeam(loop-entity, {_player}, false) is true
-					applyEffect(loop-entity, slowness, 3, 1 ticks)
-					if mod({_ln}, 20) = 0:
-						set {_ln.second} to {_ln} / 20
-						kitEffectDescription(loop-entity, "§5§l%{_ln.second}%")
-				wait a tick
-			message formatted "<##493759>§l術が発動した..." to {_player}
-			playSound("entity.wither.death", 1, 0.9, {_point})
-			loop all entities in radius 15 around {_point}:
-				kitCheckTeam(loop-entity, {_player}, false) is true
-				if type of loop-entity is a player:
-					LastKiller(loop-entity, {_player})
-					message formatted "<##2e2930>魂の滅殺を受けてしまった..." to loop-entity
-					kitEffectDescription(loop-entity, "§c衰弱")
-					sendTimeBossbar_RED(loop-entity, "衰弱 III", 300)
-				add location of loop-entity to {_locs::*}
-				apply wither 3 to loop-entity for 15 seconds
-			set {_y} to 0
-			loop 5 times:
-				add 0.25 to {_y}
-				loop {_locs::*}:
-					set {_baseloc} to loop-value-2
-					set {_rad} to 0
-					loop 10 times:
-						add 36 to {_rad}
-						set {_el} to {_baseloc}
-						add 0.5 * sin({_rad}) to x-coordinate of {_el}
-						add 0.5 * cos({_rad}) to z-coordinate of {_el}
-						add {_y} to y-coordinate of {_el}
-						spawnParticle_Color(entity_effect, rgb(50, 0, 70), {_el})
-				wait a tick
-		else:
-			send action bar "§c§l対象位置が存在しません!" to {_player}
+function kitEffect_Necronomicon(player: player):
+	set {_tool} to kitNecromanceItem({_player}, "Necronomicon")
+	if kitCheckNecromance({_player}, {_tool}) is false:
+		stop
 
-function kitParticle_Necronomicon(point: location):
+	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+	if {_SkillLocation} is not set:
+		send action bar "§c§l対象位置が存在しません!" to {_player}
+		stop
+
+	nameCT({_player}, "Necronomicon")
+	kitRemoveNecromance({_player}, {_tool})
+	kitMsg({_player}, "§5§l収集した魂が死を運ぶ...")
+	set {_point} to {_SkillLocation}
+	set {_ln} to 60
+	loop 60 times:
+		kitParticle_Necronomicon({_point})
+		if mod({_ln}, 20) = 0:
+			playSound("item.lodestone_compass.lock", 1, 0.5, {_point})
+		subtract 1 from {_ln}
+		loop all entities in radius 15 around {_point}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			applyEffect(loop-entity, slowness, 3, 1 ticks)
+			if mod({_ln}, 20) = 0:
+				set {_ln.second} to {_ln} / 20
+				kitEffectDescription(loop-entity, "§5§l%{_ln.second}%")
+		wait a tick
+	message formatted "<##493759>§l術が発動した..." to {_player}
+	playSound("entity.wither.death", 1, 0.9, {_point})
+	loop all entities in radius 15 around {_point}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		if type of loop-entity is a player:
+			LastKiller(loop-entity, {_player})
+			message formatted "<##2e2930>魂の滅殺を受けてしまった..." to loop-entity
+			kitEffectDescription(loop-entity, "§c衰弱")
+			sendTimeBossbar_RED(loop-entity, "衰弱 III", 300)
+		add location of loop-entity to {_locs::*}
+		apply wither 3 to loop-entity for 15 seconds
+	set {_y} to 0
+	loop 5 times:
+		add 0.25 to {_y}
+		loop {_locs::*}:
+			set {_baseloc} to loop-value-2
+			set {_rad} to 0
+			loop 10 times:
+				add 36 to {_rad}
+				set {_el} to {_baseloc}
+				add 0.5 * sin({_rad}) to x-coordinate of {_el}
+				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				spawnParticle_Color(entity_effect, rgb(50, 0, 70), {_el})
+		wait a tick
+
+local function kitParticle_Necronomicon(point: location):
 	# 弧を描く
 	set {_n.k} to 0
 	loop 60 times:

@@ -1,0 +1,84 @@
+# Death Detector
+
+function kitEffect_DeathDetector(player: player):
+	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+	if {_SkillLocation} is not set:
+		send action bar "§c§l地点が設定されていません!" to {_player}
+		stop
+
+	nameCT({_player}, "Death Detector")
+	set {_now} to now
+	kitStats_SET({_player}, "DeathDetector", true)
+	kitStats_SET({_player}, "DeathDetector-Time", {_now})
+
+	kitFakeDeleteData({_player}, "Death Detector")
+	set {_baseloc} to {_SkillLocation}
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0f,-0.25f]", "[0.5f,0.75f,0.5f]")
+	kitFakeBlock({_player}, {_baseloc}, "minecraft:bone_block", {_transformation}, "Death Detector")
+	set {_loc1} to {_baseloc}
+	add 0.75 to y-pos of {_loc1}
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0f,-0.25f]", "[0.5f,0.5f,0.5f]")
+	kitFakeBlock({_player}, {_loc1}, "minecraft:soul_fire", {_transformation}, "Death Detector")
+	set {_loc2} to {_baseloc}
+	add 1 to y-pos of {_loc2}
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
+	kitFakeBlock({_player}, {_loc2}, "minecraft:white_stained_glass", {_transformation}, "Death Detector")
+	set {_loc3} to {_baseloc}
+	add 1.75 to y-pos of {_loc3}
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[1f,1f,1f]")
+	kitFakeItem({_player}, {_loc3}, "minecraft:skeleton_skull", {_transformation}, "Death Detector")
+
+	kitMsg({_player}, "<##8b0000>死を感知して骨を召喚する装置を設置しました...")
+	playSound("block.end_portal_frame.fill", 1, 0.5, {_baseloc})
+	while kitStats_GET({_player}, "DeathDetector-Time") is {_now}:
+		wait a second
+		set {_exist} to kitFakeCheck({_player}, "Death Detector")
+		if {_exist} is false:
+			kitStats_DELETE({_player}, "DeathDetector-Time")
+	if kitStats_GET({_player}, "DeathDetector-Time") is not set:
+		kitStats_DELETE({_player}, "DeathDetector")
+
+function kitEffect_DeathDetector_Summon(player: player):  # 死んだ際に発動する関数
+	loop all entities:
+		metadata value "kit-block" of loop-entity is "Death Detector"
+		metadata value "Death Detector" of loop-entity is "%{_player}%"
+		set {_loc} to location of loop-entity
+	if {_loc} is set:
+		playSound("entity.wither_skeleton.death", 1, 1, {_loc})
+		loop 5 times:
+			set {_effloc} to {_loc}
+			add a random number between -1.5 and 1.5 to x-coordinate of {_effloc}
+			add a random number between -1.5 and 1.5 to z-coordinate of {_effloc}
+			add a random number between 0.5 and 2.5 to y-coordinate of {_effloc}
+			spawnParticle(witch, {_effloc})
+		loop all blocks in radius 3 around {_loc}:
+			loop-block is air
+			block below loop-block is not passable
+			add location of loop-block to {_locs::*}
+		set {_num} to a random integer between 0 and 2
+		if {_num} is 0:
+			stop
+		kitEffectDescription({_player}, "§f呼骨")
+		loop {_num} times:
+			delete {_vengeful}
+			set {_c} to kitPercent({_player}, 10)
+			chance of {_c}%:
+				set {_vengeful} to true
+			set {_sumloc} to a random location out of {_locs::*}
+			if {_vengeful} is true:
+				kitSpawn_Necromancer_Vengeful({_player}, {_sumloc})
+			else:
+				set {_skeleton} to kitSpawn_Necromancer_Skeleton({_player}, {_sumloc})
+				set max health of {_skeleton} to 1
+		kitEffect_DeathDetector_Glowing({_player})
+
+local function kitEffect_DeathDetector_Glowing(player: player):
+	loop all entities:
+		metadata value "kit-item" of loop-entity is "Death Detector"
+		metadata value "Death Detector" of loop-entity is "%{_player}%"
+		set {_glowEntity} to loop-entity
+	
+	{_glowEntity} is set
+	set glowing of {_glowEntity} to true
+	wait 3 seconds
+	set glowing of {_glowEntity} to false

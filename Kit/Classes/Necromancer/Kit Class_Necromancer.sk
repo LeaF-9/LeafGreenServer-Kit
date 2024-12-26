@@ -1,6 +1,40 @@
 # Necromancerのスキル Ver1.0.0
 
+# Weapons
+function kitWeapon_Necromancer_1(player: player):
+	log "kitWeapon_Necromancer_1(%{_player}%)"
+
+function kitWeapon_Necromancer_2(player: player):
+	log "kitWeapon_Necromancer_2(%{_player}%)"
+
+function kitWeapon_Necromancer_3(player: player):
+	log "kitWeapon_Necromancer_3(%{_player}%)"
+
 # Skills
+function kitSkill_Necromancer_1(player: player):
+	kitEffect_SpiritHaunted({_player})
+
+function kitSkill_Necromancer_2(player: player):
+	kitEffect_DumpSoul({_player})
+
+function kitSkill_Necromancer_3(player: player):
+	kitEffect_SallyFatalities({_player})
+
+function kitSkill_Necromancer_4(player: player):
+	kitEffect_SoulReanimation({_player})
+
+function kitSkill_Necromancer_5(player: player):
+	kitEffect_Necronomicon({_player})
+
+function kitSkill_Necromancer_6(player: player):
+	kitEffect_DeathDetector({_player})
+
+function kitSkill_Necromancer_7(player: player):
+	kitEffect_DarkDestiny({_player})
+
+function kitSkill_Necromancer_8(player: player):
+	kitEffect_DemiseSmell({_player})
+
 on rightclick holding a zombie spawn egg:
 	name of player's tool is "§5Summon Dead"
 	cancel event
@@ -62,7 +96,7 @@ on death:
 				kitSpawn_Necromancer_Ghost(victim, location of victim, true)
 		loop all players:
 			kitStats_GET(loop-player, "DeathDetector") is true
-			kitSkill_DeathDetector(loop-player)
+			kitEffect_DeathDetector_Summon(loop-player)
 
 on rightclick:
 	{Class::%player%} is "Necromancer"
@@ -81,9 +115,9 @@ on rightclick:
 	if {_item.num} is 3:
 		kitAddNecromance(player, 3)
 	else if {_item.num} is 2:
-		kitWeapon_Necromancer_2(player)
+		kitEffect_ErasureRapier_Pick(player)
 	else if {_item.num} is 1:
-		kitWeapon_Necromancer_1(player, location of {_tg})
+		kitEffect_DeadBone_Pick(player, location of {_tg})
 	playSound("entity.zombie.infect", 1, 0.5, {_tg})
 	playSound("entity.evoker.cast_spell", 1, 0.5, player, true)
 	set {_dis} to round(distance between player and {_tg})
@@ -266,14 +300,19 @@ function kitCheckNecromance(player: player, skill: item) :: boolean:
 		send action bar "§5§lNecromanceが不足しています!" to {_player}
 		return false
 
-function kitNecromanceItem(player: player, num: number, type: text = "Skill") :: item:
+function kitNecromanceItem(player: player, name: text) :: item:
 	set {_tool} to {_player}'s tool
-	if kitItemAllChecker({_tool}, "Necromancer", {_type}, {_num}) is true:
-		set {_necitem} to {_tool}
-	else:
+	set {_toolname} to display name of {_tool}
+	set {_toolname} to unformatted {_toolname}
+	set {_necitem} to {_tool} if {_toolname} is {_name}
+
+	if {_necitem} is not set:
 		loop all items in {_player}'s inventory:
-			kitItemAllChecker(loop-item, "Necromancer", {_type}, {_num}) is true
-			set {_necitem} to loop-item
+			set {_toolname} to display name of loop-item
+			set {_toolname} to unformatted {_toolname}
+			if {_toolname} is {_name}:
+				set {_necitem} to loop-item
+	
 	return {_necitem}
 
 # Timer
