@@ -9,21 +9,23 @@ on leftclick holding a heart of the sea:
 	else:
 		set name of player's tool to "§3Wall Protection §9[5*9]"
 
-function kitSkill_Defender_7(player: player):
-	if checkCT({_player}, "§3Wall Protection") is true:
-		setCT({_player}, "§3Wall Protection", 50)
-		playSound("entity.arrow.shoot", 1, 0.5, {_player})
-		kitStats_SET({_player}, "WPyaw", (yaw of {_player}))
-		shoot a snowball from {_player} at speed 1.5
-		if name of {_player}'s tool contains "§9[5*9]":
-			set {_size} to "5*9"
-		else:
-			set {_size} to "9*5"
-		set metadata value "wallprotection" of shot entity to {_size}
-		set {_shotentity} to shot entity
-		loop 30 times:
-			spawnParticle_Dust(rgb(64, 224, 208), 1, {_shotentity})
-			wait a tick
+function kitEffect_WallProtection(player: player):
+	if checkCT({_player}, "§3Wall Protection") is false:
+		stop
+
+	setCT({_player}, "§3Wall Protection", 50)
+	playSound("entity.arrow.shoot", 1, 0.5, {_player})
+	kitStats_SET({_player}, "WPyaw", (yaw of {_player}))
+	shoot a snowball from {_player} at speed 1.5
+	if name of {_player}'s tool contains "§9[5*9]":
+		set {_size} to "5*9"
+	else:
+		set {_size} to "9*5"
+	set metadata value "wallprotection" of shot entity to {_size}
+	set {_shotentity} to shot entity
+	loop 30 times:
+		spawnParticle_Dust(rgb(64, 224, 208), 1, {_shotentity})
+		wait a tick
 
 on projectile hit:
 	projectile is a snowball

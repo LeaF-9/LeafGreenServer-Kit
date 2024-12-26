@@ -9,7 +9,7 @@ on leftclick:
 	checkItemCT(player, {_tool}) is true
 	kitEffect_Hammer(player)
 
-function kitEffect_Hammer(player: player):
+local function kitEffect_Hammer(player: player):
 	toolItemCT({_player}, "Defender", 3)
 	set {_baseloc} to location of head of {_player}
 	set pitch of {_baseloc} to 0
@@ -29,7 +29,7 @@ function kitEffect_Hammer(player: player):
 			set {_v} to vector(0, 0.75, 0)
 			set velocity of loop-entity to {_v}
 
-function kitParticle_Hammer(loc: location):
+local function kitParticle_Hammer(loc: location):
 	playSound("block.gravel.break", 0.8, 0.5, {_loc})
 	loop all blocks in radius 1.5 around {_loc}:
 		loop-block is passable
@@ -37,7 +37,7 @@ function kitParticle_Hammer(loc: location):
 		set {_blockdata} to block data of block below loop-block
 		spawnParticle_Block({_blockdata}, location of loop-block)
 
-function kitParticle_Hammer_Hit(entity: entity):
+local function kitParticle_Hammer_Hit(entity: entity):
 	playSound("entity.dragon_fireball.explode", 1, 2, {_entity})
 	loop 10 times:
 		set {_v} to randomVector(0.5)
