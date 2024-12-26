@@ -1,21 +1,22 @@
 # Zanzo
 
-function kitSkill_Ninja_4(player: player):
-	if kitStats_GET({_player}, "Zanzo") is not set:
-		set {_skill} to name of {_player}'s tool
-		setCT({_player}, {_skill}, 10)
-		kitStats_SET({_player}, "Zanzo", 100)
-		kitMsg({_player}, "§0忍法・残像の術!")
-		sendTimeBossbar_GREEN({_player}, "Zanzo", 100)
-		playSound("entity.bat.takeoff", 1, 1.5, {_player})
-		delete {_player}'s tool
-		kunaiNinjutsu({_player}, "Zanzo")
-		wait 5 seconds
-		if kitStats_GET({_player}, "Zanzo") is set:
-			kitStats_DELETE({_player}, "Zanzo")
-			send action bar "§7§l残像は解除された!" to {_player}
-	else:
+function kitEffect_Zanzo(player: player):
+	if kitStats_GET({_player}, "Zanzo") is set:
 		send action bar "§c§l現在発動中です" to {_player}
+		stop
+
+	set {_skill} to name of {_player}'s tool
+	setCT({_player}, {_skill}, 10)
+	kitStats_SET({_player}, "Zanzo", 100)
+	kitMsg({_player}, "§0忍法・残像の術!")
+	sendTimeBossbar_GREEN({_player}, "Zanzo", 100)
+	playSound("entity.bat.takeoff", 1, 1.5, {_player})
+	delete {_player}'s tool
+	kunaiNinjutsu({_player}, "Zanzo")
+	wait 5 seconds
+	if kitStats_GET({_player}, "Zanzo") is set:
+		kitStats_DELETE({_player}, "Zanzo")
+		send action bar "§7§l残像は解除された!" to {_player}
 
 on damage of player:
 	kitStats_GET(victim, "Zanzo") is set

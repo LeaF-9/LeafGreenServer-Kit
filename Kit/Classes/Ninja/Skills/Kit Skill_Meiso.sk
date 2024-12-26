@@ -1,0 +1,54 @@
+# Meiso
+
+function kitEffect_Meiso(player: player):
+	if block 0.1 meters below {_player} is passable:
+		send action bar "§c§l接地した状態で発動してください" to {_player}
+		stop
+
+	nameCT({_player}, "Meiso")
+	kitMsg({_player}, "<##f0f8ff>瞑想を行います...")
+	playSound("block.beacon.ambient", 1, 1, {_player})
+	kitStats_SET({_player}, "Meiso", true)
+	kitFreeze({_player}, 100, false)
+	sendTimeBossbar_YELLOW({_player}, "Meiso", 100)
+	apply glowing 1 to {_player} for 5 seconds
+	set {_bl} to location of {_player}
+	loop 100 times:
+		if kitStats_GET({_player}, "Meiso") is true:
+			add 0.02 to {_y}
+			set {_rad} to 0
+			loop 10 times:
+				add 36 to {_rad}
+				set {_el} to {_bl}
+				add 0.6 * sin({_rad}) to x-coordinate of {_el}
+				add 0.6 * cos({_rad}) to z-coordinate of {_el}
+				add {_y} to y-coordinate of {_el}
+				spawnParticle(end_rod, {_el})
+			wait a tick
+	kitStats_GET({_player}, "Meiso") is true
+	playSound("block.portal.travel", 0.5, 2, {_player})
+	kitMsg({_player}, "<##80c4ff>悟りによって§6§l忍術<##80c4ff>を回収した!")
+	kitHeal({_player}, 3)
+	set {_skill::1} to kitPlayerSkillItem({_player}, "Ninja", 1)
+	set {_skill::2} to kitPlayerSkillItem({_player}, "Ninja", 2)
+	set {_skill::3} to kitPlayerSkillItem({_player}, "Ninja", 3)
+	loop {_skill::*}:
+		add 1 to {_ln}
+		set {_nin} to line 4 of lore of loop-value
+		{_nin} contains "忍術"
+		if display name of {_skill::%loop-index%} does not contain "Ninjutsu":
+			delete {_have}
+			loop all items in {_player}'s inventory:
+				loop-item is {_skill::%loop-index%}
+				set {_have} to true
+			{_have} is not set
+			give {_skill::%{_ln}%} to {_player}
+			send action bar "%display name of {_skill::%{_ln}%}% §7を再習得した..." to {_player}
+		else:
+			delete {_have}
+			loop all items in {_player}'s inventory:
+				display name of loop-item contains "Ninjutsu"
+				set {_have} to true
+			{_have} is not set
+			give {_skill::%{_ln}%} to {_player}
+			send action bar "%display name of {_skill::%{_ln}%}% §7を再習得した..." to {_player}
