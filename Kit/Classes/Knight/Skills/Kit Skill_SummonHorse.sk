@@ -1,0 +1,40 @@
+# Summon Horse
+
+function kitEffect_SummonHorse(player: player):
+	if {_player} is riding a horse:
+		send action bar "§c現在騎馬中です" to {_player}
+		stop
+
+	set {_skillitem} to {_player}'s tool
+	nameCT({_player}, "Summon Horse", 3)
+	set {_dis} to display name of {_skillitem}
+	set {CTStop.%{_player}%::%{_dis}%} to true
+	kitMsg({_player}, "§e馬を呼び出しました!")
+	spawn a horse at {_player} with nbt compound from "{SaddleItem:{id:saddle,Count:1},attributes:[{id:""generic.movement_speed"",base:0.25f},{id:""generic.jump_strength"",base:0.7f}],Age:0}"
+	set spawned horse's display name to "%{_player}%"
+	tame the spawned horse to {_player}
+	make {_player} ride last spawned horse
+	set metadata value "gametype" of spawned horse to "Kit"
+	set {_horse} to true
+	while {_horse} is true:
+		if vehicle of {_player} is a horse:
+			set {_horse} to true
+		else:
+			set {_horse} to false
+		wait a tick
+	delete {CTStop.%{_player}%::%{_dis}%}
+
+on damage of horse, undead horse or skeleton horse:
+	metadata value "gametype" of victim is "Kit"
+	set {_d} to victim's display name
+	if {team::%{_d}%} is {team::%attacker%}:
+		cancel event
+	else:
+		set damage to 100000
+
+On vehicle Exit:
+	vehicle of player is a horse
+	kill vehicle of player
+
+on death of horse, undead horse or skeleton horse:
+	clear drops
