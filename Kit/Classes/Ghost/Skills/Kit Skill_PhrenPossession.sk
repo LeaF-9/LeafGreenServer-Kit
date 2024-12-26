@@ -1,0 +1,63 @@
+# Phren Possession
+
+function kitEffect_PhrenPossession(player: player):
+	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	if {_SkillTarget} is not set:
+		send action bar "§c§l対象が存在しません!" to {_player}
+		stop
+
+	if kitCheckSpirit({_player}, "Phren Possession") is false:
+		stop
+
+	nameCT({_player}, "Phren Possession", 7)
+	set {_tg} to {_SkillTarget}
+	playSound("block.end_portal.spawn", 1, 2, {_tg})
+	set {_memsg} to kitGhostMessage("§5%{_tg}% §4の身体を乗っ取った...")
+	set {_youmsg} to kitGhostMessage("§5%{_player}% §4に身体を盗られた!", true)
+	kitMsg({_player}, {_memsg})
+	message formatted {_youmsg} to {_tg}
+	kitEffectDescription({_tg}, "§0§l身体憑依")
+	sendTimeBossbar_GREEN({_player}, "Phren Possession", 60)
+	sendTimeBossbar_RED({_tg}, "身体憑依", 60)
+	set {_targetbaseloc} to location of {_tg}
+	set {_playerbaseloc} to location of {_player}
+	kitPalsy({_player}, 60, false)
+	kitPalsy({_tg}, 60, false)
+	kitStats_SET({_player}, "Invincible", true)
+	kitStats_SET({_tg}, "Invincible", true)
+	teleport {_player} to {_targetbaseloc}
+	loop 60 times:
+		hide {_player} from all players
+		hide {_tg} from {_player}
+		teleport {_tg} to location of {_player}
+		set {_effbaseloc} to location of {_player}
+		set {_rad} to 0
+		loop 6 times:
+			set {_el} to {_effbaseloc}
+			add 60 to {_rad}
+			add 0.5 * sin({_rad}) to x-coordinate of {_el}
+			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			add 2 to y-coordinate of {_el}
+			spawnParticle_Color(entity_effect, rgb(50, 0, 0), {_el})
+		wait a tick
+	kitStats_DELETE({_player}, "Invincible")
+	kitStats_DELETE({_tg}, "Invincible")
+	teleport {_player} to {_playerbaseloc}
+	reveal {_player} from all players
+	reveal {_tg} from {_player}
+	set {_memsg} to kitGhostMessage("§1身体の乗っ取りを解除しました")
+	set {_youmsg} to kitGhostMessage("§6自分の身体が返ってきた!", true)
+	kitMsg({_player}, {_memsg})
+	message formatted {_youmsg} to {_tg}
+	set {_checkloc} to location of {_tg}
+	loop 10 times:
+		set {_cl} to location loop-number meters below {_checkloc}
+		if block at {_cl} is not passable:
+			set {_ok} to true
+	set {_tgloc} to location of {_tg}
+	loop all blocks in radius 3 around {_tgloc}:
+		if "%loop-block%" contains "lava":
+			delete {_ok}
+	if {_ok} is not set:
+		teleport {_tg} to {_targetbaseloc}
+		extinguish {_tg}

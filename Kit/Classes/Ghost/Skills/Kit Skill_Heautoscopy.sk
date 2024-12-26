@@ -1,0 +1,36 @@
+# Heautoscopy
+
+function kitEffect_Heautoscopy(player: player):
+	if kitCheckSpirit({_player}, "Heautoscopy") is false:
+		stop
+
+	nameCT({_player}, "Heautoscopy")
+	playSound("entity.evoker.prepare_summon", 1, 1.5, {_player})
+	kitStats_SET({_player}, "Heautoscopy", true)
+	set gamemode of {_player} to spectator
+	set {_baseloc} to location of {_player}
+	loop 10 times:
+		set {_el} to {_baseloc}
+		add a random number between -0.5 and 0.5 to x-coordinate of {_el}
+		add a random number between -0.5 and 0.5 to z-coordinate of {_el}
+		add a random number between 0 and 2 to y-coordinate of {_el}
+		spawnParticle(smoke, {_el})
+	loop 20 times:
+		if {_no} is not set:
+			if distance between {_baseloc} and location of {_player} <= 10:
+				wait a tick
+			else:
+				set {_no} to true
+	playSound("entity.evoker.cast_spell", 1, 1, {_player})
+	kitStats_DELETE({_player}, "Heautoscopy")
+	set gamemode of {_player} to survival
+	set {_baseloc} to location of {_player}
+	add 1 to y-coordinate of {_baseloc}
+	loop 10 times:
+		set {_speed} to a random number between 0.5 and 2
+		spawnParticle_Vector(end_rod, randomVector(), {_speed}, {_baseloc})
+
+on teleport:
+	metadata value "gametype" of player is "Kit"
+	kitStats_GET(player, "Heautoscopy") is true
+	cancel event

@@ -1,0 +1,42 @@
+# Lethan Souvenir
+
+function kitEffect_LethalSouvenir(player: player):
+	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	if {_SkillTarget} is set:
+		send action bar "§c§l対象が存在しません!" to {_player}
+		stop
+
+	if kitCheckSpirit({_player}, "Lethal Souvenir") is false:
+		stop
+
+	nameCT({_player}, "Lethal Souvenir")
+	set {_tg} to {_SkillTarget}
+	kitFear({_tg}, 20000)
+	set metadata value "Lethal Souvenir" of {_tg} to true
+	playSound("entity.elder_guardian.death", 1, 1, {_tg})
+	set {_memsg} to kitGhostMessage("§5%{_tg}% §0に置き土産を残した...")
+	set {_youmsg} to kitGhostMessage("§5霊の憑拠を受けてしまった...", true)
+	kitMsg({_player}, {_memsg})
+	message formatted {_youmsg} to {_tg}
+	kitEffectDescription({_tg}, "§5§l死霊の置き土産")
+	set health of {_player} to 0
+	set {_baseloc} to location of {_tg}
+	loop 10 times:
+		loop 10 times:
+			add 0.05 to {_y}
+			add 0.05 to {_metre}
+			add 10 to {_rad}
+			set {_effloc} to {_baseloc}
+			add {_y} to y-coordinate of {_effloc}
+			add {_metre} * sin({_rad}) to x-coordinate of {_effloc}
+			add {_metre} * cos({_rad}) to z-coordinate of {_effloc}
+			spawnParticle_Color(entity_effect, rgb(0, 0, 0), {_effloc})
+		wait a tick
+
+
+
+on damage of player with priority LOW:
+	set {_attacker} to getAttacker(victim)
+	metadata value "gametype" of victim is "Kit"
+	metadata value "Lethal Souvenir" of {_attacker} is true
+	setDamageModification_FIX(victim, 1)

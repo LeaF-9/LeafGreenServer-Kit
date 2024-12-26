@@ -1,5 +1,40 @@
 # Ghostのスキル Ver1.0.0
 
+# Weapons
+function kitWeapon_Ghost_1(player: player):
+	kitEffect_GhostBook({_player})
+
+function kitWeapon_Ghost_2(player: player):
+	log "kitWeapon_Ghost_2(%{_player}%)"
+
+function kitWeapon_Ghost_3(player: player):
+	kitEffect_Poltergeist({_player})
+
+# Skills
+function kitSkill_Ghost_1(player: player):
+	kitEffect_MutateMummy({_player})
+
+function kitSkill_Ghost_2(player: player):
+	kitEffect_MindDependence({_player})
+
+function kitSkill_Ghost_3(player: player):
+	kitEffect_PainSplit({_player})
+
+function kitSkill_Ghost_4(player: player):
+	kitEffect_LethalSouvenir({_player})
+
+function kitSkill_Ghost_5(player: player):
+	kitEffect_DeathCurse({_player})
+
+function kitSkill_Ghost_6(player: player):
+	kitEffect_Heautoscopy({_player})
+
+function kitSkill_Ghost_7(player: player):
+	kitEffect_PhrenPossession({_player})
+
+function kitSkill_Ghost_8(player: player):
+	kitEffect_VoodooDoll({_player})
+
 # Abilities
 on death of player:
 	metadata value "gametype" of victim is "Kit"
@@ -19,18 +54,20 @@ on death of player:
 		wait 3 ticks
 		set slot 1 of victim to air
 
-function kitCheckSpirit(player: player, num: number, type: text = "Skill") :: boolean:
+function kitCheckSpirit(player: player, name: text) :: boolean:
 	set {_tool} to {_player}'s tool
-	if kitItemKitChecker({_tool}) is "Ghost":
-		if kitItemTypeChecker({_tool}) is {_type}:
-			if kitItemNumberChecker({_tool}) is {_num}:
-				set {_skill} to {_tool}
+	set {_toolname} to display name of {_tool}
+	set {_toolname} to unformatted {_toolname}
+	set {_skill} to {_tool} if {_toolname} is {_name}
+
 	if {_skill} is not set:
 		loop all items in {_player}'s inventory:
-			kitItemKitChecker(loop-item) is "Ghost"
-			kitItemTypeChecker(loop-item) is {_type}
-			kitItemNumberChecker(loop-item) is {_num}
-			set {_skill} to loop-item
+			set {_toolname} to display name of loop-item
+			set {_toolname} to unformatted {_toolname}
+			if {_toolname} is {_name}:
+				set {_skill} to loop-item
+	return false if {_skill} is not set
+
 	set {_lore::*} to lore of {_skill}
 	loop {_lore::*}:
 		loop-value contains "§4Spirit§7:"
@@ -40,9 +77,9 @@ function kitCheckSpirit(player: player, num: number, type: text = "Skill") :: bo
 	if {Kit-Spirits::%{_player}%} >= {_spirit}:
 		subtract {_spirit} from {Kit-Spirits::%{_player}%}
 		return true
-	else:
-		send action bar "§5§lSpiritが不足しています!" to {_player}
-		return false
+
+	send action bar "§5§lSpiritが不足しています!" to {_player}
+	return false
 
 function kitGhostMessage(text: text, bold: boolean = false) :: text:
 	set {_colors::*} to {_text} split at "§"

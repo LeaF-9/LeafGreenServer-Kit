@@ -1,26 +1,29 @@
-# Mind Dependent
+# Mind Dependence
 
-function kitSkill_Ghost_2(player: player):
+function kitEffect_MindDependence(player: player):
 	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
-	if {_SkillTarget} is set:
-		if kitCheckSpirit({_player}, 2) is true:
-			toolCT({_player}, "Ghost", 2)
-			set {_tg} to {_SkillTarget}
-			set {_MindDepender} to kitStats_GET({_player}, "MindDependence")
-			set {_MindDependence} to kitStats_GET({_MindDepender}, "MindDependence")
-			if {_MindDependence} is {_player}:
-				kitStats_DELETE({_MindDepender}, "MindDependence")
-				kitStats_DELETE({_player}, "MindDependence")
-			set {_memsg} to kitGhostMessage("§5%{_tg}% §4と痛覚の共有を行いました...")
-			set {_youmsg} to kitGhostMessage("§5%{_player}% §cとのダメージが共有される!")
-			kitMsg({_player}, {_memsg})
-			message formatted {_youmsg} to {_tg}
-			kitStats_SET({_tg}, "MindDependence", {_player})
-			kitStats_SET({_player}, "MindDependence", {_tg})
-			playSound("entity.iron_golem.death", 1, 0.5, {_player}, true)
-			playSound("entity.iron_golem.death", 1, 0.5, {_tg}, true)
-	else:
+	if {_SkillTarget} is not set:
 		send action bar "§c§l対象が存在しません!" to {_player}
+		stop
+
+	if kitCheckSpirit({_player}, "Mind Dependence") is false:
+		stop
+
+	nameCT({_player}, "Mind Dependence")
+	set {_tg} to {_SkillTarget}
+	set {_MindDepender} to kitStats_GET({_player}, "MindDependence")
+	set {_MindDependence} to kitStats_GET({_MindDepender}, "MindDependence")
+	if {_MindDependence} is {_player}:
+		kitStats_DELETE({_MindDepender}, "MindDependence")
+		kitStats_DELETE({_player}, "MindDependence")
+	set {_memsg} to kitGhostMessage("§5%{_tg}% §4と痛覚の共有を行いました...")
+	set {_youmsg} to kitGhostMessage("§5%{_player}% §cとのダメージが共有される!")
+	kitMsg({_player}, {_memsg})
+	message formatted {_youmsg} to {_tg}
+	kitStats_SET({_tg}, "MindDependence", {_player})
+	kitStats_SET({_player}, "MindDependence", {_tg})
+	playSound("entity.iron_golem.death", 1, 0.5, {_player}, true)
+	playSound("entity.iron_golem.death", 1, 0.5, {_tg}, true)
 
 on damage of player with priority HIGHEST:
 	metadata value "gametype" of victim is "Kit"

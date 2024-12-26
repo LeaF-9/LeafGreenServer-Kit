@@ -1,16 +1,18 @@
 # Pain Split
 
-function kitSkill_Ghost_3(player: player):
+function kitEffect_PainSplit(player: player):
 	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象が存在しません!" to {_player}
 		stop
-	if kitCheckSpirit({_player}, 3) is true:
-		toolCT({_player}, "Ghost", 3)
-		set {_target} to {_SkillTarget}
-		kitEffect_PainSplit({_player}, {_target})
+	if kitCheckSpirit({_player}, 3) is false:
+		stop
 
-local function kitEffect_PainSplit(player: player, tg: player):
+	nameCT({_player}, "Pain Split")
+	set {_target} to {_SkillTarget}
+
+	set {_tg} to {_target}
+
 	set {_th} to {_tg}'s health
 	set {_ph} to {_player}'s health
 	set {_sp} to ({_th} + {_ph}) / 2

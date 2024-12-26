@@ -1,0 +1,91 @@
+# Voodoo Doll
+
+function kitEffect_VoodooDoll(player: player):
+	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	if {_SkillTarget} is not set:
+		send action bar "§c§l対象が存在しません!" to {_player}
+		stop
+
+	set {_ydis} to (y-pos of {_player}) - (y-pos of {_SkillTarget})
+	if {_ydis} > 5:
+		send action bar "§c§l設置位置が高すぎます!" to {_player}
+		stop
+
+	if block at {_player} is not passable:
+		send action bar "§c§l設置位置が不適切です!" to {_player}
+		stop
+
+	if kitCheckSpirit({_player}, "Voodoo Doll") is false:
+		stop
+
+	nameCT({_player}, "Voodoo Doll")
+	if kitStats_GET({_player}, "VoodooDoll") is set:
+		kitStats_DELETE({_player}, "VoodooDoll")
+		loop all entities:
+			type of loop-entity is an armor stand
+			metadata value "gametype" of loop-entity is "Kit"
+			metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
+			delete loop-entity
+	set {_tg} to {_SkillTarget}
+	set {_memsg} to kitGhostMessage("§5%{_tg}% §2の藁人形を生成した...", true)
+	set {_youmsg} to kitGhostMessage("§4自分の藁人形が作成された! §6壊しに行こう!", true)
+	kitMsg({_player}, {_memsg})
+	message formatted {_youmsg} to {_tg}
+	kitEffectDescription({_tg}, "§5§l藁人形の呪術")
+	playSound("entity.villager.work_fletcher", 1, 0.5, {_player})
+	set {_armorloc} to location of {_player}
+	set {_now} to now
+	spawn an armor stand at location of {_player}
+	set metadata value "gametype" of spawned armor stand to "Kit"
+	set metadata value "Kit-VoodooDoll" of spawned armor stand to "%{_player}%"
+	set metadata value "Kit-VoodooTime" of spawned armor stand to "%{_now}%"
+	set helmet of spawned armor stand to skull of {_tg}
+	kitStats_SET({_player}, "VoodooDoll", {_now})
+	set {_vector} to setVector(location of {_tg}, location of {_player})
+	set {_effbaseloc} to location of head of {_tg}
+	set yaw of {_effbaseloc} to yaw of {_vector}
+	set pitch of {_effbaseloc} to pitch of {_vector}
+	set {_t} to round(distance between {_player} and {_tg})
+	loop {_t} times:
+		set {_el} to location loop-number meters in front of {_effbaseloc}
+		spawnParticle(end_rod, {_el})
+	while kitStats_GET({_player}, "VoodooDoll") is {_now}:
+		delete {_exist}
+		if {_tg} does not have wither:
+			apply wither 1 to {_tg} for 10 seconds
+		loop all entities:
+			type of loop-entity is an armor stand
+			metadata value "gametype" of loop-entity is "Kit"
+			metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
+			metadata value "Kit-VoodooTime" of loop-entity is "%{_now}%"
+			set {_exist} to true
+			set {_armortarget} to loop-entity
+			set {_id} to id of loop-entity
+			set {_el} to aroundEffect(loop-entity)
+			spawnParticle(soul, {_el})
+		if {Class::%{_tg}%} is not set:
+			delete {_exist}
+			kitStats_DELETE({_player}, "VoodooDoll")
+		if {_exist} is true:
+			packetGlowing({_tg}, {_armortarget})
+		else:
+			packetUnglowing({_tg}, {_armortarget})
+			kitStats_DELETE({_player}, "VoodooDoll")
+		wait a tick
+	remove wither from {_tg}
+	loop all entities:
+		type of loop-entity is an armor stand
+		metadata value "gametype" of loop-entity is "Kit"
+		metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
+		metadata value "Kit-VoodooTime" of loop-entity is "%{_now}%"
+		delete loop-entity
+
+on damage of armor stand:
+	attacker is set
+	metadata value "Kit-VoodooDoll" of victim is set
+	set {_player} to metadata value "Kit-VoodooDoll" of victim parsed as player
+	if kitCheckTeam(attacker, {_player}, false) is true:
+		kitStats_DELETE({_player}, "VoodooDoll")
+		set {_memsg} to kitGhostMessage("§5藁人形が破壊された!", true)
+		kitMsg({_player}, {_memsg})
+		delete victim
