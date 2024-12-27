@@ -12,21 +12,22 @@ on leftclick holding a emerald:
 	kitMsg(player, "§e護衛状態を解除しました")
 	send action bar "§e§l%player% §6§lの護衛が解除されました" to {_tp}
 
-function kitSkill_Paladin_1(player: player):
+function kitEffect_AllySafeguard(player: player):
 	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
-	if {_SkillTarget} is set:
-		toolCT({_player}, "Paladin", 1)
-		set {_tp} to {_SkillTarget}
-		kitStats_SET({_player}, "Guarding", true)
-		kitStats_SET({_tp}, "AllySafeguard", {_player})
-		kitMsg({_player}, "§a守る相手を§6%{_tp}%§aに設定しました!")
-		send action bar "§a%{_player}% §7が護衛してくれるそうです!" to {_tp}
-		kitEffectDescription({_tp}, "§2§l護衛")
-		loop 5 times:
-			set {_el} to aroundEffect({_tp})
-			spawnParticle(happy_villager, {_el})
-	else:
+	if {_SkillTarget} is not set:
 		send action bar "§c§l対象のプレイヤーがいません" to {_player}
+		stop
+
+	nameCT({_player}, "Ally Safeguard")
+	set {_tp} to {_SkillTarget}
+	kitStats_SET({_player}, "Guarding", true)
+	kitStats_SET({_tp}, "AllySafeguard", {_player})
+	kitMsg({_player}, "§a守る相手を§6%{_tp}%§aに設定しました!")
+	send action bar "§a%{_player}% §7が護衛してくれるそうです!" to {_tp}
+	kitEffectDescription({_tp}, "§2§l護衛")
+	loop 5 times:
+		set {_el} to aroundEffect({_tp})
+		spawnParticle(happy_villager, {_el})
 
 on damage of player with priority NORMAL:
 	kitStats_GET(victim, "AllySafeguard") is set

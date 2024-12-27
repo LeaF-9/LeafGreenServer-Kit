@@ -6,7 +6,7 @@ options:
 
 
 
-function kitSkill_Paladin_2(player: player):
+function kitEffect_SacrificeHeal(player: player):
 	if {_player}'s health <= 3:
 		send action bar "§c§l体力が少なすぎます!" to {_player}
 		stop
@@ -20,12 +20,7 @@ function kitSkill_Paladin_2(player: player):
 		send action bar "§d回復§cを必要とする§6§lプレイヤー§cがいません!" to {_player}
 		stop
 
-	toolCT({_player}, "Paladin", 2)
-	kitEffect_SacrificeHeal({_player}, {_targets::*})
-
-
-
-local function kitEffect_SacrificeHeal(player: player, targets: players):
+	nameCT({_player}, "Sacrifice Heal")
 	set {_health} to (health of {_player}) - 3	
 	set health of {_player} to {_health}
 	loop {_targets::*}:
