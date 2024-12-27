@@ -11,39 +11,40 @@ on damage with priority LOW:
 		playSound("entity.wither.break_block", 1, 0.5, victim)
 		kitEffect_BruteCharge_3(victim)
 
-function kitSkill_Warrior_7(player: player):
-	if health of {_player} >= 5:
-		toolCT({_player}, "Warrior", 7)
-		kitMsg({_player}, "§5力をチャージします...")
-		kitFreeze({_player}, 60, false)
-		apply glowing 1 to {_player} for 3 seconds
-		kitStats_SET({_player}, "BruteCharging", true)
-		kitEffect_BruteCharge_1({_player})
-		loop 3 times:
-			if kitStats_GET({_player}, "BruteCharging") is true:
-				wait a second
-		if kitStats_GET({_player}, "BruteCharging") is true:
-			kitStats_DELETE({_player}, "BruteCharging")
-			kitStats_SET({_player}, "BruteCharge", true)
-			kitMsg({_player}, "§6§l暴走状態§c§に入った! §4§l敵を薙ぎ払え!")
-			sendTimeBossbar_GREEN({_player}, "Brute Charge", 100)
-			kitPalsy({_player}, 100, false)
-			set {_hp} to health of {_player}
-			subtract 5 from {_hp}
-			set health of {_player} to {_hp}
-			set {_el} to location of {_player}
-			add 1 to y-coordinate of {_el}
-			kitEffect_BruteCharge_2({_player})
-			loop 5 times:
-				if kitStats_GET({_player}, "BruteCharge") is true:
-					wait a second
-			if kitStats_GET({_player}, "BruteCharge") is true:
-				kitStats_DELETE({_player}, "BruteCharge")
-				kitMsg({_player}, "§3暴走状態は終了しました")
-		else:
-			kitMsg({_player}, "§8チャージに失敗してしまった...")
-	else:
+function kitEffect_BruteCharge(player: player):
+	if health of {_player} < 5:
 		send action bar "§c§l体力が不足しています!" to {_player}
+		stop
+
+	nameCT({_player}, "Brute Charge")
+	kitMsg({_player}, "§5力をチャージします...")
+	kitFreeze({_player}, 60, false)
+	apply glowing 1 to {_player} for 3 seconds
+	kitStats_SET({_player}, "BruteCharging", true)
+	kitEffect_BruteCharge_1({_player})
+	loop 3 times:
+		if kitStats_GET({_player}, "BruteCharging") is true:
+			wait a second
+	if kitStats_GET({_player}, "BruteCharging") is true:
+		kitStats_DELETE({_player}, "BruteCharging")
+		kitStats_SET({_player}, "BruteCharge", true)
+		kitMsg({_player}, "§6§l暴走状態§c§に入った! §4§l敵を薙ぎ払え!")
+		sendTimeBossbar_GREEN({_player}, "Brute Charge", 100)
+		kitPalsy({_player}, 100, false)
+		set {_hp} to health of {_player}
+		subtract 5 from {_hp}
+		set health of {_player} to {_hp}
+		set {_el} to location of {_player}
+		add 1 to y-coordinate of {_el}
+		kitEffect_BruteCharge_2({_player})
+		loop 5 times:
+			if kitStats_GET({_player}, "BruteCharge") is true:
+				wait a second
+		if kitStats_GET({_player}, "BruteCharge") is true:
+			kitStats_DELETE({_player}, "BruteCharge")
+			kitMsg({_player}, "§3暴走状態は終了しました")
+	else:
+		kitMsg({_player}, "§8チャージに失敗してしまった...")
 
 function kitEffect_BruteCharge_1(player: player):
 	set {_loc} to location of {_player}

@@ -1,0 +1,49 @@
+# Last Crash
+
+function kitEffect_LastCrash(player: player):
+	if health of {_player} > 3:
+		send action bar "§c§l体力が多すぎます!" to {_player}
+		stop
+
+	nameCT({_player}, "Last Crash")
+	kitStats_SET({_player}, "Last Crash", true)
+	kitMsg({_player}, "§6命を糧に§lエネルギー爆発§6を起こします!")
+	kitFreeze({_player}, 20, false)
+	playSound("entity.wither.shoot", 1, 1, {_player})
+	set {_baseloc} to location of {_player}
+	add 1 to y-coordinate of {_baseloc}
+	loop 30 times:
+		set {_toloc} to location of {_player}
+		add 1 to y-coordinate of {_toloc}
+		add a random number between -5 and 5 to x-coordinate of {_toloc}
+		add a random number between -5 and 5 to y-coordinate of {_toloc}
+		add a random number between -5 and 5 to z-coordinate of {_toloc}
+		set {_v} to setVector({_toloc}, {_baseloc})
+		set yaw of {_toloc} to yaw of {_v}
+		set pitch of {_toloc} to pitch of {_v}
+		add {_toloc} to {_locs::*}
+	set {_ln} to 0
+	loop 20 times:
+		add 1 to {_ln}
+		loop {_locs::*}:
+			set {_dis} to distance between {_baseloc} and loop-value-2
+			set {_em} to {_dis} / 20 * {_ln}
+			set {_eloc} to location {_em} meters in front of loop-value-2
+			spawnParticle(end_rod, {_eloc})
+		wait a tick
+	playSound("entity.wither.spawn", 1, 0.5, {_player})
+	kill {_player}
+	subtract 1 from y-coordinate of {_baseloc}
+	loop all entities in radius 10 around {_baseloc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		playSound("entity.wither.break_block", 1, 0.5, loop-entity)
+		kitDamage({_player}, loop-entity, 9, "最後の破壊")
+		kitEffectDescription(loop-entity, "§4❤9")
+
+		set {_el} to location of loop-entity
+		add 1 to y-coordinate of {_el}
+		loop 30 times:
+			spawnParticle_Vector(enchanted_hit, randomVector(), 1.5, {_el})
+	add 1 to y-coordinate of {_baseloc}
+	loop 200 times:
+		spawnParticle_Vector(campfire_cosy_smoke, randomVector(), 3, {_baseloc})
