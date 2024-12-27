@@ -38,9 +38,9 @@ on leftclick:
 	kitItemAllChecker({_tool}, "Thief", "Weapon", 3) is true
 	checkItemCT(player, {_tool}) is true
 	toolItemCT(player, "Thief", 3)
-	kitEffect_VenomRosalie(player)
+	kitEffect_VenomRosalie_Launch(player)
 
-function kitEffect_VenomRosalie(player: player):
+local function kitEffect_VenomRosalie_Launch(player: player):
 	set {_baseloc} to location of head of {_player}
 	loop 5 times:
 		set {_el} to location loop-number - 1 meters in front of {_baseloc}
@@ -57,7 +57,7 @@ function kitEffect_VenomRosalie(player: player):
 			applyEffect(loop-entity, poison, 3, 5 seconds)
 
 # 何tickかで下から上に螺旋状のトゲ付き蔦が伸びてくる演出
-function kitParticle_VenomRosalie_Ivy(player: player, count: number):
+local function kitParticle_VenomRosalie_Ivy(player: player, count: number):
 	playSound("block.wet_grass.step", 0.75, 2, {_player})
 	if mod({_count}, 20) is not 0:
 		stop
@@ -83,7 +83,7 @@ function kitParticle_VenomRosalie_Ivy(player: player, count: number):
 					spawnParticle_Dust(rgb(0, 123, 67), 0.35, {_il})
 		wait a tick
 
-function kitParticle_VenomRosalie_Stem(baseloc: location):
+local function kitParticle_VenomRosalie_Stem(baseloc: location):
 	playSound("block.grass.step", 1, 1.25, {_baseloc})
 	# 茎
 	loop 10 times:
@@ -100,7 +100,7 @@ function kitParticle_VenomRosalie_Stem(baseloc: location):
 		add a random number between -0.5 and 0.5 to z-pos of {_el}
 		spawnParticle_Dust(rgb(159, 111, 85), 0.3, {_el})
 
-function kitParticle_VenomRosalie_Rose(baseloc: location):
+local function kitParticle_VenomRosalie_Rose(baseloc: location):
 	playSound("block.wet_grass.break", 1, 0.5, {_baseloc})
 	set {_f} to 0
 	set {_baserad} to 0
