@@ -34,6 +34,17 @@ function kitEffect_SallyFatalities(player: player):
 		kitParticle_SallyFatalities_Death(loop-entity)
 		delete loop-entity
 
+function kitEffect_SallyFatalities_Dead(victim: entity):  # 馬に乗ったアンデッドが死亡した際に発火する関数
+	set {_uuid} to metadata value "sally-fatalities" of {_victim}
+	set {_player} to metadata value "summon-player" of {_victim}
+	loop all entities:
+		metadata value "uuid" of loop-entity is {_uuid}
+		kitParticle_SallyFatalities_Death(loop-entity)
+		delete loop-entity
+		kitAddNecromance({_player}, 1)
+
+
+
 local function kitParticle_SallyFatalities_Undead(horse: entity):
 	set {_baseloc} to location of {_horse}
 	set {_rad} to 0
@@ -85,15 +96,6 @@ local function kitParticle_SallyFatalities_Death(horse: entity):
 		add 0.1 to {_addy}
 		subtract 0.025 from {_size}
 		wait a tick
-
-local function kitSkill_SallyFatalities(victim: entity):  # 馬に乗ったアンデッドが死亡した際に発火する関数
-	set {_uuid} to metadata value "sally-fatalities" of {_victim}
-	set {_player} to metadata value "summon-player" of {_victim}
-	loop all entities:
-		metadata value "uuid" of loop-entity is {_uuid}
-		kitParticle_SallyFatalities_Death(loop-entity)
-		delete loop-entity
-		kitAddNecromance({_player}, 1)
 
 on damage:
 	metadata value "sally-fatalities-horse" of victim is set
