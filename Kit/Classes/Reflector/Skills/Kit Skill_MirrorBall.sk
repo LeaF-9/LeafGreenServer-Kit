@@ -1,11 +1,5 @@
 # skill-name: Mirror Ball
 
-function kitSkill_Reflector_4(player: player):
-	toolCT({_player}, "Reflector", 4)
-	kitEffect_MirrorBall({_player})
-
-
-
 on damage of player:
 	damage cause is not sweep attack
 	checkDamagable(victim) is true
@@ -64,7 +58,8 @@ on damage of player:
 	
 
 # 同時に発動された際の処理がわからない
-local function kitEffect_MirrorBall(player: player):
+function kitEffect_MirrorBall(player: player):
+	nameCT({_player}, "Mirror Ball")
 	kitMsg({_player}, "§f§lミラーステージ§7を展開します!")
 	set {_loc} to location of {_player}
 	kitParticle_MirrorBall_Launch({_player}, {_loc})

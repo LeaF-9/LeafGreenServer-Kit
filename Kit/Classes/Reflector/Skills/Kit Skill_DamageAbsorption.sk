@@ -13,14 +13,12 @@ on damage of player:
 		kitStats_SET(victim, "DamageAbrosption-Point", {_Point})
 		kitParticle_DamageAbsorption_Charge(victim)
 
-function kitSkill_Reflector_2(player: player):
+function kitEffect_DamageAbsorption(player: player):
 	if kitStats_GET({_player}, "PerfectReflection") is set:
 		kitMsg({_player}, "§c§l別Skill発動中は使えません!")
 		stop
-	toolCT({_player}, "Reflector", 2)
-	kitEffect_DamageAbsorption({_player})
+	nameCT({_player}, "Damage Absorption")
 
-local function kitEffect_DamageAbsorption(player: player):
 	kitMsg({_player}, "§8ダメージを溜め込みます...!")
 	kitStats_SET({_player}, "DamageAbsorption", true)
 	kitStats_SET({_player}, "DamageAbsorption-Point", 0)

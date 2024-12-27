@@ -1,9 +1,5 @@
 # Skill-Name: Perfect Reflection
 
-function kitSkill_Reflector_1(player: player):
-	toolCT({_player}, "Reflector", 1)
-	kitEffect_PerfectReflection({_player})
-
 on damage of player with priority LOW:
 	checkDamagable(victim) is true
 	set {_attacker} to getAttacker(victim)
@@ -16,7 +12,8 @@ on damage of player with priority LOW:
 	kitEffectDescription(victim, "§f§l反射")
 	kitParticle_PerfectReflection_Reflect(victim, {_attacker})
 
-local function kitEffect_PerfectReflection(player: player):
+function kitEffect_PerfectReflection(player: player):
+	nameCT({_player}, "Perfect Reflection")
 	set {_now} to now
 	kitStats_SET({_player}, "PerfectReflection", {_now})
 	kitParticle_PerfectReflection_Launch({_player})

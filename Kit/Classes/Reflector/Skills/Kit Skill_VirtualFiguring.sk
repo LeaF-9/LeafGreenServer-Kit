@@ -1,15 +1,13 @@
 # skill-name: Virtual Figuring
 
-function kitSkill_Reflector_6(player: player):
+function kitEffect_VirtualFiguring(player: player):
 	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象を指定してください" to {_player}
 		stop
-	toolCT({_player}, "Reflector", 6)
 	set {_target} to {_SkillTarget}
-	kitEffect_VirtualFiguring({_player}, {_target})
+	nameCT({_player}, "Virtual Figuring")
 
-local function kitEffect_VirtualFiguring(player: player, target: player):
 	kitParticle_VirtualFiguring_Figure({_player}, {_target})
 	kitMsg({_player}, "§b%{_target}% §fの姿を映し描いた...")
 	message formatted "§b§l%{_player}% §9によって姿を隠してもらった!" to {_target}
