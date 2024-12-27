@@ -1,18 +1,19 @@
 # Dark Magic
 
-function kitSkill_Wizard_2(player: player):
+function kitEffect_DarkMagic(player: player):
 	set {_mana} to kitManaCalc({_player}, 10)
-	if {Kit-Mana::%{_player}%} >= {_mana}:
-		toolCT({_player}, "Wizard", 2)
-		shoot a snowball from {_player} at speed 1
-		set metadata value "magic" of shot snowball to "dark"
-		set item of shot snowball to black concrete
-		kitParticle_Wizard_Magic(shot snowball, 0, 0, 0)
-		subtract {_mana} from {Kit-Mana::%{_player}%}
-	else:
+	if {Kit-Mana::%{_player}%} < {_mana}:
 		send action bar "§4§lマナが足りません!" to {_player}
+		stop
 
-function kitEffect_DarkMagic(player: player, loc: location):
+	nameCT({_player}, "Dark Magic")
+	shoot a snowball from {_player} at speed 1
+	set metadata value "magic" of shot snowball to "dark"
+	set item of shot snowball to black concrete
+	kitParticle_Wizard_Magic(shot snowball, 0, 0, 0)
+	subtract {_mana} from {Kit-Mana::%{_player}%}
+
+function kitEffect_DarkMagic_Magic(player: player, loc: location):
 	loop all entities in radius 5 around {_loc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		if "%type of loop-entity%" is "player":
@@ -25,7 +26,7 @@ function kitEffect_DarkMagic(player: player, loc: location):
 		sendTimeBossbar_RED(loop-entity, "暗闇魔法", 100)
 		kitParticle_DarkMagic_Hit(loop-entity)
 
-function kitParticle_DarkMagic_Hit(entity: entity):
+local function kitParticle_DarkMagic_Hit(entity: entity):
 	loop 5 times:
 		add 0.4 to {_h}
 		set {_rad} to 0

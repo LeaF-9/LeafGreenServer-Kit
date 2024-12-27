@@ -1,18 +1,19 @@
 # Freeze Magic
 
-function kitSkill_Wizard_3(player: player):
+function kitEffect_FreezeMagic(player: player):
 	set {_mana} to kitManaCalc({_player}, 10)
-	if {Kit-Mana::%{_player}%} >= {_mana}:
-		toolCT({_player}, "Wizard", 3)
-		shoot a snowball from {_player} at speed 1
-		set metadata value "magic" of shot snowball to "freeze"
-		set item of shot snowball to cyan concrete
-		kitParticle_Wizard_Magic(shot snowball, 0, 0, 100)
-		subtract {_mana} from {Kit-Mana::%{_player}%}
-	else:
+	if {Kit-Mana::%{_player}%} < {_mana}:
 		send action bar "§4§lマナが足りません!" to {_player}
+		stop
 
-function kitEffect_FreezeMagic(player: player, loc: location):
+	nameCT({_player}, "Freeze Magic")
+	shoot a snowball from {_player} at speed 1
+	set metadata value "magic" of shot snowball to "freeze"
+	set item of shot snowball to cyan concrete
+	kitParticle_Wizard_Magic(shot snowball, 0, 0, 100)
+	subtract {_mana} from {Kit-Mana::%{_player}%}
+
+function kitEffect_FreezeMagic_Magic(player: player, loc: location):
 	loop all players in radius 5 around {_loc}:
 		kitCheckTeam({_player}, loop-player, false) is true
 		set {_pl} to location of block at loop-player
@@ -83,7 +84,7 @@ function kitEffect_FreezeMagic(player: player, loc: location):
 		kitStats_DELETE(loop-value, "Invincible")
 		playSound("block.glass.break", 1, 1, loop-value)
 
-function kitParticle_FreezeMagic_Hit(player: player):
+local function kitParticle_FreezeMagic_Hit(player: player):
 	loop 40 times:
 		add 0.4 to {_h}
 		set {_rad} to 0

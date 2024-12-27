@@ -1,18 +1,19 @@
 # Drain Magic
 
-function kitSkill_Wizard_5(player: player):
+function kitEffect_DrainMagic(player: player):
 	set {_mana} to kitManaCalc({_player}, 10)
-	if {Kit-Mana::%{_player}%} >= {_mana}:
-		toolCT({_player}, "Wizard", 5)
-		shoot a snowball from {_player} at speed 1
-		set metadata value "magic" of shot snowball to "drain"
-		set item of shot snowball to green concrete
-		kitParticle_Wizard_Magic(shot snowball, 0, 100, 0)
-		subtract {_mana} from {Kit-Mana::%{_player}%}
-	else:
+	if {Kit-Mana::%{_player}%} < {_mana}:
 		send action bar "§4§lマナが足りません!" to {_player}
+		stop
 
-function kitEffect_DrainMagic(player: player, loc: location):
+	nameCT({_player}, "Drain Magic")
+	shoot a snowball from {_player} at speed 1
+	set metadata value "magic" of shot snowball to "drain"
+	set item of shot snowball to green concrete
+	kitParticle_Wizard_Magic(shot snowball, 0, 100, 0)
+	subtract {_mana} from {Kit-Mana::%{_player}%}
+
+function kitEffect_DrainMagic_Magic(player: player, loc: location):
 	loop all players in radius 5 around {_loc}:
 		kitCheckTeam(loop-player, {_player}, false) is true
 		LastKiller(loop-player, {_player})

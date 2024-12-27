@@ -1,18 +1,19 @@
 # Blood Magic
 
-function kitSkill_Wizard_1(player: player):
+function kitEffect_BloodMagic(player: player):
 	set {_mana} to kitManaCalc({_player}, 10)
-	if {Kit-Mana::%{_player}%} >= {_mana}:
-		toolCT({_player}, "Wizard", 1)
-		shoot a snowball from {_player} at speed 1
-		set metadata value "magic" of shot snowball to "blood"
-		set item of shot snowball to red concrete
-		kitParticle_Wizard_Magic(shot snowball, 100, 0, 0)
-		subtract {_mana} from {Kit-Mana::%{_player}%}
-	else:
+	if {Kit-Mana::%{_player}%} < {_mana}:
 		send action bar "§4§lマナが足りません!" to {_player}
+		stop
 
-function kitEffect_BloodMagic(player: player, loc: location):
+	nameCT({_player}, "Blood Magic")
+	shoot a snowball from {_player} at speed 1
+	set metadata value "magic" of shot snowball to "blood"
+	set item of shot snowball to red concrete
+	kitParticle_Wizard_Magic(shot snowball, 100, 0, 0)
+	subtract {_mana} from {Kit-Mana::%{_player}%}
+
+function kitEffect_BloodMagic_Magic(player: player, loc: location):
 	loop all entities in radius 5 around {_l}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		kitDamage({_player}, loop-entity, 3, "出血魔法")
@@ -25,7 +26,7 @@ function kitEffect_BloodMagic(player: player, loc: location):
 		kitEffectDescription(loop-entity, "§4❤3 §8& §4出血")
 		kitParticle_BloodMagic_Hit(loop-entity)
 
-function kitParticle_BloodMagic_Hit(entity: entity):
+local function kitParticle_BloodMagic_Hit(entity: entity):
 	loop 5 times:
 		add 0.4 to {_h}
 		set {_rad} to 0

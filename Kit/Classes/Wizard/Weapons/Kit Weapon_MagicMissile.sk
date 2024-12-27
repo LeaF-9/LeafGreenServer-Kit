@@ -6,10 +6,10 @@ on sneak toggle:
 	set {_tool} to player's tool
 	if kitItemAllChecker({_tool}, "Wizard", "Weapon", 3) is false:
 		stop
-	kitEffect_MagicMissile(player)
+	kitEffect_MagicMissile_Charge(player)
 
 # マジックミサイル召喚
-function kitEffect_MagicMissile(player: player):
+local function kitEffect_MagicMissile_Charge(player: player):
 	set {_true} to true
 	set {_MagicMissile} to kitStats_GET({_player}, "MagicMissile")
 	set {_num.charge} to {_MagicMissile} * 20
@@ -35,7 +35,7 @@ function kitEffect_MagicMissile(player: player):
 			kitEffect_MagicMissile_Summon({_player})
 		wait a tick
 
-function kitEffect_MagicMissile_Summon(player: player):
+local function kitEffect_MagicMissile_Summon(player: player):
 	kitParticle_MagicMissile_Summon({_player})
 	set {_MagicMissile} to kitStats_GET({_player}, "MagicMissile")
 	add 1 to {_MagicMissile}
@@ -47,7 +47,7 @@ function kitEffect_MagicMissile_Summon(player: player):
 	set metadata value "magicmissile-launched" of {_mmentity} to false
 	kitEffect_MagicMissile_Timer({_player})
 
-function kitEffect_MagicMissile_Timer(player: player):
+local function kitEffect_MagicMissile_Timer(player: player):
 	if kitStats_GET({_player}, "MagicMissile-Timer") is set:
 		stop
 	kitStats_SET({_player}, "MagicMissile-Timer", true)
@@ -80,7 +80,7 @@ function kitEffect_MagicMissile_Timer(player: player):
 		metadata value "magicmissile" of loop-entity is set
 		delete loop-entity
 
-function kitWeapon_Wizard_3(player: player):
+function kitEffect_MagicMissile(player: player):
 	if kitStats_GET({_player}, "MagicMissile") is not set:
 		kitStats_SET({_player}, "MagicMissile", 0)
 	if kitStats_GET({_player}, "MagicMissile") is 0:
@@ -136,7 +136,7 @@ function kitWeapon_Wizard_3(player: player):
 		kitMsg({_player}, "§bマナ §9§l%{_mana}% §7ゲット!")
 
 # チャージ中演出 小さな青い光がキラキラ
-function kitParticle_MagicMissile_Prepare(player: player):
+local function kitParticle_MagicMissile_Prepare(player: player):
 	playSound("entity.experience_orb.pickup", 0.5, 2, {_player})
 	set {_baseloc} to location of {_player}
 	loop 5 times:
@@ -147,7 +147,7 @@ function kitParticle_MagicMissile_Prepare(player: player):
 		spawnParticle_DustTransition(rgb(0, 161, 233), rgb(160, 216, 239), 0.4, {_el})
 
 # 魔法弾召喚時 ぽわわわーん
-function kitParticle_MagicMissile_Summon(player: player):
+local function kitParticle_MagicMissile_Summon(player: player):
 	playSound("block.conduit.attack.target", 1, 1.5, {_player})
 	set {_baseloc} to location of {_player}
 	set {_y} to 0
@@ -158,7 +158,7 @@ function kitParticle_MagicMissile_Summon(player: player):
 		add 0.5 to {_y}
 
 # 発射時の演出 渦と共にちょっと爆発
-function kitParticle_MagicMissile_Launch(player: player):
+local function kitParticle_MagicMissile_Launch(player: player):
 	playSound("block.conduit.activate", 1, 2, {_player})
 	set {_baseloc} to location 1 meter above {_player}
 	loop 20 times:
@@ -170,20 +170,20 @@ function kitParticle_MagicMissile_Launch(player: player):
 		wait a tick
 
 # 魔法弾の周囲にVertical円
-function kitParticle_MagicMissile_Trail(loc: location):
+local function kitParticle_MagicMissile_Trail(loc: location):
 	add 1 to y-pos of {_loc}
 	set {_circles::*} to particleLocation_CircleV({_loc}, 10, 0.5)
 	loop {_circles::*}:
 		spawnParticle_Dust(rgb(37, 183, 192), 0.5, loop-value)
 
 # 柔らかい破裂
-function kitParticle_MagicMissile_Blast(loc: location):
+local function kitParticle_MagicMissile_Blast(loc: location):
 	playSound("block.respawn_anchor.charge", 1, 1.5, {_loc})
 	loop 30 times:
 		spawnParticle_Vector(sculk_charge_pop, randomVector({_loc}), 0.5, {_loc})
 
 # 明るい音 直線の青緑色の光
-function kitParticle_MagicMissile_Hit(player: player, target: player):
+local function kitParticle_MagicMissile_Hit(player: player, target: player):
 	set {_loct} to location 1 meter above {_target}
 	set {_baseloc} to location 1 meter above {_player}
 	playSound("block.amethyst_block.chime", 1.5, 2, {_baseloc})

@@ -1,18 +1,19 @@
 # Electro Magic
 
-function kitSkill_Wizard_4(player: player):
+function kitEffect_ElectroMagic(player: player):
 	set {_mana} to kitManaCalc({_player}, 10)
-	if {Kit-Mana::%{_player}%} >= {_mana}:
-		toolCT({_player}, "Wizard", 4)
-		shoot a snowball from {_player} at speed 1
-		set metadata value "magic" of shot snowball to "electro"
-		set item of shot snowball to yellow concrete
-		kitParticle_Wizard_Magic(shot snowball, 100, 100, 0)
-		subtract {_mana} from {Kit-Mana::%{_player}%}
-	else:
+	if {Kit-Mana::%{_player}%} < {_mana}:
 		send action bar "§4§lマナが足りません!" to {_player}
+		stop
 
-function kitEffect_ElectroMagic(player: player, loc: location):
+	nameCT({_player}, "Electro Magic")
+	shoot a snowball from {_player} at speed 1
+	set metadata value "magic" of shot snowball to "electro"
+	set item of shot snowball to yellow concrete
+	kitParticle_Wizard_Magic(shot snowball, 100, 100, 0)
+	subtract {_mana} from {Kit-Mana::%{_player}%}
+
+function kitEffect_ElectroMagic_Magic(player: player, loc: location):
 	loop all entities in radius 5 around {_loc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		kitDamage({_player}, loop-entity, 2, "電撃魔法", true)
@@ -24,7 +25,7 @@ function kitEffect_ElectroMagic(player: player, loc: location):
 			kitPalsy(loop-entity, 200)
 		kitParticle_ElectroMagic_Hit(loop-entity)
 
-function kitParticle_ElectroMagic_Hit(entity: entity):
+local function kitParticle_ElectroMagic_Hit(entity: entity):
 	loop 5 times:
 		add 0.4 to {_h}
 		set {_rad} to 0

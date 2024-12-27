@@ -41,7 +41,41 @@ on damage of player with priority LOW:
 			add 3 to {Kit-Mana::%{_attacker}%}
 			kitMsg({_attacker}, "§bマナ §9§l3 §7ゲット!")
 
+
+
+function kitWeapon_Wizard_1(player: player):
+	log "kitWeapon_Wizard_1(%{_player}%)"
+
+function kitWeapon_Wizard_2(player: player):
+	kitEffect_FairyWand({_player})
+
+function kitWeapon_Wizard_3(player: player):
+	kitEffect_MagicMissile({_player})
+
 # Skills
+function kitSkill_Wizard_1(player: player):
+	kitEffect_BloodMagic({_player})
+
+function kitSkill_Wizard_2(player: player):
+	kitEffect_DarkMagic({_player})
+
+function kitSkill_Wizard_3(player: player):
+	kitEffect_FreezeMagic({_player})
+
+function kitSkill_Wizard_4(player: player):
+	kitEffect_ElectroMagic({_player})
+
+function kitSkill_Wizard_5(player: player):
+	kitEffect_DrainMagic({_player})
+
+function kitSkill_Wizard_6(player: player):
+	kitEffect_MeteorMagic({_player})
+
+function kitSkill_Wizard_7(player: player):
+	kitEffect_BlizzardMagic({_player})
+
+function kitSkill_Wizard_8(player: player):
+	kitEffect_EarthMagic({_player})
 
 function kitParticle_Wizard_Magic(proj: projectile, R: number, G: number, B: number):
 	loop 30 times:
@@ -112,24 +146,24 @@ on projectile hit:
 		if metadata value "magic" of projectile is "blood":
 			playSound("entity.husk.converted_to_zombie", 1, 1, {_l})
 			kitParticle_Wizard_Circle({_l}, rgb(255, 0, 0))
-			kitEffect_BloodMagic(shooter, {_l})
+			kitEffect_BloodMagic_Magic(shooter, {_l})
 		else if metadata value "magic" of projectile is "dark":
 			playSound("entity.phantom.bite", 1, 1, {_l})
 			kitParticle_Wizard_Circle({_l}, rgb(0, 0, 0))
-			kitEffect_DarkMagic(shooter, {_l})
+			kitEffect_DarkMagic_Magic(shooter, {_l})
 		else if metadata value "magic" of projectile is "freeze":
 			playSound("entity.vex.death", 1, 1, {_l})
 			kitParticle_Wizard_Circle({_l}, rgb(0, 0, 255))
-			kitEffect_FreezeMagic(shooter, {_l})
+			kitEffect_FreezeMagic_Magic(shooter, {_l})
 		else if metadata value "magic" of projectile is "electro":
 			loop 3 times:
 				strike lightning effect at {_l}
 			kitParticle_Wizard_Circle({_l}, rgb(255, 255, 0))
-			kitEffect_ElectroMagic(shooter, {_l})
+			kitEffect_ElectroMagic_Magic(shooter, {_l})
 		else if metadata value "magic" of projectile is "drain":
 			playSound("block.bubble_column.upwards_inside", 1, 1, {_l})
 			kitParticle_Wizard_Circle({_l}, rgb(0, 255, 0))
-			kitEffect_DrainMagic(shooter, {_l})
+			kitEffect_DrainMagic_Magic(shooter, {_l})
 
 # Abilities
 on death of player:
