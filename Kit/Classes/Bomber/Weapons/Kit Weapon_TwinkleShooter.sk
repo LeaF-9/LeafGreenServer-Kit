@@ -1,14 +1,5 @@
 # Weapon-Name: Twinkle Shooter
 
-on shoot:
-	metadata value "gametype" of shooter is "Kit"
-	{Class::%shooter%} is "Bomber"
-	set {_tool} to shooter's tool
-	kitItemAllChecker({_tool}, "Bomber", "Weapon", 1) is true
-	set metadata value "firework" of projectile to true
-
-
-
 function kitEffect_TwinkleShooter(player: player):
 	if {_player} has arrow:
 		load yml "plugins/skript-yaml/Kit Classes/Bomber.yml" as "firework.%{_player}%"
@@ -40,3 +31,10 @@ function kitEffect_TwinkleShooter(player: player):
 
 		loop {_loop.subtract} times:
 			remove an arrow from {_player}'s inventory
+
+function kitEffect_TwinkleShooter_Shoot(player: player, event: object):
+	metadata value "gametype" of {_player} is "Kit"
+	{Class::%{_player}%} is "Bomber"
+	
+	set {_proj} to {_event}.getEntity()
+	set metadata value "firework" of {_proj} to true

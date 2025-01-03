@@ -1,11 +1,10 @@
 # Harmful Potion
 
-on shoot:
-	metadata value "gametype" of shooter is "Kit"
-	projectile is thrown potion
-	set {_tool} to shooter's tool
-	kitItemAllChecker({_tool}, "Mercenary", "Skill", 1) is true
-	set metadata value "kit-harmful" of projectile to "true"
+function kitEffect_HarmfulPotion_Shoot(player: player, event: object):
+	metadata value "gametype" of {_player} is "Kit"
+	set {_proj} to {_event}.getEntity()
+	"%{_proj}%" is "thrown potion"
+	set metadata value "kit-harmful" of {_proj} to "true"
 
 on damage of player with priority HIGH:
 	damage was caused by potion

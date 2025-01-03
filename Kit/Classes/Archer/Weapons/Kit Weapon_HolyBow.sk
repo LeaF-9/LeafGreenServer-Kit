@@ -1,42 +1,43 @@
 # Holy Bow
 
-on shoot:
-	metadata value "gametype" of shooter is "Kit"
-	{Class::%shooter%} is "Archer"
-	set {_tool} to shooter's tool
-	kitItemAllChecker({_tool}, "Archer", "Weapon", 2) is true
-	shooter is sneaking
-	set {_pow} to getBowDrawTime(shooter)
+function kitEffect_HolyBow_Shoot(player: player, event: object):
+	metadata value "gametype" of {_player} is "Kit"
+	{Class::%{_player}%} is "Archer"
+	{_player} is sneaking
+
+	set {_pow} to getBowDrawTime({_player})
 	{_pow} >= 24
-	set {_arrow} to amount of arrow in shooter's inventory
+	set {_arrow} to amount of arrow in {_player}'s inventory
 	{_arrow} >= 3
+
 	loop 2 times:
-		remove an arrow from shooter
-	set glowing of projectile to true
+		remove an arrow from {_player}
+	set {_projectile} to {_event}.getEntity()
+	set glowing of {_projectile} to true
 	set metadata value "arrowdamage" of shot arrow to 3
-	set metadata value "holy bow" of projectile to true
+	set metadata value "holy bow" of {_projectile} to true
 	# --- 音の演出 ---
-	playSound("block.amethyst_cluster.break", 1, 0.5, shooter)
+	playSound("block.amethyst_cluster.break", 1, 0.5, {_player})
 	# --------------
 	# --- パーティクルの演出 ---
-	kitParticle_HolyBow_Arrow(projectile)
+	kitParticle_HolyBow_Arrow({_projectile})
 	# -----------------------
 	set {_enable} to true
 	loop 200 times:
-		if metadata value "holy bow" of projectile is not true:
+		if metadata value "holy bow" of {_projectile} is not true:
 			set {_enable} to false
 		if {_enable} is not true:
 			stop
 
-		set {_loc} to location of projectile
+		set {_loc} to location of {_projectile}
 		loop all entities in radius 3 around {_loc}:
-			kitCheckTeam(loop-entity, shooter, false, true) is true
+			kitCheckTeam(loop-entity, {_player}, false, true) is true
 			{_hit.%id of loop-entity%} is not set
 			set {_hit.%id of loop-entity%} to true
-			kitDamage(shooter, loop-entity, 2, "神聖の矢撃", true)
+			kitDamage({_player}, loop-entity, 2, "神聖の矢撃", true)
 			kitPalsy(loop-entity, 60)
-			kitParticle_HolyBow_Hit(shooter, loop-entity)
-			playSound("block.amethyst_block.resonate", 1, 1.5, shooter, true)
+			kitParticle_HolyBow_Hit({_player}, loop-entity)
+			playSound("block.amethyst_block.resonate", 1, 1.5, {_player}, true)
 		wait a tick
 
 local function kitParticle_HolyBow_Arrow(proj: projectile):

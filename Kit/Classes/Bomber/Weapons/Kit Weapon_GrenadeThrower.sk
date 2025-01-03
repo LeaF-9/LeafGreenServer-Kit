@@ -1,26 +1,31 @@
 # Weapon-Name: Grenade Thrower
 
-on shoot:
-	metadata value "gametype" of shooter is "Kit"
-	{Class::%shooter%} is "Bomber"
-	set {_tool} to shooter's tool
-	kitItemAllChecker({_tool}, "Bomber", "Weapon", 2) is true
-	cancel event
-	set {_t} to getBowDrawTime(shooter) * 0.083
-	shoot a primed tnt from shooter at speed {_t}
-	set metadata value "attacker" of shot primed tnt to "%shooter%"
-	set metadata value "kit-bomber" of shot primed tnt to 2.8
+options:
+	explosion-power: 2.8
+
+
+
+function kitEffect_GrenadeThrower_Shoot(player: player, event: object):
+	metadata value "gametype" of {_player} is "Kit"
+	{Class::%{_player}%} is "Bomber"
+	set {_tool} to {_player}'s tool
+
+	{_event}.setCancelled(true)
+	set {_t} to getBowDrawTime({_player}) * 0.083
+	shoot a primed tnt from {_player} at speed {_t}
+	set metadata value "attacker" of shot primed tnt to "%{_player}%"
+	set metadata value "kit-bomber" of shot primed tnt to {@explosion-power}
 	set metadata value "TrueTeam" of shot primed tnt to true
 	set {_uuid} to a random uuid
 	set metadata value "grenade-thrower-uuid" of shot primed tnt to {_uuid}
 	setFuseTime(shot primed tnt, 20)
-	playSound("entity.creeper.death", 1, 2, shooter)
+	playSound("entity.creeper.death", 1, 2, {_player})
 	loop 30 times:
 		loop all primed tnts:
 			metadata value "grenade-thrower-uuid" of loop-primed tnt is {_uuid}
-			if distance between shooter and loop-primed tnt < 10:
+			if distance between {_player} and loop-primed tnt < 10:
 				set metadata value "kit-bomber" of loop-primed tnt to 1
 			else:
-				set metadata value "kit-bomber" of loop-primed tnt to 3.6
+				set metadata value "kit-bomber" of loop-primed tnt to {@explosion-power}
 			spawnParticle(flame, location of loop-primed tnt)
 		wait a tick

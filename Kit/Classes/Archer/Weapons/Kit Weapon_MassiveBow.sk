@@ -1,15 +1,5 @@
 # Massive Bow
 
-on shoot:
-	metadata value "gametype" of shooter is "Kit"
-	{Class::%shooter%} is "Archer"
-	shooter is sneaking
-	set {_tool} to shooter's tool
-	if kitItemAllChecker({_tool}, "Archer", "Weapon", 1) is true:
-		set metadata value "massivebow" of projectile to true
-		kitEffect_MassiveBow(shooter, projectile)
-		kitParticle_MassiveBow_Shoot(shooter)
-
 on projectile hit:
 	metadata value "massivebow" of projectile is set
 	set metadata value "massivebow" of projectile to false
@@ -24,7 +14,16 @@ on damage with priority LOW:
 	set {_dmg} to {_dis} / 10
 	setDamageModification_SET(victim, {_dmg})
 
-function kitEffect_MassiveBow(player: player, proj: projectile):
+
+
+function kitEffect_MassiveBow_Shoot(player: player, event: object):
+	metadata value "gametype" of {_player} is "Kit"
+	{Class::%{_player}%} is "Archer"
+	{_player} is sneaking
+
+	set {_proj} to {_event}.getEntity()
+	set metadata value "massivebow" of {_proj} to true
+	kitParticle_MassiveBow_Shoot({_player})
 	set {_baseloc} to location of {_player}
 	set {_v} to setVector(location of {_player}, location 10 meters in front of {_player})
 	set {_power} to 0
@@ -38,15 +37,17 @@ function kitEffect_MassiveBow(player: player, proj: projectile):
 		kitParticle_MassiveBow_Arrow({_baseloc}, location of {_proj})
 		wait a tick
 
+
+
 # 爆発音と爆発Particle
-function kitParticle_MassiveBow_Shoot(player: player):
+local function kitParticle_MassiveBow_Shoot(player: player):
 	playSound("entity.wither.shoot", 1, 2, {_player})
 	set {_baseloc} to location 1 meter above {_player}
 	loop 10 times:
 		spawnParticle_Vector(cloud, randomVector({_baseloc}), 0.75, {_baseloc})
 
 # 炎上の白いParticle
-function kitParticle_MassiveBow_Arrow(vecloc: location, loc: location):
+local function kitParticle_MassiveBow_Arrow(vecloc: location, loc: location):
 	set yaw of {_loc} to yaw of {_vecloc}
 	set pitch of {_loc} to pitch of {_vecloc}
 	set {_circles::*} to particleLocation_CircleV({_loc}, 6, 0.3)
@@ -54,7 +55,7 @@ function kitParticle_MassiveBow_Arrow(vecloc: location, loc: location):
 		spawnParticle_Dust(rgb(160, 216, 239), 0.7, loop-value)
 
 # 地形破壊Particleと爆発音
-function kitParticle_MassiveBow_Hit(loc: location):
+local function kitParticle_MassiveBow_Hit(loc: location):
 	playSound("entity.wither.break_block", 1, 2, {_loc})
 	loop all blocks in radius 3 around {_loc}:
 		loop-block is not passable

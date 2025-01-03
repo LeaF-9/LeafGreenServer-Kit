@@ -1,15 +1,5 @@
 # Cyclone Bow
 
-on shoot:
-	metadata value "gametype" of shooter is "Kit"
-	{Class::%shooter%} is "Knocker"
-	set {_tool} to shooter's tool
-	kitItemAllChecker({_tool}, "Knocker", "Weapon", 3) is true
-	if shooter is sneaking:
-		kitEffect_CycloneBow_Blast(shooter, projectile)
-	else:
-		kitEffect_CycloneBow_Cyclone(shooter, projectile)
-
 on projectile hit:
 	if metadata value "cyclone-bow-blast" of projectile is true:
 		set metadata value "cyclone-bow-blast" of projectile to false
@@ -19,8 +9,20 @@ on projectile hit:
 on damage with priority LOW:
 	damage was caused by projectile
 	metadata value "cyclone-bow-blast" of projectile is set
-	setDamageModification_SET(victim, 3)
+	setDamageModification_FIX(victim, 3)
 	kitParticle_CycloneBow_BlastHit(victim)
+
+
+
+function kitEffect_CycloneBow_Shoot(player: player, event: object):
+	metadata value "gametype" of {_player} is "Kit"
+	{Class::%{_player}%} is "Knocker"
+
+	set {_proj} to {_event}.getEntity()
+	if {_player} is sneaking:
+		kitEffect_CycloneBow_Blast({_player}, {_proj})
+	else:
+		kitEffect_CycloneBow_Cyclone({_player}, {_proj})
 
 local function kitEffect_CycloneBow_Blast(player: player, proj: projectile):
 	# 矢の数確認
@@ -55,13 +57,15 @@ local function kitEffect_CycloneBow_Cyclone(player: player, proj: projectile):
 		if metadata value "cyclone-bow" of {_proj} is false:
 			stop
 		set {_exist} to false
-		loop all projectiles:
-			loop-projectile is {_proj}
-			set {_exist} to true
-		if {_exist} is false:
-			stop
+		if loop-number is not 1:
+			loop all projectiles:
+				loop-projectile is {_proj}
+				set {_exist} to true
+			if {_exist} is false:
+				stop
 
-		loop all entities in radius 3 around {_proj}:
+		set {_ploc} to location of {_proj}
+		loop all entities in radius 3 around {_ploc}:
 			kitCheckTeam({_player}, loop-entity, false) is true
 			kitDamage({_player}, loop-entity, {_dmg}, "突風の矢")
 			set {_vector} to setVector(location of {_proj}, location of loop-entity)
@@ -84,12 +88,22 @@ local function kitParticle_CycloneBow_Blast(player: player, proj: projectile):
 		wait a tick
 
 local function kitParticle_CycloneBow_Cyclone(player: player, proj: projectile):
-	playSound("entity.wither.shoot", 1, 1.6, location of {_proj})
+	playSound("entity.wither.shoot", 0.5, 1.6, location of {_proj})
 	set {_yaw} to yaw of {_player} + 180
 	set {_pitch} to pitch of {_player} * -1
 	loop 100 times:
+		set {_metadata} to metadata value "cyclone-bow" of {_proj}
 		if metadata value "cyclone-bow" of {_proj} is false:
-			continue
+			stop
+
+		set {_exist} to false
+		if loop-number is not 1:
+			loop all projectiles:
+				loop-projectile is {_proj}
+				set {_exist} to true
+			if {_exist} is false:
+				stop
+
 		playSound("entity.wither.shoot", 0.75, 1.9, location of {_proj})
 		set {_baseloc} to location of {_proj}
 		set yaw of {_baseloc} to {_yaw}
