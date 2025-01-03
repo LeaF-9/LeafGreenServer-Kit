@@ -32,6 +32,11 @@ on rightclick:
 	set {_tool} to tool of player
 	set {_type} to kitItemTypeChecker({_tool})
 
+	set {_item} to raw name of {_tool}
+	stop if {_item} is "minecraft:shield"
+	stop if {_item} is "minecraft:splash_potion"
+	stop if {_item} is "minecraft:lingering_potion"
+
 	set {_eventString} to "%event%"
 	if {_eventString} is "PlayerInteractEntityEvent":
 		if {_type} is "Weapon":
@@ -42,10 +47,6 @@ on rightclick:
 	set {_action} to event.getAction().toString()
 
 	if {_action} is "RIGHT_CLICK_AIR":
-		set {_item} to raw name of {_tool}
-		if {_item} is "minecraft:shield":
-			stop
-
 		set {_always} to {_tool}.getItemMeta().getFood().canAlwaysEat()
 		if {_always} is true:
 			stop
