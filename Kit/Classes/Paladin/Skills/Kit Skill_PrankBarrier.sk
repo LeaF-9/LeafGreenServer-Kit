@@ -1,12 +1,12 @@
-# Plank Barrier
+# Prank Barrier
 
 on damage of slime:
-	metadata value "Plank Barrier" of victim is set
+	metadata value "Prank Barrier" of victim is set
 	cancel event
 	set {_attacker} to getAttacker(victim)
-	set {_player} to metadata value "Plank Barrier" of victim
+	set {_player} to metadata value "Prank Barrier" of victim
 	kitCheckTeam({_attacker}, {_player}, false) is true
-	kitParticle_PlankShield_Damage(location of victim)
+	kitParticle_PrankShield_Damage(location of victim)
 
 
 
@@ -16,13 +16,13 @@ options:
 
 
 
-function kitEffect_PlankBarrier(player: player):
-	nameCT({_player}, "Plank Barrier")
+function kitEffect_PrankBarrier(player: player):
+	nameCT({_player}, "Prank Barrier")
 	kitMsg({_player}, "<##fcc800>妖精のバリアを張りました!")
 	set {_baseloc} to location of {_player}
 	set pitch of {_baseloc} to 0
 	set {_loc.shield} to location 1 meter in front of {_baseloc}
-	sendTimeBossbar_GREEN({_player}, "Plank Barrier", 100)
+	sendTimeBossbar_GREEN({_player}, "Prank Barrier", 100)
 	playSound("entity.illusioner.prepare_mirror", 1, 2, {_loc.shield})
 	set {_now} to now
 	# 見た目
@@ -32,8 +32,8 @@ function kitEffect_PlankBarrier(player: player):
 	spawn an item display at {_loc.shield} with nbt {_nbt}
 	set {_itemdisplay} to spawned item display
 	set metadata value "gametype" of {_itemdisplay} to "Kit"
-	set metadata value "Plank Barrier" of {_itemdisplay} to {_player}
-	set metadata value "Plank Barrier - Time" of {_itemdisplay} to {_now}
+	set metadata value "Prank Barrier" of {_itemdisplay} to {_player}
+	set metadata value "Prank Barrier - Time" of {_itemdisplay} to {_now}
 	# 当たり判定 (左上ベース)
 	set {_loc.hit} to {_loc.shield}
 	add {@height} - 2.5 to y-pos of {_loc.hit}
@@ -44,30 +44,30 @@ function kitEffect_PlankBarrier(player: player):
 		set {_w} to 0
 		loop {@width} * 2 times:
 			set {_loc.slime} to location {_w} meters to the right of {_loc.hit.height}
-			kitParticle_PlankShield_Launch({_loc.slime})
+			kitParticle_PrankShield_Launch({_loc.slime})
 			spawn a slime at {_loc.slime} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1b,NoAI:1b,Silent:1b,DropItem:0b,Team:""noCollision"",active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
 			set {_slime} to spawned slime
 			set metadata value "gametype" of {_slime} to "Kit"
 			set metadata value "shield entity" of {_slime} to true
-			set metadata value "Plank Barrier" of {_slime} to {_player}
-			set metadata value "Plank Barrier - Time" of {_slime} to {_now}
-			set metadata value "Plank Barrier - Height" of {_slime} to {_h}
-			set metadata value "Plank Barrier - Width" of {_slime} to {_w}
+			set metadata value "Prank Barrier" of {_slime} to {_player}
+			set metadata value "Prank Barrier - Time" of {_slime} to {_now}
+			set metadata value "Prank Barrier - Height" of {_slime} to {_h}
+			set metadata value "Prank Barrier - Width" of {_slime} to {_w}
 			set display name of {_slime} to "%{_player}%"
 			add 0.5 to {_w}
 		add 0.5 to {_h}
 	loop 100 times:
 		set {_loc.move} to location loop-number * 0.2 meters in front of {_loc.shield}
-		kitEffect_PlankBarrier_Move({_player}, {_loc.move}, {_now})
+		kitEffect_PrankBarrier_Move({_player}, {_loc.move}, {_now})
 		wait a tick
 	playSound("entity.zombie.infect", 1, 2, {_loc.move})
 	loop all entities:
-		metadata value "Plank Barrier" of loop-entity is {_player}
-		metadata value "Plank Barrier - Time" of loop-entity is {_now}
-		kitParticle_PlankShield_End(location of loop-entity)
+		metadata value "Prank Barrier" of loop-entity is {_player}
+		metadata value "Prank Barrier - Time" of loop-entity is {_now}
+		kitParticle_PrankShield_End(location of loop-entity)
 		delete loop-entity
 
-local function kitEffect_PlankBarrier_Move(player: player, baseloc: location, now: date):
+local function kitEffect_PrankBarrier_Move(player: player, baseloc: location, now: date):
 	# 見た目
 	set {_tplocs::base} to {_baseloc}
 	# 当たり判定 (左上ベース)
@@ -84,25 +84,25 @@ local function kitEffect_PlankBarrier_Move(player: player, baseloc: location, no
 			add 0.5 to {_w}
 		add 0.5 to {_h}
 	loop all entities:
-		metadata value "Plank Barrier" of loop-entity is {_player}
-		metadata value "Plank Barrier - Time" of loop-entity is {_now}
-		if metadata value "Plank Barrier - Height" of loop-entity is set:  # 当たり判定
-			set {_height} to metadata value "Plank Barrier - Height" of loop-entity
-			set {_width} to metadata value "Plank Barrier - Width" of loop-entity
+		metadata value "Prank Barrier" of loop-entity is {_player}
+		metadata value "Prank Barrier - Time" of loop-entity is {_now}
+		if metadata value "Prank Barrier - Height" of loop-entity is set:  # 当たり判定
+			set {_height} to metadata value "Prank Barrier - Height" of loop-entity
+			set {_width} to metadata value "Prank Barrier - Width" of loop-entity
 			teleport loop-entity to {_tplocs::h%{_height}%-w%{_width}%}
 		else:  # 見た目
 			teleport loop-entity to {_tplocs::base}
 
 
 
-local function kitParticle_PlankShield_Launch(loc: location):
+local function kitParticle_PrankShield_Launch(loc: location):
 	spawnParticle(wax_on, {_loc})
 
-local function kitParticle_PlankShield_End(loc: location):
+local function kitParticle_PrankShield_End(loc: location):
 	chance of 30%:
 		spawnParticle_Vector(cloud, randomVector(), 0.5, {_loc})
 
-local function kitParticle_PlankShield_Damage(loc: location):
+local function kitParticle_PrankShield_Damage(loc: location):
 	playSound("block.amethyst_block.break", 1, 0.7, {_loc})
 	loop 5 times:
 		spawnParticle_Vector(instant_effect, randomVector(), 0.3, {_loc})
