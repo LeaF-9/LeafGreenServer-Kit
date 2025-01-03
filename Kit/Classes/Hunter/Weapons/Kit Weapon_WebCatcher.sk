@@ -1,0 +1,115 @@
+# weapon-name: Web Catcher
+
+options:
+	metadata-projectile: "Web Catcher"
+	metadata-display: "Web Catcher - Cobweb"
+	effect-tick: 10
+
+on projectile hit:
+	metadata value {@metadata-projectile} of projectile is true
+	kitEffect_WebCatcher_Web(shooter, projectile)
+
+
+
+function kitEffect_WebCatcher(player: player):
+	stop if {_player} does not have arrow
+
+	load yml "plugins/skript-yaml/Kit Classes/Hunter.yml" as "webarrow.%{_player}%"
+	set {_WebArrow} to yml value "kititems.Web Arrow" from "webarrow.%{_player}%"
+	unload yml "webarrow.%{_player}%"
+	set {_amount} to amount of arrow in {_player}'s inventory
+	set {_amoweak} to amount of {_WebArrow} in {_player}'s inventory
+	add {_amoweak} to {_amount}
+	set {_s} to 35
+	set {_a} to 0
+	remove all arrow from {_player}
+	loop {_amount} times:
+		add 1 to {_a}
+		set slot {_s} of {_player} to {_a} of {_WebArrow}
+		if {_a} is 64:
+			subtract 1 from {_s}
+			set {_a} to 0
+
+function kitEffect_WebCatcher_Shoot(player: player, event: object):
+	set {_proj} to {_event}.getEntity()
+	set metadata value {@metadata-projectile} of {_proj} to true
+
+local function kitEffect_WebCatcher_Web(player: player, proj: projectile):
+	set {_loc} to location of {_proj}
+	set {_locs::*} to kitEffect_WebCatcher_Location({_loc})
+
+	kitEffect_WebCatcher_Display({_player}, {_locs::*})
+	kitEffect_WebCatcher_Fake({_player}, {_locs::*})
+
+local function kitEffect_WebCatcher_Location(loc: location) :: locations:
+	set {_baseloc} to location of block at {_loc}
+	set {_y} to y-pos of {_baseloc}
+
+	loop all blocks in radius 1.5 around {_baseloc}:
+		continue if loop-block is not air
+		set {_looploc} to location of loop-block
+		continue if (y-pos of {_looploc}) is not {_y}
+
+		add {_looploc} to {_returnloc::*}
+	return {_returnloc::*}
+
+# 蜘蛛の巣のDisplayを召喚する関数
+local function kitEffect_WebCatcher_Display(player: player, locs: locations):
+	set {_uuid} to a random uuid
+	set {_block} to "minecraft:cobweb"
+	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,-0.5f,-0.5f]", "[1f,1f,1f]")
+	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},teleport_duration:1}"
+
+	loop {_locs::*}:
+		set {_looploc} to loop-value
+		spawn a block display at {_looploc} with nbt {_nbt}
+		set {_blockdisplay} to spawned block display
+		set metadata value "gametype" of {_blockdisplay} to "Kit"
+		set metadata value {@metadata-display} of {_blockdisplay} to {_uuid}
+		add {_blockdisplay} to {_displays::*}
+	
+	loop {@effect-tick} times:
+		kitEffect_WebCatcher_Destroy({_player}, {_displays::*})
+		wait a tick
+	
+	loop all block displays:
+		metadata value {@metadata-display} of loop-block display is {_uuid}
+		delete loop-block display
+
+import:
+	java.util.ArrayList
+	com.comphenix.protocol.ProtocolLibrary
+	com.comphenix.protocol.PacketType
+	com.google.common.collect.Lists
+
+# 蜘蛛の巣のDisplayを敵視点のみ消滅させる処理
+local function kitEffect_WebCatcher_Destroy(player: player, displays: entities):
+	loop all players:
+		kitCheckTeam({_player}, loop-player, false, true) is true
+		
+		loop {_displays::*}:
+			set {_loopdisplay} to loop-value-2
+			set {_id} to {_loopdisplay}.getEntityId()
+			set {_manager} to ProtocolLibrary.getProtocolManager()
+			set {_packet} to {_manager}.createPacket(PacketType.Play.Server.ENTITY_DESTROY)
+			set {_ids} to Lists.newArrayList({_id})
+			{_packet}.getIntLists().write(0, {_ids})
+			ProtocolLibrary.getProtocolManager().sendServerPacket(loop-player, {_packet})
+
+# 敵視点だけ蜘蛛の巣を設置する関数
+local function kitEffect_WebCatcher_Fake(player: player, locs: locations):
+	
+	loop {@effect-tick} times:
+		delete {_enemies::*}
+		loop all players:
+			kitCheckTeam({_player}, loop-player, false, true) is true
+			add loop-player to {_enemies::*}
+
+		loop {_locs::*}:
+			set {_looploc} to loop-value-2
+			make {_enemies::*} see block at {_looploc} as cobweb
+		wait a tick
+	
+	loop {_locs::*}:
+		set {_looploc} to loop-value
+		make all players see block at {_looploc} as air
