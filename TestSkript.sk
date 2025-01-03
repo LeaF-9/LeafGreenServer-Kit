@@ -1004,3 +1004,25 @@ command /test-get-damagecause:
 	trigger:
 		set {_cause} to DamageCause.values()
 		broadcast "%{_cause}%"
+
+# 空だった
+command /test-entity-config:
+	permission: sk.admin
+	trigger:
+		set {_playerloc} to location of head of player
+		set {_m} to 0
+		loop 10 times:
+			continue if {_target} is set
+
+			add 1 to {_m}
+			set {_baseloc} to location {_m} meters in front of {_playerloc}
+			loop all entities in radius 1.5 around {_baseloc}:
+				continue if loop-entity is player
+				set {_target} to loop-entity
+		
+		if {_target} is not set:
+			message "Entityいない" to player
+		
+		load yml "plugins/skript-yaml/test.yml" as "test"
+		set yml value "test-entity" from "test" to {_target}
+		save yml "test"
