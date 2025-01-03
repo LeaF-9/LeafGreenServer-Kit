@@ -1,9 +1,9 @@
 import:
     java.lang.Runnable
 
-on rightclick:
-	metadata value "gametype" of player is "Kit"
-	set {_item} to player's tool
+local function kitRunnableExecution(player: player, event: object, title: text = ""):
+	metadata value "gametype" of {_player} is "Kit"
+	set {_item} to {_player}'s tool
 	set {_itemkit} to kitItemKitChecker({_item})
 	stop if {_itemkit} is not set
 
@@ -13,9 +13,25 @@ on rightclick:
 	set {_itemnum} to kitItemNumberChecker({_item})
 	stop if {_itemnum} is not set
 
-	checkCT(player, name of {_item}) is true
-	checkItemCT(player, {_item}) is true
+	checkCT({_player}, name of {_item}) is true
+	checkItemCT({_player}, {_item}) is true
 
-	set {_func::run} to function reference "kit%{_itemtype}%_%{_itemkit}%_%{_itemnum}%" called with (player)
+	set {_eventname} to "%{_event}%"
+	if {_eventname} contains "PlayerInteract":
+		set {_func::run} to function reference "kit%{_itemtype}%_%{_itemkit}%_%{_itemnum}%" called with ({_player})
+	else:
+		set {_itemname} to name of {_item}
+		set {_itemname} to unformatted {_itemname}
+		replace " " with "" in {_itemname}
+		set {_func::run} to function reference "kitEffect_%{_itemname}%_%{_title}%" called with ({_player}, {_event})
+
 	set {_interact} to new proxy instance of Runnable using {_func::*}
 	{_interact}.run()
+
+
+# Events
+on rightclick:
+	kitRunnableExecution(player, event)
+
+on shoot:
+	kitRunnableExecution(shooter, event, "Shoot")
