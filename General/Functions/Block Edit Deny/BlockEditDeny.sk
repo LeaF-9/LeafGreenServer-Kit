@@ -32,15 +32,21 @@ on rightclick:
 	set {_tool} to tool of player
 	set {_type} to kitItemTypeChecker({_tool})
 
+	set {_always} to {_tool}.getItemMeta().getFood().canAlwaysEat()
+
 	set {_item} to raw name of {_tool}
-	stop if {_item} is "minecraft:shield"
-	stop if {_item} is "minecraft:splash_potion"
-	stop if {_item} is "minecraft:lingering_potion"
+	replace "minecraft:" with "" in {_item}
+	set {_allowitems::shield} to true
+	set {_allowitems::fishing_rod} to true
+	set {_allowitems::splash_potion} to true
+	set {_allowitems::lingering_potion} to true
 
 	set {_eventString} to "%event%"
 	if {_eventString} is "PlayerInteractEntityEvent":
-		if {_type} is "Weapon":
-			stop
+		stop if {_always} is true
+		stop if {_type} is "Weapon"
+		stop if {_allowitems::%{_item}%} is true
+
 		cancel event
 		stop
 
@@ -48,11 +54,10 @@ on rightclick:
 
 	if {_action} is "RIGHT_CLICK_AIR":
 		set {_always} to {_tool}.getItemMeta().getFood().canAlwaysEat()
-		if {_always} is true:
-			stop
+		stop if {_always} is true
+		stop if {_type} is "Weapon"
+		stop if {_allowitems::%{_item}%} is true
 		
-		if {_type} is "Weapon":
-			stop
 
 	if {_action} is "RIGHT_CLICK_BLOCK":
 		set {_block} to event.getClickedBlock()
@@ -63,7 +68,12 @@ on rightclick:
 		if {-BlockEditDeny.allow-click::%{_blockString}%} is true:
 			stop
 		
-		if {_type} is "Weapon":
+		set {_deny} to false
+		set {_deny} to true if {_always} is true
+		set {_deny} to true if {_type} is "Weapon"
+		set {_deny} to true if {_allowitems::%{_item}%} is true
+
+		if {_deny} is true:
 			event.setUseInteractedBlock(Result.DENY)
 			stop
 
