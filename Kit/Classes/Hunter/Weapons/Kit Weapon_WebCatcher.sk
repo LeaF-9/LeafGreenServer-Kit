@@ -36,6 +36,7 @@ function kitEffect_WebCatcher_Shoot(player: player, event: object):
 
 local function kitEffect_WebCatcher_Web(player: player, proj: projectile):
 	set {_loc} to location of {_proj}
+	kitSound_WebCatcher_Web({_loc})
 	set {_locs::*} to kitEffect_WebCatcher_Location({_loc})
 
 	kitEffect_WebCatcher_Display({_player}, {_locs::*})
@@ -113,3 +114,13 @@ local function kitEffect_WebCatcher_Fake(player: player, locs: locations):
 	loop {_locs::*}:
 		set {_looploc} to loop-value
 		make all players see block at {_looploc} as air
+
+
+
+local function kitSound_WebCatcher_Web(loc: location):
+	playSound("entity.slime.squish", 1, 0.9, {_loc})
+
+	loop {@effect-tick} times:
+		wait a tick
+	
+	playSound("block.slime_block.step", 0.9, 0.8, {_loc})
