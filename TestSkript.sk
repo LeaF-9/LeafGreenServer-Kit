@@ -1026,3 +1026,13 @@ command /test-entity-config:
 		load yml "plugins/skript-yaml/test.yml" as "test"
 		set yml value "test-entity" from "test" to {_target}
 		save yml "test"
+
+# getClassのテスト
+command /test-get-class:
+	permission: sk.admin
+	trigger:
+		set {_player} to player
+		set {_location} to location of {_player}
+		set {_class.Player} to {_player}.getClass()
+		set {_class.Location} to {_location}.getClass()
+		broadcast "%{_class.Player}% | %{_class.Location}%"
