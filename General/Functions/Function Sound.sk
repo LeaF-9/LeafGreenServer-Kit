@@ -2,12 +2,14 @@ function playSound(sound: text, volume: number, pitch: number, location: object,
 	if {_personal} is true:
 		play sound {_sound} with volume {_volume} with pitch {_pitch} to {_location}
 	else:
-		if {Server} is "Kit":
-			loop all players:
-				getDebuffs(loop-player, "Fear") is false
-				add loop-player to {_players::*}
-		else:
-			set {_players::*} to all players
+		set {_class.Target} to {_location}.getClass().toString()
+		if {_class.Target} contains "entity":
+			set {_location} to {_location}.getLocation()
+
+		loop all players:
+			getDebuffs(loop-player, "Fear") is false
+			add loop-player to {_players::*}
+
 		play sound {_sound} with volume {_volume} with pitch {_pitch} to {_players::*} at {_location}
 
 function scalePitch(scale: number) :: number:
