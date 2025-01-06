@@ -1,0 +1,168 @@
+# weapon-name: Spore Blaster
+
+options:
+	metadata-arrow: "Spore Blaster"
+	heal-amount: 1
+	effect-radius: 3
+	poison-tier: 2
+	poison-second: 3 seconds
+
+on damage:
+	damage was caused by projectile
+	metadata value {@metadata-arrow} of projectile is set
+	set {_attacker} to getAttacker(victim)
+	kitHeal({_attacker}, {@heal-amount})
+	kitParticle_SporeBlaster_Heal({_attacker}, victim)
+
+on projectile hit:
+	metadata value {@metadata-arrow} of projectile is true
+	set metadata value {@metadata-arrow} of projectile to false
+	set {_loc} to location of projectile
+	kitEffect_SporeBlaster_Blast(shooter, {_loc})
+
+
+
+
+function kitEffect_SporeBlaster(player: player):
+	stop if {_player} does not have arrow
+
+	load yml "plugins/skript-yaml/Kit Classes/Hunter.yml" as "sporearrow.%{_player}%"
+	set {_SporeArrow} to yml value "kititems.Spore Arrow" from "sporearrow.%{_player}%"
+	unload yml "sporearrow.%{_player}%"
+	set {_amount} to amount of arrow in {_player}'s inventory
+	set {_amoweak} to amount of {_SporeArrow} in {_player}'s inventory
+	add {_amoweak} to {_amount}
+	set {_s} to 35
+	set {_a} to 0
+	remove all arrow from {_player}
+	loop {_amount} times:
+		add 1 to {_a}
+		set slot {_s} of {_player} to {_a} of {_SporeArrow}
+		if {_a} is 64:
+			subtract 1 from {_s}
+			set {_a} to 0
+
+function kitEffect_SporeBlaster_Shoot(player: player, event: object):
+	stop if {_player} is not sneaking
+	set {_drawTime} to getBowDrawTime({_player})
+	stop if {_drawTime} < 24
+
+	kitParticle_SporeBlaster_Launch({_player})
+	set {_proj} to {_event}.getEntity()
+
+	set metadata value {@metadata-arrow} of {_proj} to true
+	kitParticle_SporeBlaster_Projectile({_proj})
+
+# 胞子の矢が着弾した際の効果
+local function kitEffect_SporeBlaster_Blast(player: player, loc: location):
+	kitParticle_SporeBlaster_Blast({_loc})
+
+	loop all entities in radius {@effect-radius} around {_loc}:
+		kitCheckTeam(loop-entity, {_player}, false, true) is true
+		applyEffect(loop-entity, poison, {@poison-tier}, {@poison-second}, true)
+		kitParticle_SporeBlaster_Apply(loop-entity)
+
+
+
+# 胞子の矢を発射した際のプレイヤー演出 (音含む)
+local function kitParticle_SporeBlaster_Launch(player: player):
+	playSound("entity.zombie.converted_to_drowned", 1, 1.8, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 10 times:
+		spawnParticle_Vector(glow_squid_ink, randomVector(), 0.1, {_baseloc})
+
+# 胞子の矢の演出
+local function kitParticle_SporeBlaster_Projectile(proj: projectile):
+	add rgb(18, 102, 67) to {_colors::*}
+	add rgb(72, 110, 91) to {_colors::*}
+	add rgb(68, 129, 78) to {_colors::*}
+
+	# shoot particle
+	set {_rad} to 0
+	set {_addrad} to 30
+
+	loop 200 times:
+		delete {_metadata}
+		set {_metadata} to metadata value {@metadata-arrow} of {_proj}
+		stop if {_metadata} is false
+		
+		set {_proloc} to location of {_proj}
+		wait a tick
+		set {_loc} to location of {_proj}
+		if {_proloc} is not set:
+			continue
+		if loop-number is 1:
+			continue
+
+		set {_basevector} to setVector({_proloc}, {_loc})
+		set {_proloc} to setDirToVec({_proloc}, {_basevector})
+		set {_rotateloc} to {_proloc}
+		add -90 to pitch of {_rotateloc}
+
+		set {_distance} to distance between {_loc} and {_proloc}
+		set {_FM} to 0.5
+		set {_loopnum} to round({_distance} / {_FM})
+		set {_frontMeter} to 0
+		loop {_loopnum} times:
+			add {_FM} to {_frontMeter}
+			set {_baseel} to location {_frontMeter} meters in front of {_proloc}
+
+			set {_rotatevector} to setVector({_rotateloc}, location 10 meters in front of {_rotateloc}, 0.5)
+			rotate {_rotatevector} around {_basevector} by {_rad}
+			add {_addrad} to {_rad}
+
+			set {_el} to {_baseel} ~ {_rotatevector}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 2, {_el})
+
+# 胞子の矢によって回復した際の演出
+local function kitParticle_SporeBlaster_Heal(player: player, target: entity):
+	set {_color} to rgb(37, 192, 127)
+	set {_from} to location 1 meters above {_target}
+	set {_to} to location 1 meters above {_player}
+	set {_duration} to 5 ticks
+	spawnParticle_Trail({_color}, {_to}, {_duration}, {_from})
+	playSound("block.cherry_leaves.break", 1, 1.1, {_player})
+
+# 胞子の矢が着弾した際の演出
+local function kitParticle_SporeBlaster_Blast(loc: location):
+	playSound("block.fungus.break", 1, 0.85, {_loc})
+
+	add rgb(18, 102, 67) to {_colors::*}
+	add rgb(72, 110, 91) to {_colors::*}
+	add rgb(68, 129, 78) to {_colors::*}
+
+	set {_pow} to {@effect-radius}
+	set {_y} to 1
+	set {_count} to 7
+	set {_subtract} to ({_y} * 2) / ({_count} - 1)
+	loop 7 times:
+		loop 30 times:
+			chance of 10%:
+				continue
+			
+			set {_vector} to randomVector(1)
+			set y of {_vector} to {_y}
+			set {_vector} to normalized {_vector}
+			set {_vector} to {_vector} * vector({_pow}, {_pow}, {_pow})
+
+			set {_el} to {_loc} ~ {_vector}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 2.5, {_el})
+		subtract {_subtract} from {_y}
+
+# 胞子にヒットした際の演出
+local function kitParticle_SporeBlaster_Apply(entity: entity):
+	playSound("block.bubble_column.upwards_inside", 1, 1.3, {_entity})
+
+	add rgb(11, 129, 80) to {_colors::*}
+	add rgb(71, 141, 106) to {_colors::*}
+	add rgb(61, 156, 77) to {_colors::*}
+	set {_baseloc} to location 1 meter above {_entity}
+
+	loop 20 times:
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 1.5, aroundEffect({_entity}))
+		
+		spawnParticle_Vector(glow_squid_ink, randomVector(), 0.3, {_baseloc})
