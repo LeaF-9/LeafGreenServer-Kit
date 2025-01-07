@@ -31,8 +31,12 @@ function kitEffect_WebCatcher(player: player):
 			set {_a} to 0
 
 function kitEffect_WebCatcher_Shoot(player: player, event: object):
+	stop if metadata value "Shooting - Grappling Arrow" of {_player} is true
 	set {_proj} to {_event}.getEntity()
 	set metadata value {@metadata-projectile} of {_proj} to true
+
+function kitEffect_WebCatcher_LeftClick(player: player, event: object):
+	kitEffect_GrapplingArrow({_player})
 
 local function kitEffect_WebCatcher_Web(player: player, proj: projectile):
 	set {_loc} to location of {_proj}

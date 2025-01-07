@@ -43,6 +43,7 @@ function kitEffect_SporeBlaster(player: player):
 			set {_a} to 0
 
 function kitEffect_SporeBlaster_Shoot(player: player, event: object):
+	stop if metadata value "Shooting - Grappling Arrow" of {_player} is true
 	stop if {_player} is not sneaking
 	set {_drawTime} to getBowDrawTime({_player})
 	stop if {_drawTime} < 24
@@ -52,6 +53,9 @@ function kitEffect_SporeBlaster_Shoot(player: player, event: object):
 
 	set metadata value {@metadata-arrow} of {_proj} to true
 	kitParticle_SporeBlaster_Projectile({_proj})
+
+function kitEffect_SporeBlaster_LeftClick(player: player, event: object):
+	kitEffect_GrapplingArrow({_player})
 
 # 胞子の矢が着弾した際の効果
 local function kitEffect_SporeBlaster_Blast(player: player, loc: location):

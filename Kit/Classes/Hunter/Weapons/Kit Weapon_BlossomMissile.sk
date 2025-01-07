@@ -7,6 +7,8 @@ options:
 	max-vector-length: 0.05
 
 function kitEffect_BlossomMissile_Shoot(player: player, event: object):
+	stop if metadata value "Shooting - Grappling Arrow" of {_player} is true
+
 	set {_drawTime} to getBowDrawTime({_player})
 	{_event}.setCancelled(true)
 	set {_arrow} to amount of arrow in {_player}'s inventory
@@ -82,6 +84,9 @@ local function kitEffect_BlossomMissile_Missile(player: player, draw: number, ho
 
 		if mod({_m}, 2) = 0 or 2:
 			wait a tick
+
+function kitEffect_BlossomMissile_LeftClick(player: player, event: object):
+	kitEffect_GrapplingArrow({_player})
 
 
 

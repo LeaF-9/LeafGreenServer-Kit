@@ -35,6 +35,99 @@ function kitSkill_Hunter_7(player: player):
 function kitSkill_Hunter_8(player: player):
 	# kitEffect_IvyZipline({_player})
 
+
+
+on projectile hit:
+	projectile is an arrow
+	metadata value "Grappling Arrow" of projectile is true
+	set metadata value "Grappling Arrow" of projectile to false
+	set {_loc} to location of projectile
+	kitEffect_GrapplingArrow_Grapple(shooter, {_loc})
+
+function kitEffect_GrapplingArrow(player: player):
+	stop if checkCT({_player}, "Grappling Arrow") is false
+	set {_arrow} to amount of arrow in {_player}'s inventory
+	set {_tipped} to amount of tipped arrow in {_player}'s inventory
+	set {_amount} to {_arrow} + {_tipped}
+	if {_amount} <= 0:
+		send action bar "§c§l矢を所持していません" to {_player}
+		stop
+	
+	setCT({_player}, "Grappling Arrow", 20)
+	remove an arrow from {_player} if {_arrow} > 0
+	remove a tipped arrow from {_player} if {_tipped} > 0
+	set metadata value "Shooting - Grappling Arrow" of {_player} to true
+	shoot an arrow from {_player} at speed 3
+	delete metadata value "Shooting - Grappling Arrow" of {_player}
+	set metadata value "Grappling Arrow" of shot arrow to true
+	kitParticle_GrapplingArrow_Arrow(shot arrow)
+
+local function kitEffect_GrapplingArrow_Grapple(player: player, loc: location):
+	set {_playerloc} to location of head of {_player}
+	set {_vector} to setVector({_playerloc}, {_loc}, 2)
+	set velocity of {_player} to {_vector}
+	kitParticle_GrapplingArrow_Grapple({_player}, {_loc})
+
+
+
+local function kitParticle_GrapplingArrow_Arrow(proj: projectile):
+	set {_loc} to location of {_proj}
+	playSound("item.crossbow.shoot", 1, 0.7, {_loc})
+
+	add rgb(185, 194, 197) to {_colors::*}
+	add rgb(182, 189, 189) to {_colors::*}
+	add rgb(196, 201, 201) to {_colors::*}
+
+	# shoot particle
+	loop 200 times:
+		delete {_metadata}
+		set {_metadata} to metadata value "Grappling Arrow" of {_proj}
+		stop if {_metadata} is false
+		
+		set {_proloc} to location of {_proj}
+		wait a tick
+		set {_loc} to location of {_proj}
+		if {_proloc} is not set:
+			continue
+		if loop-number is 1:
+			continue
+
+		set {_proloc} to setDirToVec({_proloc}, setVector({_proloc}, {_loc}))
+		set {_distance} to distance between {_loc} and {_proloc}
+		set {_FM} to 0.5
+		set {_loopnum} to round({_distance} / {_FM})
+		set {_frontMeter} to 0
+		loop {_loopnum} times:
+			add {_FM} to {_frontMeter}
+			set {_el} to location {_frontMeter} meters in front of {_proloc}
+
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 1.5, {_el})
+
+local function kitParticle_GrapplingArrow_Grapple(player: player, loc: location):
+	playSound("item.crossbow.hit", 1, 0.6, {_loc})
+
+	add rgb(231, 231, 231) to {_colors::*}
+	add rgb(210, 228, 228) to {_colors::*}
+	add rgb(203, 214, 214) to {_colors::*}
+
+	loop 20 times:
+		set {_playerloc} to location 1 meter above {_player}
+		set {_distance} to distance between {_playerloc} and {_loc}
+		set {_count} to round({_distance} * 2)
+		set {_addm} to 0.5
+		set {_m} to 0
+		loop ({_count}) times:
+			set {_vector} to setVector({_playerloc}, {_loc}, {_m})
+			set {_el} to {_playerloc} ~ {_vector}
+			set {_el} to {_playerloc} if {_m} is 0
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 0.7, {_el})
+			add {_addm} to {_m}
+		wait a tick
+
+
+
 # Abilities
 on death of player:
 	{Class::%{LastKiller::%victim%}%} is "Hunter"
@@ -44,3 +137,40 @@ on damage of player:
 	damage was caused by fall
 	{Class::%victim%} is "Hunter"
 	setDamageModification_MUL(victim, 0.5)
+
+# Timer
+function kitTimerHunter(player: player):
+	while {Class::%{_player}%} is "Hunter":
+#	Grappling Arrow CT
+		wait a tick
+		if {_bossbar} is not set:
+			continue if {CT.%{_player}%::Grappling Arrow} is not set
+
+			set {_bossbar} to true
+			set {_ct} to {CT.%{_player}%::Grappling Arrow}
+			create bossbar titled "&6&lGrappling Arrow &b&lCT&7: &a&l%{_ct}%" and id "%{_player}%-GrapplingArrow" for {_player} with progress 100 with colors yellow with style segmented 10
+
+		if {_bossbar} is set:
+			set {_ct} to {CT.%{_player}%::Grappling Arrow}
+			if {_ct} is not set:
+				delete {_bossbar}
+				remove bossbar "%{_player}%-GrapplingArrow"
+				continue
+			if {_ct} <= 0:
+				delete {_bossbar}
+				remove bossbar "%{_player}%-GrapplingArrow"
+				continue
+
+			set {_time} to {_ct}
+			set {_timetexts::*} to "%{_time}%" split at "."
+			if size of {_timetexts::*} is 1:
+				set {_timetext} to "%{_time}%.00"
+			else if length of {_timetexts::2} is 1:
+				set {_timetext} to "%{_time}%0"
+			else:
+				set {_timetext} to "%{_time}%"
+			set {_prog} to ({CT.%{_player}%::Grappling Arrow} / 20) * 100
+			set bossbar "%{_player}%-GrapplingArrow" title to "&6&lGrappling Arrow &b&lCT&7: &a&l%{_timetext}%"
+			set bossbar "%{_player}%-GrapplingArrow" value to {_prog}
+
+	remove bossbar "%{_player}%-GrapplingArrow"
