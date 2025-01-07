@@ -1,12 +1,5 @@
 # skill-name: Lunatic Madness
 
-on leftclick:
-	set {_tool} to tool of player
-	{_tool} is enchanted
-	kitItemAllChecker({_tool}, "Berserker", "Skill", 7) is true
-	nameCT(player, "Lunatic Madness")
-	kitEffect_LunaticMadness_Execute(player, "Splash")
-
 on damage of player:
 	damage was caused by projectile
 	projectile is a snowball
@@ -88,6 +81,12 @@ function kitEffect_LunaticMadness(player: player):
 	else:
 		log "%{_player}% のLunatic Madnessは適切な効果が指定されていませんでした"
 		stop
+
+function kitEffect_LunaticMadness_LeftClick(player: player, event: object):
+	set {_tool} to tool of {_player}
+	{_tool} is enchanted
+	nameCT({_player}, "Lunatic Madness")
+	kitEffect_LunaticMadness_Execute({_player}, "Splash")
 
 local function kitEffect_LunaticMadness_DebuffEffects(effects: potion effects) :: potion effects:
 	# create debuff lists

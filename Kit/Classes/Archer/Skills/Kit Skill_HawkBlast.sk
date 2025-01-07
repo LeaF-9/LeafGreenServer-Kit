@@ -1,7 +1,9 @@
 # Hawk Blast
 
 function kitEffect_HawkBlast(player: player):
-	nameCT({_player}, "Hawk Blast")
+	set {_HawkBlast} to kitStats_GET({_player}, "HawkBlast")
+	stop if {_HawkBlast} is true
+
 	kitStats_SET({_player}, "HawkBlast", true)
 	kitStats_SET({_player}, "HawkBlastLoc", (location of (head of {_player})))
 	playSound("entity.phantom.bite", 1, 2, {_player})
@@ -31,6 +33,7 @@ function kitEffect_HawkBlast(player: player):
 			wait a tick
 	# --------------------
 	# --- 炸裂時の挙動 ---
+	nameCT({_player}, "Hawk Blast")
 	set {_HawkBlastLoc} to kitStats_GET({_player}, "HawkBlastLoc")
 	if {_HawkBlastLoc} is set:
 		kitMsg({_player}, "<##f0f8ff>鷹が<##00bfff>炸裂<##f0f8ff>した!")
@@ -88,17 +91,23 @@ function kitEffect_HawkBlast(player: player):
 			playSound("entity.phantom.bite", 0.75, 1, {_player}, true)
 	# ------------------
 
-function kitParticle_HawkBlast_Trail(loc: location):
+function kitEffect_HawkBlast_LeftClick(player: player, event: object):
+	set {_HawkBlast} to kitStats_GET({_player}, "HawkBlast")
+	kitStats_DELETE({_player}, "HawkBlast") if {_HawkBlast} is true
+
+
+
+local function kitParticle_HawkBlast_Trail(loc: location):
 	loop 5 times:
 		spawnParticle(end_rod, {_loc})
 		wait a tick
 
-function kitParticle_HawkBlast_Dust(loc: location):
+local function kitParticle_HawkBlast_Dust(loc: location):
 	loop 3 times:
 		spawnParticle_Dust(rgb(200, 240, 250), 1, {_loc})
 		wait a tick
 
-function drawHawkBlast(loc: location):
+local function drawHawkBlast(loc: location):
 	set {_froloc} to location 0.6 meters in front of {_loc}
 	set {_yaw} to yaw of {_froloc} + 180
 	if {_yaw} >= 360:
@@ -162,11 +171,3 @@ function drawHawkBlast(loc: location):
 			spawnParticle_Dust(rgb(50 * loop-number-1, 255, 255), 1, {_el})
 			set {_el} to location loop-number-2 * 0.1 meters in front of {_rloc}
 			spawnParticle_Dust(rgb(50 * loop-number-1, 255, 255), 1, {_el})
-
-on leftclick:
-	metadata value "gametype" of player is "Kit"
-	set {_HawkBlast} to kitStats_GET(player, "HawkBlast")
-	{_HawkBlast} is true
-	set {_tool} to player's tool
-	kitItemAllChecker({_tool}, "Archer", "Skill", 7) is true
-	kitStats_DELETE(player, "HawkBlast")

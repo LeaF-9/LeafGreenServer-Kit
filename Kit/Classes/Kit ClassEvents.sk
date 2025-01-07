@@ -16,8 +16,7 @@ local function kitRunnableExecution(player: player, event: object, title: text =
 	checkCT({_player}, name of {_item}) is true
 	checkItemCT({_player}, {_item}) is true
 
-	set {_eventname} to "%{_event}%"
-	if {_eventname} contains "PlayerInteract":
+	if {_title} is "RightClick":
 		set {_func::run} to function reference "kit%{_itemtype}%_%{_itemkit}%_%{_itemnum}%" called with ({_player})
 	else:
 		set {_itemname} to name of {_item}
@@ -31,7 +30,10 @@ local function kitRunnableExecution(player: player, event: object, title: text =
 
 # Events
 on rightclick:
-	kitRunnableExecution(player, event)
+	kitRunnableExecution(player, event, "RightClick")
 
 on shoot:
 	kitRunnableExecution(shooter, event, "Shoot")
+
+on leftclick:
+	kitRunnableExecution(player, event, "LeftClick")
