@@ -1,0 +1,165 @@
+# weapon-name: Blossom Missile
+
+options:
+	max-damage: 2
+	max-damage-homing: 3
+	detect-radius: 5
+	max-vector-length: 0.05
+
+function kitEffect_BlossomMissile_Shoot(player: player, event: object):
+	set {_drawTime} to getBowDrawTime({_player})
+	{_event}.setCancelled(true)
+	set {_arrow} to amount of arrow in {_player}'s inventory
+	stop if {_arrow} < 1
+
+	if {_player} is sneaking:
+		stop if {_arrow} < 2
+		kitEffect_BlossomMissile_Missile({_player}, {_drawTime}, true)
+		stop
+	kitEffect_BlossomMissile_Missile({_player}, {_drawTime})
+
+local function kitEffect_BlossomMissile_Missile(player: player, draw: number, homing: boolean = false):
+	remove an arrow from {_player} if {_homing} is true
+
+	set {_damage.percent} to {_draw} / 24
+	set {_max.damage} to {@max-damage}
+	set {_max.damage} to {@max-damage-homing} if {_homing} is true
+	set {_damage} to {_max.damage} * {_damage.percent}
+	set {_power} to 100 * {_damage.percent}
+
+	set {_baseloc} to location of head of {_player}
+	set {_m} to 0
+	set {_gravity} to vector(0, -0.1, 0)
+	set {_ok} to true
+	kitParticle_BlossomMissile_Launch({_baseloc})
+
+	while {_ok} is true:
+		if {_m} > 100:
+			delete {_ok}
+			continue
+		if block at {_baseloc} is not passable:
+			delete {_ok}
+			continue
+		if {_hit} is set:
+			delete {_ok}
+			continue
+
+		if {_homing} is true:
+			loop all entities in radius {@detect-radius} around {_baseloc}:
+				{_target} is not set
+				kitCheckTeam({_player}, loop-entity, false, true) is true
+				set {_target} to loop-entity
+				kitParticle_BlossomMissile_Find({_baseloc}, {_target})
+
+		if {_target} is set:
+			set {_basetargetloc} to location 1 meter in front of {_baseloc}
+			set {_basevec} to setVector({_baseloc}, {_basetargetloc})  # baselocから前方に向けたvector
+			set {_plusvec} to setVector({_basetargetloc}, location 1 meter above {_target}, 0)
+			set vector length of {_plusvec} to {@max-vector-length} if vector length of {_plusvec} > {@max-vector-length}
+			set {_vec} to {_basevec} + {_plusvec}
+
+			set {_baseloc} to setDirToVec({_baseloc}, {_vec})
+			set {_baseloc} to location 0.1 meters in front of {_baseloc}
+			add 0.1 to {_m}
+			kitParticle_BlossomMissile_Homing({_baseloc})
+
+		else:
+			set {_vector} to setVector({_baseloc}, location {_power} meters in front of {_baseloc}, {_power})
+			set {_vector} to {_vector} + {_gravity}
+			set {_baseloc} to setDirToVec({_baseloc}, {_vector})
+			set {_el} to location 0.1 meters in front of {_baseloc}
+			set {_baseloc} to {_el}
+			add 0.1 to {_m}
+			kitParticle_BlossomMissile_Trail({_baseloc}, {_m}, {_homing})
+
+		set {_hits::*} to checkHitEntities({_baseloc})
+		loop {_hits::*}:
+			{_hit} is not set
+			kitCheckTeam(loop-value, {_player}, false, true) is true
+			set {_hit} to loop-value
+			kitDamage({_player}, loop-value, {_damage}, "草花光")
+			kitParticle_BlossomMissile_Hit({_player}, loop-value)
+
+		if mod({_m}, 2) = 0 or 2:
+			wait a tick
+
+
+
+# 発射した際の演出
+local function kitParticle_BlossomMissile_Launch(loc: location):
+	playSound("block.cherry_leaves.break", 1, 1.15, {_loc})
+	loop 10 times:
+		spawnParticle(cherry_leaves, moveRandomLocation({_loc}, 1.5))
+		chance of 50%:
+			spawnParticle_BlockData(falling_dust, lime wool, moveRandomLocation({_loc}, 2))
+		chance of 50%:
+			spawnParticle_BlockData(falling_dust, green wool, moveRandomLocation({_loc}, 2))
+
+# 矢の軌道状の演出
+local function kitParticle_BlossomMissile_Trail(loc: location, meter: number, homing: boolean):
+	spawnParticle(composter, {_loc})
+	stop if {_homing} is false
+	
+	add rgb(147, 214, 130) to {_colors::*}
+	add rgb(142, 224, 176) to {_colors::*}
+	add rgb(145, 207, 164) to {_colors::*}
+
+	set {_basevec} to setVector({_loc}, location 10 meters in front of {_loc})
+	set {_rotateloc} to {_loc}
+	add -90 to yaw of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 1 meters in front of {_rotateloc}, 0.5)
+
+	set {_rad} to ({_meter} / 2) * 360
+	rotate {_rotatevec} around {_basevec} by {_rad}
+	set {_el} to {_loc} ~ {_rotatevec}
+	set {_color} to a random element out of {_colors::*}
+	spawnParticle_Dust({_color}, 0.6, {_el})
+
+# 草花光がヒットした際の演出
+local function kitParticle_BlossomMissile_Hit(player: player, entity: entity):
+	playSound("entity.arrow.hit_player", 1, 1.25, {_player}, true)
+	playSound("entity.bogged.hurt", 1, 1.75, {_entity})
+	loop 15 times:
+		spawnParticle_Block(oak leaves, aroundEffect({_entity}))
+		chance of 30%:
+			spawnParticle_Block(cherry leaves, aroundEffect({_entity}))
+
+# 草花光が敵を感知した際の演出
+local function kitParticle_BlossomMissile_Find(loc: location, entity: entity):
+	playSound("entity.allay.item_thrown", 1, 1.3, {_loc})
+
+	add rgb(147, 214, 130) to {_colors::*}
+	add rgb(142, 224, 176) to {_colors::*}
+	add rgb(145, 207, 164) to {_colors::*}
+
+	loop 20 times:
+		set {_from} to moveRandomLocation({_loc}, 1)
+		set {_to} to location 1 meter above {_entity}
+		set {_to} to moveRandomLocation({_to}, 1)
+		set {_ticknum} to a random integer between 5 and 15
+		set {_tick} to "%{_ticknum}% ticks" parsed as time span
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Trail({_color}, {_to}, {_tick}, {_from})
+
+# 敵を検知中の矢の軌道状の演出
+local function kitParticle_BlossomMissile_Homing(loc: location):
+	spawnParticle(composter, {_loc})
+
+	add rgb(147, 214, 130) to {_colors::*}
+	add rgb(142, 224, 176) to {_colors::*}
+	add rgb(145, 207, 164) to {_colors::*}
+
+	set {_basevec} to setVector({_loc}, location 10 meters in front of {_loc})
+	set {_rotateloc} to {_loc}
+	add -90 to yaw of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 1 meters in front of {_rotateloc}, 0.5)
+
+	set {_rad} to 0
+	set {_count} to 10
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		rotate {_rotatevec} around {_basevec} by {_rad}
+		set {_el} to {_loc} ~ {_rotatevec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.7, {_el})
+		add {_addrad} to {_rad}
