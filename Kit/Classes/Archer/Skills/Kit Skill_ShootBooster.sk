@@ -1,7 +1,7 @@
 # Shoot Booster
 
 function kitEffect_ShootBooster(player: player):
-	set {_ST} to kitStats_GET({_player}, "ST")
+	set {_ST} to getKitStats({_player}, "ST")
 	if {_ST} is true:
 		playSound("entity.arrow.shoot", 1, 1.5, {_player})
 		shoot an arrow from {_player} at speed 2.0
@@ -14,7 +14,7 @@ function kitEffect_ShootBooster(player: player):
 		playSound("block.wooden_door.open", 1, 0.5, {_player})
 		kitMsg({_player}, "§4§lShoot Booster§cを起動します...")
 		kitMsg({_player}, "§63秒間の間右クリックをした分だけ矢が発射されます!")
-		kitStats_SET({_player}, "ST", true)
+		setKitStats({_player}, "ST", true)
 		set {_time} to 60
 		sendTimeBossbar_GREEN({_player}, "Shoot Booster", {_time})
 		set {_ln} to 60
@@ -26,4 +26,4 @@ function kitEffect_ShootBooster(player: player):
 			wait a tick
 		kitMsg({_player}, "§4§lShoot Booster§cの効果が終了しました")
 		nameCT({_player}, "Shoot Booster")
-		kitStats_DELETE({_player}, "ST")
+		deleteKitStats({_player}, "ST")

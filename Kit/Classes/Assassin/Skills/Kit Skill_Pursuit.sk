@@ -28,7 +28,7 @@ function kitEffect_Pursuit(player: player):
 	playSound("entity.player.attack.sweep", 1, 0.6, {_tgloc})
 	if {_tgplayer} is set:
 		set {_damage} to 2
-		set {_Pursuit} to kitStats_GET({_tgplayer}, "Pursuit")
+		set {_Pursuit} to getKitStats({_tgplayer}, "Pursuit")
 		if {_Pursuit} is set:
 			add 2 * {_Pursuit} to {_damage}
 		kitDamage({_player}, {_tgplayer}, {_damage}, "追斬撃", true)
@@ -42,13 +42,13 @@ function kitEffect_Pursuit(player: player):
 
 function kitEffect_Pursuit_Prepare(victim: player, asn: number):
 	set {_now} to now
-	kitStats_SET({_victim}, "Pursuit", {_asn})
-	kitStats_SET({_victim}, "PursuitTime", {_now})
+	setKitStats({_victim}, "Pursuit", {_asn})
+	setKitStats({_victim}, "PursuitTime", {_now})
 	wait 3 seconds
-	set {_PursuitTime} to kitStats_GET({_victim}, "PursuitTime")
+	set {_PursuitTime} to getKitStats({_victim}, "PursuitTime")
 	if {_PursuitTime} is {_now}:
-		kitStats_DELETE({_victim}, "Pursuit")
-		kitStats_DELETE({_victim}, "PursuitTime")
+		deleteKitStats({_victim}, "Pursuit")
+		deleteKitStats({_victim}, "PursuitTime")
 
 
 

@@ -10,7 +10,7 @@ options:
 
 
 on shoot:
-	set {_ForceSnipe} to kitStats_GET(shooter, "ForceSnipe")
+	set {_ForceSnipe} to getKitStats(shooter, "ForceSnipe")
 	{_ForceSnipe} is set
 	projectile is an arrow or a spectral arrow
 	set {_draw} to getBowDrawTime(shooter)
@@ -31,19 +31,19 @@ on damage:
 function kitEffect_ForceSnipe(player: player):
 	nameCT({_player}, "Force Snipe")
 	set {_now} to now
-	kitStats_SET({_player}, "ForceSnipe", {_now})
+	setKitStats({_player}, "ForceSnipe", {_now})
 	kitMsg({_player}, "§b§lForceSnipe§9を起動しました!")
 	kitMsg({_player}, "§35秒間の間矢の近くにいる敵にダメージを与えます!")
 	sendTimeBossbar_GREEN({_player}, "Force Snipe", {@effect-tick})
 	kitParticle_ForceSnipe_Launch({_player})
 	kitParticle_ForceSnipe_Apply({_player})
 	loop {@effect-tick} times:
-		set {_ForceSnipe} to kitStats_GET({_player}, "ForceSnipe")
+		set {_ForceSnipe} to getKitStats({_player}, "ForceSnipe")
 		if {_ForceSnipe} is not {_now}:
 			stop
 		wait a tick
 	kitMsg({_player}, "§b§lForceSnipe§3の効果が切れました")
-	kitStats_DELETE({_player}, "ForceSnipe")
+	deleteKitStats({_player}, "ForceSnipe")
 
 local function kitEffect_ForceSnipe_Hit(player: player, proj: projectile):
 	set {_draw} to metadata value "force snipe - arrow" of {_proj}
@@ -82,10 +82,10 @@ local function kitParticle_ForceSnipe_Launch(player: player):
 	
 
 local function kitParticle_ForceSnipe_Apply(player: player):
-	set {_now} to kitStats_GET({_player}, "ForceSnipe")
+	set {_now} to getKitStats({_player}, "ForceSnipe")
 
 	loop {@effect-tick} times:
-		set {_ForceSnipe} to kitStats_GET({_player}, "ForceSnipe")
+		set {_ForceSnipe} to getKitStats({_player}, "ForceSnipe")
 		if {_ForceSnipe} is not {_now}:
 			stop
 

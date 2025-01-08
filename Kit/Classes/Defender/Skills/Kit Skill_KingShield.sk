@@ -15,9 +15,9 @@ on damage of slime with priority HIGHEST:
 			playSound("entity.armor_stand.hit", 1, 1, victim)
 			set {_dmg} to getDamageModification_ALL(victim, damage)
 			setDamageModification_FIX(victim, 0)
-			set {_King-Shield} to kitStats_GET(victim, "King Shield")
+			set {_King-Shield} to getKitStats(victim, "King Shield")
 			subtract {_dmg} from {_King-Shield}
-			kitStats_SET(victim, "King Shield", {_King-Shield})
+			setKitStats(victim, "King Shield", {_King-Shield})
 		else:
 			cancel event
 	else:
@@ -27,9 +27,9 @@ on damage of slime with priority HIGHEST:
 
 function kitEffect_KingShield(player: player):
 	wait 6 ticks
-	set {_King-Shield} to kitStats_GET({_player}, "King Shield")
+	set {_King-Shield} to getKitStats({_player}, "King Shield")
 	if {_King-Shield} is not set:
-		kitStats_SET({_player}, "King Shield", 200)
+		setKitStats({_player}, "King Shield", 200)
 	else if {_King-Shield} <= 0:
 		loop all items in {_player}'s inventory:
 			name of loop-item is "§1King Shield"
@@ -112,7 +112,7 @@ function kitEffect_KingShield(player: player):
 		set {_item.check} to "minecraft:blue_stained_glass_pane"
 
 		delete {_King-Shield}
-		set {_King-Shield} to kitStats_GET({_player}, "King Shield")
+		set {_King-Shield} to getKitStats({_player}, "King Shield")
 		if {_King-Shield} <= 0:
 			#壊れる処理
 			loop all entities:

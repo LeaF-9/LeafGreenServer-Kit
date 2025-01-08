@@ -15,16 +15,16 @@ on damage of player with priority LOW:
 function kitEffect_PerfectReflection(player: player):
 	nameCT({_player}, "Perfect Reflection")
 	set {_now} to now
-	kitStats_SET({_player}, "PerfectReflection", {_now})
+	setKitStats({_player}, "PerfectReflection", {_now})
 	kitParticle_PerfectReflection_Launch({_player})
 	kitMsg({_player}, "§f全てのダメージを5秒間跳ね返します!")
 	sendTimeBossbar_GREEN({_player}, "Perfect Reflection", 100)
 	loop 100 times:
-		kitStats_GET({_player}, "PerfectReflection") is {_now}
+		getKitStats({_player}, "PerfectReflection") is {_now}
 		kitParticle_PerfectReflection_Armor({_player})
 		wait a tick
-	kitStats_GET({_player}, "PerfectReflection") is {_now}
-	kitStats_DELETE({_player}, "PerfectReflection")
+	getKitStats({_player}, "PerfectReflection") is {_now}
+	deleteKitStats({_player}, "PerfectReflection")
 	kitMsg({_player}, "§f§lPerfect Reflection§cの効果が切れました")
 
 # 発動時の演出

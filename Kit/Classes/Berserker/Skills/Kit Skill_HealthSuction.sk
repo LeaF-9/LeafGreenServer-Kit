@@ -5,7 +5,7 @@ options:
 
 on damage of player with priority LOW:
 	set {_attacker} to getAttacker(victim)
-	set {_HealthSuction} to kitStats_GET({_attacker}, "HealthSuction")
+	set {_HealthSuction} to getKitStats({_attacker}, "HealthSuction")
 	{_HealthSuction} is set
 	set {_now} to now
 	set {_metadata} to metadata value {@metadata-name} of {_attacker}
@@ -18,7 +18,7 @@ on damage of player with priority LOW:
 	kitEffect_HealthSuction_Heal({_attacker}, victim)
 
 on death of player:
-	set {_HealthSuction} to kitStats_GET(attacker, "HealthSuction")
+	set {_HealthSuction} to getKitStats(attacker, "HealthSuction")
 	{_HealthSuction} is set
 	kitEffect_HealthSuction_Health(attacker)
 
@@ -27,14 +27,14 @@ on death of player:
 function kitEffect_HealthSuction(player: player):
 	nameCT({_player}, "Health Suction")
 	set {_now} to now
-	kitStats_SET({_player}, "HealthSuction", {_now})
+	setKitStats({_player}, "HealthSuction", {_now})
 	kitMsg({_player}, "§4敵の血を奪うことで§d回復§4します...")
 	sendTimeBossbar_GREEN({_player}, "Health Suction", 200)
 	kitParticle_HealthSuction({_player})
 	wait 10 seconds
-	set {_HealthSuction} to kitStats_GET({_player}, "HealthSuction")
+	set {_HealthSuction} to getKitStats({_player}, "HealthSuction")
 	{_HealthSuction} is {_now}
-	kitStats_DELETE({_player}, "HealthSuction")
+	deleteKitStats({_player}, "HealthSuction")
 	delete metadata value {@metadata-name} of {_player}
 	kitMsg({_player}, "§cHealth Suction§dの効果が切れました")
 
@@ -52,9 +52,9 @@ local function kitEffect_HealthSuction_Health(player: player):
 
 local function kitParticle_HealthSuction(player: player):
 	playSound("entity.ghast.warn", 1, 1.2, {_player})
-	set {_now} to kitStats_GET({_player}, "HealthSuction")
+	set {_now} to getKitStats({_player}, "HealthSuction")
 	loop 200 times:
-		if kitStats_GET({_player}, "HealthSuction") is not {_now}:
+		if getKitStats({_player}, "HealthSuction") is not {_now}:
 			stop
 
 		set {_el} to aroundEffect({_player})

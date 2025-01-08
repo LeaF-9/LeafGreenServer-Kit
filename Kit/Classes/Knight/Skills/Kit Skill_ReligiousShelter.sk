@@ -7,7 +7,7 @@ options:
 
 
 on damage of player with priority HIGH:
-	if kitStats_GET(victim, "ReligiousShelter") is set:
+	if getKitStats(victim, "ReligiousShelter") is set:
 		set {_hp} to health of victim
 		set {_dm} to getDamageModification_ALL(victim, damage)
 		if {_dm} > {_hp}:
@@ -24,17 +24,17 @@ function kitEffect_ReligiousShelter(player: player):
 		wait a tick
 
 	set {_now} to now
-	kitStats_SET({_player}, "ReligiousShelter", {_now})
+	setKitStats({_player}, "ReligiousShelter", {_now})
 	kitMsg({_player}, "<##2262c2>3秒間,<##00bfff>体力以上のダメージを<##d9ffff>§l0<##00bfff>にします!")
 	sendTimeBossbar_GREEN({_player}, "Religious Shelter", 60)
 	kitParticle_ReligiousShelter_Launch({_player})
 	kitParticle_ReligiousShelter_Apply({_player})
 
 	loop {@effect-tick} times:
-		if kitStats_GET({_player}, "ReligiousShelter") is not {_now}:
+		if getKitStats({_player}, "ReligiousShelter") is not {_now}:
 			stop
 		wait a tick
-	kitStats_DELETE({_player}, "ReligiousShelter")
+	deleteKitStats({_player}, "ReligiousShelter")
 	kitMsg({_player}, "§bReligious Shelter§cの効果が切れました")
 
 
@@ -109,10 +109,10 @@ local function kitParticle_ReligiousShelter_Apply(player: player):
 	kitParticle_ReligiousShelter_Aura({_player})
 
 local function kitParticle_ReligiousShelter_Chain(player: player):
-	set {_now} to kitStats_GET({_player}, "ReligiousShelter")
+	set {_now} to getKitStats({_player}, "ReligiousShelter")
 
 	loop {@effect-tick} times:
-		if kitStats_GET({_player}, "ReligiousShelter") is not {_now}:
+		if getKitStats({_player}, "ReligiousShelter") is not {_now}:
 			stop
 
 		set {_baseloc} to location of {_player}
@@ -127,7 +127,7 @@ local function kitParticle_ReligiousShelter_Chain(player: player):
 		wait a tick	
 
 local function kitParticle_ReligiousShelter_Aura(player: player):
-	set {_now} to kitStats_GET({_player}, "ReligiousShelter")
+	set {_now} to getKitStats({_player}, "ReligiousShelter")
 
 	set {_rad} to 0
 	set {_add.rad} to 360 / {@effect-tick}
@@ -138,7 +138,7 @@ local function kitParticle_ReligiousShelter_Aura(player: player):
 
 	set {_ln.1} to 0
 	loop {@effect-tick} times:
-		if kitStats_GET({_player}, "ReligiousShelter") is not {_now}:
+		if getKitStats({_player}, "ReligiousShelter") is not {_now}:
 			stop
 		
 		set {_baseloc} to location 1 meter above {_player}

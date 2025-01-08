@@ -7,14 +7,14 @@ options:
 
 
 on damage of player with priority NORMAL:
-	kitStats_GET(victim, "RecipientGenie") is set
+	getKitStats(victim, "RecipientGenie") is set
 	checkDamagable(victim) is true
 	set {_attacker} to getAttacker(victim)
 	set {_dmg} to getDamageModification_ALL(victim, damage)
 	cancel event
 
-	set {_player} to kitStats_GET(victim, "RecipientGenie")
-	set {_popularity} to kitStats_GET({_player}, "RecipientGenie-Number")
+	set {_player} to getKitStats(victim, "RecipientGenie")
+	set {_popularity} to getKitStats({_player}, "RecipientGenie-Number")
 	set {_truedmg} to {_dmg} * (1 / (1 + {_popularity}))
 
 	kitDamageNull({_attacker}, {_player}, {_truedmg}, "護衛")
@@ -28,12 +28,12 @@ function kitEffect_RecipientGenie(player: player):
 	nameCT({_player}, "Recipient Genie")
 	kitMsg({_player}, "§1周りのダメージを全て受け持ちます!")
 	set {_now} to now
-	kitStats_SET({_player}, "RecipientGenie-Launcher", {_now})
+	setKitStats({_player}, "RecipientGenie-Launcher", {_now})
 	sendTimeBossbar_GREEN({_player}, "Recipient Genie", {@effect-tick})
 	kitParticle_RecipientGenie_Launch({_player})
 
 	loop {@effect-tick} times:
-		if kitStats_GET({_player}, "RecipientGenie-Launcher") is not {_now}:
+		if getKitStats({_player}, "RecipientGenie-Launcher") is not {_now}:
 			continue
 
 		delete {_eg::*}
@@ -42,31 +42,31 @@ function kitEffect_RecipientGenie(player: player):
 		loop all players in radius 7 around {_player}:
 			loop-player is not {_player}
 			kitCheckTeam(loop-player, {_player}, true) is true
-			kitStats_GET(loop-player, "RecipientGenie-Launcher") is not set
+			getKitStats(loop-player, "RecipientGenie-Launcher") is not set
 			add 1 to {_popularity}
 			set {_eg::%id of loop-player%} to true
 			kitParticle_RecipientGenie_Cover({_player}, loop-player)
 			if {_jb::%id of loop-player%} is not set:
 				set {_jb::%id of loop-player%} to true
-				kitStats_SET(loop-player, "RecipientGenie", {_player})
+				setKitStats(loop-player, "RecipientGenie", {_player})
 
 		loop all players:
 			metadata value "gametype" of loop-player is "Kit"
 			{_eg::%id of loop-player%} is not set
 			{_jb::%id of loop-player%} is true
 			delete {_jb::%id of loop-player%}
-			kitStats_DELETE(loop-player, "RecipientGenie")
-		kitStats_SET({_player}, "RecipientGenie-Number", {_popularity})
+			deleteKitStats(loop-player, "RecipientGenie")
+		setKitStats({_player}, "RecipientGenie-Number", {_popularity})
 		wait a tick
 
-	if kitStats_GET({_player}, "RecipientGenie-Launcher") is {_now}:
+	if getKitStats({_player}, "RecipientGenie-Launcher") is {_now}:
 		kitParticle_RecipientGenie_End({_player})
-	kitStats_DELETE({_player}, "RecipientGenie-Launcher")
-	kitStats_DELETE({_player}, "RecipientGenie-Number")
+	deleteKitStats({_player}, "RecipientGenie-Launcher")
+	deleteKitStats({_player}, "RecipientGenie-Number")
 	loop all players:
 		{_eg::%id of loop-player%} is true
 		{_jb::%id of loop-player%} is true
-		kitStats_DELETE(loop-player, "RecipientGenie")
+		deleteKitStats(loop-player, "RecipientGenie")
 
 
 
@@ -139,7 +139,7 @@ local function kitParticle_RecipientGenie_Launch(player: player):
 		wait a tick
 
 local function kitParticle_RecipientGenie_Aura(player: player):
-	set {_now} to kitStats_GET({_player}, "RecipientGenie-Launcher")
+	set {_now} to getKitStats({_player}, "RecipientGenie-Launcher")
 
 	add rgb(65, 62, 233) to {_colors.fairy::*}
 	add rgb(12, 99, 212) to {_colors.fairy::*}
@@ -154,7 +154,7 @@ local function kitParticle_RecipientGenie_Aura(player: player):
 	set {_count} to 4
 	set {_count.2} to 2
 	loop {@effect-tick} times:
-		if kitStats_GET({_player}, "RecipientGenie-Launcher") is not {_now}:
+		if getKitStats({_player}, "RecipientGenie-Launcher") is not {_now}:
 			stop
 
 		set {_baseloc} to location 1 meter above {_player}

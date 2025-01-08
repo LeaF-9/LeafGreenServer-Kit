@@ -1,7 +1,7 @@
 # Death Curse
 
 function kitEffect_DeathCurse(player: player):
-	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象が存在しません!" to {_player}
 		stop
@@ -28,10 +28,10 @@ function kitEffect_DeathCurse(player: player):
 	kitPalsy({_player}, 200, false)
 	apply glowing 1 to {_player} for 10 seconds
 	apply slowness 3 to {_player} for 10 seconds
-	kitStats_SET({_player}, "DeathCursing", true)
+	setKitStats({_player}, "DeathCursing", true)
 	set {_health} to 10
 	loop 11 times:
-		if kitStats_GET({_player}, "DeathCursing") is set:
+		if getKitStats({_player}, "DeathCursing") is set:
 			kitParticle_DeathCurse_Targeting({_player}, {_tg})
 			if {_health} is 0:
 				set {_ok} to true
@@ -98,8 +98,8 @@ function kitEffect_DeathCurse(player: player):
 
 on damage of player:
 	metadata value "gametype" of victim is "Kit"
-	if kitStats_GET(victim, "DeathCursing") is true:
-		kitStats_DELETE(victim, "DeathCursing")
+	if getKitStats(victim, "DeathCursing") is true:
+		deleteKitStats(victim, "DeathCursing")
 
 
 

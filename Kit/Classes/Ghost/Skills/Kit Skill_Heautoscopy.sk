@@ -6,7 +6,7 @@ function kitEffect_Heautoscopy(player: player):
 
 	nameCT({_player}, "Heautoscopy")
 	playSound("entity.evoker.prepare_summon", 1, 1.5, {_player})
-	kitStats_SET({_player}, "Heautoscopy", true)
+	setKitStats({_player}, "Heautoscopy", true)
 	set gamemode of {_player} to spectator
 	set {_baseloc} to location of {_player}
 	loop 10 times:
@@ -22,7 +22,7 @@ function kitEffect_Heautoscopy(player: player):
 			else:
 				set {_no} to true
 	playSound("entity.evoker.cast_spell", 1, 1, {_player})
-	kitStats_DELETE({_player}, "Heautoscopy")
+	deleteKitStats({_player}, "Heautoscopy")
 	set gamemode of {_player} to survival
 	set {_baseloc} to location of {_player}
 	add 1 to y-coordinate of {_baseloc}
@@ -32,5 +32,5 @@ function kitEffect_Heautoscopy(player: player):
 
 on teleport:
 	metadata value "gametype" of player is "Kit"
-	kitStats_GET(player, "Heautoscopy") is true
+	getKitStats(player, "Heautoscopy") is true
 	cancel event

@@ -10,7 +10,7 @@ on damage:
 
 
 function kitEffect_InfernoStaff_Bar(player: player):
-	set {_bar} to kitStats_GET({_player}, "InfernoStaff")
+	set {_bar} to getKitStats({_player}, "InfernoStaff")
 	if {_bar} is not set:
 		set {_bar} to 30
 	
@@ -23,20 +23,20 @@ function kitEffect_InfernoStaff_Bar(player: player):
 
 
 function kitEffect_InfernoStaff(player: player):
-	if kitStats_GET({_player}, "InfernoStaff") <= 0:
+	if getKitStats({_player}, "InfernoStaff") <= 0:
 		stop
 
-	if kitStats_GET({_player}, "InfernoStaff") is not set:
-		kitStats_SET({_player}, "InfernoStaff", 30)
+	if getKitStats({_player}, "InfernoStaff") is not set:
+		setKitStats({_player}, "InfernoStaff", 30)
 
 	set {_true} to true
 	while {_true} is true:
 		if checkEating({_player}) is false:
 			set {_delete} to true
 
-		if kitStats_GET({_player}, "InfernoStaff") <= 0:
+		if getKitStats({_player}, "InfernoStaff") <= 0:
 			set {_reload} to true
-		if kitStats_GET({_player}, "InfernoStaff") is not set:
+		if getKitStats({_player}, "InfernoStaff") is not set:
 			set {_reload} to true
 
 		if {_reload} is true:
@@ -46,9 +46,9 @@ function kitEffect_InfernoStaff(player: player):
 			delete {_true}
 			continue
 		
-		set {_InfernoStaff} to kitStats_GET({_player}, "InfernoStaff")
+		set {_InfernoStaff} to getKitStats({_player}, "InfernoStaff")
 		subtract 1 from {_InfernoStaff}
-		kitStats_SET({_player}, "InfernoStaff", {_InfernoStaff})
+		setKitStats({_player}, "InfernoStaff", {_InfernoStaff})
 		kitEffect_InfernoStaff_Fire({_player})
 		wait a tick
 
@@ -84,7 +84,7 @@ local function kitEffect_InfernoStaff_Reload(player: player):
 			name of loop-item contains "Inferno Staff"
 			set {_hold} to true
 		if {_hold} is not set:
-			kitStats_DELETE({_player}, "InfernoStaff")
+			deleteKitStats({_player}, "InfernoStaff")
 			stop
 		wait a tick
 
@@ -93,7 +93,7 @@ local function kitEffect_InfernoStaff_Reload(player: player):
 		name of loop-item contains "Inferno Staff"
 		set {_hold} to true
 	if {_hold} is true:
-		kitStats_SET({_player}, "InfernoStaff", 30)
+		setKitStats({_player}, "InfernoStaff", 30)
 		playSound("block.iron_door.close", 1, 1.5, {_player})
 
 local function kitEffect_InfernoStaff_Hit(player: player, entity: entity):

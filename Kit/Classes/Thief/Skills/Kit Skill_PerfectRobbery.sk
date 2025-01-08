@@ -1,7 +1,7 @@
 # Skill-Name: Perfect Robbery
 
 function kitEffect_PerfectRobbery(player: player):
-	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象が存在しません!" to {_player}
 		stop
@@ -12,12 +12,12 @@ function kitEffect_PerfectRobbery(player: player):
 		stop
 	nameCT({_player}, "Perfect Robbery")
 	if {Class::%{_tg}%} is "Werewolf":
-		if kitStats_GET({_tg}, "Instinct") is true:
+		if getKitStats({_tg}, "Instinct") is true:
 			set {_type} to "Werewolf_Instinct"
 		else:
 			set {_type} to {Class::%{_tg}%}
 	else if {Class::%{_tg}%} is "Vampire":
-		if kitStats_GET({_tg}, "BatMode") is true:
+		if getKitStats({_tg}, "BatMode") is true:
 			set {_type} to "Vampire_Bat"
 		else:
 			set {_type} to {Class::%{_tg}%}
@@ -38,8 +38,8 @@ function kitEffect_PerfectRobbery(player: player):
 	sendTimeBossbar_RED({_tg}, "§7§l窃盗", 140)
 	kitMsg({_player}, "§6%{_tg}% §bのスキルを全部しまいこんだ!")
 	message formatted "§dスキルを全部盗まれてしまった!" to {_tg}
-	kitStats_SET({_tg}, "Stolen.Perfect Robbery", true)
-	kitStats_SET({_player}, "Stealing.Perfect Robbery", true)
+	setKitStats({_tg}, "Stolen.Perfect Robbery", true)
+	setKitStats({_player}, "Stealing.Perfect Robbery", true)
 	loop {_own::*}:
 		remove loop-value from {_tg}
 		set {_nbt} to nbt compound of loop-value
@@ -51,14 +51,14 @@ function kitEffect_PerfectRobbery(player: player):
 	wait a tick
 	give {_giveitems::1} to {_player}
 	wait 7 seconds
-	if kitStats_GET({_tg}, "Stolen.Perfect Robbery") is true:
+	if getKitStats({_tg}, "Stolen.Perfect Robbery") is true:
 		loop 3 times:
 			set {_skill} to kitPlayerSkillItem({_tg}, {_type}, loop-number)
 			give {_skill} to {_tg}
-		kitStats_DELETE({_tg}, "Stolen.Perfect Robbery")
-	if kitStats_GET({_player}, "Stealing.Perfect Robbery") is true:
+		deleteKitStats({_tg}, "Stolen.Perfect Robbery")
+	if getKitStats({_player}, "Stealing.Perfect Robbery") is true:
 		loop {_giveitems::*}:
 			remove loop-value from {_player}
 		give {_tool} to {_player}
 		delete {StealItem-Perfect Robbery.%{_player}%::*}
-		kitStats_DELETE({_player}, "Stealing.Perfect Robbery")
+		deleteKitStats({_player}, "Stealing.Perfect Robbery")

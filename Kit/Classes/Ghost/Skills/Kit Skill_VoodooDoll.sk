@@ -1,7 +1,7 @@
 # Voodoo Doll
 
 function kitEffect_VoodooDoll(player: player):
-	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象が存在しません!" to {_player}
 		stop
@@ -19,8 +19,8 @@ function kitEffect_VoodooDoll(player: player):
 		stop
 
 	nameCT({_player}, "Voodoo Doll")
-	if kitStats_GET({_player}, "VoodooDoll") is set:
-		kitStats_DELETE({_player}, "VoodooDoll")
+	if getKitStats({_player}, "VoodooDoll") is set:
+		deleteKitStats({_player}, "VoodooDoll")
 		loop all entities:
 			type of loop-entity is an armor stand
 			metadata value "gametype" of loop-entity is "Kit"
@@ -40,7 +40,7 @@ function kitEffect_VoodooDoll(player: player):
 	set metadata value "Kit-VoodooDoll" of spawned armor stand to "%{_player}%"
 	set metadata value "Kit-VoodooTime" of spawned armor stand to "%{_now}%"
 	set helmet of spawned armor stand to skull of {_tg}
-	kitStats_SET({_player}, "VoodooDoll", {_now})
+	setKitStats({_player}, "VoodooDoll", {_now})
 	set {_vector} to setVector(location of {_tg}, location of {_player})
 	set {_effbaseloc} to location of head of {_tg}
 	set yaw of {_effbaseloc} to yaw of {_vector}
@@ -49,7 +49,7 @@ function kitEffect_VoodooDoll(player: player):
 	loop {_t} times:
 		set {_el} to location loop-number meters in front of {_effbaseloc}
 		spawnParticle(end_rod, {_el})
-	while kitStats_GET({_player}, "VoodooDoll") is {_now}:
+	while getKitStats({_player}, "VoodooDoll") is {_now}:
 		delete {_exist}
 		if {_tg} does not have wither:
 			apply wither 1 to {_tg} for 10 seconds
@@ -65,12 +65,12 @@ function kitEffect_VoodooDoll(player: player):
 			spawnParticle(soul, {_el})
 		if {Class::%{_tg}%} is not set:
 			delete {_exist}
-			kitStats_DELETE({_player}, "VoodooDoll")
+			deleteKitStats({_player}, "VoodooDoll")
 		if {_exist} is true:
 			packetGlowing({_tg}, {_armortarget})
 		else:
 			packetUnglowing({_tg}, {_armortarget})
-			kitStats_DELETE({_player}, "VoodooDoll")
+			deleteKitStats({_player}, "VoodooDoll")
 		wait a tick
 	remove wither from {_tg}
 	loop all entities:
@@ -85,7 +85,7 @@ on damage of armor stand:
 	metadata value "Kit-VoodooDoll" of victim is set
 	set {_player} to metadata value "Kit-VoodooDoll" of victim parsed as player
 	if kitCheckTeam(attacker, {_player}, false) is true:
-		kitStats_DELETE({_player}, "VoodooDoll")
+		deleteKitStats({_player}, "VoodooDoll")
 		set {_memsg} to kitGhostMessage("§5藁人形が破壊された!", true)
 		kitMsg({_player}, {_memsg})
 		delete victim

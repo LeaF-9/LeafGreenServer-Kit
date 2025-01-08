@@ -16,7 +16,7 @@ on damage with priority LOW:
 		setDamageModification_MUL(victim, 0.5)
 		kitEffectDescription(victim, "§4❤§a§lx{@debuff-rate}")
 
-	if kitStats_GET(victim, "BarbaricTorment") is set:
+	if getKitStats(victim, "BarbaricTorment") is set:
 		if {_enabled} is not set:  # 範囲外からの攻撃を無効化
 			cancel event
 		kitFear({_attacker}, {@fear-time})
@@ -27,13 +27,13 @@ function kitEffect_BarbaricTorment(player: player):
 	nameCT({_player}, "Barbaric Torment")
 	kitMsg({_player}, "§5§l残忍な本性§5を開放します...")
 	set {_now} to now
-	kitStats_SET({_player}, "BarbaricTorment", {_now})
+	setKitStats({_player}, "BarbaricTorment", {_now})
 	set metadata value "Barbaric Torment - Hit" of {_player} to {_player}
 	sendTimeBossbar_GREEN({_player}, "Barbaric Torment", {@effect-tick})
 	kitParticle_BarbaricTorment_Launch({_player})
 
 	loop {@effect-tick} times:
-		if kitStats_GET({_player}, "BarbaricTorment") is not {_now}:
+		if getKitStats({_player}, "BarbaricTorment") is not {_now}:
 			stop
 		
 		delete {_hit.now::*}
@@ -55,7 +55,7 @@ function kitEffect_BarbaricTorment(player: player):
 		kitParticle_BarbaricTorment_Aura({_player}, loop-number)
 		wait a tick
 
-	kitStats_DELETE({_player}, "BarbaricTorment")
+	deleteKitStats({_player}, "BarbaricTorment")
 	delete metadata value "Barbaric Torment - Hit" of {_player}
 	loop {_hit.past::*}:
 		set {_loop-entity} to loop-value

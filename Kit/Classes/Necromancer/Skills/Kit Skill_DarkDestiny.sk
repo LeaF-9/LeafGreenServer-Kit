@@ -13,14 +13,14 @@ function kitEffect_DarkDestiny(player: player):
 	loop 30 times:
 		spawnParticle_Vector(witch, randomVector(), 0.3, location of {_player})
 	execute console command "/skclass %{_player}% Kit-Lich"
-	kitStats_SET({_player}, "Lich", true)
+	setKitStats({_player}, "Lich", true)
 	wait 10 seconds
-	if kitStats_GET({_player}, "Lich") is true:
-		kitStats_DELETE({_player}, "Lich")
+	if getKitStats({_player}, "Lich") is true:
+		deleteKitStats({_player}, "Lich")
 		execute console command "/class Necromancer %{_player}% false"
 
 on damage of player:
 	{Class::%victim%} is "Necromancer"
-	kitStats_GET(victim, "Lich") is true
+	getKitStats(victim, "Lich") is true
 	if damage was caused by potion or wither:
 		cancel event

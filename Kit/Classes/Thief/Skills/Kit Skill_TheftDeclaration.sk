@@ -53,12 +53,12 @@ function kitEffect_TheftDeclaration(player: player):
 		sendTimeBossbar_RED(loop-player, "§7§l窃盗", 200)
 		sendTimeBossbar_RED(loop-player, "§0盲目", 100)
 		if {Class::%loop-player%} is "Werewolf":
-			if kitStats_GET(loop-player, "Instinct") is true:
+			if getKitStats(loop-player, "Instinct") is true:
 				set {_type.%loop-player%} to "Werewolf_Instinct"
 			else:
 				set {_type.%loop-player%} to {Class::%loop-player%}
 		else if {Class::%loop-player%} is "Vampire":
-			if kitStats_GET(loop-player, "BatMode") is true:
+			if getKitStats(loop-player, "BatMode") is true:
 				set {_type.%loop-player%} to "Vampire_Bat"
 			else:
 				set {_type.%loop-player%} to {Class::%loop-player%}
@@ -76,30 +76,30 @@ function kitEffect_TheftDeclaration(player: player):
 			set {_skill} to kitPlayerSkillItem(loop-player, {_type.%loop-player%}, loop-number)
 			remove {_skill} from loop-player
 		if size of {_stolenskills.%loop-player%::*} is not 0:
-			kitStats_SET(loop-player, "Stolen.Theft Declaration", true)
+			setKitStats(loop-player, "Stolen.Theft Declaration", true)
 			add loop-player to {_stolens::*}
 	if size of {_skills::*} is 0:
 		kitMsg({_player}, "§1スキルを盗むことはできませんでした...")
 		stop
 	sendTimeBossbar_GREEN({_player}, "Theft Declaration", 200)
-	kitStats_SET({_player}, "Stealing.Theft Declaration", true)
+	setKitStats({_player}, "Stealing.Theft Declaration", true)
 	set {StealItem-Theft Declaration.%{_player}%::*} to {_skills::*}
 	remove {_tool} from {_player}
 	give {_skills::1} to {_player}
 	wait 10 seconds
 	loop all players:
 		{_stolens::*} contains loop-player
-		if kitStats_GET(loop-player, "Stolen.Theft Declaration") is true:
+		if getKitStats(loop-player, "Stolen.Theft Declaration") is true:
 			loop 3 times:
 				set {_skill} to kitPlayerSkillItem(loop-player, {_type.%loop-player%}, loop-number)
 				give {_skill} to loop-player
-			kitStats_DELETE(loop-player, "Stolen.Theft Declaration")
-	if kitStats_GET({_player}, "Stealing.Theft Declaration") is true:
+			deleteKitStats(loop-player, "Stolen.Theft Declaration")
+	if getKitStats({_player}, "Stealing.Theft Declaration") is true:
 		loop {_skills::*}:
 			remove loop-value from {_player}
 		give {_tool} to {_player}
 		delete {StealItem-Theft Declaration.%{_player}%::*}
-		kitStats_DELETE({_player}, "Stealing.Theft Declaration")
+		deleteKitStats({_player}, "Stealing.Theft Declaration")
 
 function kitParticle_TheftDeclaration_Paper(entity: entity):
 	loop 60 times:

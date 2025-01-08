@@ -6,7 +6,7 @@ on damage of player:
 	metadata value "gametype" of {_attacker} is "Kit"
 	damage was caused by attack
 	{Class::%attacker%} is "Wizard"
-	kitStats_GET(victim, "Invincible") is not set
+	getKitStats(victim, "Invincible") is not set
 	set {_tool} to {_attacker}'s tool
 	if kitItemAllChecker({_tool}, "Wizard", "Weapon", 1) is true:
 		set {_ok} to true
@@ -31,7 +31,7 @@ on damage of player with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	{Class::%{_attacker}%} is "Wizard"
 	victim is not {_attacker}
-	kitStats_GET(victim, "Invincible") is not set
+	getKitStats(victim, "Invincible") is not set
 	if damage was caused by potion:
 		if metadata value "managreen" of projectile is "true":
 			setDamageModification_SET(victim, 1)
@@ -178,10 +178,10 @@ on death of player:
 
 function kitManaCalc(player: player, mana: number) :: number:
 	set {_mc} to {_mana}
-	set {_FairyWand} to kitStats_GET({_player}, "FairyWand")
+	set {_FairyWand} to getKitStats({_player}, "FairyWand")
 	if {_FairyWand} is set:
 		set {_mc} to {_mc} - {_FairyWand}
-		kitStats_DELETE({_player}, "FairyWand")
+		deleteKitStats({_player}, "FairyWand")
 		if {_mc} < 0:
 			set {_mc} to 0
 	return {_mc}

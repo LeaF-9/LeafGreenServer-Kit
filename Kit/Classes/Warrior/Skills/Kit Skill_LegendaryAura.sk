@@ -10,7 +10,7 @@ function kitEffect_LegendaryAura(player: player):
 		stop
 	
 	nameCT({_player}, "Legendary Aura")
-	kitStats_SET({_player}, "LegendaryAura", true)
+	setKitStats({_player}, "LegendaryAura", true)
 	kitMsg({_player}, "<##d9e367>剣のエネルギーを地に放出します!")
 	sendTimeBossbar_GREEN({_player}, "Legendary Aura", 100)
 
@@ -33,9 +33,9 @@ function kitEffect_LegendaryAura(player: player):
 	loop all entities:
 		metadata value "legendary-aura" of loop-entity is "%{_player}%"
 		delete loop-entity
-	if kitStats_GET({_player}, "LegendaryAura") is true:
+	if getKitStats({_player}, "LegendaryAura") is true:
 		set slot 0 of {_player} to {_weapon}
-	kitStats_DELETE({_player}, "LegendaryAura")
+	deleteKitStats({_player}, "LegendaryAura")
 
 local function kitEffect_LegendaryAura_Wave(player: player, loc: location):
 	playSound("entity.ender_dragon.hurt", 1, 0.75, {_loc})

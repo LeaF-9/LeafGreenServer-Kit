@@ -36,16 +36,16 @@ function kitUltKnocker(player: player):
 			# player時の処理
 			if checkEntityType(loop-entity, player) is true:
 				LastKiller(loop-entity, {_player})
-				kitStats_SET(loop-entity, "FallTiming", {_now})
-				kitStats_SET(loop-entity, "FallDamage", 5)
+				setKitStats(loop-entity, "FallTiming", {_now})
+				setKitStats(loop-entity, "FallDamage", 5)
 			# ヒット演出
 			kitParticle_EnormousHurricane_Hit(loop-entity, {_pushvec})
 		wait a tick
 	wait 3 seconds
 	loop all players:
-		if kitStats_GET(loop-player, "FallTiming") is {_now}:
-			kitStats_DELETE(loop-player, "FallTiming")
-			kitStats_DELETE(loop-player, "FallDamage")
+		if getKitStats(loop-player, "FallTiming") is {_now}:
+			deleteKitStats(loop-player, "FallTiming")
+			deleteKitStats(loop-player, "FallDamage")
 
 # 竜巻演出
 function kitParticle_EnormousHurricane_Hurricane(baseloc: location, ln: number):

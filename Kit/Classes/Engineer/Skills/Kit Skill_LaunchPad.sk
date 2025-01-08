@@ -1,14 +1,14 @@
 # Launch Pad
 
 function kitEffect_LaunchPad(player: player):
-	set {_loc} to kitStats_GET({_player}, "SkillLocation")
+	set {_loc} to getKitStats({_player}, "SkillLocation")
 	if {_loc} is not set:
 		nullEngineerPlacePosition({_player})
 		stop
 
 	nameCT({_player}, "Launch Pad")
 	set {_now} to now
-	kitStats_SET({_player}, "LaunchPad-Time", {_now})
+	setKitStats({_player}, "LaunchPad-Time", {_now})
 	kitFakeDeleteData({_player}, "Machine-Launch Pad")
 	if {team::%{_player}%} is "red":
 		set {_block} to "minecraft:red_stained_glass"
@@ -29,7 +29,7 @@ function kitEffect_LaunchPad(player: player):
 	kitFakeBlock({_player}, {_loc.glass}, {_block}, {_transformation}, "Machine-Launch Pad")
 	kitMsg({_player}, "<##D70035>Launch Pad§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
-	while kitStats_GET({_player}, "LaunchPad-Time") is {_now}:
+	while getKitStats({_player}, "LaunchPad-Time") is {_now}:
 		wait a tick
 		loop {_time::*}:
 			if {_time::%loop-index%} is set:
@@ -44,7 +44,7 @@ function kitEffect_LaunchPad(player: player):
 				if checkFuel({_player}, 1) is false:
 					continue
 			setSupporter(loop-player, {_player})
-			kitStats_SET(loop-player, "LaunchPad", true)
+			setKitStats(loop-player, "LaunchPad", true)
 			push loop-player upwards at speed 1
 			push loop-player forward at speed 2
 			set {_time::%loop-player%} to 20
@@ -54,11 +54,11 @@ function kitEffect_LaunchPad(player: player):
 				spawnParticle(campfire_cosy_smoke, {_el})
 		set {_exist} to kitFakeCheck({_player}, "Machine-Launch Pad")
 		if {_exist} is false:
-			kitStats_DELETE({_player}, "LaunchPad-Time")
+			deleteKitStats({_player}, "LaunchPad-Time")
 			continue
 
 on damage of player:
-	kitStats_GET(victim, "LaunchPad") is true
+	getKitStats(victim, "LaunchPad") is true
 	damage was caused by fall
 	cancel event
-	kitStats_DELETE(victim, "LaunchPad")
+	deleteKitStats(victim, "LaunchPad")

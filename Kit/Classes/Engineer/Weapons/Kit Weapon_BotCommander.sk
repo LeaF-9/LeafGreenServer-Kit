@@ -5,27 +5,27 @@ function kitEffect_BotCommander_LeftClick(player: player, event: object):
 
 function kitEffect_BotCommander(player: player):
 	if {_player} is sneaking:
-		if kitStats_GET({_player}, "BotNumber") is not set:
-			kitStats_SET({_player}, "BotNumber", 0)
-			kitStats_SET({_player}, "BotCharge", 0)
-			kitStats_SET({_player}, "BotPattern", "Defence")
+		if getKitStats({_player}, "BotNumber") is not set:
+			setKitStats({_player}, "BotNumber", 0)
+			setKitStats({_player}, "BotCharge", 0)
+			setKitStats({_player}, "BotPattern", "Defence")
 			engineerBotAI({_player})
-		if kitStats_GET({_player}, "BotNumber") < 5:
-			if kitStats_GET({_player}, "BotCharge") < 20:
+		if getKitStats({_player}, "BotNumber") < 5:
+			if getKitStats({_player}, "BotCharge") < 20:
 				set {_now} to now
-				kitStats_SET({_player}, "BotChargeNow", {_now})
+				setKitStats({_player}, "BotChargeNow", {_now})
 				playSound("entity.blaze.burn", 1, 2, {_player})
 				loop 5 times:
-					if kitStats_GET({_player}, "BotCharge") < 20:
-						set {_BotCharge} to kitStats_GET({_player}, "BotCharge")
+					if getKitStats({_player}, "BotCharge") < 20:
+						set {_BotCharge} to getKitStats({_player}, "BotCharge")
 						add 1 to {_BotCharge}
-						kitStats_SET({_player}, "BotCharge", {_BotCharge})
-					loop kitStats_GET({_player}, "BotCharge") times:
+						setKitStats({_player}, "BotCharge", {_BotCharge})
+					loop getKitStats({_player}, "BotCharge") times:
 						if loop-number-2 is 1:
 							set {_ok.line} to "|"
 						else:
 							set {_ok.line} to "%{_ok.line}%|"
-					set {_BotCharge} to kitStats_GET({_player}, "BotCharge")
+					set {_BotCharge} to getKitStats({_player}, "BotCharge")
 					set {_ngtime} to 20 - {_BotCharge}
 					set {_ng.line} to ""
 					if {_ngtime} is not 0:
@@ -40,20 +40,20 @@ function kitEffect_BotCommander(player: player):
 						spawnParticle(smoke, {_el})
 					wait a tick
 				wait a tick
-				if kitStats_GET({_player}, "BotChargeNow") is {_now}:
-					if kitStats_GET({_player}, "BotCharge") >= 20:
+				if getKitStats({_player}, "BotChargeNow") is {_now}:
+					if getKitStats({_player}, "BotCharge") >= 20:
 						engineerBotGenerator({_player})
-						kitStats_DELETE({_player}, "BotChargeNow")
-						kitStats_SET({_player}, "BotCharge", 0)
+						deleteKitStats({_player}, "BotChargeNow")
+						setKitStats({_player}, "BotCharge", 0)
 					else:
-						kitStats_DELETE({_player}, "BotChargeNow")
-						kitStats_SET({_player}, "BotCharge", 0)
+						deleteKitStats({_player}, "BotChargeNow")
+						setKitStats({_player}, "BotCharge", 0)
 						playSound("block.fire.extinguish", 1, 1, {_player})
 	else:
 		playSound("ui.button.click", 1, 1, {_player}, true)
 		load yml "plugins/skript-yaml/Kit Classes/Engineer.yml" as "bot.%{_player}%"
-		if kitStats_GET({_player}, "BotPattern") is "Defence":
-			kitStats_SET({_player}, "BotPattern", "Attack")
+		if getKitStats({_player}, "BotPattern") is "Defence":
+			setKitStats({_player}, "BotPattern", "Attack")
 			kitMsg({_player}, "§6行動パターンを変更しました§a: §4§l襲撃モード")
 			set {_BotHead} to yml value "kititems.Bot Red" from "bot.%{_player}%"
 			loop all skeletons:
@@ -61,7 +61,7 @@ function kitEffect_BotCommander(player: player):
 				set metadata value "Bot Pattern" of loop-skeleton to "Attack"
 				set spawned skeleton's helmet to {_BotHead}
 		else:
-			kitStats_SET({_player}, "BotPattern", "Defence")
+			setKitStats({_player}, "BotPattern", "Defence")
 			kitMsg({_player}, "§6行動パターンを変更しました§a: §1§l防衛モード")
 			set {_BotHead} to yml value "kititems.Bot Blue" from "bot.%{_player}%"
 			loop all skeletons:
@@ -75,7 +75,7 @@ function kitSub_Engineer_3(player: player):
 	if {_player} is sneaking:
 		if {_tg} is set:
 			if distance between {_tg} and {_player} <= 30:
-				kitStats_SET({_player}, "BotAttack", (location of {_tg}))
+				setKitStats({_player}, "BotAttack", (location of {_tg}))
 				playSound("entity.bee.sting", 1, 2, {_player})
 				kitMsg({_player}, "§4襲撃場所§6を指定しました")
 				set {_dis} to round(distance between {_tg} and {_player})
@@ -94,11 +94,11 @@ on damage of skeleton:
 		else:
 			set {_num} to metadata value "Bot Number" of victim
 			set {_uuid} to metadata value "Bot UUID" of victim
-			set {_BotNumber} to kitStats_GET({_player}, "BotNumber")
+			set {_BotNumber} to getKitStats({_player}, "BotNumber")
 			subtract 1 from {_BotNumber}
-			kitStats_SET({_player}, "BotNumber", {_BotNumber})
-			kitStats_DELETE({_player}, "BotList_%{_num}%")
-			kitStats_DELETE({_player}, "Bot_UUID_%{_uuid}%")
+			setKitStats({_player}, "BotNumber", {_BotNumber})
+			deleteKitStats({_player}, "BotList_%{_num}%")
+			deleteKitStats({_player}, "Bot_UUID_%{_uuid}%")
 			delete victim
 			playSound("entity.iron_golem.damage", 1, 2, victim)
 			set {_baseloc} to location of victim
@@ -124,7 +124,7 @@ function engineerBotAI(player: player):
 		delete {_target}
 
 		# Defence Mode
-		if kitStats_GET({_player}, "BotPattern") is "Defence":
+		if getKitStats({_player}, "BotPattern") is "Defence":
 			loop 5 times:
 				delete {_aloc.%loop-number%}
 			
@@ -178,7 +178,7 @@ function engineerBotAI(player: player):
 		# Attack Mode
 		else:
 			# check attack location
-			set {_BotAttack} to kitStats_GET({_player}, "BotAttack")
+			set {_BotAttack} to getKitStats({_player}, "BotAttack")
 			if {_BotAttack} is set:
 				if distance between {_player} and {_BotAttack} <= 30:
 
@@ -329,21 +329,21 @@ function engineerBotBeam(player: player, loc: location, attack: boolean):
 				set {_ng} to true
 
 function engineerBotGenerator(player: player):
-	set {_BotNumber} to kitStats_GET({_player}, "BotNumber")
+	set {_BotNumber} to getKitStats({_player}, "BotNumber")
 	if {_BotNumber} < 5:
 		if checkFuel({_player}, 3, "Weapon") is true:
 			add 1 to {_BotNumber}
-			kitStats_SET({_player}, "BotNumber", {_BotNumber})
+			setKitStats({_player}, "BotNumber", {_BotNumber})
 			loop 8 times:
 				set {_num} to a random integer between 0 and 9
 				set {_n.%loop-number%} to {_num}
 			set {_uuid} to "%{_n.1}%%{_n.2}%%{_n.3}%%{_n.4}%%{_n.5}%%{_n.6}%%{_n.7}%%{_n.8}%"
 			loop 5 times:
 				{_ok} is not set
-				if kitStats_GET({_player}, "BotList_%loop-number%") is not set:
+				if getKitStats({_player}, "BotList_%loop-number%") is not set:
 					set {_ok} to true
-					kitStats_SET({_player}, "BotList_%loop-number%", {_uuid})
-					kitStats_SET({_player}, "Bot_UUID_%{_uuid}%", loop-number)
+					setKitStats({_player}, "BotList_%loop-number%", {_uuid})
+					setKitStats({_player}, "Bot_UUID_%{_uuid}%", loop-number)
 					set {_number} to loop-number
 			spawn a skeleton at {_player} with nbt compound from "{NoGravity:1b,ArmorItems:[{},{},{},{}],HandItems:[{},{}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F],CanPickUpLoot:0b,NoAI:1,Silent:1,Team:""noCollision"",active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
 			set spawned skeleton's display name to "%{_player}%"

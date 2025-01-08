@@ -3,7 +3,7 @@
 function kitEffect_DiveImpact(player: player):
 	nameCT({_player}, "Dive Impact")
 	kitMsg({_player}, "§c地面に衝撃を与えて敵を吹き飛ばします!")
-	kitStats_SET({_player}, "DiveImpact", true)
+	setKitStats({_player}, "DiveImpact", true)
 	set velocity of {_player} to vector(0, 1.65, 0)
 	playSound("entity.wither.shoot", 1, 0.8, {_player})
 	loop 5 times:
@@ -37,6 +37,6 @@ local function kitParticle_DiveImpact(loc: location):
 on damage of player:
 	metadata value "gametype" of victim is "Kit"
 	damage was caused by fall
-	kitStats_GET(victim, "DiveImpact") is true
+	getKitStats(victim, "DiveImpact") is true
 	cancel event
-	kitStats_DELETE(victim, "DiveImpact")
+	deleteKitStats(victim, "DiveImpact")

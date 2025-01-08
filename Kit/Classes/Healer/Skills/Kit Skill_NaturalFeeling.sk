@@ -1,20 +1,20 @@
 # Natural Feeling
 
 function kitEffect_NaturalFeeling(player: player):
-	if kitStats_GET({_player}, "NaturalFeeling") is not set:
-		kitStats_SET({_player}, "NaturalFeeling", 10)
+	if getKitStats({_player}, "NaturalFeeling") is not set:
+		setKitStats({_player}, "NaturalFeeling", 10)
 	loop 5 times:
-		kitStats_GET({_player}, "NaturalFeeling") > 0
+		getKitStats({_player}, "NaturalFeeling") > 0
 		playSound("block.grass.step", 0.8, 2, {_player})
 		loop all players in radius 10 around {_player}:
-			kitStats_GET({_player}, "NaturalFeeling") > 0
+			getKitStats({_player}, "NaturalFeeling") > 0
 			loop-player is not {_player}
 			kitCheckAlive(loop-player) is true
 			kitCheckTeam(loop-player, {_player}, true) is true
 			health of loop-player is not max health of loop-player
-			set {_NaturalFeeling} to kitStats_GET({_player}, "NaturalFeeling")
+			set {_NaturalFeeling} to getKitStats({_player}, "NaturalFeeling")
 			subtract 0.05 from {_NaturalFeeling}
-			kitStats_SET({_player}, "NaturalFeeling", {_NaturalFeeling})
+			setKitStats({_player}, "NaturalFeeling", {_NaturalFeeling})
 			setSupporter(loop-player, {_player})
 			kitHeal(loop-player, 0.05, 1)
 			kitEffectDescription(loop-player, "§d§l回復")
@@ -27,13 +27,13 @@ function kitEffect_NaturalFeeling(player: player):
 			add 1 to y-coordinate of {_loc}
 			spawnParticle_Dust(rgb(121, 192, 110), 1, {_loc})
 			add 10 to {_angle}
-		if kitStats_GET({_player}, "NaturalFeeling") <= 0:
+		if getKitStats({_player}, "NaturalFeeling") <= 0:
 			loop all items in {_player}'s inventory:
 				name of loop-item is "§aNatural Feeling"
 				delete loop-item
 			playSound("block.grass.break", 1, 1, {_player})
 		else:
-			set {_NaturalFeeling} to kitStats_GET({_player}, "NaturalFeeling")
+			set {_NaturalFeeling} to getKitStats({_player}, "NaturalFeeling")
 			set {_barcount} to round({_NaturalFeeling} * 4)
 			set {_bar} to 0
 			set {_bartext} to ""

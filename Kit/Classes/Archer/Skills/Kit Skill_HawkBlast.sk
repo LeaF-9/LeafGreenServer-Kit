@@ -1,31 +1,31 @@
 # Hawk Blast
 
 function kitEffect_HawkBlast(player: player):
-	set {_HawkBlast} to kitStats_GET({_player}, "HawkBlast")
+	set {_HawkBlast} to getKitStats({_player}, "HawkBlast")
 	stop if {_HawkBlast} is true
 
-	kitStats_SET({_player}, "HawkBlast", true)
-	kitStats_SET({_player}, "HawkBlastLoc", (location of (head of {_player})))
+	setKitStats({_player}, "HawkBlast", true)
+	setKitStats({_player}, "HawkBlastLoc", (location of (head of {_player})))
 	playSound("entity.phantom.bite", 1, 2, {_player})
 	kitMsg({_player}, "§f鷹を§b放出§fします...")
 	set {_count} to 0
 	# --- 炸裂までの挙動 ---
-	while kitStats_GET({_player}, "HawkBlast") is true:
+	while getKitStats({_player}, "HawkBlast") is true:
 		add 1 to {_count}
 		set {_tool} to {_player}'s tool
 		if {_count} >= 100:  # 100mを超えた際の挙動
-			kitStats_DELETE({_player}, "HawkBlast")
+			deleteKitStats({_player}, "HawkBlast")
 		else if kitItemAllChecker({_tool}, "Archer", "Skill", 7) is false:  # 持っているアイテムがスキルのものでは無い場合の挙動
-			kitStats_DELETE({_player}, "HawkBlast")
+			deleteKitStats({_player}, "HawkBlast")
 		else:
 			set {_locnow} to location of head of {_player}
-			set {_baseloc} to kitStats_GET({_player}, "HawkBlastLoc")
+			set {_baseloc} to getKitStats({_player}, "HawkBlastLoc")
 			set yaw of {_baseloc} to yaw of {_locnow}
 			set pitch of {_baseloc} to pitch of {_locnow}
 			set {_block} to location 1 meter in front of {_baseloc}
-			kitStats_SET({_player}, "HawkBlastLoc", {_block})
+			setKitStats({_player}, "HawkBlastLoc", {_block})
 			if block at {_block} is not passable:  # ブロックと衝突した際の挙動
-				kitStats_DELETE({_player}, "HawkBlast")
+				deleteKitStats({_player}, "HawkBlast")
 			kitParticle_HawkBlast_Trail({_block})
 			if mod({_count}, 5) is 0:
 				playSound("entity.phantom.flap", 1, 2, {_block})
@@ -34,12 +34,12 @@ function kitEffect_HawkBlast(player: player):
 	# --------------------
 	# --- 炸裂時の挙動 ---
 	nameCT({_player}, "Hawk Blast")
-	set {_HawkBlastLoc} to kitStats_GET({_player}, "HawkBlastLoc")
+	set {_HawkBlastLoc} to getKitStats({_player}, "HawkBlastLoc")
 	if {_HawkBlastLoc} is set:
 		kitMsg({_player}, "<##f0f8ff>鷹が<##00bfff>炸裂<##f0f8ff>した!")
-		set {_bloc} to kitStats_GET({_player}, "HawkBlastLoc")
-		kitStats_DELETE({_player}, "HawkBlast")
-		kitStats_DELETE({_player}, "HawkBlastLoc")
+		set {_bloc} to getKitStats({_player}, "HawkBlastLoc")
+		deleteKitStats({_player}, "HawkBlast")
+		deleteKitStats({_player}, "HawkBlastLoc")
 		playSound("entity.phantom.hurt", 1, 0.5, {_bloc})
 		set {_y} to 0
 		set {_rad} to 0
@@ -92,8 +92,8 @@ function kitEffect_HawkBlast(player: player):
 	# ------------------
 
 function kitEffect_HawkBlast_LeftClick(player: player, event: object):
-	set {_HawkBlast} to kitStats_GET({_player}, "HawkBlast")
-	kitStats_DELETE({_player}, "HawkBlast") if {_HawkBlast} is true
+	set {_HawkBlast} to getKitStats({_player}, "HawkBlast")
+	deleteKitStats({_player}, "HawkBlast") if {_HawkBlast} is true
 
 
 

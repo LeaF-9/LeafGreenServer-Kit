@@ -6,13 +6,13 @@ on damage of player with priority NORMAL:
 	set {_attacker} to getAttacker(victim)
 	set {_tool} to victim's tool
 	kitItemAllChecker({_tool}, "Reflector", "Weapon", 3) is true
-	kitStats_GET(victim, "TolleStone") is not set
+	getKitStats(victim, "TolleStone") is not set
 	set {_dmg} to getDamageModification_ALL(victim, damage)
 	if {_dmg} < 3:
 		stop
 
 	setDamageModification_ADD(victim, -1.5)
-	kitStats_SET(victim, "TolleStone", true)
+	setKitStats(victim, "TolleStone", true)
 	kitMsg(victim, "§cダメージ<##f068d2>を<##bf23e6>§lチャージ<##f068d2>した!")
 	kitParticle_TolleStone_Charge(victim)
 
@@ -21,9 +21,9 @@ on damage of player with priority NORMAL:
 function kitEffect_TolleStone(player: player):
 	nameItemCT({_player}, "Tolle Stone")
 	set {_dmg} to 1.5
-	if kitStats_GET({_player}, "TolleStone") is set:
+	if getKitStats({_player}, "TolleStone") is set:
 		set {_adddmg} to 1.5
-		kitStats_DELETE({_player}, "TolleStone")
+		deleteKitStats({_player}, "TolleStone")
 
 	set {_baseloc} to location of head of {_player}
 	kitParticle_TolleStone_Launch(location 0.5 meters in front of {_baseloc})

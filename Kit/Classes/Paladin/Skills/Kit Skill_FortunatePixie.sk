@@ -3,14 +3,14 @@ options:
 	delay-tick: 10
 
 on damage of player:
-	kitStats_GET(victim, "FortunatePixie") is set
+	getKitStats(victim, "FortunatePixie") is set
 	set {_now} to now
-	kitStats_SET(victim, "FortunatePixie-Time", {_now})
+	setKitStats(victim, "FortunatePixie-Time", {_now})
 	set {_dmg} to getDamageModification_ALL(victim, damage)
 	kitParticle_FortunatePixie_Damage(victim)
 	loop {@delay-tick} times:
 		wait a tick
-	kitStats_GET(victim, "FortunatePixie-Time") is {_now}
+	getKitStats(victim, "FortunatePixie-Time") is {_now}
 	kitEffectDescription(victim, "§d§l回復")
 	kitParticle_FortunatePixie_Heal(victim)
 	kitEffect_ForTunatePixie_Healing(victim, {_dmg}, {_now})
@@ -98,8 +98,8 @@ function kitEffect_FortunatePixie(player: player):
 		wait a tick
 	wait 7 seconds
 	loop all players:
-		kitStats_GET(loop-player, "FortunatePixie") is {_player}
-		kitStats_DELETE(loop-player, "FortunatePixie")
+		getKitStats(loop-player, "FortunatePixie") is {_player}
+		deleteKitStats(loop-player, "FortunatePixie")
 		message formatted "§e幸運の妖精は消え去りました..." to loop-player
 
 local function kitEffect_FortunatePixie_Apply(player: player, target: player, from: location):
@@ -144,18 +144,18 @@ local function kitEffect_FortunatePixie_Apply(player: player, target: player, fr
 	message formatted "§a幸運の妖精が身を護ってくれます!" to {_target}
 	kitEffectDescription({_target}, "§d§l幸運の妖精")
 	sendTimeBossbar_GREEN({_target}, "§d§l幸運の妖精", 140)
-	kitStats_SET({_target}, "FortunatePixie", {_player})
+	setKitStats({_target}, "FortunatePixie", {_player})
 	kitParticle_FortunatePixie_Apply({_player}, {_target})
 	kitLuck({_target}, 3, true)
 
 local function kitEffect_ForTunatePixie_Healing(player: player, damage: number, time: date):
 	set {_healamount} to {_damage} / 20
 	loop 20 times:
-		if kitStats_GET({_player}, "FortunatePixie-Time") is not {_time}:
+		if getKitStats({_player}, "FortunatePixie-Time") is not {_time}:
 			stop
 		kitHeal({_player}, {_healamount}, 1)
 		wait a tick
-	kitStats_DELETE({_player}, "FortunatePixie-Time")
+	deleteKitStats({_player}, "FortunatePixie-Time")
 
 
 
@@ -164,7 +164,7 @@ local function kitEffect_ForTunatePixie_Healing(player: player, damage: number, 
 local function kitParticle_FortunatePixie_Apply(player: player, target: player):
 	playSound("block.amethyst_cluster.break", 1, 0.5, {_player})
 	loop 140 times:
-		kitStats_GET({_target}, "FortunatePixie") is {_player}
+		getKitStats({_target}, "FortunatePixie") is {_player}
 		loop 10 times:
 			chance of 10%:
 				set {_el} to aroundEffect({_target})

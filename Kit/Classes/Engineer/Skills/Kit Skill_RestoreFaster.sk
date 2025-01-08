@@ -1,14 +1,14 @@
 # Restore Faster
 
 function kitEffect_RestoreFaster(player: player):
-	set {_loc} to kitStats_GET({_player}, "SkillLocation")
+	set {_loc} to getKitStats({_player}, "SkillLocation")
 	if {_loc} is not set:
 		nullEngineerPlacePosition({_player})
 		stop
 
 	nameCT({_player}, "Restore Faster")
 	set {_now} to now
-	kitStats_SET({_player}, "RestoreFaster-Time", {_now})
+	setKitStats({_player}, "RestoreFaster-Time", {_now})
 	kitFakeDeleteData({_player}, "Machine-Restore Faster")
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
@@ -36,7 +36,7 @@ function kitEffect_RestoreFaster(player: player):
 	set {_randomid} to a random UUID
 	# coreを回転させる関数
 	kitEffect_RestoreFaster_Core({_player}, {_coredisplay})
-	while kitStats_GET({_player}, "RestoreFaster-Time") is {_now}:
+	while getKitStats({_player}, "RestoreFaster-Time") is {_now}:
 		wait a second
 		# 現在範囲内の味方リストをリセット
 		delete {_enter.now::*}
@@ -84,7 +84,7 @@ function kitEffect_RestoreFaster(player: player):
 					create bossbar titled {_timer.title} and id {_id} for loop-player with progress 0 with colors yellow with style solid
 				# 現在入っている記録 & 効果
 				add loop-player to {_enter.now::*}
-				kitStats_SET(loop-player, "FastCT", true)
+				setKitStats(loop-player, "FastCT", true)
 
 				# ボスバー設定
 				set {_prog} to 100 - (({_distance} / 30) * 100)
@@ -96,8 +96,8 @@ function kitEffect_RestoreFaster(player: player):
 				set {_uuid} to UUID of loop-value
 				set {_id} to "%{_randomid}%-%{_uuid}%"
 				# 効果発動中であれば効果削除
-				if kitStats_GET(loop-value, "FastCT") is true:
-					kitStats_DELETE(loop-value, "FastCT")
+				if getKitStats(loop-value, "FastCT") is true:
+					deleteKitStats(loop-value, "FastCT")
 					message formatted "§bクールタイム短縮§c効果が切れました" to loop-value
 					kitParticle_RestoreFaster(loop-value, false)
 					set {_timer::%loop-value%} to 5
@@ -110,18 +110,18 @@ function kitEffect_RestoreFaster(player: player):
 				set {_uuid} to UUID of loop-value
 				set {_id} to "%{_randomid}%-%{_uuid}%"
 				# 効果発動中であれば効果削除
-				if kitStats_GET(loop-value, "FastCT") is true:
-					kitStats_DELETE(loop-value, "FastCT")
+				if getKitStats(loop-value, "FastCT") is true:
+					deleteKitStats(loop-value, "FastCT")
 					message formatted "§bクールタイム短縮§c効果が切れました" to loop-value
 					kitParticle_RestoreFaster(loop-value, false)
 					remove bossbar {_id}
 		# 機械存在のチェック
 		set {_exist} to kitFakeCheck({_player}, "Machine-Restore Faster")
 		if {_exist} is false:
-			kitStats_DELETE({_player}, "RestoreFaster-Time")
+			deleteKitStats({_player}, "RestoreFaster-Time")
 			loop {_enter.hist::*}:
-				kitStats_GET(loop-value, "FastCT") is true
-				kitStats_DELETE(loop-value, "FastCT")
+				getKitStats(loop-value, "FastCT") is true
+				deleteKitStats(loop-value, "FastCT")
 				message "§bクールタイム短縮§c効果が切れました" to loop-value
 				kitParticle_RestoreFaster(loop-value, false)
 			loop all players:
@@ -130,13 +130,13 @@ function kitEffect_RestoreFaster(player: player):
 				remove bossbar {_id}
 
 local function kitEffect_RestoreFaster_Core(player: player, display: entity):
-	set {_now} to kitStats_GET({_player}, "RestoreFaster-Time")
+	set {_now} to getKitStats({_player}, "RestoreFaster-Time")
 	set {_yaw} to yaw of {_display}
 	set {_rotate.yaw} to 100
 	set {_add.yaw} to {_rotate.yaw} / 20 * -1
 
 	set {_ln} to 0
-	while kitStats_GET({_player}, "RestoreFaster-Time") is {_now}:
+	while getKitStats({_player}, "RestoreFaster-Time") is {_now}:
 		delete {_exist}
 		loop all block displays:
 			loop-block display is {_display}

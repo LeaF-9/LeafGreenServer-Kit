@@ -1,15 +1,15 @@
 # Death Detector
 
 function kitEffect_DeathDetector(player: player):
-	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+	set {_SkillLocation} to getKitStats({_player}, "SkillLocation")
 	if {_SkillLocation} is not set:
 		send action bar "§c§l地点が設定されていません!" to {_player}
 		stop
 
 	nameCT({_player}, "Death Detector")
 	set {_now} to now
-	kitStats_SET({_player}, "DeathDetector", true)
-	kitStats_SET({_player}, "DeathDetector-Time", {_now})
+	setKitStats({_player}, "DeathDetector", true)
+	setKitStats({_player}, "DeathDetector-Time", {_now})
 
 	kitFakeDeleteData({_player}, "Death Detector")
 	set {_baseloc} to {_SkillLocation}
@@ -30,13 +30,13 @@ function kitEffect_DeathDetector(player: player):
 
 	kitMsg({_player}, "<##8b0000>死を感知して骨を召喚する装置を設置しました...")
 	playSound("block.end_portal_frame.fill", 1, 0.5, {_baseloc})
-	while kitStats_GET({_player}, "DeathDetector-Time") is {_now}:
+	while getKitStats({_player}, "DeathDetector-Time") is {_now}:
 		wait a second
 		set {_exist} to kitFakeCheck({_player}, "Death Detector")
 		if {_exist} is false:
-			kitStats_DELETE({_player}, "DeathDetector-Time")
-	if kitStats_GET({_player}, "DeathDetector-Time") is not set:
-		kitStats_DELETE({_player}, "DeathDetector")
+			deleteKitStats({_player}, "DeathDetector-Time")
+	if getKitStats({_player}, "DeathDetector-Time") is not set:
+		deleteKitStats({_player}, "DeathDetector")
 
 function kitEffect_DeathDetector_Summon(player: player):  # 死んだ際に発動する関数
 	loop all entities:

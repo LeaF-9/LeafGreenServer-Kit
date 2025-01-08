@@ -1,7 +1,7 @@
 # Mind Dependence
 
 function kitEffect_MindDependence(player: player):
-	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象が存在しません!" to {_player}
 		stop
@@ -11,27 +11,27 @@ function kitEffect_MindDependence(player: player):
 
 	nameCT({_player}, "Mind Dependence")
 	set {_tg} to {_SkillTarget}
-	set {_MindDepender} to kitStats_GET({_player}, "MindDependence")
-	set {_MindDependence} to kitStats_GET({_MindDepender}, "MindDependence")
+	set {_MindDepender} to getKitStats({_player}, "MindDependence")
+	set {_MindDependence} to getKitStats({_MindDepender}, "MindDependence")
 	if {_MindDependence} is {_player}:
-		kitStats_DELETE({_MindDepender}, "MindDependence")
-		kitStats_DELETE({_player}, "MindDependence")
+		deleteKitStats({_MindDepender}, "MindDependence")
+		deleteKitStats({_player}, "MindDependence")
 	set {_memsg} to kitGhostMessage("§5%{_tg}% §4と痛覚の共有を行いました...")
 	set {_youmsg} to kitGhostMessage("§5%{_player}% §cとのダメージが共有される!")
 	kitMsg({_player}, {_memsg})
 	message formatted {_youmsg} to {_tg}
-	kitStats_SET({_tg}, "MindDependence", {_player})
-	kitStats_SET({_player}, "MindDependence", {_tg})
+	setKitStats({_tg}, "MindDependence", {_player})
+	setKitStats({_player}, "MindDependence", {_tg})
 	playSound("entity.iron_golem.death", 1, 0.5, {_player}, true)
 	playSound("entity.iron_golem.death", 1, 0.5, {_tg}, true)
 
 on damage of player with priority HIGHEST:
 	metadata value "gametype" of victim is "Kit"
 	checkDamagable(victim) is true
-	if kitStats_GET(victim, "MindDependence") is set:
+	if getKitStats(victim, "MindDependence") is set:
 		set {_dmg} to getDamageModification_ALL(victim, damage)
 		loop all players:
-			kitStats_GET(victim, "MindDependence") is loop-player
+			getKitStats(victim, "MindDependence") is loop-player
 			kitDamageNull(victim, loop-player, {_dmg}, "痛覚共有")
 			kitEffectDescription(loop-player, "§4§l痛覚共有")
 			loop 10 times:
@@ -42,7 +42,7 @@ on damage of player with priority HIGHEST:
 
 on death:
 	metadata value "gametype" of victim is "Kit"
-	kitStats_GET(victim, "MindDependence") is set
+	getKitStats(victim, "MindDependence") is set
 	loop all players:
-		kitStats_GET(loop-player, "MindDependence") is victim
-		kitStats_DELETE(loop-player, "MindDependence")
+		getKitStats(loop-player, "MindDependence") is victim
+		deleteKitStats(loop-player, "MindDependence")

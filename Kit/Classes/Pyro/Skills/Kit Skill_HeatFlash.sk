@@ -11,16 +11,16 @@ options:
 
 
 function kitEffect_HeatFlash(player: player):
-	stop if kitStats_GET({_player}, "HeatFlash") is true
+	stop if getKitStats({_player}, "HeatFlash") is true
 
 	set {_baseloc} to location of head of {_player}
 	kitMsg({_player}, "§e§l閃光弾§dを発射します!")
-	kitStats_SET({_player}, "HeatFlash", true)
+	setKitStats({_player}, "HeatFlash", true)
 	kitSound_HeatFlash_Launch({_player})
 
 	set {_m} to 0
 	loop {@flash-max-tick} times:
-		if kitStats_GET({_player}, "HeatFlash") is not set:
+		if getKitStats({_player}, "HeatFlash") is not set:
 			continue
 		
 		add {@flash-tick-speed} to {_m}
@@ -54,8 +54,8 @@ function kitEffect_HeatFlash(player: player):
 		sendTimeBossbar_RED(loop-entity, "§e§l閃光", {@flash-tick})
 
 function kitEffect_HeatFlash_LeftClick(player: player, event: object):
-	kitStats_GET({_player}, "HeatFlash") is true
-	kitStats_DELETE({_player}, "HeatFlash")
+	getKitStats({_player}, "HeatFlash") is true
+	deleteKitStats({_player}, "HeatFlash")
 
 
 

@@ -13,7 +13,7 @@ options:
 
 on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
-	kitStats_GET({_attacker}, "EternalPhoenix") is true
+	getKitStats({_attacker}, "EternalPhoenix") is true
 	set {_now} to now
 	set {_hit} to metadata value "eternal phoenix - hit" of victim
 	delete metadata value "eternal phoenix - hit" of victim
@@ -34,14 +34,14 @@ function kitUltPyro(player: player):
 
 
 local function kitEffect_EternalPhoenix(player: player):
-	kitStats_SET({_player}, "EternalPhoenix", true)
+	setKitStats({_player}, "EternalPhoenix", true)
 	kitParticle_EternalPhoenix_Wing({_player})
 	allow fly for {_player}
 	loop {@effect-tick} times:
 		if mod(loop-number, {@eruption-interval}) is 0 or {@eruption-interval}:
 			kitEffect_EternalPhoenix_Burning({_player})
 		wait a tick
-	kitStats_DELETE({_player}, "EternalPhoenix")
+	deleteKitStats({_player}, "EternalPhoenix")
 	disallow fly for {_player}
 
 local function kitEffect_EternalPhoenix_Burning(player: player):
@@ -91,7 +91,7 @@ local function kitEffect_EternalPhoenix_Fire(player: player):
 
 local function kitParticle_EternalPhoenix_Wing(player: player):
 	loop 200 times:
-		if kitStats_GET({_player}, "EternalPhoenix") is not true:
+		if getKitStats({_player}, "EternalPhoenix") is not true:
 			stop
 
 		set {_wing.1::*} to kitParticle_EternalPhoenix_Wing_Upper({_player})

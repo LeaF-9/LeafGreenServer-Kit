@@ -10,7 +10,7 @@ function kitEffect_Kunai(player: player):
 		remove {_tool} from {_player}
 		give {_fuda} to {_player}
 		# -----------------
-		kitStats_SET({_player}, "Kunai-Shooting", true)
+		setKitStats({_player}, "Kunai-Shooting", true)
 		# --- クナイの発射 ---
 		shoot an arrow from {_player} at speed 3
 		set metadata value "kunai" of shot arrow to "%{_player}%"
@@ -28,14 +28,14 @@ function kitEffect_Kunai(player: player):
 				metadata value "kunai-remaining" of loop-item display is "%{_player}%"
 				set {_remaining} to true
 			if {_remaining} is not set:
-				kitStats_DELETE({_player}, "Kunai-Shooting")
+				deleteKitStats({_player}, "Kunai-Shooting")
 				# --- クナイの返還 ---
 				remove {_fuda} from {_player}
 				give {_tool} to {_player}
 				# ------------------
 	else if name of {_tool} contains "Fuda":
-		if kitStats_GET({_player}, "Kunai-Remaining") is set:
-			kitStats_DELETE({_player}, "Kunai-Remaining")
+		if getKitStats({_player}, "Kunai-Remaining") is set:
+			deleteKitStats({_player}, "Kunai-Remaining")
 			loop all item displays:
 				metadata value "kunai-remaining" of loop-item display is "%{_player}%"
 				delete loop-item display
@@ -55,8 +55,8 @@ function kitParticle_Kunai(proj: projectile):
 on projectile hit:
 	projectile is an arrow
 	metadata value "kunai" of projectile is set
-	kitStats_GET(shooter, "Kunai-Shooting") is true
-	kitStats_DELETE(shooter, "Kunai-Shooting")
+	getKitStats(shooter, "Kunai-Shooting") is true
+	deleteKitStats(shooter, "Kunai-Shooting")
 	set {_baseloc} to location of projectile
 	set {_d} to 100
 	loop all blocks in radius 1.5 around {_baseloc}:
@@ -71,7 +71,7 @@ on projectile hit:
 	set {_v} to setVector({_baseloc}, {_baseblock}, 0.1)
 	set {_dirloc} to setDirToVec({_baseloc}, {_v})
 	set {_kunailoc} to {_dirloc} ~ {_v}
-	kitStats_SET(shooter, "Kunai-Remaining", {_kunailoc})
+	setKitStats(shooter, "Kunai-Remaining", {_kunailoc})
 	set {_item} to "minecraft:arrow"
 	set {_transformation} to "[0.7071f,0.7071f,0.0000f,0.0000f,0.0000f,0.0000f,-1.0000f,0.0000f,-0.7071f,0.7071f,0.0000f,0.0000f,0.0000f,0.0000f,0.0000f,1.0000f]"
 	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},teleport_duration:1}"
@@ -82,14 +82,14 @@ on projectile hit:
 	packetGlowing(shooter, {_itemdisplay})
 
 on death of player:
-	kitStats_GET(victim, "Kunai-Remaining") is set
+	getKitStats(victim, "Kunai-Remaining") is set
 	loop all item displays:
 		metadata value "kunai-remaining" of loop-item display is "%victim%"
 		delete loop-item display
 
 function kunaiNinjutsu(player: player, type: text):
-	if kitStats_GET({_player}, "Kunai-Remaining") is set:
-		set {_loc} to kitStats_GET({_player}, "Kunai-Remaining")
+	if getKitStats({_player}, "Kunai-Remaining") is set:
+		set {_loc} to getKitStats({_player}, "Kunai-Remaining")
 		# --- 隠身 ---
 		if {_type} is "Kakuremi":
 			loop all players in radius 5 around {_loc}:
@@ -142,10 +142,10 @@ function kunaiNinjutsu(player: player, type: text):
 					add loop-player to {_inow::*}
 					if {_ined::*} does not contain loop-player:
 						add loop-player to {_ined::*}
-					kitStats_SET(loop-player, "Zanzo", true)
+					setKitStats(loop-player, "Zanzo", true)
 				loop {_ined::*}:
 					{_inow::*} does not contain loop-value-2
-					kitStats_DELETE(loop-value-2, "Zanzo")
+					deleteKitStats(loop-value-2, "Zanzo")
 					delete {_ined::%loop-index%}
 				# --- パーティクル演出 ---
 				loop all blocks in radius 5 around {_loc}:
@@ -155,7 +155,7 @@ function kunaiNinjutsu(player: player, type: text):
 				# ---------------------
 				wait a tick
 			loop {_ined::*}:
-				kitStats_DELETE(loop-value, "Zanzo")
+				deleteKitStats(loop-value, "Zanzo")
 		# -----------
 		# --- 鎌鼬 ---
 		else if {_type} is "Kamaitachi":

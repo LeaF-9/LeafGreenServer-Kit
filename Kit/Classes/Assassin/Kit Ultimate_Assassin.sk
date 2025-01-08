@@ -1,7 +1,7 @@
 # Death Blow
 
 function kitUltAssassin(player: player):
-	kitStats_SET({_player}, "UltAssassin", true)
+	setKitStats({_player}, "UltAssassin", true)
 	loop 200 times:
 		delete {_enemy}
 		loop all players in radius 5 around {_player}:
@@ -18,12 +18,12 @@ function kitUltAssassin(player: player):
 			set {_eb} to aroundEffect({_player})
 			spawnParticle_Color(entity_effect, rgb(100, 0, 10), {_eb})
 		wait a tick
-	kitStats_DELETE({_player}, "UltAssassin")
+	deleteKitStats({_player}, "UltAssassin")
 	if getInvisibleRepeats({_player}) is true:
 		kitInvisibleRepeat_Stop({_player})
 
 on rightclick:
-	set {_UltAssassin} to kitStats_GET({_player}, "UltAssassin")
+	set {_UltAssassin} to getKitStats({_player}, "UltAssassin")
 	if {_UltAssassin} is true:
 		set {_tp} to target player
 		{_tp} is set
@@ -39,7 +39,7 @@ on rightclick:
 on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	{Class::%{_attacker}%} is "Assassin"
-	set {_UltAssassin} to kitStats_GET({_attacker}, "UltAssassin")
+	set {_UltAssassin} to getKitStats({_attacker}, "UltAssassin")
 	if {_UltAssassin} is true:
 		if victim's facing is {_attacker}'s facing:
 			setDamageModification_FIX(victim, 100)

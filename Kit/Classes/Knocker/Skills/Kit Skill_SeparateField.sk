@@ -15,8 +15,8 @@ function kitEffect_SeparateField(player: player):
 			if checkEntityType(loop-entity, player) is true:
 				chance of 30%:
 					playSound("entity.breeze.idle_air", 1, 2, loop-entity)
-				if kitStats_GET(loop-entity, "FallRemove") is not set:
-					kitStats_SET(loop-entity, "FallRemove", {_now})
+				if getKitStats(loop-entity, "FallRemove") is not set:
+					setKitStats(loop-entity, "FallRemove", {_now})
 			set {_to} to location of loop-entity
 			set {_vector} to setVector({_from}, {_to}, 0.5)
 			set velocity of loop-entity to {_vector}
@@ -40,5 +40,5 @@ function kitEffect_SeparateField(player: player):
 	kitMsg({_player}, "§7§lSeparate Field §9の効果が切れました")
 	wait 3 seconds
 	loop all players:
-		kitStats_GET(loop-player, "FallRemove") is {_now}
-		kitStats_DELETE(loop-player, "FallRemove")
+		getKitStats(loop-player, "FallRemove") is {_now}
+		deleteKitStats(loop-player, "FallRemove")

@@ -4,7 +4,7 @@ function kitEffect_SensorMine(player: player):
 	nameCT({_player}, "Sensor Mine")
 	set {_now} to now
 	# --- 過去の地雷の爆破 ---
-	set {_SensorMine-Amount} to kitStats_GET({_player}, "SensorMine-Amount")
+	set {_SensorMine-Amount} to getKitStats({_player}, "SensorMine-Amount")
 	if {_SensorMine-Amount} is 3:
 		set {_toptime} to 0
 		loop {-Stats.%{_player}%::*}:
@@ -18,25 +18,25 @@ function kitEffect_SensorMine(player: player):
 				set {_oldnum} to loop-index
 				replace "SensorMine-" with "" in {_oldnum}
 				replace ".Time" with "" in {_oldnum}
-		set {_oldloc} to kitStats_GET({_player}, "SensorMine-%{_oldnum}%.Location")
+		set {_oldloc} to getKitStats({_player}, "SensorMine-%{_oldnum}%.Location")
 		subtract 1 from {_SensorMine-Amount}
-		kitStats_SET({_player}, "SensorMine-Amount", {_SensorMine-Amount})
-		kitStats_DELETE({_player}, "SensorMine-%{_oldnum}%.Time")
-		kitStats_DELETE({_player}, "SensorMine-%{_oldnum}%.Location")
+		setKitStats({_player}, "SensorMine-Amount", {_SensorMine-Amount})
+		deleteKitStats({_player}, "SensorMine-%{_oldnum}%.Time")
+		deleteKitStats({_player}, "SensorMine-%{_oldnum}%.Location")
 		kitEffect_SensorMine_Boom({_player}, {_oldloc})
 	# ---------------------
 	kitMsg({_player}, "<##8b0000>地雷を設置します...")
 	playSound("ui.button.click", 1.2, 0.5, {_player})
-	set {_SensorMine-Number} to kitStats_GET({_player}, "SensorMine-Number")
+	set {_SensorMine-Number} to getKitStats({_player}, "SensorMine-Number")
 	add 1 to {_SensorMine-Number}
-	kitStats_SET({_player}, "SensorMine-Number", {_SensorMine-Number})
+	setKitStats({_player}, "SensorMine-Number", {_SensorMine-Number})
 	add 1 to {_SensorMine-Amount}
-	kitStats_SET({_player}, "SensorMine-Amount", {_SensorMine-Amount})
-	set {_newnum} to kitStats_GET({_player}, "SensorMine-Number")
+	setKitStats({_player}, "SensorMine-Amount", {_SensorMine-Amount})
+	set {_newnum} to getKitStats({_player}, "SensorMine-Number")
 	set {_l} to location of {_player}
-	kitStats_SET({_player}, "SensorMine-%{_newnum}%.Time", {_now})
-	kitStats_SET({_player}, "SensorMine-%{_newnum}%.Location", {_l})
-	while kitStats_GET({_player}, "SensorMine-%{_newnum}%.Location") is set:
+	setKitStats({_player}, "SensorMine-%{_newnum}%.Time", {_now})
+	setKitStats({_player}, "SensorMine-%{_newnum}%.Location", {_l})
+	while getKitStats({_player}, "SensorMine-%{_newnum}%.Location") is set:
 		set {_rad} to 0
 		loop 10 times:
 			add 36 to {_rad}
@@ -46,12 +46,12 @@ function kitEffect_SensorMine(player: player):
 			spawnParticle_Dust(rgb(240, 230, 140), 1, {_el}, {_player})
 		loop all players in radius 3 around {_l}:
 			kitCheckTeam({_player}, loop-player, false) is true
-			set {_exloc} to kitStats_GET({_player}, "SensorMine-%{_newnum}%.Location")
-			set {_SensorMine-Amount} to kitStats_GET({_player}, "SensorMine-Amount")
+			set {_exloc} to getKitStats({_player}, "SensorMine-%{_newnum}%.Location")
+			set {_SensorMine-Amount} to getKitStats({_player}, "SensorMine-Amount")
 			subtract 1 from {_SensorMine-Amount}
-			kitStats_SET({_player}, "SensorMine-Amount", {_SensorMine-Amount})
-			kitStats_DELETE({_player}, "SensorMine-%{_newnum}%.Time")
-			kitStats_DELETE({_player}, "SensorMine-%{_newnum}%.Location")
+			setKitStats({_player}, "SensorMine-Amount", {_SensorMine-Amount})
+			deleteKitStats({_player}, "SensorMine-%{_newnum}%.Time")
+			deleteKitStats({_player}, "SensorMine-%{_newnum}%.Location")
 			kitEffect_SensorMine_Boom({_player}, {_exloc})
 		wait a tick
 

@@ -3,12 +3,12 @@
 on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	{_attacker} is set
-	kitStats_GET({_attacker}, "BeatClapper") is set
+	getKitStats({_attacker}, "BeatClapper") is set
 	setDamageModification_MUL(victim, 2)
 	kitParticle_BeatClapper_Damage({_attacker})
 
 function kitEffect_BeatClapper(player: player):
-	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+	set {_SkillLocation} to getKitStats({_player}, "SkillLocation")
 	if {_SkillLocation} is not set:
 		send action bar "§c§l発動地点が有効ではありません!" to {_player}
 		stop
@@ -16,7 +16,7 @@ function kitEffect_BeatClapper(player: player):
 
 	nameCT({_player}, "Beat Clapper")
 	set {_now} to now
-	kitStats_SET({_player}, "BeatClapper-Time", {_now})
+	setKitStats({_player}, "BeatClapper-Time", {_now})
 	kitParticle_BeatClapper_Place({_loc})
 	kitFakeDeleteData({_player}, "Beat Clapper")
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0f,-0.25f]", "[0.5f,1f,0.5f]")
@@ -32,14 +32,14 @@ function kitEffect_BeatClapper(player: player):
 	kitMsg({_player}, "§6§l音波を発する装置§eを設置しました!")
 	set {_timer} to 0
 	set {_y} to 0
-	while kitStats_GET({_player}, "BeatClapper-Time") is {_now}:
+	while getKitStats({_player}, "BeatClapper-Time") is {_now}:
 		wait a tick
 		set {_exist} to kitFakeCheck({_player}, "Beat Clapper")
 		if {_exist} is false:
-			kitStats_DELETE({_player}, "BeatClapper-Time")
+			deleteKitStats({_player}, "BeatClapper-Time")
 			continue
 		set {_goal} to 40
-		if kitStats_GET({_player}, "Fortissimo") is true:
+		if getKitStats({_player}, "Fortissimo") is true:
 			set {_goal} to 20
 		if {_y} < 0:
 			add 0.05 to {_y}
@@ -59,13 +59,13 @@ local function kitEffect_BeatClapper_Clap(player: player, loc: location):
 	loop all players in radius 10 around {_loc}:
 		kitCheckTeam({_player}, loop-player, true) is true
 		add loop-player to {_claps::*}
-		kitStats_SET(loop-player, "BeatClapper", {_player})
+		setKitStats(loop-player, "BeatClapper", {_player})
 		kitParticle_BeatClapper_Clap(loop-player)
 		kitEffectDescription(loop-player, "§c§l火力増加")
 	wait a tick
 	loop {_claps::*}:
-		kitStats_GET(loop-value, "BeatClapper") is {_player}
-		kitStats_DELETE(loop-value, "BeatClapper")
+		getKitStats(loop-value, "BeatClapper") is {_player}
+		deleteKitStats(loop-value, "BeatClapper")
 
 # 音波
 local function kitEffect_BeatClapper_Wave(player: player, loc: location):

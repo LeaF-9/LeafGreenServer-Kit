@@ -3,7 +3,7 @@
 function kitEffect_ArrowRain(player: player):
 	nameCT({_player}, "Arrow Rain")
 	kitMsg({_player}, "§1矢の雨を降らせる卵を発射します...!")
-	kitStats_SET({_player}, "ArrowRain", location of {_player})
+	setKitStats({_player}, "ArrowRain", location of {_player})
 	shoot an egg from {_player} at speed 1.5
 	set metadata value "arrowegg" of shot entity to "true"
 	set {_shotegg} to shot entity
@@ -15,10 +15,10 @@ function kitEffect_ArrowRain(player: player):
 on projectile hit:
 	projectile is an egg
 	metadata value "arrowegg" of projectile is set
-	set {_ArrowRain} to kitStats_GET(shooter, "ArrowRain")
+	set {_ArrowRain} to getKitStats(shooter, "ArrowRain")
 	{_ArrowRain} is set
 	playSound("entity.generic.burn", 1, 0.5, location of projectile)
-	set {_face} to kitStats_GET(shooter, "ArrowRain")
+	set {_face} to getKitStats(shooter, "ArrowRain")
 	set {_baseloc} to location of block at projectile
 	set {_y} to y-coordinate of {_baseloc}
 	set y-coordinate of {_face} to {_y}

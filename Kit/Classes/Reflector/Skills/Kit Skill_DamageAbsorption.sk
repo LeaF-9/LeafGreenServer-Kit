@@ -2,32 +2,32 @@
 
 on damage of player:
 	set {_attacker} to getAttacker(victim)
-	if kitStats_GET({_attacker}, "DamageAbsorption") is true:
+	if getKitStats({_attacker}, "DamageAbsorption") is true:
 		cancel event
 		set action bar of {_attacker} to "§c§l我慢中は攻撃できません!"
 		stop
 	if kitReflector_DamageChecker(victim) is "Damage Absorption":
 		cancel event
-		set {_Point} to kitStats_GET(victim, "DamageAbsorption-Point")
+		set {_Point} to getKitStats(victim, "DamageAbsorption-Point")
 		add 1 to {_Point}
-		kitStats_SET(victim, "DamageAbrosption-Point", {_Point})
+		setKitStats(victim, "DamageAbrosption-Point", {_Point})
 		kitParticle_DamageAbsorption_Charge(victim)
 
 function kitEffect_DamageAbsorption(player: player):
-	if kitStats_GET({_player}, "PerfectReflection") is set:
+	if getKitStats({_player}, "PerfectReflection") is set:
 		kitMsg({_player}, "§c§l別Skill発動中は使えません!")
 		stop
 	nameCT({_player}, "Damage Absorption")
 
 	kitMsg({_player}, "§8ダメージを溜め込みます...!")
-	kitStats_SET({_player}, "DamageAbsorption", true)
-	kitStats_SET({_player}, "DamageAbsorption-Point", 0)
+	setKitStats({_player}, "DamageAbsorption", true)
+	setKitStats({_player}, "DamageAbsorption-Point", 0)
 	applyEffect({_player}, mining fatigue, 2, 3 seconds)
 	sendTimeBossbar_GREEN({_player}, "Damage Absorption", 60)
 	kitParticle_DamageAbsorption_Launch({_player})
 
 	loop 60 times:
-		set {_point} to kitStats_GET({_player}, "DamageAbsorption-Point")
+		set {_point} to getKitStats({_player}, "DamageAbsorption-Point")
 		if {_point} > 5:
 			set {_point} to 5
 
@@ -36,11 +36,11 @@ function kitEffect_DamageAbsorption(player: player):
 			kitParticle_DamageAbsorption_Explode({_player})
 		wait a tick
 
-	kitStats_DELETE({_player}, "DamageAbsorption")
-	if kitStats_GET({_player}, "DamageAbsorption-Point") > 5:
-		kitStats_SET({_player}, "DamageAbsorption-Point", 5)
-	set {_dmg} to kitStats_GET({_player}, "DamageAbsorption-Point")
-	kitStats_DELETE({_player}, "DamageAbsorption-Point")
+	deleteKitStats({_player}, "DamageAbsorption")
+	if getKitStats({_player}, "DamageAbsorption-Point") > 5:
+		setKitStats({_player}, "DamageAbsorption-Point", 5)
+	set {_dmg} to getKitStats({_player}, "DamageAbsorption-Point")
+	deleteKitStats({_player}, "DamageAbsorption-Point")
 	kitMsg({_player}, "§6溜めたダメージを爆発させます!")
 	loop all entities in radius 5 around {_player}:
 		kitCheckTeam({_player}, loop-entity, false) is true

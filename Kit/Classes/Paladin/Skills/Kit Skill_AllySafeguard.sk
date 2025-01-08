@@ -3,25 +3,25 @@
 on leftclick holding a emerald:
 	set {_tool} to player's tool
 	kitItemAllChecker({_tool}, "Paladin", "Skill", 1) is true
-	kitStats_GET(player, "Guarding") is true
+	getKitStats(player, "Guarding") is true
 	loop all players:
-		kitStats_GET(loop-player, "AllySafeguard") is player
+		getKitStats(loop-player, "AllySafeguard") is player
 		set {_tp} to loop-player
-	kitStats_DELETE({_tp}, "AllySafeguard")
-	kitStats_DELETE(player, "Guarding")
+	deleteKitStats({_tp}, "AllySafeguard")
+	deleteKitStats(player, "Guarding")
 	kitMsg(player, "§e護衛状態を解除しました")
 	send action bar "§e§l%player% §6§lの護衛が解除されました" to {_tp}
 
 function kitEffect_AllySafeguard(player: player):
-	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象のプレイヤーがいません" to {_player}
 		stop
 
 	nameCT({_player}, "Ally Safeguard")
 	set {_tp} to {_SkillTarget}
-	kitStats_SET({_player}, "Guarding", true)
-	kitStats_SET({_tp}, "AllySafeguard", {_player})
+	setKitStats({_player}, "Guarding", true)
+	setKitStats({_tp}, "AllySafeguard", {_player})
 	kitMsg({_player}, "§a守る相手を§6%{_tp}%§aに設定しました!")
 	send action bar "§a%{_player}% §7が護衛してくれるそうです!" to {_tp}
 	kitEffectDescription({_tp}, "§2§l護衛")
@@ -30,13 +30,13 @@ function kitEffect_AllySafeguard(player: player):
 		spawnParticle(happy_villager, {_el})
 
 on damage of player with priority NORMAL:
-	kitStats_GET(victim, "AllySafeguard") is set
+	getKitStats(victim, "AllySafeguard") is set
 	checkDamagable(victim) is true
 	damage cause is not fall, void, lava, flame or suffocation
 
 	set {_attacker} to getAttacker(victim)
 	loop all players:
-		kitStats_GET(victim, "AllySafeguard") is loop-player
+		getKitStats(victim, "AllySafeguard") is loop-player
 		distance between loop-player and victim <= 15
 		set {_per} to kitPercent(loop-player, 50)
 		chance of {_per}%:
@@ -56,5 +56,5 @@ on damage of player with priority NORMAL:
 
 on death of player:
 	loop all players:
-		kitStats_GET(loop-player, "AllySafeguard") is victim
-		kitStats_DELETE(loop-player, "AllySafeguard")
+		getKitStats(loop-player, "AllySafeguard") is victim
+		deleteKitStats(loop-player, "AllySafeguard")

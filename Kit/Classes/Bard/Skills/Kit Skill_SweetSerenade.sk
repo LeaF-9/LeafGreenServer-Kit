@@ -10,7 +10,7 @@ options:
 
 
 on damage of player:
-	set {_SweetSerenade-Target} to kitStats_GET(victim, "SweetSerenade-Target")
+	set {_SweetSerenade-Target} to getKitStats(victim, "SweetSerenade-Target")
 	{_SweetSerenade-Target} is set
 	set {_now} to now
 	set metadata value {@metadata-damage} of victim to {_now}
@@ -18,12 +18,12 @@ on damage of player:
 
 
 function kitEffect_SweetSerenade(player: player):
-	set {_SkillTarget} to kitStats_GET({_player}, "SkillTarget")
+	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象を指定してください" to {_player}
 		stop
 	set {_target} to {_SkillTarget}
-	set {_SweetSerenade} to kitStats_GET({_player}, "SweetSerenade")
+	set {_SweetSerenade} to getKitStats({_player}, "SweetSerenade")
 	if {_target} is {_SweetSerenade}:
 		kitMsg({_player}, "§c§l現在演奏中の味方に対して付与することはできません")
 		stop
@@ -32,8 +32,8 @@ function kitEffect_SweetSerenade(player: player):
 	kitMsg({_player}, "§d%{_target}% §cに§4ハートの小夜曲§cを捧げます...")
 	message formatted "§b%{_player}% §dがハートの小夜曲を演奏してくれた!" to {_target}
 	kitParticle_SweetSerenade_Launch({_player}, {_target})
-	kitStats_SET({_player}, "SweetSerenade", {_target})
-	kitStats_SET({_player}, "SweetSerenade-Target", {_player})
+	setKitStats({_player}, "SweetSerenade", {_target})
+	setKitStats({_player}, "SweetSerenade-Target", {_player})
 	setSupporter({_target}, {_player})
 
 	set {_id} to a random UUID
@@ -43,14 +43,14 @@ function kitEffect_SweetSerenade(player: player):
 	create bossbar titled {_bar.title} and id {_id} for {_bar.targets::*} with progress 0 with colors pink with style solid
 
 	set {_timer} to 0
-	while kitStats_GET({_player}, "SweetSerenade") is {_target}:
-		set {_SweetSerenade-Target} to kitStats_GET({_player}, "SweetSerenade-Target")
+	while getKitStats({_player}, "SweetSerenade") is {_target}:
+		set {_SweetSerenade-Target} to getKitStats({_player}, "SweetSerenade-Target")
 		if {_SweetSerenade-Target} is not {_player}:
-			kitStats_DELETE({_player}, "SweetSerenade")
+			deleteKitStats({_player}, "SweetSerenade")
 			continue
 		set {_distance} to distance between {_target} and {_player}
 		if {_distance} > {@effect-distance}:
-			kitStats_DELETE({_player}, "SweetSerenade")
+			deleteKitStats({_player}, "SweetSerenade")
 			continue
 
 		# ボスバー設定
@@ -59,7 +59,7 @@ function kitEffect_SweetSerenade(player: player):
 		add 1 to {_timer}
 		
 		set {_checker} to {@base-cycle}
-		if kitStats_GET({_player}, "Fortissimo") is true:
+		if getKitStats({_player}, "Fortissimo") is true:
 			set {_checker} to {_checker} * 0.5
 		if {_timer} >= {_checker}:
 			if {_checker} is not {@base-cycle}:
@@ -92,8 +92,8 @@ function kitEffect_SweetSerenade(player: player):
 		wait a tick
 	remove bossbar {_id}
 	kitMsg({_player}, "§9%{_target}% §5への小夜曲は途切れた...")
-	if kitStats_GET({_target}, "SweetSerenade-Target") is {_player}:
-		kitStats_DELETE({_target}, "SweetSerenade-Target")
+	if getKitStats({_target}, "SweetSerenade-Target") is {_player}:
+		deleteKitStats({_target}, "SweetSerenade-Target")
 		message formatted "§7小夜曲が聴こえなくなりました" to {_target}
 		set max absorption attribute of {_target} to 0
 

@@ -11,7 +11,7 @@ on sneak toggle:
 # マジックミサイル召喚
 local function kitEffect_MagicMissile_Charge(player: player):
 	set {_true} to true
-	set {_MagicMissile} to kitStats_GET({_player}, "MagicMissile")
+	set {_MagicMissile} to getKitStats({_player}, "MagicMissile")
 	set {_num.charge} to {_MagicMissile} * 20
 	wait a tick
 	while {_true} is true:
@@ -37,9 +37,9 @@ local function kitEffect_MagicMissile_Charge(player: player):
 
 local function kitEffect_MagicMissile_Summon(player: player):
 	kitParticle_MagicMissile_Summon({_player})
-	set {_MagicMissile} to kitStats_GET({_player}, "MagicMissile")
+	set {_MagicMissile} to getKitStats({_player}, "MagicMissile")
 	add 1 to {_MagicMissile}
-	kitStats_SET({_player}, "MagicMissile", {_MagicMissile})
+	setKitStats({_player}, "MagicMissile", {_MagicMissile})
 	set {_mmentity} to kitSpawnMob_NBT({_player}, armor stand, location of {_player}, "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Small:1b,CustomNameVisible:0b,ArmorItems:[{},{},{},{id:""minecraft:player_head"",count:1,components:{""minecraft:profile"":{id:[I;-110805139,1605126504,-1314409618,-754615504],properties:[{	name:""textures"",value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWYxNzhhM2U3MDU4YTEzYWFjNTBkMTkyOWE1NGQ0ODRkYmRmZmMwMzg1MzI0YzE5YjE4ZGZlMzQ0MWI0Yzc5ZSJ9fX0=""}]}}}],HandItems:[{},{}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}")
 	set {_nbt} to nbt compound of {_mmentity}
 	set byte tag "CustomNameVisible" of {_nbt} to 0
@@ -48,11 +48,11 @@ local function kitEffect_MagicMissile_Summon(player: player):
 	kitEffect_MagicMissile_Timer({_player})
 
 local function kitEffect_MagicMissile_Timer(player: player):
-	if kitStats_GET({_player}, "MagicMissile-Timer") is set:
+	if getKitStats({_player}, "MagicMissile-Timer") is set:
 		stop
-	kitStats_SET({_player}, "MagicMissile-Timer", true)
+	setKitStats({_player}, "MagicMissile-Timer", true)
 	while {Class::%{_player}%} is "Wizard":
-		if kitStats_GET({_player}, "MagicMissile-Timer") is not set:
+		if getKitStats({_player}, "MagicMissile-Timer") is not set:
 			stop
 		set {_playerloc} to location of {_player}
 		add 1 to y-pos of {_playerloc}
@@ -81,15 +81,15 @@ local function kitEffect_MagicMissile_Timer(player: player):
 		delete loop-entity
 
 function kitEffect_MagicMissile(player: player):
-	if kitStats_GET({_player}, "MagicMissile") is not set:
-		kitStats_SET({_player}, "MagicMissile", 0)
-	if kitStats_GET({_player}, "MagicMissile") is 0:
+	if getKitStats({_player}, "MagicMissile") is not set:
+		setKitStats({_player}, "MagicMissile", 0)
+	if getKitStats({_player}, "MagicMissile") is 0:
 		stop
 	kitParticle_MagicMissile_Launch({_player})
-	set {_id} to kitStats_GET({_player}, "MagicMissile")
+	set {_id} to getKitStats({_player}, "MagicMissile")
 	set {_MagicMissile} to {_id}
 	subtract 1 from {_MagicMissile}
-	kitStats_SET({_player}, "MagicMissile", {_MagicMissile})
+	setKitStats({_player}, "MagicMissile", {_MagicMissile})
 	loop all entities:
 		metadata value "summon-player" of loop-entity is {_player}
 		metadata value "magicmissile" of loop-entity is {_id}

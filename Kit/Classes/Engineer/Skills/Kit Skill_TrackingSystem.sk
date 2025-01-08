@@ -1,7 +1,7 @@
 # Tracking System
 
 function kitEffect_TrackingSystem(player: player):
-	set {_loc} to kitStats_GET({_player}, "SkillLocation")
+	set {_loc} to getKitStats({_player}, "SkillLocation")
 	if {_loc} is not set:
 		nullEngineerPlacePosition({_player})
 		stop
@@ -26,18 +26,18 @@ function kitEffect_TrackingSystem(player: player):
 				set {_index} to loop-index
 		replace "TrackingSystem-Time-" with "" in {_index}
 		kitFakeDeleteData({_player}, "Machine-Tracking System-%{_index}%")
-		kitStats_DELETE({_player}, "TrackingSystem-Time-%{_index}%")
-	set {_TrackingSystem-Number} to kitStats_GET({_player}, "TrackingSystem-Number")
+		deleteKitStats({_player}, "TrackingSystem-Time-%{_index}%")
+	set {_TrackingSystem-Number} to getKitStats({_player}, "TrackingSystem-Number")
 	add 1 to {_TrackingSystem-Number}
 	set {_num} to {_TrackingSystem-Number}
-	kitStats_SET({_player}, "TrackingSystem-Number", {_TrackingSystem-Number})
+	setKitStats({_player}, "TrackingSystem-Number", {_TrackingSystem-Number})
 	set {_blockdisplay} to kitEffect_TrackingSystem_Machine({_player}, {_num}, {_loc})
 	set {_baseloc} to {_loc}
 	add 0.5 to y-coordinate of {_baseloc}
-	kitStats_SET({_player}, "TrackingSystem-Time-%{_num}%", {_now})
+	setKitStats({_player}, "TrackingSystem-Time-%{_num}%", {_now})
 	kitMsg({_player}, "<##0075C2>Tracking System§bを設置しました!")
 	playSound("block.respawn_anchor.charge", 1, 2, {_loc})
-	while kitStats_GET({_player}, "TrackingSystem-Time-%{_num}%") is {_now}:
+	while getKitStats({_player}, "TrackingSystem-Time-%{_num}%") is {_now}:
 		wait a tick
 		delete {_true}
 		loop all entities in radius 5 around {_loc}:
@@ -82,7 +82,7 @@ function kitEffect_TrackingSystem(player: player):
 			else:
 				set glowing of {_blockdisplay} to false
 		else:
-			kitStats_DELETE({_player}, "TrackingSystem-Time-%{_num}%")
+			deleteKitStats({_player}, "TrackingSystem-Time-%{_num}%")
 
 local function kitEffect_TrackingSystem_Machine(player: player, num: number, loc: location) :: entity:
 	# foot

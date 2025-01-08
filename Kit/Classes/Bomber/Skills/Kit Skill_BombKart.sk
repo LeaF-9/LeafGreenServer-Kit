@@ -21,7 +21,7 @@ function kitEffect_BombKart(player: player):
 
 	set {_now} to now
 	set {_skilltool} to tool of {_player}
-	kitStats_SET({_player}, "BombKart", {_now})
+	setKitStats({_player}, "BombKart", {_now})
 	set {_baseloc} to location of {_player}
 	set pitch of {_baseloc} to 0
 	set {_moveloc} to {_baseloc}
@@ -50,7 +50,7 @@ function kitEffect_BombKart(player: player):
 	set {_ln} to 0
 	loop {@effect-tick} times:
 		# 条件確認
-		if kitStats_GET({_player}, "BombKart") is not {_now}:
+		if getKitStats({_player}, "BombKart") is not {_now}:
 			continue
 		if {_bombhit} is set:
 			continue
@@ -163,8 +163,8 @@ function kitEffect_BombKart(player: player):
 		add 1 to {_ln}
 		wait a tick
 	remove bossbar {_id}
-	if kitStats_GET({_player}, "BombKart") is {_now}:
-		kitStats_DELETE({_player}, "BombKart")
+	if getKitStats({_player}, "BombKart") is {_now}:
+		deleteKitStats({_player}, "BombKart")
 	loop all block displays:
 		metadata value "bomb kart" of loop-block display is {_player}
 		metadata value "bomb kart - time" of loop-block display is {_now}

@@ -36,11 +36,11 @@ on projectile hit:
 function kitEffect_GemStinger(player: player):
 	if {_player} is not sneaking:
 		stop
-	if kitStats_GET({_player}, "GemStinger") <= 0:
+	if getKitStats({_player}, "GemStinger") <= 0:
 		stop
-	set {_GemStinger} to kitStats_GET({_player}, "GemStinger")
+	set {_GemStinger} to getKitStats({_player}, "GemStinger")
 	subtract 1 from {_GemStinger}
-	kitStats_SET({_player}, "GemStinger", {_GemStinger})
+	setKitStats({_player}, "GemStinger", {_GemStinger})
 	kitEffect_GemStinger_Launch({_player})
 
 local function kitEffect_GemStinger_Drop(attacker: player, victim: player):
@@ -62,9 +62,9 @@ local function kitEffect_GemStinger_Drop(attacker: player, victim: player):
 local function kitEffect_GemStinger_Pickup(player: player):
 	kitParticle_GemStinger_Pickup({_player})
 	applyEffect({_player}, resistance, 1, 1.5 seconds)
-	set {_GemStinger} to kitStats_GET({_player}, "GemStinger")
+	set {_GemStinger} to getKitStats({_player}, "GemStinger")
 	add 1 to {_GemStinger}
-	kitStats_SET({_player}, "GemStinger", {_GemStinger})
+	setKitStats({_player}, "GemStinger", {_GemStinger})
 
 local function kitEffect_GemStinger_Launch(player: player):
 	kitParticle_GemStinger_Launch({_player})

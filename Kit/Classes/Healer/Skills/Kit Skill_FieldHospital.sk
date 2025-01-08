@@ -8,7 +8,7 @@ options:
 
 
 function kitEffect_FieldHospital(player: player):
-	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+	set {_SkillLocation} to getKitStats({_player}, "SkillLocation")
 	if {_SkillLocation} is not set:
 		send action bar "§c§l地点を指定してください" to {_player}
 		stop
@@ -19,7 +19,7 @@ function kitEffect_FieldHospital(player: player):
 	nameCT({_player}, "Field Hospital")
 	subtract {@required-odo} from {Kit-Odo::%{_player}%}
 	set {_now} to now
-	kitStats_SET({_player}, "FieldHospital-Time", {_now})
+	setKitStats({_player}, "FieldHospital-Time", {_now})
 	set {_loc.target} to {_SkillLocation}
 
 	kitFakeDeleteData({_player}, "Field Hospital")
@@ -53,7 +53,7 @@ function kitEffect_FieldHospital(player: player):
 
 	set {_ln} to 0
 	set {_heal} to {@heal-per-second} / 20
-	while kitStats_GET({_player}, "FieldHospital-Time") is {_now}:
+	while getKitStats({_player}, "FieldHospital-Time") is {_now}:
 		wait a tick
 		add 1 to {_ln}
 		
@@ -84,7 +84,7 @@ function kitEffect_FieldHospital(player: player):
 
 		set {_exist} to kitFakeCheck({_player}, "Field Hospital")
 		if {_exist} is false:
-			kitStats_DELETE({_player}, "FieldHospital-Time")
+			deleteKitStats({_player}, "FieldHospital-Time")
 
 
 

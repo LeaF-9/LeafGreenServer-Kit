@@ -13,20 +13,20 @@ function kitUltWizard(player: player):
 on rightclick holding a netherite hoe:
 	name of player's tool is {@itemname}
 	cancel event
-	kitStats_GET(player, "ArcaneSorcery") is not set
+	getKitStats(player, "ArcaneSorcery") is not set
 	kitEffect_ArcaneSorcery(player)
 
 
 
 local function kitEffect_ArcaneSorcery(player: player):
 	set {_now} to now
-	kitStats_SET({_player}, "ArcaneSorcery", {_now})
+	setKitStats({_player}, "ArcaneSorcery", {_now})
 	set {_slot} to {_player}.getInventory().getHeldItemSlot()
 
 	# 準備フェーズ
 	kitParticle_ArcaneSorcery_Circle({_player}, {_now})
 	loop 60 times:
-		if kitStats_GET({_player}, "ArcaneSorcery") is not {_now}:
+		if getKitStats({_player}, "ArcaneSorcery") is not {_now}:
 			stop
 
 		{_player}.getInventory().setHeldItemSlot({_slot})  # 武器スロット固定化
@@ -56,7 +56,7 @@ local function kitEffect_ArcaneSorcery(player: player):
 	loop 100 times:
 		wait a tick
 		# 条件確認
-		if kitStats_GET({_player}, "ArcaneSorcery") is not {_now}:
+		if getKitStats({_player}, "ArcaneSorcery") is not {_now}:
 			continue
 		
 		kitSound_ArcaneSorcery_Beam({_player})
@@ -106,8 +106,8 @@ local function kitEffect_ArcaneSorcery(player: player):
 	loop all item displays:
 		loop-item display is {_display}
 		delete loop-item display
-	if kitStats_GET({_player}, "ArcaneSorcery") is {_now}:
-		kitStats_DELETE({_player}, "ArcaneSorcery")
+	if getKitStats({_player}, "ArcaneSorcery") is {_now}:
+		deleteKitStats({_player}, "ArcaneSorcery")
 		remove a netherite hoe named {@itemname} from {_player}
 
 
@@ -119,7 +119,7 @@ local function kitParticle_ArcaneSorcery_Circle(player: player, now: date):
 	add rgb(183, 236, 225) to {_colors::*}
 
 	loop 60 times:
-		if kitStats_GET({_player}, "ArcaneSorcery") is not {_now}:
+		if getKitStats({_player}, "ArcaneSorcery") is not {_now}:
 			stop
 		
 		set {_pitch} to 0.5 + (1.5 * ((loop-number) / 60))

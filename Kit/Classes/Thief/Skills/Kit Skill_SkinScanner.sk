@@ -18,9 +18,9 @@ function kitSetSkinScanner(player: player, target: player):
 	nameCT({_player}, "Skin Scanner")
 	set {_Class} to {Class::%{_target}%}
 	set {_CLS} to {CLS::%{_target}%}
-	kitStats_SET({_player}, "FakePlayer", {_target})
-	kitStats_SET({_player}, "FakeClass", {_Class})
-	kitStats_SET({_player}, "FakeCLS", {_CLS})
+	setKitStats({_player}, "FakePlayer", {_target})
+	setKitStats({_player}, "FakeClass", {_Class})
+	setKitStats({_player}, "FakeCLS", {_CLS})
 	execute console command "/disguiseplayer %{_player}% Player %{_target}%"
 	kitMsg({_player}, "§6§l%{_target}% §bに変装しました...")
 	sendTimeBossbar_GREEN({_player}, "Skin Scanner", 600)
@@ -36,11 +36,11 @@ function kitSetSkinScanner(player: player, target: player):
 	loop 30 times:
 		spawnParticle_Vector(scrape, randomVector(), 0.3, {_el})
 	wait 30 seconds
-	if kitStats_GET({_player}, "FakePlayer") is set:
+	if getKitStats({_player}, "FakePlayer") is set:
 		execute console command "/undisplayer %{_player}%"
-		kitStats_DELETE({_player}, "FakePlayer")
-		kitStats_DELETE({_player}, "FakeClass")
-		kitStats_DELETE({_player}, "FakeCLS")
+		deleteKitStats({_player}, "FakePlayer")
+		deleteKitStats({_player}, "FakeClass")
+		deleteKitStats({_player}, "FakeCLS")
 		kitMsg({_player}, "§c§l変装が解除された!")
 		execute console command "/skclass %{_player}% Kit-Thief"
 		set {_weapon.main} to kitPlayerWeaponItem({_player}, "Thief")
@@ -52,6 +52,6 @@ function kitSetSkinScanner(player: player, target: player):
 on damage of player:
 	set {_attacker} to getAttacker(victim)
 	{_attacker} is set
-	kitStats_GET(victim, "FakePlayer") is set
+	getKitStats(victim, "FakePlayer") is set
 	kitCheckTeam(victim, {_attacker}, false) is true
 	apply glowing 1 to victim for 1 second replacing existing effect

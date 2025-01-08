@@ -2,7 +2,7 @@
 
 on damage of player with priority LOW:
 	metadata value "gametype" of victim is "Kit"
-	kitStats_GET(victim, "IschemiaCurse") is true
+	getKitStats(victim, "IschemiaCurse") is true
 	setDamageModification_MUL(victim, 2)
 	send action bar "§5§l血痕魔法陣が傷を増幅する..." to victim
 	kitEffectDescription(victim, "§4x2")
@@ -30,7 +30,7 @@ function kitEffect_IschemiaCurse(player: player):
 			set {_eg::%loop-player%} to true
 			if {_jb::%loop-player%} is not set:
 				set {_jb::%loop-player%} to true
-				kitStats_SET(loop-player, "IschemiaCurse", true)
+				setKitStats(loop-player, "IschemiaCurse", true)
 				kitParticle_IschemiaCurse_Start(loop-player)
 
 		loop all players:
@@ -38,14 +38,14 @@ function kitEffect_IschemiaCurse(player: player):
 			{_eg::%loop-player%} is not set
 			{_jb::%loop-player%} is true
 			delete {_jb::%loop-player%}
-			kitStats_DELETE(loop-player, "IschemiaCurse")
+			deleteKitStats(loop-player, "IschemiaCurse")
 
 		wait a tick
 	kitMsg({_player}, "§5血痕魔法陣は消滅しました...")
 	loop all players:
 		{_eg::%loop-player%} is true
 		{_jb::%loop-player%} is true
-		kitStats_DELETE(loop-player, "IschemiaCurse")
+		deleteKitStats(loop-player, "IschemiaCurse")
 
 
 

@@ -9,14 +9,14 @@ options:
 
 
 on rightclick holding a bow:
-	set {_HelicalLuminary} to kitStats_GET(player, "HelicalLuminary")
+	set {_HelicalLuminary} to getKitStats(player, "HelicalLuminary")
 	{_HelicalLuminary} is set
 	kitParticle_HelicalLuminary_Charge(player)
 
 
 
 on shoot:
-	set {_HelicalLuminary} to kitStats_GET(shooter, "HelicalLuminary")
+	set {_HelicalLuminary} to getKitStats(shooter, "HelicalLuminary")
 	{_HelicalLuminary} is set
 	projectile is an arrow or a spectral arrow
 	set {_draw} to getBowDrawTime(shooter, 30)
@@ -35,16 +35,16 @@ function kitUltArcher(player: player):
 
 
 local function kitEffect_HelicalLuminary(player: player):
-	kitStats_SET({_player}, "HelicalLuminary", 3)
+	setKitStats({_player}, "HelicalLuminary", 3)
 	kitParticle_HelicalLuminary_Force({_player})
 
 local function kitEffect_HelicalLuminary_Shoot(player: player):
 	# forceの消費
-	set {_HL} to kitStats_GET({_player}, "HelicalLuminary")
+	set {_HL} to getKitStats({_player}, "HelicalLuminary")
 	subtract 1 from {_HL}
-	kitStats_SET({_player}, "HelicalLuminary", {_HL})
+	setKitStats({_player}, "HelicalLuminary", {_HL})
 	if {_HL} <= 0:
-		kitStats_DELETE({_player}, "HelicalLuminary")
+		deleteKitStats({_player}, "HelicalLuminary")
 	# 音
 	playSound("item.trident.thunder", 100, 1, {_player})
 
@@ -124,14 +124,14 @@ local function kitParticle_HelicalLuminary_Force(player: player):
 	set {_baserad} to 0
 	set {_addbaserad} to 50 / 20
 	while {_enable} is true:
-		if kitStats_GET({_player}, "HelicalLuminary") is not set:
+		if getKitStats({_player}, "HelicalLuminary") is not set:
 			stop
 
 		set {_baseloc} to location 1 meter above {_player}
 		set pitch of {_baseloc} to 0
 		set {_basevec} to setVector({_baseloc}, (location 10 meters in front of {_baseloc}), 1)
 
-		set {_count} to kitStats_GET({_player}, "HelicalLuminary")
+		set {_count} to getKitStats({_player}, "HelicalLuminary")
 		set {_rad} to {_baserad}
 		set {_addrad} to 360 / {_count}
 		loop {_count} times:
@@ -174,7 +174,7 @@ local function kitParticle_HelicalLuminary_Charge(player: player):
 	add rgb(245, 241, 183) to {_colors.l::*}
 	add rgb(255, 253, 223) to {_colors.l::*}
 
-	set {_count} to kitStats_GET({_player}, "HelicalLuminary")
+	set {_count} to getKitStats({_player}, "HelicalLuminary")
 	set {_enable} to true
 	while {_enable} is true:
 		wait a tick
@@ -184,7 +184,7 @@ local function kitParticle_HelicalLuminary_Charge(player: player):
 			stop
 		if type of (tool of {_player}) is not a bow:
 			stop
-		if kitStats_GET({_player}, "HelicalLuminary") is not {_count}:
+		if getKitStats({_player}, "HelicalLuminary") is not {_count}:
 			stop
 		
 		set {_baseloc} to location of (head of {_player})

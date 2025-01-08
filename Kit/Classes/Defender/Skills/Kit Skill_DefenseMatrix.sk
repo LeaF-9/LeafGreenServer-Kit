@@ -1,14 +1,14 @@
 # Defense Matrix
 
 function kitEffect_DefenseMatrix(player: player):
-	set {_SkillLocation} to kitStats_GET({_player}, "SkillLocation")
+	set {_SkillLocation} to getKitStats({_player}, "SkillLocation")
 	if {_SkillLocation} is not set:
 		send action bar "§c§l発動地点が有効ではありません!" to {_player}
 		stop
 
 	nameCT({_player}, "Defense Matrix")
 	set {_now} to now
-	kitStats_SET({_player}, "DefenseMatrix-Time", {_now})
+	setKitStats({_player}, "DefenseMatrix-Time", {_now})
 	kitFakeDeleteData({_player}, "Defense Matrix")
 	set {_loc} to {_SkillLocation}
 	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
@@ -20,11 +20,11 @@ function kitEffect_DefenseMatrix(player: player):
 	kitMsg({_player}, "§9Defense Matrix§bを設置しました!")
 	playSound("block.anvil.land", 1, 0.5, {_loc})
 	set {_yaw} to 0
-	while kitStats_GET({_player}, "DefenseMatrix-Time") is {_now}:
+	while getKitStats({_player}, "DefenseMatrix-Time") is {_now}:
 		wait a tick
 		set {_exist} to kitFakeCheck({_player}, "Defense Matrix")
 		if {_exist} is false:
-			kitStats_DELETE({_player}, "DefenseMatrix-Time")
+			deleteKitStats({_player}, "DefenseMatrix-Time")
 			continue
 		add 10 to {_yaw}
 		if {_yaw} >= 360:
@@ -38,7 +38,7 @@ function kitEffect_DefenseMatrix(player: player):
 		teleport {_itemdisplay} to {_loc}
 
 on damage with priority NORMAL:
-	kitStats_GET(victim, "NoSupport") is not set
+	getKitStats(victim, "NoSupport") is not set
 	metadata value "gametype" of victim is "Kit"
 	loop all block displays in radius 5 around victim:
 		{_a} is not set

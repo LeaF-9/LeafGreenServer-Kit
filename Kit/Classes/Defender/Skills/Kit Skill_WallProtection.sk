@@ -15,7 +15,7 @@ function kitEffect_WallProtection(player: player):
 
 	setCT({_player}, "§3Wall Protection", 50)
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
-	kitStats_SET({_player}, "WPyaw", (yaw of {_player}))
+	setKitStats({_player}, "WPyaw", (yaw of {_player}))
 	shoot a snowball from {_player} at speed 1.5
 	if name of {_player}'s tool contains "§9[5*9]":
 		set {_size} to "5*9"
@@ -37,13 +37,13 @@ on projectile hit:
 	else:
 		set {_h} to 9
 		set {_w} to 3
-	set {_WPyaw} to kitStats_GET(shooter, "WPyaw")
+	set {_WPyaw} to getKitStats(shooter, "WPyaw")
 	if {_WPyaw} is between 225 and 315:
 		set {_dir} to true
 	if {_WPyaw} is between 45 and 135:
 		set {_dir} to true
-	kitStats_DELETE(shooter, "WPyaw")
-	kitStats_SET(shooter, "WallProtection", true)
+	deleteKitStats(shooter, "WPyaw")
+	setKitStats(shooter, "WallProtection", true)
 	kitMsg(shooter, "<##40e0d0>大きな壁を生成しました!")
 	sendTimeBossbar_GREEN(shooter, "Wall Protection", 200)
 	playSound("block.glass.place", 1.5, 0.5, projectile)
@@ -71,7 +71,7 @@ on projectile hit:
 	loop {_lb::*}:
 		add loop-value to {Block.%shooter%::*}
 	wait 10 seconds
-	kitStats_DELETE(shooter, "WallProtection")
+	deleteKitStats(shooter, "WallProtection")
 	playSound("block.glass.break", 1.5, 0.5, projectile)
 	loop {_lb::*}:
 		if block at loop-value is not air:
@@ -82,7 +82,7 @@ on projectile hit:
 on break of blue glass:
 	metadata value "gametype" of player is "Kit"
 	loop all players:
-		kitStats_GET(loop-player, "WallProtection") is true
+		getKitStats(loop-player, "WallProtection") is true
 		{Block.%loop-player%::*} contains event-location
 		set {_ok} to true
 	if {_ok} is true:
@@ -94,7 +94,7 @@ on break of blue glass:
 on break of light blue glass:
 	metadata value "gametype" of player is "Kit"
 	loop all players:
-		kitStats_GET(loop-player, "WallProtection") is true
+		getKitStats(loop-player, "WallProtection") is true
 		{Block.%loop-player%::*} contains event-location
 		set {_ok} to true
 	if {_ok} is true:
@@ -106,7 +106,7 @@ on break of light blue glass:
 on break of white glass:
 	metadata value "gametype" of player is "Kit"
 	loop all players:
-		kitStats_GET(loop-player, "WallProtection") is true
+		getKitStats(loop-player, "WallProtection") is true
 		{Block.%loop-player%::*} contains event-location
 		set {_ok} to loop-player
 	if {_ok} is set:

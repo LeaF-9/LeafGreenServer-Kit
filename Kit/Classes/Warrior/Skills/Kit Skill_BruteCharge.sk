@@ -1,12 +1,12 @@
 # Brute Charge
 
 on damage with priority LOW:
-	if kitStats_GET(victim, "BruteCharging") is true:
-		kitStats_DELETE(victim, "BruteCharging")
+	if getKitStats(victim, "BruteCharging") is true:
+		deleteKitStats(victim, "BruteCharging")
 		kitMsg(victim, "§cチャージがキャンセルされた!")
 		stop
 	set {_attacker} to getAttacker(victim)
-	if kitStats_GET({_attacker}, "BruteCharge") is true:
+	if getKitStats({_attacker}, "BruteCharge") is true:
 		setDamageModification_FIX(victim, 100)
 		playSound("entity.wither.break_block", 1, 0.5, victim)
 		kitEffect_BruteCharge_3(victim)
@@ -20,14 +20,14 @@ function kitEffect_BruteCharge(player: player):
 	kitMsg({_player}, "§5力をチャージします...")
 	kitFreeze({_player}, 60, false)
 	apply glowing 1 to {_player} for 3 seconds
-	kitStats_SET({_player}, "BruteCharging", true)
+	setKitStats({_player}, "BruteCharging", true)
 	kitEffect_BruteCharge_1({_player})
 	loop 3 times:
-		if kitStats_GET({_player}, "BruteCharging") is true:
+		if getKitStats({_player}, "BruteCharging") is true:
 			wait a second
-	if kitStats_GET({_player}, "BruteCharging") is true:
-		kitStats_DELETE({_player}, "BruteCharging")
-		kitStats_SET({_player}, "BruteCharge", true)
+	if getKitStats({_player}, "BruteCharging") is true:
+		deleteKitStats({_player}, "BruteCharging")
+		setKitStats({_player}, "BruteCharge", true)
 		kitMsg({_player}, "§6§l暴走状態§c§に入った! §4§l敵を薙ぎ払え!")
 		sendTimeBossbar_GREEN({_player}, "Brute Charge", 100)
 		kitPalsy({_player}, 100, false)
@@ -38,10 +38,10 @@ function kitEffect_BruteCharge(player: player):
 		add 1 to y-coordinate of {_el}
 		kitEffect_BruteCharge_2({_player})
 		loop 5 times:
-			if kitStats_GET({_player}, "BruteCharge") is true:
+			if getKitStats({_player}, "BruteCharge") is true:
 				wait a second
-		if kitStats_GET({_player}, "BruteCharge") is true:
-			kitStats_DELETE({_player}, "BruteCharge")
+		if getKitStats({_player}, "BruteCharge") is true:
+			deleteKitStats({_player}, "BruteCharge")
 			kitMsg({_player}, "§3暴走状態は終了しました")
 	else:
 		kitMsg({_player}, "§8チャージに失敗してしまった...")
@@ -67,7 +67,7 @@ function kitEffect_BruteCharge_1(player: player):
 	set {_s} to 0
 	set {_u} to 3
 	loop 3 times:
-		if kitStats_GET({_player}, "BruteCharging") is true:
+		if getKitStats({_player}, "BruteCharging") is true:
 			set {_soundpitch} to 2.5 - 0.5 * loop-number
 			playSound("entity.wither.ambient", 1, {_soundpitch}, {_player})
 			add 40 to {_s}
@@ -101,7 +101,7 @@ function kitEffect_BruteCharge_2(player: player):
 	set {_loc} to location of {_player}
 	set {_vector} to {_loc}
 	loop 6 times:
-		if kitStats_GET({_player}, "BruteCharge") is true:
+		if getKitStats({_player}, "BruteCharge") is true:
 			playSound("entity.wither.shoot", 1, 0.6, {_player})
 			set {_loc} to location of {_player}
 	#		座標の設定　主軸{_loc}{_w}

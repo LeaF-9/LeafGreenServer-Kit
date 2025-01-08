@@ -1,10 +1,10 @@
 # Spatial Distorter
 
 function kitEffect_SpatialDistorter(player: player):
-	if kitStats_GET({_player}, "SpatialDistorter") is not set:
-		kitStats_SET({_player}, "SpatialDistorter", 60)
+	if getKitStats({_player}, "SpatialDistorter") is not set:
+		setKitStats({_player}, "SpatialDistorter", 60)
 	set {_now} to now
-	kitStats_SET({_player}, "SpatialDistorterNow", {_now})
+	setKitStats({_player}, "SpatialDistorterNow", {_now})
 	set {_baseloc} to location of head of {_player}
 	loop 15 times:
 		{_obloc} is not set
@@ -16,11 +16,11 @@ function kitEffect_SpatialDistorter(player: player):
 		set {_obloc} to location 15 meters in front of {_baseloc}
 	playSound("block.portal.ambient", 0.7, 2, {_obloc})
 	loop 5 times:
-		kitStats_GET({_player}, "SpatialDistorter") > 0
-		kitStats_GET({_player}, "SpatialDistorterNow") is {_now}
-		set {_SpatialDistorter} to kitStats_GET({_player}, "SpatialDistorter")
+		getKitStats({_player}, "SpatialDistorter") > 0
+		getKitStats({_player}, "SpatialDistorterNow") is {_now}
+		set {_SpatialDistorter} to getKitStats({_player}, "SpatialDistorter")
 		subtract 1 from {_SpatialDistorter}  # Action BarはKit Timerで作成
-		kitStats_SET({_player}, "SpatialDistorter", {_SpatialDistorter})
+		setKitStats({_player}, "SpatialDistorter", {_SpatialDistorter})
 		set {_baseloc} to location of head of {_player}
 		set {_m} to 0
 		delete {_obloc}
@@ -39,7 +39,7 @@ function kitEffect_SpatialDistorter(player: player):
 			set {_vector} to setVector({_obloc}, {_to}, 0.5)
 			set velocity of loop-entity to {_vector}
 			if type of loop-entity is a player:
-				kitStats_SET(loop-entity, "FallRemove", {_now})
+				setKitStats(loop-entity, "FallRemove", {_now})
 		set {_s} to 0
 		set {_t} to 0
 		loop 19 time:
@@ -57,16 +57,16 @@ function kitEffect_SpatialDistorter(player: player):
 				add 10 to {_t}
 			add 10 to {_s}
 		wait a tick
-	if kitStats_GET({_player}, "SpatialDistorterNow") is {_now}:
-		kitStats_DELETE({_player}, "SpatialDistorterNow")
+	if getKitStats({_player}, "SpatialDistorterNow") is {_now}:
+		deleteKitStats({_player}, "SpatialDistorterNow")
 	wait 5 seconds
 	loop all players:
-		kitStats_GET(loop-player, "FallRemove") is {_now}
-		kitStats_DELETE(loop-player, "FallRemove")
+		getKitStats(loop-player, "FallRemove") is {_now}
+		deleteKitStats(loop-player, "FallRemove")
 
 function kitSkill_LinkageChain_ActionBar(player: player):
-	if kitStats_GET({_player}, "SpatialDistorter") is set:
-		set {_barcount} to kitStats_GET({_player}, "SpatialDistorter")
+	if getKitStats({_player}, "SpatialDistorter") is set:
+		set {_barcount} to getKitStats({_player}, "SpatialDistorter")
 	else:
 		set {_barcount} to 60
 	set {_bar} to 0
