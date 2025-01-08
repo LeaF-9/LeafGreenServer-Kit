@@ -151,6 +151,9 @@ function kitRankingUpdate(stats: text):
 		delete {_highplayer}
 	kitChangeRankingDisplay({_stats}, {_display::*})
 
+import:
+	org.bukkit.entity.Display$Billboard
+
 # 指定したステータスの指定したランクをDisplayに変更
 function kitChangeRankingDisplay(stats: text, displays: texts):
 	set {_num} to 0
@@ -174,7 +177,8 @@ function kitChangeRankingDisplay(stats: text, displays: texts):
 			set {_nbt} to nbt compound of {_textDisplay}
 			set string tag "custom;{@nbt-tag-type}" of {_nbt} to {_stats}
 			set string tag "custom;{@nbt-tag-line}" of {_nbt} to "%{_num}%"
-		set display name of {_textDisplay} to {_displays::%{_num}%}
+		{_textDisplay}.setBillboard(Billboard.CENTER)
+		{_textDisplay}.setText("%{_displays::%{_num}%}%")
 
 # 着手中(後回し)
 # ランキングディスプレイを削除する関数
