@@ -71,7 +71,7 @@ local function kitEffect_StealthTrap_Active(player: player, loc: location):
 
 	loop all entities in radius {@effect-radius} around {_loc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
-		kitDamage({_player}, "loop-entity", {@damage-amount}, "毒罠")
+		kitDamage({_player}, loop-entity, {@damage-amount}, "毒罠")
 		applyEffect(loop-entity, poison, {@poison-tier}, {@effect-second})
 		applyEffect(loop-entity, blindness, 1, {@effect-second})
 		kitParticle_StealthTrap_Hit(loop-entity)
@@ -107,29 +107,38 @@ local function kitParticle_StealthTrap_Trap(player: player, loc: location):
 	add rgb(20, 145, 113) to {_colors::*}
 
 	set {_basevector} to vector({@effect-radius}, 0, 0)
-	set {_rad} to 0
-	set {_count} to 60
-	set {_addrad} to 360 / {_count}
-	loop {_count} times:
-		set {_rotatevector} to {_basevector}
-		rotate {_rotatevector} around y-axis by {_rad}
-		add {_addrad} to {_rad}
-		set {_el} to {_baseloc} ~ {_rotatevector}
-		set {_color} to a random element out of {_colors::*}
-		spawnParticle_Dust({_color}, 1, {_el})
-	
-	loop 3 times:
-		set {_rm} to a random number between 0 and {@effect-radius}
-		set {_v} to randomVector({_rm})
-		set {_el} to {_loc} ~ {_v}
-		spawnParticle_BlockData(falling_dust, green wool, {_el})
-		chance of 50%:
-			continue
+
+	set {_enable} to true
+	set {_now} to getKitStats({_player}, "Stealth Trap")
+	while {_enable} is true:
+		set {_time} to getKitStats({_player}, "Stealth Trap")
+		if {_time} is not {_now}:
+			stop
+
+		set {_rad} to 0
+		set {_count} to 60
+		set {_addrad} to 360 / {_count}
+		loop {_count} times:
+			set {_rotatevector} to {_basevector}
+			rotate {_rotatevector} around y-axis by {_rad}
+			add {_addrad} to {_rad}
+			set {_el} to {_loc} ~ {_rotatevector}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 1, {_el}, {_player})
 		
-		set {_rm} to a random number between 0 and {@effect-radius}
-		set {_v} to randomVector({_rm})
-		set {_el} to {_loc} ~ {_v}
-		spawnParticle_BlockData(falling_dust, lime wool, {_el})
+		loop 3 times:
+			set {_rm} to a random number between 0 and {@effect-radius}
+			set {_v} to randomVector({_rm})
+			set {_el} to {_loc} ~ {_v}
+			spawnParticle_BlockData(falling_dust, green wool, {_el}, {_player})
+			chance of 50%:
+				continue
+			
+			set {_rm} to a random number between 0 and {@effect-radius}
+			set {_v} to randomVector({_rm})
+			set {_el} to {_loc} ~ {_v}
+			spawnParticle_BlockData(falling_dust, lime wool, {_el}, {_player})
+		wait a tick
 
 # 罠が動作した際の演出
 local function kitParticle_StealthTrap_Active(loc: location):
@@ -144,8 +153,8 @@ local function kitParticle_StealthTrap_Active(loc: location):
 		set {_rotatevector} to {_basevector}
 		rotate {_rotatevector} around y-axis by {_rad}
 		add {_addrad} to {_rad}
-		set {_el} to {_baseloc} ~ {_rotatevector}
-		spawnParticle_Block(oak leaves, {_el})
+		set {_el} to {_loc} ~ {_rotatevector}
+		spawnParticle_BlockData(dust_pillar, oak leaves, {_el})
 	
 	loop 30 times:
 		set {_rm} to a random number between 0 and {@effect-radius}
