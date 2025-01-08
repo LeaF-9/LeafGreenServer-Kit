@@ -1,0 +1,54 @@
+# skill-name: Forest Servant
+
+options:
+	spider-poison-time: 3 seconds
+	metadata-name: "Forest Servant"
+
+on damage:
+	set {_attacker} to getAttacker(victim)
+	checkEntityType({_attacker}, cave spider) is true
+	metadata value {@metadata-name} of {_attacker} is true
+	applyEffect(victim, poison, 1, {@spider-poison-time}, true)
+
+
+
+function kitEffect_ForestServant(player: player):
+	nameCT({_player}, "Forest Servant")
+
+	# 既に召喚されたMobの消滅
+	loop all entities:
+		metadata value {@metadata-name} of loop-entity is true
+		delete loop-entity
+	
+	kitMsg({_player}, "<##08653a>§l森の守護者達<##82db88>を召喚しました!")
+	set {_baseloc} to location of {_player}
+	set pitch of {_baseloc} to 0
+	set {_basevec} to setVector({_baseloc}, location 10 meters in front of {_baseloc}, 3)
+	
+	set {_nbt} to nbt compound from "{Team:""kit-%{TrueTeam::%{_player}%}%""}"
+
+	set {_rad} to 0
+	set {_addrad} to 120
+	loop 3 times:
+		set {_rotatevec} to {_basevec}
+		rotate {_rotatevec} around y-axis by {_rad}
+		add {_addrad} to {_rad}
+		set {_spawnloc} to {_baseloc} ~ {_rotatevec}
+		set {_spawnloc} to {_baseloc} if location 0.1 meters below {_spawnloc} is passable
+
+		if loop-number is 1:
+			spawn a bogged at {_spawnloc} with nbt {_nbt}
+			set {_spawned} to spawned bogged
+		else:
+			spawn a cave spider at {_spawnloc} with nbt {_nbt}
+			set {_spawned} to spawned cave spider
+		set display name of {_spawned} to "%{_player}%"
+		set metadata value {@metadata-name} of {_spawned} to true
+		kitParticle_ForestServant_Spawn({_spawned})
+
+local function kitParticle_ForestServant_Spawn(entity: entity):
+	playSound("entity.creaking.attack", 0.8, 0.8, {_entity})
+
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 10 times:
+		spawnParticle_Vector(glow_squid_ink, randomVector(), 0.5, {_baseloc})
