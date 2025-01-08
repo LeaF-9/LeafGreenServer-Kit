@@ -2,6 +2,10 @@
 
 options:
 	place-time: 60
+	effect-radius: 5
+	damage-amount: 2
+	poison-tier: 2
+	effect-second: 5 seconds
 
 
 
@@ -10,88 +14,211 @@ function kitEffect_StealthTrap(player: player):
 
 	set {_StealthTrap} to getKitStats({_player}, "Stealth Trap")
 	if {_StealthTrap} is set:
+		set {_loc} to getKitStats({_player}, "Stealth Trap - Location")
+		kitParticle_StealthTrap_Recall({_loc})
+		deleteKitStats({_player}, "Stealth Trap")
+		deleteKitStats({_player}, "Stealth Trap - Location")
 		kitMsg({_player}, "<##78a27c>古い罠を回収しました!")
 	
-	setKitStats()
+	kitMsg({_player}, "<##19722c>罠を設置します...")
+	set {_now} to now
+	setKitStats({_player}, "Stealth Trap - Placing", {_now})
+
+	set {_ln} to 0
+	loop {@place-time} times:
+		delete {_placing}
+		set {_placing} to getKitStats({_player}, "Stealth Trap - Placing")
+		if {_placing} is not set:
+			kitMsg({_player}, "§c§l罠の設置が中断されました!")
+			stop
+
+		add 1 to {_ln}
+		kitParticle_StealthTrap_Placing({_player}, {_ln})
+		set velocity of {_player} to vector(0, 0, 0)
+		wait a tick
+	
+	deleteKitStats({_player}, "Stealth Trap - Placing")
+	kitMsg({_player}, "<##1c852c>§l透明の毒罠<##698787>を設置しました!")
+	set {_loc} to location of {_player}
+	kitParticle_StealthTrap_Fix({_loc})
+	kitEffect_StealthTrap_Timer({_player}, {_loc})
+
+local function kitEffect_StealthTrap_Timer(player: player, loc: location):
+	set {_now} to now
+	setKitStats({_player}, "Stealth Trap", {_now})
+	setKitStats({_player}, "Stealth Trap - Location", {_loc})
+
+	set {_enable} to true
+	while {_enable} is true:
+		set {_time} to getKitStats({_player}, "Stealth Trap")
+		if {_time} is not {_now}:
+			stop
+
+		loop all players in radius {@effect-radius} around {_loc}:
+			kitCheckTeam({_player}, loop-player, false) is true
+			set {_active} to true
+			kitEffect_StealthTrap_Active({_player}, {_loc})
+			stop
+
+		kitParticle_StealthTrap_Trap({_player}, {_loc})
+		wait a second
+
+local function kitEffect_StealthTrap_Active(player: player, loc: location):
+	deleteKitStats({_player}, "Stealth Trap")
+	deleteKitStats({_player}, "Stealth Trap - Location")
+	kitParticle_StealthTrap_Active({_loc})
+	sendTitle({_player}, "<##9e1b3a>§l罠が作動しました!", "", 1 second, 3 ticks, 3 tick)
+
+	loop all entities in radius {@effect-radius} around {_loc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		kitDamage({_player}, "loop-entity", {@damage-amount}, "毒罠")
+		applyEffect(loop-entity, poison, {@poison-tier}, {@effect-second})
+		applyEffect(loop-entity, blindness, 1, {@effect-second})
+		kitParticle_StealthTrap_Hit(loop-entity)
 
 
 
 
+# 設置中の演出
+local function kitParticle_StealthTrap_Placing(player: player, num: number):
+	set {_pitch} to 0.5 + (1.5 * ({_num} / {@place-time}))
+	playSound("block.grass.step", 0.75, {_pitch}, {_player})
 
+	add rgb(16, 95, 49) to {_colors::*}
+	add rgb(13, 121, 69) to {_colors::*}
+	add rgb(33, 103, 86) to {_colors::*}
 
-# on rightclick holding a lead:
-# 	name of player's tool is "§1Trap"
-# 	if {CT.%player%::%name of player's tool%} is not set:
-# 		execute console command "/trapopen %player%"
-# 	else:
-# 		set action bar of player to "§c§lクールタイムが終わっていません!"
+	set {_baseloc} to location of {_player}
+	set {_basevector} to vector({@effect-radius}, 0, 0)
+	set {_rad} to 0
+	set {_addrad} to 360 / {@place-time}
+	loop {_num} times:
+		set {_rotatevector} to {_basevector}
+		rotate {_rotatevector} around y-axis by {_rad}
+		add {_addrad} to {_rad}
+		set {_el} to {_baseloc} ~ {_rotatevector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.6, {_el})
 
-# command /trapopen <player>:
-# 	trigger:
-# 		open chest with 1 row named "§1Trap" to arg 1
-# 		wait a tick
-# 		format slot 1 of arg 1 with raw pufferfish named "§4Poison" with lore "§6=効果=||§d- 毒 I 10s" to close then run [make arg 1 execute command "trap poison"]
-# 		format slot 3 of arg 1 with eye of ender named "§4Blindness" with lore "§6=効果=||§d- 盲目 10s" to close then run [make arg 1 execute command "trap blind"]
-# 		format slot 5 of arg 1 with cobweb named "§4Stiffness" with lore "§6=効果=||§d- 移動速度低下 X 10s||§d- 跳躍力上昇 -10 10s" to close then run [make arg 1 execute command "trap stiff"]
-# 		format slot 7 of arg 1 with melon seeds named "§4Fatigue" with lore "§6=効果=||§d- 採掘速度低下 I 10s" to close then run [make arg 1 execute command "trap fatigue"]
+# 罠の演出
+local function kitParticle_StealthTrap_Trap(player: player, loc: location):
+	add rgb(14, 139, 66) to {_colors::*}
+	add rgb(15, 156, 88) to {_colors::*}
+	add rgb(20, 145, 113) to {_colors::*}
 
-# command /trap <text>:
-# 	trigger:
-# 		if {-Stats.%player%::Trap} is true:
-# 			message "{@prefix} §3以前の罠が撤去されました"
-# 		set {-Stats.%player%::Trap} to true
-# 		set {-Stats.%player%::TrapType} to arg 1
-# 		set {-Stats.%player%::TrapLocate} to location of block at player
-# 		message "{@prefix} §cトラップを仕掛けました!"
-# 		message "{@prefix} §e設置場所 §a%{-Stats.%player%::TrapLocate}%"
-# 		set {CT.%player%::§1Trap} to 50
+	set {_basevector} to vector({@effect-radius}, 0, 0)
+	set {_rad} to 0
+	set {_count} to 60
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		set {_rotatevector} to {_basevector}
+		rotate {_rotatevector} around y-axis by {_rad}
+		add {_addrad} to {_rad}
+		set {_el} to {_baseloc} ~ {_rotatevector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 1, {_el})
+	
+	loop 3 times:
+		set {_rm} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_rm})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle_BlockData(falling_dust, green wool, {_el})
+		chance of 50%:
+			continue
+		
+		set {_rm} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_rm})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle_BlockData(falling_dust, lime wool, {_el})
 
-# every a second:
-# 	loop all players:
-# 		{-Stats.%loop-player-1%::Trap} is true
-# 		set {_pn} to 0
-# 		loop all players in radius 3 around location of {-Stats.%loop-player-1%::TrapLocate}:
-# 			{team::%loop-player-2%} is not {team::%loop-player-1%}
-# 			{CLS::%loop-player-2%} is not "ENG"
-# 			add 1 to {_pn}
-# 			set {_trapped.%loop-player-1%::%loop-player-2%} to true
-# 		{_pn} is more than 0
-# 		if {-Stats.%loop-player-1%::TrapType} is "poison":
-# 			loop all players:
-# 				{_trapped.%loop-player-1%::%loop-player-2%} is true
-# 				make loop-player-1 damage loop-player-2 by 4
-# 				apply poison 1 to loop-player-2 for 10 seconds
-# 				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
-# 				message "§5罠に掛かってしまった!" to loop-player-2
-# 				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-# 		else if {-Stats.%loop-player-1%::TrapType} is "blind":
-# 			loop all players:
-# 				{_trapped.%loop-player-1%::%loop-player-2%} is true
-# 				make loop-player-1 damage loop-player-2 by 4
-# 				apply blindness 1 to loop-player-2 for 10 seconds
-# 				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
-# 				message "§5罠に掛かってしまった!" to loop-player-2
-# 				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-# 		else if {-Stats.%loop-player-1%::TrapType} is "stiff":
-# 			loop all players:
-# 				{_trapped.%loop-player-1%::%loop-player-2%} is true
-# 				make loop-player-1 damage loop-player-2 by 4
-# 				remove slowness from loop-player-2
-# 				remove jump boost from loop-player-2
-# 				apply slowness 10 to loop-player-2 for 10 seconds
-# 				apply jump boost -10 to loop-player-2 for 10 seconds
-# 				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
-# 				message "§5罠に掛かってしまった!" to loop-player-2
-# 				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-# 		else if {-Stats.%loop-player-1%::TrapType} is "fatigue":
-# 			loop all players:
-# 				{_trapped.%loop-player-1%::%loop-player-2%} is true
-# 				make loop-player-1 damage loop-player-2 by 4
-# 				apply mining fatigue 1 to loop-player-2 for 10 seconds
-# 				create a fake explosion at {-Stats.%loop-player-1%::TrapLocate}
-# 				message "§5罠に掛かってしまった!" to loop-player-2
-# 				drawDot count 1, particle "mobspell", XYZ 0, 50, 0, center loop-player-2, visibleRange 32, keepFor 5 seconds
-# 		message "§2罠が発動した！" to loop-player-1
-# 		delete {-Stats.%loop-player-1%::Trap}
-# 		delete {-Stats.%loop-player-1%::TrapType}
-# 		delete {-Stats.%loop-player-1%::TrapLocate}
+# 罠が動作した際の演出
+local function kitParticle_StealthTrap_Active(loc: location):
+	playSound("entity.generic.explode", 1, 1.15, {_loc})
+	playSound("entity.zombie.converted_to_drowned", 1, 0.8, {_loc})
+
+	set {_basevector} to vector({@effect-radius}, 0, 0)
+	set {_rad} to 0
+	set {_count} to 60
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		set {_rotatevector} to {_basevector}
+		rotate {_rotatevector} around y-axis by {_rad}
+		add {_addrad} to {_rad}
+		set {_el} to {_baseloc} ~ {_rotatevector}
+		spawnParticle_Block(oak leaves, {_el})
+	
+	loop 30 times:
+		set {_rm} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_rm})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle_BlockData(block_crumble, oak leaves, {_el})
+		chance of 10%:
+			continue
+		
+		set {_rm} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_rm})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle_BlockData(block_crumble, birch leaves, {_el})
+		chance of 10%:
+			continue
+		
+		set {_rm} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_rm})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle_BlockData(block_crumble, spruce leaves, {_el})
+
+# 罠にヒットした際の演出
+local function kitParticle_StealthTrap_Hit(entity: entity):
+	playSound("block.grass.break", 1, {_pitch}, {_entity})
+
+	add rgb(16, 95, 49) to {_colors::*}
+	add rgb(13, 121, 69) to {_colors::*}
+	add rgb(33, 103, 86) to {_colors::*}
+
+	set {_basevec} to vector(0.5, 0, 0)
+	set {_count} to 5
+	set {_y} to 0
+	set {_addy} to 0.5
+	set {_circle} to 10
+	set {_addrad} to 360 / {_circle}
+	loop {_count} times:
+		set {_baseloc} to location of {_entity}
+		set {_rad} to 0
+		loop {_circle} times:
+			set {_rotatevec} to {_basevec}
+			rotate {_rotatevec} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_rotatevec}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 1, {_el})
+			add {_addrad} to {_rad}
+		wait a tick
+
+# 罠を回収した際の演出
+local function kitParticle_StealthTrap_Recall(loc: location):
+	playSound("entity.item.pickup", 1, 0.8, {_loc})
+
+	set {_basevector} to vector({@effect-radius}, 0, 0)
+	set {_rad} to 0
+	set {_count} to 60
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		set {_rotatevector} to {_basevector}
+		rotate {_rotatevector} around y-axis by {_rad}
+		add {_addrad} to {_rad}
+		set {_el} to {_baseloc} ~ {_rotatevector}
+		spawnParticle_Block(pale oak leaves, {_el})
+
+# 罠の設置が完了した際の演出
+local function kitParticle_StealthTrap_Fix(loc: location):
+	playSound("entity.player.levelup", 1, 1.5, {_loc})
+
+	set {_basevector} to vector({@effect-radius}, 0, 0)
+	set {_rad} to 0
+	set {_count} to 60
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		set {_rotatevector} to {_basevector}
+		rotate {_rotatevector} around y-axis by {_rad}
+		add {_addrad} to {_rad}
+		set {_el} to {_baseloc} ~ {_rotatevector}
+		spawnParticle(egg_crack, {_el})
