@@ -86,10 +86,16 @@ function kitFreeze(player: player, tick: number, msg: boolean = true):
 	set metadata value "DebuffTime - Freeze" of {_player} to {_tick}
 	set {_time} to "%{_tick}% ticks" parsed as time span
 	set {_bossbar.id} to a random UUID
+
+	set {_titledisplay} to "§b§l凍結"
+	set {_timedisplay} to timeDisplay_SECOND({_tick})
+	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+
 	if {_msg} is true:
 		message "§b凍ってしまった!" to {_player}
-		create bossbar titled "&b&l凍結" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+		create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
 	set {_prog} to 100 / {_tick}
+	set {_ticknumber} to {_tick}
 
 	# 凍結処理
 	loop {_tick} times:
@@ -108,6 +114,11 @@ function kitFreeze(player: player, tick: number, msg: boolean = true):
 				chance of 50%:
 					set {_el} to aroundEffect({_player})
 					spawnParticle_BlockData(falling_dust, blue ice, {_el})
+			set {_timedisplay} to timeDisplay_SECOND({_ticknumber})
+			set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+			set bossbar {_bossbar.id} title to {_timer.title}
+			subtract 1 from {_ticknumber}
+
 			set {_value} to value of bossbar {_bossbar.id}
 			subtract {_prog} from {_value}
 			set bossbar {_bossbar.id} value to {_value}
@@ -142,11 +153,17 @@ function kitPalsy(player: player, tick: number, eff: boolean = true):
 	set metadata value "Debuff - Palsy" of {_player} to {_now}
 	set metadata value "DebuffTime - Palsy" of {_player} to {_tick}
 	set {_bossbar.id} to a random UUID
+
+	set {_titledisplay} to "§e§l麻痺"
+	set {_timedisplay} to timeDisplay_SECOND({_tick})
+	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+
 	if {_eff} is true:
 		message "§e痺れてしまった!" to {_player}
-		create bossbar titled "&e&l麻痺" and id {_bossbar.id} for {_player} with progress 100 with colors yellow with style solid
+		create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors yellow with style solid
 	set {_time} to "%{_tick}% ticks" parsed as time span
 	set {_prog} to 100 / {_tick}
+	set {_ticknumber} to {_tick}
 
 	# 麻痺処理
 	loop {_tick} times:
@@ -160,6 +177,11 @@ function kitPalsy(player: player, tick: number, eff: boolean = true):
 				chance of 20%:
 					kitEffect_Palsy({_player})
 			# ボスバー処理
+			set {_timedisplay} to timeDisplay_SECOND({_ticknumber})
+			set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+			set bossbar {_bossbar.id} title to {_timer.title}
+			subtract 1 from {_ticknumber}
+
 			set {_value} to value of bossbar {_bossbar.id}
 			subtract {_prog} from {_value}
 			set bossbar {_bossbar.id} value to {_value}
@@ -269,12 +291,16 @@ function kitSleep(player: player, tick: number):
 	apply blindness 1 to {_player} for {_time} replacing existing effect
 
 	set {_bossbar.id} to a random UUID
-	create bossbar titled "&5&l睡眠" and id {_bossbar.id} for {_player} with progress 100 with colors purple with style solid
+	set {_titledisplay} to "§5§l睡眠"
+	set {_timedisplay} to timeDisplay_SECOND({_tick})
+	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+	create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors purple with style solid
 
 	message formatted "§bZzz..." to {_player}
 	playSound("entity.wolf.growl", 0.5, 0.5, {_player})
 
 	set {_prog} to 100 / {_tick}
+	set {_ticknumber} to {_tick}
 	set {_loc} to location of {_player}
 	# 睡眠処理
 	loop {_tick} times:
@@ -284,6 +310,11 @@ function kitSleep(player: player, tick: number):
 		if block below {_loc} is passable:
 			set {_loc} to location 1 meter below {_loc}
 		teleport {_player} to {_loc}
+
+		set {_timedisplay} to timeDisplay_SECOND({_ticknumber})
+		set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+		set bossbar {_bossbar.id} title to {_timer.title}
+		subtract 1 from {_ticknumber}
 
 		set {_value} to value of bossbar {_bossbar.id}
 		subtract {_prog} from {_value}
@@ -333,11 +364,15 @@ function kitStun(player: player, tick: number):
 	set metadata value "DebuffTime - Stun" of {_player} to {_tick}
 
 	set {_bossbar.id} to a random UUID
-	create bossbar titled "&6&l眩暈" and id {_bossbar.id} for {_player} with progress 100 with colors yellow with style solid
+	set {_titledisplay} to "§6§l眩暈"
+	set {_timedisplay} to timeDisplay_SECOND({_tick})
+	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+	create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors yellow with style solid
 	message formatted "§6眩暈を起こしてしまった!" to {_player}
 	playSound("entity.iron_golem.hurt", 0.7, 0.7, {_player})
 	set {_time} to "%{_tick}% ticks" parsed as time span
 	set {_prog} to 100 / {_tick}
+	set {_ticknumber} to {_tick}
 	set walk speed of {_player} to 0.1
 	set attack speed attribute of {_player} to 4
 
@@ -348,6 +383,11 @@ function kitStun(player: player, tick: number):
 			continue
 
 		# ボスバー処理
+		set {_timedisplay} to timeDisplay_SECOND({_ticknumber})
+		set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+		set bossbar {_bossbar.id} title to {_timer.title}
+		subtract 1 from {_ticknumber}
+
 		set {_value} to value of bossbar {_bossbar.id}
 		subtract {_prog} from {_value}
 		set bossbar {_bossbar.id} value to {_value}
@@ -388,19 +428,28 @@ function kitFear(player: player, tick: number):
 	set metadata value "DebuffTime - Fear" of {_player} to {_tick}
 
 	set {_bossbar.id} to a random UUID
-	create bossbar titled "&0&l恐怖" and id {_bossbar.id} for {_player} with progress 100 with colors purple with style solid
+	set {_titledisplay} to "§0§l恐怖"
+	set {_timedisplay} to timeDisplay_SECOND({_tick})
+	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+	create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors purple with style solid
 
 	message formatted "§0恐怖で視力と聴力が弱まってしまった..." to {_player}
 	playSound("entity.warden.tendril_clicks", 1, 0.5, {_player})
 
 	set {_time} to "%{_tick}% ticks" parsed as time span
 	set {_prog} to 100 / {_tick}
+	set {_ticknumber} to {_tick}
 	applyEffect({_player}, darkness, 1, {_time})
 
 	# 恐怖処理
 	loop {_tick} times:
 		if getDebuffDates({_player}, "Fear") is not {_now}:
 			continue
+
+		set {_timedisplay} to timeDisplay_SECOND({_ticknumber})
+		set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+		set bossbar {_bossbar.id} title to {_timer.title}
+		subtract 1 from {_ticknumber}
 
 		set {_value} to value of bossbar {_bossbar.id}
 		subtract {_prog} from {_value}
@@ -448,12 +497,16 @@ function kitTrail(player: player, tick: number, from: location = location(0.0, 0
 	set metadata value "DebuffTime - Trail" of {_player} to {_tick}
 
 	set {_bossbar.id} to a random UUID
-	create bossbar titled "&9&l追跡" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+	set {_titledisplay} to "§9§l追跡"
+	set {_timedisplay} to timeDisplay_SECOND({_tick})
+	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+	create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
 	message formatted "§9追跡された! §d自分の位置情報が残留してしまう!" to {_player}
 	playSound("item.lodestone_compass.lock", 1, 0.5, {_player})
 	# タイマー初期設定
 	set {_time} to "%{_tick}% ticks" parsed as time span
 	set {_prog} to 100 / {_tick}
+	set {_ticknumber} to {_tick}
 	# from-location設定
 	set {_sum.xyz} to x-pos of {_from} + y-pos of {_from} + z-pos of {_from}
 	if {_sum.xyz} = 0:
@@ -471,6 +524,11 @@ function kitTrail(player: player, tick: number, from: location = location(0.0, 0
 		# initialize
 		delete {_player.trail::*}
 		# タイマー設定
+		set {_timedisplay} to timeDisplay_SECOND({_ticknumber})
+		set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+		set bossbar {_bossbar.id} title to {_timer.title}
+		subtract 1 from {_ticknumber}
+
 		set {_value} to value of bossbar {_bossbar.id}
 		subtract {_prog} from {_value}
 		set bossbar {_bossbar.id} value to {_value}

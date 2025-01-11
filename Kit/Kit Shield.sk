@@ -14,13 +14,18 @@ function kitShield(player: player, shield: number):
 	setShieldTime({_player}, {_now})
 
 	set {_bossbar.id} to a random UUID
-	create bossbar titled "&9&lシールド" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+	set {_titledisplay} to "§9§lシールド"
+	set {_timer.title} to "%{_titledisplay}%§r §3❤%{_shield}%"
+	create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
 
 	shieldParticles({_player}, {_now})
 	while getShieldTime({_player}) is {_now}:
 		set {_shield.now} to getShield({_player})
 		set {_prog} to {_shield.now} / {_shield} * 100
 		set bossbar {_bossbar.id} value to {_prog}
+
+		set {_timer.title} to "%{_titledisplay}%§r §3❤%{_shield.now}%"
+		set bossbar {_bossbar.id} title to {_timer.title}
 		wait a tick
 	remove bossbar {_bossbar.id}
 

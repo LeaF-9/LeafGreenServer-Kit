@@ -21,8 +21,12 @@ function kitInvisible(player: player, tick: number):
 
 	# タイマー作成
 	set {_bossbar.id} to a random UUID
-	create bossbar titled "&b&l透明" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+	set {_titledisplay} to "§b§l透明"
+	set {_timedisplay} to timeDisplay_SECOND({_tick})
+	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+	create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
 	set {_prog} to 100 / {_tick}
+	set {_ticknumber} to {_tick}
 
 	# 透明処理
 	loop {_tick} times:
@@ -39,6 +43,11 @@ function kitInvisible(player: player, tick: number):
 			hide {_player} from loop-player
 
 		# ボスバー処理
+		set {_timedisplay} to timeDisplay_SECOND({_ticknumber})
+		set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+		set bossbar {_bossbar.id} title to {_timer.title}
+		subtract 1 from {_ticknumber}
+
 		set {_value} to value of bossbar {_bossbar.id}
 		subtract {_prog} from {_value}
 		set bossbar {_bossbar.id} value to {_value}
