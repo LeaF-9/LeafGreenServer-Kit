@@ -12,7 +12,55 @@ on join:
 
 # --- Health Displays ---
 
+import:
+	java.lang.Integer
+	org.bukkit.entity.Display$Billboard
+	org.bukkit.entity.Display$Brightness
+
 # Damage
+function kitHealthDisplay_Damage(entity: entity, amount: number, event: object = "none"):
+	if:
+		{_event} is not "none"
+		{_event}.isCancelled() is true
+		display name of {_entity} is not "Test-Stand"
+	then:
+		stop
+
+	set {_index} to 0
+	loop 3 times:
+		add 1 to {_index}
+		set {_max} to 1.5
+		set {_min} to 1
+		set {_pos::%{_index}%} to a random number between {_min} and {_max}
+		chance of 50%:
+			set {_pos::%{_index}%} to {_pos::%{_index}%} * (-1)
+
+	set {_l} to location 1 meter above {_entity}
+	add {_pos::1} to x-pos of {_l}
+	add {_pos::2} to z-pos of {_l}
+	add {_pos::3} to y-pos of {_l}
+
+	spawn a text display at {_l}
+	set {_textDisplay} to spawned text display
+	set {_bright} to Integer.valueOf(15)
+	{_textDisplay}.setBrightness(Display.Brightness(15, 15))
+	{_textDisplay}.setBillboard(Billboard.CENTER)
+	{_textDisplay}.setTeleportDuration(1)
+	{_textDisplay}.setViewRange(100)
+	{_textDisplay}.setDefaultBackground(false)
+	{_textDisplay}.getTransformation().getScale().set(2, 2, 1)
+	{_textDisplay}.setText("§4❤%{_amount}%")
+	set {_uuid} to a random uuid
+	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	loop 5 times:
+		wait a tick
+		set {_ml} to location of {_textDisplay}
+		add 0.1 to y-pos of {_ml}
+		teleport {_textDisplay} to {_ml}
+	wait 15 ticks
+	loop all text displays:
+		loop-text display is {_textDisplay}
+		delete loop-text display
 
 # Heal
 
