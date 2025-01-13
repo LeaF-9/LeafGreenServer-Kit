@@ -37,31 +37,10 @@ command /kit-standspawn:
 		spawn a slime at location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0) with nbt compound from "{Size:1.5,NoAI:1b,Silent:1b,CustomName:'{""text"":""Test-Stand""}'}"
 		set metadata value "gametype" of spawned slime to "Kit"
 
-import:
-	org.bukkit.entity.Display$Billboard
-
 on damage of slime with priority MONITOR:
 	metadata value "gametype" of victim is "Kit"
 	display name of victim is "Test-Stand"
 	cancel event
-	wait a tick
-	set {_damage} to damage
-	set {_l} to location of victim
-	add a random number between -1 and 1 to x-coordinate of {_l}
-	add a random number between -1 and 1 to z-coordinate of {_l}
-	add a random number between 0.5 and 3 to y-coordinate of {_l}
-	spawn a text display at {_l}
-	set {_textDisplay} to spawned text display
-	{_textDisplay}.setBillboard(Billboard.CENTER)
-	{_textDisplay}.setText("§4❤%{_damage}%")
-	set {_uuid} to a random uuid
-	set metadata value "damage-check-uuid" of {_textDisplay} to {_uuid}
-	loop all projectiles in radius 3 around victim:
-		delete loop-projectile
-	wait a second
-	loop all text displays:
-		metadata value "damage-check-uuid" of loop-text display is {_uuid}
-		delete loop-text display
 
 on rightclick on a sign:
 	if line 1 of target block is "§a[§e§lKit§a]":

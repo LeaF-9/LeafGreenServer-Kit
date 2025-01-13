@@ -119,6 +119,8 @@ on damage with priority MONITOR:
 		event.setDamage(DamageModifier.ARMOR, 0)
 		event.setDamage(DamageModifier.RESISTANCE, 0)
 	
+	kitHealthDisplay_Damage(victim, {_damage}, event)
+	
 	delete metadata value "raw damage" of victim
 	delete metadata value "kit damage" of victim
 
@@ -161,6 +163,8 @@ function kitDamageNull(attacker: player, victim: entity, damage: number, cause: 
 		LastKiller({_victim}, {_attacker})
 		setLastDamage({_victim}, {_cause})
 	setAttacker({_victim}, {_attacker})
+
+	kitHealthDisplay_Damage({_victim}, {_damage})
 
 	if {_fix} is true:
 		damage {_victim} by {_damage} hearts
