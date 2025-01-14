@@ -8,24 +8,26 @@ on heal:
 every a second:
 	{@enable} is true
 	loop all players:
-		if {Regen::%loop-player%} is set:
-			if gamemode of loop-player is survival:
-				if loop-player is alive:
-					if health of loop-player is not max health of loop-player:
-						add 1 to {Regen::%loop-player%}
-						if {Regen::%loop-player%} >= 5:
-							set {Regen::%loop-player%} to 0
-							set {_food} to food level of loop-player
-							if {_food} >= 8:
-								if getDebuffs(loop-player, "Blood") is false:
-									heal loop-player by 0.5 hearts
-					else:
-						delete {Regen::%loop-player%}
-				else:
-					delete {Regen::%loop-player%}
-			else:
-				delete {Regen::%loop-player%}
-		else if health of loop-player is not max health of loop-player:
-			set {Regen::%loop-player%} to 0
-		if loop-player does not have hunger:
-			set food level of loop-player to 10
+		set food level of loop-player to 10 if loop-player does not have hunger
+
+		set {_health} to floor((health of loop-player) * 100) / 100
+		set {_maxHealth} to floor((max health of loop-player) * 100) / 100
+		delete {_continue}
+		set {_continue} to true if {_health} = {_maxHealth}
+
+		set {_continue} to true if gamemode of loop-player is not survival
+		set {_continue} to true if loop-player is dead
+		set {_continue} to true if food level of loop-player < 8
+
+		if {_continue} is true:
+			delete {-Regen::%loop-player%}
+			continue
+
+		if {-Regen::%loop-player%} is not set:
+			set {-Regen::%loop-player%} to 0
+			continue
+		
+		add 1 to {-Regen::%loop-player%}
+		if {-Regen::%loop-player%} >= 5:
+			set {-Regen::%loop-player%} to 0
+			kitHeal(loop-player, 0.5, 0)
