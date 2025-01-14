@@ -75,11 +75,13 @@ on respawn:
 					set {_timetext} to "%{_time}%"
 				send title "§c§l死んでしまった!" with subtitle "§3§l%{_timetext}% §b秒後に復活します..." to player for 3 ticks with fadein 0 second and fadeout 0 second
 				apply blindness 1 to player for 1.5 seconds replacing existing effect
+				player.setAllowFlight(true) if player.getAllowFlight() is false
 				subtract 1 from {Kit-Spawning::%player%}
 				wait a tick
 			else:
 				delete {Kit-Spawning::%player%}
 		reset title of player
+		player.setAllowFlight(false)
 		loop all entities:
 			type of loop-entity is armor stand
 			metadata value "deadplayer" of loop-entity is "%player%"
