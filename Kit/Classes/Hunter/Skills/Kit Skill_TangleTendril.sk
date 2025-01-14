@@ -59,7 +59,7 @@ local function kitEffect_TangleTendril_HitGround(player: player, loc: location):
 			set {_preloc.%{_id}%} to {_loc.entity}
 			set {_distance} to distance between {_loc} and {_loc.entity}
 			if {_distance} > 5:
-				kitDamage({_player}, {_loop-entity}, {@damage-escape})
+				kitDamage({_player}, {_loop-entity}, {@damage-escape}, "拘束蔦")
 				set {_vector} to setVector({_loc.entity}, {_loc}, 0.3)
 				set velocity of {_loop-entity} to {_vector}
 
@@ -67,11 +67,11 @@ local function kitEffect_TangleTendril_HitGround(player: player, loc: location):
 				continue
 
 			# Move Check
-			continue if {_preloc.entity} is not set:
+			continue if {_preloc.entity} is not set
 			set yaw of {_loc.entity} to yaw of {_preloc.entity}
-			set pitch of {_loc.entity} to pitch of {_loc.entity}
-			if {_loc.entity} is {_preloc.entity}:
-				kitDamage({_player}, {_loop-entity}, {@damage-move})
+			set pitch of {_loc.entity} to pitch of {_preloc.entity}
+			if {_loc.entity} is not {_preloc.entity}:
+				kitDamage({_player}, {_loop-entity}, {@damage-move}, "拘束蔦")
 				kitParticle_TangleTendril_Move({_loop-entity})
 		wait a tick
 
@@ -118,7 +118,7 @@ local function kitParticle_TangleTendril_Projectile(proj: projectile):
 				set {_el} to {_baseel} ~ {_vec}
 
 				add 1 to {_ln}
-				chance of 50%
+				chance of 50%:
 					spawnParticle_BlockData(falling_dust, lime wool, {_el})
 					continue
 				spawnParticle_BlockData(falling_dust, green wool, {_el})
@@ -128,22 +128,136 @@ local function kitParticle_TangleTendril_Projectile(proj: projectile):
 
 # 発射物が地形にヒットした際の演出
 local function kitParticle_TangleTendril_HitGround(loc: location):
-	playSound()
+	playSound("block.grass.break", 1, 0.7, {_loc})
+	set {_m} to 0
+	loop 5 times:
+		add 1 to {_m}
+		set {_rotatevec} to vector({_m}, 0, 0)
+		set {_rad} to 0
+		loop 90 times:
+			set {_vec} to {_rotatevec}
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_loc} ~ {_vec}
+			spawnParticle_Block(jungle leaves, {_el})
+			add (360 / 90) to {_rad}
+		wait a tick
 
 # ヒットしたエンティティの演出
 local function kitParticle_TangleTendril_HitEntity(entity: entity):
-	playSound()
+	playSound("block.wet_grass.break", 1, 0.95, {_entity})
+
+	add rgb(15, 136, 11) to {_colors::*}
+	add rgb(39, 148, 11) to {_colors::*}
+	add rgb(33, 139, 77) to {_colors::*}
+
+	loop 10 times:
+		set {_baseloc} to location 1 meter above {_entity}
+		set {_rotatevec} to vector(0.5, 0, 0)
+		set {_rad} to 0
+		loop 10 times:
+			set {_vec} to {_rotatevec}
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_vec}
+
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 0.5, {_el})
+
+			add 360 / 10 to {_rad}
+		wait a tick
 
 # 効果中の範囲の演出
 local function kitParticle_TangleTendril_Circle(loc: location):
+	add rgb(15, 136, 11) to {_colors.circle::*}
+	add rgb(39, 148, 11) to {_colors.circle::*}
+	add rgb(33, 139, 77) to {_colors.circle::*}
+
+	add rgb(12, 87, 10) to {_colors.vine::*}
+	add rgb(21, 68, 9) to {_colors.vine::*}
+	add rgb(13, 85, 43) to {_colors.vine::*}
+
+	set {_rotatevec} to vector({@effect-radius}, 0, 0)
+	set {_rad} to 0
+	set {_count} to 100
+	set {_addrad} to 360 / {_count}
+	set {_rad.vine} to 0
+	set {_addrad.vine} to (360 * 4) / {_count}
+	loop 100 times:
+		set {_vec} to {_rotatevec}
+		rotate {_vec} around y-axis by {_rad}
+		set {_el.circle} to {_loc} ~ {_vec}
+		set {_color} to a random element out of {_colors.circle::*}
+		spawnParticle_Dust({_color}, 1.5, {_el.circle})
+
+		set {_directvec} to {_vec}
+		rotate {_directvec} around y-axis by 90
+		
+		set {_vec.vine} to vector(0, 0.5, 0)
+		rotate {_vec.vine} around {_directvec} by {_rad.vine}
+		set {_el.vine} to {_el.circle} ~ {_vec.vine}
+		set {_color} to a random element out of {_colors.vine::*}
+		spawnParticle_Dust({_color}, 0.6, {_el.vine})
+
+		add {_addrad} to {_rad}
+		add {_addrad.vine} to {_rad.vine}
 
 # 効果中のエンティティの演出
 local function kitParticle_TangleTendril_Rope(entity: entity, loc: location):
+	add rgb(12, 87, 10) to {_colors::*}
+	add rgb(21, 68, 9) to {_colors::*}
+	add rgb(13, 85, 43) to {_colors::*}
+
+	set {_toloc} to location 1 meter above {_entity}
+	set {_basevec} to setVector({_loc}, {_toloc})
+	set {_baseloc} to setDirToVec({_loc}, {_basevec})
+	set {_rotateloc} to {_baseloc}
+	add 90 to pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 10 meters in front of {_rotateloc}, 0.2)
+
+	set {_distance} to distance between {_baseloc} and {_toloc}
+	set {_count} to round({_distance} * 10)
+	set {_addMeter} to 0.1
+	set {_frontMeter} to 0
+	set {_rad} to 0
+	set {_addrad} to 360 / 15
+
+	loop {_count} times:
+		add {_addMeter} to {_frontMeter}
+		set {_baseel} to location {_frontMeter} in front of {_baseloc}
+
+		set {_vec} to {_rotatevec}
+		rotate {_vec} around {_basevec} by {_rad}
+		set {_el} to {_baseel} ~ {_vec}
+
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.5, {_el})
+		add {_addrad} to {_rad}
 
 # 逃げようとしているエンティティの演出
 local function kitParticle_TangleTendril_Escape(entity: entity, loc: location):
-	playSound()
+	playSound("entity.creaking.sway", 1, 0.9, {_entity})
+
+	add rgb(15, 136, 11) to {_colors::*}
+	add rgb(39, 148, 11) to {_colors::*}
+	add rgb(33, 139, 77) to {_colors::*}
+
+	set {_fromloc} to location 1 meter above {_entity}
+	set {_vector} to setVector({_fromloc}, {_loc}, {@effect-radius})
+
+	loop 50 times:
+		set {_from} to moveRandomLocation({_fromloc}, 1)
+		set {_target} to {_from} ~ {_vector}
+
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Trail({_color}, {_target}, 1 second, {_from})
 
 # 動いたエンティティの演出
 local function kitParticle_TangleTendril_Move(entity: entity):
-	playSound()
+	playSound("entity.creaking.step", 1, 1.65, {_entity})
+
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 20 times:
+		set {_vec} to randomVector()
+		spawnParticle_Vector(enchanted_hit, {_vec}, 1, {_baseloc})
+
+		set {_el} to moveRandomLocation({_baseloc}, 0.75)
+		spawnParticle_BlockData(block_crumble, jungle leaves, {_el})
