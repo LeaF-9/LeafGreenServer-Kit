@@ -3,7 +3,7 @@
 options:
 	effect-tick: 200
 	effect-radius: 5
-	levitation-tier: 3
+	levitation-tier: 10
 	levitation-second: 10 ticks
 	falling-second: 3 seconds
 
@@ -23,7 +23,7 @@ function kitEffect_MapleZephyr(player: player):
 		loop all entities in radius ({@effect-radius} + 5) around {_loc}:
 			metadata value "gametype" of loop-entity is "Kit"
 
-			set {_entityloc} to location of {_entity}
+			set {_entityloc} to location of loop-entity
 			continue if ((y-pos of {_entityloc}) > (y-pos of {_loc} + 5))
 			set y-pos of {_entityloc} to y-pos of {_loc}
 			set {_distance} to distance between {_entityloc} and {_loc} 
@@ -47,15 +47,15 @@ local function kitParticle_MapleZephyr_Wind(loc: location):
 	add rgb(241, 204, 18) to {_colors::*}
 
 	set {_baserad} to 0
-	set {_addrad} to 1
+	set {_addrad} to -1
 	set {_count} to 100
 	set {_rotate.max} to 500
 	set {_rotate.add} to {_rotate.max} / {_count}
 	set {_meter.min} to 1
 	set {_meter.max} to {@effect-radius}
 	set {_meter.add} to ({_meter.max} - {_meter.min}) / {_count}
-	set {_height} to 5
-	set {_addheight} to {_height} / {_count}
+	set {_height.max} to 5
+	set {_addheight} to {_height.max} / {_count}
 
 	loop {@effect-tick} times:
 		chance of 10%:
@@ -66,17 +66,31 @@ local function kitParticle_MapleZephyr_Wind(loc: location):
 			add 1 to {_ln}
 			set {_rad} to {_baserad} + (90 * {_ln})
 			set {_meter} to {_meter.min}
+			set {_height} to 0
 			loop {_count} times:
 				set {_rotatevec} to vector({_meter}, 0, 0)
 				rotate {_rotatevec} around y-axis by {_rad}
-				set {_el} to {_loc} ~ {_rad}
+				set {_el} to {_loc} ~ {_rotatevec}
+				add {_height} to y-pos of {_el}
 
 				add {_rotate.add} to {_rad}
 				add {_meter.add} to {_meter}
+				add {_addheight} to {_height}
 				chance of 20%:
 					continue
 				set {_color} to a random element out of {_colors::*}
 				spawnParticle_Dust({_color}, 0.55, {_el})
+
+				chance of 97%:
+					continue
+				set {_el} to moveRandomLocation({_el}, 0.5)
+				spawnParticle_BlockData(falling_dust, orange terracotta, {_el})
+
+				chance of 97%:
+					continue
+				set {_el} to moveRandomLocation({_el}, 0.5)
+				spawnParticle_BlockData(falling_dust, yellow wool, {_el})
+
 
 		add {_addrad} to {_baserad}
 		wait a tick
