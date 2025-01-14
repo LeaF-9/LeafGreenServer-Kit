@@ -1,0 +1,149 @@
+# skill-name: Tangle Tendril
+
+options:
+	effect-radius: 5
+	effect-tick: 100
+	metadata-projectile: "Tangle Tendril"
+	damage-move: 0.5
+	damage-escape: 1
+
+on projectile hit:
+	metadata value {@metadata-projectile} of projectile is set
+	set metadata value {@metadata-projectile} of projectile to false
+	set {_loc} to location of projectile
+	kitEffect_TangleTendril_HitGround(shooter, {_loc})
+
+
+
+function kitEffect_TangleTendril(player: player):
+	nameCT({_player}, "Tangle Tendril")
+
+	kitMsg({_player}, "<##357b05>§l拘束種<##11a404>を発射します...")
+	shoot a snowball from {_player} at speed 1
+	set {_shotproj} to shot snowball
+	set metadata value {@metadata-projectile} of {_shotproj} to true
+	set item of {_shotproj} to oak leaves
+	kitParticle_TangleTendril_Projectile({_shotproj})
+
+local function kitEffect_TangleTendril_HitGround(player: player, loc: location):
+	kitParticle_TangleTendril_HitGround({_loc})
+
+	loop all entities in radius {@effect-radius} around {_loc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		add loop-entity to {_hits::*}
+		kitEffectDescription(loop-entity, "<##357d05>拘束")
+		sendTimeBossbar_RED(loop-entity, "<##357b05>§l拘束蔦", {@effect-tick})
+		message formatted "<##04d122>§l拘束する蔦<##0c580c>に掛かってしまった!" to loop-entity
+		kitParticle_TangleTendril_HitEntity(loop-entity)
+	
+	set {_size} to size of {_hits::*}
+	stop if {_size} = 0
+
+	sendTimeBossbar_GREEN({_player}, "<##357b05>§l拘束蔦", {@effect-tick})
+	kitMsg({_player}, "<##19e661>§l%{_size}%体<##0c9224>拘束した!")
+	loop {@effect-tick} times:
+		kitParticle_TangleTendril_Circle({_loc})
+		loop {_hits::*}:
+			set {_loop-entity} to loop-value-2
+			if kitCheckAlive({_loop-entity}) is false:
+				remove {_loop-entity} from {_hits::*}
+				stop if (size of {_hits::*}) <= 0
+				continue
+			kitParticle_TangleTendril_Rope({_loop-entity}, {_loc})
+
+			set {_id} to id of {_loop-entity}
+			set {_preloc.entity} to {_preloc.%{_id}%}
+
+			# Escape Check
+			set {_loc.entity} to location of {_loop-entity}
+			set {_preloc.%{_id}%} to {_loc.entity}
+			set {_distance} to distance between {_loc} and {_loc.entity}
+			if {_distance} > 5:
+				kitDamage({_player}, {_loop-entity}, {@damage-escape})
+				set {_vector} to setVector({_loc.entity}, {_loc}, 0.3)
+				set velocity of {_loop-entity} to {_vector}
+
+				kitParticle_TangleTendril_Escape({_loop-entity}, {_loc})
+				continue
+
+			# Move Check
+			continue if {_preloc.entity} is not set:
+			set yaw of {_loc.entity} to yaw of {_preloc.entity}
+			set pitch of {_loc.entity} to pitch of {_loc.entity}
+			if {_loc.entity} is {_preloc.entity}:
+				kitDamage({_player}, {_loop-entity}, {@damage-move})
+				kitParticle_TangleTendril_Move({_loop-entity})
+		wait a tick
+
+
+
+# 発射物のパーティクル演出
+local function kitParticle_TangleTendril_Projectile(proj: projectile):
+	playSound("entity.arrow.shoot", 1, 1.4, {_proj})
+
+	set {_baserad} to 0
+	set {_addrad} to 15
+	set {_radius} to 0.5
+	loop 200 times:
+		delete {_metadata}
+		set {_metadata} to metadata value {@metadata-projectile} of {_proj}
+		stop if {_metadata} is false
+		
+		set {_proloc} to location of {_proj}
+		wait a tick
+		set {_loc} to location of {_proj}
+		if {_proloc} is not set:
+			continue
+		if loop-number is 1:
+			continue
+
+		set {_basevector} to setVector({_proloc}, {_loc})
+		set {_proloc} to setDirToVec({_proloc}, {_basevector})
+		set {_rotateloc} to {_proloc}
+		add 90 to pitch of {_rotateloc}
+		set {_rotatevec} to setVector({_rotateloc}, location 10 meters in front of {_rotateloc}, {_radius})
+
+		set {_distance} to distance between {_loc} and {_proloc}
+		set {_FM} to 0.5
+		set {_loopnum} to round({_distance} / {_FM})
+		set {_frontMeter} to 0
+		loop {_loopnum} times:
+			add {_FM} to {_frontMeter}
+			set {_ln} to 0
+			set {_baseel} to location {_frontMeter} meters in front of {_proloc}
+			loop 2 times:
+				set {_rad} to {_baserad} + (180 * {_ln})
+				set {_vec} to {_rotatevec}
+				rotate {_vec} around {_basevector} by {_rad}
+				set {_el} to {_baseel} ~ {_vec}
+
+				add 1 to {_ln}
+				chance of 50%
+					spawnParticle_BlockData(falling_dust, lime wool, {_el})
+					continue
+				spawnParticle_BlockData(falling_dust, green wool, {_el})
+		
+			add {_addrad} to {_baserad}
+		wait a tick
+
+# 発射物が地形にヒットした際の演出
+local function kitParticle_TangleTendril_HitGround(loc: location):
+	playSound()
+
+# ヒットしたエンティティの演出
+local function kitParticle_TangleTendril_HitEntity(entity: entity):
+	playSound()
+
+# 効果中の範囲の演出
+local function kitParticle_TangleTendril_Circle(loc: location):
+
+# 効果中のエンティティの演出
+local function kitParticle_TangleTendril_Rope(entity: entity, loc: location):
+
+# 逃げようとしているエンティティの演出
+local function kitParticle_TangleTendril_Escape(entity: entity, loc: location):
+	playSound()
+
+# 動いたエンティティの演出
+local function kitParticle_TangleTendril_Move(entity: entity):
+	playSound()
