@@ -33,7 +33,7 @@ function kitEffect_SweetSerenade(player: player):
 	message formatted "§b%{_player}% §dがハートの小夜曲を演奏してくれた!" to {_target}
 	kitParticle_SweetSerenade_Launch({_player}, {_target})
 	setKitStats({_player}, "SweetSerenade", {_target})
-	setKitStats({_player}, "SweetSerenade-Target", {_player})
+	setKitStats({_target}, "SweetSerenade-Target", {_player})
 	setSupporter({_target}, {_player})
 
 	set {_id} to a random UUID
@@ -77,16 +77,12 @@ function kitEffect_SweetSerenade(player: player):
 			set {_timeDif} to difference between {_metadata} and {_now}
 
 			if {_timeDif} >= 1 second:	
-				set {_maxGold} to {@max-absorption} * 2
-				set {_gold} to {_target}.getAbsorptionAmount()
-				log "%{_gold}%"
+				set {_maxGold} to {@max-absorption}
+				set {_gold} to {_target}.getAbsorptionAmount() / 2
 				if {_gold} < {_maxGold}:
-					add 1 to {_gold}
+					add 0.5 to {_gold}
 					if {_gold} > {_maxGold}:
 						set {_gold} to {_maxGold}
-					set {_attribute} to max absorption attribute of {_target}
-					if {_attribute} is 0:
-						set max absorption attribute of {_target} to 100
 					kitAbsorption({_target}, {_gold})
 					kitParticle_SweetSerenade_Gold({_target})
 		wait a tick

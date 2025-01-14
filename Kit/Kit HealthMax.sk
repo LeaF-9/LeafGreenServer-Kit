@@ -7,24 +7,25 @@ on death of player:
 	kitMaxHealth(victim, 10)
 
 function kitMaxHealth(entity: entity, heart: number, addMode: boolean = false):
-	set {_setHealth} to {_heart}
+	set {_nowHealth} to {_entity}.getMaxHealth()
+
+	set {_setHealth} to {_heart} * 2
 	if {_addMode} is true:
-		set {_setHealth} to (health of {_entity}) + {_heart}
-	
-	set {_nowHealth} to max health of {_entity}
+		set {_setHealth} to {_nowHealth} + ({_heart} * 2)
+
 	{_entity}.setMaxHealth({_setHealth})
 
 	stop if {_nowHealth} >= {_setHealth}
 
-	set {_displayHealth} to {_setHealth} - {_nowHealth}
+	set {_displayHealth} to ({_setHealth} - {_nowHealth}) / 2
 	kitHealthDisplay_HealthBoost({_entity}, {_displayHealth})
 
 function kitAbsorption(entity: entity, heart: number, addMode: boolean = false):
 	set {_nowHealth} to {_entity}.getAbsorptionAmount()
 
-	set {_setHealth} to {_heart}
+	set {_setHealth} to {_heart} * 2
 	if {_addMode} is true:
-		set {_setHealth} to {_nowHelath} + {_heart}
+		set {_setHealth} to {_nowHelath} + ({_heart} * 2)
 	
 	set max absorption attribute of {_entity} to 100
 	{_entity}.setAbsorptionAmount({_setHealth})
@@ -33,5 +34,5 @@ function kitAbsorption(entity: entity, heart: number, addMode: boolean = false):
 		set max absorption attribute of {_entity} to 0
 		stop
 
-	set {_displayHealth} to {_setHealth} - {_nowHealth}
+	set {_displayHealth} to ({_setHealth} - {_nowHealth}) / 2
 	kitHealthDisplay_Absorption({_entity}, {_displayHealth})
