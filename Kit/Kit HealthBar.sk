@@ -12,11 +12,6 @@ on join:
 
 # --- Health Displays ---
 
-import:
-	java.lang.Integer
-	org.bukkit.entity.Display$Billboard
-	org.bukkit.entity.Display$Brightness
-
 # Damage
 function kitHealthDisplay_Damage(entity: entity, amount: number, event: object = "none"):
 	if:
@@ -26,6 +21,127 @@ function kitHealthDisplay_Damage(entity: entity, amount: number, event: object =
 	then:
 		stop
 
+	set {_l} to randomDisplayLocation({_entity})
+
+	set {_display} to "§4❤%{_amount}%"
+	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
+	set {_uuid} to a random uuid
+	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	loop 5 times:
+		wait a tick
+		set {_ml} to location of {_textDisplay}
+		add 0.1 to y-pos of {_ml}
+		teleport {_textDisplay} to {_ml}
+	loop 5 times:
+		wait a tick
+		set {_ml} to location of {_textDisplay}
+		add -0.1 to y-pos of {_ml}
+		teleport {_textDisplay} to {_ml}
+	wait 10 ticks
+	loop all text displays:
+		loop-text display is {_textDisplay}
+		delete loop-text display
+
+# Heal
+function kitHealthDisplay_Heal(entity: entity, amount: number):
+	set {_l} to randomDisplayLocation({_entity})
+
+	set {_display} to "§a❤%{_amount}%"
+	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
+	set {_uuid} to a random uuid
+	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	loop 20 times:
+		wait a tick
+		set {_ml} to location of {_textDisplay}
+		add 0.5 / 20 to y-pos of {_ml}
+		teleport {_textDisplay} to {_ml}
+
+	loop all text displays:
+		loop-text display is {_textDisplay}
+		delete loop-text display
+
+# Health Boost
+function kitHealthDisplay_HealthBoost(entity: entity, amount: number):
+	set {_l} to randomDisplayLocation({_entity})
+
+	set {_display} to "§d❤%{_amount}%"
+	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
+	set {_uuid} to a random uuid
+	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	loop 10 times:
+		wait a tick
+		set {_ml} to location of {_textDisplay}
+		add 0.5 / 10 to y-pos of {_ml}
+		teleport {_textDisplay} to {_ml}
+	wait 10 ticks
+
+	loop all text displays:
+		loop-text display is {_textDisplay}
+		delete loop-text display
+
+# Shield
+function kitHealthDisplay_Shield(entity: entity, amount: number):
+	set {_l} to randomDisplayLocation({_entity})
+
+	set {_display} to "§b❤%{_amount}%"
+	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
+	set {_uuid} to a random uuid
+	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	loop 5 times:
+		wait a tick
+		set {_ml} to location of {_textDisplay}
+		add 0.5 / 5 to y-pos of {_ml}
+		teleport {_textDisplay} to {_ml}
+
+	loop all text displays:
+		loop-text display is {_textDisplay}
+		delete loop-text display
+
+# Absorption
+function kitHealthDisplay_Absorption(entity: entity, amount: number):
+	set {_l} to randomDisplayLocation({_entity})
+
+	set {_display} to "§e❤%{_amount}%"
+	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
+	set {_uuid} to a random uuid
+	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	loop 10 times:
+		wait a tick
+		set {_ml} to location of {_textDisplay}
+		add 0.5 / 20 to y-pos of {_ml}
+		teleport {_textDisplay} to {_ml}
+	wait 10 ticks
+
+	loop all text displays:
+		loop-text display is {_textDisplay}
+		delete loop-text display
+
+# spawn function
+import:
+	java.lang.Integer
+	org.bukkit.entity.Display$Billboard
+	org.bukkit.entity.Display$Brightness
+	org.bukkit.entity.TextDisplay
+
+local function spawnHealthDisplay(loc: location, display: text) :: entity:
+	spawn text display at {_loc}
+	set {_textDisplay} to spawned text display
+
+	set {_bright} to Integer.valueOf(15)
+	{_textDisplay}.setBrightness(Display.Brightness({_bright}, {_bright}))
+	{_textDisplay}.setBillboard(Billboard.CENTER)
+	{_textDisplay}.setTeleportDuration(1)
+	{_textDisplay}.setViewRange(100)
+	{_textDisplay}.setDefaultBackground(false)
+	set {_axisAngle4f} to getAxisAngle4f(0, 0, 0, 1)
+	set {_scale} to getVector3f(2, 2, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	setTransformation({_textDisplay}, {_axisAngle4f}, {_axisAngle4f}, {_translation}, {_scale})
+	{_textDisplay}.setText({_display})
+
+	return {_textDisplay}
+
+local function randomDisplayLocation(entity: entity) :: location:
 	set {_index} to 0
 	loop 3 times:
 		add 1 to {_index}
@@ -40,32 +156,4 @@ function kitHealthDisplay_Damage(entity: entity, amount: number, event: object =
 	add {_pos::2} to z-pos of {_l}
 	add {_pos::3} to y-pos of {_l}
 
-	spawn a text display at {_l}
-	set {_textDisplay} to spawned text display
-	set {_bright} to Integer.valueOf(15)
-	{_textDisplay}.setBrightness(Display.Brightness(15, 15))
-	{_textDisplay}.setBillboard(Billboard.CENTER)
-	{_textDisplay}.setTeleportDuration(1)
-	{_textDisplay}.setViewRange(100)
-	{_textDisplay}.setDefaultBackground(false)
-	{_textDisplay}.getTransformation().getScale().set(2, 2, 1)
-	{_textDisplay}.setText("§4❤%{_amount}%")
-	set {_uuid} to a random uuid
-	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
-	loop 5 times:
-		wait a tick
-		set {_ml} to location of {_textDisplay}
-		add 0.1 to y-pos of {_ml}
-		teleport {_textDisplay} to {_ml}
-	wait 15 ticks
-	loop all text displays:
-		loop-text display is {_textDisplay}
-		delete loop-text display
-
-# Heal
-
-# Health Boost
-
-# Shield
-
-# Absorption
+	return {_l}
