@@ -27,17 +27,17 @@ function kitHealthDisplay_Damage(entity: entity, amount: number, event: object =
 	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
 	set {_uuid} to a random uuid
 	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
-	loop 5 times:
+	loop 2 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
-		add 0.1 to y-pos of {_ml}
+		add 0.25 to y-pos of {_ml}
 		teleport {_textDisplay} to {_ml}
-	loop 5 times:
+	loop 4 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
-		add -0.1 to y-pos of {_ml}
+		add -0.125 to y-pos of {_ml}
 		teleport {_textDisplay} to {_ml}
-	wait 10 ticks
+	wait 6 ticks
 	loop all text displays:
 		loop-text display is {_textDisplay}
 		delete loop-text display
@@ -50,7 +50,7 @@ function kitHealthDisplay_Heal(entity: entity, amount: number):
 	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
 	set {_uuid} to a random uuid
 	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
-	loop 20 times:
+	loop 10 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
 		add 0.5 / 20 to y-pos of {_ml}
@@ -68,12 +68,12 @@ function kitHealthDisplay_HealthBoost(entity: entity, amount: number):
 	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
 	set {_uuid} to a random uuid
 	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
-	loop 10 times:
+	loop 5 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
-		add 0.5 / 10 to y-pos of {_ml}
+		add 0.5 / 5 to y-pos of {_ml}
 		teleport {_textDisplay} to {_ml}
-	wait 10 ticks
+	wait 5 ticks
 
 	loop all text displays:
 		loop-text display is {_textDisplay}
@@ -87,11 +87,12 @@ function kitHealthDisplay_Shield(entity: entity, amount: number):
 	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
 	set {_uuid} to a random uuid
 	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
-	loop 5 times:
+	loop 3 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
-		add 0.5 / 5 to y-pos of {_ml}
+		add 0.5 / 3 to y-pos of {_ml}
 		teleport {_textDisplay} to {_ml}
+	wait 7 ticks
 
 	loop all text displays:
 		loop-text display is {_textDisplay}
@@ -105,12 +106,12 @@ function kitHealthDisplay_Absorption(entity: entity, amount: number):
 	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
 	set {_uuid} to a random uuid
 	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
-	loop 10 times:
+	loop 5 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
-		add 0.5 / 20 to y-pos of {_ml}
+		add 0.5 / 10 to y-pos of {_ml}
 		teleport {_textDisplay} to {_ml}
-	wait 10 ticks
+	wait 5 ticks
 
 	loop all text displays:
 		loop-text display is {_textDisplay}
@@ -119,6 +120,7 @@ function kitHealthDisplay_Absorption(entity: entity, amount: number):
 # spawn function
 import:
 	java.lang.Integer
+	org.bukkit.Color
 	org.bukkit.entity.Display$Billboard
 	org.bukkit.entity.Display$Brightness
 	org.bukkit.entity.TextDisplay
@@ -128,13 +130,16 @@ local function spawnHealthDisplay(loc: location, display: text) :: entity:
 	set {_textDisplay} to spawned text display
 
 	set {_bright} to Integer.valueOf(15)
-	{_textDisplay}.setBrightness(Display.Brightness({_bright}, {_bright}))
+	set {_brightness} to new Brightness({_bright}, {_bright})
+	{_textDisplay}.setBrightness({_brightness})
 	{_textDisplay}.setBillboard(Billboard.CENTER)
 	{_textDisplay}.setTeleportDuration(1)
 	{_textDisplay}.setViewRange(100)
 	{_textDisplay}.setDefaultBackground(false)
+	set {_background} to new Color(0, 0, 0, 0)
+	{_textDisplay}.setBackgroundColor({_background})
 	set {_axisAngle4f} to getAxisAngle4f(0, 0, 0, 1)
-	set {_scale} to getVector3f(2, 2, 1)
+	set {_scale} to getVector3f(3, 3, 1)
 	set {_translation} to getVector3f(0, 0, 0)
 	setTransformation({_textDisplay}, {_axisAngle4f}, {_axisAngle4f}, {_translation}, {_scale})
 	{_textDisplay}.setText({_display})
@@ -145,8 +150,8 @@ local function randomDisplayLocation(entity: entity) :: location:
 	set {_index} to 0
 	loop 3 times:
 		add 1 to {_index}
-		set {_max} to 1.5
-		set {_min} to 1
+		set {_max} to 1
+		set {_min} to 0.75
 		set {_pos::%{_index}%} to a random number between {_min} and {_max}
 		chance of 50%:
 			set {_pos::%{_index}%} to {_pos::%{_index}%} * (-1)
