@@ -224,12 +224,15 @@ on damage of player:
 	getKitStats(victim, "Invincible") is true
 	cancel event
 
+
+# Heal
 function kitHeal(player: entity, heart: number, particle: number = 5):
 	if checkEntityType({_player}, player) is true:
 		if getDebuffs({_player}, "Blood") is true:
 			stop
 
 	heal {_player} by {_heart} hearts
+	kitHealthDisplay_Heal({_player}, {_heart})
 	if {_particle} >= 1:
 		healEffect({_player}, {_particle})
 

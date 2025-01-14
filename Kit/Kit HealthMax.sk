@@ -1,7 +1,37 @@
 every a second:
 	loop all players:
 		if max health of loop-player > 20:
-			set max health of loop-player to 20
+			kitMaxHealth(loop-player, 20)
 
 on death of player:
-	set max health of victim to 10
+	kitMaxHealth(victim, 10)
+
+function kitMaxHealth(entity: entity, heart: number, addMode: boolean = false):
+	set {_setHealth} to {_heart}
+	if {_addMode} is true:
+		set {_setHealth} to (health of {_entity}) + {_heart}
+	
+	set {_nowHealth} to max health of {_entity}
+	{_entity}.setMaxHealth({_setHealth})
+
+	stop if {_nowHealth} >= {_setHealth}
+
+	set {_displayHealth} to {_setHealth} - {_nowHealth}
+	kitHealthDisplay_HealthBoost({_entity}, {_displayHealth})
+
+function kitAbsorption(entity: entity, heart: number, addMode: boolean = false):
+	set {_nowHealth} to {_entity}.getAbsorptionAmount()
+
+	set {_setHealth} to {_heart}
+	if {_addMode} is true:
+		set {_setHealth} to {_nowHelath} + {_heart}
+	
+	set max absorption attribute of {_entity} to 100
+	{_entity}.setAbsorptionAmount({_setHealth})
+
+	if {_nowHealth} >= {_setHealth}:
+		set max absorption attribute of {_entity} to 0
+		stop
+
+	set {_displayHealth} to {_setHealth} - {_nowHealth}
+	kitHealthDisplay_Absorption({_entity}, {_displayHealth})
