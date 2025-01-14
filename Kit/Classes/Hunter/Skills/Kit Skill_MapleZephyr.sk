@@ -1,0 +1,97 @@
+# skill-name: Maple Zephyr
+
+options:
+	effect-tick: 200
+	effect-radius: 5
+	levitation-tier: 3
+	levitation-second: 10 ticks
+	falling-second: 3 seconds
+
+function kitEffect_MapleZephyr(player: player):
+	set {_loc} to getKitStats({_player}, "SkillLocation")
+	if {_loc} is not set:
+		send action bar "§c§l地点を指定してください" to {_player}
+		stop
+	
+	nameCT({_player}, "Maple Zephyr")
+
+	kitMsg({_player}, "<##e4800e>§l紅葉風<##eac74a>を呼び起こしました!")
+	sendTimeBossbar_GREEN({_player}, "<##e4800e>§l紅葉風", {@effect-tick})
+	kitParticle_MapleZephyr_Wind({_loc})
+
+	loop {@effect-tick} times:
+		loop all entities in radius ({@effect-radius} + 5) around {_loc}:
+			metadata value "gametype" of loop-entity is "Kit"
+
+			set {_entityloc} to location of {_entity}
+			continue if ((y-pos of {_entityloc}) > (y-pos of {_loc} + 5))
+			set y-pos of {_entityloc} to y-pos of {_loc}
+			set {_distance} to distance between {_entityloc} and {_loc} 
+			continue if {_distance} > 5
+
+			kitParticle_MapleZephyr_Levitation(loop-entity)
+			applyEffect(loop-entity, levitation, {@levitation-tier}, {@levitation-second}, true)
+
+			continue if kitCheckTeam(loop-entity, {_player}, true) is false
+			applyEffect(loop-entity, slow falling, 1, {@falling-second}, true)
+		wait a tick
+
+
+
+# 紅葉風本体を示すパーティクル演出
+local function kitParticle_MapleZephyr_Wind(loc: location):
+	playSound("entity.breeze.wind_burst", 1, 0.6, {_loc})
+
+	add rgb(236, 141, 40) to {_colors::*}
+	add rgb(243, 163, 59) to {_colors::*}
+	add rgb(241, 204, 18) to {_colors::*}
+
+	set {_baserad} to 0
+	set {_addrad} to 1
+	set {_count} to 100
+	set {_rotate.max} to 500
+	set {_rotate.add} to {_rotate.max} / {_count}
+	set {_meter.min} to 1
+	set {_meter.max} to {@effect-radius}
+	set {_meter.add} to ({_meter.max} - {_meter.min}) / {_count}
+	set {_height} to 5
+	set {_addheight} to {_height} / {_count}
+
+	loop {@effect-tick} times:
+		chance of 10%:
+			playSound("entity.breeze.idle_air", 1, 0.9, {_loc})
+		
+		set {_ln} to 0
+		loop 4 times:
+			add 1 to {_ln}
+			set {_rad} to {_baserad} + (90 * {_ln})
+			set {_meter} to {_meter.min}
+			loop {_count} times:
+				set {_rotatevec} to vector({_meter}, 0, 0)
+				rotate {_rotatevec} around y-axis by {_rad}
+				set {_el} to {_loc} ~ {_rad}
+
+				add {_rotate.add} to {_rad}
+				add {_meter.add} to {_meter}
+				chance of 20%:
+					continue
+				set {_color} to a random element out of {_colors::*}
+				spawnParticle_Dust({_color}, 0.55, {_el})
+
+		add {_addrad} to {_baserad}
+		wait a tick
+
+# 紅葉風にヒットしたエンティティの演出
+local function kitParticle_MapleZephyr_Levitation(entity: entity):
+	if {_entity} does not have levitation:
+		playSound("entity.breeze.idle_ground", 1, 1.1, {_entity})
+	
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 5 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_Block(dead bush, {_el})
+
+		chance of 10%:
+			continue
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(falling_dust, brown concrete, {_el})
