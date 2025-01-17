@@ -1,0 +1,143 @@
+# skill-name: Bubble Nectar
+
+options:
+	max-meter: 30
+	meter-per-second: 1
+	bubble-radius: 3
+	explosion-bee: 3
+	metadata-bee: "Bubble Nectar - Bee"
+	sweet-radius: 7
+	sweet-tick: 200
+	slowness-tier: 3
+
+function kitEffect_BubbleNectar(player: player):
+	nameCT({_player}, "Bubble Nectar")
+
+	kitMsg({_player}, "<##e8d820>前方に<##eda42e>§l蜂蜜の泡沫<##e8d820>を発射します...")
+	set {_baseloc} to location of head of {_player}
+	kitParticle_BubbleNectar_Launch({_baseloc})
+	set {_nectarDisplay} to kitEffect_BubbleNectar_Bubble({_player}, {_baseloc})
+	set {_axisAngle4f} to getAxisAngle4f(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+
+	set {_tick-meter} to {@meter-per-second} / 20
+	set {_looptime} to {@max-meter} * 20
+	set {_m} to 0
+	set {_x.scale} to 0
+	set {_x.plus} to false
+	set {_x.add} to 2 / 20
+	loop {_looptime} times:
+		continue if {_hit} is true
+
+		add {_tick-meter} to {_m}
+		set {_loc} to location {_m} meters in front of {_baseloc}
+		
+		teleport {_nectarDisplay} to {_loc}
+		kitParticle_BubbleNectar_Bubble({_loc})
+		set {_x.addscale} to {_x.add}
+		set {_x.addscale} to {_x.add} * (-1) if {_x.plus} is false
+		add {_x.addscale} to {_x.scale}
+		set {_x.setscale} to {@bubble-radius} + {_x.scale}
+
+		set {_y.setscale} to {_x.setscale} * (-1)
+		set {_scale} to getVector3f({_x.setscale}, {_y.setscale}, 1)
+		setTransformation({_entity}, {_axisAngle4f}, {_axisAngle4f}, {_translation}, {_scale})
+
+		set {_x.plus} to true if {_x.scale} <= -1
+		set {_x.plus} to false if {_x.scale} >= 1
+
+		loop all entities in radius {@bubble-radius} around {_loc}:
+			{_hit} is not set
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			set {_hit} to true
+		wait a tick
+	{_nectarDisplay}.remove()
+	stop if {_hit} is not set
+
+	set {_uuid} to a random UUID
+	loop {@explosion-bee} times:
+		kitEffect_BubbleNectar_Bee({_player}, {_loc}, {_uuid})
+	kitParticle_BubbleNectar_Explode({_loc})
+
+	loop {@sweet-tick} times:
+		kitParticle_BubbleNectar_Sweet({_loc})
+
+		delete {_enemies::*}
+		loop all entities in radius {@sweet-radius} around {_loc}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			if checkEntityType(loop-entity, player) is true:
+				applyEffect(loop-entity, slowness, {@effect-tier}, 10 ticks, true)
+				add loop-entity to {_enemies::*}
+				continue
+			kitEffect_BubbleNectar_Convert({_player}, loop-entity, {_uuid})
+		
+		loop all bees:
+			metadata value {@metadata-bee} of loop-bee is {_uuid}
+			set {_target} to target of loop-bee
+			if {_target} is not set:
+				continue if (size of {_enemies::*}) = 0
+
+				set {_randomtag} to a random element out of {_enemies::*}
+				set target of loop-bee to {_randomtag}
+				loop-bee.setAnger(2147483647)
+				continue
+
+			delete (target of loop-bee) if {_enemies::*} does not contain {_target}
+		wait a tick
+	
+	loop all bees:
+		metadata value {@metadata-bee} of loop-bee is {_uuid}
+		delete loop-bee
+
+# 蜂蜜の泡沫を召喚する関数
+local function kitEffect_BubbleNectar_Bubble(player: player, loc: location) :: entity:
+	spawn an item display at {_loc}
+	set {_entity} to spawned item display
+
+	setBrightness({_entity})
+	{_entity}.setTeleportDuration(1)
+	{_entity}.setViewRange(1000)
+	{_entity}.setInterpolationDuration(1)
+	set {_axisAngle4f} to getAxisAngle4f(0, 0, 0, 1)
+	set {_scale} to getVector3f(3, 3, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	setTransformation({_entity}, {_axisAngle4f}, {_axisAngle4f}, {_translation}, {_scale})
+	setDisplayItem({_entity}, honey block)
+
+	return {_entity}
+
+# ハチを召喚する関数
+local function kitEffect_BubbleNectar_Bee(player: player, loc: location, uuid: text):
+	set {_bee} to kitSpawnMob({_player}, bee, {_loc})
+	set metadata value {@metadata-bee} of {_bee} to {_uuid}
+
+	{_bee}.setAge(0)
+	{_bee}.setAdult()
+	{_bee}.setCannotEnterHiveTicks(2147483647)
+	{_bee}.setHasNectar(false)
+	{_bee}.setHasStung(false)
+
+# 芳甘煙に入ったエンティティへの処理
+local function kitEffect_BubbleNectar_Convert(player: player, entity: entity, uuid):
+	kitParticle_BubbleNectar_Convert({_entity})
+	set display name of {_entity} to "%{_player}%"
+
+	set {_loc} to location 1 meter above {_entity}
+	kitEffect_BubbleNectar_Bee({_player}, {_loc}, {_uuid})
+
+
+
+# 泡玉を発射する演出
+local function kitParticle_BubbleNectar_Launch(loc: location):
+
+# 泡玉周囲の演出
+local function kitParticle_BubbleNectar_Bubble(loc: location):
+
+# 泡玉が破裂した際の演出
+local function kitParticle_BubbleNectar_Explode(loc: location):
+
+# 芳甘煙の演出
+local function kitParticle_BubbleNectar_Sweet(loc: location):
+
+# エンティティ変換時の演出
+local function kitParticle_BubbleNectar_Convert(entity: entity):
