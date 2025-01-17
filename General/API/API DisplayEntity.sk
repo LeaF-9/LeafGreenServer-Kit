@@ -1,13 +1,20 @@
 import:
 	java.lang.Integer
 
+	org.bukkit.entity.Display$Brightness
+
 	org.bukkit.util.Transformation
 
 	org.joml.Vector3f
 	org.joml.AxisAngle4f
 
+# Brightness
+function setBrightness(entity: entity, level: number = 15):
+	set {_bright} to Integer.valueOf({_level})
+	set {_brightness} to new Brightness({_bright}, {_bright})
+	{_entity}.setBrightness({_brightness})
 
-
+# Transform
 function getVector3f(x: number, y: number, z: number) :: object:
 	set {_vector} to new Vector3f({_x}, {_y}, {_z})
 	return {_vector}
@@ -19,3 +26,14 @@ function getAxisAngle4f(x: number, y: number, z: number, angle: number) :: objec
 function setTransformation(entity: entity, leftRotation: object, rightRotation: object, translation: object, scale: object):
 	set {_transformation} to new Transformation({_translation}, {_leftRotation}, {_scale}, {_rightRotation})
 	{_entity}.setTransformation({_transformation})
+
+
+
+# Item Display
+function setDisplayItem(entity: entity, item: object):
+	set {_isItem} to {_item}.isItem()
+	if {_isItem} is false:
+		set {_item} to {_item}.asItemType()
+		stop if {_item}.isItem() is false
+
+	{_entity}.setItemStack({_item})
