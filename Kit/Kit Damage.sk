@@ -231,8 +231,12 @@ function kitHeal(player: entity, heart: number, particle: number = 5):
 		if getDebuffs({_player}, "Blood") is true:
 			stop
 
+	set {_health.bfr} to health of {_player}
 	heal {_player} by {_heart} hearts
-	kitHealthDisplay_Heal({_player}, {_heart})
+	set {_health.aft} to health of {_player}
+
+	if {_health.bfr} is not {_health.aft}:
+		kitHealthDisplay_Heal({_player}, {_heart})
 	if {_particle} >= 1:
 		healEffect({_player}, {_particle})
 
