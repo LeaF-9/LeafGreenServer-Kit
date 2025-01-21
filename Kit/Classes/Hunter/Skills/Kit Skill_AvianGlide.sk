@@ -1,0 +1,141 @@
+# skill-name: Avian Glide
+
+options:
+	stats-name: "Avian Glide"
+	metadata-name: "Avian Glide"
+	max-distance: 30
+	meter-per-second: 15
+	max-vector-length: 0.1
+
+function kitEffect_AvianGlide(player: player):
+	stop if getKitStats({_player}, {@stats-name}) is true
+	setKitStats({_player}, {@stats-name}, true)
+
+	kitMsg({_player}, "<##8ccfe1>鳥を用いた<##12dff1>滑空<##8ccfe1>を行います...")
+	set {_baseloc} to location of head of {_player}
+	set {_vec} to setVector({_baseloc}, location 10 meters in front of {_baseloc})
+	set {_avian} to kitEffect_AvianGlide_Summon({_player}, {_baseloc})
+
+	set {_check} to true
+	set {_pushpower} to {@meter-per-second} / 20
+	set {_pushing} to vector({_pushpower}, {_pushpower}, {_pushpower})
+	set {_count} to 20 * ({@max-distance} / {@meter-per-second})
+	loop {_count} times:
+		break if checkEating({_player}) is false
+		break if kitCheckAlive({_player}) is false
+
+		set {_baseloc} to location of {_avian}
+		kitParticle_AvianGlide_Fly({_baseloc}, {_vec})
+		set yaw of {_baseloc} to yaw of {_vec}
+		set pitch of {_baseloc} to pitch of {_vec}
+
+		set {_playerloc} to location of head of {_player}
+		set {_plusvec} to setVector({_playerloc}, location 5 meters in front of {_playerloc}, 0)
+		set {_basevec} to setVector({_baseloc}, location 10 meters in front of {_baseloc})
+		set vector length of {_plusvec} to {@max-vector-length} if vector length of {_plusvec} > {@max-vector-length}
+		set {_vec} to {_basevec} + {_plusvec}
+		set {_pushvec} to normalized {_vec} * {_pushing}
+
+		set velocity of {_avian} to {_pushvec}
+		wait a tick
+	nameCT({_player}, "Avian Glide")
+	deleteKitStats({_player}, {@stats-name})
+
+	set {_avianloc} to location of {_avian}
+	{_avian}.remove()
+	stop if kitCheckAlive({_player}) is false
+	
+	set {_playerloc} to location 1 meter above {_player}
+	kitParticle_AvianGlide_Jump({_playerloc}, {_avianloc})
+	set {_distance} to distance between {_playerloc} and {_avianloc}
+	set {_playerpushpower} to {_distance} / 10
+	set {_playerpush} to setVector({_playerloc}, {_avianloc}, {_playerpushpower})
+	loop 10 times:
+		set velocity of {_player} to {_playerpush}
+		kitParticle_AvianGlide_Glide({_player}, {_avianloc})
+		wait a tick
+
+local function kitEffect_AvianGlide_Summon(player: player, loc: location) :: entity:
+	set {_entity} to kitSpawnMob({_player}, parrot, {_loc})
+	kitParticle_AvianGlide_Summon({_entity})
+	set metadata value {@metadata-name} of {_entity} to true
+
+	{_entity}.setCustomNameVisible(false)
+	{_entity}.setInvulnerable(true)
+	{_entity}.setPersistent(true)
+	{_entity}.setSilent(true)
+	{_entity}.setAI(false)
+	{_entity}.setCollidable(false)
+	{_entity}.setAdult()
+	{_entity}.setAgeLock()
+	{_entity}.setBreed(false)
+	
+	return {_entity}
+
+
+
+local function kitParticle_AvianGlide_Summon(entity: entity):
+	playSound("entity.parrot.ambient", 1, 0.6, {_entity})
+	playSound("entity.parrot.fly", 1, 0.5, {_entity})
+
+	set {_loc} to location of {_entity}
+	loop 20 times:
+		set {_vec} to randomVector(0.5)
+		spawnParticle_Vector(end_rod, {_vec}, 1, {_loc})
+
+local function kitParticle_AvianGlide_Fly(loc: location, vec: vector):
+	chance of 10%:
+		playSound("entity.parrot.fly", 1, 1, {_loc})
+
+	add rgb(20, 187, 233) to {_colors::*}
+	add rgb(100, 236, 236) to {_colors::*}
+	add rgb(69, 203, 233) to {_colors::*}
+	
+	set {_loc} to location 0.5 meters above {_loc}
+	set {_vec} to (normalized {_vec}) * vector(-0.1, -0.1, -0.1)
+	set {_count} to a random integer between 0 and 2
+	loop {_count} times:
+		set {_base} to moveRandomLocation({_loc}, 0.5)
+		set {_el} to {_loc}
+		loop 5 times:
+			set {_el} to {_el} ~ {_vec}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 0.5, {_el})
+
+local function kitParticle_AvianGlide_Jump(loc: location, avianloc: location):
+	playSound("entity.phantom.death", 1, 1.2, {_loc})
+	playSound("entity.phantom.death", 1, 1.2, {_avianloc})
+
+	loop 20 times:
+		set {_vec} to randomVector()
+		spawnParticle_Vector(firework, {_vec}, 1, {_loc})
+		spawnParticle_Vector(firework, {_vec}, 1, {_avianloc})
+
+local function kitParticle_AvianGlide_Glide(player: player, avianloc: location):
+	add rgb(20, 187, 233) to {_colors.trail::*}
+	add rgb(48, 228, 248) to {_colors.trail::*}
+	add rgb(114, 196, 250) to {_colors.trail::*}
+
+	add rgb(176, 209, 235) to {_colors.hook::*}
+	add rgb(167, 224, 240) to {_colors.hook::*}
+	add rgb(137, 226, 223) to {_colors.hook::*}
+
+	set {_loc} to location 1 meter above {_player}
+	set {_vec} to setVector({_loc}, {_avianloc}, 0.1)
+	set {_count} to a random integer between 1 and 3
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 1)
+		loop 5 times:
+			set {_el} to {_el} ~ {_vec}
+			set {_color} to a random element out of {_colors.trail::*}
+			spawnParticle_Dust({_color}, 0.5, {_el})
+	
+	set {_distance} to distance between {_loc} and {_avianloc}
+	set {_count} to round({_distance}) * 2
+	set {_m} to 0
+	set {_addm} to 0.5
+	loop {_count} times:
+		set {_m} to {_m} + {_addm}
+		set {_el} to location {_m} meters in front of {_loc}
+		set {_color} to a random element out of {_colors.hook::*}
+		spawnParticle_Dust({_color}, 0.75, {_el})
