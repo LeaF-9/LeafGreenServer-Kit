@@ -1,0 +1,202 @@
+# Boscage Twine
+
+options:
+	effect-meter: 50
+	catch-radius: 3
+	damage-per-second: 1
+	move-per-second: 10
+
+function kitUltHunter(player: player):
+	load yml "plugins/skript-yaml/Kit Classes/Hunter.yml" as "boscagearrow.%{_player}%"
+	set {_BoscageArrow} to yml value "kititems.Boscage Arrow" from "boscagearrow.%{_player}%"
+	unload yml "boscagearrow.%{_player}%"
+
+	set offhand of {_player} to {_BoscageArrow}
+	setKitStats({_player}, "BoscageTwine-Arrow", {_BoscageArrow})
+
+	loop 200 times:
+		set {_offhand} to offhand of {_player}
+		if {_offhand} is not {_BoscageArrow}:
+			deleteKitStats({_player}, "BoscageTwine-Arrow")
+			stop
+		wait a tick
+	
+	deleteKitStats({_player}, "BoscageTwine-Arrow")
+	set offhand of {_player} to air
+
+on shoot:
+	set {_arrow} to event.getConsumable()
+	stop if {_arrow} is not getKitStats(shooter, "BoscageTwine-Arrow")
+	cancel event
+	set offhand of shooter to air
+	kitEffect_BoscageTwine(shooter)
+
+local function kitEffect_BoscageTwine(player: player):
+	set {_baseloc} to location of head of {_player}
+	set {_loc.trail::0} to {_baseloc}
+	kitSound_BoscageTwine_Launch({_baseloc})
+
+	set {_rad} to 0
+	set {_addrad} to 360 / 150
+	set {_count} to {@effect-meter} * 2
+	set {_addvec} to setVector({_baseloc}, location 10 meters in front of {_baseloc}, 0.5)
+	set {_ln} to 0
+	loop {_count} times:
+		add 0.5 to {_ln}
+		set {_checkloc} to {_baseloc} ~ {_addvec}
+		if (block at {_checkloc}) is not passable:
+			set {_blockloc} to location of block at {_checkloc}
+			set {_normal} to setVector({_blockloc}, {_baseloc}, 1)
+            set {_addvec} to kitEffect_BoscageTwine_Reflect({_addvec}, {_normal})
+			set {_checkloc} to {_baseloc} ~ {_addvec}
+		set {_baseloc} to {_checkloc}
+		set {_loc.trail::%{_ln}%} to {_baseloc}
+		kitParticle_BoscageTwine_Twine({_baseloc}, {_rad})
+
+		loop all players in radius {@catch-radius} around {_baseloc}:
+			continue if kitCheckTeam(loop-player, {_player}, false, true) is false
+			continue if {_hit::*} contains loop-player
+			add loop-player to {_hit::*}
+			set {_count.%loop-player%} to {_ln}
+			message formatted "<##16c61e>§l捕獲の蔦<##248d5c>に掛かってしまった!" to loop-player
+
+		add {_addrad} to {_rad}
+		if mod({_ln}, 10) is 0 or 10:
+			wait a tick
+	stop if (size of {_hit::*}) is 0
+
+	set {_coreloc} to {_loc.trail::0}
+	set {_reduceMeter} to {@move-per-second} / 20
+	set {_damage} to {@damage-per-second} / 2
+	set {_count} to {@effect-meter} * 2
+	set {_ln} to 0
+	loop {_count} times:
+		stop if (size of {_hit::*}) is 0
+		kitParticle_BoscageTwine_Core({_coreloc})
+
+		loop {_hit::*}:
+			set {_loop-player} to loop-value-2
+			set {_pm} to {_count.%{_loop-player}%}
+			subtract {_reduceMeter} from {_pm}
+			if {_pm} < 0:
+				kitParticle_BoscageTwine_Release({_loop-player})
+				remove {_loop-player} from {_hit::*}
+				continue
+			set {_teleportloc} to location 1 meter below {_loc.trail::%{_pm}%}
+			set yaw of {_teleportloc} to yaw of {_loop-player}
+			set pitch of {_teleportloc} to pitch of {_loop-player}
+			teleport {_loop-player} to {_teleportloc}
+			kitParticle_BoscageTwine_Catch({_loop-player}, {_loc.trail::*}, {_pm})
+			set {_count.%{_loop-player}%} to {_pm}
+
+			if mod({_ln}, 10) is 0 or 10:
+				kitDamage({_player}, {_loop-player}, {_damage}, "捕獲の蔦")
+
+		add 0.5 to {_ln}
+		wait a tick
+	stop if (size of {_hit::*}) is 0
+	loop {_hit::*}:
+		kitParticle_BoscageTwine_Release({_loop-player})
+
+local function kitEffect_BoscageTwine_Reflect(vec: vector, normal: vector) :: vector:
+    set {_dot} to {_vec} dot {_normal}
+    set {_reflect} to {_vec} - 2 * {_dot} * {_normal}
+	set {_reflect} to (normalized {_reflect}) * vector(0.5, 0.5, 0.5)
+    return {_reflect}
+
+
+
+local function kitParticle_BoscageTwine_Twine(loc: location, rad: number):
+	set {_basevec} to setVector({_loc}, location 10 meters in front of {_loc})
+	set {_rotateloc} to {_loc}
+	add -90 to pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 10 meters in front of {_rotateloc}, {@catch-radius})
+
+	set {_count} to 10
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		add {_addrad} to {_rad}
+		set {_vec} to {_rotatevec}
+		rotate {_vec} around {_basevec} by {_rad}
+		set {_el} to {_loc} ~ {_vec}
+		spawnParticle(egg_crack, {_el})
+
+		chance of 3%:
+			set {_el.2} to moveRandomLocation({_el}, 0.5)
+			spawnParticle_BlockData(falling_dust, lime wool, {_el.2})
+		
+		chance of 3%:
+			set {_el.2} to moveRandomLocation({_el}, 0.5)
+			spawnParticle_BlockData(falling_dust, green wool, {_el.2})
+
+local function kitParticle_BoscageTwine_Core(loc: location):
+	chance of 10%:
+		playSound("entity.creaking.step", 1, 2, {_loc})
+	
+	add rgb(27, 105, 47) to {_colors::*}
+	add rgb(34, 142, 97) to {_colors::*}
+	add rgb(15, 124, 31) to {_colors::*}
+	
+	loop 50 times:
+		set {_vec} to randomVector(1)
+		set {_el} to {_loc} ~ {_vec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 1.5, {_el})
+	
+	loop 3 times:
+		set {_vec} to randomVector(1.5)
+		set {_el} to {_loc} ~ {_vec}
+		spawnParticle_BlockData(block_crumble, oak leaves, {_el})
+
+local function kitParticle_BoscageTwine_Catch(player: player, loc: locations, maxmeter: number):
+	chance of 10%:
+		playSound("entity.creaking.freeze", 1, 1, {_player})
+	
+	add rgb(79, 242, 120) to {_colors.trail::*}
+	add rgb(87, 236, 174) to {_colors.trail::*}
+	add rgb(103, 233, 89) to {_colors.trail::*}
+
+	set {_baseloc} to location of {_player}
+	set {_y} to 0
+	set {_addy} to 0.5
+	set {_circle} to 10
+	set {_addrad} to 360 / {_circle}
+	set {_rotatevec} to vector(0.5, 0, 0)
+	loop 5 times:
+		set {_rad} to 0
+		set {_baseel} to location {_y} meters above {_baseloc}
+		loop {_circle} times:
+			add {_addrad} to {_rad}
+			chance of 20%:
+				continue
+			set {_vec} to {_rotatevec}
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_baseel} ~ {_vec}
+			spawnParticle(composter, {_el})
+		add {_addy} to {_y}
+	
+	set {_ln} to {_maxmeters}
+	set {_sub} to 0.5
+	loop {_maxmeters} times:
+		set {_next} to {_ln} - {_sub}
+		stop if {_next} < 0
+		set {_loc.from} to {_loc::%{_ln}%}
+		set {_loc.to} to {_loc::%{_next}%}
+
+		set {_color} to a random element out of {_colors.trail::*}
+		spawnParticle_Trail({_color}, {_loc.to}, 5 ticks, {_loc.from})
+
+		subtract {_sub} from {_ln}
+
+local function kitParticle_BoscageTwine_Release(player: player):
+	playSound("entity.creaking.deactivate", 1, 1.4, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 30 times:
+		set {_vec} to randomVector()
+		spawnParticle_Vector(glow_squid_ink, {_vec}, 0.5, {_baseloc})
+
+
+
+local function kitSound_BoscageTwine_Launch(loc: location):
+	playSound("entity.creaking.spawn", 50, 1.2, {_loc})
