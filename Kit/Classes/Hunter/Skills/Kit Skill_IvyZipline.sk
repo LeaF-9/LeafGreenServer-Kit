@@ -1,0 +1,212 @@
+# skill-name: Ivy Zipline
+
+options:
+	metadata-ivy: "Ivy Zipline - FromLocation"
+	stats-time: "IvyZipline-Time"
+	ride-radius: 2
+	ride-damage: 0.5
+
+import:
+	org.bukkit$FluidCollisionMode
+	org.bukkit.block.data$Bisected.Half
+
+on projectile hit:
+	projectile is a snowball
+	metadata value {@metadata-ivy} of projectile is set
+	kitEffect_IvyZipline_Hit(shooter, event)
+
+
+
+function kitEffect_IvyZipline(player: player):
+	set {_onGround} to {_player}.isOnGround()
+	if {_onGround} is true:
+		send action bar "§c§l接地した状態で発動してください" to {_player}
+		stop
+	
+	nameCT({_player}, "Ivy Zipline")
+	set {_loc.from} to location of {_player}
+	set pitch of {_loc.from} to 0
+	shoot a snowball from {_player} at speed 3
+	set {_shot} to shot snowball
+	set item of {_shot} to oak leaves
+	set metadata value {@metadata-ivy} of {_shot} to {_loc.from}
+	kitParticle_IvyZipline_Projectile({_shot})
+	kitMsg({_player}, "<##1a5132>蔦の鉤縄<##2d704a>を発射します...")
+
+local function kitEffect_IvyZipline_Hit(player: player, event: object):
+	set {_proj} to {_event}.getEntity()
+	set {_loc.from} to metadata value {@metadata-ivy} of {_proj}
+
+	set {_loc.proj} to location of {_proj}
+	if ({_event}.getHitBlock()) is set:
+		set {_faceDirection} to {_event}.getHitBlockFace().getDirection()
+		set {_loc.to} to {_event}.getHitBlock().getLocation().add({_faceDirection})
+		set yaw of {_loc.to} to (yaw of {_loc.from}) + 180
+		set pitch of {_loc.to} to pitch of {_faceDirection}
+	
+	else:
+		set {_world} to world of {_loc.proj}
+		set {_fluid} to (FluidCollisionMode.NEVER)
+		set {_ray} to rayTraceBlocks({_loc.proj}, vector(0, -1, 0), 300, {_fluid}, true)
+
+		if ({_ray}.getHitBlock()) is not set:
+			send action bar "§c§l着地点が見つかりませんでした" to {_player}
+			stop
+
+		set {_faceDirection} to {_ray}.getHitBlockFace().getDirection()
+		set {_loc.to} to {_ray}.getHitBlock().getLocation().add({_faceDirection})
+		set yaw of {_loc.to} to (yaw of {_loc.from}) + 180
+		set pitch of {_loc.to} to 0
+		kitParticle_IvyZipline_Fall({_loc.proj}, {_loc.to})
+	
+	kitEffect_IvyZipline_Zipline({_player}, {_loc.from}, {_loc.to})
+
+local function kitEffect_IvyZipline_Zipline(player: player, from: location, to: location):
+	set {_now} to now
+	setKitStats({_player}, {@stats-time}, {_now})
+
+	kitFakeDeleteData({_player}, "Ivy Zipline")
+
+	set {_displays.from::*} to kitEffect_IvyZipline_Display({_player}, {_from})
+	set {_displays.to::*} to kitEffect_IvyZipline_Display({_player}, {_to})
+
+	kitMsg({_player}, "<##39c613>§l蔦のジップライン<##8be18b>を設置しました!")
+	kitParticle_IvyZipline_Place({_from}, {_to})
+
+	add -90 to pitch of {_from}
+	set {_from} to location 1.75 meters in front of {_from}
+
+	add -90 to pitch of {_to}
+	set {_to} to location 1.75 meters in front of {_to}
+	
+	set {_vec.from} to setVector({_from}, {_to}, 0.5)
+	set {_from} to setDirToVec({_from}, {_vec.from})
+	set {_vec.to} to setVector({_to}, {_from}, 0.5)
+	set {_to} to setDirToVec({_to}, {_vec.to})
+
+	set {_distance} to distance between {_from} and {_to}
+	set {_metercount} to round({_distance}) * 2
+	set {_uuid} to a random UUID
+
+	while getKitStats({_player}, {@stats-name}) is {_now}:
+		wait a tick
+
+		# Particle
+		kitParticle_IvyZipline_Line({_from}, {_to})
+
+		# 乗車確認
+		set {_m} to 0
+		set {_addm} to 0.5
+		loop {_metercount} times:
+			add {_addm} to {_m}
+			set {_rideloc} to location {_m} meters in front of {_from}
+
+			loop all players in radius {@ride-radius} around {_rideloc}:
+				metadata value "gametype" of loop-player is "Kit"
+				{_riding::%loop-player%} is not set
+				if loop-player is sneaking:
+					if {_sneaking::%loop-player%} is false:
+						set {_sneaking::%loop-player%} to true
+
+						set {_playerloc} to location of loop-player
+						set {_playervec} to setVector({_playerloc}, location 1 meter in front of {_playerloc})
+						set {_angle.from} to {_playervec}.angle({_vec.from})
+						set {_angle.to} to {_playervec}.angle({_vec.to})
+						if {_angle.from} <= {_angle.to}:
+							set {_ridingvec} to {_vec.from}
+						else:
+							set {_ridingvec} to {_vec.to}
+
+						set {_riding::%loop-player%} to {_rideloc}
+						set {_riding.vec::%loop-player%} to {_ridingvec}
+						kitParticle_IvyZipline_Ride({_rideloc})
+						continue
+				set {_sneaking::%loop-player%} to false if loop-player is not sneaking
+
+		# 乗車中処理
+		loop all players:
+			continue if {_riding::%loop-player%} is not set
+
+			set {_rideloc} to {_riding::%loop-player%} ~ {_riding.vec::%loop-player%}
+			set {_riding::%loop-player%} to {_rideloc}
+
+			set {_sneaking::%loop-player%} to false if loop-player is not sneaking
+
+			if loop-player is sneaking:
+				if {_sneaking::%loop-player%} is false:
+					set {_sneaking::%loop-player%} to true
+					delete {_riding::%loop-player%}
+					delete {_riding.vec::%loop-player%}
+					kitParticle_IvyZipline_Drop({_rideloc})
+					continue
+			
+			if {_riding.vec::%loop-player%} = {_vec.from}:
+				set {_disbase} to {_from}
+			else:
+				set {_disbase} to {_to}
+			set {_disride} to distance between {_disbase} and {_rideloc}
+			if {_disride} > {_distance}:
+				delete {_sneaking::%loop-player%}
+				delete {_riding::%loop-player%}
+				delete {_riding.vec::%loop-player%}
+				kitParticle_IvyZipline_Drop({_rideloc})
+				continue
+
+			set yaw of {_rideloc} to yaw of loop-player
+			set pitch of {_rideloc} to pitch of loop-player
+			teleport loop-player to {_rideloc}
+
+			continue if kitCheckTeam(loop-player, {_player}, false) is false
+			set {_damage::%loop-player%} to 0 if {_damage::%loop-player%} is not set
+			if mod({_damage::%loop-player%}, 10) is 0 or 10:
+				kitDamage({_player}, loop-player, {@ride-damage}, "蔦の鉤縄")
+				kitParticle_IvyZipline_Damage(loop-player)
+			add 1 to {_damage::%loop-player%}
+
+		set {_exist} to kitFakeCheck({_player}, "Ivy Zipline")
+		if {_exist} is false:
+			deleteKitStats({_player}, {@stats-name})
+
+local function kitEffect_IvyZipline_Display(player: player, loc: location) :: entity:
+	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
+	set {_transformation::scale} to getVector3f(1, 0.75, 1)
+	set {_block} to getBlockState(small dripleaf)
+	set {_displays::1} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Ivy Zipline")
+
+	set {_transformation::translation} to getVector3f(-0.5, 0.75, -0.5)
+	set {_displays::2} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Ivy Zipline")
+
+	set {_transformation::translation} to getVector3f(-0.25, 1.5, -0.25)
+	set {_transformation::scale} to getVector3f(0.5, 0.5, 0.5)
+	set {_block} to getBlockState(flowering azalea leaves)
+	set {_displays::3} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Ivy Zipline")
+
+	add 45 to yaw of {_loc}
+	set {_transformation::translation} to getVector3f(-0.45, 1.5, -0.45)
+	set {_transformation::scale} to getVector3f(0.9, 0.7, 0.9)
+	set {_block} to getBlockState(lilac)
+	set {_blockdata} to {_block}.getBlockData().setHalf(Bisected.Half.TOP)
+	{_block}.setBlockData({_blockdata})
+	set {_displays::3} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Ivy Zipline")
+
+	return {_displays::*}
+
+
+
+local function kitParticle_IvyZipline_Projectile(proj: projectile):
+
+local function kitParticle_IvyZipline_Fall(from: location, to: location):
+
+local function kitParticle_IvyZipline_Place(from: location, to: location):
+
+local function kitParticle_IvyZipline_Line(from: location, to: location):
+
+local function kitParticle_IvyZipline_Ride(loc: location):
+
+local function kitParticle_IvyZipline_Drop(loc: location):
+
+local function kitParticle_IvyZipline_Riding(loc: location):
+
+local function kitParticle_IvyZipline_Damage(player: player):
