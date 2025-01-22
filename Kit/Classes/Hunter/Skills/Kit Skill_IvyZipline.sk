@@ -7,8 +7,8 @@ options:
 	ride-damage: 0.5
 
 import:
-	org.bukkit$FluidCollisionMode
-	org.bukkit.block.data$Bisected.Half
+	org.bukkit.FluidCollisionMode
+	org.bukkit.block.data.Bisected$Half
 
 on projectile hit:
 	projectile is a snowball
@@ -19,7 +19,7 @@ on projectile hit:
 
 function kitEffect_IvyZipline(player: player):
 	set {_onGround} to {_player}.isOnGround()
-	if {_onGround} is true:
+	if {_onGround} is false:
 		send action bar "§c§l接地した状態で発動してください" to {_player}
 		stop
 	
@@ -47,7 +47,7 @@ local function kitEffect_IvyZipline_Hit(player: player, event: object):
 	else:
 		set {_world} to world of {_loc.proj}
 		set {_fluid} to (FluidCollisionMode.NEVER)
-		set {_ray} to rayTraceBlocks({_loc.proj}, vector(0, -1, 0), 300, {_fluid}, true)
+		set {_ray} to {_world}.rayTraceBlocks({_loc.proj}, vector(0, -1, 0), 300, {_fluid}, true)
 
 		if ({_ray}.getHitBlock()) is not set:
 			send action bar "§c§l着地点が見つかりませんでした" to {_player}
@@ -81,14 +81,16 @@ local function kitEffect_IvyZipline_Zipline(player: player, from: location, to: 
 	
 	set {_vec.from} to setVector({_from}, {_to}, 0.5)
 	set {_from} to setDirToVec({_from}, {_vec.from})
+	add 3.5 to y-pos of {_from}
 	set {_vec.to} to setVector({_to}, {_from}, 0.5)
 	set {_to} to setDirToVec({_to}, {_vec.to})
+	add 3.5 to y-pos of {_to}
 
 	set {_distance} to distance between {_from} and {_to}
 	set {_metercount} to round({_distance}) * 2
 	set {_uuid} to a random UUID
 
-	while getKitStats({_player}, {@stats-name}) is {_now}:
+	while getKitStats({_player}, {@stats-time}) is {_now}:
 		wait a tick
 
 		# Particle
@@ -165,31 +167,34 @@ local function kitEffect_IvyZipline_Zipline(player: player, from: location, to: 
 
 		set {_exist} to kitFakeCheck({_player}, "Ivy Zipline")
 		if {_exist} is false:
-			deleteKitStats({_player}, {@stats-name})
+			deleteKitStats({_player}, {@stats-time})
 
-local function kitEffect_IvyZipline_Display(player: player, loc: location) :: entity:
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
-	set {_transformation::scale} to getVector3f(1, 0.75, 1)
-	set {_block} to getBlockState(small dripleaf)
-	set {_displays::1} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Ivy Zipline")
+local function kitEffect_IvyZipline_Display(player: player, loc: location) :: entities:
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.5, 0, -0.5)
+	set {_scale} to getVector3f(1, 0.75, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(small dripleaf)
+	set {_displays::1} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Ivy Zipline")
 
-	set {_transformation::translation} to getVector3f(-0.5, 0.75, -0.5)
-	set {_displays::2} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Ivy Zipline")
+	set {_translation} to getVector3f(-0.5, 0.75, -0.5)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_displays::2} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Ivy Zipline")
 
-	set {_transformation::translation} to getVector3f(-0.25, 1.5, -0.25)
-	set {_transformation::scale} to getVector3f(0.5, 0.5, 0.5)
-	set {_block} to getBlockState(flowering azalea leaves)
-	set {_displays::3} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Ivy Zipline")
+	set {_translation} to getVector3f(-0.25, 1.5, -0.25)
+	set {_scale} to getVector3f(0.5, 0.5, 0.5)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(flowering azalea leaves)
+	set {_displays::3} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Ivy Zipline")
 
 	add 45 to yaw of {_loc}
-	set {_transformation::translation} to getVector3f(-0.45, 1.5, -0.45)
-	set {_transformation::scale} to getVector3f(0.9, 0.7, 0.9)
-	set {_block} to getBlockState(lilac)
-	set {_blockdata} to {_block}.getBlockData().setHalf(Bisected.Half.TOP)
+	set {_translation} to getVector3f(-0.45, 1.5, -0.45)
+	set {_scale} to getVector3f(0.9, 0.7, 0.9)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(lilac)
+	set {_blockdata} to {_block}.getBlockData().setHalf(Half.TOP)
 	{_block}.setBlockData({_blockdata})
-	set {_displays::3} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Ivy Zipline")
+	set {_displays::3} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Ivy Zipline")
 
 	return {_displays::*}
 
