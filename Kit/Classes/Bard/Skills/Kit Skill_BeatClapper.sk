@@ -19,16 +19,24 @@ function kitEffect_BeatClapper(player: player):
 	setKitStats({_player}, "BeatClapper-Time", {_now})
 	kitParticle_BeatClapper_Place({_loc})
 	kitFakeDeleteData({_player}, "Beat Clapper")
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0f,-0.25f]", "[0.5f,1f,0.5f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:spruce_fence", {_transformation}, "Beat Clapper")
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,1f,-0.5f]", "[1f,1f,1f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:spruce_pressure_plate", {_transformation}, "Beat Clapper")
-	loop all block displays:
-		metadata value "kit-block" of loop-block display is "Beat Clapper"
-		metadata value "Beat Clapper" of loop-block display is "%{_player}%"
-		set metadata value "Beat Clapper-Lever" of loop-block display to "%{_player}%"
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,0.5f,1f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:note_block", {_transformation}, "Beat Clapper")
+
+	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::translation} to getVector3f(-0.25, 0, -0.25)
+	set {_transformation::scale} to getVector3f(0.5, 1, 0.5)
+	set {_block} to getBlockState(spruce fence)
+	set {_hasMetadataDisplay} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Beat Clapper")
+	set metadata value "Beat Clapper-Lever" of {_hasMetadataDisplay} to "%{_player}%"
+
+	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
+	set {_transformation::scale} to getVector3f(1, 1, 1)
+	set {_block} to getBlockState(spruce pressure plate)
+	set {_hasMetadataDisplay} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Beat Clapper")
+	set metadata value "Beat Clapper-Lever" of {_hasMetadataDisplay} to "%{_player}%"
+
+	set {_transformation::scale} to getVector3f(1, 0.5, 1)
+	set {_block} to getBlockState(note block)
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Beat Clapper")
 	kitMsg({_player}, "§6§l音波を発する装置§eを設置しました!")
 	set {_timer} to 0
 	set {_y} to 0

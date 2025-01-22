@@ -1,26 +1,44 @@
-function kitFakeBlock(player: player, location: location, block: text, transformation: text, metadata: text):
+function kitFakeBlock(player: player, location: location, block: block data, transformation: objects, metadata: text) :: entity:
 	set {_team} to getTeam({_player}, true)
 	set {_rgb} to kitTeamRGB({_team})
-	set {_color} to convertColorToDataColor({_rgb})
+	set {_color} to {_rgb}.asBukkitColor()
 
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},glow_color_override:%{_color}%,teleport_duration:1}"
-	spawn a block display at {_location} with nbt {_nbt}
+	spawn a block display at {_location}
 	set {_blockdisplay} to spawned block display
 	set metadata value "gametype" of {_blockdisplay} to "Kit"
 	set metadata value "kit-block" of {_blockdisplay} to {_metadata}
 	set metadata value {_metadata} of {_blockdisplay} to "%{_player}%"
 
-function kitFakeItem(player: player, location: location, item: text, transformation: text, metadata: text):
+	setBrightness({_blockdisplay})
+	{_blockDisplay}.setGlowColorOverride({_color})
+	{_blockdisplay}.setTeleportDuration(1)
+	{_blockdisplay}.setInterpolationDuration(1)
+	{_blockdisplay}.setViewRange(1000)
+	setTransformation({_blockdisplay}, {_transformation::1}, {_transformation::2}, {_transformation::3}, {_transformation::4})
+	setDisplayBlock({_blockdisplay}, {_block})
+
+	return {_blockdisplay}
+
+function kitFakeItem(player: player, location: location, item: item type, transformation: objects, metadata: text) :: entity:
 	set {_team} to getTeam({_player}, true)
 	set {_rgb} to kitTeamRGB({_team})
-	set {_color} to convertColorToDataColor({_rgb})
+	set {_color} to {_rgb}.asBukkitColor()
 
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},brightness:{block:15,sky:15},glow_color_override:%{_color}%,teleport_duration:1}"
-	spawn an item display at {_location} with nbt {_nbt}
+	spawn an item display at {_location}
 	set {_itemdisplay} to spawned item display
 	set metadata value "gametype" of {_itemdisplay} to "Kit"
 	set metadata value "kit-item" of {_itemdisplay} to {_metadata}
 	set metadata value {_metadata} of {_itemdisplay} to "%{_player}%"
+
+	setBrightness({_itemdisplay})
+	{_itemdisplay}.setGlowColorOverride({_color})
+	{_itemdisplay}.setTeleportDuration(1)
+	{_itemdisplay}.setInterpolationDuration(1)
+	{_itemdisplay}.setViewRange(1000)
+	setTransformation({_itemdisplay}, {_transformation::1}, {_transformation::2}, {_transformation::3}, {_transformation::4})
+	setDisplayItem({_itemdisplay}, {_item})
+
+	return {_itemdisplay}
 
 function kitTransformation(left_rotation: text, right_rotation: text, translation: text, scale: text) :: text:
 	set {_transformation} to "{left_rotation:%{_left_rotation}%,right_rotation:%{_right_rotation}%,translation:%{_translation}%,scale:%{_scale}%}"
@@ -32,6 +50,9 @@ command /kit-createdisplaytest <text> <text> <text> <text> <text> <text>:
 	executable by: player
 	permission: sk.admin
 	trigger:
+		message formatted "§c§lこのコマンドを使う際には更新作業をお願いします" to {_player}
+		stop
+
 		set {_arg} to arg 1
 		set {_object} to arg 2
 		set {_left_rotation} to arg 3

@@ -85,22 +85,28 @@ function kitEffect_TrackingSystem(player: player):
 			deleteKitStats({_player}, "TrackingSystem-Time-%{_num}%")
 
 local function kitEffect_TrackingSystem_Machine(player: player, num: number, loc: location) :: entity:
+	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::translation} to getVector3f(0.2, 0, 0.2)
+	set {_transformation::scale} to getVector3f(0.1, 0.2, 0.1)
+	set {_block} to getBlockState(white stained glass)
 	# foot
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0.2f,0f,0.2f]", "[0.1f,0.2f,0.1f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:white_stained_glass", {_transformation}, "Machine-Tracking System-%{_num}%")
+	set {_transformation::translation} to getVector3f(0.2, 0, 0.2)
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Machine-Tracking System-%{_num}%")
 	
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.3f,0f,0.2f]", "[0.1f,0.2f,0.1f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:white_stained_glass", {_transformation}, "Machine-Tracking System-%{_num}%")
+	set {_transformation::translation} to getVector3f(-0.3, 0, 0.2)
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Machine-Tracking System-%{_num}%")
 
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0.2f,0f,-0.3f]", "[0.1f,0.2f,0.1f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:white_stained_glass", {_transformation}, "Machine-Tracking System-%{_num}%")
+	set {_transformation::translation} to getVector3f(0.2, 0, -0.3)
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Machine-Tracking System-%{_num}%")
 
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.3f,0f,-0.3f]", "[0.1f,0.2f,0.1f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:white_stained_glass", {_transformation}, "Machine-Tracking System-%{_num}%")
+	set {_transformation::translation} to getVector3f(-0.3, 0, -0.3)
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Machine-Tracking System-%{_num}%")
 
 	# head
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.25f,0.25f,-0.25f]", "[0.5f,0.5f,0.5f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:beacon", {_transformation}, "Machine-Tracking System-%{_num}%")
-	set {_return} to spawned block display
+	set {_transformation::translation} to getVector3f(-0.25, 0.25, -0.25)
+	set {_transformation::scale} to getVector3f(0.5, 0.5, 0.5)
+	set {_block} to getBlockState(beacon)
+	set {_return} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Machine-Tracking System-%{_num}%")
 
 	return {_return}

@@ -35,19 +35,23 @@ function kitEffect_GuardianTurret(player: player):
 
 	set {_loc.mark} to {_loc.target}
 	add 1.65 to y-coordinate of {_loc.mark}
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,-0.5f,-0.5f]", "[1f,1f,1f]")
-	kitFakeBlock({_player}, {_loc.mark}, "minecraft:skeleton_skull", {_transformation}, "Guardian Turret")
-	loop all block displays:
-		metadata value "kit-block" of loop-block display is "Guardian Turret"
-		metadata value "Guardian Turret" of loop-block display is "%{_player}%"
-		set {_marker} to loop-block display
+
+	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::translation} to getVector3f(-0.5, -0.5, -0.5)
+	set {_transformation::scale} to getVector3f(1, 1, 1)
+	set {_block} to getBlockState(skeleton skull)
+	set {_marker} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation::*}, "Guardian Turret")
 
 	set {_loc.base} to {_loc.target}
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.45f,0f,-0.45f]", "[0.9f,0.9f,0.9f]")
-	kitFakeBlock({_player}, {_loc.base}, "minecraft:spruce_fence", {_transformation}, "Guardian Turret")
+	set {_transformation::translation} to getVector3f(-0.45, 0, -0.45)
+	set {_transformation::scale} to getVector3f(0.9, 0.9, 0.9)
+	set {_block} to getBlockState(spruce fence)
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation::*}, "Guardian Turret")
 
 	add 1 to y-pos of {_loc.base}
-	kitFakeBlock({_player}, {_loc.base}, "minecraft:jungle_leaves", {_transformation}, "Guardian Turret")
+	set {_block} to getBlockState(jungle leaves)
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation::*}, "Guardian Turret")
 
 	kitMsg({_player}, "<##146074>タレットを設置しました...")
 	playSound("block.anvil.use", 5, 0.5, {_loc.target})

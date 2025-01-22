@@ -10,11 +10,18 @@ function kitEffect_FenceMarker(player: player):
 	set {_now} to now
 	setKitStats({_player}, "FenceMarker-Time", {_now})
 	kitFakeDeleteData({_player}, "Fence Marker")
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
 	set {_loc.base} to {_SkillLocation}
-	kitFakeBlock({_player}, {_loc.base}, "minecraft:end_rod", {_transformation}, "Fence Marker")
+
+	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
+	set {_transformation::scale} to getVector3f(1, 1, 1)
+	set {_block} to getBlockState(end rod)
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation::*}, "Fence Marker")
 	set {_loc.top} to location 1 meter above {_loc.base}
-	kitFakeBlock({_player}, {_loc.top}, "minecraft:dead_fire_coral_fan", {_transformation}, "Fence Marker")
+
+	set {_block} to getBlockState(dead fire coral fan)
+	kitFakeBlock({_player}, {_loc.top}, {_block}, {_transformation::*}, "Fence Marker")
 	setKitStats({_player}, "FenceMarker", {_loc.top})
 	kitMsg({_player}, "§7盗品売買所§5を設置しました...")
 	playSound("entity.witch.celebrate", 1, 0.9, {_loc.base})

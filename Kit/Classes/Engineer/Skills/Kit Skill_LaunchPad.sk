@@ -11,22 +11,28 @@ function kitEffect_LaunchPad(player: player):
 	setKitStats({_player}, "LaunchPad-Time", {_now})
 	kitFakeDeleteData({_player}, "Machine-Launch Pad")
 	if {team::%{_player}%} is "red":
-		set {_block} to "minecraft:red_stained_glass"
+		set {_block} to getBlockState(red stained glass)
 	else if {team::%{_player}%} is "blue":
-		set {_block} to "minecraft:blue_stained_glass"
+		set {_block} to getBlockState(blue stained glass)
 	else if {team::%{_player}%} is "yellow":
-		set {_block} to "minecraft:yellow_stained_glass"
+		set {_block} to getBlockState(yellow stained glass)
 	else if {team::%{_player}%} is "green":
-		set {_block} to "minecraft:lime_stained_glass"
+		set {_block} to getBlockState(lime stained glass)
 	else:
-		set {_block} to "minecraft:purple_stained_glass"
-	set {_plate} to "minecraft:heavy_weighted_pressure_plate"
+		set {_block} to getBlockState(purple stained glass)
+	set {_plate} to getBlockState(heavy weighted pressure plate)
+
 	set {_loc.glass} to {_loc}
 	subtract 0.5 from y-coordinate of {_loc.glass}
 	set {_loc.plate} to {_loc}
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
-	kitFakeBlock({_player}, {_loc.plate}, {_plate}, {_transformation}, "Machine-Launch Pad")
-	kitFakeBlock({_player}, {_loc.glass}, {_block}, {_transformation}, "Machine-Launch Pad")
+
+	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
+	set {_transformation::scale} to getVector3f(1, 1, 1)
+
+	kitFakeBlock({_player}, {_loc.plate}, {_plate}, {_transformation::*}, "Machine-Launch Pad")
+	kitFakeBlock({_player}, {_loc.glass}, {_block}, {_transformation::*}, "Machine-Launch Pad")
 	kitMsg({_player}, "<##D70035>Launch Pad§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
 	while getKitStats({_player}, "LaunchPad-Time") is {_now}:

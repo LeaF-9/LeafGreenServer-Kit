@@ -11,12 +11,24 @@ function kitEffect_DefenseMatrix(player: player):
 	setKitStats({_player}, "DefenseMatrix-Time", {_now})
 	kitFakeDeleteData({_player}, "Defense Matrix")
 	set {_loc} to {_SkillLocation}
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,0f,-0.5f]", "[1f,1f,1f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:cyan_stained_glass", {_transformation}, "Defense Matrix")
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.45f,0f,-0.45f]", "[0.9f,0.1f,0.9f]")
-	kitFakeBlock({_player}, {_loc}, "minecraft:obsidian", {_transformation}, "Defense Matrix")
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0.5f,0f]", "[0.65f,0.65f,0.65f]")
-	kitFakeItem({_player}, {_loc}, "minecraft:diamond_block", {_transformation}, "Defense Matrix")
+
+	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
+	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
+	set {_transformation::scale} to getVector3f(1, 1, 1)
+	set {_block} to getBlockState(cyan stained glass)
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Defense Matrix")
+
+	set {_transformation::translation} to getVector3f(-0.45, 0, -0.45)
+	set {_transformation::scale} to getVector3f(0.9, 0.1, 0.9)
+	set {_block} to getBlockState(obsidian)
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Defense Matrix")
+
+	set {_transformation::translation} to getVector3f(0, 0.5, 0)
+	set {_transformation::scale} to getVector3f(0.65, 0.65, 0.65)
+	set {_item} to diamond block
+	set {_rotateDisplay} to kitFakeItem({_player}, {_loc}, {_item}, {_transformation::*}, "Defense Matrix")
+
 	kitMsg({_player}, "§9Defense Matrix§bを設置しました!")
 	playSound("block.anvil.land", 1, 0.5, {_loc})
 	set {_yaw} to 0
@@ -30,12 +42,7 @@ function kitEffect_DefenseMatrix(player: player):
 		if {_yaw} >= 360:
 			set {_yaw} to 0
 		set yaw of {_loc} to {_yaw}
-		if {_itemdisplay} is not set:
-			loop all item displays:
-				metadata value "kit-item" of loop-item display is "Defense Matrix"
-				metadata value "Defense Matrix" of loop-item display is "%{_player}%"
-				set {_itemdisplay} to loop-item display
-		teleport {_itemdisplay} to {_loc}
+		teleport {_rotateDisplay} to {_loc}
 
 on damage with priority NORMAL:
 	getKitStats(victim, "NoSupport") is not set
