@@ -7,6 +7,8 @@ import:
 
 	org.joml.Vector3f
 	org.joml.AxisAngle4f
+	org.joml.Quaternionf
+	org.joml.Matrix4f
 
 # Brightness
 function setBrightness(entity: entity, level: number = 15):
@@ -20,8 +22,35 @@ function getVector3f(x: number, y: number, z: number) :: object:
 	return {_vector}
 
 function getAxisAngle4f(x: number, y: number, z: number, angle: number) :: object:
-	set {_angle} to new AxisAngle4f({_angle}, {_x}, {_y}, {_z})
-	return {_angle}
+	set {_axisAngle} to new AxisAngle4f({_angle}, {_x}, {_y}, {_z})
+	return {_axisAngle}
+
+function getQuaternionf(x: number, y: number, z: number, w: number) :: object:
+	set {_quaternion} to new Quaternionf({_x}, {_y}, {_z}, {_w})
+	return {_quaternion}
+
+function getMatrix4f(m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number) :: object:
+	set {_matrix} to new Matrix4f({_m00}, {_m01}, {_m02}, {_m03}, {_m10}, {_m11}, {_m12}, {_m13}, {_m20}, {_m21}, {_m22}, {_m23}, {_m30}, {_m31}, {_m32}, {_m33})
+	return {_matrix}
+
+function getQuaternionFromMatrix(matrix: object) :: object:
+	set {_quaternion} to new Quaternionf()
+	set {_quaternion} to {_matrix}.getNormalizedRotation({_quaternion})
+	return {_quaternion}
+
+function getTranslationFromMatrix(matrix: object) :: object:
+	set {_vector} to new Vector3f()
+	set {_vector} to {_matrix}.getTranslation({_vector})
+	return {_vector}
+
+function getScaleFromMatrix(matrix: object) :: object:
+	set {_vector} to new Vector3f()
+	set {_vector} to {_matrix}.getScale({_vector})
+	return {_vector}
+
+function getTransformation(leftRotation: object, rightRotation: object, translation: object, scale: object) :: object:
+	set {_transformation} to new Transformation({_translation}, {_leftRotation}, {_scale}, {_rightRotation})
+	return {_transformation}
 
 function setTransformation(entity: entity, leftRotation: object, rightRotation: object, translation: object, scale: object):
 	set {_transformation} to new Transformation({_translation}, {_leftRotation}, {_scale}, {_rightRotation})
@@ -39,9 +68,9 @@ function setDisplayItem(entity: entity, item: item type):
 	{_entity}.setItemStack({_item})
 
 # Block Display
-function setDisplayBlock(entity: entity, block: block data):
+function setDisplayBlock(entity: entity, block: object):
 	{_entity}.setBlock({_block})
 
-function getBlockState(block: object) :: object:
-	set {_block} to {_block}.getBlockState()
+function getBlockData(block: item type) :: object:
+	set {_block} to {_block}.getMaterial().createBlockData()
 	return {_block}
