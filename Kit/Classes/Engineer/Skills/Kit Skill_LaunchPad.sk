@@ -11,28 +11,28 @@ function kitEffect_LaunchPad(player: player):
 	setKitStats({_player}, "LaunchPad-Time", {_now})
 	kitFakeDeleteData({_player}, "Machine-Launch Pad")
 	if {team::%{_player}%} is "red":
-		set {_block} to getBlockState(red stained glass)
+		set {_block} to getBlockData(red stained glass)
 	else if {team::%{_player}%} is "blue":
-		set {_block} to getBlockState(blue stained glass)
+		set {_block} to getBlockData(blue stained glass)
 	else if {team::%{_player}%} is "yellow":
-		set {_block} to getBlockState(yellow stained glass)
+		set {_block} to getBlockData(yellow stained glass)
 	else if {team::%{_player}%} is "green":
-		set {_block} to getBlockState(lime stained glass)
+		set {_block} to getBlockData(lime stained glass)
 	else:
-		set {_block} to getBlockState(purple stained glass)
-	set {_plate} to getBlockState(heavy weighted pressure plate)
+		set {_block} to getBlockData(purple stained glass)
+	set {_plate} to getBlockData(heavy weighted pressure plate)
 
 	set {_loc.glass} to {_loc}
 	subtract 0.5 from y-coordinate of {_loc.glass}
 	set {_loc.plate} to {_loc}
 
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
-	set {_transformation::scale} to getVector3f(1, 1, 1)
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.5, 0, -0.5)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 
-	kitFakeBlock({_player}, {_loc.plate}, {_plate}, {_transformation::*}, "Machine-Launch Pad")
-	kitFakeBlock({_player}, {_loc.glass}, {_block}, {_transformation::*}, "Machine-Launch Pad")
+	kitFakeBlock({_player}, {_loc.plate}, {_plate}, {_transformation}, "Machine-Launch Pad")
+	kitFakeBlock({_player}, {_loc.glass}, {_block}, {_transformation}, "Machine-Launch Pad")
 	kitMsg({_player}, "<##D70035>Launch Pad§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
 	while getKitStats({_player}, "LaunchPad-Time") is {_now}:

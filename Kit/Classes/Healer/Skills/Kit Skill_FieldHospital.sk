@@ -27,22 +27,24 @@ function kitEffect_FieldHospital(player: player):
 	set {_loc.mark} to {_loc.target}
 	add 1.2 to y-coordinate of {_loc.mark}
 
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.15, 0, -0.15)
-	set {_transformation::scale} to getVector3f(0.3, 1.2, 0.3)
-	set {_block} to getBlockState(pink concrete powder)
-	set {_markers::1} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation::*}, "Field Hospital")
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.15, 0, -0.15)
+	set {_scale} to getVector3f(0.3, 1.2, 0.3)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(pink concrete powder)
+	set {_markers::1} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation}, "Field Hospital")
 
-	set {_transformation::translation} to getVector3f(-0.6, 0.45, -0.15)
-	set {_transformation::scale} to getVector3f(1.2, 0.3, 0.3)
-	set {_markers::2} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation::*}, "Field Hospital")
+	set {_translation} to getVector3f(-0.6, 0.45, -0.15)
+	set {_scale} to getVector3f(1.2, 0.3, 0.3)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_markers::2} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation}, "Field Hospital")
 
 	set {_loc.base} to {_loc.target}
-	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
-	set {_transformation::scale} to getVector3f(1, 1, 1)
-	set {_block} to getBlockState(crimson fence)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation::*}, "Field Hospital")
+	set {_translation} to getVector3f(-0.5, 0, -0.5)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(crimson fence)
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Field Hospital")
 
 	kitMsg({_player}, "§d周辺の味方を回復する装置を設置しました...")
 	send action bar "§d現在のオド: §c%{Kit-Odo::%{_player}%}%" to {_player}

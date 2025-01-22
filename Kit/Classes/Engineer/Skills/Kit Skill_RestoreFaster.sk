@@ -14,17 +14,18 @@ function kitEffect_RestoreFaster(player: player):
 	set {_loc.core} to {_loc}
 	add 1.55 to y-coordinate of {_loc.core}
 
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.45, -0.45, -0.45)
-	set {_transformation::scale} to getVector3f(0.9, 0.9, 0.9)
-	set {_block} to getBlockState(glowstone)
-	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation::*}, "Machine-Restore Faster")
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.45, -0.45, -0.45)
+	set {_scale} to getVector3f(0.9, 0.9, 0.9)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(glowstone)
+	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Restore Faster")
 
-	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
-	set {_transformation::scale} to getVector3f(1, 1, 1)
-	set {_block} to getBlockState(birch fence)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation::*}, "Machine-Restore Faster")
+	set {_translation} to getVector3f(-0.5, 0, -0.5)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(birch fence)
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Restore Faster")
 	kitMsg({_player}, "<##FFF352>Restore Faster§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
 

@@ -1,4 +1,4 @@
-function kitFakeBlock(player: player, location: location, block: block data, transformation: objects, metadata: text) :: entity:
+function kitFakeBlock(player: player, location: location, block: object, transformation: object, metadata: text) :: entity:
 	set {_team} to getTeam({_player}, true)
 	set {_rgb} to kitTeamRGB({_team})
 	set {_color} to {_rgb}.asBukkitColor()
@@ -10,16 +10,16 @@ function kitFakeBlock(player: player, location: location, block: block data, tra
 	set metadata value {_metadata} of {_blockdisplay} to "%{_player}%"
 
 	setBrightness({_blockdisplay})
-	{_blockDisplay}.setGlowColorOverride({_color})
+	{_blockdisplay}.setGlowColorOverride({_color})
 	{_blockdisplay}.setTeleportDuration(1)
 	{_blockdisplay}.setInterpolationDuration(1)
 	{_blockdisplay}.setViewRange(1000)
-	setTransformation({_blockdisplay}, {_transformation::1}, {_transformation::2}, {_transformation::3}, {_transformation::4})
 	setDisplayBlock({_blockdisplay}, {_block})
+	{_blockdisplay}.setTransformation({_transformation})
 
 	return {_blockdisplay}
 
-function kitFakeItem(player: player, location: location, item: item type, transformation: objects, metadata: text) :: entity:
+function kitFakeItem(player: player, location: location, item: item type, transformation: object, metadata: text) :: entity:
 	set {_team} to getTeam({_player}, true)
 	set {_rgb} to kitTeamRGB({_team})
 	set {_color} to {_rgb}.asBukkitColor()
@@ -35,8 +35,8 @@ function kitFakeItem(player: player, location: location, item: item type, transf
 	{_itemdisplay}.setTeleportDuration(1)
 	{_itemdisplay}.setInterpolationDuration(1)
 	{_itemdisplay}.setViewRange(1000)
-	setTransformation({_itemdisplay}, {_transformation::1}, {_transformation::2}, {_transformation::3}, {_transformation::4})
 	setDisplayItem({_itemdisplay}, {_item})
+	{_itemdisplay}.setTransformation({_transformation})
 
 	return {_itemdisplay}
 

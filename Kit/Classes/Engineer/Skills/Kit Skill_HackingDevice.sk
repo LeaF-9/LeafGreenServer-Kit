@@ -15,15 +15,16 @@ function kitEffect_HackingDevice(player: player):
 	add 1 to y-coordinate of {_loc.core}
 	setKitStats({_player}, "HackingDevice", {_loc.core})
 
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
-	set {_transformation::scale} to getVector3f(1, 1, 1)
-	set {_block} to getBlockState(polished blackstone wall)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation::*}, "Machine-Hacking Device")
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	
+	set {_translation} to getVector3f(-0.5, 0, -0.5)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(polished blackstone wall)
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Hacking Device")
 
-	set {_block} to getBlockState(structure block)
-	kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation::*}, "Machine-Hacking Device")
+	set {_block} to getBlockData(structure block)
+	kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Hacking Device")
 	kitMsg({_player}, "<##E9BC00>Hacking Device§eを設置しました!")
 	playSound("item.trident.return", 1, 1.5, {_loc.base})
 	while getKitStats({_player}, "HackingDevice-Time") is {_now}:

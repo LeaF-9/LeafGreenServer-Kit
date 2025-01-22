@@ -14,14 +14,15 @@ function kitEffect_ShieldCrystal(player: player):
 	set {_loc.core} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
 
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.5, -0.5, -0.5)
-	set {_transformation::scale} to getVector3f(1, 1, 1)
-	set {_block} to getBlockState(diamond block)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation::*}, "Machine-Shield Crystal")
-	set {_block} to getBlockState(barrier)
-	kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation::*}, "Machine-Shield Crystal")
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	
+	set {_translation} to getVector3f(-0.5, -0.5, -0.5)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(diamond block)
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Shield Crystal")
+	set {_block} to getBlockData(barrier)
+	kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Shield Crystal")
 	spawn end crystal at {_loc.core} with nbt compound from "{ShowBottom:false}"
 	set metadata value "gametype" of spawned end crystal to "Kit"
 	set metadata value "shield crystal" of spawned end crystal to "%{_player}%"

@@ -12,22 +12,24 @@ function kitEffect_DefenseMatrix(player: player):
 	kitFakeDeleteData({_player}, "Defense Matrix")
 	set {_loc} to {_SkillLocation}
 
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
-	set {_transformation::scale} to getVector3f(1, 1, 1)
-	set {_block} to getBlockState(cyan stained glass)
-	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Defense Matrix")
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.5, 0, -0.5)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(cyan stained glass)
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Defense Matrix")
 
-	set {_transformation::translation} to getVector3f(-0.45, 0, -0.45)
-	set {_transformation::scale} to getVector3f(0.9, 0.1, 0.9)
-	set {_block} to getBlockState(obsidian)
-	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Defense Matrix")
+	set {_translation} to getVector3f(-0.45, 0, -0.45)
+	set {_scale} to getVector3f(0.9, 0.1, 0.9)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(obsidian)
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Defense Matrix")
 
-	set {_transformation::translation} to getVector3f(0, 0.5, 0)
-	set {_transformation::scale} to getVector3f(0.65, 0.65, 0.65)
+	set {_translation} to getVector3f(0, 0.5, 0)
+	set {_scale} to getVector3f(0.65, 0.65, 0.65)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_item} to diamond block
-	set {_rotateDisplay} to kitFakeItem({_player}, {_loc}, {_item}, {_transformation::*}, "Defense Matrix")
+	set {_rotateDisplay} to kitFakeItem({_player}, {_loc}, {_item}, {_transformation}, "Defense Matrix")
 
 	kitMsg({_player}, "§9Defense Matrix§bを設置しました!")
 	playSound("block.anvil.land", 1, 0.5, {_loc})

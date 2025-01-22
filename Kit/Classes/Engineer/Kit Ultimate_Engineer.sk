@@ -14,14 +14,16 @@ function kitUltEngineer(player: player):
 	set {_mecloc} to {_tploc}
 	add 2 to y-coordinate of {_mecloc}
 	set yaw of {_mecloc} to 0
-	set pitch of {_mecloc} to -180
+	set pitch of {_mecloc} to 0
 
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.5, -0.5, -0.5)
-	set {_transformation::scale} to getVector3f(1, 0.5, 1)
-	set {_block} to getBlockState(sculk shrieker)
-	set {_transporter} to kitFakeBlock({_player}, {_mecloc}, {_block}, {_transformation::*}, "Machine-Transport Lift")
+	set {_matrix} to getMatrix4f(1, 0, 0, -0.5, 0, -0.5, -0, 0.5, 0, 0, -1, 0.5, 0, 0, 0, 1)
+	set {_leftrotation} to getQuaternionFromMatrix({_matrix})
+	set {_rightrotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.5, 0.375, 0.5)
+	set {_scale} to getVector3f(1, 0.5, 1)
+	set {_transformation} to getTransformation({_leftrotation}, {_rightrotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(shrieker)
+	set {_transporter} to kitFakeBlock({_player}, {_mecloc}, {_block}, {_transformation}, "Machine-Transport Lift")
 
 	loop {_fromloc::*}:
 		set {_armloc} to loop-value

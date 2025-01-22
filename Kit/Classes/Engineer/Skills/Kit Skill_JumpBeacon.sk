@@ -34,17 +34,18 @@ function kitEffect_JumpBeacon(player: player):
 	setKitStats({_player}, "JumpBeacon-Number", {_JumpBeacon-Number})
 
 	# 機械設置処理
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.25, 0, -0.25)
-	set {_transformation::scale} to getVector3f(0.5, 0.5, 0.5)
-	set {_block} to getBlockState(spruce fence)
-	set {_spawned} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Machine-Jump Beacon-%{_num}%")
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.25, 0, -0.25)
+	set {_scale} to getVector3f(0.5, 0.5, 0.5)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(spruce fence)
+	set {_spawned} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Machine-Jump Beacon-%{_num}%")
 	add {_spawned} to {_jumpbeacons::*}
 
-	set {_transformation::translation} to getVector3f(-0.15, 0.5, -0.15)
-	set {_transformation::scale} to getVector3f(0.3, 0.3, 0.3)
-	set {_block} to getBlockState(redstone block)
+	set {_translation} to getVector3f(-0.15, 0.5, -0.15)
+	set {_scale} to getVector3f(0.3, 0.3, 0.3)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(redstone block)
 	set {_spawned} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Machine-Jump Beacon-%{_num}%")
 	add {_spawned} to {_jumpbeacons::*}
 	

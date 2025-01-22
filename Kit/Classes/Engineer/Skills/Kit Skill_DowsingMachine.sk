@@ -14,15 +14,15 @@ function kitEffect_DowsingMachine(player: player):
 	set {_loc.core} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
 
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
-	set {_transformation::scale} to getVector3f(1, 1, 1)
-	set {_block} to getBlockState(sea lantern)
-	set {_coredisply} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation::*}, "Machine-Dowsing Machine")
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.5, 0, -0.5)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(sea lantern)
+	set {_coredisply} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Dowsing Machine")
 	
-	set {_block} to getBlockState(cobblestone wall)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation::*}, "Machine-Dowsing Machine")
+	set {_block} to getBlockData(cobblestone wall)
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Dowsing Machine")
 	kitMsg({_player}, "<##00FFFF>Dowsing Machine§9を設置しました!")
 	playSound("block.conduit.activate", 1, 2, {_loc.base})
 
