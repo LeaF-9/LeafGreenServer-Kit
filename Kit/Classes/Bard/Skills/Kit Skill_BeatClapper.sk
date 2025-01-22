@@ -20,23 +20,26 @@ function kitEffect_BeatClapper(player: player):
 	kitParticle_BeatClapper_Place({_loc})
 	kitFakeDeleteData({_player}, "Beat Clapper")
 
-	set {_transformation::left_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::right_rotation} to getAxisAngle4f(0, 0, 0, 1)
-	set {_transformation::translation} to getVector3f(-0.25, 0, -0.25)
-	set {_transformation::scale} to getVector3f(0.5, 1, 0.5)
-	set {_block} to getBlockState(spruce fence)
-	set {_hasMetadataDisplay} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Beat Clapper")
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.25, 0, -0.25)
+	set {_scale} to getVector3f(0.5, 1, 0.5)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(spruce fence)
+	set {_hasMetadataDisplay} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Beat Clapper")
 	set metadata value "Beat Clapper-Lever" of {_hasMetadataDisplay} to "%{_player}%"
 
-	set {_transformation::translation} to getVector3f(-0.5, 0, -0.5)
-	set {_transformation::scale} to getVector3f(1, 1, 1)
-	set {_block} to getBlockState(spruce pressure plate)
-	set {_hasMetadataDisplay} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Beat Clapper")
+	set {_translation} to getVector3f(-0.5, 1, -0.5)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(spruce pressure plate)
+	set {_hasMetadataDisplay} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Beat Clapper")
 	set metadata value "Beat Clapper-Lever" of {_hasMetadataDisplay} to "%{_player}%"
 
-	set {_transformation::scale} to getVector3f(1, 0.5, 1)
-	set {_block} to getBlockState(note block)
-	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation::*}, "Beat Clapper")
+	set {_translation} to getVector3f(-0.5, 0, -0.5)
+	set {_scale} to getVector3f(1, 0.5, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_block} to getBlockData(note block)
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Beat Clapper")
 	kitMsg({_player}, "§6§l音波を発する装置§eを設置しました!")
 	set {_timer} to 0
 	set {_y} to 0
@@ -77,12 +80,12 @@ local function kitEffect_BeatClapper_Clap(player: player, loc: location):
 
 # 音波
 local function kitEffect_BeatClapper_Wave(player: player, loc: location):
+	kitParticle_BeatClapper_Wave({_loc}, 10)
 	set {_m} to 0
 	loop 20 times:
 		add 0.5 to {_m}
 		set {_min} to {_m} - 0.25
 		set {_max} to {_m} + 0.25
-		kitParticle_BeatClapper_Wave({_loc}, {_m})
 		loop all entities in radius 12 around {_loc}:
 			{_hit.%id of loop-entity%} is not set
 			block at location 0.1 meters below loop-entity is not passable
@@ -133,22 +136,24 @@ local function kitParticle_BeatClapper_Clap(player: player):
 	spawnParticle_Note("orange", {_el})
 
 local function kitParticle_BeatClapper_Wave(loc: location, meter: number):
-	set {_m} to {_meter} - 0.25
-	set {_ln} to 0
-	loop 11 times:
-		add 1 to {_ln}
-		set {_count} to 90
-		set {_count} to 9 if {_ln} <= 2
-		set {_count} to 45 if {_ln} <= 5
+	add rgb(255, 175, 26) to {_colors::*}
+	add rgb(247, 183, 9) to {_colors::*}
+	add rgb(252, 195, 74) to {_colors::*}
+	add 0.1 to y-pos of {_loc}
+
+	set {_count} to 600
+	set {_addrad} to 360 / {_count}
+	set {_rotatevec} to vector({_meter}, 0, 0)
+	loop 5 times:
 		set {_rad} to 0
-		set {_addrad} to 360 / {_count}
 		loop {_count} times:
-			set {_el} to {_loc}
-			add {_m} * sin({_rad}) to x-pos of {_el}
-			add {_m} * cos({_rad}) to z-pos of {_el}
-			spawnParticle_Dust(rgb(243, 152, 29), 0.5, {_el})
+			set {_vec} to {_rotatevec}
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_loc} ~ {_vec}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Trail({_color}, {_el}, 20 ticks, {_loc})
 			add {_addrad} to {_rad}
-		add 0.05 to {_m}
+		wait a tick
 
 local function kitParticle_BeatClapper_Damage(player: player):
 	playSound("block.respawn_anchor.set_spawn", 1, 1.85, {_player})
