@@ -1,21 +1,14 @@
 # skill-name: Ivy Zipline
 
 options:
-	metadata-ivy: "Ivy Zipline - FromLocation"
 	stats-time: "IvyZipline-Time"
+	max-meter: 50
 	ride-radius: 2
 	ride-damage: 0.5
 
 import:
 	org.bukkit.FluidCollisionMode
 	org.bukkit.block.data.Bisected$Half
-
-on projectile hit:
-	projectile is a snowball
-	metadata value {@metadata-ivy} of projectile is set
-	kitEffect_IvyZipline_Hit(shooter, event)
-
-
 
 function kitEffect_IvyZipline(player: player):
 	set {_onGround} to {_player}.isOnGround()
@@ -24,51 +17,62 @@ function kitEffect_IvyZipline(player: player):
 		stop
 	
 	nameCT({_player}, "Ivy Zipline")
-	set {_loc.from} to location of {_player}
-	set pitch of {_loc.from} to 0
-	shoot a snowball from {_player} at speed 3
-	set {_shot} to shot snowball
-	set item of {_shot} to oak leaves
-	set metadata value {@metadata-ivy} of {_shot} to {_loc.from}
-	kitParticle_IvyZipline_Projectile({_shot})
+	set {_loc.from} to location 1.5 meters above {_player}
 	kitMsg({_player}, "<##1a5132>蔦の鉤縄<##2d704a>を発射します...")
+	kitEffect_IvyZipline_Shoot({_player}, {_loc.from})
 
-local function kitEffect_IvyZipline_Hit(player: player, event: object):
-	set {_proj} to {_event}.getEntity()
-	set {_loc.from} to metadata value {@metadata-ivy} of {_proj}
+local function kitEffect_IvyZipline_Shoot(player: player, loc: location):
+	set {_baseloc} to {_loc}
+	set {_world} to world of {_baseloc}
+	set {_fluid} to (FluidCollisionMode.NEVER)
+	set {_gravity} to vector(0, -0.01, 0)
+	set {_vec} to setVector({_loc}, location 1 meter in front of {_loc})
 
-	set {_loc.proj} to location of {_proj}
-	if ({_event}.getHitBlock()) is set:
-		set {_faceDirection} to {_event}.getHitBlockFace().getDirection()
-		set {_loc.to} to {_event}.getHitBlock().getLocation().add({_faceDirection})
-		set yaw of {_loc.to} to (yaw of {_loc.from}) + 180
-		set pitch of {_loc.to} to pitch of {_faceDirection}
+	set {_addm} to 0.5
+	set {_count} to {@max-meter} / {_addm}
+
+	set {_ticktime} to 5
+	set {_ln} to 0
+	loop {_count} times:
+		continue if {_hit} is set
+
+		set {_rayTrace} to {_world}.rayTraceBlocks({_baseloc}, {_vec}, {_addm}, {_fluid}, true)
+		if ({_rayTrace}.getHitBlock()) is set:
+			set {_hit} to {_rayTrace}.getHitBlock()
+			set {_hitface} to {_rayTrace}.getHitBlockFace()
+
+		set {_baseloc} to setDirToVec({_baseloc}, {_vec})
+		set {_baseloc} to location {_addm} meters in front of {_baseloc}
+		kitParticle_IvyZipline_Ivy({_baseloc})
+
+		wait a tick if mod({_ln}, {_ticktime}) is 0 or 5
+		set {_vec} to {_vec} + {_gravity}
+		add 1 to {_ln}
+
+	if {_hit} is not set:
+		send action bar "§c§l着地点が見つかりませんでした" to {_player}
+		stop
 	
-	else:
-		set {_world} to world of {_loc.proj}
-		set {_fluid} to (FluidCollisionMode.NEVER)
-		set {_ray} to {_world}.rayTraceBlocks({_loc.proj}, vector(0, -1, 0), 300, {_fluid}, true)
+	set {_loc.below} to location 1.5 meters below {_loc}
+	set {_vec.direction} to setVector({_loc.below}, {_baseloc})
+	set {_loc.from} to {_loc.below}
+	set yaw of {_loc.from} to yaw of {_vec.direction}
 
-		if ({_ray}.getHitBlock()) is not set:
-			send action bar "§c§l着地点が見つかりませんでした" to {_player}
-			stop
+	set {_loc.to} to {_baseloc}
+	set yaw of {_loc.to} to ((yaw of {_vec.direction}) + 180)
+	set {_tovec} to {_hitface}.getDirection() * vector(1.5, 1.5, 1.5)
+	set {_loc.above} to {_loc.to} ~ {_tovec}
 
-		set {_faceDirection} to {_ray}.getHitBlockFace().getDirection()
-		set {_loc.to} to {_ray}.getHitBlock().getLocation().add({_faceDirection})
-		set yaw of {_loc.to} to (yaw of {_loc.from}) + 180
-		set pitch of {_loc.to} to 0
-		kitParticle_IvyZipline_Fall({_loc.proj}, {_loc.to})
-	
-	kitEffect_IvyZipline_Zipline({_player}, {_loc.from}, {_loc.to})
+	kitEffect_IvyZipline_Zipline({_player}, {_loc.from}, {_loc}, {_loc.to}, {_loc.above})
 
-local function kitEffect_IvyZipline_Zipline(player: player, from: location, to: location):
+local function kitEffect_IvyZipline_Zipline(player: player, from: location, core.from: location, to: location, core.to: location):
 	set {_now} to now
 	setKitStats({_player}, {@stats-time}, {_now})
 
 	kitFakeDeleteData({_player}, "Ivy Zipline")
 
-	set {_displays.from::*} to kitEffect_IvyZipline_Display({_player}, {_from})
-	set {_displays.to::*} to kitEffect_IvyZipline_Display({_player}, {_to})
+	kitEffect_IvyZipline_Display({_player}, {_from}, {_core.from})
+	kitEffect_IvyZipline_Display({_player}, {_to}, {_core.to})
 
 	kitMsg({_player}, "<##39c613>§l蔦のジップライン<##8be18b>を設置しました!")
 	kitParticle_IvyZipline_Place({_from}, {_to})
@@ -169,40 +173,89 @@ local function kitEffect_IvyZipline_Zipline(player: player, from: location, to: 
 		if {_exist} is false:
 			deleteKitStats({_player}, {@stats-time})
 
-local function kitEffect_IvyZipline_Display(player: player, loc: location) :: entities:
-	set {_rotation} to getQuaternionf(0, 0, 0, 1)
-	set {_translation} to getVector3f(-0.5, 0, -0.5)
-	set {_scale} to getVector3f(1, 0.75, 1)
-	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+local function kitEffect_IvyZipline_Display(player: player, loc: location, core: location):
+	set {_basevec} to setVector({_loc}, {_core})
+	set {_basevec} to normalized {_basevec}
+	set {_placeloc} to {_loc}
+	set pitch of {_placeloc} to 0
+
+	if {_basevec} is vector(0, 1, 0):
+		set {_matrix.1} to getMatrix4f(1, 0, 0, -0.5, 0, 0.75, 0, 0, 0, 0, 1, -0.5, 0, 0, 0, 1)
+		set {_matrix.2} to getMatrix4f(1, 0, 0, -0.5, 0, 0.75, 0, 0.75, 0, 0, 1, -0.5, 0, 0, 0, 1)
+		set {_matrix.3} to getMatrix4f(0.5, 0, 0, -0.25, 0, 0.5, 0, 1.5, 0, 0, 0.5, -0.25, 0, 0, 0, 1)
+		set {_matrix.4} to getMatrix4f(0.6363961031, 0, -0.6363961031, 0, 0, 0.7, 0, 1.5, 0.6363961031, 0, 0.6363961031, -0.63625, 0, 0, 0, 1)
+	
+	else if {_basevec} is vector(0, -1, 0):
+		set {_matrix.1} to getMatrix4f(1, 0, 0, -0.5, 0, -0.75, 0, 0, 0, 0, -1, 0.5, 0, 0, 0, 1)
+		set {_matrix.2} to getMatrix4f(1, 0, 0, -0.5, 0, -0.75, 0, -0.75, 0, 0, -1, 0.5, 0, 0, 0, 1)
+		set {_matrix.3} to getMatrix4f(0.5, 0, 0, -0.25, 0, -0.5, 0, -1.5, 0, 0, -0.5, 0.25, 0, 0, 0, 1)
+		set {_matrix.4} to getMatrix4f(0.6363961031, 0, -0.6363961031, 0, 0, -0.7, 0, -1.5, -0.6363961031, 0, -0.6363961031, 0.63625, 0, 0, 0, 1)
+	
+	else if {_basevec} is vector(1, 0, 0):
+		set {_matrix.1} to getMatrix4f(0, 0.75, 0, 0, 1, 0, 0, -0.5, 0, 0, -1, 0.5, 0, 0, 0, 1)
+		set {_matrix.2} to getMatrix4f(0, 0.75, 0, 0.75, 1, 0, 0, -0.5, 0, 0, -1, 0.5, 0, 0, 0, 1)
+		set {_matrix.3} to getMatrix4f(0, 0.5, 0, 1.5, 0.5, 0, 0, -0.25, 0, 0, -0.5, 0.25, 0, 0, 0, 1)
+		set {_matrix.4} to getMatrix4f(0, 0.7, 0, 1.5, 0.6363961031, 0, -0.6363961031, 0, -0.6363961031, 0, -0.6363961031, 0.63625, 0, 0, 0, 1)
+	
+	else if {_basevec} is vector(-1, 0, 0):
+		set {_matrix.1} to getMatrix4f(0, -0.75, 0, 0, -1, 0, 0, 0.5, 0, 0, -1, 0.5, 0, 0, 0, 1)
+		set {_matrix.2} to getMatrix4f(0, -0.75, 0, -0.75, -1, 0, 0, 0.5, 0, 0, -1, 0.5, 0, 0, 0, 1)
+		set {_matrix.3} to getMatrix4f(0, -0.5, 0, -1.5, -0.5, 0, 0, 0.25, 0, 0, -0.5, 0.25, 0, 0, 0, 1)
+		set {_matrix.4} to getMatrix4f(0, -0.7, 0, -1.5, -0.6363961031, 0, 0.6363961031, 0, -0.6363961031, 0, -0.6363961031, 0.63625, 0, 0, 0, 1)
+	
+	else if {_basevec} is vector(0, 0, 1):
+		set {_matrix.1} to getMatrix4f(0, 0, -1, 0.5, -1, 0, 0, 0.5, 0, 0.75, 0, 0, 0, 0, 0, 1)
+		set {_matrix.2} to getMatrix4f(0, 0, -1, 0.5, -1, 0, 0, 0.5, 0, 0.75, 0, 0.75, 0, 0, 0, 1)
+		set {_matrix.3} to getMatrix4f(0, 0, -0.5, 0.25, -0.5, 0, 0, 0.25, 0, 0.5, 0, 1.5, 0, 0, 0, 1)
+		set {_matrix.4} to getMatrix4f(-0.6363961031, 0, -0.6363961031, 0.63625, -0.6363961031, 0, 0.6363961031, 0, 0, 0.7, 0, 1.5, 0, 0, 0, 1)
+	
+	else if {_basevec} is vector(0, 0, -1):
+		set {_matrix.1} to getMatrix4f(0, 0, -1, 0.5, 1, 0, 0, -0.5, 0, -0.75, 0, 0, 0, 0, 0, 1)
+		set {_matrix.2} to getMatrix4f(0, 0, -1, 0.5, 1, 0, 0, -0.5, 0, -0.75, 0, -0.75, 0, 0, 0, 1)
+		set {_matrix.3} to getMatrix4f(0, 0, -0.5, 0.25, 0.5, 0, 0, -0.25, 0, -0.5, 0, -1.5, 0, 0, 0, 1)
+		set {_matrix.4} to getMatrix4f(-0.6363961031, 0, -0.6363961031, 0.63625, 0.6363961031, 0, -0.6363961031, 0, 0, -0.7, 0, -1.5, 0, 0, 0, 1)
+	
+	else:
+		log "Vector Error"
+		stop
+
+	set {_rotation.left} to getQuaternionFromMatrix({_matrix.1})
+	set {_rotation.right} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getTranslationFromMatrix({_matrix.1})
+	set {_scale} to getScaleFromMatrix({_matrix.1})
+	log "1: %{_rotation.left}% | %{_translation}% | %{_scale}%"
+	set {_transformation} to getTransformation({_rotation.left}, {_rotation.right}, {_translation}, {_scale})
 	set {_block} to getBlockData(small dripleaf)
-	set {_displays::1} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Ivy Zipline")
+	set {_displays::1} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, "Ivy Zipline")
 
-	set {_translation} to getVector3f(-0.5, 0.75, -0.5)
-	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
-	set {_displays::2} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Ivy Zipline")
+	set {_rotation.left} to getQuaternionFromMatrix({_matrix.2})
+	set {_translation} to getTranslationFromMatrix({_matrix.2})
+	set {_scale} to getScaleFromMatrix({_matrix.2})
+	log "2: %{_rotation.left}% | %{_translation}% | %{_scale}%"
+	set {_transformation} to getTransformation({_rotation.left}, {_rotation.right}, {_translation}, {_scale})
+	set {_displays::2} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, "Ivy Zipline")
 
-	set {_translation} to getVector3f(-0.25, 1.5, -0.25)
-	set {_scale} to getVector3f(0.5, 0.5, 0.5)
-	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_rotation.left} to getQuaternionFromMatrix({_matrix.3})
+	set {_translation} to getTranslationFromMatrix({_matrix.3})
+	set {_scale} to getScaleFromMatrix({_matrix.3})
+	log "3: %{_rotation.left}% | %{_translation}% | %{_scale}%"
+	set {_transformation} to getTransformation({_rotation.left}, {_rotation.right}, {_translation}, {_scale})
 	set {_block} to getBlockData(flowering azalea leaves)
-	set {_displays::3} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Ivy Zipline")
+	set {_displays::3} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, "Ivy Zipline")
 
-	add 45 to yaw of {_loc}
-	set {_translation} to getVector3f(-0.45, 1.5, -0.45)
-	set {_scale} to getVector3f(0.9, 0.7, 0.9)
-	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_rotation.left} to getQuaternionFromMatrix({_matrix.4})
+	set {_translation} to getTranslationFromMatrix({_matrix.4})
+	set {_scale} to getScaleFromMatrix({_matrix.4})
+	log "4: %{_rotation.left}% | %{_translation}% | %{_scale}%"
+	set {_transformation} to getTransformation({_rotation.left}, {_rotation.right}, {_translation}, {_scale})
 	set {_block} to getBlockData(lilac)
-	set {_blockdata} to {_block}.getBlockData().setHalf(Half.TOP)
-	{_block}.setBlockData({_blockdata})
-	set {_displays::3} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Ivy Zipline")
-
-	return {_displays::*}
+	set {_blockdata} to {_block}.setHalf(Half.TOP)
+	set {_displays::4} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, "Ivy Zipline")
 
 
 
-local function kitParticle_IvyZipline_Projectile(proj: projectile):
-
-local function kitParticle_IvyZipline_Fall(from: location, to: location):
+local function kitParticle_IvyZipline_Ivy(loc: location):
+	spawnParticle(happy_villager, {_loc})
 
 local function kitParticle_IvyZipline_Place(from: location, to: location):
 
