@@ -39,8 +39,11 @@ function getQuaternionFromMatrix(matrix: object) :: object:
 	return {_quaternion}
 
 function getTranslationFromMatrix(matrix: object) :: object:
-	set {_vector} to new Vector3f()
-	set {_vector} to {_matrix}.getTranslation({_vector})
+	set {_tx} to {_matrix}.get(0, 3)
+	set {_ty} to {_matrix}.get(1, 3)
+	set {_tz} to {_matrix}.get(2, 3)
+	set {_vector} to new Vector3f({_tx}, {_ty}, {_tz})
+	# set {_vector} to {_matrix}.getTranslation({_vector})
 	return {_vector}
 
 function getScaleFromMatrix(matrix: object) :: object:
