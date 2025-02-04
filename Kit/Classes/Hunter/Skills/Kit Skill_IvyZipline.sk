@@ -14,6 +14,8 @@ import:
 	org.bukkit.FluidCollisionMode
 	org.bukkit.block.data.Bisected$Half
 
+	io.papermc.paper.entity.TeleportFlag$EntityState
+
 on VehicleEnterEvent:
 	broadcast "hey"
 
@@ -102,18 +104,18 @@ local function kitEffect_IvyZipline_Zipline(player: player, from: location, to: 
 	kitMsg({_player}, "<##39c613>§l蔦のジップライン<##8be18b>を設置しました!")
 	kitParticle_IvyZipline_Place({_from}, {_to})
 
-	add -90 to pitch of {_from}
-	set {_from} to location 1.75 meters in front of {_from}
+	# add -90 to pitch of {_from}
+	# set {_from} to location 1.75 meters in front of {_from}
 
-	add -90 to pitch of {_to}
-	set {_to} to location 1.75 meters in front of {_to}
+	# add -90 to pitch of {_to}
+	# set {_to} to location 1.75 meters in front of {_to}
 	
 	set {_vec.from} to setVector({_from}, {_to}, 0.5)
 	set {_from} to setDirToVec({_from}, {_vec.from})
-	add 3.5 to y-pos of {_from}
+	add 0.5 to y-pos of {_from}
 	set {_vec.to} to setVector({_to}, {_from}, 0.5)
 	set {_to} to setDirToVec({_to}, {_vec.to})
-	add 3.5 to y-pos of {_to}
+	add 0.5 to y-pos of {_to}
 
 	set {_distance} to distance between {_from} and {_to}
 	set {_metercount} to round({_distance}) * 2
@@ -195,7 +197,7 @@ local function kitEffect_IvyZipline_Zipline(player: player, from: location, to: 
 				continue
 
 			{_rideentity}.addPassenger(loop-player)
-			teleport {_rideentity} to {_rideloc}
+			{_rideentity}.teleport({_rideloc}, EntityState.RETAIN_PASSENGERS)
 
 			continue if kitCheckTeam(loop-player, {_player}, false) is false
 			set {_damage::%loop-player%} to 0 if {_damage::%loop-player%} is not set
@@ -243,18 +245,18 @@ local function kitEffect_IvyZipline_Display(player: player, loc: location):
 
 local function kitEffect_IvyZipline_Vehicle(player: player, loc: location) :: entity:
 	spawn a block display at {_loc}
-	set {_display} to spawned block display
+	set {_vehicle} to spawned block display
 
-	set metadata value "gametype" of {_display} to "Kit"
-	set metadata value {@metadata-vehicle} of {_display} to {_player}
+	set metadata value "gametype" of {_vehicle} to "Kit"
+	set metadata value {@metadata-vehicle} of {_vehicle} to {_player}
 
-	setBrightness({_display})
-	{_display}.setTeleportDuration(1)
-	{_display}.setViewRange(1)
+	setBrightness({_vehicle})
+	{_vehicle}.setTeleportDuration(1)
+	{_vehicle}.setViewRange(1)
 	set {_block} to getBlockData(barrier)
-	setDisplayBlock({_display}, {_block})
+	setDisplayBlock({_vehicle}, {_block})
 
-	return {_display}
+	return {_vehicle}
 
 
 
