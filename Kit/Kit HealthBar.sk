@@ -150,11 +150,14 @@ local function randomDisplayLocation(entity: entity) :: location:
 	set {_index} to 0
 	loop 3 times:
 		add 1 to {_index}
-		set {_max} to 1
-		set {_min} to 0.75
+		set {_max} to 0.5
+		set {_max} to 1 if {_index} is 3
+		set {_min} to 0.2
+		set {_min} to 0.75 if {_index} is 3
 		set {_pos::%{_index}%} to a random number between {_min} and {_max}
-		chance of 50%:
-			set {_pos::%{_index}%} to {_pos::%{_index}%} * (-1)
+		if {_index} <= 2:
+			chance of 50%:
+				set {_pos::%{_index}%} to {_pos::%{_index}%} * (-1)
 
 	set {_l} to location 1 meter above {_entity}
 	add {_pos::1} to x-pos of {_l}
