@@ -28,16 +28,16 @@ command /testworld <text> <player=%player%>:
 command /kit-standspawn:
 	permission: sk.admin
 	trigger:
-		loop all slimes:
-			display name of loop-entity is "Test-Stand"
-			set metadata value "gametype" of loop-slime to "Kit"
-			teleport loop-slime to location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0)
+		loop all creepers:
+			display name of loop-creeper is "Test-Stand"
+			set metadata value "gametype" of loop-creeper to "Kit"
+			teleport loop-creeper to location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0)
 			set {_exist} to true
 		{_exist} is not set
-		spawn a slime at location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0) with nbt compound from "{Size:1.5,NoAI:1b,Silent:1b,CustomName:'{""text"":""Test-Stand""}'}"
-		set metadata value "gametype" of spawned slime to "Kit"
+		spawn a creeper at location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0) with nbt compound from "{Size:1.5,NoAI:1b,Silent:1b,CustomName:'{""text"":""Test-Stand""}'}"
+		set metadata value "gametype" of spawned creeper to "Kit"
 
-on damage of slime with priority MONITOR:
+on damage of creeper with priority MONITOR:
 	metadata value "gametype" of victim is "Kit"
 	display name of victim is "Test-Stand"
 	cancel event
