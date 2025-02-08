@@ -41,6 +41,7 @@ function kitEffect_IvyZipline(player: player):
 	kitParticle_IvyZipline_Launch({_player})
 
 local function kitEffect_IvyZipline_Shoot(player: player, loc: location):
+	set {_tool} to tool of {_player}
 	set {_baseloc} to {_loc}
 	set {_world} to world of {_baseloc}
 	set {_fluid} to (FluidCollisionMode.NEVER)
@@ -87,6 +88,7 @@ local function kitEffect_IvyZipline_Shoot(player: player, loc: location):
 	set {_blocking} to true if block at (location 0.1 meters above {_loc.to}) is not passable
 	set {_blocking} to true if block at (location 1.1 meters above {_loc.to}) is not passable
 	if {_blocking} is true:
+		setCT({_player}, (display name of {_tool}), 5)
 		kitMsg({_player}, "§c§l着弾点がジップラインを設置するのに不適切です")
 		playSound("block.note_block.bass", 1, 1.2, {_player}, true)
 		stop
@@ -283,6 +285,10 @@ local function kitParticle_IvyZipline_Line(from: location, to: location):
 	add rgb(54, 239, 100) to {_colors::*}
 	add rgb(6, 209, 98) to {_colors::*}
 
+	set {_from} to location 1.6 meters above {_from}
+	set {_to} to location 1.6 meters above {_to}
+	set {_width} to 0.25
+
 	set {_from.1} to {_from}
 	set {_to.1} to {_to}
 	set {_vector} to setVector({_from}, {_to})
@@ -290,8 +296,8 @@ local function kitParticle_IvyZipline_Line(from: location, to: location):
 	set yaw of {_to.1} to yaw of {_vector}
 	set pitch of {_from.1} to 0
 	set pitch of {_to.1} to 0
-	set {_from.1} to location 0.625 meters to the left of {_from.1}
-	set {_to.1} to location 0.625 meters to the left of {_to.1}
+	set {_from.1} to location {_width} meters to the left of {_from.1}
+	set {_to.1} to location {_width} meters to the left of {_to.1}
 	
 	set {_color} to a random element out of {_colors::*}
 	spawnParticle_Trail({_color}, {_to.1}, 3 seconds, {_from.1})
@@ -303,8 +309,8 @@ local function kitParticle_IvyZipline_Line(from: location, to: location):
 	set yaw of {_to.2} to yaw of {_vector}
 	set pitch of {_from.2} to 0
 	set pitch of {_to.2} to 0
-	set {_from.2} to location 0.625 meters to the left of {_from.2}
-	set {_to.2} to location 0.625 meters to the left of {_to.2}
+	set {_from.2} to location {_width} meters to the left of {_from.2}
+	set {_to.2} to location {_width} meters to the left of {_to.2}
 
 	set {_color} to a random element out of {_colors::*}
 	spawnParticle_Trail({_color}, {_to.2}, 3 seconds, {_from.2})
@@ -313,28 +319,28 @@ local function kitParticle_IvyZipline_Ride(loc: location):
 	playSound("block.sweet_berry_bush.pick_berries", 1, 1.3, {_loc})
 
 	loop 30 times:
-		set {_el} to moveRandomLocation(1)
+		set {_el} to moveRandomLocation({_loc}, 1)
 		spawnParticle(sneeze, {_el})
 
 local function kitParticle_IvyZipline_Drop(loc: location):
 	playSound("block.flowering_azalea.place", 1, 1.2, {_loc})
 
 	loop 30 times:
-		set {_el} to moveRandomLocation(1)
+		set {_el} to moveRandomLocation({_loc}, 1)
 		spawnParticle_BlockData(block_crumble, oak leaves, {_el})
 
 local function kitParticle_IvyZipline_Riding(loc: location):
 	playSound("block.wet_grass.step", 0.9, 1.8, {_loc})
 
-	set {_el} to moveRandomLocation(1)
-	spawnParticle(composter)
+	set {_el} to moveRandomLocation({_loc}, 1)
+	spawnParticle(composter, {_el})
 	
 	chance of 30%:
-		set {_el} to moveRandomLocation(0.5)
+		set {_el} to moveRandomLocation({_loc}, 0.5)
 		spawnParticle_BlockData(falling_dust, lime wool, {_el})
 
 local function kitParticle_IvyZipline_Damage(player: player):
-	playSound()
+	playSound("entity.player.hurt_sweet_berry_bush", 1, 0.8, {_player})
 
 	set {_baseloc} to location 1 meter above {_player}
 	loop 30 times:
