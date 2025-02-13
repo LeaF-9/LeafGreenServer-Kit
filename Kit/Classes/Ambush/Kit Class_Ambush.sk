@@ -34,3 +34,125 @@ function kitSkill_Ambush_7(player: player):
 
 function kitSkill_Ambush_8(player: player):
 	kitEffect_FakeDecease({_player})
+
+# Passive
+options:
+	metadata-spyaction: "Spy Action - Active"
+	spyaction-limitmeter: 10
+	metadata-stealthbehavior-damage: "Stealth Behavior - Damage"
+
+on sneak toggle:
+	{Class::%player%} is "Ambush"
+	metadata value "gametype" of player is "Kit"
+	if player is not sneaking:
+		set metadata value {@metadata-spyaction} of player to false
+		stop
+	delete metadata value {@metadata-spyaction} of player
+
+on damage of player:
+	{Class::%victim%} is "Ambush"
+	metadata value "gametype" of victim is "Kit"
+	set {_now} to now
+	set metadata value {@metadata-stealthbehavior-damage} of victim to {_now}
+
+# Timer
+function kitTimerAmbush(player: player):
+	while {Class::%{_player}%} is "Ambush":
+		# Spy Action
+		set {_spyaction} to metadata value {@metadata-spyaction} of {_player}
+		if {_spyaction} is set:
+			if {_spyaction} is false:
+				set {_spyaction.prepare} to -1 if {_spyaction.prepare} is not set
+				add 1 to {_spyaction.prepare}
+				kitParticle_SpyAction_Prepare({_player}, {_spyaction.prepare})
+
+				if {_spyaction.prepare} >= 20:
+					delete {_spyaction.prepare}
+					set metadata value {@metadata-spyaction} of {_player} to true
+					set {_spyaction} to true
+			
+			if {_spyaction} is true:
+				if {_spyaction.active} is not set:
+					set {_spyaction.active} to true
+					set {_spyaction.location} to location of {_player}
+					kitInvisibleRepeat_Start({_player})
+
+					kitMsg({_player}, "§7§o潜伏します...")
+					kitParticle_SpyAction_Active({_player})
+
+				set {_loc.now} to location of {_player}
+				set {_distance.now} to distance between {_spyaction.location} and {_loc.now}
+				add {_distance.now} to {_spyaction.distance}
+				# キャンセル処理
+				if {_spyaction.distance} >= {@spyaction-limitmeter}:
+					kitInvisibleRepeat_Stop({_player})
+					delete metadata value {@metadata-spyaction} of {_player}
+					kitMsg({_player}, "§c§l動きすぎた! §3§o潜伏が明らかになってしまった...!")
+
+					delete {_spyaction.prepare}
+					delete {_spyaction.active}
+					delete {_spyaction.location}
+					delete {_spyaction.distance}
+		
+		else if {_spyaction} is not set:
+			# Spy Action キャンセル処理
+			if {_spyaction.active} is true:
+				kitInvisibleRepeat_Stop({_player})
+				kitMsg({_player}, "§b潜伏を解除しました!")
+
+				delete {_spyaction.prepare}
+				delete {_spyaction.active}
+				delete {_spyaction.location}
+				delete {_spyaction.distance}
+
+			# Shadow Body
+			delete {_shadowbody.active}
+			if getInvisibleStatus({_player}) is true:
+				set {_shadowbody.true} to true
+				applyEffect({_player}, speed, 2, 5 ticks, true)
+			
+			if {_player} has glowing:
+				set {_shadowbody.timer} to 20 if {_shadowbody.timer} is not set
+
+				add 1 to {_shadowbody.timer}
+				if {_shadowbody.timer} >= 20:
+					set {_shadowbody} to 0
+					damage {_player} by 0.5 hearts
+
+		# Stealth Behavior
+		set {_now} to now
+		set {_stealthbehavior.damage} to metadata value {@metadata-stealthbehavior-damage} of {_player}
+		set {_stealthbehavior.timedif} to 100 seconds
+		set {_stealthbehavior.timedif} to difference between {_stealthbehavior.damage} and {_now}
+		delete {_stealthbehavior.prepare}
+		if:
+			{_spyaction.active} is not set
+			{_shadowbody.active} is not set
+			{_stealthbehavior.timedif} > 10 seconds
+		then:
+			set {_stealthbehavior.prepare} to true
+		
+		if {_stealthbehavior.prepare} is true:
+			{_player} does not have glowing
+			delete {_stealthbehavior.pop}
+			loop all players in radius 10 around {_player}:
+				kitCheckTeam({_player}, loop-player, false, true) is true
+				add 1 to {_stealthbehavior.pop}
+
+			if {_stealthbehavior.pop} is set:
+				wait a tick
+				continue
+
+			# Stealth Behavior実行
+			kitInvisible({_player}, 5 ticks)
+			send action bar "§7§l§o潜伏中です..." to {_player}
+
+		wait a tick
+
+
+
+# Spy Action準備中の演出 下からぐいーんと上がってくる感じ
+local function kitParticle_SpyAction_Prepare(player: player, tick: number):
+
+# Spy Action発動の演出
+local function kitParticle_SpyAction_Active(player: player):
