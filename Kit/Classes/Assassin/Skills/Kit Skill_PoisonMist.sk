@@ -51,18 +51,19 @@ on projectile hit:
 			else if loop-entity is shooter:
 				loop-entity does not have glowing
 				set {_jc} to true
-				if getInvisibleRepeats(shooter) is true:
+				if getInvisibleStatus(shooter) is true:
+					kitInvisible(shooter, 3)
 					set {_notInvTimer} to 20
 				else:
 					if {_notInvTimer} is not set:
-						kitInvisibleRepeat_Start(shooter)
+						kitInvisible(shooter, 3)
 					else:
 						subtract 1 from {_notInvTimer}
 						if {_notInvTimer} <= 0:
 							delete {_notInvTimer}
 		if {_jc} is not set:
-			if getInvisibleRepeats(shooter) is true:
-				kitInvisibleRepeat_Stop(shooter)
+			if getInvisibleRemains(shooter) <= 3:
+				removeInvisible(shooter)
 		loop all entities:
 			metadata value "gametype" of loop-entity is "Kit"
 			{_eg::%id of loop-entity%} is not set
@@ -70,8 +71,7 @@ on projectile hit:
 			remove poison from loop-entity
 			delete {_jb::%id of loop-entity%}
 		wait a tick
-	if getInvisibleRepeats(shooter) is true:
-		kitInvisibleRepeat_Stop(shooter)
+
 	loop all entities:
 		{_eg::%id of loop-entity%} is true
 		{_jb::%id of loop-entity%} is true

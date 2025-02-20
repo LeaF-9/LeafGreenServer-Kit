@@ -9,18 +9,16 @@ function kitUltAssassin(player: player):
 			{TrueTeam::%{_player}%} is not {TrueTeam::%loop-player%}
 			set {_enemy} to true
 		if {_enemy} is not set:
-			if getInvisibleRepeats({_player}) is false:
-				kitInvisibleRepeat_Start({_player})
-				send action bar "§b§l透明化した!" to {_player}
+			if getInvisibleRemains({_player}) <= 3:
+				kitInvisible({_player}, 3)
+				send action bar "§7§o身を潜めています..." to {_player}
 		else:
-			if getInvisibleRepeats({_player}) is true:
-				kitInvisibleRepeat_Stop({_player})
+			if getInvisibleRemains({_player}) <= 3:
+				removeInvisible({_player})
 			set {_eb} to aroundEffect({_player})
 			spawnParticle_Color(entity_effect, rgb(100, 0, 10), {_eb})
 		wait a tick
 	deleteKitStats({_player}, "UltAssassin")
-	if getInvisibleRepeats({_player}) is true:
-		kitInvisibleRepeat_Stop({_player})
 
 on rightclick:
 	set {_UltAssassin} to getKitStats({_player}, "UltAssassin")
