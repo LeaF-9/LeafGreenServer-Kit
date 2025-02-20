@@ -7,7 +7,8 @@ function kitInvisible(player: player, tick: number):
 		set {_hasTime} to getInvisibleRemains({_player})
 		if {_hasTime} >= {_tick}:
 			stop
-	kitInvisibleRepeat_Stop({_player})
+		set {_bossbar.id} to getKitStats({_player}, "Invisible - TimerID")
+
 	set {_now} to now
 	set metadata value "Invisible - Date" of {_player} to {_now}
 	set metadata value "Invisible - Time" of {_player} to {_tick}
@@ -20,11 +21,15 @@ function kitInvisible(player: player, tick: number):
 		apply invisibility 1 to {_player} for {_second} replacing existing effect
 
 	# タイマー作成
-	set {_bossbar.id} to a random UUID
-	set {_titledisplay} to "§b§l透明"
-	set {_timedisplay} to timeDisplay_SECOND({_tick})
-	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
-	create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+	if {_bossbar.id} is not set:
+		set {_bossbar.id} to a random UUID
+		setKitStats({_player}, "Invisible - TimerID", {_bossbar.id})
+
+		set {_titledisplay} to "§b§l透明"
+		set {_timedisplay} to timeDisplay_SECOND({_tick})
+		set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+		create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+
 	set {_prog} to 100 / {_tick}
 	set {_ticknumber} to {_tick}
 
@@ -54,44 +59,11 @@ function kitInvisible(player: player, tick: number):
 		# InvisibleTime処理
 		subtractInvisibleTime({_player})
 		wait a tick
+	
+	stop if getInvisibleDates({_player}) is not {_now}
+	removeInvisible({_player})
 	remove bossbar {_bossbar.id}
-	if getInvisibleDates({_player}) is {_now}:
-		removeInvisible({_player})
-
-function kitInvisibleRepeat_Start(player: player):
-	kitCheckAlive({_player}) is true
-	metadata value "Invisible - Repeat" of {_player} is not set
-	removeInvisible({_player})
-	set metadata value "Invisible - Repeat" of {_player} to true
-
-	# 透明Effect付与
-	set {_hasEffects::*} to getClassEffects("Kit-%{Class::%{_player}%}%")
-	if {_hasEffects::*} does not contain invisibility:
-		set {_invnot} to true
-		apply infinite invisibility 1 to {_player} replacing existing effect
-
-	# 透明処理
-	set {_repeater} to metadata value "Invisible - Repeat" of {_player}
-	while {_repeater} is true:
-		# 例外処理
-		if {_player} has glowing:
-			kitInvisibleRepeat_Stop({_player})
-			stop
-
-		# 透明付与
-		loop all players:
-			{Class::%loop-player%} is not "Sentinel"
-			kitCheckTeam({_player}, loop-player, false) is true
-			hide {_player} from loop-player
-		send action bar "§b§o透明化しています..." to {_player}
-
-		wait a tick
-		delete {_repeat}
-		set {_repeater} to metadata value "Invisible - Repeat" of {_player}
-	removeInvisible({_player})
-
-function kitInvisibleRepeat_Stop(player: player):
-	delete metadata value "Invisible - Repeat" of {_player}
+	deleteKitStats({_player}, "Invisible - TimerID")
 
 on leftclick:
 	set {_target} to targeted player
@@ -112,10 +84,6 @@ function getInvisibleStatus(player: player) :: boolean:
 	set {_has} to metadata value {_metadata} of {_player}
 	if {_has} is not set:
 		return false
-	set {_metadata.repeat} to "Invisible - Repeat"
-	set {_repeat} to metadata value {_metadata.repeat} of {_player}
-	if {_repeat} is false:
-		return false
 	return true
 
 function getInvisibleRemains(player: player) :: number:
@@ -130,15 +98,6 @@ function getInvisibleDates(player: player) :: date:
 	set {_metadata} to "Invisible - Date"
 	set {_return} to metadata value {_metadata} of {_player}
 	return {_return}
-
-function getInvisibleRepeats(player: player) :: boolean:
-	if getInvisibleStatus({_player}) is true:
-		return false
-	set {_metadata.repeat} to "Invisible - Repeat"
-	set {_repeat} to metadata value {_metadata.repeat} of {_player}
-	if {_repeat} is not set:
-		return false
-	return true
 
 function removeInvisible(player: player):
 	set {_metadata.base} to "Invisible - Date"
