@@ -5,9 +5,8 @@ function kitInvisible(player: player, tick: number):
 	kitCheckAlive({_player}) is true
 	if getInvisibleStatus({_player}) is true:
 		set {_hasTime} to getInvisibleRemains({_player})
-		if {_hasTime} >= {_tick}:
+		if {_hasTime} > {_tick}:
 			stop
-		set {_bossbar.id} to getKitStats({_player}, "Invisible - TimerID")
 
 	set {_now} to now
 	set metadata value "Invisible - Date" of {_player} to {_now}
@@ -21,14 +20,11 @@ function kitInvisible(player: player, tick: number):
 		apply invisibility 1 to {_player} for {_second} replacing existing effect
 
 	# タイマー作成
-	if {_bossbar.id} is not set:
-		set {_bossbar.id} to a random UUID
-		setKitStats({_player}, "Invisible - TimerID", {_bossbar.id})
-
-		set {_titledisplay} to "§b§l透明"
-		set {_timedisplay} to timeDisplay_SECOND({_tick})
-		set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
-		create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+	set {_bossbar.id} to a random UUID
+	set {_titledisplay} to "§b§l透明"
+	set {_timedisplay} to timeDisplay_SECOND({_tick})
+	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+	create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
 
 	set {_prog} to 100 / {_tick}
 	set {_ticknumber} to {_tick}
@@ -59,11 +55,9 @@ function kitInvisible(player: player, tick: number):
 		# InvisibleTime処理
 		subtractInvisibleTime({_player})
 		wait a tick
-	
-	stop if getInvisibleDates({_player}) is not {_now}
-	removeInvisible({_player})
+
 	remove bossbar {_bossbar.id}
-	deleteKitStats({_player}, "Invisible - TimerID")
+	removeInvisible({_player}) if getInvisibleDates({_player}) is {_now}
 
 on leftclick:
 	set {_target} to targeted player
