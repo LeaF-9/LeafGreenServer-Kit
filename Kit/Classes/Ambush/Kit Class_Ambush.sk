@@ -153,6 +153,40 @@ function kitTimerAmbush(player: player):
 
 # Spy Action準備中の演出 下からぐいーんと上がってくる感じ
 local function kitParticle_SpyAction_Prepare(player: player, tick: number):
+	set {_baseloc} to location of {_player}
+
+	add rgb(234, 234, 234) to {_colors::*}
+	add rgb(139, 152, 157) to {_colors::*}
+	add rgb(181, 192, 193) to {_colors::*}
+	set {_color.transition} to rgb(123, 123, 123)
+
+	set {_addy} to {_tick} / 10
+	add {_addy} to y-pos of {_baseloc}
+	set {_baserad} to 30 * {_tick}
+	
+	set {_count} to 8
+	set {_addrad} to 360 / {_count}
+
+	set {_basevec} to vector(0.5, 0, 0)
+	set {_ln} to 0
+	loop {_count} times:
+		add 1 to {_ln}
+		set {_rad} to {_baserad} + ({_addrad} * {_ln})
+
+		set {_rotatevec} to {_basevec}
+		rotate {_rotatevec} around y-axis by {_rad}
+
+		set {_el} to {_baseloc} ~ {_rotatevec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_DustTransition({_color}, {_color.transition}, 1, {_el})
+
 
 # Spy Action発動の演出
 local function kitParticle_SpyAction_Active(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	
+	set {_count} to 30
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		set {_vec} to randomVector()
+		spawnParticle_Vector(firework, {_vec}, 1, {_el}, {_player})
