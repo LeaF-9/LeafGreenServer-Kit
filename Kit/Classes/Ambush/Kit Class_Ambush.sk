@@ -61,7 +61,13 @@ local function kitEffect_SpyAction(player: player):
 
 	set {_baseloc} to location of {_player}
 	set {_ln} to 0
-	loop {@spyaction-sneaktime}:
+	loop {@spyaction-sneaktime} times:
+		wait a tick
+
+		if {_player} is not sneaking:
+			kitMsg({_player}, "§c§lスニークを解除した為,潜伏できませんでした...")
+			kitSound_SpyAction_Cancel({_player})
+			stop
 		set {_nowloc} to location of {_player}
 		set yaw of {_nowloc} to yaw of {_baseloc}
 		set pitch of {_nowloc} to pitch of {_baseloc}
@@ -72,27 +78,32 @@ local function kitEffect_SpyAction(player: player):
 
 		add 1 to {_ln}
 		kitParticle_SpyAction_Prepare({_player}, {_ln})
-		wait a tick
 	
 	set metadata value {@metadata-spyaction} of {_player} to true
 	set {_spyaction.location} to location of {_player}
 
 	kitMsg({_player}, "§8§l§o潜伏が成功しました...")
 	kitParticle_SpyAction_Active({_player})
-			
+
+	kitInvisible({_player}, 3)
+	wait a tick
 	set {_active} to true
 	while {_active} is true:
 		if getInvisibleRemains({_player}) > 3:
 			delete metadata value {@metadata-spyaction} of {_player}
-			stop
+			removeInvisible({_player})
 		
 		if getInvisibleStatus({_player}) is false:
 			delete metadata value {@metadata-spyaction} of {_player}
+		
+		if metadata value {@metadata-spyaction} of {_player} is not set:
+			delete {_active}
 			stop
 		
 		set {_loc.now} to location of {_player}
 		set {_distance.now} to distance between {_spyaction.location} and {_loc.now}
 		add {_distance.now} to {_spyaction.distance}
+		set {_spyaction.location} to {_loc.now}
 		# キャンセル処理
 		if {_spyaction.distance} >= {@spyaction-limitmeter}:
 			removeInvisible({_player})
@@ -198,14 +209,14 @@ function kitTimerAmbush(player: player):
 				damage {_player} by 0.5 hearts
 
 		# Stealth Behavior
-		if {_shadowbody.active} is not set:
+		if {_shadowbody.active} is set:
 			wait a tick
 			continue
 
 		set {_now} to now
 		set {_stealthbehavior.damage} to metadata value {@metadata-stealthbehavior-damage} of {_player}
-		set {_stealthbehavior.timedif} to 100 seconds
 		set {_stealthbehavior.timedif} to difference between {_stealthbehavior.damage} and {_now}
+		set {_stealthbehavior.timedif} to 100 seconds if {_stealthbehavior.damage} is not set
 
 
 		if {_stealthbehavior.timedif} <= 10 seconds:
@@ -218,7 +229,7 @@ function kitTimerAmbush(player: player):
 			kitCheckTeam({_player}, loop-player, false, true) is true
 			add 1 to {_stealthbehavior.pop}
 
-		if {_stealthbehavior.pop} is set:
+		if {_stealthbehavior.pop} is not 0:
 			wait a tick
 			continue
 
