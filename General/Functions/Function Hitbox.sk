@@ -40,3 +40,44 @@ function checkHitting(entity: entity, loc: location) :: boolean:
 	then:
 		set {_bool} to true
 	return {_bool}
+
+
+
+# 球体状の攻撃判定に被弾判定が触れているか検知
+function checkHitting_Sphere(entity: entity, loc: location, radius: number) :: boolean:
+	# 球体の中心座標と半径
+	set {_sphere.x} to x-pos of {_loc}
+	set {_sphere.y} to y-pos of {_loc}
+	set {_sphere.z} to z-pos of {_loc}
+
+	# 直方体の中心座標とサイズ
+	set {_BoundingBox} to {_entity}.getBoundingBox()
+	set {_vec.min} to {_boundingBox}.getMin()
+	set {_vec.max} to {_boundingBox}.getMax()
+
+	# 直方体の各頂点を計算
+	set {_world} to world of {_loc}
+	set {_vertices::1} to location((x-pos of {_vec.min}), (y-pos of {_vec.min}), (z-pos of {_vec.min}), {_world})
+	set {_vertices::2} to location((x-pos of {_vec.min}), (y-pos of {_vec.min}), (z-pos of {_vec.max}), {_world})
+	set {_vertices::3} to location((x-pos of {_vec.max}), (y-pos of {_vec.min}), (z-pos of {_vec.min}), {_world})
+	set {_vertices::4} to location((x-pos of {_vec.max}), (y-pos of {_vec.min}), (z-pos of {_vec.max}), {_world})
+	set {_vertices::5} to location((x-pos of {_vec.min}), (y-pos of {_vec.max}), (z-pos of {_vec.min}), {_world})
+	set {_vertices::6} to location((x-pos of {_vec.min}), (y-pos of {_vec.max}), (z-pos of {_vec.max}), {_world})
+	set {_vertices::7} to location((x-pos of {_vec.max}), (y-pos of {_vec.max}), (z-pos of {_vec.min}), {_world})
+	set {_vertices::8} to location((x-pos of {_vec.max}), (y-pos of {_vec.max}), (z-pos of {_vec.max}), {_world})
+
+	# 当たり判定の計算
+	set {_hit} to false
+	set {_ln} to 0
+	loop 8 times:
+		continue if {_hit} is true
+		add 1 to {_ln}
+		set {_vx} to x-pos of {_vertices::%{_ln}%}
+		set {_vy} to y-pos of {_vertices::%{_ln}%}
+		set {_vz} to z-pos of {_vertices::%{_ln}%}
+		# 距離計算
+		set {_distance} to sqrt((({_vx} - {_sphere.x})^2) + (({_vy} - {_sphere.y})^2) + (({_vz} - {_sphere.z})^2))
+		if {_distance} <= {_radius}:
+			set {_hit} to true
+	
+	return {_hit}
