@@ -38,116 +38,78 @@ function kitSkill_Ambush_8(player: player):
 # Passive
 options:
 	metadata-spyaction: "Spy Action - Active"
+	spyaction-sneaktime: 20
 	spyaction-limitmeter: 10
 	metadata-stealthbehavior-damage: "Stealth Behavior - Damage"
 
+# Spy Action
 on sneak toggle:
 	{Class::%player%} is "Ambush"
 	metadata value "gametype" of player is "Kit"
-	if player is not sneaking:
-		set metadata value {@metadata-spyaction} of player to false
+	# 解除処理
+	if player is sneaking:
+		if metadata value {@metadata-spyaction} of player is true:
+			kitEffect_SpyAction_Reveal(player)
 		stop
-	delete metadata value {@metadata-spyaction} of player
 
-on damage of player:
-	{Class::%victim%} is "Ambush"
-	metadata value "gametype" of victim is "Kit"
-	set {_now} to now
-	set metadata value {@metadata-stealthbehavior-damage} of victim to {_now}
+	# 発動処理
+	stop if getInvisibleStatus(player) is true
+	kitEffect_SpyAction(player)
 
-# Timer
-function kitTimerAmbush(player: player):
-	while {Class::%{_player}%} is "Ambush":
-		# Spy Action
-		set {_spyaction} to metadata value {@metadata-spyaction} of {_player}
-		if {_spyaction} is set:
-			if {_spyaction} is false:
-				set {_spyaction.prepare} to -1 if {_spyaction.prepare} is not set
-				add 1 to {_spyaction.prepare}
-				kitParticle_SpyAction_Prepare({_player}, {_spyaction.prepare})
+local function kitEffect_SpyAction(player: player):
+	kitMsg({_player}, "§7身を潜める準備をします...")
 
-				if {_spyaction.prepare} >= 20:
-					delete {_spyaction.prepare}
-					set metadata value {@metadata-spyaction} of {_player} to true
-					set {_spyaction} to true
-			
-			if {_spyaction} is true:
-				if {_spyaction.active} is not set:
-					set {_spyaction.active} to true
-					set {_spyaction.location} to location of {_player}
-					kitInvisibleRepeat_Start({_player})
+	set {_baseloc} to location of {_player}
+	set {_ln} to 0
+	loop {@spyaction-sneaktime}:
+		set {_nowloc} to location of {_player}
+		set yaw of {_nowloc} to yaw of {_baseloc}
+		set pitch of {_nowloc} to pitch of {_baseloc}
+		if {_nowloc} is not {_baseloc}:
+			kitMsg({_player}, "§c§l準備中に動いた為,潜伏できませんでした...")
+			kitSound_SpyAction_Cancel({_player})
+			stop
 
-					kitMsg({_player}, "§7§o潜伏します...")
-					kitParticle_SpyAction_Active({_player})
-
-				set {_loc.now} to location of {_player}
-				set {_distance.now} to distance between {_spyaction.location} and {_loc.now}
-				add {_distance.now} to {_spyaction.distance}
-				# キャンセル処理
-				if {_spyaction.distance} >= {@spyaction-limitmeter}:
-					kitInvisibleRepeat_Stop({_player})
-					delete metadata value {@metadata-spyaction} of {_player}
-					kitMsg({_player}, "§c§l動きすぎた! §3§o潜伏が明らかになってしまった...!")
-
-					delete {_spyaction.prepare}
-					delete {_spyaction.active}
-					delete {_spyaction.location}
-					delete {_spyaction.distance}
-		
-		else if {_spyaction} is not set:
-			# Spy Action キャンセル処理
-			if {_spyaction.active} is true:
-				kitInvisibleRepeat_Stop({_player})
-				kitMsg({_player}, "§b潜伏を解除しました!")
-
-				delete {_spyaction.prepare}
-				delete {_spyaction.active}
-				delete {_spyaction.location}
-				delete {_spyaction.distance}
-
-			# Shadow Body
-			delete {_shadowbody.active}
-			if getInvisibleStatus({_player}) is true:
-				set {_shadowbody.true} to true
-				applyEffect({_player}, speed, 2, 5 ticks, true)
-			
-			if {_player} has glowing:
-				set {_shadowbody.timer} to 20 if {_shadowbody.timer} is not set
-
-				add 1 to {_shadowbody.timer}
-				if {_shadowbody.timer} >= 20:
-					set {_shadowbody} to 0
-					damage {_player} by 0.5 hearts
-
-		# Stealth Behavior
-		set {_now} to now
-		set {_stealthbehavior.damage} to metadata value {@metadata-stealthbehavior-damage} of {_player}
-		set {_stealthbehavior.timedif} to 100 seconds
-		set {_stealthbehavior.timedif} to difference between {_stealthbehavior.damage} and {_now}
-		delete {_stealthbehavior.prepare}
-		if:
-			{_spyaction.active} is not set
-			{_shadowbody.active} is not set
-			{_stealthbehavior.timedif} > 10 seconds
-		then:
-			set {_stealthbehavior.prepare} to true
-		
-		if {_stealthbehavior.prepare} is true:
-			{_player} does not have glowing
-			delete {_stealthbehavior.pop}
-			loop all players in radius 10 around {_player}:
-				kitCheckTeam({_player}, loop-player, false, true) is true
-				add 1 to {_stealthbehavior.pop}
-
-			if {_stealthbehavior.pop} is set:
-				wait a tick
-				continue
-
-			# Stealth Behavior実行
-			kitInvisible({_player}, 10)
-			send action bar "§7§l§o潜伏中です..." to {_player}
-
+		add 1 to {_ln}
+		kitParticle_SpyAction_Prepare({_player}, {_ln})
 		wait a tick
+	
+	set metadata value {@metadata-spyaction} of {_player} to true
+	set {_spyaction.location} to location of {_player}
+
+	kitMsg({_player}, "§8§l§o潜伏が成功しました...")
+	kitParticle_SpyAction_Active({_player})
+			
+	set {_active} to true
+	while {_active} is true:
+		if getInvisibleRemains({_player}) > 3:
+			delete metadata value {@metadata-spyaction} of {_player}
+			stop
+		
+		if getInvisibleStatus({_player}) is false:
+			delete metadata value {@metadata-spyaction} of {_player}
+			stop
+		
+		set {_loc.now} to location of {_player}
+		set {_distance.now} to distance between {_spyaction.location} and {_loc.now}
+		add {_distance.now} to {_spyaction.distance}
+		# キャンセル処理
+		if {_spyaction.distance} >= {@spyaction-limitmeter}:
+			removeInvisible({_player})
+			delete metadata value {@metadata-spyaction} of {_player}
+			kitMsg({_player}, "§c§l動きすぎた! §3§o潜伏が明らかになってしまった...!")
+			kitParticle_SpyAction_Reveal({_player})
+			stop
+		
+		kitInvisible({_player}, 3)
+		send action bar "§7§l§o潜伏中です..." to {_player}
+		wait a tick
+
+local function kitEffect_SpyAction_Reveal(player: player):
+	removeInvisible({_player})
+	delete metadata value {@metadata-spyaction} of {_player}
+	kitMsg({_player}, "§b潜伏を解除しました")
+	kitParticle_SpyAction_Reveal({_player})
 
 
 
@@ -183,6 +145,16 @@ local function kitParticle_SpyAction_Prepare(player: player, tick: number):
 
 # Spy Action発動の演出
 local function kitParticle_SpyAction_Active(player: player):
+	playSound("entity.wither.shoot", 3, 1.75, {_player})
+	set {_baseloc} to location 1 meter above {_player}
+	
+	set {_count} to 30
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle(wax_off, {_el}, {_player})
+
+# Spy Action解除時の演出
+local function kitParticle_SpyAction_Reveal(player: player):
 	set {_baseloc} to location 1 meter above {_player}
 	
 	set {_count} to 30
@@ -190,3 +162,68 @@ local function kitParticle_SpyAction_Active(player: player):
 		set {_el} to moveRandomLocation({_baseloc}, 1)
 		set {_vec} to randomVector()
 		spawnParticle_Vector(firework, {_vec}, 1, {_el}, {_player})
+
+
+
+local function kitSound_SpyAction_Cancel(player: player):
+	playSound("item.shield.break", 1, 1.3, {_player}, true)
+
+
+on damage of player:
+	{Class::%victim%} is "Ambush"
+	metadata value "gametype" of victim is "Kit"
+	set {_now} to now
+	set metadata value {@metadata-stealthbehavior-damage} of victim to {_now}
+
+# Timer
+function kitTimerAmbush(player: player):
+	while {Class::%{_player}%} is "Ambush":
+		set {_spyaction} to metadata value {@metadata-spyaction} of {_player}
+		if {_spyaction} is true:
+			wait a tick
+			continue
+
+		# Shadow Body
+		delete {_shadowbody.active}
+		if getInvisibleStatus({_player}) is true:
+			set {_shadowbody.true} to true
+			applyEffect({_player}, speed, 2, 5 ticks, true)
+		
+		if {_player} has glowing:
+			set {_shadowbody.timer} to 20 if {_shadowbody.timer} is not set
+
+			add 1 to {_shadowbody.timer}
+			if {_shadowbody.timer} >= 20:
+				set {_shadowbody} to 0
+				damage {_player} by 0.5 hearts
+
+		# Stealth Behavior
+		if {_shadowbody.active} is not set:
+			wait a tick
+			continue
+
+		set {_now} to now
+		set {_stealthbehavior.damage} to metadata value {@metadata-stealthbehavior-damage} of {_player}
+		set {_stealthbehavior.timedif} to 100 seconds
+		set {_stealthbehavior.timedif} to difference between {_stealthbehavior.damage} and {_now}
+
+
+		if {_stealthbehavior.timedif} <= 10 seconds:
+			wait a tick
+			continue
+		
+		{_player} does not have glowing
+		set {_stealthbehavior.pop} to 0
+		loop all players in radius 10 around {_player}:
+			kitCheckTeam({_player}, loop-player, false, true) is true
+			add 1 to {_stealthbehavior.pop}
+
+		if {_stealthbehavior.pop} is set:
+			wait a tick
+			continue
+
+		# Stealth Behavior実行
+		kitInvisible({_player}, 3)
+		send action bar "§7§l§o潜伏中です..." to {_player}
+
+		wait a tick
