@@ -12,5 +12,71 @@ function kitEffect_Scyclone(player: player):
 		stop
 	
 	set {_baseloc} to head of {_player}
+	set {_count} to {@effect-meter}
+	set {_addm} to {@effect-meter} / {_count}
+	set {_m} to 0
+	loop {_count} times:
+		add {_addm} to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		kitEffect_Scyclone_Check({_player}, {_el})
+		
+		kitParticle_Scyclone_Slash({_el})
+		wait a tick
 
 local function kitEffect_Scyclone_Cyclone(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_count} to {@effect-meter}
+	set {_addm} to {@effect-meter} / {_count}
+	set {_m} to 0
+
+	set {_baserad} to 0
+	set {_baseaddrad} to 90 / {_count}
+	set {_rotatecount} to 8
+	set {_addrad} to 360 / {_rotatecount}
+
+	loop {_count} times:
+		add {_addm} to {_m}
+		set {_basevec} to vector({_m}, 0, 0)
+		set {_rad} to {_baserad}
+		loop {_rotatecount} times:
+			add {_addrad} to {_rad}
+			set {_rotatevec} to {_basevec}
+			rotate {_rotatevec} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_rotatevec}
+
+			kitEffect_Scyclone_Check({_player}, {_el}, true)
+			kitParticle_Scyclone_Slash({_el})
+
+		add {_baseadddrad} to {_baserad}
+		wait a tick
+
+local function kitEffect_Scyclone_Check(player: player, loc: location, absorb: boolean = false):
+	loop all entities in radius 3 around {_loc}:
+		kitCheckTeam(loop-entity, {_player}, false, true) is true
+		set {_test} to checkHitting_Sphere(loop-entity, {_loc}, 1)
+		checkHitting_Sphere(loop-entity, {_loc}, 1) is true
+		kitEffect_Scyclone_Hit({_player}, loop-entity, {_absorb})
+
+local function kitEffect_Scyclone_Hit(player: player, target: entity, absorb: boolean = false):
+	kitDamage({_player}, {_target}, {@damage-amount}, "乱斬撃")
+	kitParticle_Scyclone_Hit({_target})
+	stop if {_absorb} is false
+
+	set {_from} to location of {_target}
+	set {_to} to location of {_player}
+	set {_vector} to setVector({_to}, {_from})
+	set velocity of {_target} to {_vector}
+
+
+
+local function kitParticle_Scyclone_Slash(loc: location):
+	playSound("entity.player.attack.sweep", 0.5, 1.7, {_loc})
+	spawnParticle(sweep_attack, {_loc})
+
+local function kitParticle_Scyclone_Hit(entity: entity):
+	playSound("item.trident.throw", 1, 1.8, {_entity})
+
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 20 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(block_crumble, redstone block, {_el})
