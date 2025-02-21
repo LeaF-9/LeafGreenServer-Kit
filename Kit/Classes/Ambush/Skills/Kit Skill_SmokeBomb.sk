@@ -1,3 +1,85 @@
 # skill-name: Smoke Bomb
 
+options:
+	effect-radius: 5
+	effect-tick: 60
+	effect-second: 3 seconds
+	metadata-projectile: "Smoke Bomb - Projectile"
+
+on projectile hit:
+	metadata value {@metadata-projectile} of projectile is true
+	set {_loc} to location of projectile
+	kitEffect_SmokeBomb_Hit(shooter, {_loc})
+	kitParticle_SmokeBomb_Hit({_loc})
+	set metadata value {@metadata-projectile} of projectile to false
+
 function kitEffect_SmokeBomb(player: player):
+	subtract 1 from item amount of tool of {_player}
+	shoot a snowball from {_player} at speed 3
+	set {_proj} to shot snowball
+	set metadata value {@metadata-projectile} of {_proj} to true
+	set item of {_proj} to firework star
+	kitParticle_SmokeBomb_Projectile({_player}, {_proj})
+
+local function kitEffect_SmokeBomb_Hit(player: player, loc: location):
+	loop all entities in radius {@effect-radius} around {_loc}:
+		if kitCheckTeam({_player}, loop-entity, false) is true:
+			applyEffect(loop-entity, blindness, 1, {@effect-second})
+			message formatted "§8煙幕にかかった!" to loop-entity
+			kitParticle_SmokeBomb_Blind(loop-entity)
+			continue
+		
+		kitCheckTeam({_player}, loop-entity, true) is true
+		checkEntityType(loop-entity, player) is true
+		kitInvisible(loop-entity, {@effect-tick})
+		message formatted "§7煙幕§fによって§b§l透明効果§fが付与された!" to loop-entity
+
+
+
+local function kitParticle_SmokeBomb_Projectile(player: player, proj: projectile):
+	playSound("entity.arrow.shoot", 1, 0.6, {_player})
+
+	set {_loc} to location of {_proj}
+	loop 200 times:
+		stop if metadata value {@metadata-projectile} of {_proj} is false
+		
+		set {_proloc} to location of {_proj}
+		wait a tick
+		set {_loc} to location of {_proj}
+		if {_proloc} is not set:
+			continue
+		if loop-number is 1:
+			continue
+
+		set {_basevector} to setVector({_proloc}, {_loc})
+		set {_proloc} to setDirToVec({_proloc}, {_basevector})
+
+		set {_distance} to distance between {_loc} and {_proloc}
+		set {_FM} to 0.5
+		set {_loopnum} to round({_distance} / {_FM})
+		set {_frontMeter} to 0
+		loop {_loopnum} times:
+			add {_FM} to {_frontMeter}
+			set {_el} to location {_frontMeter} meters in front of {_proloc}
+			spawnParticle(smoke, {_el})
+
+local function kitParticle_SmokeBomb_Hit(loc: location):
+	playSound("entity.ghast.shoot", 1, 0.6, {_loc})
+	
+	loop 200 times:
+		set {_num} to a random number between 0 and {@effect-radius}
+		set {_vec} to randomVector({_num})
+		set {_el} to {_loc} ~ {_vec}
+		spawnParticle(campfire_cosy_smoke, {_el})
+
+local function kitParticle_SmokeBomb_Blind(entity: entity):
+	set {_baseloc} to head of {_entity}
+	set {_count} to 10
+	set {_rad} to 0
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		add {_addrad} to {_rad}
+		set {_vec} to vector(1, 0, 0)
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_vec}
+		spawnParticle_BlockData(falling_dust, black wool, {_el})
