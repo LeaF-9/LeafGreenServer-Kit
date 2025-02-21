@@ -55,7 +55,6 @@ local function kitEffect_AeroBlade_Throw(player: player):
 	set {_count} to 10
 	set {_addm} to {_meter} / {_count}
 	set {_m} to 0
-	set
 	loop {_count} times:
 		continue if {_hit.player} is set
 
@@ -99,18 +98,16 @@ local function kitEffect_AeroBlade_Summon(player: player, loc: location, tool: i
 	set {_item} to type of {_tool}
 	setDisplayItem({_itemdisplay}, {_item})
 
-	set {_rotation} to getQuaternionf(0, 0, 0, 1)
-
 	set {_matrix} to getMatrix4f(0.7071, 0.7071, 0, 0, 0, -0, -1, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
 	{_itemdisplay}.setTransformationMatrix({_matrix})
 
 	return {_itemdisplay}
 
-local function kitEffect_AeroBlade_DisplayMotion(display: entity, loc: location, meter: number):
+local function kitEffect_AeroBlade_DisplayMotion(display: entity, loc: location, meter: number, num: number):
 	kitParticle_AeroBlade_Rotate({_loc}, {_meter})
 
 	teleport {_display} to {_loc}
-	set {_matrix} to kitEffect_AeroBlade_GetMatrix({_meter})
+	set {_matrix} to kitEffect_AeroBlade_GetMatrix({_num})
 	{_display}.setTransformationMatrix({_matrix})
 
 local function kitEffect_AeroBlade_GetMatrix(num: number) :: object:
