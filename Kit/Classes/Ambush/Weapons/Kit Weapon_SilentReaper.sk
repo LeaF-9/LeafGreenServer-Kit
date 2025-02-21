@@ -1,0 +1,38 @@
+# Weapon-Name: Silent Reaper
+
+options:
+	damage-amount: 5
+	invisible-tick: 60
+	metadata-spyaction: "Spy Action - Active"
+
+on damage of player with priority HIGH:
+	set {_attacker} to getAttacker(victim)
+	{Class::%{_attacker}%} is "Ambush"
+	set {_tool} to tool of {_attacker}
+	kitItemAllChecker({_tool}, "Ambush", "Weapon", 3) is true
+	kitEffect_SilentReaper_Attack(attacker, event)
+
+local function kitEffect_SilentReaper_Attack(player: player, event: event):
+	stop if metadata value {@metadata-spyaction} of {_player} is not true
+
+	kitMsg({_player}, "<##4f4343>§l潜伏攻撃<##8e1212>が成功した...!")
+	kitInvisible({_player}, {@invisible-tick})
+
+	set {_victim} to {_event}.getEntity()
+	kitParticle_SilentReaper_Attack({_victim})
+	set {_health} to health of {_victim}
+	if {_health} <= {@damage-amount}:
+		setDamageModification_FIX({_victim}, {@damage-amount})
+		stop
+	
+	{_event}.setCancelled(true)
+	set {_setHealth} to {_health} - {@damage-amount}
+	set health of {_victim} to {_setHealth}
+
+
+
+local function kitParticle_SilentReaper_Attack(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	loop 10 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(83, 8, 8), 2, {_el})
