@@ -1,3 +1,225 @@
 # weapon-name: Aero Blade
 
+options:
+	charge-tick: 6
+	effect-meter: 10
+	damage-amount: 2
+	effect-meter-buff: 15
+	damage-amount-buff: 3
+	
+	metadata-display: "Aero Blade - Display"
+
 function kitEffect_AeroBlade(player: player):
+	set {_weapontool} to tool of {_player}
+	set {_true} to true
+	while {_true} is true:
+		if checkEating({_player}) is false:
+			set {_delete} to true
+		set {_tool} to tool of {_player}
+		if {_tool} is not {_weapontool}:
+			set {_delete} to true
+
+		if {_delete} is true:
+			delete {_true}
+			continue
+		
+		add 1 to {_count}
+		kitParticle_AeroBlade_Charge({_player}, {_count})
+
+		if {_count} >= {@charge-tick}:
+			kitParticle_AeroBlade_Complete({_player}) if {_complete} is not set
+			set {_complete} to true
+
+		wait a tick
+	stop if {_complete} is not set
+
+	kitEffect_AeroBlade_Throw({_player})
+
+local function kitEffect_AeroBlade_Throw(player: player):
+	nameItemCT({_player}, "Aero Blade")
+
+	set {_tool} to tool of {_player}
+	set tool of {_player} to air
+
+	set {_meter} to {@effect-meter}
+	set {_damage} to {@damage-amount}
+	set {_teleport} to false
+	if getInvisibleStatus({_player}) is true:
+		set {_meter} to {@effect-meter-buff}
+		set {_damage} to {@damage-amount-buff}
+		set {_teleport} to true
+	
+	set {_baseloc} to location 1 meter above {_player}
+	set {_display} to kitEffect_AeroBlade_Summon({_player}, {_baseloc}, {_tool})
+
+	set {_count} to 10
+	set {_addm} to {_meter} / {_count}
+	set {_m} to 0
+	set
+	loop {_count} times:
+		continue if {_hit.player} is set
+
+		add 1 to {_ln}
+		add {_addm} to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		kitEffect_AeroBlade_DisplayMotion({_display}, {_el}, {_m}, {_ln})
+		loop all entities in radius 3 around {_el}:
+			kitCheckTeam(loop-entity, {_player}, false, true) is true
+			{_hit.player} is not set
+			{_hit.%id of loop-entity%} is not set
+			checkHitting_Sphere(loop-entity, {_el}, 1) is true
+			set {_hit.%id of loop-entity%} to true
+			set {_hit.player} to true if checkEntityType(loop-entity, player) is true
+			kitEffect_AeroBlade_Hit({_player}, loop-entity, {_damage}, {_teleport})
+		
+		wait a tick
+	
+	# return weapon
+	set {_slot} to slot 0 of inventory of {_player}
+	set slot 0 of inventory of {_player} to {_tool}
+	if {_slot} is not air:
+		give {_slot} to {_player}
+
+	# delete item display
+	{_display}.remove()
+
+local function kitEffect_AeroBlade_Summon(player: player, loc: location, tool: item) :: entity:
+	kitSound_AeroBlade_Summon({_loc})
+
+	spawn an item display at {_loc}
+	set {_itemdisplay} to spawned item display
+	set metadata value "gametype" of {_itemdisplay} to "Kit"
+	set metadata value {@metadata-display} of {_itemdisplay} to {_player}
+
+	setBrightness({_itemdisplay})
+	{_itemdisplay}.setTeleportDuration(1)
+	{_itemdisplay}.setInterpolationDuration(1)
+	{_itemdisplay}.setViewRange(1000)
+
+	set {_item} to type of {_tool}
+	setDisplayItem({_itemdisplay}, {_item})
+
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+
+	set {_matrix} to getMatrix4f(0.7071, 0.7071, 0, 0, 0, -0, -1, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
+	{_itemdisplay}.setTransformationMatrix({_matrix})
+
+	return {_itemdisplay}
+
+local function kitEffect_AeroBlade_DisplayMotion(display: entity, loc: location, meter: number):
+	kitParticle_AeroBlade_Rotate({_loc}, {_meter})
+
+	teleport {_display} to {_loc}
+	set {_matrix} to kitEffect_AeroBlade_GetMatrix({_meter})
+	{_display}.setTransformationMatrix({_matrix})
+
+local function kitEffect_AeroBlade_GetMatrix(num: number) :: object:
+	set {_mod} to mod({_num}, 4)
+	set {_check} to {_mod} + 1
+	if {_check} is 1:
+		set {_matrix} to getMatrix4f(0.7071, 0.7071, 0, 0, 0, -0, -1, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
+	else if {_check} is 2:
+		set {_matrix} to getMatrix4f(0.5, 0.5, 0.7071, 0, 0.5, 0.5, -0.7071, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
+	else if {_check} is 3:
+		set {_matrix} to getMatrix4f(0, 0, 1, 0, 0.7071, 0.7071, 0, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
+	else if {_check} is 4:
+		set {_matrix} to getMatrix4f(-0.5, -0.5, 0.7071, 0, 0.5, 0.5, 0.7071, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
+
+	return {_matrix}
+
+local function kitEffect_AeroBlade_Hit(player: player, target: entity, damage: number, teleport: boolean):
+	kitDamage({_player}, {_target}, {_damage}, "短剣")
+	kitParticle_AeroBlade_Hit({_target})
+	stop if {_teleport} is false
+	stop if checkEntityType({_target}, player) is false
+
+	set {_tploc} to location of {_target}
+	set pitch of {_tploc} to 0
+	set {_tploc} to location 1 meter behind {_tploc}
+	teleport {_player} to {_tploc}
+	kitParticle_AeroBlade_Teleport({_player})
+
+
+
+local function kitParticle_AeroBlade_Charge(player: player, count: number):
+	set {_pitch} to 1 + (({_count} - 1) * 0.2)
+	playSound("entity.breeze.jump", 0.75, {_pitch}, {_player})
+
+	add rgb(212, 222, 223) to {_colors::*}
+	add rgb(190, 223, 228) to {_colors::*}
+	add rgb(173, 211, 227) to {_colors::*}
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 10 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.9, {_el})
+
+local function kitParticle_AeroBlade_Complete(player: player):
+	playSound("entity.breeze.deflect", 1, 0.7, {_player})
+
+	set {_el} to location 1 meter above {_player}
+	spawnParticle(gust, {_el})
+
+local function kitParticle_AeroBlade_Rotate(loc: location, meter: number):
+	add rgb(176, 224, 221) to {_colors::*}
+	add rgb(114, 204, 224) to {_colors::*}
+	add rgb(134, 182, 193) to {_colors::*}
+
+	set {_frontloc} to location 0.5 meter in front of {_loc}
+	set {_basevec} to setVector({_frontloc}, {_loc})
+	set {_rotateloc} to {_loc}
+	add 90 to pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_loc}, {_rotateloc})
+
+	set {_baserad} to 30 * {_meter}
+	set {_height} to 1
+	set {_count.height} to 10
+	set {_add.height} to {_height} / {_count.height}
+
+	set {_count.vortex} to 4
+	set {_addrad.vortex} to 360 / {_count.vortex}
+
+	set {_h} to 0
+	loop {_count.height} times:
+		add {_add.height} to {_h}
+		set {_heightvec} to {_basevec} * {_h}
+		set {_baseheightloc} to {_frontloc} ~ {_heightvec}
+
+		set {_rad} to 0
+		loop {_count.vortex} times:
+			add {_addrad.vortex} to {_rad}
+			set {_vec} to {_rotatevec}
+			rotate {_vec} around {_basevec} by {_rad}
+			set {_el} to {_baseheightloc} ~ {_rotatevec}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 0.5, {_el})
+
+local function kitParticle_AeroBlade_Hit(entity: entity):
+	playSound("entity.breeze.hurt", 1, 2, {_entity})
+
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 20 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(block_crumble, white wool, {_el})
+
+		chance of 50%:
+			set {_el} to moveRandomLocation({_el}, 0.5)
+			spawnParticle_BlockData(block_crumble, light gray wool, {_el})
+
+local function kitParticle_AeroBlade_Teleport(player: player):
+	playSound("entity.enderman.teleport", 1, 2, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 30 times:
+		set {_vec} to randomVector()
+		spawnParticle_Vector(witch, {_vec}, 1, {_baseloc})
+
+	loop 20 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle(reverse_portal, {_el})
+
+
+
+local function kitSound_AeroBlade_Summon(loc: location):
+	playSound("entity.breeze.wind_burst", 1, 2, {_loc})
