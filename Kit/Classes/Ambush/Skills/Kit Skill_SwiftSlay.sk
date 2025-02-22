@@ -1,3 +1,92 @@
 # skill-name: Swift Slay
 
+options:
+	effect-meter: 10
+	damage-amount: 3
+
 function kitEffect_SwiftSlay(player: player):
+	nameCT({_player}, "Swift Slay")
+
+	kitMsg({_player}, "<##82e4f7>眼にも留まらぬ速さで斬る!")
+	kitSound_SwiftSlay_Launch({_player})
+	set {_playerloc} to location of {_player}
+	set {_baseloc} to head of {_player}
+	set {_basesub} to (y-pos of {_baseloc}) - (y-pos of {_playerloc})
+	
+	set {_count} to {@effect-meter}
+	set {_addm} to {@effect-meter} / {_count}
+	set {_m} to 0
+	loop {_count} times:
+		continue if {_stop} is true
+
+		add {_addm} to {_m}
+		set {_loc} to location {_m} meters in front of {_baseloc}
+		if block at {_loc} is not passable:
+			set {_stop} to true
+			subtract {_addm} from {_m}
+			continue
+		
+		kitParticle_SwiftSlay_Slay({_loc})
+		loop all entities in radius 3 around {_loc}:
+			kitCheckTeam({_player}, loop-entity, false) is true
+			{_hit.%id of loop-entity%} is not set
+			set {_hit.%id of loop-entity%} to true
+			kitDamage({_player}, loop-entity, {@damage-amount}, "斬撃")
+			kitParticle_SwiftSlay_Hit(loop-entity)
+	
+	set {_effectloc} to location {_m} meters in front of {_baseloc}
+	set {_belowloc} to location {_basesub} meters below {_effectloc}
+	set {_effectloc} to {_belowloc} if block at {_belowloc} is passable
+
+	teleport {_player} to {_effectloc}
+
+
+
+local function kitParticle_SwiftSlay_Slay(loc: location):
+	playSound("entity.breeze.jump", 0.5, 1.8, {_loc})
+
+	add rgb(27, 224, 234) to {_colors::*}
+	add rgb(141, 205, 244) to {_colors::*}
+	add rgb(100, 224, 199) to {_colors::*}
+
+	set {_vector} to setVector({_loc}, location 1 meter in front of {_loc})
+	set {_count} to a random integer between 3 and 5
+	loop {_count} times:
+		set {_baseloc} to moveRandomLocation({_loc}, 1)
+		set {_m} to 0
+		loop 5 times:
+			add 0.2 to {_m}
+			set {_multivec} to vector({_m}, {_m}, {_m})
+			set {_movevec} to {_vector} * {_multivec}
+			set {_el} to {_baseloc} ~ {_movevec}
+
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 0.8, {_el})
+
+local function kitParticle_SwiftSlay_Hit(entity: entity):
+	playSound("block.glass.break", 1, 1.85, {_entity})
+	set {_baseloc} to location 1 meter above {_entity}
+
+	set {_vec::1} to vector(1, 1, 0)
+	set {_vec::2} to vector(-1, 1, 0)
+	set {_vec::3} to vector(1, -1, 0)
+	set {_vec::4} to vector(-1, -1, 0)
+
+	set {_ln} to 0
+	set {_count} to 5
+	set {_addm} to 0.25
+	loop 4 times:
+		add 1 to {_ln}
+		set {_basevec} to {_vec::%{_ln}%}
+		set {_baseel} to setDirToVec({_baseloc}, {_basevec})
+		set {_m} to 0
+		loop {_count} times:
+			set {_el} to location {_m} meters in front of {_baseel}
+			spawnParticle(firework, {_el})
+			add {_addm} to {_m}
+
+
+
+
+local function kitSound_SwiftSlay_Launch(player: player):
+	playSound("entity.breeze.deflect", 1, 1.2, {_player})
