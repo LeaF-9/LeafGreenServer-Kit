@@ -1,3 +1,115 @@
 # skill-name: Flash Light
 
+options:
+	invisible-tick: 60
+	blind-radius: 5
+	blind-second: 5 seconds
+	blind-tick: 100
+	flash-radius: 30
+	flash-second: 3 seconds
+	flash-tick: 60
+	effect-message "<##edff63>§l眩しい!"
+
 function kitEffect_FlashLight(player: player):
+	nameCT({_player}, "Flash Light")
+
+	kitMsg({_player}, "<##fdf92b>閃光を放ちます!")
+	kitInvisible({_player}, {@invisible-tick})
+	set {_baseloc} to location of {_player}
+	kitParticle_FlashLight_Launch({_player}, {_baseloc})
+
+	loop all entities in radius {@blind-radius} around {_baseloc}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		set {_hit.%id of loop-entity%} to true
+		applyEffect(loop-entity, blindness, 1, {@blind-second})
+		message formatted {@effect-message} to loop-entity
+		kitParticle_FlashLight_Blind(loop-entity, {@blind-tick})
+
+	loop all entities in radius {@flash-radius} around {_baseloc}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		{_hit.%id of loop-entity%} is not set
+		checkCanSee(loop-player, {_effloc}) is true
+		applyEffect(loop-entity, blindness, 1, {@flash-second})
+		message formatted {@effect-message} to loop-entity
+		kitParticle_FlashLight_Blind(loop-entity, {@flash-tick})
+
+
+
+import:
+	java.util.ArrayList
+	com.comphenix.protocol.ProtocolLibrary
+	com.comphenix.protocol.PacketType
+	com.google.common.collect.Lists
+
+local function kitEffect_UniversalDivision_DestroyWall(player: player, entity: entity):
+	set {_id} to {_entity}.getEntityId()
+	set {_manager} to ProtocolLibrary.getProtocolManager()
+	set {_packet} to {_manager}.createPacket(PacketType.Play.Server.ENTITY_DESTROY)
+	set {_ids} to Lists.newArrayList({_id})
+	{_packet}.getIntLists().write(0, {_ids})
+	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_packet})
+
+local function kitParticle_FlashLight_Launch(player: player, loc: location):
+	playSound("entity.wither.hurt", 2, 1.3, {_loc})
+
+	set {_baseloc} to location 1 meter above {_loc}
+	kitParticle_FlashLight_Display({_player}, {_baseloc})
+
+	add rgb(255, 248, 50) to {_colors::*}
+	add rgb(248, 254, 133) to {_colors::*}
+	add rgb(242, 213, 51) to {_colors::*}
+
+	set {_count} to 300
+	loop {_count} times:
+		set {_vector} to randomVector({@blind-radius})
+		set {_el} to {_loc} ~ {_vector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_DustTransition({_color}, rgb(255, 255, 255), 0.65, {_el})
+
+		chance of 10%:
+			set {_rm} to a rando number between 0 and {@blind-radius}
+			set {_vector} to randomVector({_rm})
+			set {_el} to {_loc} ~ {_vector}
+			spawnParticle(end_rod, {_el})
+
+local function kitParticle_FlashLight_Display(player: player, location: location):
+	set {_block} to glowstone
+	set {_rgb} to rgb(255, 244, 33)
+	set {_color} to {_rgb}.asBukkitColor()
+
+	spawn an item display at {_location}
+	set {_itemdisplay} to spawned item display
+	set metadata value "gametype" of {_itemdisplay} to "Kit"
+	set metadata value "Flash Light - Entity" of {_itemdisplay} to {_player}
+
+	setBrightness({_itemdisplay})
+	{_itemdisplay}.setGlowColorOverride({_color})
+	{_itemdisplay}.setGlowing(true)
+	{_itemdisplay}.setTeleportDuration(1)
+	{_itemdisplay}.setInterpolationDuration(1)
+	{_itemdisplay}.setViewRange(30)
+	setDisplayItem({_itemdisplay}, {_item})
+
+	set {_id} to {_itemdisplay}.getEntityId()
+	set {_manager} to ProtocolLibrary.getProtocolManager()
+	set {_packet} to {_manager}.createPacket(PacketType.Play.Server.ENTITY_DESTROY)
+	set {_ids} to Lists.newArrayList({_id})
+	{_packet}.getIntLists().write(0, {_ids})
+	ProtocolLibrary.getProtocolManager().sendServerPacket({_player}, {_packet})
+
+	wait a second
+	{_itemdisplay}.remove()
+
+local function kitParticle_FlashLight_Blind(entity: entity, tick: number):
+	playSound("entity.experience_orb.pickup", 2, 0.7, {_entity})
+	set {_rad} to 0
+	set {_addrad} to 360 / 10
+	set {_basevector} to vector(0.5, 0, 0)
+	loop {_tick} times:
+		set {_baseloc} to head of {_entity}
+		add {_addrad} to {_rad}
+		set {_rotatevec} to {_basevector}
+		rotate {_rotatevec} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_rotatevec}
+		spawnParticle(electric_spark, {_el})
+		wait a tick
