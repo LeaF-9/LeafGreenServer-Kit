@@ -26,11 +26,12 @@ function kitEffect_LatentEscape(player: player):
 		send action bar "§7§l§o潜伏中です..." to {_player}
 		wait a tick
 	
-	detectCT({_player}, {_tool})
+	detectCT({_player}, {_skillitem})
 	reveal {_player} from all players if getInvisibleStatus({_player}) is false
 	stop if getKitStats({_player}, "Latent Escape") is not set
 
 	kitMsg({_player}, "<##828b8b>§l伏走状態<##3571ca>が終了しました")
+	kitParticle_LatentEscape_End({_player})
 	deleteKitStats({_player}, "Latent Escape")
 	set {_pop} to 0
 	loop all players in radius 10 around {_player}:
@@ -47,4 +48,12 @@ local function kitParticle_LatentEscape_Launch(player: player):
 	playSound("entity.generic.explode", 1, 1.9, {_player})
 
 	set {_baseloc} to location 1 meter above {_player}
-	spawnParticle(gust_emitter, {_baseloc})
+	spawnParticle(gust_emitter_large, {_baseloc})
+
+local function kitParticle_LatentEscape_End(player: player):
+	playSound("entity.ender_dragon.flap", 1, 2, {_player}, true)
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 10 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle(small_gust, {_el}, {_player})
