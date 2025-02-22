@@ -8,7 +8,7 @@ options:
 	flash-radius: 30
 	flash-second: 3 seconds
 	flash-tick: 60
-	effect-message "<##edff63>§l眩しい!"
+	effect-message: "<##edff63>§l眩しい!"
 
 function kitEffect_FlashLight(player: player):
 	nameCT({_player}, "Flash Light")
@@ -25,13 +25,13 @@ function kitEffect_FlashLight(player: player):
 		message formatted {@effect-message} to loop-entity
 		kitParticle_FlashLight_Blind(loop-entity, {@blind-tick})
 
-	loop all entities in radius {@flash-radius} around {_baseloc}:
-		kitCheckTeam({_player}, loop-entity, false) is true
-		{_hit.%id of loop-entity%} is not set
+	loop all players in radius {@flash-radius} around {_baseloc}:
+		kitCheckTeam({_player}, loop-player, false) is true
+		{_hit.%id of loop-player%} is not set
 		checkCanSee(loop-player, {_effloc}) is true
-		applyEffect(loop-entity, blindness, 1, {@flash-second})
-		message formatted {@effect-message} to loop-entity
-		kitParticle_FlashLight_Blind(loop-entity, {@flash-tick})
+		applyEffect(loop-player, blindness, 1, {@flash-second})
+		message formatted {@effect-message} to loop-player
+		kitParticle_FlashLight_Blind(loop-player, {@flash-tick})
 
 
 
@@ -67,7 +67,7 @@ local function kitParticle_FlashLight_Launch(player: player, loc: location):
 		spawnParticle_DustTransition({_color}, rgb(255, 255, 255), 0.65, {_el})
 
 		chance of 10%:
-			set {_rm} to a rando number between 0 and {@blind-radius}
+			set {_rm} to a random number between 0 and {@blind-radius}
 			set {_vector} to randomVector({_rm})
 			set {_el} to {_loc} ~ {_vector}
 			spawnParticle(end_rod, {_el})
