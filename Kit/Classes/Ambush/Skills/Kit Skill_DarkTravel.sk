@@ -1,3 +1,30 @@
 # skill-name: Dark Travel
 
+options:
+	invisible-tick: 100
+
 function kitEffect_DarkTravel(player: player):
+	set {_loc} to getKitStats({_player}, "SkillLocation")
+	if {_loc} is not set:
+		send action bar "§c§l地点を指定してください" to {_player}
+		stop
+	
+	nameCT({_player}, "Dark Travel")
+
+	kitMsg({_player}, "<##60356c>暗躍移動します...")
+	set {_el} to location 1 meter above {_player}
+	kitParticle_DarkTravel_Launch({_el})
+
+	kitInvisible({_player}, {@invisible-tick})
+	teleport {_player} to {_loc}
+
+
+
+local function kitParticle_DarkTravel_Launch(loc: location):
+	playSound("entity.zombie_villager.converted", 1, 1.5, {_loc})
+
+	loop 20 times:
+		set {_vector} to randomVector()
+		set {_el} to moveRandomLocation({_loc}, 1)
+		spawnParticle_Vector(witch, {_vector}, 0.5, {_el})
+		spawnParticle_BlockData(falling_dust, purple wool, {_el})
