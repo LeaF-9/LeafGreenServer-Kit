@@ -23,6 +23,10 @@ function kitEffect_AeroBlade(player: player):
 			delete {_true}
 			continue
 		
+		if {_complete} is true:
+			wait a tick
+			continue
+
 		add 1 to {_count}
 		kitParticle_AeroBlade_Charge({_player}, {_count})
 
@@ -98,8 +102,12 @@ local function kitEffect_AeroBlade_Summon(player: player, loc: location, tool: i
 	set {_item} to type of {_tool}
 	setDisplayItem({_itemdisplay}, {_item})
 
-	set {_matrix} to getMatrix4f(0.7071, 0.7071, 0, 0, 0, -0, -1, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
-	{_itemdisplay}.setTransformationMatrix({_matrix})
+	set {_left} to getQuaternionf(-0.653, -0.271, 0.271, 0.653)
+	set {_right} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_transformation} to getTransformation({_left}, {_right}, {_translation}, {_scale})
+	{_itemdisplay}.setTransformation({_transformation})
 
 	return {_itemdisplay}
 
@@ -107,22 +115,29 @@ local function kitEffect_AeroBlade_DisplayMotion(display: entity, loc: location,
 	kitParticle_AeroBlade_Rotate({_loc}, {_meter})
 
 	teleport {_display} to {_loc}
-	set {_matrix} to kitEffect_AeroBlade_GetMatrix({_num})
-	{_display}.setTransformationMatrix({_matrix})
+	set {_transformation} to kitEffect_AeroBlade_GetTransformation({_num})
+	{_display}.setTransformation({_transformation})
 
-local function kitEffect_AeroBlade_GetMatrix(num: number) :: object:
+local function kitEffect_AeroBlade_GetTransformation(num: number) :: object:
 	set {_mod} to mod({_num}, 4)
 	set {_check} to {_mod} + 1
+	set {_translation} to getVector3f(0, 0, 0)
+	set {_scale} to getVector3f(1, 1, 1)
 	if {_check} is 1:
-		set {_matrix} to getMatrix4f(0.7071, 0.7071, 0, 0, 0, -0, -1, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
+		set {_left} to getQuaternionf(-0.653, -0.271, 0.271, 0.653)
+		set {_right} to getQuaternionf(0, 0, 0, 1)
 	else if {_check} is 2:
-		set {_matrix} to getMatrix4f(0.5, 0.5, 0.7071, 0, 0.5, 0.5, -0.7071, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
+		set {_left} to getQuaternionf(0.5, 0.5, 0, -0.707)
+		set {_right} to getQuaternionf(0, 0, 0, 1)
 	else if {_check} is 3:
-		set {_matrix} to getMatrix4f(0, 0, 1, 0, 0.7071, 0.7071, 0, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
+		set {_left} to getQuaternionf(-0.271, -0.653, -0.271, 0.653)
+		set {_right} to getQuaternionf(0, 0, 0, 1)
 	else if {_check} is 4:
-		set {_matrix} to getMatrix4f(-0.5, -0.5, 0.7071, 0, 0.5, 0.5, 0.7071, 0, -0.7071, 0.7071, -0, 0, 0, 0, 0, 1)
+		set {_left} to getQuaternionf(-0.271, -0.653, -0.271, 0.653)
+		set {_right} to getQuaternionf(0, 0, -0.383, 0.924)
 
-	return {_matrix}
+	set {_transformation} to getTransformation({_left}, {_right}, {_translation}, {_scale})
+	return {_transformation}
 
 local function kitEffect_AeroBlade_Hit(player: player, target: entity, damage: number, teleport: boolean):
 	kitDamage({_player}, {_target}, {_damage}, "短剣")
