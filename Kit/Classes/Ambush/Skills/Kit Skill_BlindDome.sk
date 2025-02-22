@@ -16,7 +16,7 @@ function kitEffect_BlindDome(player: player):
 	set {_displays::*} to kitEffect_BlindDome_Display({_player}, {_baseloc})
 
 	set {_yaw} to 0
-	set {_addyaw} to 15
+	set {_addyaw} to 5
 	set {_true} to true
 	while {_true} is true:
 		if checkEating({_player}) is false:
@@ -72,7 +72,7 @@ function kitEffect_BlindDome(player: player):
 local function kitEffect_BlindDome_Display(player: player, loc: location) :: entities:
 	kitParticle_BlindDome_Launch({_loc})
 
-	set {_block} to obsidian
+	set {_block} to getBlockData(black concrete)
 
 	set {_sc} to -0.5
 	set {_addsc} to 1
@@ -88,10 +88,10 @@ local function kitEffect_BlindDome_Display(player: player, loc: location) :: ent
 		{_blockdisplay}.setViewRange(1000)
 		setDisplayBlock({_blockdisplay}, {_block})
 		set {_rotation} to getQuaternionf(0, 0, 0, 1)
-		set {_coord} to -0.25
 		set {_scalecoord} to {_sc}
 		add {_addsc} to {_sc}
-		set {_translation} to getVector3f({_coord}, {_coord}, {_coord})
+		set {_transcoord} to {_scalecoord} * (-0.5)
+		set {_translation} to getVector3f({_transcoord}, {_transcoord}, {_transcoord})
 		set {_scale} to getVector3f({_scalecoord}, {_scalecoord}, {_scalecoord})
 		set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 		{_blockdisplay}.setTransformation({_transformation})
@@ -100,16 +100,18 @@ local function kitEffect_BlindDome_Display(player: player, loc: location) :: ent
 	return {_blockdisplays::*}
 
 local function kitEffect_BlindDome_Expand(displays: entities):
+	set {_sc} to -1
+	set {_addsc} to 2 
 	loop {_displays::*}:
 		set {_display} to loop-value
 		set {_rotation} to getQuaternionf(0, 0, 0, 1)
-		set {_coord} to ({@effect-radius} * (-0.5))
 
 		set {_nowscale} to {_display}.getTransformation().getScale().x()
-		set {_scalecoord} to {@effect-radius}
-		set {_scalecoord} to ({@effect-radius} * (-1)) if {_nowscale} < 0
+		set {_scalecoord} to ({@effect-radius} + 2) * {_sc}
+		add {_addsc} to {_sc}
+		set {_transcoord} to {_scalecoord} * (-0.5)
 
-		set {_translation} to getVector3f({_coord}, {_coord}, {_coord})
+		set {_translation} to getVector3f({_transcoord}, {_transcoord}, {_transcoord})
 		set {_scale} to getVector3f({_scalecoord}, {_scalecoord}, {_scalecoord})
 		set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 		{_display}.setTransformation({_transformation})
@@ -134,7 +136,7 @@ local function kitParticle_BlindDome_Move(loc: location):
 		set {_color} to a random element out of {_colors::*}
 		spawnParticle_Dust({_color}, 0.7, {_el})
 
-local functioin kitParticle_BlindDome_Expand(loc: location):
+local function kitParticle_BlindDome_Expand(loc: location):
 	playSound("entity.enderman.ambient", 1, 0.55, {_loc})
 
 	loop 50 times:
@@ -145,10 +147,10 @@ local function kitParticle_BlindDome_Dome(loc: location):
 	chance of 30%:
 		playSound("entity.squid.ambient", 0.5, 0.5, {_loc})
 	add rgb(0, 0, 0) to {_colors::*}
-	add rgb(32, 15, 32) to {_colors::*}
-	add rgb(54, 35, 62) to {_colors::*}
+	add rgb(19, 12, 19) to {_colors::*}
+	add rgb(26, 19, 29) to {_colors::*}
 
-	set {_count} to a random integer between 100 and 200
+	set {_count} to a random integer between 30 and 50
 	loop {_count} times:
 		set {_vector} to randomVector({@effect-radius})
 		set {_el} to {_loc} ~ {_vector}
