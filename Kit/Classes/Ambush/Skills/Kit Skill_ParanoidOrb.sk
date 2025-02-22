@@ -1,3 +1,102 @@
 # skill-name: Paranoid Orb
 
+options:
+	max-distance: 30
+	meter-per-second: 10
+	effect-radius: 5
+	effect-tick: 140
+
 function kitEffect_ParanoidOrb(player: player):
+	nameCT({_player}, "Paranoid Orb")
+	kitMsg({_player}, "<##550861>§l精神汚染のオーブ<##744f81>を放出します...")
+	kitSound_ParanoidOrb_Launch({_player})
+
+	set {_fromloc} to location of {_player}
+	set {_baseloc} to head of {_player}
+	set {_m} to 0
+	set {_addm} to {@meter-per-second} / 20
+	set {_count} to {@max-distance} / {_addm}
+	set {_ln} to 0
+	loop {_count} times:
+		add 1 to {_ln}
+		add {_addm} to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+		kitParticle_ParanoidOrb_Orb({_el}, {_ln})
+
+		loop all entities in radius {@effect-radius} around {_el}:
+			kitCheckTeam({_player}, loop-entity, false) is true
+			{_hit.%id of loop-entity%} is not set
+			set {_hit.%id of loop-entity%} to true
+			set {_second} to "{@effect-tick} ticks" parsed as time span
+			applyEffect(loop-entity, blindness, 1, {_second})
+			kitTrail(loop-entity, {@effect-tick}, {_fromloc})
+			message formatted "<##550861>§l精神が汚染された..." to loop-entity
+			kitParticle_ParanoidOrb_Hit(loop-entity)
+		
+		wait a tick
+
+
+
+local function kitParticle_ParanoidOrb_Orb(loc: location, num: number):
+	add rgb(110, 25, 131) to {_colors::*}
+	add rgb(79, 9, 106) to {_colors::*}
+	add rgb(75, 34, 77) to {_colors::*}
+
+	set {_axisvector} to setVector({_loc}, location 1 meter behind {_loc})
+	set {_axisloc} to setDirToVec({_loc}, {_axisvector})
+	set {_rotateloc} to {_loc}
+	add -90 to pitch of {_rotateloc}
+	set {_rotatevector} to setVector({_loc}, {_rotateloc})
+
+	set {_baserad} to {_num} * 20
+	set {_addbaserad} to 30
+	set {_count.vortex} to 8
+	set {_addrad} to 360 / {_count.vortex}
+
+	set {_count.height} to 20
+
+	set {_radius} to 0
+	set {_addradius} to {@effect-radius} / {_count.height}
+
+	set {_height.max} to {@effect-radius} * 2
+	set {_addradian} to 90 / {_count.height}
+	set {_ln} to 0
+	loop {_count.height} times:
+		add 1 to {_ln}
+		add {_addradian} to {_radian}
+		set {_sin} to sin({_radian})
+		set {_height} to {_height.max} * {_sin}
+		set {_baseloc} to location {_height} meters in front of {_axisloc}
+
+		add {_addradius} to {_radius}
+		set {_multivec} to vector({_radius}, {_radius}, {_radius})
+		set {_rad} to {_addbaserad}
+		loop {_count.vortex} times:
+			add {_addrad} to {_rad}
+			set {_vec} to {_rotatevector} * {_multivec}
+			rotate {_vec} around {_axisvector} by {_rad}
+
+			set {_el} to {_baseloc} ~ {_vec}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 2, {_el})
+
+		add {_addbaserad} to {_baserad}
+
+
+local function kitParticle_ParanoidOrb_Hit(entity: entity):
+	playSound("entity.enderman.scream", 1, 0.7, {_entity})
+
+	set {_baseloc} to location 1 meter above {_entity}
+	loop 30 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(falling_dust, black wool, {_el})
+
+		chance of 50%:
+			continue
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(falling_dust, purple wool, {_el})
+
+
+
+local function kitSound_ParanoidOrb_Launch(player: player):
+	playSound("entity.zombie_villager.cure", 1, 1.3, {_player})
