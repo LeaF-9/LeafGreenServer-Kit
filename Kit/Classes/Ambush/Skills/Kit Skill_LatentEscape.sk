@@ -1,3 +1,50 @@
 # skill-name: Latent Escape
 
+options:
+	max-effect-tick: 100
+
 function kitEffect_LatentEscape(player: player):
+	if getKitStats({_player}, "Latent Escape") is set:
+		setKitStats({_player}, "Latent Escape", false)
+		stop
+	
+	set {_skillitem} to tool of {_player}
+	setKitStats({_player}, "Latent Escape", true)
+	kitMsg({_player}, "<##695d5d>潜伏して戦線離脱します...")
+	kitParticle_LatentEscape_Launch({_player})
+
+	loop {@max-effect-tick} times:
+		continue if getKitStats({_player}, "Latent Escape") is not true
+
+		if getInvisibleStatus({_player}) is true:
+			deleteKitStats({_player}, "Latent Escape")
+			kitMsg({_player}, "§b別の透明効果§3が付与された為,§7§lLatent Escape§3が終了しました")
+			stop
+
+		hide {_player} from all players
+		applyEffect({_player}, speed, 2, 3 ticks, true)
+		send action bar "§7§l§o潜伏中です..." to {_player}
+		wait a tick
+	
+	detectCT({_player}, {_tool})
+	reveal {_player} from all players if getInvisibleStatus({_player}) is false
+	stop if getKitStats({_player}, "Latent Escape") is not set
+
+	kitMsg({_player}, "<##ffffff>§l伏走状態<##ffffff>が終了しました")
+	deleteKitStats({_player}, "Latent Escape")
+	set {_pop} to 0
+	loop all players in radius 10 around {_player}:
+		kitCheckTeam({_player}, loop-player, false, true) is true
+		add 1 to {_pop}
+	
+	stop if {_pop} > 0
+	delete metadata value "Stealth Behavior - Damage" of {_player}
+	kitMsg({_player}, "§b§lStealth Behavior§7に移行します...")
+
+
+
+local function kitParticle_LatentEscape_Launch(player: player):
+	playSound("entity.generic.explode", 1, 1.9, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	spawnParticle(gust_emitter, {_baseloc})
