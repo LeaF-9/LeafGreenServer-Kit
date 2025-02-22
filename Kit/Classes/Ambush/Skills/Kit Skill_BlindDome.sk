@@ -1,3 +1,165 @@
 # skill-name: Blind Dome
 
+options:
+	max-distance: 50
+	meter-per-second: 20
+	effect-radius: 5
+	effect-tick: 200
+
 function kitEffect_BlindDome(player: player):
+	kitMsg({_player}, "<##241a27>光を通さない球体<##6c566c>を放出します...")
+	set {_tool} to tool of {_player}
+
+	set {_baseloc} to head of {_player}
+	set {_m} to 0
+	set {_addm} to {@meter-per-second} / 20
+	set {_displays::*} to kitEffect_BlindDome_Display({_player}, {_baseloc})
+
+	set {_yaw} to 0
+	set {_addyaw} to 15
+	set {_true} to true
+	while {_true} is true:
+		if checkEating({_player}) is false:
+			set {_delete} to true
+		set {_tool} to tool of {_player}
+		if {_tool} is not {_tool}:
+			set {_delete} to true
+		if {_m} >= {@max-distance}:
+			set {_delete} to true
+
+		if {_delete} is true:
+			delete {_true}
+			continue
+		set {_playerloc} to location of {_player}
+		set yaw of {_baseloc} to yaw of {_playerloc}
+		set pitch of {_baseloc} to pitch of {_playerloc}
+
+		add {_addm} to {_m}
+		set {_loc} to location {_m} meters in front of {_baseloc}
+		set {_displayloc} to {_loc}
+		add {_addyaw} to {_yaw}
+		set yaw of {_displayloc} to {_yaw}
+		set pitch of {_displayloc} to 0
+		teleport {_displays::*} to {_displayloc}
+
+		kitParticle_BlindDome_Move({_displayloc})
+		wait a tick
+	
+	set {_centerloc} to {_loc}
+	detectCT({_player}, {_tool})
+	kitMsg({_player}, "<##250d25>§l暗黒球体<##6f0a6c>を設置しました!")
+	kitEffect_BlindDome_Expand({_displays::*})
+	kitParticle_BlindDome_Expand({_centerloc})
+
+	loop {@effect-tick} times:
+		add {_addyaw} to {_yaw}
+		set {_displayloc} to {_centerloc}
+		set yaw of {_displayloc} to {_yaw}
+		set pitch of {_displayloc} to 0
+		teleport {_displays::*} to {_displayloc}
+
+		loop all entities in radius {@effect-radius} around {_centerloc}:
+			kitCheckTeam({_player}, loop-entity, false) is true
+			applyEffect(loop-entity, blindness, 1, 2 seconds, true)
+
+		kitParticle_BlindDome_Dome({_centerloc})
+		wait a tick
+	
+	kitParticle_BlindDome_Remove({_centerloc})
+	loop {_displays::*}:
+		loop-value.remove()
+
+local function kitEffect_BlindDome_Display(player: player, loc: location) :: entities:
+	kitParticle_BlindDome_Launch({_loc})
+
+	set {_block} to obsidian
+
+	set {_sc} to -0.5
+	set {_addsc} to 1
+	loop 2 times:
+		spawn a block display at {_loc}
+		set {_blockdisplay} to spawned block display
+		set metadata value "gametype" of {_blockdisplay} to "Kit"
+		set metadata value "Blind Dome - Dome" of {_blockdisplay} to {_player}
+
+		setBrightness({_blockdisplay})
+		{_blockdisplay}.setTeleportDuration(1)
+		{_blockdisplay}.setInterpolationDuration(1)
+		{_blockdisplay}.setViewRange(1000)
+		setDisplayBlock({_blockdisplay}, {_block})
+		set {_rotation} to getQuaternionf(0, 0, 0, 1)
+		set {_coord} to -0.25
+		set {_scalecoord} to {_sc}
+		add {_addsc} to {_sc}
+		set {_translation} to getVector3f({_coord}, {_coord}, {_coord})
+		set {_scale} to getVector3f({_scalecoord}, {_scalecoord}, {_scalecoord})
+		set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+		{_blockdisplay}.setTransformation({_transformation})
+		add {_blockdisplay} to {_blockdisplays::*}
+
+	return {_blockdisplays::*}
+
+local function kitEffect_BlindDome_Expand(displays: entities):
+	loop {_displays::*}:
+		set {_display} to loop-value
+		set {_rotation} to getQuaternionf(0, 0, 0, 1)
+		set {_coord} to ({@effect-radius} * (-0.5))
+
+		set {_nowscale} to {_display}.getTransformation().getScale().x()
+		set {_scalecoord} to {@effect-radius}
+		set {_scalecoord} to ({@effect-radius} * (-1)) if {_nowscale} < 0
+
+		set {_translation} to getVector3f({_coord}, {_coord}, {_coord})
+		set {_scale} to getVector3f({_scalecoord}, {_scalecoord}, {_scalecoord})
+		set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+		{_display}.setTransformation({_transformation})
+
+
+
+local function kitParticle_BlindDome_Launch(loc: location):
+	playSound("entity.zombie_villager.converted", 1, 1.3, {_loc})
+
+	loop 30 times:
+		set {_vector} to randomVector()
+		spawnParticle_Vector(smoke, {_vector}, 0.3, {_loc})
+
+local function kitParticle_BlindDome_Move(loc: location):
+	add rgb(0, 0, 0) to {_colors::*}
+	add rgb(32, 15, 32) to {_colors::*}
+	add rgb(54, 35, 62) to {_colors::*}
+
+	set {_count} to a random integer between 1 and 5
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.7, {_el})
+
+local functioin kitParticle_BlindDome_Expand(loc: location):
+	playSound("entity.enderman.ambient", 1, 0.55, {_loc})
+
+	loop 50 times:
+		set {_vector} to randomVector()
+		spawnParticle_Vector(squid_ink, {_vector}, 1, {_loc})
+
+local function kitParticle_BlindDome_Dome(loc: location):
+	chance of 30%:
+		playSound("entity.squid.ambient", 0.5, 0.5, {_loc})
+	add rgb(0, 0, 0) to {_colors::*}
+	add rgb(32, 15, 32) to {_colors::*}
+	add rgb(54, 35, 62) to {_colors::*}
+
+	set {_count} to a random integer between 100 and 200
+	loop {_count} times:
+		set {_vector} to randomVector({@effect-radius})
+		set {_el} to {_loc} ~ {_vector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 3, {_el})
+
+local function kitParticle_BlindDome_Remove(loc: location):
+	playSound("entity.zombie.infect", 1, 0.5, {_loc})
+
+	loop 50 times:
+		set {_rm} to a random number between 0 and 5
+		set {_vector} to randomVector({_rm})
+		set {_el} to {_loc} ~ {_vector}
+		spawnParticle(campfire_cosy_smoke, {_el})
