@@ -24,22 +24,7 @@ on respawn:
 		set respawn location to {Kit-Respawn::%player%}
 		if {Kit-NoCorpse::%player%} is not set:
 			if {Kit-Resurrect::%player%} is not set:
-				spawn armor stand at location of {Kit-Respawn::%player%} with nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Small:1b,Invisible:1b,Marker:1b}"
-				equip spawned armor stand with player's head
-				set metadata value "gametype" of spawned armor stand to "Kit"
-				set metadata value "deadplayer" of spawned armor stand to "%player%"
-				equip spawned armor stand with leather chestplate
-				set {_team} to {TrueTeam::%player%}
-				if {_team} is "red":
-					dye spawned armor stand's chestplate (255, 0, 0)
-				else if {_team} is "blue":
-					dye spawned armor stand's chestplate (0, 0, 255)
-				else if {_team} is "yellow":
-					dye spawned armor stand's chestplate (255, 255, 0)
-				else if {_team} is "green":
-					dye spawned armor stand's chestplate (0, 255, 0)
-				else:
-					dye spawned armor stand's chestplate (255, 0, 255)
+				spawnCorpse(player, {Kit-Respawn::%player%})
 			else:
 				delete {Kit-Respawn::%player%}
 				delete {Kit-Resurrect::%player%}
@@ -141,3 +126,30 @@ on damage of player:
 		delete {Kit-RespawnKill::%attacker%}
 		delete {Kit-RespawnPoint::%attacker%}
 		send action bar "§dリスポーンキル防止の無敵化が解除されました!" to attacker
+
+
+
+function spawnCorpse(player: player, loc: location):
+	spawn armor stand at {_loc}
+	set {_corpse} to spawned armor stand
+
+	set metadata value "gametype" of {_corpse} to "Kit"
+	set metadata value "deadplayer" of {_corpse} to "%{_player}%"
+
+	{_corpse}.setInvulnerable(true)
+	{_corpse}.setPersistenceRequired(true)
+	{_corpse}.setBasePlate(false)
+	{_corpse}.setGravity(false)
+	{_corpse}.setSmall(true)
+	{_corpse}.setInvisible(true)
+	{_corpse}.setMarker(true)
+
+	set {_helmet} to skull of {_player}
+	set {_helmet} to {_helmet}.asItemType().createItemStack()
+	{_corpse}.setHelmet({_helmet})
+
+	set {_chestplate} to leather chestplate
+	set {_team} to getTeam({_player})
+	set {_color} to getTeamRGB({_team}).asBukkitColor()
+	{_chestplate}.setColor({_color})
+	{_corpse}.setChestplate({_chestplate})
