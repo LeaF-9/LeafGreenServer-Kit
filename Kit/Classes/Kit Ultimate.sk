@@ -360,46 +360,8 @@ on rightclick holding a nether star:
 		kitUltNinja(player)
 	else if {Class::%player%} is "Thief":
 		kitUltThief(player)
-#	else if {Class::%player%} is "Ambush":
-#		loop all players:
-#			set {_ok} to true
-#			if {_silent} is true:
-#				if loop-player is not player:
-#					delete {_ok}
-#			{_ok} is true
-#			send loop-player title "<%{TrueTeam::%player%}%>§l§oHidden Humanity" with subtitle "§bー 身を隠しすぎた伏兵 ー" for 3 seconds
-#		message "§c自身と周辺の味方に10秒の透明化を付与します!"
-#		message "§c透明化した味方が敵を殴ると,10秒の盲目を付与して透明化を解除します!"
-#		message "§c自身は,透明化が敵に解除されるまではこの効果が継続されます!!"
-#		set {Ult.%player%::Ambush} to true
-#		set {-Stats.%player%::AmbushUlt} to true
-#		play raw sound "mob.wither.shoot" at the player with pitch 2 volume 0.5
-#		drawWarpRings style 0, particle "redstone", RGB 255, 255, 255, center player, id "%player%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
-#		set {Invisible::%player%} to true
-#		add player to {_list::*}
-#		hide player from all players
-#		loop all players in radius 10 around player:
-#			loop-player is not player
-#			if {TrueTeam::%loop-player%} is {TrueTeam::%player%}:
-#				message "§b§l§n透明化が付与されました!" to loop-player
-#				message "§9この透明化は敵を殴ると盲目を付与して消滅します!" to loop-player
-#				play raw sound "mob.wither.shoot" at the player with pitch 2 volume 0.5
-#				drawWarpRings style 0, particle "redstone", RGB 255, 255, 255, center loop-player, id "%loop-player%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
-#				set {Invisible::%loop-player%} to true
-#				set {-Stats.%loop-player%::AmbushUlt} to true
-#				add loop-player to {_list::*}
-#				hide loop-player from all players
-#		wait 5 ticks
-#		loop {_list::*}:
-#			stopEffect "%loop-value%"
-#		wait 195 ticks
-#		delete {Ult.%player%::Ambush}
-#		loop {_list::*}:
-#			delete {-Stats.%loop-value%::AmbushUlt}
-#			if {Invisible::%loop-value%} is true:
-#				reveal loop-value from all players
-#				delete {Invisible::%loop-value%}
-#				set action bar of loop-value to "§b§l透明化が解除されました!"
+	else if {Class::%player%} is "Ambush":
+		kitUltAmbush(player)
 #	else if {Class::%player%} is "Vampire":
 #		loop all players:
 #			set {_ok} to true

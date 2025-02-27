@@ -1,0 +1,60 @@
+# Abyssal Eclipse
+
+options:
+	before-second: 5 seconds
+	before-bossbar-tick: 100
+	after-bossbar-tick: 100
+	invisible-tick: 100
+	metadata-name: "Abyssal Eclipse - Spectating"
+
+on teleport:
+	metadata value "gametype" of player is "Kit"
+	metadata value {@metadata-name} of player is true
+	cancel event
+
+
+
+function kitUltAmbush(player: player):
+	kitEffect_AbyssalEclipse({_player})
+
+local function kitEffect_AbyssalEclipse(player: player):
+	# player effect
+	set metadata value {@metadata-name} of {_player} to true
+	set gamemode of {_player} to spectator
+	sendTimeBossbar_PURPLE({_player}, "Abyssal Eclipse - BLINDNESS", {@before-bossbar-tick})
+
+	# enemy effect
+	loop all players:
+		kitCheckTeam({_player}, loop-player, false, true) is true
+		applyEffect(loop-player, blindness, 1, {@before-second})
+		applyEffect(loop-player, glowing, 1, {@before-second})
+		message formatted "<##08035f>§l日食により視界が暗転する..."
+		kitParticle_AbyssalEclipse_Enemy(loop-player)
+	
+	wait {@before-second}
+
+	set gamemode of {_player} to survival
+	delete metadata value {@metadata-name} of {_player}
+	kitSpecter({_player}, {@invisible-tick})
+	kitMsg({_player}, "<##5e2c0a>日食により<##5d0d51>§l姿を晦ました...")
+	kitParticle_AbyssalEclipse_Specter({_player})
+
+
+
+local function kitParticle_AbyssalEclipse_Enemy(player: player):
+	playSound("entity.experience_orb.pickup", 1, 0.5, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 50 times:
+		set {_toloc} to moveRandomLocation({_baseloc}, 1)
+		set {_pow} to a random number between 0.5 and 1
+		set {_vec} to setVector({_baseloc}, {_toloc}, {_pow})
+		spawnParticle_Vector(totem_of_undying, {_vec}, 1, {_toloc})
+
+local function kitParticle_AbyssalEclipse_Specter(player: player):
+	playSound("block.bell.resonate", 100, 0.5, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 10 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(falling_dust, light gray wool, {_el})
