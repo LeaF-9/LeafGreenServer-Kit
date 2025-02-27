@@ -36,6 +36,8 @@ function kitInvisible(player: player, tick: number):
 			continue
 		if {_player} has glowing:
 			continue
+		if metadata value "Specter - Date" of {_player} is set:
+			continue
 		
 		# 透明付与
 		loop all players:
@@ -58,6 +60,8 @@ function kitInvisible(player: player, tick: number):
 
 	remove bossbar {_bossbar.id}
 	removeInvisible({_player}) if getInvisibleDates({_player}) is {_now}
+	if metadata value "Specter - Date" of {_player} is set:
+		send action bar "§f§l幽隠効果§3によって§b透明効果§3は強制解除された!"
 
 on leftclick:
 	set {_target} to targeted player
@@ -110,3 +114,55 @@ local function subtractInvisibleTime(player: player):
 	subtract 1 from {_debufftime}
 	set {_metadata} to "Invisible - Time"
 	set metadata value {_metadata} of {_player} to {_debufftime}
+
+
+
+function kitSpecter(player: player, tick: number):
+	kitCheckAlive({_player}) is true
+
+	set {_now} to now
+	set metadata value "Specter - Date" of {_player} to {_now}
+
+	# 透明Effect付与
+	set {_second} to "%{_tick}% ticks" parsed as time span
+	set {_hasEffects::*} to getClassEffects("Kit-%{Class::%{_player}%}%")
+	if {_hasEffects::*} does not contain invisibility:
+		set {_invnot} to true
+		apply invisibility 1 to {_player} for {_second} replacing existing effect
+
+	# タイマー作成
+	set {_bossbar.id} to a random UUID
+	set {_titledisplay} to "§f§l幽隠"
+	set {_timedisplay} to timeDisplay_SECOND({_tick})
+	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+	create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors white with style solid
+
+	set {_prog} to 100 / {_tick}
+	set {_ticknumber} to {_tick}
+
+	# 透明処理
+	loop {_tick} times:
+		remove glowing from {_player} if {_player} has glowing
+		
+		# 透明付与
+		loop all players:
+			kitCheckTeam({_player}, loop-player, false) is true
+			hide {_player} from loop-player
+
+		# ボスバー処理
+		set {_timedisplay} to timeDisplay_SECOND({_ticknumber})
+		set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+		set bossbar {_bossbar.id} title to {_timer.title}
+		subtract 1 from {_ticknumber}
+
+		set {_value} to value of bossbar {_bossbar.id}
+		subtract {_prog} from {_value}
+		set bossbar {_bossbar.id} value to {_value}
+		wait a tick
+
+	remove bossbar {_bossbar.id}
+	removeSpecter({_player})
+
+function removeSpecter(player: player):
+	delete metadata value "Specter - Date" of {_player}
+	reveal {_player} from all players
