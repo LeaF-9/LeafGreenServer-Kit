@@ -24,7 +24,7 @@ on respawn:
 		set respawn location to {Kit-Respawn::%player%}
 		if {Kit-NoCorpse::%player%} is not set:
 			if {Kit-Resurrect::%player%} is not set:
-				spawnCorpse(player, {Kit-Respawn::%player%})
+				set {_corpse} to spawnCorpse(player, {Kit-Respawn::%player%})
 			else:
 				delete {Kit-Respawn::%player%}
 				delete {Kit-Resurrect::%player%}
@@ -67,10 +67,7 @@ on respawn:
 				delete {Kit-Spawning::%player%}
 		reset title of player
 		player.setAllowFlight(false)
-		loop all entities:
-			type of loop-entity is armor stand
-			metadata value "deadplayer" of loop-entity is "%player%"
-			delete loop-entity
+		{_corpse}.remove() if {_corpse} is set
 		if {Kit-DeadPlayer::%player%} is true:
 			delete {Kit-DeadPlayer::%player%}
 			if "%world of player%" is "Kit-SkillCheck":
@@ -129,7 +126,7 @@ on damage of player:
 
 
 
-function spawnCorpse(player: player, loc: location):
+function spawnCorpse(player: player, loc: location)  :: entity:
 	spawn armor stand at {_loc}
 	set {_corpse} to spawned armor stand
 
@@ -153,3 +150,5 @@ function spawnCorpse(player: player, loc: location):
 	set {_color} to getTeamRGB({_team}).asBukkitColor()
 	{_chestplate}.setColor({_color})
 	{_corpse}.setChestplate({_chestplate})
+
+	return {_corpse}
