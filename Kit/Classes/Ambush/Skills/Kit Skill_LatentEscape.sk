@@ -10,24 +10,19 @@ function kitEffect_LatentEscape(player: player):
 	
 	set {_skillitem} to tool of {_player}
 	setKitStats({_player}, "Latent Escape", true)
+	kitSpecter({_player}, {@max-effect-tick})
 	kitMsg({_player}, "<##695d5d>潜伏して戦線離脱します...")
 	kitParticle_LatentEscape_Launch({_player})
 
 	loop {@max-effect-tick} times:
 		continue if getKitStats({_player}, "Latent Escape") is not true
-
-		if getInvisibleStatus({_player}) is true:
-			deleteKitStats({_player}, "Latent Escape")
-			kitMsg({_player}, "§b別の透明効果§3が付与された為,§7§lLatent Escape§3が終了しました")
-			stop
-
-		hide {_player} from all players
+	
 		applyEffect({_player}, speed, 2, 3 ticks, true)
 		send action bar "§7§l§o潜伏中です..." to {_player}
 		wait a tick
 	
 	detectCT({_player}, {_skillitem})
-	reveal {_player} from all players if getInvisibleStatus({_player}) is false
+	removeSpecter({_player})
 	stop if getKitStats({_player}, "Latent Escape") is not set
 
 	kitMsg({_player}, "<##828b8b>§l伏走状態<##3571ca>が終了しました")
