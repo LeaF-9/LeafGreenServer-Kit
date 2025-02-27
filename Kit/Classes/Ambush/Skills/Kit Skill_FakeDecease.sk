@@ -1,3 +1,96 @@
 # skill-name: Fake Decease
 
+options:
+	stats-name: "Fake Decease"
+	effect-tick: 200
+	enemy-radius: 10
+	damage-multiplier: 2
+	glowing-second: 3 seconds
+
+on damage of player:
+	set {_attacker} to getAttacker(victim)
+	stop if getKitStats(victim, {@stats-name}) is not set
+	setDamageModification_MUL(victim, {@damage-multiplier})
+	kitParticle_FakeDecease_Multiple(victim)
+
+
+
 function kitEffect_FakeDecease(player: player):
+	nameCT({_player}, "Fake Decease")
+	kitMsg({_player}, "<##590505>§l死を装います...")
+	set {_now} to now
+	setKitStats({_player}, {@stats-name}, {_now})
+	kitInvisible({_player}, {@effect-tick})
+	kitParticle_FakeDecease_Launch({_player})
+
+	set {_cause} to getLastDamage(victim)
+	set {_cause} to "不明" if {_cause} is not set
+	kitDeathMessage({_player}, {_cause})
+	set {_loc} to location of {_player}
+	set {_corpse} to spawnCorpse({_player}, {_loc})
+
+	loop {@effect-tick} times:
+		stop if getKitStats({_player}, {@stats-name}) is not {_now}
+
+		set {_stop} to true if getInvisibleStatus({_player}) is false
+		
+		loop all players in radius {@enemy-radius} around {_player}:
+			kitChecKTeam({_player}, loop-player, false) is true
+			set {_target} to target of loop-player
+			continue if {_target} is not {_player}
+
+			set {_stop} to true
+			kitEffect_FakeDecease_Reveal({_player})
+
+		if {_stop} is true:
+			{_corpse}.remove()
+			deleteKitStats({_player}, {@stats-name})
+			stop
+		wait a tick
+	
+	{_corpse}.remove()
+	deleteKitStats({_player}, {@stats-name})
+	kitMsg({_player}, "<##be5f5f>死の偽装は解かれました")
+
+local function kitEffect_FakeDecease_Reveal(player: player):
+	kitMsg({_player}, "<##eeff00>§lバレた!")
+	kitParticle_FakeDecease_Reveal({_player})
+	removeInvisible({_player})
+	applyEffect({_player}, glowing, 1, {@glowing-second})
+
+
+
+local function kitParticle_FakeDecease_Launch(player: player):
+	playSound("entity.player.hurt", 1, 1, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 30 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(falling_dust, gray wool, {_el}, {_player})
+
+		chance of 50%:
+			continue
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(falling_dust, red wool, {_el}, {_player})
+
+local function kitParticle_FakeDecease_Multiple(player: player):
+	playSound("entity.phantom.hurt", 1, 0.65, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 50 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle(falling_obsidian_tear, {_el})
+
+		set {_vector} to randomVector()
+		spawnParticle_Vector(reverse_portal, {_vector}, 0.7, {_baseloc})
+
+local function kitParticle_FakeDecease_Reveal(player: player):
+	playSound("block.bell.use", 1, 0.7, {_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 40 times:
+		set {_vec} to randomVector(0.75)
+		spawnParticle_Vector(end_rod, {_vec}, 0.7, {_baseloc})
+		
+		set {_vec} to randomVector()
+		spawnParticle_Vector(firework, {_vec}, 0.5, {_baseloc})
