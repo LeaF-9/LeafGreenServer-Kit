@@ -43,47 +43,6 @@ options:
 	spyaction-limitmeter: 10
 	metadata-stealthbehavior-damage: "Stealth Behavior - Damage"
 
-function kitAmbush_ContinuableInvisible(player: player):
-	kitCheckAlive({_player}) is true
-	stop if getInvisibleRemains({_player}) > 3
-
-	set {_now} to now
-	set {_tick} to 3
-	set metadata value "Invisible - Date" of {_player} to {_now}
-	set metadata value "Invisible - Time" of {_player} to {_tick}
-
-	# 透明Effect付与
-	set {_second} to "%{_tick}% ticks" parsed as time span
-	set {_hasEffects::*} to getClassEffects("Kit-%{Class::%{_player}%}%")
-	if {_hasEffects::*} does not contain invisibility:
-		set {_invnot} to true
-		apply invisibility 1 to {_player} for {_second} replacing existing effect
-
-	# 透明処理
-	loop {_tick} times:
-		# 例外処理
-		if getInvisibleDates({_player}) is not {_now}:
-			continue
-		if {_player} has glowing:
-			continue
-		if metadata value "Specter - Date" of {_player} is set:
-			continue
-		
-		send action bar "§7§l透明化しています..." to {_player}
-		# 透明付与
-		loop all players:
-			{Class::%loop-player%} is not "Sentinel"
-			kitCheckTeam({_player}, loop-player, false) is true
-			hide {_player} from loop-player
-
-		# InvisibleTime処理
-		subtractInvisibleTime({_player})
-		wait a tick
-
-	removeInvisible({_player}) if getInvisibleDates({_player}) is {_now}
-	if metadata value "Specter - Date" of {_player} is set:
-		send action bar "§f§l幽隠効果§3によって§b透明効果§3は強制解除された!"
-
 # Spy Action
 on sneak toggle:
 	{Class::%player%} is "Ambush"
@@ -127,7 +86,7 @@ local function kitEffect_SpyAction(player: player):
 	kitMsg({_player}, "§8§l§o潜伏が成功しました...")
 	kitParticle_SpyAction_Active({_player})
 
-	kitAmbush_ContinuableInvisible({_player})
+	kitInvisible({_player}, 3)
 	wait a tick
 	set {_active} to true
 	while {_active} is true:
@@ -153,7 +112,8 @@ local function kitEffect_SpyAction(player: player):
 			kitParticle_SpyAction_Reveal({_player})
 			stop
 		
-		kitAmbush_ContinuableInvisible({_player})
+		kitInvisible({_player}, 3)
+		send action bar "§7§o潜伏中です..." to {_player}
 		wait a tick
 
 local function kitEffect_SpyAction_Reveal(player: player):
@@ -244,8 +204,8 @@ function kitTimerAmbush(player: player):
 
 		# Shadow Body
 		delete {_shadowbody.active}
-		if getInvisibleStatus({_player}) is true:
-			set {_shadowbody.true} to true
+		if getInvisibleRemains({_player}) > 3:
+			set {_shadowbody.active} to true
 			applyEffect({_player}, speed, 2, 5 ticks, true)
 		
 		if {_player} has glowing:
@@ -283,6 +243,7 @@ function kitTimerAmbush(player: player):
 			continue
 
 		# Stealth Behavior実行
-		kitAmbush_ContinuableInvisible({_player})
+		kitInvisible({_player}, 3)
+		send action bar "§7§o潜伏中です..." to {_player}
 
 		wait a tick
