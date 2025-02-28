@@ -51,6 +51,14 @@ function getScaleFromMatrix(matrix: object) :: object:
 	set {_vector} to {_matrix}.getScale({_vector})
 	return {_vector}
 
+function convertMatrixToTransformation(matrix: object) :: object:
+	set {_leftRotation} to getQuaternionFromMatrix({_matrix})
+	set {_rightRotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getTranslationFromMatrix({_matrix})
+	set {_scale} to getScaleFromMatrix({_matrix})
+	set {_transformation} to getTransformation({_leftRotation}, {_rightRotation}, {_translation}, {_scale})
+	return {_transformation}
+
 function getTransformation(leftRotation: object, rightRotation: object, translation: object, scale: object) :: object:
 	set {_transformation} to new Transformation({_translation}, {_leftRotation}, {_scale}, {_rightRotation})
 	return {_transformation}
