@@ -124,7 +124,9 @@ on damage of player:
 		delete {Kit-RespawnPoint::%attacker%}
 		send action bar "§dリスポーンキル防止の無敵化が解除されました!" to attacker
 
-
+import:
+	org.bukkit.inventory.ItemStack
+	org.bukkit.Material
 
 function spawnCorpse(player: player, loc: location)  :: entity:
 	spawn armor stand at {_loc}
@@ -134,7 +136,7 @@ function spawnCorpse(player: player, loc: location)  :: entity:
 	set metadata value "deadplayer" of {_corpse} to "%{_player}%"
 
 	{_corpse}.setInvulnerable(true)
-	{_corpse}.setPersistenceRequired(true)
+	{_corpse}.setPersistent(true)
 	{_corpse}.setBasePlate(false)
 	{_corpse}.setGravity(false)
 	{_corpse}.setSmall(true)
@@ -142,13 +144,14 @@ function spawnCorpse(player: player, loc: location)  :: entity:
 	{_corpse}.setMarker(true)
 
 	set {_helmet} to skull of {_player}
-	set {_helmet} to {_helmet}.asItemType().createItemStack()
 	{_corpse}.setHelmet({_helmet})
 
-	set {_chestplate} to leather chestplate
+	set {_chestplate} to new ItemStack(Material.LEATHER_CHESTPLATE)
 	set {_team} to getTeam({_player})
-	set {_color} to getTeamRGB({_team}).asBukkitColor()
-	{_chestplate}.setColor({_color})
+	set {_color} to kitTeamRGB({_team}).asBukkitColor()
+	set {_colormeta} to {_chestplate}.getItemMeta()
+	{_colormeta}.setColor({_color})
+	{_chestplate}.setItemMeta({_colormeta})
 	{_corpse}.setChestplate({_chestplate})
 
 	return {_corpse}
