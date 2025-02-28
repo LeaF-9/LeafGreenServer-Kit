@@ -20,14 +20,15 @@ function kitInvisible(player: player, tick: number):
 		apply invisibility 1 to {_player} for {_second} replacing existing effect
 
 	# タイマー作成
-	set {_bossbar.id} to a random UUID
-	set {_titledisplay} to "§b§l透明"
-	set {_timedisplay} to timeDisplay_SECOND({_tick})
-	set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
-	create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
+	if {_tick} > 5:
+		set {_bossbar.id} to a random UUID
+		set {_titledisplay} to "§b§l透明"
+		set {_timedisplay} to timeDisplay_SECOND({_tick})
+		set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+		create bossbar titled "%{_timer.title}%" and id {_bossbar.id} for {_player} with progress 100 with colors blue with style solid
 
-	set {_prog} to 100 / {_tick}
-	set {_ticknumber} to {_tick}
+		set {_prog} to 100 / {_tick}
+		set {_ticknumber} to {_tick}
 
 	# 透明処理
 	loop {_tick} times:
@@ -46,22 +47,23 @@ function kitInvisible(player: player, tick: number):
 			hide {_player} from loop-player
 
 		# ボスバー処理
-		set {_timedisplay} to timeDisplay_SECOND({_ticknumber})
-		set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
-		set bossbar {_bossbar.id} title to {_timer.title}
-		subtract 1 from {_ticknumber}
+		if {_bossbar.id} is set:
+			set {_timedisplay} to timeDisplay_SECOND({_ticknumber})
+			set {_timer.title} to "%{_titledisplay}%§r §b%{_timedisplay}% §3秒"
+			set bossbar {_bossbar.id} title to {_timer.title}
+			subtract 1 from {_ticknumber}
 
-		set {_value} to value of bossbar {_bossbar.id}
-		subtract {_prog} from {_value}
-		set bossbar {_bossbar.id} value to {_value}
+			set {_value} to value of bossbar {_bossbar.id}
+			subtract {_prog} from {_value}
+			set bossbar {_bossbar.id} value to {_value}
 		# InvisibleTime処理
 		subtractInvisibleTime({_player})
 		wait a tick
 
-	remove bossbar {_bossbar.id}
+	remove bossbar {_bossbar.id} if {_bossbar.id} is set
 	removeInvisible({_player}) if getInvisibleDates({_player}) is {_now}
 	if metadata value "Specter - Date" of {_player} is set:
-		send action bar "§f§l幽隠効果§3によって§b透明効果§3は強制解除された!"
+		send action bar "§f§l幽隠効果§3によって§b透明効果§3は強制解除された!" to {_player}
 
 on leftclick:
 	set {_target} to targeted player
@@ -124,11 +126,10 @@ function kitSpecter(player: player, tick: number):
 	set metadata value "Specter - Date" of {_player} to {_now}
 
 	# 透明Effect付与
-	set {_second} to "%{_tick}% ticks" parsed as time span
 	set {_hasEffects::*} to getClassEffects("Kit-%{Class::%{_player}%}%")
 	if {_hasEffects::*} does not contain invisibility:
 		set {_invnot} to true
-		apply invisibility 1 to {_player} for {_second} replacing existing effect
+		apply invisibility 1 to {_player} for 5 ticks replacing existing effect
 
 	# タイマー作成
 	set {_bossbar.id} to a random UUID
@@ -145,6 +146,7 @@ function kitSpecter(player: player, tick: number):
 		remove glowing from {_player} if {_player} has glowing
 		
 		# 透明付与
+		apply invisibility 1 to {_player} for 5 ticks replacing existing effect if {_invnot} is true
 		loop all players:
 			kitCheckTeam({_player}, loop-player, false) is true
 			hide {_player} from loop-player
