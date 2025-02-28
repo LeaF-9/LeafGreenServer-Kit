@@ -171,7 +171,7 @@ local function kitParticle_AeroBlade_Rotate(loc: location, meter: number):
 	set {_basevec} to setVector({_frontloc}, {_loc})
 	set {_rotateloc} to {_loc}
 	add 90 to pitch of {_rotateloc}
-	set {_rotatevec} to setVector({_loc}, {_rotateloc})
+	set {_rotatevec} to setVector({_loc}, location 1 meter in front of {_rotateloc})
 
 	set {_baserad} to 30 * {_meter}
 	set {_height} to 1
@@ -184,15 +184,17 @@ local function kitParticle_AeroBlade_Rotate(loc: location, meter: number):
 	set {_h} to 0
 	loop {_count.height} times:
 		add {_add.height} to {_h}
-		set {_heightvec} to {_basevec} * {_h}
+		set {_multivec} to vector({_h}, {_h}, {_h})
+		set {_heightvec} to {_basevec} * {_multivec}
 		set {_baseheightloc} to {_frontloc} ~ {_heightvec}
 
-		set {_rad} to 0
+		set {_rad} to {_baserad}
+		add 10 to {_baserad}
 		loop {_count.vortex} times:
 			add {_addrad.vortex} to {_rad}
-			set {_vec} to {_rotatevec}
+			set {_vec} to {_rotatevec} * vector({_h}, {_h}, {_h})
 			rotate {_vec} around {_basevec} by {_rad}
-			set {_el} to {_baseheightloc} ~ {_rotatevec}
+			set {_el} to {_baseheightloc} ~ {_vec}
 			set {_color} to a random element out of {_colors::*}
 			spawnParticle_Dust({_color}, 0.5, {_el})
 
