@@ -23,7 +23,7 @@ function kitEffect_FakeDecease(player: player):
 	kitInvisible({_player}, {@effect-tick})
 	kitParticle_FakeDecease_Launch({_player})
 
-	set {_cause} to getLastDamage(victim)
+	set {_cause} to getLastDamage({_player})
 	set {_cause} to "不明" if {_cause} is not set
 	kitDeathMessage({_player}, {_cause})
 	set {_loc} to location of {_player}
@@ -35,7 +35,7 @@ function kitEffect_FakeDecease(player: player):
 		set {_stop} to true if getInvisibleStatus({_player}) is false
 		
 		loop all players in radius {@enemy-radius} around {_player}:
-			kitChecKTeam({_player}, loop-player, false) is true
+			kitCheckTeam({_player}, loop-player, false) is true
 			set {_target} to target of loop-player
 			continue if {_target} is not {_player}
 
