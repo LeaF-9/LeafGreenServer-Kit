@@ -4,7 +4,7 @@ options:
 	effect-tick: 200
 	eruption-interval: 10
 	fire-hit-radius: 3
-	fire-damage: 3
+	fire-damage: 1
 	fire-ignite-time: 100
 	regeneration-tier: 5
 	regeneration-time: 1 second
@@ -14,10 +14,10 @@ options:
 on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	getKitStats({_attacker}, "EternalPhoenix") is true
-	set {_now} to now
 	set {_hit} to metadata value "eternal phoenix - hit" of victim
-	delete metadata value "eternal phoenix - hit" of victim
-	if {_hit} is {_now}:
+	if {_hit} is set:
+		wait a tick
+		delete metadata value "eternal phoenix - hit" of victim
 		stop
 
 	set {_firetick} to victim.getFireTicks()
@@ -67,6 +67,7 @@ local function kitEffect_EternalPhoenix_Fire(player: player):
 		loop all entities in radius {@fire-hit-radius} around {_fireentity}:
 			{_hit} is not set
 			kitCheckTeam(loop-entity, {_player}, false, true) is true
+			metadata value "eternal phoenix - hit" of loop-entity is not set
 			set {_hit} to true
 			set {_now} to now
 			set metadata value "eternal phoenix - hit" of loop-entity to {_now}
