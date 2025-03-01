@@ -1,27 +1,67 @@
 # Cutlass
 
-on leftclick:
-	set {_tool} to player's offhand tool
-	name of {_tool} is "§3Cutlass"
-	checkItemCT(player, {_tool}) is true
-	kitEffect_Cutlass_Launch(player)
+options:
+	charge-tick: 20
+	effect-meter: 10
+	damage-amount: 3
+	
+	metadata-display: "Cutlass - Display"
 
+function kitEffect_Cutlass(player: player):
+	set {_weapontool} to tool of {_player}
+	
+	set {_count} to 0
+	set {_true} to true
+	while {_true} is true:
+		set {_tool} to tool of {_player}
+		stop if {_tool} is not {_weapontool}
 
+		if checkEating({_player}) is false:
+			delete {_true}
+			continue
+		
+		if {_complete} is true:
+			wait a tick
+			continue
+
+		if mod({_count}, 5) is 0:
+			set {_mul} to {_count} / 5
+			kitSound_Cutlass_Charge({_player}, {_mul})
+		add 1 to {_count}
+
+		if {_count} >= {@charge-tick}:
+			kitParticle_Cutlass_Complete({_player}) if {_complete} is not set
+			set {_complete} to true
+
+		wait a tick
+	stop if {_complete} is not set
+
+	kitEffect_Cutlass_Launch({_player})
 
 local function kitEffect_Cutlass_Launch(player: player):
-	set {_tool} to offhand tool of {_player}
+	set {_tool} to tool of {_player}
 	setKitStats({_player}, "Cutlass", true)
 	setItemCT({_player}, {_tool})
-	set offhand tool of {_player} to air
+	set tool of {_player} to air
 
 	set {_loc} to location 1 meter above {_player}
 
-	set {_item} to "minecraft:golden_sword"
-	set {_transformation} to "[0.0000f,0.0000f,-1.0000f,0.0000f,-0.7071f,-0.7071f,-0.0000f,0.0000f,-0.7071f,0.7071f,0.0000f,0.0000f,0.0000f,0.0000f,0.0000f,1.0000f]"
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},teleport_duration:1}"
-	spawn an item display at {_loc} with nbt {_nbt}
+	spawn an item display at {_loc}
 	set {_itemdisplay} to spawned item display
-	set metadata value "cutlass" of {_itemdisplay} to "%{_player}%"
+	set metadata value "gametype" of {_itemdisplay} to "Kit"
+	set metadata value {@metadata-display} of {_itemdisplay} to {_player}
+
+	setBrightness({_itemdisplay})
+	{_itemdisplay}.setTeleportDuration(1)
+	{_itemdisplay}.setInterpolationDuration(1)
+	{_itemdisplay}.setViewRange(1000)
+
+	set {_item} to type of {_tool}
+	setDisplayItem({_itemdisplay}, {_item})
+
+	set {_matrix} to getAdjustedMatrix4f(0, 0, -1, 0, -0.7071, -0.7071, -0, 0, -0.7071, 0.7071, 0, 0, 0, 0, 0, 1)
+	{_itemdisplay}.setTransformationMatrix({_matrix})
+
 	playSound("entity.arrow.shoot", 1, 1, {_player})
 
 	set {_f} to 0
@@ -30,36 +70,47 @@ local function kitEffect_Cutlass_Launch(player: player):
 		set {_l} to location {_f} meters in front of {_loc}
 		teleport {_itemdisplay} to {_l}
 
-		loop all entities in radius 2 around {_l}:
+		loop all entities in radius 3 around {_l}:
 			{_hit.%id of loop-entity%} is not set
 			kitCheckTeam(loop-entity, {_player}, false, true) is true
+			checkHitting_Sphere(loop-entity, {_l}, 1)
 			set {_hit.%id of loop-entity%} to true
 			kitDamage({_player}, loop-entity, 3, "投剣")
-			playSound("entity.player.attack.sweep", 1, 1, location of loop-entity)
-			loop 5 times:
-				set {_el} to aroundEffect(loop-entity)
-				spawnParticle_Block(redstone block, {_el})
+			kitParticle_Cutlass_Hit(loop-entity)
 		wait a tick
 
-	loop all item displays:
-		metadata value "cutlass" of loop-item display is "%{_player}%"
-		delete loop-item display
+	{_itemdisplay}.remove()
 	if getKitStats({_player}, "Cutlass") is true:
-		set offhand tool of {_player} to {_tool}
+		set {_slot} to slot 0 of inventory of {_player}
+		set slot 0 of inventory of {_player} to {_tool}
+		if {_slot} is not air:
+			give {_slot} to {_player}
 	deleteKitStats({_player}, "Cutlass")
 
-on rightclick:
-	{Class::%player%} is "Knight"
-	kitSelectChecker_Weapon(player, "Knight") is 2
-	if name of tool of player is "§3Cutlass":
-		set {_tool} to tool of player
-		set tool of player to air
-		set offhand tool of player to {_tool}
-	else if name of offhand tool of player is "§3Cutlass":
-		set {_tool} to offhand tool of player
-		set offhand tool of player to air
-		set {_slot} to slot 0 of inventory of player
-		set slot 0 of inventory of player to {_tool}
-		if {_slot} is not air:
-			give {_slot} to player
-		set current hotbar slot of player to 0
+
+
+local function kitParticle_Cutlass_Complete(player: player):
+	kitSound_Cutlass_Complete({_player})
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 20 times:
+		set {_vector} to randomVector()
+		spawnParticle_Vector(bubble_pop, {_vector}, 0.5, {_baseloc})
+
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle(splash, {_el})
+
+local function kitParticle_Cutlass_Hit(entity: entity):
+	playSound("entity.player.attack.sweep", 1, 1, {_entity})
+	loop 5 times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle_Block(redstone block, {_el})
+
+
+
+local function kitSound_Cutlass_Charge(player: player, num: number):
+	set {_pitch} to 0.5 + (0.2 * ({_num} - 1))
+	playSound("block.bamboo_wood_button.click_on", 1, {_pitch}, {_player})
+
+local function kitSound_Cutlass_Complete(player: player):
+	playSound("block.bamboo_wood_button.click_on", 1, 2, {_player})
