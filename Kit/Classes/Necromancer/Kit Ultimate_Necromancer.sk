@@ -1,5 +1,8 @@
 # Immortal Soul
 
+import:
+	org.bukkit.attribute.Attribute
+
 function kitUltNecromancer(player: player):
 	loop all entities:
 		metadata value "necromancer-entity" of loop-entity is {_player}
@@ -22,10 +25,42 @@ function kitUltNecromancer(player: player):
 		delete loop-skeleton
 
 function kitSpawn_Necromancer_Reaper(player: player, loc: location):
-	set {_nbt} to "{PersistenceRequired:1b,Health:100,attributes:[{id:""max_health"",base:100},{id:""knockback_resistance"",base:1f},{id:""attack_damage"",base:6}],Silent:1,HandItems:[{id:""minecraft:netherite_hoe"",Count:1},{}],ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",components:{dyed_color:{rgb:0}},Count:1},{id:""minecraft:player_head"",components:{profile:{id:[I;296808892,54742945,-1675401107,1649769798],properties:[{name:""textures"",value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWVhMDM0MDc2Y2ExMDk1OWRlOWQ1NDFjODE3Y2QyOGQyYThiMGFhZDdkOGE4YWZjMmI1NDI1M2Y2ZjBmZWQzIn19fQ==""}]}},Count:1b}],active_effects:[{id:speed,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b},{id:slow_falling,duration:12000,amplifier:0,show_particles:0b}]}"
-	set {_mob} to kitSpawnMob_NBT({_player}, skeleton, {_loc}, {_nbt})
+	set {_mob} to kitSpawnMob({_player}, skeleton, {_loc})
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-reaper" of {_mob} to true
+
+	{_mob}.setPersistent(true)
+	{_mob}.setSilent(true)
+
+	{_mob}.getAttribute(Attribute.MAX_HEALTH).setBaseValue(100)
+	{_mob}.getAttribute(Attribute.KNOCKBACK_RESISTANCE).setBaseValue(1)
+	{_mob}.getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(6)
+
+	{_mob}.setHealth(100)
+
+	load yml "plugins/skript-yaml/Kit Classes/Necromancer.yml" as "head.reaper"
+	set {_head} to yml value "kititems.Reaper Head" from "head.reaper"
+	unload yml "head.reaper"
+
+	set {_chestplate} to leather chestplate
+	set {_color} to rgb(0, 0, 0).asBukkitColor()
+	set {_colormeta} to {_chestplate}.getItemMeta()
+	{_colormeta}.setColor({_color})
+	{_chestplate}.setItemMeta({_colormeta})
+
+	set {_tool} to netherite hoe
+
+	set {_equip} to {_mob}.getEquipment()
+	{_equip}.setHelmet({_head})
+	{_equip}.setChestplate({_chestplate})
+	{_equip}.setLeggings(air)
+	{_equip}.setBoots(air)
+	{_equip}.setItemInMainHand({_tool})
+
+	applyEffect({_mob}, speed, 1, 10 seconds, true, "none")
+	applyEffect({_mob}, invisibility, 1, 10 seconds, true, "none")
+	applyEffect({_mob}, slow falling, 1, 10 seconds, true, "none")
+
 	loop 200 times:
 		{_mob} is alive
 		spawnParticle(witch, location of {_mob})
