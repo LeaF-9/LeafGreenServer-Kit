@@ -6,6 +6,9 @@ options:
 	beam-damage: 0.5
 	beam-distance: 50
 
+import:
+	java.lang.Math
+
 function kitUltWizard(player: player):
 	wait a tick
 	give a netherite hoe named {@itemname} to {_player}
@@ -37,22 +40,33 @@ local function kitEffect_ArcaneSorcery(player: player):
 	# 発射フェーズ
 	# ビームエンティティ召喚
 	set {_backloc} to location 1 meter in front of (head of {_player})
-	set {_item} to "minecraft:sea_lantern"
-	set {_color} to convertColorToDataColor(rgb(125, 250, 219))
+	set {_item} to sea lantern
+	set {_color} to rgb(125, 250, 219).asBukkitColor()
 	set {_translate.z} to ({@beam-distance} / 2) + 1
-	set {_transformation} to kitTransformation("[0f,0f,0f,180f]", "[0f,0f,0f,1f]", "[0f,0f,%{_translate.z}%f]", "[3f,3f,{@beam-distance}f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},brightness:{block:15,sky:15},glow_color_override:%{_color}%}"
-	spawn a item display at {_backloc} with nbt {_nbt}
+	set {_leftRotation} to getQuaternionf(0, 0, 0, 1)
+	set {_rightRotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 0, {_translate.z})
+	set {_scale} to getVector3f(3, 3, {@beam-distance})
+	set {_transformation} to getTransformation({_leftRotation}, {_rightRotation}, {_translation}, {_scale})
+
+	spawn a item display at {_backloc}
 	set {_display} to spawned item display
 	set metadata value "gametype" of {_display} to "Kit"
 	set metadata value "Arcane Sorcery" of {_display} to {_player}
 	set metadata value "Arcane Sorcery - Time" of {_display} to {_now}
-	set glowing of {_display} to true
+
+	setBrightness({_display})
+	{_display}.setGlowColorOverride({_color})
+	{_display}.setGlowing(true)
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+	setDisplayItem({_display}, {_item})
+	{_display}.setTransformation({_transformation})
 
 	kitParticle_ArcaneSorcery_Explode({_player})
-	set {_rad} to 0
-	set {_addrad} to 200 / 20
-	set {_maxrad} to 180
+	set {_addrad} to Math.toRadians(200 / 20)
+	# set {_maxrad} to 180
 	loop 100 times:
 		wait a tick
 		# 条件確認
@@ -80,14 +94,9 @@ local function kitEffect_ArcaneSorcery(player: player):
 		kitParticle_ArcaneSorcery_Beam({_nextloc})
 		teleport {_display} to {_nextloc}
 
-		add {_addrad} to {_rad}
-		if {_rad} > {_maxrad}:
-			set {_rad} to {_rad} - {_maxrad}
-		
-		set {_nbt} to nbt compound of {_display}
-		set {_broadcast} to compound tag "transformation" of {_nbt}
-		set {_transformation} to kitTransformation("[0f,0f,%{_rad}%f,180f]", "[0f,0f,0f,1f]", "[0f,0f,%{_translate.z}%f]", "[3f,3f,{@beam-distance}f]")
-		set compound tag "transformation" of {_nbt} to nbt from {_transformation}
+		{_leftRotation}.rotateZ({_addrad})
+		set {_transformation} to getTransformation({_leftRotation}, {_rightRotation}, {_translation}, {_scale})
+		{_display}.setTransformation({_transformation})
 
 		# ヒット確認
 		set {_m} to 1
@@ -103,9 +112,7 @@ local function kitEffect_ArcaneSorcery(player: player):
 			add {_addm} to {_m}
 	
 	# 終了処理
-	loop all item displays:
-		loop-item display is {_display}
-		delete loop-item display
+	{_display}.remove()
 	if getKitStats({_player}, "ArcaneSorcery") is {_now}:
 		deleteKitStats({_player}, "ArcaneSorcery")
 		remove a netherite hoe named {@itemname} from {_player}
