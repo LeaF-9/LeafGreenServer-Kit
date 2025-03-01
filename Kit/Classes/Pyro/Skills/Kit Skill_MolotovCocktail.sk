@@ -4,8 +4,9 @@ options:
 	shoot-power: 0.95
 	molotov-radius: 5
 	molotov-spread-tick: 10
-	molotov-second: 10 seconds
+	molotov-tick: 140
 	molotov-soul-chance: 30
+	molotov-extinguish-chance: 20
 
 
 
@@ -39,13 +40,22 @@ local function kitEffect_MolotovCocktail_Molotov(player: player, loc: location):
 			set {_distance} to distance between {_loc} and location of loop-block
 			{_distance} <= {_maxm}
 			set {_lb::%location of loop-block%} to location of loop-block
+			set {_redfire::%location of loop-block%} to location of loop-block
 			set loop-block to fire
 			chance of {@molotov-soul-chance}%:
 				set loop-block to soul fire
+				delete {_redfire::%location of loop-block%}
 			add location of loop-block to {Block.%{_player}%::*}
 		wait a tick
 	
-	wait {@molotov-second}
+	loop {@molotov-tick} times:
+		chance of {@molotov-extinguish-chance}%:
+			set {_fl} to a random location out of {_redfire::*}
+			remove {_fl} from {_redfire::*}
+			remove {_fl} from {_lb::*}
+			set (block at {_fl}) to air if (block at {_fl}) is not air
+			remove {_fl} from {Block.%{_player}%::*}
+		wait a tick
 
 	kitSound_MolotovCocktail_Extinguish({_loc})
 	loop {_lb::*}:
