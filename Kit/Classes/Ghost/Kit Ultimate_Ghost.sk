@@ -12,22 +12,14 @@ function kitUltGhost(player: player):
 	deleteKitStats({_player}, "UltGhost")
 	if gamemode of {_player} is survival:
 		disallow fly for {_player}
-		apply invisibility 1 to {_player} for 100000000000 seconds
+		apply infinite invisibility 1 to {_player}
 	execute console command "/undisplayer %{_player}%"
-	setKitStats({_player}, "UltGhostFalling", true)
-	wait 5 seconds
-	deleteKitStats({_player}, "UltGhostFalling")
+	applyEffect({_player}, slow falling, 1, 5 seconds)
 
 function kitParticle_HellishOccultism_Form(player: player):
 	loop 200 times:
 		spawnParticle_Color(entity_effect, rgb(50, 0, 50), {_player})
 		wait a tick
-
-on damage of player:
-	metadata value "gametype" of victim is "Kit"
-	getKitStats(victim, "UltGhostFalling") is true
-	deleteKitStats(victim, "UltGhostFalling")
-	cancel event
 
 on leftclick:
 	metadata value "gametype" of player is "Kit"
