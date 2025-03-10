@@ -45,6 +45,7 @@ function kitEffect_CloudBarrage(player: player):
 		add {_addrad} to {_rad}
 
 local function kitEffect_CloudBarrage_Hit(player: player, loc: location):
+	kitEffect_CloudBarrage_Display({_player}, {_loc})
 	kitParticle_CloudBarrage_Hit({_loc})
 	loop {@cloud-tick} times:
 		loop all entities in radius {@cloud-radius} around {_loc}:
@@ -57,6 +58,45 @@ local function kitEffect_CloudBarrage_Hit(player: player, loc: location):
 		wait a tick
 	kitSound_CloudBarrage_End({_loc})
 
+local function kitEffect_CloudBarrage_Display(player: player, loc: location):
+	set pitch of {_loc} to 0
+	set {_block} to getBlockData(snow block)
+
+	set {_sc} to -1
+	set {_addsc} to 2
+	loop 2 times:
+		spawn a block display at {_loc}
+		set {_blockdisplay} to spawned block display
+		set metadata value "gametype" of {_blockdisplay} to "Kit"
+		set metadata value "Cloud Barrage - Cloud" of {_blockdisplay} to {_player}
+
+		setBrightness({_blockdisplay})
+		{_blockdisplay}.setTeleportDuration(1)
+		{_blockdisplay}.setInterpolationDuration(1)
+		{_blockdisplay}.setViewRange(1000)
+		setDisplayBlock({_blockdisplay}, {_block})
+		set {_rotation} to getQuaternionf(0, 0, 0, 1)
+		set {_scalecoord} to ({@cloud-radius} + 1) * {_sc}
+		add {_addsc} to {_sc}
+		set {_transcoord} to {_scalecoord} * (-0.5)
+		set {_translation} to getVector3f({_transcoord}, {_transcoord}, {_transcoord})
+		set {_scale} to getVector3f({_scalecoord}, {_scalecoord}, {_scalecoord})
+		set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+		{_blockdisplay}.setTransformation({_transformation})
+		add {_blockdisplay} to {_blockdisplays::*}
+
+
+	set {_yaw} to 0
+	set {_addyaw} to 3
+	loop {@cloud-tick} times:
+		add {_addyaw} to {_yaw}
+		set {_tploc} to location of {_loc}
+		add {_yaw} to yaw of {_tploc}
+		teleport {_blockdisplays::*} to {_tploc}
+		wait a tick
+
+	loop {_blockdisplays::*}:
+		loop-value.remove()
 
 
 local function kitParticle_CloudBarrage_Launch(loc: location):
@@ -120,19 +160,19 @@ local function kitParticle_CloudBarrage_Cloud(loc: location):
 	set {_aftercolor} to rgb(63, 71, 73)
 
 	set {_mid} to {@cloud-radius} * 0.3
-	loop 20 times:
+	loop 5 times:
 		set {_pow} to a random number between 0 and {_mid}
 		set {_vector} to randomVector({_pow})
 		set {_el} to {_loc} ~ {_vector}
 		set {_color} to a random element out of {_colors::*}
-		spawnParticle_DustTransition({_color}, {_aftercolor}, 3, {_el})
+		spawnParticle_DustTransition({_color}, {_aftercolor}, 2, {_el})
 	
-	loop 50 times:
+	loop 10 times:
 		set {_pow} to a random number between {_mid} and {@cloud-radius}
 		set {_vector} to randomVector({_pow})
 		set {_el} to {_loc} ~ {_vector}
 		set {_color} to a random element out of {_colors::*}
-		spawnParticle_DustTransition({_color}, {_aftercolor}, 5, {_el})
+		spawnParticle_DustTransition({_color}, {_aftercolor}, 3, {_el})
 
 local function kitParticle_CloudBarrage_Slow(entity: entity):
 	set {_baseloc} to location 1 meter above {_entity}
