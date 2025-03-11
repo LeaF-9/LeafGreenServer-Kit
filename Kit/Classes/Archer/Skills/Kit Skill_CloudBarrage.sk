@@ -59,6 +59,8 @@ local function kitEffect_CloudBarrage_Hit(player: player, loc: location):
 	kitSound_CloudBarrage_End({_loc})
 
 local function kitEffect_CloudBarrage_Display(player: player, loc: location):
+	set {_y} to a random number between 0 and 360
+	set yaw of {_loc} to {_y}
 	set pitch of {_loc} to 0
 	set {_block} to getBlockData(snow block)
 
@@ -76,7 +78,7 @@ local function kitEffect_CloudBarrage_Display(player: player, loc: location):
 		{_blockdisplay}.setViewRange(1000)
 		setDisplayBlock({_blockdisplay}, {_block})
 		set {_rotation} to getQuaternionf(0, 0, 0, 1)
-		set {_scalecoord} to ({@cloud-radius} + 1) * {_sc}
+		set {_scalecoord} to ({@cloud-radius}) * {_sc}
 		add {_addsc} to {_sc}
 		set {_transcoord} to {_scalecoord} * (-0.5)
 		set {_translation} to getVector3f({_transcoord}, {_transcoord}, {_transcoord})
