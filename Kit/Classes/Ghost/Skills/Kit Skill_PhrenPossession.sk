@@ -26,38 +26,53 @@ function kitEffect_PhrenPossession(player: player):
 	setKitStats({_player}, "Invincible", true)
 	setKitStats({_tg}, "Invincible", true)
 	teleport {_player} to {_targetbaseloc}
+
+	set {_backlocation} to location of {_tg}
 	loop 60 times:
 		hide {_player} from all players
 		hide {_tg} from {_player}
-		teleport {_tg} to location of {_player}
-		set {_effbaseloc} to location of {_player}
-		set {_rad} to 0
-		loop 6 times:
-			set {_el} to {_effbaseloc}
-			add 60 to {_rad}
-			add 0.5 * sin({_rad}) to x-coordinate of {_el}
-			add 0.5 * cos({_rad}) to z-coordinate of {_el}
-			add 2 to y-coordinate of {_el}
-			spawnParticle_Color(entity_effect, rgb(50, 0, 0), {_el})
+
+		set {_tploc} to location of {_player}
+		teleport {_tg} to {_tploc}
+		kitParticle_PhrenPossession_Control({_player})
+
+		# check target is viable
+		loop 10 times:
+			cotinue if {_ok} is true
+
+			set {_cl} to location loop-number meters below {_tploc}
+			set {_ok} to true if block at {_cl} is not passable
+
+		loop all blocks in radius 3 around {_tploc}:
+			delete {_ok} if "%loop-block%" contains "lava"
+
+			if {Kit-GameStage::name} is "Acid Rain":
+				delete {_ok} if "%loop-block%" contains "water"
+		continue if {_ok} is not set
+
+		set {_backlocation} to {_tploc}
+
 		wait a tick
+	extinguish {_tg}
 	deleteKitStats({_player}, "Invincible")
 	deleteKitStats({_tg}, "Invincible")
-	teleport {_player} to {_playerbaseloc}
+	teleport {_player} to {_backlocation}
 	reveal {_player} from all players
 	reveal {_tg} from {_player}
 	set {_memsg} to kitGhostMessage("§1身体の乗っ取りを解除しました")
 	set {_youmsg} to kitGhostMessage("§6自分の身体が返ってきた!", true)
 	kitMsg({_player}, {_memsg})
 	message formatted {_youmsg} to {_tg}
-	set {_checkloc} to location of {_tg}
-	loop 10 times:
-		set {_cl} to location loop-number meters below {_checkloc}
-		if block at {_cl} is not passable:
-			set {_ok} to true
-	set {_tgloc} to location of {_tg}
-	loop all blocks in radius 3 around {_tgloc}:
-		if "%loop-block%" contains "lava":
-			delete {_ok}
-	if {_ok} is not set:
-		teleport {_tg} to {_targetbaseloc}
-		extinguish {_tg}
+
+
+
+local function kitParticle_PhrenPossession_Control(player: player):
+	set {_effbaseloc} to location of {_player}
+	set {_rad} to 0
+	loop 6 times:
+		set {_el} to {_effbaseloc}
+		add 60 to {_rad}
+		add 0.5 * sin({_rad}) to x-coordinate of {_el}
+		add 0.5 * cos({_rad}) to z-coordinate of {_el}
+		add 2 to y-coordinate of {_el}
+		spawnParticle_Color(entity_effect, rgb(50, 0, 0), {_el})
