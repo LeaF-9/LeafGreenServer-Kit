@@ -1,5 +1,10 @@
 # Phren Possession
 
+on damage with priority HIGHEST:
+	set {_attacker} to getAttacker(victim)
+	metadata value "Phren Possession" of {_attacker} is true
+	cancel event
+
 function kitEffect_PhrenPossession(player: player):
 	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
@@ -11,6 +16,9 @@ function kitEffect_PhrenPossession(player: player):
 
 	nameCT({_player}, "Phren Possession")
 	set {_tg} to {_SkillTarget}
+	set metadata value "Phren Possession" of {_player} to true
+	set metadata value "Phren Possession" of {_tg} to true
+
 	playSound("block.end_portal.spawn", 1, 2, {_tg})
 	set {_memsg} to kitGhostMessage("§5%{_tg}% §4の身体を乗っ取った...")
 	set {_youmsg} to kitGhostMessage("§5%{_player}% §4に身体を盗られた!", true)
@@ -54,6 +62,8 @@ function kitEffect_PhrenPossession(player: player):
 
 		wait a tick
 	extinguish {_tg}
+	delete metadata value "Phren Possession" of {_player}
+	delete metadata value "Phren Possession" of {_tg}
 	deleteKitStats({_player}, "Invincible")
 	deleteKitStats({_tg}, "Invincible")
 	teleport {_player} to {_backlocation}
