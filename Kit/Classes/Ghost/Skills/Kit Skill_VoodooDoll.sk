@@ -1,18 +1,36 @@
 # Voodoo Doll
 
+import:
+	com.destroystokyo.paper.entity.Pathfinder
+	com.destroystokyo.paper.entity.Pathfinder$PathResult
+
 function kitEffect_VoodooDoll(player: player):
 	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象が存在しません!" to {_player}
 		stop
 
-	set {_ydis} to (y-pos of {_player}) - (y-pos of {_SkillTarget})
-	if {_ydis} > 5:
-		send action bar "§c§l設置位置が高すぎます!" to {_player}
-		stop
+	# PathFinder
+	set {_fromloc} to location of {_SkillTarget}
+	set {_pathmob} to kitSpawnMob({_SkillTarget}, slime, {_loc})
+	set metadata value "Voodoo Doll - Path Finder" of {_pathmob} to true
 
-	if block at {_player} is not passable:
-		send action bar "§c§l設置位置が不適切です!" to {_player}
+	{_pathmob}.setAI(false)
+	{_pathmob}.setCollidable(false)
+
+	applyEffect({_pathmob}, invisibility, 1, 600 seconds, true, "none")
+
+	set {_pathloc} to location of {_player}
+	set {_path} to {_pathmob}.getPathfinder()
+	{_path}.setCanFloat(true)
+	{_path}.setCanOpenDoors(true)
+	{_path}.setCanPassDoors(true)
+
+	set {_pathresult} to {_path}.findPath({_pathloc})
+	set {_canReach} to {_pathresult}.canReachFinalPoint()
+	{_pathmob}.remove()
+	if {_canReach} is false:
+		send action bar "§c§l到達不可の地点には設置できません!" to {_player}
 		stop
 
 	if kitCheckSpirit({_player}, "Voodoo Doll") is false:
