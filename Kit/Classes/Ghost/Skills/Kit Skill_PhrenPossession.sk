@@ -34,8 +34,7 @@ function kitEffect_PhrenPossession(player: player):
 	setKitStats({_player}, "Invincible", true)
 	setKitStats({_tg}, "Invincible", true)
 	teleport {_player} to {_targetbaseloc}
-
-	set {_backlocation} to location of {_tg}
+	set {_backlocation} to {_targetbaseloc}
 	loop 60 times:
 		hide {_player} from all players
 		hide {_tg} from {_player}
@@ -46,9 +45,9 @@ function kitEffect_PhrenPossession(player: player):
 
 		# check target is viable
 		loop 10 times:
-			cotinue if {_ok} is true
+			continue if {_ok} is true
 
-			set {_cl} to location loop-number meters below {_tploc}
+			set {_cl} to location loop-number-2 meters below {_tploc}
 			set {_ok} to true if block at {_cl} is not passable
 
 		loop all blocks in radius 3 around {_tploc}:
@@ -56,9 +55,9 @@ function kitEffect_PhrenPossession(player: player):
 
 			if {Kit-GameStage::name} is "Acid Rain":
 				delete {_ok} if "%loop-block%" contains "water"
-		continue if {_ok} is not set
 
-		set {_backlocation} to {_tploc}
+		if {_ok} is true:
+			set {_backlocation} to {_tploc}
 
 		wait a tick
 	extinguish {_tg}
@@ -66,7 +65,8 @@ function kitEffect_PhrenPossession(player: player):
 	delete metadata value "Phren Possession" of {_tg}
 	deleteKitStats({_player}, "Invincible")
 	deleteKitStats({_tg}, "Invincible")
-	teleport {_player} to {_backlocation}
+	teleport {_player} to {_playerbaseloc}
+	teleport {_tg} to {_backlocation} if {_ok} is not set
 	reveal {_player} from all players
 	reveal {_tg} from {_player}
 	set {_memsg} to kitGhostMessage("§1身体の乗っ取りを解除しました")
