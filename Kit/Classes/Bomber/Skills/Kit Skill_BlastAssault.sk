@@ -54,15 +54,19 @@ function kitEffect_BlastAssault(player: player):
 local function kitEffect_BlastAssault_Boom(player: player, click: boolean = false):
 	nameCT({_player}, "Blast Assault")
 	if {_click} is false:
-		set {_sneaking} to true
+		set {_notjump} to true
 	if {_player} is sneaking:
+		set {_notjump} to true
 		set {_sneaking} to true
 	
 	set {_baseloc} to location 1 meter above {_player}
 	set {_baseexp} to getKitStats({_player}, "BlastAssault-Power")
 	set {_exp} to {_baseexp}
 	if {_click} is true:
-		set {_exp} to {_baseexp} * 0.5
+		set {_mult} to 0.5
+		set {_mult} to 0.75 if {_sneaking} is true
+
+		set {_exp} to {_baseexp} * {_mult}
 	deleteKitStats({_player}, "BlastAssault")
 	deleteKitStats({_player}, "BlastAssault-Power")
 	kitExplosion({_player}, {_exp}, {_baseloc})
@@ -73,8 +77,8 @@ local function kitEffect_BlastAssault_Boom(player: player, click: boolean = fals
 	set {_id} to "Blast Assault-%{_uuid}%"
 	remove bossbar {_id}
 
-	if {_sneaking} is true:
-		stop
+	stop if {_notjump} is true
+
 	set {_up} to 0.5 + ({_baseexp} * 0.25)
 	set {_vector} to vector(0, {_up}, 0)
 	set velocity of {_player} to {_vector}
