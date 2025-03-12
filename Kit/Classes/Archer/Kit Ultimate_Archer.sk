@@ -1,6 +1,7 @@
 # Helical Luminary
 
 options:
+	effect-tick: 600
 	force-count: 3
 	damage-amount: 6
 	glowing-time: 5 seconds
@@ -35,8 +36,15 @@ function kitUltArcher(player: player):
 
 
 local function kitEffect_HelicalLuminary(player: player):
-	setKitStats({_player}, "HelicalLuminary", 3)
+	setKitStats({_player}, "HelicalLuminary", {@force-count})
 	kitParticle_HelicalLuminary_Force({_player})
+
+	loop {@effect-tick} times:
+		stop if getKitStats({_player}, "HelicalLuminary") is not set
+
+		wait a tick
+	deleteKitStats({_player}, "HelicalLuminary")
+
 
 local function kitEffect_HelicalLuminary_Shoot(player: player):
 	# forceの消費
