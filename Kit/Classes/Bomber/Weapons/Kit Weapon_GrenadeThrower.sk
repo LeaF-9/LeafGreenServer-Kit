@@ -11,10 +11,13 @@ function kitEffect_GrenadeThrower_Shoot(player: player, event: object):
 	set {_tool} to {_player}'s tool
 
 	{_event}.setCancelled(true)
-	set {_t} to getBowDrawTime({_player}) * 0.083
+	set {_drawtime} to getBowDrawTime({_player})
+	set {_t} to {_drawtime} * 0.083
+	set {_expower} to {@explosion-power} * ({_drawtime} / 24)
+
 	shoot a primed tnt from {_player} at speed {_t}
 	set metadata value "attacker" of shot primed tnt to "%{_player}%"
-	set metadata value "kit-bomber" of shot primed tnt to {@explosion-power}
+	set metadata value "kit-bomber" of shot primed tnt to {_expower}
 	set metadata value "TrueTeam" of shot primed tnt to true
 	set {_uuid} to a random uuid
 	set metadata value "grenade-thrower-uuid" of shot primed tnt to {_uuid}
@@ -26,6 +29,6 @@ function kitEffect_GrenadeThrower_Shoot(player: player, event: object):
 			if distance between {_player} and loop-primed tnt < 10:
 				set metadata value "kit-bomber" of loop-primed tnt to 1
 			else:
-				set metadata value "kit-bomber" of loop-primed tnt to {@explosion-power}
+				set metadata value "kit-bomber" of loop-primed tnt to {_expower}
 			spawnParticle(flame, location of loop-primed tnt)
 		wait a tick
