@@ -48,17 +48,19 @@ function kitExplosion(attacker: player, power: number, loc: location, bool: bool
 	loop all entities in radius {_round} around {_loc}:
 		kitCheckTeam(loop-entity, {_attacker}, false, {_bool}) is true
 		if checkEntityType(loop-entity, player) is false:
+			# シールドエンティティの確認
+			if metadata value "shield entity" of loop-entity is true:
+				if {_shield} is set:
+					continue
+				set {_shield} to true
+
 			set {_distance} to distance between {_loc} and loop-entity
 			set {_impact} to ({_round} - {_distance})
 			set {_damage} to {_impact} + 0.1
 			kitDamage({_attacker}, loop-entity, {_damage}, "爆発", true)
 			continue
-		# ダメージ処理
-		if metadata value "shield entity" of loop-entity is true:
-			if {_shield} is set:
-				continue
-			set {_shield} to true
 
+		# ダメージ処理
 		set {_distance} to distance between {_loc} and loop-entity  # 距離
 		set {_expose} to kitCalcExpose(loop-entity, {_loc})
 		set {_impact} to ({_round} - {_distance}) / 2 * {_expose}
