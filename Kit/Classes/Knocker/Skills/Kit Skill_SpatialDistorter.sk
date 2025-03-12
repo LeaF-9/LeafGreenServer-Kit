@@ -1,80 +1,116 @@
 # Spatial Distorter
 
+options:
+	effect-radius: 3
+	effect-distance: 15
+	effect-tick: 60
+	reload-tick: 200
+
 function kitEffect_SpatialDistorter(player: player):
 	if getKitStats({_player}, "SpatialDistorter") is not set:
-		setKitStats({_player}, "SpatialDistorter", 60)
-	set {_now} to now
-	setKitStats({_player}, "SpatialDistorterNow", {_now})
-	set {_baseloc} to location of head of {_player}
-	loop 15 times:
-		{_obloc} is not set
-		add 1 to {_m}
-		set {_bl} to location {_m} meters in front of {_baseloc}
-		if block at {_bl} is not passable:
-			set {_obloc} to {_bl}
-	if {_obloc} is not set:
-		set {_obloc} to location 15 meters in front of {_baseloc}
-	playSound("block.portal.ambient", 0.7, 2, {_obloc})
-	loop 5 times:
-		getKitStats({_player}, "SpatialDistorter") > 0
-		getKitStats({_player}, "SpatialDistorterNow") is {_now}
+		setKitStats({_player}, "SpatialDistorter", {@effect-tick})
+
+	stop if getKitStats({_player}, "SpatialDistorter") <= 0
+
+	set {_true} to true
+	while {_true} is true:
+		set {_delete} to true if checkEating({_player}) is false
+
+		set {_reload} to true if getKitStats({_player}, "SpatialDistorter") <= 0
+		set {_reload} to true if getKitStats({_player}, "SpatialDistorter") is not set
+
+		if {_reload} is true:
+			kitEffect_SpatialDistorter_Reload({_player})
+			set {_delete} to true
+		if {_delete} is true:
+			delete {_true}
+			continue
+		
+		add 1 to {_ln}
+		if mod({_ln}, 10) = 0:
+			playSound("block.portal.ambient", 0.7, 2, {_obloc})
+
 		set {_SpatialDistorter} to getKitStats({_player}, "SpatialDistorter")
 		subtract 1 from {_SpatialDistorter}  # Action BarはKit Timerで作成
 		setKitStats({_player}, "SpatialDistorter", {_SpatialDistorter})
 		set {_baseloc} to location of head of {_player}
 		set {_m} to 0
 		delete {_obloc}
-		loop 15 times:
+		loop {@effect-distance} times:
 			{_obloc} is not set
 			add 1 to {_m}
 			set {_bl} to location {_m} meters in front of {_baseloc}
 			if block at {_bl} is not passable:
 				set {_obloc} to {_bl}
 		if {_obloc} is not set:
-			set {_obloc} to location 15 meters in front of {_baseloc}
-		loop all entities in radius 3 around {_obloc}:
+			set {_obloc} to location {@effect-distance} meters in front of {_baseloc}
+		loop all entities in radius {@effect-radius} around {_obloc}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			LastKiller(loop-entity, {_player})
 			set {_to} to location of loop-entity
 			set {_vector} to setVector({_obloc}, {_to}, 0.5)
 			set velocity of loop-entity to {_vector}
-			if type of loop-entity is a player:
+			if checkEntityType(loop-entity, player) is true:
 				setKitStats(loop-entity, "FallRemove", {_now})
-		set {_s} to 0
-		set {_t} to 0
-		loop 19 time:
-			loop 36 time:
-				set {_el} to {_obloc}
-				set {_v} to {_el}
-				set {_x} to x-coordinate of {_el}
-				set {_y} to y-coordinate of {_el}
-				set {_z} to z-coordinate of {_el}
-				set x-coordinate of {_v} to {_x} + ( 3 * sin({_s}) * cos({_t}) )
-				set y-coordinate of {_v} to {_y} + ( 3 * cos({_s}) )
-				set z-coordinate of {_v} to {_z} + ( 3 * sin({_s}) * sin({_t}) )
-				chance of 3%:
-					spawnParticle_Dust(rgb(50, 0, 50), 1, {_v})
-				add 10 to {_t}
-			add 10 to {_s}
+		
+		kitParticle_SpatialDistorter_Sphere({_obloc})
 		wait a tick
-	if getKitStats({_player}, "SpatialDistorterNow") is {_now}:
-		deleteKitStats({_player}, "SpatialDistorterNow")
 	wait 5 seconds
 	loop all players:
 		getKitStats(loop-player, "FallRemove") is {_now}
 		deleteKitStats(loop-player, "FallRemove")
 
-function kitSkill_LinkageChain_ActionBar(player: player):
+function kitSkill_SpatialDistorter_ActionBar(player: player):
 	if getKitStats({_player}, "SpatialDistorter") is set:
 		set {_barcount} to getKitStats({_player}, "SpatialDistorter")
 	else:
-		set {_barcount} to 60
+		set {_barcount} to {@effect-tick}
 	set {_bar} to 0
 	set {_bartext} to ""
-	loop 60 times:
+	loop {@effect-tick} times:
 		add 1 to {_bar}
 		if {_bar} <= {_barcount}:
 			set {_bartext} to "%{_bartext}%§a|"
 		else:
 			set {_bartext} to "%{_bartext}%§8|"
 	send action bar "§e§l[ %{_bartext}% §e§l]" to {_player}
+
+local function kitEffect_SpatialDistorter_Reload(player: player):
+	playSound("entity.ender_dragon.hurt", 1, 1.7, {_player})
+	loop all items in {_player}'s inventory:
+		name of loop-item contains "Spatial Distorter"
+		set {_itemct} to loop-item
+	set {_ct} to "{@reload-tick} ticks" parsed as time span
+	set item cooldown of {_itemct} for {_player} to {_ct}
+
+	loop {@reload-tick} times:
+		delete {_hold}
+		loop all items in {_player}'s inventory:
+			name of loop-item contains "Spatial Distorter"
+			set {_hold} to true
+		if {_hold} is not set:
+			deleteKitStats({_player}, "SpatialDistorter")
+			stop
+		wait a tick
+
+	delete {_hold}
+	loop all items in {_player}'s inventory:
+		name of loop-item contains "Spatial Distorter"
+		set {_hold} to true
+	stop if {_hold} is not set
+
+	setKitStats({_player}, "SpatialDistorter", {@effect-tick})
+	playSound("block.end_portal_frame.fill", 1, 0.65, {_player})
+
+
+local function kitParticle_SpatialDistorter_Sphere(loc: location):
+	add rgb(86, 17, 90) to {_colors::*}
+	add rgb(52, 14, 82) to {_colors::*}
+	add rgb(43, 17, 66) to {_colors::*}
+
+	set {_count} to a random integer between 80 and 160
+	loop {_count} times:
+		set {_vec} to randomVector({@effect-radius})
+		set {_el} to {_loc} ~ {_vec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 1.1, {_el})
