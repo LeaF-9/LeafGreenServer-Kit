@@ -55,12 +55,43 @@ on death of player:
 			spawn a primed tnt at {_v}
 			push spawned primed tnt east at speed random number from -0.5 to 0.5
 			push spawned primed tnt north at speed random number from -0.5 to 0.5
-			set metadata value "attacker" of spawned primed tnt to "%victim%"
-			set metadata value "kit-bomber" of spawned primed tnt to 2
+			set metadata value "attacker" of spawned primed tnt to victim
+			set metadata value "kit-bomber-dying" of spawned primed tnt to true
 			setFuseTime(spawned primed tnt, 20)
 	if {Class::%{LastKiller::%victim%}%} is "Bomber":
 		give 2 tnt to {LastKiller::%victim%}
 		give 4 arrow to {LastKiller::%victim%}
+
+on explode:
+	cancel event
+	metadata value "kit-bomber-dying" of event-entity is true
+	set {_entity} to event-entity
+	set {_loc} to event-location
+	set {_attacker} to metadata value "attacker" of {_entity}
+	set {_power} to 2
+	set {_bool} to false
+	
+	set {_values::player} to {_attacker}
+	set {_values::location} to {_loc}
+	call a custom event "GasSprayInduction" with {_values::*}
+
+	set {_round} to {_power} * 2
+	playSound("entity.generic.explode", {_power}, 1, {_loc})
+	if {_power} < 2:
+		spawnParticle(explosion, {_loc})
+	else:
+		spawnParticle(explosion_emitter, {_loc})
+	loop all players in radius {_round} around {_loc}:
+		{team::%loop-player%} is not {team::%{_attacker}%}
+		# ダメージ処理
+		set {_distance} to distance between {_loc} and loop-player  # 距離
+		set {_expose} to kitCalcExpose(loop-player, {_loc})
+		set {_impact} to ({_round} - {_distance}) / 2 * {_expose}
+		set {_damage} to {_impact} + 0.1
+		kitDamage({_attacker}, loop-player, {_damage}, "爆発", true)
+		set {_hit} to true
+	if {_hit} is true:
+		playSound("entity.experience_orb.pickup", 1, 2, {_attacker}, true)
 
 # Timer
 function kitTimerBomber(player: player):
