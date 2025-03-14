@@ -1,36 +1,37 @@
 on fishing:
-	if name of player's tool contains "Grappling Hook":
-		if {CT.%player%::Grappling Hook} is not set:
-			if "%event.getState()%" is "reel_in" or "in_ground":
-				set damage value of player's tool to 0
-				if block below fish hook is not air:
-					if "%type of block below fish hook%" does not contain "water" or "lava":
-						push player (direction from player to fish hook) at speed (distance between fish hook and player/4)
-						if (y coordinate of fish hook-1) > (y coordinate of player):
-#							push player upward at speed ((0.00000000000000001)*(difference between y coordinate of fish hook and y coordinate of player))
-						play sound "entity.zombie.infect" with volume 0.5 with pitch 2 at location of player
-						set {CT.%player%::Grappling Hook} to 7
-						playerCoolTimer(player)
-				else if block at fish hook is not air:
-					push player (direction from player to fish hook) at speed (distance between fish hook and player/4)
-					if (y coordinate of fish hook-1) > (y coordinate of player):
-#						push player upward at speed ((0.00000000000000001)*(difference between y coordinate of fish hook and y coordinate of player))
-					play sound "entity.zombie.infect" with volume 0.5 with pitch 2 at location of player
-					set {CT.%player%::Grappling Hook} to 7
-					playerCoolTimer(player)
-				else if block below fish hook is air:
-					if block below block below fish hook is not air or water or lava:
-						push player (direction from player to fish hook) at speed (distance between fish hook and player/4)
-						if (y coordinate of fish hook-1) > (y coordinate of player):
-#							push player upward at speed ((0.00000000000000001)*(difference between y coordinate of fish hook and y coordinate of player))
-						play sound "entity.zombie.infect" with volume 0.5 with pitch 2 at location of player
-						set {CT.%player%::Grappling Hook} to 7
-						playerCoolTimer(player)
+	name of player's tool contains "Grappling Hook"
+	stop if checkCT({_player}, "Grappling Hook") is false
+
+	if "%event.getState()%" is "reel_in" or "in_ground":
+		set damage value of player's tool to 0
+
+		if block below fish hook is not air:
+			if "%type of block below fish hook%" does not contain "water" or "lava":
+				jump(player, fish hook, {_vector})
+
+		else if block at fish hook is not air:
+			jump(player, fish hook, {_vector})
+
+		else if block below fish hook is air:
+			if block below block below fish hook is not air or water or lava:
+				jump(player, fish hook, {_vector})
+
+local function jump(player: player, hook: object, vector: vector):
+	playSound("entity.zombie.infect", 1, 2, {_player})
+	setCT({_player}, "Grappling Hook", 7)
+
+	set {_from} to head of {_player}
+	set {_to} to location of {_hook}
+	set {_vector} to setVector({_from}, {_to}, 0)
+	set {_pow} to 0.165
+	set {_vec} to {_vector} * vector({_pow}, {_pow}, {_pow})
+
+	loop 5 times:
+		set velocity of {_player} to {_vec}
+		wait a tick
 
 on rightclick holding a fishing rod:
-	if {CT.%player%::Grappling Hook} is set:
-		send action bar "§c§lクールタイムが終わっていません!" to player
-		cancel event
+	cancel event if checkCT(player, "Grappling Hook") is false
 
 on damage:
 	damage was caused by projectile
