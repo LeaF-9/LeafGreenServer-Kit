@@ -11,26 +11,11 @@ function kitEffect_VoodooDoll(player: player):
 		stop
 
 	# PathFinder
-	set {_fromloc} to location of {_SkillTarget}
-	set {_pathmob} to kitSpawnMob({_SkillTarget}, slime, {_loc})
-	set metadata value "Voodoo Doll - Path Finder" of {_pathmob} to true
-
-	{_pathmob}.setAI(false)
-	{_pathmob}.setCollidable(false)
-
-	applyEffect({_pathmob}, invisibility, 1, 600 seconds, true, "none")
-
-	set {_pathloc} to location of {_player}
-	set {_path} to {_pathmob}.getPathfinder()
-	{_path}.setCanFloat(true)
-	{_path}.setCanOpenDoors(true)
-	{_path}.setCanPassDoors(true)
-
-	set {_pathresult} to {_path}.findPath({_pathloc})
-	set {_canReach} to {_pathresult}.canReachFinalPoint()
-	{_pathmob}.remove()
+	set {_canReach} to kitEffect_VoodooDoll_Pathfind({_player}, {_SkillTarget})
 	if {_canReach} is false:
 		send action bar "§c§l到達不可の地点には設置できません!" to {_player}
+		set {_tool} to tool of {_player}
+		set item cooldown of {_tool} for {_player} to 1 second
 		stop
 
 	if kitCheckSpirit({_player}, "Voodoo Doll") is false:
@@ -107,3 +92,113 @@ on damage of armor stand:
 		set {_memsg} to kitGhostMessage("§5藁人形が破壊された!", true)
 		kitMsg({_player}, {_memsg})
 		delete victim
+
+local function kitEffect_VoodooDoll_Pathfind(player: player, target: player, count: number = 10000) :: boolean:
+	set {_start} to location of block at {_target}
+	set {_goal} to location of block at {_player}
+
+	if {_start} is {_goal}:
+		return true
+
+	set {_score} to h({_start}, {_goal})
+	set {_open::sorted::%{_score}%} to {_score}
+	set {_open::sorted::%{_score}%::%{_start}%} to {_start}
+	set {_open::list::%{_start}%} to true
+	set {_score::%{_start}%} to {_score}
+
+	while {_open::list::*} is set:
+		add 1 to {_process}
+		if {_process} > {_count}:
+			stop loop
+
+		if {_found} is set:
+			stop loop
+
+		set {_first} to first element out of {_open::sorted::*}
+		set {_parent} to first element out of {_open::sorted::%{_first}%::*}
+
+		set {_score} to {_score::%{_parent}%}
+		set {_h1} to h({_parent}, {_goal})
+		set {_g} to {_score} - {_h1}
+
+		delete {_open::list::%{_parent}%}
+		delete {_open::sorted::%{_first}%::%{_parent}%}
+		if {_open::sorted::%{_first}%::*} is not set:
+			delete {_open::sorted::%{_first}%}
+
+		set {_close::%{_parent}%} to {_score}
+
+		loop all blocks in radius 1.8 around {_parent}:
+			add 1 to {_process}
+			if {_process} > {_count}:
+				stop loop
+
+			set {_child} to location of loop-block
+			{_parent} is not {_child}
+
+			#conditions
+			if pass({_child}) is false:
+				continue
+
+			if pass(block above {_child}) is false:
+				continue
+
+			if pass(block under {_child}):
+				if y-pos of {_start} < y-pos of {_child}:
+					continue
+
+				if pass(block under {_parent}):
+					y-pos of {_parent} <= y-pos of {_child}
+					continue
+
+			if {_child} is {_goal}:
+				set {_found} to {_child}
+				stop loop
+
+			set {_h2} to h({_child}, {_goal})
+			set {_cost} to distance between {_parent} and {_child}
+
+			set {_v2} to {_g} + {_cost} + {_h2}
+			delete {_v1}
+			set {_v1} to {_score::%{_child}%}
+
+			if {_open::list::%{_child}%} is set:
+				if {_v2} < {_v1}:
+					set {_score} to {_score::%{_child}%}
+					delete {_open::sorted::%{_score}%::%{_child}%}
+					if {_open::sorted::%{_score}%::*} is not set:
+						delete {_open::sorted::%{_score}%}
+
+					set {_open::list::%{_child}%} to true
+					set {_open::sorted::%{_v2}%::%{_child}%} to {_child}
+					set {_open::sorted::%{_v2}%} to {_v2}
+					set {_score::%{_child}%} to {_v2}
+
+			else if {_close::%{_child}%} is set:
+				if {_v2} < {_v1}:
+					delete {_close::%{_child}%}
+
+					set {_open::list::%{_child}%} to true
+					set {_open::sorted::%{_v2}%::%{_child}%} to {_child}
+					set {_open::sorted::%{_v2}%} to {_v2}
+					set {_score::%{_child}%} to {_v2}
+
+			else:
+				set {_open::list::%{_child}%} to true
+				set {_open::sorted::%{_v2}%::%{_child}%} to {_child}
+				set {_open::sorted::%{_v2}%} to {_v2}
+				set {_score::%{_child}%} to {_v2}
+
+	if {_found} is set:
+		return true
+	return false
+
+local function h(n: location, m: location) :: number:
+	set {_v} to vector between {_n} and {_m}
+	set {_v} to {_v} * {_v}
+	return vector length of {_v} / 1.5
+
+local function pass(pos: location) :: boolean:
+	if block at {_pos} is passable:
+		return true
+	return false
