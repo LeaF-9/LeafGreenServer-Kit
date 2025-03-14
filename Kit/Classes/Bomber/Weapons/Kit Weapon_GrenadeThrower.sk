@@ -1,7 +1,7 @@
 # Weapon-Name: Grenade Thrower
 
 options:
-	explosion-power: 2.8
+	explosion-power: 3
 
 
 
@@ -16,19 +16,31 @@ function kitEffect_GrenadeThrower_Shoot(player: player, event: object):
 	set {_expower} to {@explosion-power} * ({_drawtime} / 24)
 
 	shoot a primed tnt from {_player} at speed {_t}
-	set metadata value "attacker" of shot primed tnt to "%{_player}%"
-	set metadata value "kit-bomber" of shot primed tnt to {_expower}
-	set metadata value "TrueTeam" of shot primed tnt to true
+	set {_tnt} to shot primed tnt
+	set metadata value "attacker" of {_tnt} to "%{_player}%"
+	set metadata value "kit-bomber" of {_tnt} to {_expower}
+	set metadata value "TrueTeam" of {_tnt} to true
 	set {_uuid} to a random uuid
-	set metadata value "grenade-thrower-uuid" of shot primed tnt to {_uuid}
-	setFuseTime(shot primed tnt, 20)
+	set metadata value "grenade-thrower-uuid" of {_tnt} to {_uuid}
+	setFuseTime({_tnt}, 20)
 	playSound("entity.creeper.death", 1, 2, {_player})
 	loop 30 times:
-		loop all primed tnts:
-			metadata value "grenade-thrower-uuid" of loop-primed tnt is {_uuid}
-			if distance between {_player} and loop-primed tnt < 10:
-				set metadata value "kit-bomber" of loop-primed tnt to 1
-			else:
-				set metadata value "kit-bomber" of loop-primed tnt to {_expower}
-			spawnParticle(flame, location of loop-primed tnt)
+		if distance between {_player} and {_tnt} < 10:
+			set metadata value "kit-bomber" of {_tnt} to 1
+		else:
+			set metadata value "kit-bomber" of {_tnt} to {_expower}
+		kitParticle_GrenadeThrower_TNT({_tnt}, {_expower})
 		wait a tick
+
+local function kitParticle_GrenadeThrower_TNT(entity: entity, power: number):
+	stop if {_entity} does not exist
+
+	set {_loc} to location 0.5 meters above {_entity}
+	spawnParticle(flame, {_loc})
+
+	set {_g} to (1 - {_power} / {@explosion-power}) * 255
+	set {_color} to rgb(255, {_g}, 0)
+	set {_count} to a random integer between 3 and 5
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		spawnParticle_DustTransition({_color}, rgb(50, 0, 0), 0.65, {_el})
