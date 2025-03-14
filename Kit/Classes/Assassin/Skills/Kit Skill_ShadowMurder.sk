@@ -1,5 +1,8 @@
 # Shadow Murder
 
+options:
+	effect-radius: 4
+
 function kitEffect_ShadowMurder(player: player):
 	set {_SkillLocation} to getKitStats({_player}, "SkillLocation")
 	if {_SkillLocation} is not set:
@@ -31,11 +34,12 @@ function kitEffect_ShadowMurder(player: player):
 			wait a tick
 	if {_ok2} is true:
 		playSound("entity.zombie_villager.converted", 1, 1.5, {_player})
-		loop all players in radius 5 around {_player}:
+		loop all players in radius {@effect-radius} around {_player}:
 			if kitCheckTeam(loop-player, {_player}, false) is true:
 				kitSleep(loop-player, 60)
 				kitEffectDescription(loop-player, "§b§l睡眠")
 		set {_bnm} to 1
+		set {_addbnm} to {@effect-radius} / 5
 		set {_pl} to location of block at {_player}
 		loop 5 times:
 			loop all blocks in radius {_bnm} around {_player}:
@@ -46,7 +50,7 @@ function kitEffect_ShadowMurder(player: player):
 				if distance between {_bl} and {_pl} >= {_bn}:
 					add -0.3 to y-coordinate of {_bl}
 					spawnParticle(witch, {_bl})
-			add 1 to {_bnm}
+			add {_addbnm} to {_bnm}
 			wait a tick
 
 function kitParticle_ShadowMurder_Spell(player: player):
