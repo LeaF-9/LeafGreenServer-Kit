@@ -1,5 +1,9 @@
 # Respawn Controller
 
+options:
+	enemy-time: 10
+	ally-time: 1
+
 function kitEffect_RespawnController(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
 	if {_loc} is not set:
@@ -50,7 +54,7 @@ function kitEffect_RespawnController(player: player):
 
 		# 範囲内のプレイヤーに効果付与
 		loop all players in radius 10 around {_loc.base}:
-			kitCheckTeam(loop-player, {_player}, false) is true
+			loop-player is not {_player}
 			if getKitStats(loop-player, "RespawnController") is not set:  # 復活時間延長効果が付与されていない場合
 				setKitStats(loop-player, "RespawnController", {_player})
 				# 演出
@@ -77,13 +81,21 @@ function kitEffect_RespawnController(player: player):
 				getKitStats(loop-value, "RespawnController") is {_player}
 				deleteKitStats(loop-value, "RespawnController")
 
-on death of player:
+on death of player with priority LOWEST:
 	set {_RespawnController} to getKitStats(victim, "RespawnController")
 	{_RespawnController} is set
 	set {_player} to {_RespawnController}
-	if checkFuel({_player}, 6) is false:
-		stop
-	setKitStats(victim, "SpawnTime", 15)
+	stop if checkFuel({_player}, 6) is false
+
+	if kitCheckTeam({_player}, victim, true) is true:
+		set {_time} to {@ally-time}
+		message formatted "§5機械により §a§l復活時間が短縮 §5されました!" to victim
+	if kitCheckTeam({_player}, victim, false) is true:
+		set {_time} to {@enemy-time}
+		message formatted "§5機械により §9§l復活時間が延長 §5されました..." to victim
+	stop if {_time} is not set
+
+	setKitStats(victim, "SpawnTime", {_time})
 	kitParticle_RespawnController_Launch({_player}, victim)
 
 
@@ -138,10 +150,8 @@ local function kitParticle_RespawnController_Launch(player: player, target: play
 	kitParticle_RespawnController_Beam({_baseloc}, {_targetloc})
 
 	# 対象に機械の位置を開示
-	kitParticle_RespawnController_Expose({_player}, {_target})
-
-	# 対象にメッセージ
-	message formatted "§5機械により §9§l復活時間が延長 §5されました..." to {_target}
+	if kitCheckTeam({_player}, {_target}, false) is true:
+		kitParticle_RespawnController_Expose({_player}, {_target})
 
 
 
@@ -170,7 +180,7 @@ local function kitParticle_RespawnController_Expose(player: player, target: play
 		metadata value "Machine-Respawn Controller" of loop-block displays is {_player}
 		add loop-block display to {_machines::*}
 	
-	loop 400 times:
+	loop 300 times:
 		loop {_machines::*}:
 			set {_machine} to loop-value-2
 			packetGlowing({_target}, {_machine})
