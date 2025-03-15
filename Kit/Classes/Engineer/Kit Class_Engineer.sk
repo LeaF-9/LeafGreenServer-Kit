@@ -76,6 +76,16 @@ function checkFuel(player: player, num: number, type: text = "Skill") :: boolean
 		send action bar "§c§l燃料が不足しています!" to {_player}
 		return false
 
+function checkFuelAmount(player: player, fuel: number) :: boolean:
+	if {Kit-Fuel::%{_player}%} >= {_fuel}:
+		setFuelCT({_player})
+		subtract {_fuel} from {Kit-Fuel::%{_player}%}
+		kitEffectDescription({_player}, "§8§lFuel§c§l消費")
+		return true
+	else:
+		send action bar "§c§l燃料が不足しています!" to {_player}
+		return false
+
 function setFuelCT(player: player):
 	set {_Fuel-CT} to getKitStats({_player}, "Fuel CT")
 	if {_Fuel-CT} is set:
