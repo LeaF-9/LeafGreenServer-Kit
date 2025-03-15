@@ -10,16 +10,88 @@ function kitEffect_DivineDefense(player: player):
 		kitMsg({_player}, "§a%loop-player% §7に§b強固なバリア§7を張りました!")
 		message formatted "§9%{_player}% §bにバリアを張ってもらいました!" to loop-player
 		kitEffectDescription(loop-player, "§3§lシールド")
+		kitParticle_DivineDefense_Apply(loop-player)
 	kitMsg({_player}, "§b周りの味方プレイヤーに§l強固なバリア§bを張りました!")
+	kitParticle_DivineDefense_Aura({_player})
+
+
+
+local function kitParticle_DivineDefense_Aura(player: player):
 	playSound("entity.wither.ambient", 1, 2, {_player})
-	set {_baseloc} to location of {_player}
-	loop 5 times:
-		loop 20 times:
-			add 9 to {_rad}
-			add 0.04 to {_y}
-			set {_el} to {_baseloc}
-			add 10 * sin({_rad}) to x-coordinate of {_el}
-			add 10 * cos({_rad}) to z-coordinate of {_el}
-			add {_y} to y-coordinate of {_el}
-			spawnParticle_Dust(rgb(100, 255, 100), 1, {_el})
+
+	add rgb(158, 241, 223) to {_colors::*}
+	add rgb(45, 218, 209) to {_colors::*}
+	add rgb(86, 241, 203) to {_colors::*}
+
+	set {_baseloc} to location 1 meter above {_player}
+	set {_m} to 0
+	set {_addm} to 10 / 20
+
+	set {_baserad} to 0
+	set {_addbaserad} to 300 / 20
+
+	set {_count} to 4
+	set {_addrad} to 360 / 4
+	loop 20 times:
+		add {_addm} to {_m}
+		set {_rad} to {_baserad}
+		loop {_count} times:
+			set {_vector} to vector({_m}, 0, 0)
+			rotate {_vector} around y-axis by {_rad}
+			set {_loc.now} to {_baseloc} ~ {_vector}
+			set {_vector.next} to vector({_m}, 0, 0)
+			rotate {_vector.next} around y-axis by ({_rad} + {_addrad})
+			set {_loc.next} to {_baseloc} ~ {_vector.next}
+
+			set {_distance} to distance between {_loc.now} and {_loc.next}
+			set {_count.2} to round({_distance} * 3)
+			set {_addm.2} to {_distance} / {_count.2}
+			set {_m.2} to 0
+			loop {_count.2} times:
+				add {_addm.2} to {_m.2}
+				set {_vector.2} to setVector({_loc.now}, {_loc.next}, {_m.2})
+				set {_el} to {_loc.now} ~ {_vector.2}
+				set {_color} to a random element out of {_colors::*}
+				spawnParticle_Dust({_color}, 0.8, {_el})
+
+			add {_addrad} to {_rad}
+		add {_addbaserad} to {_baserad}
+		wait a tick
+
+local function kitParticle_DivineDefense_Apply(player: player):
+	add rgb(158, 241, 216) to {_colors::*}
+	add rgb(45, 218, 189) to {_colors::*}
+	add rgb(86, 241, 176) to {_colors::*}
+
+	set {_loc} to location of {_player}
+	set {_m} to 0.5
+
+	set {_count} to 4
+	set {_addrad} to 360 / 4
+	set {_y} to 0
+	set {_addy} to 2 / 20
+	loop 20 times:
+		add {_addy} to {_y}
+		set {_baseloc} to location {_y} meters above {_loc}
+		set {_rad} to 0
+		loop {_count} times:
+			set {_vector} to vector({_m}, 0, 0)
+			rotate {_vector} around y-axis by {_rad}
+			set {_loc.now} to {_baseloc} ~ {_vector}
+			set {_vector.next} to vector({_m}, 0, 0)
+			rotate {_vector.next} around y-axis by ({_rad} + {_addrad})
+			set {_loc.next} to {_baseloc} ~ {_vector.next}
+
+			set {_distance} to distance between {_loc.now} and {_loc.next}
+			set {_count.2} to round({_distance} * 3)
+			set {_addm.2} to {_distance} / {_count.2}
+			set {_m.2} to 0
+			loop {_count.2} times:
+				add {_addm.2} to {_m.2}
+				set {_vector.2} to setVector({_loc.now}, {_loc.next}, {_m.2})
+				set {_el} to {_loc.now} ~ {_vector.2}
+				set {_color} to a random element out of {_colors::*}
+				spawnParticle_Dust({_color}, 0.5, {_el})
+
+			add {_addrad} to {_rad}
 		wait a tick
