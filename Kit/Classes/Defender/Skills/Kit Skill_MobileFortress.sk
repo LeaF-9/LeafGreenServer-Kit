@@ -3,6 +3,7 @@
 options:
 	effect-tick: 200
 	effect-radius: 8
+	metadata-particle: "Mobile Fortress - Cancel Particle"
 	metadata-launcher: "Mobile Fortress - Launch Time"
 	metadata-protected: "Mobile Fortress - Protected"
 
@@ -18,7 +19,16 @@ on damage with priority HIGH:
 
 	cancel event
 	kitEffectDescription(victim, "§9§l防御")
+
+	set {_now} to now
+	set {_time} to metadata value {@metadata-particle} of victim
+	set {_dif} to difference between {_now} and {_time}
+	stop if {_dif} < 20 ticks
+
+	set metadata value {@metadata-particle} of victim to {_now}
 	kitParticle_MobileFortress_Damage(victim)
+	wait 20 ticks
+	delete metadata value {@metadata-particle} of victim
 
 
 
@@ -76,7 +86,7 @@ local function kitParticle_MobileFortress_Damage(entity: entity):
 	loop 30 times:
 		set {_el} to moveRandomLocation({_baseloc}, 1)
 		set {_color} to a random element out of {_colors::*}
-		set {_size} to a random number between 2 and 3
+		set {_size} to a random number between 1 and 2
 		spawnParticle_DustTransition({_color}, rgb(7, 42, 82), {_size}, {_el})
 
 local function kitParticle_MobileFortress_Shield(player: player):
