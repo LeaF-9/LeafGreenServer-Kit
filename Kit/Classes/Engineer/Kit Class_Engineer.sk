@@ -41,7 +41,7 @@ on rightclick holding a coal:
 	if checkCT(player, name of tool of player) is true:
 		if {Kit-Fuel::%player%} >= 10:
 			setFuelCT(player)
-			subtract 10 from {Kit-Fuel::%{_player}%}
+			subtract 10 from {Kit-Fuel::%player%}
 			detectCT(player, {_item})
 			apply speed 1 to player for 10 seconds
 			kitMsg(player, "§e加速装置を使った!")
@@ -131,7 +131,7 @@ function kitTimerEngineer(player: player):
 		# Hover効果
 		delete {_true}
 		if {_player} is sneaking:
-			if block 0.1 meters below {_player} is passable:
+			if {_player}.isOnGround() is false:
 				if {Kit-Fuel::%{_player}%} >= 1:
 					set {_true} to true
 					set {_hovering} to true
