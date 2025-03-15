@@ -1,5 +1,16 @@
 # Hacking Device
 
+options:
+	effect-radius: 10
+	hacking-time: 60
+	hacked-tick: 200
+	pulse-charge: 20
+	pulse-damage: 3
+	pulse-tick: 200
+
+import:
+	org.bukkit.block.data.type.StructureBlock$Mode
+
 function kitEffect_HackingDevice(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
 	if {_loc} is not set:
@@ -23,83 +34,249 @@ function kitEffect_HackingDevice(player: player):
 	set {_block} to getBlockData(polished blackstone wall)
 	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Hacking Device")
 
-	set {_block} to getBlockData(structure block)
+	set {_block} to getBlockData(tinted glass)
 	kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Hacking Device")
+
+	set {_block} to getBlockData(structure block)
+	set {_blockdata} to {_block}.setMode(Mode.LOAD)
+	set {_translation} to getVector3f(-0.35, 0.15, -0.35)
+	set {_scale} to getVector3f(0.7, 0.7, 0.7)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Hacking Device")
 	kitMsg({_player}, "<##E9BC00>Hacking Device§eを設置しました!")
 	playSound("item.trident.return", 1, 1.5, {_loc.base})
+	# coreを回転させる関数
+	kitEffect_HackingDevice_Core({_player}, {_coredisplay})
 	while getKitStats({_player}, "HackingDevice-Time") is {_now}:
-		wait a second
+		wait a tick
 		set {_exist} to kitFakeCheck({_player}, "Machine-Hacking Device")
 		if {_exist} is false:
 			deleteKitStats({_player}, "HackingDevice")
 			deleteKitStats({_player}, "HackingDevice-Time")
 
-on leftclick holding a structure block:
-	set {_tool} to player's tool
-	set {_item.kit} to kitItemKitChecker({_tool})
-	{_item.kit} is "Engineer"
-	set {_item.type} to kitItemTypeChecker({_tool})
-	{_item.type} is "Skill"
-	set {_item.num} to kitItemNumberChecker({_tool})
-	{_item.num} is 7
-	getKitStats(player, "HackingDevice") is set
-	checkCT(player, "Hacking Wave") is true
-	if getKitStats(player, "HackingDevice-NoFuel") is true:
-		set {_ok} to true
-	else if checkFuel(player, 7) is true:
-		set {_ok} to true
-	if {_ok} is not set:
-		stop
-	setCT(player, "Hacking Wave", 3)
-	kitMsg(player, "§e§lHacking Device §6のチャージを行ないます...")
+			loop all players:
+				{_hacking.bossbar::%loop-player%} is set
+				remove bossbar {_hacking.bossbar::%loop-player%}
+			stop
+		
+		delete {_hacked::*}
+		loop all players in radius {@effect-radius} around {_loc.core}:
+			kitCheckTeam(loop-player, {_player}, false) is true
+			getDebuffs(loop-player, "Palsy") is false
+			set {_hacked::%loop-player%} to true
+			add 1 to {_hacking::%loop-player%}
+			kitParticle_HackingDevice_Hacking({_loc.core}, loop-player)
+			if {_hacking.bossbar::%loop-player%} is not set:
+				set {_id} to a random UUID
+				create bossbar titled "§e§l§oHACKED" and id {_id} for loop-player with progress 0 with colors yellow with style solid
+				set {_hacking.bossbar::%loop-player%} to {_id}
+			set {_prog} to {_hacking::%loop-player%} / {@hacking-time} * 100
+			set bossbar {_hacking.bossbar::%loop-player%} value to {_prog}
+
+			if {_hacking::%loop-player%} >= {@hacking-time}:
+				kitEffect_HackingDevice_Hacked({_player}, loop-player)
+				remove bossbar {_hacking.bossbar::%loop-player%}
+				delete {_hacking::%loop-player%}
+				delete {_hacking.bossbar::%loop-player%}
+		
+		loop all players:
+			{_hacking::%loop-player%} is set
+			{_hacked::%loop-player%} is not set
+			remove bossbar {_hacking.bossbar::%loop-player%}
+			delete {_hacking::%loop-player%}
+			delete {_hacking.bossbar::%loop-player%}
+			kitParticle_HackingDevice_Cancel({_loc.core}, loop-player)
+
+local function kitEffect_HackingDevice_Hacked(player: player, target: player):
+	stop if checkFuelAmount({_player}, 10) is false
+	kitMsg({_player}, "§c%{_target}% <##d1ac47>のハッキングが完了した!")
+	message formatted "<##501e91>§l§kX XX XXX <##6b0029>§lHACKED BY <##a55000>§l%{_player}% <##501e91>§l§kXXX XX X" to {_target}
+	kitPalsy({_target}, {@hacked-tick})
+	kitParticle_HackingDevice_Hacked({_target})
+
+on leftclick:
+	set {_player} to player
+	set {_tool} to tool of {_player}
+	kitItemAllChecker({_tool}, "Engineer", "Skill", 7) is true
+	getKitStats({_player}, "HackingDevice") is set
+	checkCT({_player}, "Pulse Wave") is true
+	checkFuelAmount({_player}, 30) is true
+	setCT({_player}, "Pulse Wave", 10)
+	sendTimeBossbar_RED({_player}, "§e§lPulse Wave §7- §9Cool Time", 200)
+	kitMsg({_player}, "<##d8d534>§oパルス砲をチャージします...")
 	set {_pitch} to 0.5
 	set {_round} to 0
-	loop all block displays:
-		metadata value "kit-block" of loop-block display is "Machine-Hacking Device"
-		metadata value "Machine-Hacking Device" of loop-block display is "%player%"
-		set glowing of loop-block display to true
-	loop 40 times:
-		if getKitStats(player, "HackingDevice") is set:
-			add 0.25 to {_round}
-			set {_baseloc} to getKitStats(player, "HackingDevice")
-			add 0.5 to y-coordinate of {_baseloc}
-			loop 10 times:
-				set {_el} to {_baseloc}
-				add a random number between {_round} * -1 and {_round} to x-coordinate of {_el}
-				add a random number between {_round} * -1 and {_round} to z-coordinate of {_el}
-				add a random number between {_round} * -1 and {_round} to y-coordinate of {_el}
-				spawnParticle(enchanted_hit, {_el})
-			playSound("entity.blaze.hurt", 0.6, {_pitch}, {_baseloc})
-			add 0.0375 to {_pitch}
-			wait a tick
-	if getKitStats(player, "HackingDevice") is set:
-		set {_baseloc} to getKitStats(player, "HackingDevice")
-		kitMsg(player, "§5装置より <##E9BC00>§lハッキングウェーブ §5を放出しました!")
-		playSound("block.respawn_anchor.set_spawn", 1, 1, {_baseloc})
-		loop all players in radius 10 around {_baseloc}:
-			kitCheckTeam(player, loop-player, false) is true
-			kitPalsy(loop-player, 200)
-			apply mining fatigue 1 to loop-player for 3 seconds
-			message formatted "§eハッキングでスキルの使用が禁じられた!" to loop-player
-			kitEffectDescription(loop-player, "§e§l麻痺")
+	setKitStats({_player}, "HackingDevice-PulseCharge", 0)
+	set {_charge} to 0
+	loop {@pulse-charge} times:
+		stop if getKitStats({_player}, "HackingDevice") is not set
+
+		set {_baseloc} to getKitStats({_player}, "HackingDevice")
+		add 0.5 to y-coordinate of {_baseloc}
+
+		add 1 to {_charge}
+		setKitStats({_player}, "HackingDevice-PulseCharge", {_charge})
+		kitParticle_HackingDevice_Charge({_baseloc}, {_charge})
+		wait a tick
+	deleteKitStats({_player}, "HackingDevice-PulseCharge")
+	stop if getKitStats({_player}, "HackingDevice") is not set
+
+	set {_baseloc} to getKitStats({_player}, "HackingDevice")
+	kitMsg({_player}, "<##ffdc52>§lパルス砲 §6を放出しました!")
+	kitParticle_HackingDevice_Pulse({_baseloc})
+	set {_fromtrail} to location of {_player}
+	loop all entities in radius 10 around {_baseloc}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		kitDamage({_player}, loop-entity, {@pulse-damage}, "パルス砲")
+		kitTrail(loop-entity, {@pulse-tick}, {_fromtrail})
+		message formatted "<##fdc344>§lパルス砲 §eによりダメージを受けた!" to loop-entity
+		kitEffectDescription(loop-entity, "§4❤3 §8& §b§l追跡")
+
+local function kitEffect_HackingDevice_Core(player: player, display: entity):
+	set {_now} to getKitStats({_player}, "HackingDevice-Time")
+	set {_yaw} to yaw of {_display}
+	set {_rotate.yaw} to 90
+	set {_add.yaw} to {_rotate.yaw} / 20
+
+	set {_ln} to 0
+	while getKitStats({_player}, "HackingDevice-Time") is {_now}:
+		delete {_exist}
 		loop all block displays:
-			metadata value "kit-block" of loop-block display is "Machine-Hacking Device"
-			metadata value "Machine-Hacking Device" of loop-block display is "%player%"
-			set glowing of loop-block display to false
-		set {_s} to 0
-		set {_t} to 0
-		set {_pl} to {_baseloc}
-		loop 19 time:
-			loop 36 time:
-				set {_loc} to {_pl}
-				set {_vector} to {_loc}
-				set {_x} to x-coordinate of {_loc}
-				set {_y} to y-coordinate of {_loc}
-				set {_z} to z-coordinate of {_loc}
-				set x-coordinate of {_vector} to {_x} + ( 10 * sin({_s}) * cos({_t}) )
-				set y-coordinate of {_vector} to {_y} + ( 10 * cos({_s}) )
-				set z-coordinate of {_vector} to {_z} + ( 10 * sin({_s}) * sin({_t}) )
-				chance of 30%:
-					spawnParticle_Color(entity_effect, rgb(255, 255, 0), {_vector})
-				add 10 to {_t}
-			add 10 to {_s}
+			loop-block display is {_display}
+			set {_exist} to true
+		if {_exist} is not set:
+			stop
+
+		set {_baseloc} to location of {_display}
+		set {_tploc} to {_baseloc}
+		add {_add.yaw} to {_yaw}
+		set {_pulse} to getKitStats({_player}, "HackingDevice-PulseCharge")
+
+		if {_pulse} is set:
+			add (5 * {_pulse}) to {_yaw}
+			{_display}.setGlowing(true)
+
+			set {_block} to getBlockData(structure block)
+			set {_blockdata} to {_block}.setMode(Mode.SAVE)
+			setDisplayBlock({_display}, {_block})
+		else if {_display}.isGlowing():
+			{_display}.setGlowing(false)
+
+			set {_block} to getBlockData(structure block)
+			set {_blockdata} to {_block}.setMode(Mode.LOAD)
+			setDisplayBlock({_display}, {_block})
+
+		set yaw of {_tploc} to {_yaw}
+		teleport {_display} to {_tploc}
+		wait a tick
+
+
+
+local function kitParticle_HackingDevice_Hacking(loc: location, player: player):
+	chance of 10%:
+		set {_pitch} to a random number between 1 and 2
+		playSound("entity.bee.sting", 0.6, {_pitch}, {_player})
+
+	add rgb(255, 240, 108) to {_colors::*}
+	add rgb(223, 219, 32) to {_colors::*}
+	add rgb(223, 196, 110) to {_colors::*}
+
+	set {_baseloc} to location 0.5 meters above {_loc}
+	set {_toloc} to location 1 meter above {_player}
+	set {_distance} to distance between {_baseloc} and {_toloc}
+	set {_count} to round({_distance} * 2)
+	set {_m} to 0
+	set {_addm} to 0.5
+	loop {_count} times:
+		add {_addm} to {_m}
+		set {_vec} to setVector({_baseloc}, {_toloc}, {_m})
+		set {_el} to {_baseloc} ~ {_vec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.5, {_el})
+
+		chance of 20%:
+			set {_el} to moveRandomLocation({_el}, 0.5)
+			spawnParticle(crit, {_el})
+
+local function kitParticle_HackingDevice_Cancel(loc: location, player: player):
+	playSound("entity.player.hurt_on_fire", 1, 2, {_player})
+
+	set {_baseloc} to location 0.5 meters above {_loc}
+	set {_toloc} to location 1 meter above {_player}
+	set {_distance} to distance between {_baseloc} and {_toloc}
+	set {_m} to {_distance} * 0.5
+	set {_vec} to setVector({_baseloc}, {_toloc}, {_m})
+	set {_core} to {_baseloc} ~ {_vec}
+
+	loop 20 times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(crit, {_v}, 0.75, {_core})
+
+local function kitParticle_HackingDevice_Hacked(player: player):
+	kitSound_HackingDevice_Hacked({_player})
+
+	add rgb(247, 248, 155) to {_colors::*}
+	add rgb(224, 214, 125) to {_colors::*}
+	add rgb(233, 208, 138) to {_colors::*}
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop 100 times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(firework, {_v}, 0.6, {_baseloc})
+
+		chance of 50%:
+			set {_color} to a random element out of {_colors::*}
+			set {_el} to moveRandomLocation({_baseloc}, 0.5)
+			spawnParticle_DustTransition({_color}, rgb(94, 6, 28), 1, {_el})
+
+local function kitParticle_HackingDevice_Charge(loc: location, charged: number):
+	set {_baseloc} to location 0.5 meters above {_loc}
+	set {_round} to 0.5 * {_charged}
+	loop 30 times:
+		set {_pow} to a random number between 0.1 and {_round}
+		set {_vec} to randomVector({_pow})
+		set {_el} to {_baseloc} ~ {_vec}
+		spawnParticle(enchanted_hit, {_el})
+	set {_pitch} to 0.5 + (0.075 * {_charged})
+	playSound("entity.blaze.hurt", 0.6, {_pitch}, {_baseloc})
+
+local function kitParticle_HackingDevice_Pulse(loc: location):
+	playSound("block.respawn_anchor.set_spawn", 1.5, 0.9, {_loc})
+
+	add rgb(247, 248, 155) to {_colors::*}
+	add rgb(224, 214, 125) to {_colors::*}
+	add rgb(233, 208, 138) to {_colors::*}
+
+	set {_baseloc} to location 0.5 meters above {_loc}
+
+	loop 300 times:
+		set {_vec} to randomVector(10)
+		set {_el} to {_baseloc} ~ {_vec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_DustTransition({_color}, rgb(255, 248, 228), 2.5, {_el})
+
+		spawnParticle_Trail({_color}, {_el}, 1 seconds, {_baseloc})
+
+		chance of 10%:
+			set {_m} to a random number between 0 and 10
+			set {_vec} to randomVector({_m})
+			set {_el} to {_baseloc} ~ {_vec}
+			spawnParticle(firework, {_el})
+		
+		chance of 10%:
+			set {_m} to a random number between 0 and 10
+			set {_vec} to randomVector({_m})
+			set {_el} to {_baseloc} ~ {_vec}
+			spawnParticle(end_rod, {_el})
+		
+		chance of 10%:
+			set {_m} to a random number between 0 and 10
+			set {_vec} to randomVector({_m})
+			set {_el} to {_baseloc} ~ {_vec}
+			spawnParticle(wax_off, {_el})
+
+
+local function kitSound_HackingDevice_Hacked(player: player):
+	loop 5 times:
+		set {_pitch} to a random number between 1.5 and 2
+		playSound("entity.firework_rocket.twinkle_far", 1, {_pitch}, {_player})
