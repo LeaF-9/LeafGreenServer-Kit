@@ -3,6 +3,8 @@
 options:
 	effect-tick: 200
 	metadata-nodamage: "Sprite Talisman - No Damage"
+	max-resistance: 3
+	subtract-amount: 1
 
 
 
@@ -26,7 +28,7 @@ on damage of player with priority NORMAL:
 			set {_dmg} to 0
 		setDamageModification_SET(victim, {_dmg})
 		send action bar "§4❤%{_SpriteTalisman}%§cダメージ §aを§2§l吸収§aしました!" to victim
-		subtract 0.5 from {_SpriteTalisman}
+		subtract {@subtract-amount} from {_SpriteTalisman}
 		setKitStats(victim, "SpriteTalisman", {_SpriteTalisman})
 		if {_SpriteTalisman} <= 0:  # ダメージ減衰の効果終了時
 			kitEffect_SpriteTalisman_Explode(victim)
@@ -49,7 +51,7 @@ function kitEffect_SpriteTalisman(player: player):
 		setSupporter(loop-player, {_player})
 		message formatted "<##c6ff4a>ダメージを受け持つ<##98ff4a>守護の妖精<##c6ff4a>が付与された!" to loop-player
 		sendTimeBossbar_GREEN(loop-player, "<##98ff4a>§l守護の妖精", {@effect-tick})
-		setKitStats(loop-player, "SpriteTalisman", 2.5)
+		setKitStats(loop-player, "SpriteTalisman", {@max-resistance})
 		setKitStats(loop-player, "SpriteTalisman-Time", {_now})
 		kitParticle_SpriteTalisman_Apply(loop-player)
 		kitParticle_SpriteTalisman_Aura(loop-player)
