@@ -2,6 +2,7 @@
 
 options:
 	effect-radius: 4
+	sleep-tick: 30
 
 function kitEffect_ShadowMurder(player: player):
 	set {_SkillLocation} to getKitStats({_player}, "SkillLocation")
@@ -36,7 +37,7 @@ function kitEffect_ShadowMurder(player: player):
 		playSound("entity.zombie_villager.converted", 1, 1.5, {_player})
 		loop all players in radius {@effect-radius} around {_player}:
 			if kitCheckTeam(loop-player, {_player}, false) is true:
-				kitSleep(loop-player, 60)
+				kitSleep(loop-player, {@sleep-tick})
 				kitEffectDescription(loop-player, "§b§l睡眠")
 		set {_bnm} to 1
 		set {_addbnm} to {@effect-radius} / 5
