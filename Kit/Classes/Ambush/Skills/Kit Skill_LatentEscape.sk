@@ -3,6 +3,11 @@
 options:
 	max-effect-tick: 100
 
+on damage:
+	set {_attacker} to getAttacker(victim)
+	cancel event if getKitStats(victim, "Latent Escape") is set
+	cancel event if getKitStats({_attacker}, "Latent Escape") is set
+
 function kitEffect_LatentEscape(player: player):
 	if getKitStats({_player}, "Latent Escape") is set:
 		setKitStats({_player}, "Latent Escape", false)
