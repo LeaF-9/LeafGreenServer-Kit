@@ -16,11 +16,7 @@ import:
 
 	io.papermc.paper.entity.TeleportFlag$EntityState
 
-on VehicleEnterEvent:
-	broadcast "hey"
-
 on VehicleExitEvent:
-	broadcast "hey"
 	set {_vehicle} to event.getVehicle()
 	stop if metadata value {@metadata-vehicle} of {_vehicle} is not set
 
@@ -69,6 +65,7 @@ local function kitEffect_IvyZipline_Shoot(player: player, loc: location):
 		add 1 to {_ln}
 
 	if {_hit} is not set:
+		setCT({_player}, (display name of {_tool}), 5)
 		kitMsg({_player}, "§c§l着地点が見つかりませんでした")
 		playSound("block.note_block.bass", 1, 1.2, {_player}, true)
 		stop
