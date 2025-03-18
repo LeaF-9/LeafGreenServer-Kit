@@ -54,7 +54,7 @@ on sneak toggle:
 		stop
 
 	# 発動処理
-	stop if getInvisibleStatus(player) is true
+	stop if getInvisibleRemains({_player}) > 3
 	kitEffect_SpyAction(player)
 
 local function kitEffect_SpyAction(player: player):
@@ -119,6 +119,8 @@ local function kitEffect_SpyAction(player: player):
 local function kitEffect_SpyAction_Reveal(player: player):
 	removeInvisible({_player})
 	delete metadata value {@metadata-spyaction} of {_player}
+	set {_now} to now
+	set metadata value {@metadata-stealthbehavior-damage} of {_player} to {_now}
 	kitMsg({_player}, "§b潜伏を解除しました")
 	kitParticle_SpyAction_Reveal({_player})
 
