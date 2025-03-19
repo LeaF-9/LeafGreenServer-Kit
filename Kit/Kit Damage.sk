@@ -229,9 +229,8 @@ on damage of player:
 
 # Heal
 function kitHeal(player: entity, heart: number, particle: number = 5):
-	if checkEntityType({_player}, player) is true:
-		if getDebuffs({_player}, "Blood") is true:
-			stop
+	stop if kitCheckAlive({_player}) is false
+	stop if getDebuffs({_player}, "Blood") is true
 
 	set {_health.bfr} to health of {_player}
 	heal {_player} by {_heart} hearts
