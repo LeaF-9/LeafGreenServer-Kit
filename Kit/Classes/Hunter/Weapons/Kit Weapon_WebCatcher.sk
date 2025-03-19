@@ -91,7 +91,11 @@ import:
 local function kitEffect_WebCatcher_Destroy(player: player, displays: entities):
 	loop all players:
 		kitCheckTeam({_player}, loop-player, false, true) is true
+		continue if {Kit-RespawnKill::%loop-player%} is true
+		add loop-player to {_targets::*}
 		
+	loop {_targets::*}
+		set {_loop-player} to loop-value
 		loop {_displays::*}:
 			set {_loopdisplay} to loop-value-2
 			set {_id} to {_loopdisplay}.getEntityId()
@@ -99,7 +103,7 @@ local function kitEffect_WebCatcher_Destroy(player: player, displays: entities):
 			set {_packet} to {_manager}.createPacket(PacketType.Play.Server.ENTITY_DESTROY)
 			set {_ids} to Lists.newArrayList({_id})
 			{_packet}.getIntLists().write(0, {_ids})
-			ProtocolLibrary.getProtocolManager().sendServerPacket(loop-player, {_packet})
+			ProtocolLibrary.getProtocolManager().sendServerPacket({_loop-player}, {_packet})
 
 # 敵視点だけ蜘蛛の巣を設置する関数
 local function kitEffect_WebCatcher_Fake(player: player, locs: locations):
@@ -108,6 +112,7 @@ local function kitEffect_WebCatcher_Fake(player: player, locs: locations):
 		delete {_enemies::*}
 		loop all players:
 			kitCheckTeam({_player}, loop-player, false, true) is true
+			continue if {Kit-RespawnKill::%loop-player%} is true
 			add loop-player to {_enemies::*}
 
 		loop {_locs::*}:
