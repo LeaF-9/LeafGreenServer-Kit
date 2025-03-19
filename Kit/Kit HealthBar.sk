@@ -20,6 +20,9 @@ function kitHealthDisplay_Damage(entity: entity, amount: number, event: object =
 		display name of {_entity} is not "Test-Stand"
 	then:
 		stop
+	
+	set {_former} to getFormer({_entity}, "Damage")
+	{_former}.remove() if {_former} is set
 
 	set {_l} to randomDisplayLocation({_entity})
 
@@ -27,6 +30,7 @@ function kitHealthDisplay_Damage(entity: entity, amount: number, event: object =
 	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
 	set {_uuid} to a random uuid
 	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	setFormer({_entity}, "Damage", {_textDisplay})
 	loop 2 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
@@ -38,36 +42,42 @@ function kitHealthDisplay_Damage(entity: entity, amount: number, event: object =
 		add -0.125 to y-pos of {_ml}
 		teleport {_textDisplay} to {_ml}
 	wait 6 ticks
-	loop all text displays:
-		loop-text display is {_textDisplay}
-		delete loop-text display
+	deleteFormer({_entity}, "Damage") if getFormer({_entity}, "Damage") is {_textDisplay}
+	{_textDisplay}.remove()
 
 # Heal
 function kitHealthDisplay_Heal(entity: entity, amount: number):
+	set {_former} to getFormer({_entity}, "Heal")
+	{_former}.remove() if {_former} is set
+
 	set {_l} to randomDisplayLocation({_entity})
 
 	set {_display} to "§a❤%{_amount}%"
 	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
 	set {_uuid} to a random uuid
 	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	setFormer({_entity}, "Heal", {_textDisplay})
 	loop 10 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
 		add 0.5 / 20 to y-pos of {_ml}
 		teleport {_textDisplay} to {_ml}
 
-	loop all text displays:
-		loop-text display is {_textDisplay}
-		delete loop-text display
+	deleteFormer({_entity}, "Heal") if getFormer({_entity}, "Heal") is {_textDisplay}
+	{_textDisplay}.remove()
 
 # Health Boost
 function kitHealthDisplay_HealthBoost(entity: entity, amount: number):
+	set {_former} to getFormer({_entity}, "HealthBoost")
+	{_former}.remove() if {_former} is set
+
 	set {_l} to randomDisplayLocation({_entity})
 
 	set {_display} to "§d❤%{_amount}%"
 	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
 	set {_uuid} to a random uuid
 	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	setFormer({_entity}, "HealthBoost", {_textDisplay})
 	loop 5 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
@@ -75,18 +85,21 @@ function kitHealthDisplay_HealthBoost(entity: entity, amount: number):
 		teleport {_textDisplay} to {_ml}
 	wait 5 ticks
 
-	loop all text displays:
-		loop-text display is {_textDisplay}
-		delete loop-text display
+	deleteFormer({_entity}, "HealthBoost") if getFormer({_entity}, "HealthBoost") is {_textDisplay}
+	{_textDisplay}.remove()
 
 # Shield
 function kitHealthDisplay_Shield(entity: entity, amount: number):
+	set {_former} to getFormer({_entity}, "Shield")
+	{_former}.remove() if {_former} is set
+
 	set {_l} to randomDisplayLocation({_entity})
 
 	set {_display} to "§b❤%{_amount}%"
 	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
 	set {_uuid} to a random uuid
 	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	setFormer({_entity}, "Shield", {_textDisplay})
 	loop 3 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
@@ -94,18 +107,21 @@ function kitHealthDisplay_Shield(entity: entity, amount: number):
 		teleport {_textDisplay} to {_ml}
 	wait 7 ticks
 
-	loop all text displays:
-		loop-text display is {_textDisplay}
-		delete loop-text display
+	deleteFormer({_entity}, "Shield") if getFormer({_entity}, "Shield") is {_textDisplay}
+	{_textDisplay}.remove()
 
 # Absorption
 function kitHealthDisplay_Absorption(entity: entity, amount: number):
+	set {_former} to getFormer({_entity}, "Absorption")
+	{_former}.remove() if {_former} is set
+
 	set {_l} to randomDisplayLocation({_entity})
 
 	set {_display} to "§e❤%{_amount}%"
 	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
 	set {_uuid} to a random uuid
 	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	setFormer({_entity}, "Absorption", {_textDisplay})
 	loop 5 times:
 		wait a tick
 		set {_ml} to location of {_textDisplay}
@@ -113,9 +129,22 @@ function kitHealthDisplay_Absorption(entity: entity, amount: number):
 		teleport {_textDisplay} to {_ml}
 	wait 5 ticks
 
-	loop all text displays:
-		loop-text display is {_textDisplay}
-		delete loop-text display
+	deleteFormer({_entity}, "Absorption") if getFormer({_entity}, "Absorption") is {_textDisplay}
+	{_textDisplay}.remove()
+
+# get display
+local function getFormer(entity: entity, arg: text) :: entity:
+	set {_metadata} to "health-display-former: %{_arg}%"
+	set {_display} to metadata value {_metadata} of {_entity}
+	return {_display}
+
+local function setFormer(entity: entity, arg: text, display: entity):
+	set {_metadata} to "health-display-former: %{_arg}%"
+	set metadata value {_metadata} of {_entity} to {_display}
+
+local function deleteFormer(entity: entity, arg: text):
+	set {_metadata} to "health-display-former: %{_arg}%"
+	delete metadata value {_metadata} of {_entity}
 
 # spawn function
 import:
