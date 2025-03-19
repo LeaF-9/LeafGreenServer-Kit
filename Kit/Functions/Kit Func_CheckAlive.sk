@@ -1,6 +1,9 @@
-function kitCheckAlive(player: player) :: boolean:
-	if {_player} is not alive:
-		return false
-	if game mode of {_player} is spectator:
-		return false
+function kitCheckAlive(player: entity) :: boolean:
+	return false if {_player} is not alive
+	return true if checkEntityType({_player}, player) is false
+
+	return false if game mode of {_player} is spectator
+	set {_hp} to health of {_player}
+	return false if {_hp} <= 0
+
 	return true
