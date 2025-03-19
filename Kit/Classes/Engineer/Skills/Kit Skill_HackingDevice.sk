@@ -109,7 +109,9 @@ on leftclick:
 	setKitStats({_player}, "HackingDevice-PulseCharge", 0)
 	set {_charge} to 0
 	loop {@pulse-charge} times:
-		stop if getKitStats({_player}, "HackingDevice") is not set
+		if getKitStats({_player}, "HackingDevice") is not set:
+			deleteKitStats({_player}, "HackingDevice-PulseCharge")
+			stop
 
 		set {_baseloc} to getKitStats({_player}, "HackingDevice")
 		add 0.5 to y-coordinate of {_baseloc}
