@@ -145,6 +145,8 @@ on arm swing:
 		set {_metadata} to metadata value "kit-item" of {_tg}
 	set {_target} to metadata value {_metadata} of {_tg}
 	set {_target} to {_target} parsed as offline player
+
+	stop if {_target} is player
 	if kitCheckTeam(player, {_target}, false) is true:
 		make a fake explosion at location of {_tg}
 		kitMsg({_target}, "§9§l%{_metadata}% §cが破壊された!")
@@ -191,6 +193,8 @@ on projectile hit:
 		else:
 			stop
 		set {_target} to {_target} parsed as offline player
+
+		stop if {_target} is shooter
 		if kitCheckTeam(shooter, {_target}, false) is true:
 			make a fake explosion at location of loop-entity
 			if {_breaks::*} does not contain {_metadata}:
