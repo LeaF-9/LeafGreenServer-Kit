@@ -29,6 +29,16 @@ on rightclick:
 			if block above clicked block is not passable:
 				stop
 
+	set {_offhand} to offhand tool of player
+	if {_offhand} is not air:
+		set {_offhanditem} to raw name of {_offhand}
+		replace "minecraft:" with "" in {_offhanditem}
+		set {_offhandallow::shield} to true
+		set {_offhandallow::fishing_rod} to true
+		set {_offhandallow::splash_potion} to true
+		set {_offhandallow::lingering_potion} to true
+		stop if {_offhandallow::%{_offhanditem}%} is true
+
 	set {_tool} to tool of player
 	set {_type} to kitItemTypeChecker({_tool})
 
