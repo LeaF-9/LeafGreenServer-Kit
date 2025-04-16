@@ -143,8 +143,9 @@ local function kitEffect_LunaticMadness_Buff(player: player, effects: potion eff
 	
 	kitParticle_LunaticMadness_Buff({_player})
 	
-	applyEffect({_player}, strength, {_mintier}, {_mintime}, true)
-	applyEffect({_player}, regeneration, {_mintier}, {_mintime})
+	set {_mintick} to getTicks({_mintime})
+	applyEffect({_player}, strength, {_mintier}, {_mintick}, true)
+	applyEffect({_player}, regeneration, {_mintier}, {_mintick})
 
 	kitMsg({_player}, "§5デバフを§4§l自分の力§5へと変換した...")
 
@@ -166,6 +167,7 @@ local function kitEffect_LunaticMadness_Splash(player: player, effects: potion e
 		set {_time} to effectTime(loop-value)
 		if {_time} > 10 seconds:
 			set {_time} to 10 seconds
+		set {_time} to getTicks({_time})
 		set {_effect-times::%{_count}%} to {_time}
 	
 	set {_baseloc} to location 1.5 meters above {_player}

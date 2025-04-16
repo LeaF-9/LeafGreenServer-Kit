@@ -7,7 +7,7 @@ options:
 	fire-damage: 1
 	fire-ignite-time: 100
 	regeneration-tier: 5
-	regeneration-time: 1 second
+	regeneration-tick: 20
 
 
 
@@ -43,7 +43,7 @@ local function kitEffect_EternalPhoenix(player: player):
 		wait a tick
 	deleteKitStats({_player}, "EternalPhoenix")
 	disallow fly for {_player}
-	applyEffect({_player}, slow falling, 1, 5 seconds)
+	applyEffect({_player}, slow falling, 1, 100)
 
 local function kitEffect_EternalPhoenix_Burning(player: player):
 	kitSound_EternalPhoenix_Burning({_player})
@@ -78,7 +78,7 @@ local function kitEffect_EternalPhoenix_Fire(player: player):
 			kitEffectDescription(loop-entity, "§4❤{@fire-damage} §8& §4§l炎上")
 
 		if {_hit} is true:
-			applyEffect({_player}, regeneration, {@regeneration-tier}, {@regeneration-time}, true)
+			applyEffect({_player}, regeneration, {@regeneration-tier}, {@regeneration-tick}, true)
 			set {_enable} to false
 		
 		if {_enable} is false:

@@ -4,8 +4,8 @@ options:
 	effect-tick: 200
 	effect-radius: 5
 	levitation-tier: 10
-	levitation-second: 10 ticks
-	falling-second: 3 seconds
+	levitation-tick: 10
+	falling-tick: 60
 
 function kitEffect_MapleZephyr(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
@@ -30,10 +30,10 @@ function kitEffect_MapleZephyr(player: player):
 			continue if {_distance} > 5
 
 			kitParticle_MapleZephyr_Levitation(loop-entity)
-			applyEffect(loop-entity, levitation, {@levitation-tier}, {@levitation-second}, true)
+			applyEffect(loop-entity, levitation, {@levitation-tier}, {@levitation-tick}, true)
 
 			continue if kitCheckTeam(loop-entity, {_player}, true) is false
-			applyEffect(loop-entity, slow falling, 1, {@falling-second}, true)
+			applyEffect(loop-entity, slow falling, 1, {@falling-tick}, true)
 		wait a tick
 
 

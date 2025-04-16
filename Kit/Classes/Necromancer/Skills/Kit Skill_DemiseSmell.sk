@@ -57,9 +57,9 @@ local function kitSpawn_Necromancer_Wraith(player: player, loc: location):
 	{_equip}.setBoots(air)
 	{_equip}.setItemInMainHand({_tool})
 
-	applyEffect({_mob}, speed, 2, 60 seconds, true, "none")
-	applyEffect({_mob}, invisibility, 1, 60 seconds, true, "none")
-	applyEffect({_mob}, slow falling, 1, 60 seconds, true, "none")
+	applyEffect({_mob}, speed, 2, 1200, true, "none")
+	applyEffect({_mob}, invisibility, 1, 1200, true, "none")
+	applyEffect({_mob}, slow falling, 1, 1200, true, "none")
 
 	kitWraithTimer({_player}, {_mob})
 
@@ -285,7 +285,7 @@ local function kitWraith_Dark(player: player, wraith: entity):
 	# --- 暗闇効果付与 ---
 	loop all entities in radius 10 around {_baseloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
-		applyEffect(loop-entity, blindness, 1, 3 seconds)
+		applyEffect(loop-entity, blindness, 1, 60)
 		setSupporter(loop-entity, {_player})
 	# ------------------
 	kitWraith_Dark_Particle_Launch({_baseloc})
@@ -382,7 +382,7 @@ on damage of wither skeleton with priority LOW:
 	metadata value "necromancer-entity-abyss" of victim is true
 	if metadata value "abyss-barrier" of victim is true:
 		cancel event
-		applyEffect(attacker, wither, 3, 1 seconds)
+		applyEffect(attacker, wither, 3, 20)
 		playSound("entity.shulker_bullet.hit", 1, 0.7, victim)
 		loop 10 times:
 			set {_v} to randomVector(1)
@@ -427,7 +427,7 @@ local function kitWraith_Thunder(player: player, wraith: entity):
 					set {_hit.%id of {_hitentity}%} to true
 					kitDamage({_player}, {_hitentity}, 3, "深淵の落雷", true)
 					kitPalsy({_hitentity}, 100)
-					applyEffect({_hitentity}, glowing, 1, 5 seconds)
+					applyEffect({_hitentity}, glowing, 1, 100)
 
 				kitWraith_Thunder_Particle_Lightning({_el})
 		wait 5 ticks
@@ -446,7 +446,7 @@ local function kitWraith_Thunder(player: player, wraith: entity):
 				set {_hit.%id of {_hitentity}%} to true
 				kitDamage({_player}, {_hitentity}, 3, "深淵の落雷", true)
 				kitPalsy({_hitentity}, 100)
-				applyEffect({_hitentity}, glowing, 1, 5 seconds)
+				applyEffect({_hitentity}, glowing, 1, 100)
 
 			kitWraith_Thunder_Particle_Lightning({_el})
 		
@@ -540,9 +540,9 @@ local function kitWraith_Summon(player: player, wraith: entity):
 		{_equip}.setBoots(air)
 		{_equip}.setItemInMainHand(air)
 
-		applyEffect({_mob}, speed, 1, 60 seconds, true, "none")
-		applyEffect({_mob}, invisibility, 1, 60 seconds, true, "none")
-		applyEffect({_mob}, slow falling, 1, 60 seconds, true, "none")
+		applyEffect({_mob}, speed, 1, 1200, true, "none")
+		applyEffect({_mob}, invisibility, 1, 1200, true, "none")
+		applyEffect({_mob}, slow falling, 1, 1200, true, "none")
 
 		kitWraith_Summon_Particle_Appear({_l})
 
@@ -616,7 +616,7 @@ local function kitWraith_Teleport_Particle_End(loc: location):
 # ビーム魔法
 # 1秒のためのあとに❤4ダメージのビームを放出
 local function kitWraith_Beam(player: player, wraith: entity):
-	applyEffect({_wraith}, slowness, 10, 1 second, true, "none")
+	applyEffect({_wraith}, slowness, 10, 20, true, "none")
 
 	set {_target} to target of {_wraith}
 	set {_fromloc} to location of head of {_wraith}

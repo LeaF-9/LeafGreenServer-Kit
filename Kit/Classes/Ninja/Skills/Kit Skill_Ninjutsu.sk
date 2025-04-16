@@ -252,7 +252,7 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 				add loop-player to {_nowentering::*}
 				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
 				if loop-player does not have regeneration:
-					applyEffect(loop-player, regeneration, 1, 5 seconds)
+					applyEffect(loop-player, regeneration, 1, 100)
 				if getInvisibleStatus(loop-player) is true:
 					set {_noInvTimer.%loop-player%} to 20
 				else:
@@ -267,7 +267,7 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 				add loop-player to {_nowentering::*}
 				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
 				if loop-player does not have poison:
-					applyEffect(loop-player, poison, 1, 5 seconds)
+					applyEffect(loop-player, poison, 1, 100)
 					kitEffectDescription(loop-player, "§c§l毒")
 		loop {_entered::*}:
 			if {_nowentering::*} does not contain loop-value-2:
@@ -351,7 +351,7 @@ function kitNinjutsu_MIZU(player: player, l: location):
 				add loop-entity to {_joined::*}
 			extinguish loop-entity
 			if loop-entity does not have regeneration:
-				applyEffect(loop-entity, regeneration, 2, 5 seconds)
+				applyEffect(loop-entity, regeneration, 2, 100)
 				kitEffectDescription(loop-entity, "§d§l再生能力")
 		# ------------------------------
 
@@ -386,7 +386,7 @@ function kitNinjutsu_MIZU(player: player, l: location):
 function kitNinjutsu_HONO(player: player, loc: location):
 	playSound("entity.ghast.shoot", 1, 1, {_player})
 	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 火 -", 100)
-	applyEffect({_player}, fire resistance, 1, 5 seconds)
+	applyEffect({_player}, fire resistance, 1, 100)
 	kitParticle_Ninjutsu_HONO_1({_loc})
 	loop all entities in radius 5 around {_loc}:
 		kitCheckTeam({_player}, loop-entity, false) is true
@@ -478,7 +478,7 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 			metadata value "gametype" of loop-player is "Kit"
 			{_eg::%loop-player%} is set
 			if {_jb::%loop-player%} is true:
-				applyEffect(loop-player, slowness, 1, 0.2 seconds, true)
+				applyEffect(loop-player, slowness, 1, 40, true)
 				kitParticle_Ninjutsu_HYOU_3(loop-player)
 			else:
 				if {_eg::%loop-player%} > 0:
@@ -557,8 +557,8 @@ function kitNinjutsu_TSUCHI(player: player, l: location):
 	loop all entities in radius 5 around {_l}:
 		kitCheckTeam(loop-entity, {_player}, true) is true
 		setSupporter(loop-entity, {_player})
-		applyEffect(loop-entity, resistance, 1, 5 seconds)
-		applyEffect(loop-entity, mining fatigue, 1, 5 seconds)
+		applyEffect(loop-entity, resistance, 1, 100)
+		applyEffect(loop-entity, mining fatigue, 1, 100)
 		kitEffectDescription(loop-entity, "§6§l耐性")
 		sendTimeBossbar_GREEN(loop-entity, "Ninjutsu - 土 -", 100)
 	set {_y} to y-coordinate of block at {_player}

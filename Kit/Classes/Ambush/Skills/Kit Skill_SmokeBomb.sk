@@ -3,7 +3,6 @@
 options:
 	effect-radius: 5
 	effect-tick: 60
-	effect-second: 3 seconds
 	metadata-projectile: "Smoke Bomb - Projectile"
 
 on projectile hit:
@@ -24,7 +23,7 @@ function kitEffect_SmokeBomb(player: player):
 local function kitEffect_SmokeBomb_Hit(player: player, loc: location):
 	loop all entities in radius {@effect-radius} around {_loc}:
 		if kitCheckTeam({_player}, loop-entity, false) is true:
-			applyEffect(loop-entity, blindness, 1, {@effect-second})
+			applyEffect(loop-entity, blindness, 1, {@effect-tick})
 			message formatted "§8煙幕にかかった!" to loop-entity
 			kitParticle_SmokeBomb_Blind(loop-entity)
 			continue

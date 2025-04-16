@@ -3,10 +3,8 @@
 options:
 	invisible-tick: 60
 	blind-radius: 5
-	blind-second: 5 seconds
 	blind-tick: 100
 	flash-radius: 30
-	flash-second: 3 seconds
 	flash-tick: 60
 	effect-message: "<##edff63>§l眩しい!"
 
@@ -21,7 +19,7 @@ function kitEffect_FlashLight(player: player):
 	loop all entities in radius {@blind-radius} around {_baseloc}:
 		kitCheckTeam({_player}, loop-entity, false) is true
 		set {_hit.%id of loop-entity%} to true
-		applyEffect(loop-entity, blindness, 1, {@blind-second})
+		applyEffect(loop-entity, blindness, 1, {@blind-tick})
 		message formatted {@effect-message} to loop-entity
 		kitParticle_FlashLight_Blind(loop-entity, {@blind-tick})
 
@@ -29,7 +27,7 @@ function kitEffect_FlashLight(player: player):
 		kitCheckTeam({_player}, loop-player, false) is true
 		{_hit.%id of loop-player%} is not set
 		checkCanSee(loop-player, {_effloc}) is true
-		applyEffect(loop-player, blindness, 1, {@flash-second})
+		applyEffect(loop-player, blindness, 1, {@flash-tick})
 		message formatted {@effect-message} to loop-player
 		kitParticle_FlashLight_Blind(loop-player, {@flash-tick})
 
