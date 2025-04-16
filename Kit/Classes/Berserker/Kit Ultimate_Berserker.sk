@@ -10,34 +10,23 @@ on damage of player with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	set {_AdrenalinRage} to getKitStats({_attacker}, "AdrenalinRage")
 	{_AdrenalinRage} is set
-	set {_now} to now
-	setKitStats({_attacker}, "AdrenalinRage-Time", {_now})
 
-	set {_damage} to {_AdrenalinRage}
+	set {_damage} to 1
 	loop all players in radius 10 around {_attacker}:
 		loop-player is not {_attacker}
-		add 1 to {_damage}
+		add 0.5 to {_damage}
 		if loop-player is not victim:
 			kitDamageNull({_attacker}, loop-player, 1, "乱撃")
 			kitEffectDescription(loop-player, "§4❤1")
 			kitParticle_AdrenalinRage_Around(loop-player)
 	
 	setDamageModification_SET(victim, {_damage})
-	add 1 to {_AdrenalinRage}
-	setKitStats({_attacker}, "AdrenalinRage", {_AdrenalinRage})
-	send action bar "§4§lコンボ§5: §6§l%{_AdrenalinRage}%" to {_attacker}
 	kitParticle_AdrenalinRage_Damage(victim)
-
-	wait a second
-	set {_AdrenalinRage-Time} to getKitStats({_attacker}, "AdrenalinRage-Time")
-	{_AdrenalinRage-Time} is {_now}
-	deleteKitStats({_attacker}, "AdrenalinRage-Time")
-	setKitStats({_attacker}, "AdrenalinRage", 0)
 
 
 
 local function kitEffect_AdrenalinRage(player: player):
-	setKitStats({_player}, "AdrenalinRage", 0)
+	setKitStats({_player}, "AdrenalinRage", true)
 	applyEffect({_player}, speed, 3, 200, true)
 	kitParticle_AdrenalinRage({_player})
 
@@ -65,7 +54,6 @@ local function kitEffect_AdrenalinRage(player: player):
 		wait a tick
 	
 	deleteKitStats({_player}, "AdrenalinRage")
-	deleteKitStats({_player}, "AdrenalinRage-Time")
 	loop all players:
 		{_jb::%loop-player%} is true
 		set maximum damage delay of loop-player to 20 ticks
