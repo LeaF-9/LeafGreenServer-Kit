@@ -1,11 +1,21 @@
+import:
+	org.bukkit.RegionAccessor
+	org.bukkit.Bukkit
+
 function kitSpawnMob(summoner: player, mob: entity type, loc: location) :: entity:
-	spawn 1 of {_mob} at {_loc}
-	set {_mob} to spawned entity
+	set {_world} to world of {_loc}
+	set {_mob} to {_world}.spawnEntity({_loc}, {_mob})
+
 	set display name of {_mob} to "%{_summoner}%"
 	set metadata value "gametype" of {_mob} to "Kit"
 	set metadata value "summon-player" of {_mob} to {_player}
-	set {_uuid} to a random uuid
+	set {_uuid} to {_mob}.getUniqueId()
 	set metadata value "uuid" of {_mob} to {_uuid}
+
+	set {_scoreboard} to Bukkit.getScoreboardManager().getMainScoreboard()
+	set {_playerteam} to getTeam({_summoner})
+	set {_team} to {_scoreboard}.getTeam("kit-%{_playerteam}%")
+	{_team}.addEntry({_uuid})
 	return {_mob}
 
 function kitSpawnMob_NBT(summoner: player, mob: entity type, loc: location, tag: text) :: entity:
@@ -15,6 +25,6 @@ function kitSpawnMob_NBT(summoner: player, mob: entity type, loc: location, tag:
 	set display name of {_mob} to "%{_summoner}%"
 	set metadata value "gametype" of {_mob} to "Kit"
 	set metadata value "summon-player" of {_mob} to {_summoner}
-	set {_uuid} to a random uuid
+	set {_uuid} to {_mob}.getUniqueId()
 	set metadata value "uuid" of {_mob} to {_uuid}
 	return {_mob}
