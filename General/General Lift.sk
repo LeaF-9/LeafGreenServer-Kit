@@ -2,7 +2,7 @@ command /liftset:
 	permission: sk.admin
 	executable by: player
 	trigger:
-		if target block is wall sign:
+		if target block is tagged as tag "skript:wall-sign":
 			set {_sign} to targeted block
 			set line 1 of targeted block to "§a[§bLIFT§a]"
 			set {_line} to location of {_sign}
@@ -12,8 +12,8 @@ command /liftset:
 			loop 256 times:
 				add 1 to {_y}
 				set y-coordinate of {_line} to {_y}
-				if block at {_line} is wall sign:
-					if block below {_line} is button:
+				if block at {_line} is tagged as tag "skript:wall-sign":
+					if block below {_line} is tagged as tag "skript:button":
 						add 1 to {_floor}
 						if block at {_line} is {_sign}:
 							set {_nowfloor} to {_floor}
@@ -34,7 +34,8 @@ command /liftset:
 			set line 3 of targeted block to "§6[<##dc143c>%{_dest}%§6]"
 			set line 4 of targeted block to ""
 
-on rightclick on a wall sign:
+on rightclick:
+	event-block is tagged as "skript:wall-sign"
 	if line 1 of targeted block is "§a[§bLIFT§a]":
 		set {_sign} to targeted block
 		set {_line} to location of {_sign}
@@ -44,8 +45,8 @@ on rightclick on a wall sign:
 		loop 256 times:
 			add 1 to {_y}
 			set y-coordinate of {_line} to {_y}
-			if block at {_line} is wall sign:
-				if block below {_line} is button:
+			if block at {_line} is tagged as tag "skript:wall-sign":
+				if block below {_line} is tagged as tag "skript:button":
 					add 1 to {_floor}
 					if block at {_line} is {_sign}:
 						set {_nowfloor} to {_floor}
@@ -70,15 +71,14 @@ on rightclick on a wall sign:
 aliases:
 	liftbase = minecraft:iron_block, minecraft:gold_block, minecraft:diamond_block
 	liftglass = minecraft:glass, minecraft:white_stained_glass, minecraft:orange_stained_glass, minecraft:magenta_stained_glass, minecraft:light_blue_stained_glass, minecraft:yellow_stained_glass, minecraft:lime_stained_glass, minecraft:pink_stained_glass, minecraft:gray_stained_glass, minecraft:light_gray_stained_glass, minecraft:cyan_stained_glass, minecraft:purple_stained_glass, minecraft:blue_stained_glass, minecraft:brown_stained_glass, minecraft:green_stained_glass, minecraft:red_stained_glass, minecraft:black_stained_glass
-	liftbutton = unpowered stone button, unpowered oak button, unpowered spruce button, unpowered birch button, unpowered jungle button, unpowered acacia button, unpowered dark oak button, unpowered crimson button, unpowered warped button, unpowered polished blackstone button
-	liftbuttonpow = powered stone button, powered oak button, powered spruce button, powered birch button, powered jungle button, powered acacia button, powered dark oak button, powered crimson button, powered warped button, powered polished blackstone button
 
-on rightclick on a button:
-	event-block is liftbutton
-	block above event-location is wall sign
+on rightclick:
+	clicked block is tagged as tag "skript:button"
+	pushing(block data of clicked block) is false
+	block above event-location is tagged as tag "skript:wall-sign"
 	line 1 of block above event-location is "§a[§bLIFT§a]"
 	wait a tick
-	event-block is liftbuttonpow
+	pushing(block data of clicked block) is true
 	set {_sign} to block above event-location
 	set {_signloc} to location of {_sign}
 #目的地値設定
@@ -99,8 +99,8 @@ on rightclick on a button:
 	loop 256 times:
 		add 1 to {_y}
 		set y-coordinate of {_line} to {_y}
-		if block at {_line} is wall sign:
-			if block below {_line} is button:
+		if block at {_line} is tagged as tag "skript:wall-sign":
+			if block below {_line} is tagged as tag "skript:button":
 				add 1 to {_floor}
 #			ベースブロック読み取り
 				if {_floor} is 1:
@@ -168,3 +168,10 @@ on rightclick on a button:
 			if {_basedepart} < {_destloc}:
 				set {_stop} to true
 			wait a tick
+
+
+
+local function pushing(data: block data) :: boolean:
+	set {_string} to "%{_data}%"
+	return true if {_string} contains "powered=true"
+	return false

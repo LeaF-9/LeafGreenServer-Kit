@@ -18,17 +18,17 @@ on rightclick holding a book:
 # 選択システム
 on inventory click:
 	type of event-inventory is chest inventory
-	inventory name of event-inventory is {@itemname}
+	name of event-inventory is {@itemname}
 	cancel event
-	if type of clicked item is book:
-		set {_lore} to line 3 of lore of clicked item
+	if type of event-item is book:
+		set {_lore} to line 3 of lore of event-item
 		replace "§8" with "" in {_lore}
 		replace "\" with "/" in {_lore}
 		setSkriptList(player, {_lore})
-	else if type of clicked item is light green dye:
-		set {_file} to name of clicked item
+	else if type of event-item is lime dye:
+		set {_file} to name of event-item
 		replace "§a" with "" in {_file}
-		set {_lore} to line 4 of lore of clicked item
+		set {_lore} to line 4 of lore of event-item
 		replace "§8" with "" in {_lore}
 		replace "\" with "/" in {_lore}
 		if click type is left mouse button:
@@ -40,10 +40,10 @@ on inventory click:
 			make player execute command "/sk %{_arg}% %{_file}%"
 		else:
 			make player execute command "/sk %{_arg}% %{_lore}%/%{_file}%"
-	else if type of clicked item is gray dye:
-		set {_file} to name of clicked item
+	else if type of event-item is gray dye:
+		set {_file} to name of event-item
 		replace "§8" with "" in {_file}
-		set {_lore} to line 3 of lore of clicked item
+		set {_lore} to line 3 of lore of event-item
 		replace "§8" with "" in {_lore}
 		replace "\" with "/" in {_lore}
 		close player's inventory
@@ -59,31 +59,47 @@ function openSkriptBook(player: player):
 	wait a tick
 	setSkriptList({_player})
 
+import:
+	java.io.File
+
 # Skript List表示用関数
 function setSkriptList(player: player, path: text = "plugins/Skript/scripts", page: number = 1):
 	set {_slot} to 0
 	loop 9 * {@rownum} times:
 		set slot {_slot} of {_player}'s current inventory to air
 		add 1 to {_slot}
-	set {_directories::*} to all directories of dir path {_path}
-	set {_files::*} to all files of dir path {_path}
+
+	set {_FileInst} to new File({_path})
+	set {_file} to {_FileInst}.listFiles()
+	set {_length} to {_file}.length
+	set {_loopnum} to 0
+	loop {_length} times:
+		set {_loopfile} to {_file}.get({_loopnum})
+		add {_loopfile} to {_directories::*} if {_loopfile}.isDirectory()
+		add {_loopfile} to {_files::*} if {_loopfile}.isFile()
+		add 1 to {_loopnum}
+
 	set {_slot} to 0
 	loop {_directories::*}:
-		set {_dirname} to directory name of directory path "%loop-value%"
+		set {_loopfile} to loop-value
+
+		set {_dirname} to {_loopfile}.getName()
 		{_dirname} does not contain ".git"
-		set slot {_slot} of {_player}'s current inventory to book named "§6%{_dirname}%" with lore "§a左クリック §eでディレクトリを開く", " " and "§8%loop-value%"
+		set slot {_slot} of {_player}'s current inventory to book named "§6%{_dirname}%" with lore "§a左クリック §eでディレクトリを開く", " " and "§8%{_loopfile}%"
 		add 1 to {_slot}
 	set {_clickpath} to {_path}
 	replace "plugins/Skript/scripts" with "" in {_clickpath}
 	loop {_files::*}:
-		set {_filename} to file name of file path "%loop-value%"
+		set {_loopfile} to loop-value
+
+		set {_filename} to {_loopfile}.getName()
 		last 3 characters of {_filename} is ".sk"
 		replace ".sk" with "" in {_filename}
 		if first character of {_filename} is "-":
 			replace first characters of {_filename} with "" in {_filename}
 			set slot {_slot} of {_player}'s current inventory to gray dye named "§8%{_filename}%" with lore "§a右クリック §eで有効化する", " " and "§8%{_clickpath}%"
 		else:
-			set slot {_slot} of {_player}'s current inventory to light green dye named "§a%{_filename}%" with lore "§a左クリック §eで再読み込みする", "§a右クリック §eで無効化する", " " and "§8%{_clickpath}%"
+			set slot {_slot} of {_player}'s current inventory to lime dye named "§a%{_filename}%" with lore "§a左クリック §eで再読み込みする", "§a右クリック §eで無効化する", " " and "§8%{_clickpath}%"
 		add 1 to {_slot}
 	set {_pathnames::*} to {_path} split at "/"
 	set {_clickpath} to ""

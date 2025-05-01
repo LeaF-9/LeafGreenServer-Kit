@@ -1,3 +1,6 @@
+import:
+	java.io.File
+
 on load:
 	savePlayerNames()
 
@@ -10,14 +13,21 @@ on join:
 	save yml "player"
 
 function savePlayerNames():
-	set {_files::*} to all files of dir path "plugins/skript-yaml/Kit Players"
-	loop {_files::*}:
-		load yml "%loop-value%" as "playerdata"
+	set {_FileInst} to new File("plugins/skript-yaml/Kit Players")
+	set {_file} to {_FileInst}.listFiles()
+	set {_length} to {_file}.length
+	set {_loopnum} to 0
+	loop {_length} times:
+		set {_loopfile} to {_file}.get({_loopnum})
+		set {_path} to {_loopfile}.getPath()
+
+		load yml {_path} as "playerdata"
 		set {_name} to yml value "name" from "playerdata"
 		unload yml "playerdata"
-		if {_name} is not set:
-			continue
+		continue if {_name} is not set
 		
-		set {_uuid} to file name of loop-value
+		set {_uuid} to {_loopfile}.getName()
 		replace ".yml" with "" in {_uuid}
 		set {-UUID::%{_uuid}%} to {_name}
+
+		add 1 to {_loopnum}

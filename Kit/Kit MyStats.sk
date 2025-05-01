@@ -1,7 +1,7 @@
 on inventory click:
 	type of event-inventory is chest inventory
-	set {_invname} to inventory name of event-inventory
-	set {_clickitem} to clicked item
+	set {_invname} to name of event-inventory
+	set {_clickitem} to event-item
 
 	# period stats
 	if {_invname} contains "§6§lPvP Stats§r §7- §b":
@@ -34,8 +34,8 @@ on inventory click:
 	# Kit Select
 	else if {_invname} is "§bKit: §6Genre-Stats":
 		cancel event
-		if type of clicked item is a concrete:
-			set {_genre} to name of clicked item
+		if type of event-item is tagged as tag "skript:genre-concretes":
+			set {_genre} to name of event-item
 			replace "§6§l" with "" in {_genre}
 			close player's inventory
 			openKitStats(player, {_genre}, "Kill")
@@ -48,7 +48,7 @@ on inventory click:
 		if {_itemname} is " ":
 			stop
 
-		if type of clicked item is a concrete:
+		if type of event-item is tagged as tag "skript:genre-concretes":
 			set {_genre} to {_invname}
 			replace "§6Kit Stats §7- §c§l" with "" in {_genre}
 

@@ -4,37 +4,37 @@ options:
 on inventory click:
 	{Game::%player%} is "Kit"
 	if type of event-inventory is chest inventory:
-		if inventory name of event-inventory is "§bKit: §6Genre-Unit":
+		if name of event-inventory is "§bKit: §6Genre-Unit":
 			cancel event
-			if type of clicked item is a concrete:
-				set {_genre} to name of clicked item
+			if type of event-item is tagged as tag "skript:genre-concretes":
+				set {_genre} to name of event-item
 				replace "§6§l" with "" in {_genre}
 				close player's inventory
 				openKitUnitGenre(player, {_genre})
-		else if inventory name of event-inventory is "§bKit: §9Unit Customize":
+		else if name of event-inventory is "§bKit: §9Unit Customize":
 			cancel event
 			if clicked slot is 0, 1, 2, 3, 4, 5, 6, 7 or 8:
-				set {_kit} to name of clicked item
+				set {_kit} to name of event-item
 				if {_kit} is set:
 					replace "§6§l" with "" in {_kit}
 					close player's inventory
 					openKitUnitList(player, {_kit})
-		else if inventory name of event-inventory contains "§a's New Unit":
+		else if name of event-inventory contains "§a's New Unit":
 			if clicked slot is 44:
 				cancel event
-				set {_kit} to inventory name of event-inventory
+				set {_kit} to name of event-inventory
 				replace "§a's New Unit" with "" in {_kit}
 				replace "§6" with "" in {_kit}
 				kitUnitCreate(player, {_kit})
-			else if type of clicked item  is a stained glass pane:
+			else if type of event-item is tagged as tag "skript:cancel-glass":
 				cancel event
-		else if inventory name of event-inventory contains "§9's Unit":
+		else if name of event-inventory contains "§9's Unit":
 			cancel event
-			set {_kit} to inventory name of event-inventory
+			set {_kit} to name of event-inventory
 			replace "§9's Unit" with "" in {_kit}
 			replace "§bKit: §6" with "" in {_kit}
-			if type of clicked item is a chest:
-				set {_unit} to 1st line of lore of clicked item
+			if type of event-item is a chest:
+				set {_unit} to 1st line of lore of event-item
 				replace "§b§lUnit " with "" in {_unit}
 				set {_unit} to {_unit} parsed as number
 				close player's inventory
@@ -44,25 +44,25 @@ on inventory click:
 					openKitUnitCustom(player, {_kit}, {_unit})
 				else if click type is middle mouse button:
 					openKitUnitRemove(player, {_kit}, {_unit})
-			else if type of clicked item is a lime stained glass pane:
+			else if type of event-item is a lime stained glass pane:
 				set {_num} to clicked slot
 				set {_num} to {_num} + 1
 				close player's inventory
 				openKitUnitCreate(player, {_kit})
-		else if inventory name of event-inventory contains "§a's Unit":
+		else if name of event-inventory contains "§a's Unit":
 			cancel event
-			set {_kit} to inventory name of event-inventory
+			set {_kit} to name of event-inventory
 			replace "§a's Unit" with "" in {_kit}
 			replace "§bKit: §6" with "" in {_kit}
-			if type of clicked item is a chest:
-				set {_unit} to 1st line of lore of clicked item
+			if type of event-item is a chest:
+				set {_unit} to 1st line of lore of event-item
 				replace "§b§lUnit " with "" in {_unit}
 				set {_unit} to {_unit} parsed as number
 				close player's inventory
 				kitUnitSelect(player, {_kit}, {_unit})
-		else if inventory name of event-inventory contains "§e's Unit Detail":
+		else if name of event-inventory contains "§e's Unit Detail":
 			cancel event
-			set {_name} to inventory name of event-inventory
+			set {_name} to name of event-inventory
 			set {_details::*} to {_name} split at ":"
 			set {_kit} to {_details::1}
 			replace "§6" with "" in {_kit}
@@ -79,8 +79,8 @@ on inventory click:
 			else if clicked slot is 25:
 				close player's inventory
 				openKitUnitRemove(player, {_kit}, {_unit})
-		else if inventory name of event-inventory contains "§e's Unit Custom":
-			set {_name} to inventory name of event-inventory
+		else if name of event-inventory contains "§e's Unit Custom":
+			set {_name} to name of event-inventory
 			set {_details::*} to {_name} split at ":"
 			set {_kit} to {_details::1}
 			replace "§6" with "" in {_kit}
@@ -101,26 +101,26 @@ on inventory click:
 			else if clicked slot is 44:
 				cancel event
 				kitUnitSave(player, {_kit}, {_unit})
-			else if type of clicked item is stained glass pane:
+			else if event-item is tagged as tag "skript:cancel-glass":
 				cancel event
-		else if inventory name of event-inventory contains "§eを削除しますか?":
+		else if name of event-inventory contains "§eを削除しますか?":
 			cancel event
-			set {_name} to inventory name of event-inventory
+			set {_name} to name of event-inventory
 			replace "§6" with "" in {_name}
 			set {_details::*} to {_name} split at "§"
 			set {_kit} to {_details::1}
 			set {_unit} to {_details::2}
 			replace "eのUnit" with "" in {_unit}
 			set {_unit} to {_unit} parsed as number
-			if type of clicked item is a lime concrete:
+			if type of event-item is a lime concrete:
 				close player's inventory
 				kitUnitRemove(player, {_kit}, {_unit})
-			else if type of clicked item is a red concrete:
+			else if type of event-item is a red concrete:
 				close player's inventory
 				openKitUnitList(player, {_kit})
-		else if inventory name of event-inventory contains "§c's Unit Weapon":
+		else if name of event-inventory contains "§c's Unit Weapon":
 			cancel event
-			set {_name} to inventory name of event-inventory
+			set {_name} to name of event-inventory
 			set {_details::*} to {_name} split at ":"
 			set {_kit} to {_details::1}
 			replace "§6" with "" in {_kit}
@@ -137,7 +137,7 @@ on inventory click:
 				save yml "class.%player%.unit"
 				message formatted "{@prefix} §9ユニット§7: §b§l%{_unitname}% §cの§4Weapon§cを削除しました" to player
 			else:
-				set {_weapon} to clicked item
+				set {_weapon} to event-item
 				set {_main-weapon::*} to kitWeaponList({_kit})
 				loop {_main-weapon::*}:
 					if loop-value is {_weapon}:
@@ -253,9 +253,9 @@ function openKitUnitCustom(player: player, kit: text, num: number):
 	set {_num} to 0
 	loop 27 times:
 		if {_num} is 0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25 or 26:
-			set slot {_num} of {_player}'s current inventory to a white glass pane named " "
+			set slot {_num} of {_player}'s current inventory to a white stained glass pane named " "
 		else if {_num} is 1, 4 or 7:
-			set slot {_num} of {_player}'s current inventory to a red glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩"
+			set slot {_num} of {_player}'s current inventory to a red stained glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩"
 		add 1 to {_num}
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "skill" from "class.custom.%{_kit}%":
@@ -280,7 +280,7 @@ function openKitUnitCustom(player: player, kit: text, num: number):
 		set slot 37 of {_player}'s current inventory to {_weapon}
 	else:
 		set slot 37 of {_player}'s current inventory to structure void named "§4Weapon§eがセットされていません"
-	set slot 39 of {_player}'s current inventory to nametag named "§9§lName Change" with lore "§eUnitの名前を変更することが出来ます", "" and "§9現在の名前: §b§l%{_name}%"
+	set slot 39 of {_player}'s current inventory to name tag named "§9§lName Change" with lore "§eUnitの名前を変更することが出来ます", "" and "§9現在の名前: §b§l%{_name}%"
 	set slot 44 of {_player}'s current inventory to nether star named "§a§lUnit Save" with lore "§eUnitの設定を保存します"
 
 function openKitUnitRemove(player: player, kit: text, num: number):
@@ -301,9 +301,9 @@ function openKitUnitCreate(player: player, kit: text):
 	set {_num} to 0
 	loop 27 times:
 		if {_num} is 0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25 or 26:
-			set slot {_num} of {_player}'s current inventory to a white glass pane named " "
+			set slot {_num} of {_player}'s current inventory to a white stained glass pane named " "
 		else if {_num} is 1, 4 or 7:
-			set slot {_num} of {_player}'s current inventory to a red glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩"
+			set slot {_num} of {_player}'s current inventory to a red stained glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩"
 		add 1 to {_num}
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "skill" from "class.custom.%{_kit}%":
@@ -379,8 +379,8 @@ function openKitUnitWeapon(player: player, kit: text, num: number):
 	wait a tick
 	open chest with 2 row named "§6%{_kit}%§c's Unit Weapon§7: §9§l%{_num}%" to {_player}
 	wait a tick
-	set slot 0 of {_player}'s current inventory to a red glass pane named "§4§lMain Weapon" with lore "§fKitのメインとなる武器です" and "§aこの列のアイテムを選択して下さい"
-	set slot 9 of {_player}'s current inventory to a yellow glass pane named "§e§lSub Weapon" with lore "§fKitのオフハンドに装備する武器です" and "§cこの列のアイテムは選択できません"
+	set slot 0 of {_player}'s current inventory to a red stained glass pane named "§4§lMain Weapon" with lore "§fKitのメインとなる武器です" and "§aこの列のアイテムを選択して下さい"
+	set slot 9 of {_player}'s current inventory to a yellow stained glass pane named "§e§lSub Weapon" with lore "§fKitのオフハンドに装備する武器です" and "§cこの列のアイテムは選択できません"
 	set {_slot} to 2
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "weapon" from "class.custom.%{_kit}%":

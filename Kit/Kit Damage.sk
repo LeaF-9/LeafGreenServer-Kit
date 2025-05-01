@@ -197,8 +197,8 @@ function kitDamageInstant(attacker: player, victim: entity, damage: number, caus
 	set metadata value "kit damage" of {_victim} to {_now}
 
 	# 無敵時間操作
-	set {_baseTick} to maximum damage delay of {_victim}
-	set maximum damage delay of {_victim} to 1 tick
+	set {_baseTick} to no damage time of {_victim}
+	set no damage time of {_victim} to 1 tick
 
 	if {_fix} is true:
 		damage {_victim} by {_damage} hearts
@@ -220,7 +220,7 @@ function kitDamageInstant(attacker: player, victim: entity, damage: number, caus
 		damage {_victim} by {_truedamage} hearts
 	
 	# 無敵時間戻す
-	set maximum damage delay of {_victim} to {_baseTick}
+	set no damage time of {_victim} to {_baseTick}
 
 on damage of player:
 	getKitStats(victim, "Invincible") is true

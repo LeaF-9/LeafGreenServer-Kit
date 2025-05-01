@@ -18,14 +18,14 @@ function kitEffect_FlashLight(player: player):
 
 	loop all entities in radius {@blind-radius} around {_baseloc}:
 		kitCheckTeam({_player}, loop-entity, false) is true
-		set {_hit.%id of loop-entity%} to true
+		set {_hit.%uuid of loop-entity%} to true
 		applyEffect(loop-entity, blindness, 1, {@blind-tick})
 		message formatted {@effect-message} to loop-entity
 		kitParticle_FlashLight_Blind(loop-entity, {@blind-tick})
 
 	loop all players in radius {@flash-radius} around {_baseloc}:
 		kitCheckTeam({_player}, loop-player, false) is true
-		{_hit.%id of loop-player%} is not set
+		{_hit.%uuid of loop-player%} is not set
 		checkCanSee(loop-player, {_effloc}) is true
 		applyEffect(loop-player, blindness, 1, {@flash-tick})
 		message formatted {@effect-message} to loop-player

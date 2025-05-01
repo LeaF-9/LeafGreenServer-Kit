@@ -55,16 +55,16 @@ local function kitEffect_GasSpray_Gas(player: player, proj: projectile):
 		loop all entities in radius {@effect-radius} around {_l}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			kitParticle_GasSpray_Stay(loop-entity)
-			set {_eg::%id of loop-entity%} to true
-			if {_jb::%id of loop-entity%} is not set:
-				set {_jb::%id of loop-entity%} to true
+			set {_eg::%uuid of loop-entity%} to true
+			if {_jb::%uuid of loop-entity%} is not set:
+				set {_jb::%uuid of loop-entity%} to true
 				apply poison 1 to loop-entity for 10 seconds replacing existing effect
 
 		loop all entities:
-			{_eg::%id of loop-entity%} is not set
-			{_jb::%id of loop-entity%} is true
+			{_eg::%uuid of loop-entity%} is not set
+			{_jb::%uuid of loop-entity%} is true
 			remove poison from loop-entity
-			delete {_jb::%id of loop-entity%}
+			delete {_jb::%uuid of loop-entity%}
 
 		loop all projectiles in radius {@effect-radius} around {_l}:
 			loop-projectile is not {_proj}
@@ -78,8 +78,8 @@ local function kitEffect_GasSpray_Gas(player: player, proj: projectile):
 		if loop-entity is {_marker}:
 			delete loop-entity
 			continue
-		{_eg::%id of loop-entity%} is true
-		{_jb::%id of loop-entity%} is true
+		{_eg::%uuid of loop-entity%} is true
+		{_jb::%uuid of loop-entity%} is true
 		remove poison from loop-entity
 	kitEffect_GasSpray_Explosion({_player}, {_l})
 

@@ -1,20 +1,30 @@
-on fishing:
-	name of player's tool contains "Grappling Hook"
+import:
+	org.bukkit.event.player.PlayerFishEvent
+	org.bukkit.event.player.PlayerFishEvent$State
+
+on PlayerFishEvent:
+	set {_player} to event.getPlayer()
+	name of {_player}'s tool contains "Grappling Hook"
 	stop if checkCT({_player}, "Grappling Hook") is false
 
-	if "%event.getState()%" is "reel_in" or "in_ground":
-		set damage value of player's tool to 0
+	set {_state} to event.getState()
+	if any:
+		{_state} is State.REEL_IN
+		{_state} is State.IN_GROUND
+	then:
+		set damage value of {_player}'s tool to 0
+		set {_hook} to event.getHook()
 
-		if block below fish hook is not air:
-			if "%type of block below fish hook%" does not contain "water" or "lava":
-				jump(player, fish hook, {_vector})
+		if block below {_hook} is not air:
+			if "%type of block below {_hook}%" does not contain "water" or "lava":
+				jump({_player}, {_hook}, {_vector})
 
-		else if block at fish hook is not air:
-			jump(player, fish hook, {_vector})
+		else if block at {_hook} is not air:
+			jump({_player}, {_hook}, {_vector})
 
-		else if block below fish hook is air:
-			if block below block below fish hook is not air or water or lava:
-				jump(player, fish hook, {_vector})
+		else if block below {_hook} is air:
+			if block below block below {_hook} is not air or water or lava:
+				jump({_player}, {_hook}, {_vector})
 
 local function jump(player: player, hook: object, vector: vector):
 	playSound("entity.zombie.infect", 1, 2, {_player})

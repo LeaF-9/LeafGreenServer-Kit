@@ -25,14 +25,14 @@ function kitEffect_FrenzySlash(player: player):
 		set {_baseloc} to location 1 meters above {_player}
 		loop all entities in radius 2 around {_baseloc}:
 			loop-entity is not {_player}
-			{_hit.%id of loop-entity%} is not set
-			set {_hit.%id of loop-entity%} to true
+			{_hit.%uuid of loop-entity%} is not set
+			set {_hit.%uuid of loop-entity%} to true
 			kitDamage({_player}, loop-entity, 3, "突進")
 
 			if checkEntityType(loop-entity, player) is true:
 				add loop-entity to {_hitplayers::*}
 				set metadata value "frenzy slash" of loop-entity to {_player}
-				set maximum damage delay of loop-entity to 10 ticks
+				set no damage time of loop-entity to 10 ticks
 				message formatted "§4§l被ダメージ間隔§cが§6§l半分§cになってしまった!" to loop-entity
 				sendTimeBossbar_RED(loop-entity, "ダメージ間隔半分", 100)
 				kitEffectDescription(loop-entity, "§4❤3")
@@ -47,7 +47,7 @@ function kitEffect_FrenzySlash(player: player):
 		set {_loop-player} to loop-value
 		metadata value "frenzy slash" of {_loop-player} is {_player}
 		delete metadata value "frenzy slash" of {_loop-player}
-		set maximum damage delay of {_loop-player} to 20 ticks
+		set no damage time of {_loop-player} to 20 ticks
 		message formatted "§4被ダメージ間隔§bが元に戻りました" to {_loop-player}
 
 local function kitEffect_FrenzySlash_Heal(player: player, target: player):

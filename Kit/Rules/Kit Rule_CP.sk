@@ -1,6 +1,13 @@
 ﻿aliases:
 	coreblock = minecraft:iron_block, minecraft:gold_block, minecraft:diamond_block, minecraft:air, minecraft:bedrock
 
+on load:
+	register block tag named "areawool" using white wool, yellow wool, blue wool, green wool, red wool
+	register block tag named "areaterracotta" using white terracotta, yellow terracotta, blue terracotta, green terracotta, red terracotta
+	register block tag named "areastainedglass" using white stained glass, yellow stained glass, blue stained glass, green stained glass, red stained glass
+	register block tag named "areaconcrete" using white concrete, yellow concrete, blue concrete, green concrete, red concrete
+	register block tag named "areaconcretepowder" using white concrete powder, yellow concrete powder, blue concrete powder, green concrete powder, red concrete powder
+
 function kitSetHologram_CP(stage: text):
 	loop {Kit-GameStage.Areas::*}:
 		# エリアのベース座標
@@ -297,19 +304,19 @@ function kitSetColorBlock_CP(loc: location, color: text) :: item:
 	if {Kit-GameStage::color-%{_color}%} is set:
 		return {Kit-GameStage::color-%{_color}%}
 	set {_block} to block at {_loc}
-	if type of {_block} is wool:
+	if {_block} is tagged as tag "skript:areawool":
 		set {_pb} to "%{_color}% wool" parsed as item
 		return {_pb}
-	else if type of {_block} is hard clay:
+	else if {_block} is tagged as tag "skript:areaterracotta":
 		set {_pb} to "%{_color}% hard clay" parsed as item
 		return {_pb}
-	else if type of {_block} is glass:
+	else if {_block} is tagged as tag "skript:areastainedglass":
 		set {_pb} to "%{_color}% glass" parsed as item
 		return {_pb}
-	else if type of {_block} is concrete:
+	else if {_block} is tagged as tag "skript:areaconcrete":
 		set {_pb} to "%{_color}% concrete" parsed as item
 		return {_pb}
-	else if type of {_block} is concrete powder:
+	else if {_block} is tagged as tag "skript:areaconcretepowder":
 		set {_pb} to "%{_color}% concrete powder" parsed as item
 		return {_pb}
 	else:

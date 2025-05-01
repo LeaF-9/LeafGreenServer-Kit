@@ -44,17 +44,17 @@ function kitEffect_RecipientGenie(player: player):
 			kitCheckTeam(loop-player, {_player}, true) is true
 			getKitStats(loop-player, "RecipientGenie-Launcher") is not set
 			add 1 to {_popularity}
-			set {_eg::%id of loop-player%} to true
+			set {_eg::%uuid of loop-player%} to true
 			kitParticle_RecipientGenie_Cover({_player}, loop-player)
-			if {_jb::%id of loop-player%} is not set:
-				set {_jb::%id of loop-player%} to true
+			if {_jb::%uuid of loop-player%} is not set:
+				set {_jb::%uuid of loop-player%} to true
 				setKitStats(loop-player, "RecipientGenie", {_player})
 
 		loop all players:
 			metadata value "gametype" of loop-player is "Kit"
-			{_eg::%id of loop-player%} is not set
-			{_jb::%id of loop-player%} is true
-			delete {_jb::%id of loop-player%}
+			{_eg::%uuid of loop-player%} is not set
+			{_jb::%uuid of loop-player%} is true
+			delete {_jb::%uuid of loop-player%}
 			deleteKitStats(loop-player, "RecipientGenie")
 		setKitStats({_player}, "RecipientGenie-Number", {_popularity})
 		wait a tick
@@ -64,8 +64,8 @@ function kitEffect_RecipientGenie(player: player):
 	deleteKitStats({_player}, "RecipientGenie-Launcher")
 	deleteKitStats({_player}, "RecipientGenie-Number")
 	loop all players:
-		{_eg::%id of loop-player%} is true
-		{_jb::%id of loop-player%} is true
+		{_eg::%uuid of loop-player%} is true
+		{_jb::%uuid of loop-player%} is true
 		deleteKitStats(loop-player, "RecipientGenie")
 
 

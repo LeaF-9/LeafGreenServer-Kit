@@ -1,3 +1,6 @@
+import:
+	java.io.File
+
 options:
 	prefix: §e[§b§l§oSK§6§oClass§e]§r
 
@@ -5,11 +8,16 @@ on tab complete for "/skclass":
 	add "export" to {_tab1::*}
 	loop all players:
 		add "%loop-player%" to {_tab1::*}
-	set {_files::*} to all files of dir path "plugins/skript-yaml/General Classes"
-	loop {_files::*}:
-		set {_filename} to file name of file path "%loop-value%"
+	set {_FileInst} to new File("plugins/skript-yaml/General Classes")
+	set {_file} to {_FileInst}.listFiles()
+	set {_length} to {_file}.length
+	set {_loopnum} to 0
+	loop {_length} times:
+		set {_loopfile} to {_file}.get({_loopnum})
+		set {_filename} to {_loopfile}.getName()
 		replace ".yml" with "" in {_filename}
 		add {_filename} to {_tab2::*}
+		add 1 to {_loopnum}
 	set tab completions for position 1 to {_tab1::*}
 	set tab completions for position 2 to {_tab2::*}
 

@@ -154,35 +154,35 @@ function openKitInvGenre(player: player, genre: text):
 
 on inventory click:
 	type of event-inventory is chest inventory
-	if inventory name of event-inventory is "§6§lKit §e§lGenre":
+	if name of event-inventory is "§6§lKit §e§lGenre":
 		cancel event
-		if name of clicked item is "§c§lAttacker":
+		if name of event-item is "§c§lAttacker":
 			openKitInvGenre(player, "attacker")
 			close player's inventory
-		else if name of clicked item is "§e§lMagician":
+		else if name of event-item is "§e§lMagician":
 			openKitInvGenre(player, "magician")
 			close player's inventory
-		else if name of clicked item is "§a§lShooter":
+		else if name of event-item is "§a§lShooter":
 			openKitInvGenre(player, "shooter")
 			close player's inventory
-		else if name of clicked item is "§b§lAcrobat":
+		else if name of event-item is "§b§lAcrobat":
 			openKitInvGenre(player, "acrobat")
 			close player's inventory
-		else if name of clicked item is "§9§lTank":
+		else if name of event-item is "§9§lTank":
 			openKitInvGenre(player, "tank")
 			close player's inventory
-		else if name of clicked item is "§d§lSupport":
+		else if name of event-item is "§d§lSupport":
 			openKitInvGenre(player, "support")
 			close player's inventory
-	else if inventory name of event-inventory is "§6§lKit §a§lSelect":
+	else if name of event-inventory is "§6§lKit §a§lSelect":
 		cancel event
-		if type of clicked item is a barrier or a structure void:
+		if type of event-item is a barrier or a structure void:
 			message formatted "§4§lこのKitは選択できません" to player
 			stop
 		load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "class.all"
 		set {_classes::*} to yml list "Classes" from "class.all"
 		unload yml "class.all"
-		set {_kit} to name of clicked item
+		set {_kit} to name of event-item
 		replace "§6§l" with "" in {_kit}
 		if {_classes::*} contains {_kit}:
 			close player's inventory
@@ -190,13 +190,13 @@ on inventory click:
 				openKitDescriptions(player, {_kit})
 				stop
 			make player execute command "/class %{_kit}%"
-		else if name of clicked item is "§4§lBack":
+		else if name of event-item is "§4§lBack":
 			close player's inventory
 			openKitInv(player)
-	else if inventory name of event-inventory contains "§6§lKit Descriptions§e: §a§l":
+	else if name of event-inventory contains "§6§lKit Descriptions§e: §a§l":
 		cancel event
 		if clicked slot is 53:
-			loadKitGenreInv(player, inventory name of event-inventory)
+			loadKitGenreInv(player, name of event-inventory)
 
 local function openKitDescriptions(player: player, kit: text):
 	wait a tick

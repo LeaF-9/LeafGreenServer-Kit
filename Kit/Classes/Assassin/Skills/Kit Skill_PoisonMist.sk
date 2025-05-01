@@ -43,9 +43,9 @@ on projectile hit:
 		loop all entities in radius 5 around {_l}:
 			if kitCheckTeam(loop-entity, shooter, false) is true:
 				spawnParticle_Color(entity_effect, rgb(0, 150, 0), loop-entity)
-				set {_eg::%id of loop-entity%} to true
-				if {_jb::%id of loop-entity%} is not set:
-					set {_jb::%id of loop-entity%} to true
+				set {_eg::%uuid of loop-entity%} to true
+				if {_jb::%uuid of loop-entity%} is not set:
+					set {_jb::%uuid of loop-entity%} to true
 					apply poison 3 to loop-entity for 10 seconds replacing existing effect
 					kitEffectDescription(loop-entity, "§c§l毒")
 			else if loop-entity is shooter:
@@ -66,15 +66,15 @@ on projectile hit:
 				removeInvisible(shooter)
 		loop all entities:
 			metadata value "gametype" of loop-entity is "Kit"
-			{_eg::%id of loop-entity%} is not set
-			{_jb::%id of loop-entity%} is true
+			{_eg::%uuid of loop-entity%} is not set
+			{_jb::%uuid of loop-entity%} is true
 			remove poison from loop-entity
-			delete {_jb::%id of loop-entity%}
+			delete {_jb::%uuid of loop-entity%}
 		wait a tick
 
 	loop all entities:
-		{_eg::%id of loop-entity%} is true
-		{_jb::%id of loop-entity%} is true
+		{_eg::%uuid of loop-entity%} is true
+		{_jb::%uuid of loop-entity%} is true
 		remove poison from loop-entity
 
 on consume of potion:

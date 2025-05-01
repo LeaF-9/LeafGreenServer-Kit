@@ -1,6 +1,10 @@
 options:
 	prefix: §a[§eSkill§a]
 
+on load:
+	register block tag named "genre-concretes" using red concrete, yellow concrete, lime concrete, light blue concrete, blue concrete, pink concrete
+	register block tag named "cancel-glass" using white stained glass pane, red stained glass pane
+
 command /kitskilllist <text> <text>:
 	permission: sk.admin
 	executable by: player
@@ -189,32 +193,32 @@ command /kitcustom <text> <player=%player%>:
 
 on inventory click:
 	type of event-inventory is chest inventory
-	if inventory name of event-inventory is "§bKit: §6Genre-Weapon":
+	if name of event-inventory is "§bKit: §6Genre-Weapon":
 		cancel event
-		if type of clicked item is a concrete:
-			set {_genre} to name of clicked item
+		if type of event-item is tagged as tag "skript:genre-concretes":
+			set {_genre} to name of event-item
 			replace "§6§l" with "" in {_genre}
 			close player's inventory
 			openKitCustom(player, "Weapon", {_genre})
-	else if inventory name of event-inventory is "§bKit: §6Genre-Skill":
+	else if name of event-inventory is "§bKit: §6Genre-Skill":
 		cancel event
-		if type of clicked item is a concrete:
-			set {_genre} to name of clicked item
+		if type of event-item is tagged as tag "skript:genre-concretes":
+			set {_genre} to name of event-item
 			replace "§6§l" with "" in {_genre}
 			close player's inventory
 			openKitCustom(player, "Skill", {_genre})
-	else if inventory name of event-inventory is "§bKit: §9Weapon Customize":
+	else if name of event-inventory is "§bKit: §9Weapon Customize":
 		cancel event
 		if clicked slot is 0, 1, 2, 3, 4, 5, 6, 7 or 8:
-			set {_genre} to name of clicked item
+			set {_genre} to name of event-item
 			if {_genre} is set:
 				replace "§6§l" with "" in {_genre}
 				close player's inventory
 				openKitWeaponCustom(player, {_genre})
-	else if inventory name of event-inventory is "§bKit: §9Skill Customize":
+	else if name of event-inventory is "§bKit: §9Skill Customize":
 		cancel event
 		if clicked slot is 0, 1, 2, 3, 4, 5, 6, 7 or 8:
-			set {_genre} to name of clicked item
+			set {_genre} to name of event-item
 			if {_genre} is set:
 				replace "§6§l" with "" in {_genre}
 				close player's inventory
@@ -233,9 +237,9 @@ on inventory click:
 		unload yml "class.all"
 		loop {_classes.all::*}:
 			# Weapon Custom
-			if inventory name of event-inventory is "§bKit: §6%loop-value%§c's Weapon":
+			if name of event-inventory is "§bKit: §6%loop-value%§c's Weapon":
 				cancel event
-				set {_weapon} to clicked item
+				set {_weapon} to event-item
 				load yml "plugins/skript-yaml/Kit Classes/%loop-value%.yml" as "class.%loop-value%"
 				loop yaml node keys "weapon" from "class.%loop-value%":
 					set {_main} to yml value "%loop-node%" from "class.%loop-value-1%"
@@ -253,8 +257,8 @@ on inventory click:
 						message "{@prefix} §a選択したWeaponをセーブしました" to player
 
 			# Skill Custom
-			else if inventory name of event-inventory is "§bKit: §6%loop-value%§e's Skill":
-				set {_skill} to clicked item
+			else if name of event-inventory is "§bKit: §6%loop-value%§e's Skill":
+				set {_skill} to event-item
 				set {_kit} to loop-value
 
 				load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.select.%{_kit}%"
@@ -268,9 +272,9 @@ on inventory click:
 				if {_skill} is not set:
 					stop
 				cancel event
-				if {_skill} is a white glass pane named " ":
+				if {_skill} is a white stained glass pane named " ":
 					stop
-				if {_skill} is a red glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩":
+				if {_skill} is a red stained glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩":
 					stop
 
 				# Unitインベントリ
@@ -359,9 +363,9 @@ function openKitSkillCustom(player: player, kit: text):
 	loop 27 times:
 		add 1 to {_num}
 		if {_num} is 0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25 or 26:
-			set slot {_num} of {_player}'s current inventory to a white glass pane named " "
+			set slot {_num} of {_player}'s current inventory to a white stained glass pane named " "
 		else if {_num} is 1, 4 or 7:
-			set slot {_num} of {_player}'s current inventory to a red glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩"
+			set slot {_num} of {_player}'s current inventory to a red stained glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩"
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "skill" from "class.custom.%{_kit}%":
 		set {_skill} to yml value "%loop-node%" from "class.custom.%{_kit}%"
@@ -386,9 +390,9 @@ function openKitWeaponCustom(player: player, kit: text):
 	loop 27 times:
 		add 1 to {_num}
 		if {_num} is 0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25 or 26:
-			set slot {_num} of {_player}'s current inventory to a white glass pane named " "
+			set slot {_num} of {_player}'s current inventory to a white stained glass pane named " "
 		else if {_num} is 1, 4 or 7:
-			set slot {_num} of {_player}'s current inventory to a red glass pane named "§4§l⇩ §c§lWeapon Select §4§l⇩"
+			set slot {_num} of {_player}'s current inventory to a red stained glass pane named "§4§l⇩ §c§lWeapon Select §4§l⇩"
 
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "weapon" from "class.custom.%{_kit}%":
