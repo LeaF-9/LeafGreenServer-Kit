@@ -15,10 +15,14 @@ on join:
 function savePlayerNames():
 	set {_FileInst} to new File("plugins/skript-yaml/Kit Players")
 	set {_file} to {_FileInst}.listFiles()
-	set {_length} to {_file}.length
+	set {_length} to 300
 	set {_loopnum} to 0
+	set {_looping} to true
 	loop {_length} times:
-		set {_loopfile} to {_file}.get({_loopnum})
+		{_looping} is true
+
+		set {_loopfile} to {_file}[{_loopnum}]
+		set {_looping} to false if {_loopfile} is not set
 		set {_path} to {_loopfile}.getPath()
 
 		load yml {_path} as "playerdata"

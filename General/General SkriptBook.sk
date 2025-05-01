@@ -71,12 +71,17 @@ function setSkriptList(player: player, path: text = "plugins/Skript/scripts", pa
 
 	set {_FileInst} to new File({_path})
 	set {_file} to {_FileInst}.listFiles()
-	set {_length} to {_file}.length
+	set {_length} to 54
 	set {_loopnum} to 0
+	set {_looping} to true
 	loop {_length} times:
-		set {_loopfile} to {_file}.get({_loopnum})
-		add {_loopfile} to {_directories::*} if {_loopfile}.isDirectory()
-		add {_loopfile} to {_files::*} if {_loopfile}.isFile()
+		{_looping} is true
+		set {_loopfile} to {_file}[{_loopnum}]
+		set {_looping} to false if {_loopfile} is not set
+		if {_loopfile}.isDirectory():
+			add {_loopfile} to {_directories::*}
+		else:
+			add {_loopfile} to {_files::*}
 		add 1 to {_loopnum}
 
 	set {_slot} to 0
