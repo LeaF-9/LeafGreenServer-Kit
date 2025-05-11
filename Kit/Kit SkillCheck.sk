@@ -25,6 +25,9 @@ command /testworld <text> <player=%player%>:
 			set {_loc} to location of player
 			set {Kit-TestWorld} to {_loc}
 
+import:
+	org.bukkit.entity.EntityType
+
 command /kit-standspawn:
 	permission: sk.admin
 	trigger:
@@ -34,8 +37,14 @@ command /kit-standspawn:
 			teleport loop-creeper to location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0)
 			set {_exist} to true
 		{_exist} is not set
-		spawn a creeper at location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0) with nbt compound from "{NoAI:1b,Silent:1b,CustomName:'{""text"":""Test-Stand""}'}"
-		set metadata value "gametype" of spawned creeper to "Kit"
+		
+		set {_world} to world "Kit-SkillCheck"
+		set {_loc} to location(-60.5, 103, 0.5, {_world}, 270, 0)
+		set {_mob} to {_world}.spawnEntity({_loc}, EntityType.CREEPER)
+		set metadata value "gametype" of {_mob} to "Kit"
+		{_mob}.setAI(false)
+		{_mob}.setSilent(true)
+		set display name of {_mob} to "Test-Stand"
 
 on damage of creeper with priority MONITOR:
 	metadata value "gametype" of victim is "Kit"
