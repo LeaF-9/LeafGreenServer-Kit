@@ -1,3 +1,13 @@
+import:
+	net.kyori.adventure.text.Component
+	net.kyori.adventure.text.format.TextColor
+	net.kyori.adventure.text.format.TextDecoration
+	org.bukkit.Material
+	org.bukkit.inventory.ItemStack
+	org.bukkit.NamespacedKey
+	org.bukkit.inventory.meta.components.consumable.ConsumableComponent$Animation
+	com.google.common.collect.Lists
+
 options:
 	prefix: §a[§eSkill§a]
 
@@ -75,39 +85,286 @@ command /kitweaponlist <text> <text>:
 				message "§7----------" to player
 			unload yml "class.%arg 2%"
 
-command /kitskilladd <text>:
+# ここらへんkitskillsaveに変えても良いかも
+
+command /kitskillsave <text>:
+	usage: /kitskillsave <kit>
 	permission: sk.admin
 	executable by: player
 	trigger:
-		set {_l} to 8
-		set {_num} to 0
-		load yml "plugins/skript-yaml/Kit Classes/%arg 1%.yml" as "class.save.%arg 1%"
-		loop {_l} times:
-			set {_item} to slot {_num} of player
-			set {_ymlnum} to {_num} + 1
-			set {_item} to kitItemTagChanger({_item}, arg 1, "Skill", {_ymlnum})
-			set yml value "skill.%{_ymlnum}%" from "class.save.%arg 1%" to {_item}
-			add 1 to {_num}
-		save yml "class.save.%arg 1%"
-		message "§a%arg 1% §bのSkillを再設定しました" to player
+		set {_kit} to arg 1
 
-command /kitweaponadd <text>:
-	usage: /kitweaponadd <kit>
+		set {_skillamount} to 8
+		load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "classloading"
+
+		loop {_skillamount} times:
+			add 1 to {_num}
+			set {_skilltag} to yml value "skill.%{_num}%.name" from "classloading"
+			load yml "plugins/skript-yaml/Kit Loadouts/Skills/%{_Kit}%/%{_skilltag}%.yml" as "loadout.%{_skilltag}%"
+			set {_namecheck} to yml value "name" from "loadout.%{_skilltag}%"
+			unload yml "loadout.%{_skilltag}%"
+			if {_namecheck} is not {_skilltag}:
+				message formatted "§e%{_skilltag}% §cというSkillは存在しません §7(§b§l§o%{_num}%§7)" to player
+				continue
+
+			set {_skillitem} to buildLoadout({_kit}, "skill", {_skilltag}, {_num})
+			set yml value "skill.%{_num}%.item" from "classloading" to {_skillitem}
+		
+		save yml "classloading"
+		message formatted "§a%{_kit}% §bのSkillを再設定しました" to player
+
+command /kitweaponsave <text>:
+	usage: /kitweaponsave <kit>
 	permission: sk.admin
 	executable by: player
 	trigger:
-		set {_l} to 3
-		set {_num} to 0
-		load yml "plugins/skript-yaml/Kit Classes/%arg 1%.yml" as "class.save.%arg 1%"
-		loop {_l} times:
-			set {_item} to slot {_num} of player
-			set {_ymlnum} to {_num} + 1
-			set {_item} to kitItemTagChanger({_item}, arg 1, "Weapon", {_ymlnum})
-			set yml value "weapon.%{_ymlnum}%" from "class.save.%arg 1%" to {_item}
-			add 1 to {_num}
-		save yml "class.save.%arg 1%"
-		message "§a%arg 1% §bのWeaponを再設定しました" to player
+		set {_kit} to arg 1
 
+		set {_weaponamount} to 3
+		set {_num} to 0
+		load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "classloading"
+		loop {_weaponamount} times:
+			add 1 to {_num}
+			set {_weapontag} to yml value "weapon.%{_num}%.name" from "classloading"
+			load yml "plugins/skript-yaml/Kit Loadouts/Weapons/%{_Kit}%/%{_weapontag}%.yml" as "loadout.%{_weapontag}%"
+			set {_namecheck} to yml value "name" from "loadout.%{_weapontag}%"
+			unload yml "loadout.%{_weapontag}%"
+			if {_namecheck} is not {_weapontag}:
+				message formatted "§e%{_weapontag}% §cというWeaponは存在しません §7(§b§l§o%{_num}%§7)" to player
+				continue
+
+			set {_weaponitem} to buildLoadout({_kit}, "weapon", {_weapontag})
+			set yml value "weapon.%{_num}%.item" from "classloading" to {_weaponitem}
+
+		save yml "classloading"
+		message formatted "§a%{_kit}% §bのSkillを再設定しました" to player
+
+# LoadousファイルからItemStackをビルドする関数
+local function buildLoadout(kit: text, type: text, name: text, num: number = 0) :: item:
+	if {_type} is "skill":
+		load yml "plugins/skript-yaml/Kit Loadouts/Skills/%{_kit}%/%{_name}%.yml" as "build.%{_name}%"
+		set {_material} to getSkillItemType({_kit}, {_num})
+		set {_amount} to yml value "amount" from "build.%{_name}%"
+		set {_amount} to 1 if {_amount} is not set
+		set {_ItemStack} to new ItemStack({_material}, {_amount})
+		
+		# Custom Name
+		set {_name.yml} to yml value "name" from "build.%{_name}%"
+		set {_name-color.yml} to yml value "name-color" from "build.%{_name}%"
+		set {_name-shadow-color.yml} to yml value "name-shadow-color" from "build.%{_name}%"
+
+		set {_ItemMeta} to {_ItemStack}.getItemMeta()
+		if {_name-shadow-color.yml} is set:
+			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(TextColor.fromCSSHexString({_name-shadow-color.yml}))
+		else:
+			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false)
+		{_ItemMeta}.customName({_Component})
+
+		# Lore
+		set {_lore-summary.yml} to yml value "lore-summary" from "build.%{_name}%"
+		set {_lore-effect.yml::*} to yml list "lore-effect" from "build.%{_name}%"
+		set {_lore-additional.yml::*} to yml list "lore-additional" from "build.%{_name}%"
+		set {_cooltime.yml} to yml value "cooltime" from "build.%{_name}%"
+		set {_difficulty.yml} to yml value "difficulty" from "build.%{_name}%"
+
+		set {_lores} to Lists.newArrayList()
+		set {_lore.1} to "§f%{_lore.summary.yml}%"
+		{_lores}.add({_lore.1})
+		{_lores}.add("§5§m------------------------------")
+		{_lores}.add("§f[§d§l効果§f]")
+		loop {_lore-effect.yml::*}:
+			set {_looplore} to loop-value
+			{_lores}.add({_looplore})
+
+		if {_cooltime.yml} is set:
+			{_lores}.add("")
+			{_lores}.add("§bCoolTime§7: §a%{_cooltime.yml}%")
+		{_lores}.add("§5§m------------------------------")
+
+		if {_lore-additional.yml::1} is set:
+			{_lores}.add("§f[§9§l補足§f]")
+			loop {_lore-additional.yml::*}:
+				set {_looplore} to loop-value
+				{_lores}.add({_looplore})
+			{_lores}.add("§5§m------------------------------")
+		
+		if {_difficulty.yml} is 1:
+			set {_color.dif} to "§d"
+			set {_text.dif} to "超簡単"
+			set {_star.dif} to "★☆☆☆☆"
+		else if {_difficulty.yml} is 2:
+			set {_color.dif} to "§b"
+			set {_text.dif} to "簡単"
+			set {_star.dif} to "★★☆☆☆"
+		else if {_difficulty.yml} is 3:
+			set {_color.dif} to "§a"
+			set {_text.dif} to "普通"
+			set {_star.dif} to "★★★☆☆"
+		else if {_difficulty.yml} is 4:
+			set {_color.dif} to "§e"
+			set {_text.dif} to "難関"
+			set {_star.dif} to "★★★★☆"
+		else if {_difficulty.yml} is 5:
+			set {_color.dif} to "§c"
+			set {_text.dif} to "超難関"
+			set {_star.dif} to "★★★★★"
+		
+		{_lores}.add("§f[§6§l難易度§f]")
+		{_lores}.add("§8- %{_color.dif}%§l%{_text.dif}% §6[%{_color.dif}%%{_star.dif}%§6]")
+
+		{_ItemMeta}.setLore({_lores})
+
+		# Consumable / Food
+		set {_consumable-animation.yml} to yml value "consumable-animation" from "build.%{_name}%"
+		if {_consumable-animation.yml} is set:
+			set {_Consumable} to {_ItemMeta}.getConsumable()
+			set {_Animation} to Animation.valueOf({_consumable-animation.yml})
+			{_Consumable}.setAnimation({_Animation})
+			{_Consumable}.setConsumeParticles(false)
+			{_Consumable}.setConsumeSeconds(2147483647)
+			{_ItemMeta}.setConsumable({_Consumable})
+
+			set {_Food} to {_ItemMeta}.getFood()
+			{_Food}.setCanAlwaysEat(true)
+			{_Food}.setNutrition(0)
+			{_Food}.setSaturation(0)
+			{_ItemMeta}.setFood({_Food})
+
+		# Item Model
+		set {_type.yml} to yml value "type" from "build.%{_name}%"
+		set {_namespacedkey} to NamespacedKey.minecraft({_type.yml})
+		{_ItemMeta}.setItemModel({_namespacedkey})
+
+		{_ItemStack}.setItemMeta({_ItemMeta})
+
+	else if {_type} is "weapon":
+		load yml "plugins/skript-yaml/Kit Loadouts/Weapons/%{_kit}%/%{_name}%.yml" as "build.%{_name}%"
+		set {_type.yml} to yml value "type" from "build.%{_name}%"
+		set {_weapon-type.yml} to yml value "weapon-type" from "build.%{_name}%"
+		set {_material} to getWeaponItemType({_type.yml}, {_weapon-type.yml})
+		set {_amount} to yml value "amount" from "build.%{_name}%"
+		set {_amount} to 1 if {_amount} is not set
+		set {_ItemStack} to new ItemStack({_material}, {_amount})
+		
+		# Attributes
+		
+
+		# Custom Name
+		set {_name.yml} to yml value "name" from "build.%{_name}%"
+		set {_name-color.yml} to yml value "name-color" from "build.%{_name}%"
+		set {_name-shadow-color.yml} to yml value "name-shadow-color" from "build.%{_name}%"
+
+		set {_ItemMeta} to {_ItemStack}.getItemMeta()
+		if {_name-shadow-color.yml} is set:
+			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(TextColor.fromCSSHexString({_name-shadow-color.yml}))
+		else:
+			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false)
+		{_ItemMeta}.customName({_Component})
+
+		# Lore
+		set {_lore-summary.yml} to yml value "lore-summary" from "build.%{_name}%"
+		set {_lore-effect.yml::*} to yml list "lore-effect" from "build.%{_name}%"
+		set {_lore-additional.yml::*} to yml list "lore-additional" from "build.%{_name}%"
+		set {_cooltime.yml} to yml value "cooltime" from "build.%{_name}%"
+		set {_difficulty.yml} to yml value "difficulty" from "build.%{_name}%"
+
+		set {_lores} to Lists.newArrayList()
+		set {_lore.1} to "§f%{_lore.summary.yml}%"
+		{_lores}.add({_lore.1})
+		{_lores}.add("§5§m------------------------------")
+		{_lores}.add("§f[§d§l効果§f]")
+		loop {_lore-effect.yml::*}:
+			set {_looplore} to loop-value
+			{_lores}.add({_looplore})
+
+		if {_cooltime.yml} is set:
+			{_lores}.add("")
+			{_lores}.add("§bCoolTime§7: §a%{_cooltime.yml}%")
+		{_lores}.add("§5§m------------------------------")
+
+		if {_lore-additional.yml::1} is set:
+			{_lores}.add("§f[§9§l補足§f]")
+			loop {_lore-additional.yml::*}:
+				set {_looplore} to loop-value
+				{_lores}.add({_looplore})
+			{_lores}.add("§5§m------------------------------")
+		
+		if {_difficulty.yml} is 1:
+			set {_color.dif} to "§d"
+			set {_text.dif} to "超簡単"
+			set {_star.dif} to "★☆☆☆☆"
+		else if {_difficulty.yml} is 2:
+			set {_color.dif} to "§b"
+			set {_text.dif} to "簡単"
+			set {_star.dif} to "★★☆☆☆"
+		else if {_difficulty.yml} is 3:
+			set {_color.dif} to "§a"
+			set {_text.dif} to "普通"
+			set {_star.dif} to "★★★☆☆"
+		else if {_difficulty.yml} is 4:
+			set {_color.dif} to "§e"
+			set {_text.dif} to "難関"
+			set {_star.dif} to "★★★★☆"
+		else if {_difficulty.yml} is 5:
+			set {_color.dif} to "§c"
+			set {_text.dif} to "超難関"
+			set {_star.dif} to "★★★★★"
+		
+		{_lores}.add("§f[§6§l難易度§f]")
+		{_lores}.add("§8- %{_color.dif}%§l%{_text.dif}% §6[%{_color.dif}%%{_star.dif}%§6]")
+
+		{_ItemMeta}.setLore({_lores})
+
+		# Consumable / Food
+		set {_consumable-animation.yml} to yml value "consumable-animation" from "build.%{_name}%"
+		if {_consumable-animation.yml} is set:
+			set {_Consumable} to {_ItemMeta}.getConsumable()
+			set {_Animation} to Animation.valueOf({_consumable-animation.yml})
+			{_Consumable}.setAnimation({_Animation})
+			{_Consumable}.setConsumeParticles(false)
+			{_Consumable}.setConsumeSeconds(2147483647)
+			{_ItemMeta}.setConsumable({_Consumable})
+
+			set {_Food} to {_ItemMeta}.getFood()
+			{_Food}.setCanAlwaysEat(true)
+			{_Food}.setNutrition(0)
+			{_Food}.setSaturation(0)
+			{_ItemMeta}.setFood({_Food})
+
+		# Item Model
+		set {_type.yml} to yml value "type" from "build.%{_name}%"
+		set {_namespacedkey} to NamespacedKey.minecraft({_type.yml})
+		{_ItemMeta}.setItemModel({_namespacedkey})
+
+		{_ItemStack}.setItemMeta({_ItemMeta})
+
+	unload yml "build.%{_name}%"
+	return {_ItemStack}
+
+local function getSkillItemType(kit: text, num: number) :: object:
+	if {_kit} is "Thief":
+		return Material.ANGLER_POTTERY_SHARD if {_num} is 1
+		return Material.ARCHER_POTTERY_SHARD if {_num} is 2
+		return Material.BLADE_POTTERY_SHARD if {_num} is 3
+		return Material.BREWER_POTTERY_SHARD if {_num} is 4
+		return Material.BURN_POTTERY_SHARD if {_num} is 5
+		return Material.DANGER_POTTERY_SHARD if {_num} is 6
+		return Material.EXPLORER_POTTERY_SHARD if {_num} is 7
+		return Material.FLOW_POTTERY_SHARD if {_num} is 8
+	return Material.FLOWER_BANNER_PATTERN if {_num} is 1
+	return Material.CREEPER_BANNER_PATTERN if {_num} is 2
+	return Material.SKULL_BANNER_PATTERN if {_num} is 3
+	return Material.MOJANG_BANNER_PATTERN if {_num} is 4
+	return Material.GLOBE_BANNER_PATTERN if {_num} is 5
+	return Material.PIGLIN_BANNER_PATTERN if {_num} is 6
+	return Material.FLOW_BANNER_PATTERN if {_num} is 7
+	return Material.GUSTER_BANNER_PATTERN if {_num} is 8
+
+local function getWeaponItemType(type: text, weapontype: text) :: object:
+	return Material.STICK if {_weapontype} is "melee"
+	return Material.valueOf({_type})
+
+# 変更予定 (β1.5.0)
 command /kitskillgive <text>:
 	usage: /kitskillgive <kit>
 	permission: sk.admin
@@ -118,6 +375,7 @@ command /kitskillgive <text>:
 		loop {_skills::*}:
 			give loop-value to player
 
+# 変更予定 (β1.5.0)
 command /kitweapongive <text>:
 	usage: /kitweapongive <kit>
 	permission: sk.admin
@@ -528,18 +786,21 @@ command /kitweaponusage <text>:
 			set {_per} to ({_U-%{_name}%} / {_sum}) * 100
 			message formatted "{@prefix} - %{_name}%§7 §a%{_per}%§e%%" to player
 
+# Kitの特定のSkillを取得
 function kitSkillItem(kit: text, num: number) :: item:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_kit}%"
 	set {_item} to yml value "skill.%{_num}%" from "class.%{_kit}%"
 	unload yml "class.%{_kit}%"
 	return {_item}
 
+# Kitの特定のWeaponを取得
 function kitWeaponItem(kit: text, num: number) :: item:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_kit}%"
 	set {_item} to yml value "weapon.%{_num}%" from "class.%{_kit}%"
 	unload yml "class.%{_kit}%"
 	return {_item}
 
+# KitのSkillリストを取得
 function kitSkillList(kit: text) :: items:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_kit}%"
 	loop yaml node keys "skill" from "class.%{_kit}%":
@@ -548,6 +809,7 @@ function kitSkillList(kit: text) :: items:
 	unload yml "class.%{_kit}%"
 	return {_skills::*}
 
+# KitのWeaponリストを取得
 function kitWeaponList(kit: text) :: items:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_kit}%"
 	loop yaml node keys "weapon" from "class.%{_kit}%":
@@ -556,6 +818,7 @@ function kitWeaponList(kit: text) :: items:
 	unload yml "class.%{_kit}%"
 	return {_weapons::*}
 
+# プレイヤーが選択しているSkillの取得
 function kitPlayerSkillItem(player: player, kit: text, slot: number) :: item:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_player}%.kit"
 	set {_uuid} to UUID of {_player}
@@ -566,6 +829,7 @@ function kitPlayerSkillItem(player: player, kit: text, slot: number) :: item:
 	unload yml "player.%{_player}%.kit"
 	return {_item}
 
+# プレイヤーが選択しているWeaponの取得
 function kitPlayerWeaponItem(player: player, kit: text) :: item:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_player}%.kit"
 	set {_uuid} to UUID of {_player}
