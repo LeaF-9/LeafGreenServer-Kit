@@ -90,7 +90,6 @@ command /kitweaponlist <text> <text>:
 command /kitskillsave <text>:
 	usage: /kitskillsave <kit>
 	permission: sk.admin
-	executable by: player
 	trigger:
 		set {_kit} to arg 1
 
@@ -104,19 +103,19 @@ command /kitskillsave <text>:
 			set {_namecheck} to yml value "name" from "loadout.%{_skilltag}%"
 			unload yml "loadout.%{_skilltag}%"
 			if {_namecheck} is not {_skilltag}:
-				message formatted "§e%{_skilltag}% §cというSkillは存在しません §7(§b§l§o%{_num}%§7)" to player
+				message formatted "§e%{_skilltag}% §cというSkillは存在しません §7(§b§l§o%{_num}%§7)" to command sender
 				continue
 
 			set {_skillitem} to buildLoadout({_kit}, "skill", {_skilltag}, {_num})
+			kitItemTagChanger({_skillitem}, {_Kit}, "Skill", {_num})
 			set yml value "skill.%{_num}%.item" from "classloading" to {_skillitem}
 		
 		save yml "classloading"
-		message formatted "§a%{_kit}% §bのSkillを再設定しました" to player
+		message formatted "§a%{_kit}% §bのSkillを再設定しました" to command sender
 
 command /kitweaponsave <text>:
 	usage: /kitweaponsave <kit>
 	permission: sk.admin
-	executable by: player
 	trigger:
 		set {_kit} to arg 1
 
@@ -130,14 +129,15 @@ command /kitweaponsave <text>:
 			set {_namecheck} to yml value "name" from "loadout.%{_weapontag}%"
 			unload yml "loadout.%{_weapontag}%"
 			if {_namecheck} is not {_weapontag}:
-				message formatted "§e%{_weapontag}% §cというWeaponは存在しません §7(§b§l§o%{_num}%§7)" to player
+				message formatted "§e%{_weapontag}% §cというWeaponは存在しません §7(§b§l§o%{_num}%§7)" to command sender
 				continue
 
 			set {_weaponitem} to buildLoadout({_kit}, "weapon", {_weapontag})
+			kitItemTagChanger({_weaponitem}, {_Kit}, "Weapon", {_num})
 			set yml value "weapon.%{_num}%.item" from "classloading" to {_weaponitem}
 
 		save yml "classloading"
-		message formatted "§a%{_kit}% §bのSkillを再設定しました" to player
+		message formatted "§a%{_kit}% §bのSkillを再設定しました" to command sender
 
 # LoadousファイルからItemStackをビルドする関数
 local function buildLoadout(kit: text, type: text, name: text, num: number = 0) :: item:
