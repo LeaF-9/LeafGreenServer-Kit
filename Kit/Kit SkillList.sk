@@ -141,202 +141,118 @@ command /kitweaponsave <text>:
 
 # LoadousファイルからItemStackをビルドする関数
 local function buildLoadout(kit: text, type: text, name: text, num: number = 0) :: item:
+	set {_dirname} to "Skills" if {_type} is "skill"
+	set {_dirname} to "Weapons" if {_type} is "weapon"
+
+	load yml "plugins/skript-yaml/Kit Loadouts/%{_dirname}%/%{_kit}%/%{_name}%.yml" as "build.%{_name}%"
+	set {_type.yml} to yml value "type" from "build.%{_name}%"
 	if {_type} is "skill":
-		load yml "plugins/skript-yaml/Kit Loadouts/Skills/%{_kit}%/%{_name}%.yml" as "build.%{_name}%"
 		set {_material} to getSkillItemType({_kit}, {_num})
-		set {_amount} to yml value "amount" from "build.%{_name}%"
-		set {_amount} to 1 if {_amount} is not set
-		set {_ItemStack} to new ItemStack({_material}, {_amount})
-		
-		# Custom Name
-		set {_name.yml} to yml value "name" from "build.%{_name}%"
-		set {_name-color.yml} to yml value "name-color" from "build.%{_name}%"
-		set {_name-shadow-color.yml} to yml value "name-shadow-color" from "build.%{_name}%"
-
-		set {_ItemMeta} to {_ItemStack}.getItemMeta()
-		if {_name-shadow-color.yml} is set:
-			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(TextColor.fromCSSHexString({_name-shadow-color.yml}))
-		else:
-			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false)
-		{_ItemMeta}.customName({_Component})
-
-		# Lore
-		set {_lore-summary.yml} to yml value "lore-summary" from "build.%{_name}%"
-		set {_lore-effect.yml::*} to yml list "lore-effect" from "build.%{_name}%"
-		set {_lore-additional.yml::*} to yml list "lore-additional" from "build.%{_name}%"
-		set {_cooltime.yml} to yml value "cooltime" from "build.%{_name}%"
-		set {_difficulty.yml} to yml value "difficulty" from "build.%{_name}%"
-
-		set {_lores} to Lists.newArrayList()
-		set {_lore.1} to "§f%{_lore.summary.yml}%"
-		{_lores}.add({_lore.1})
-		{_lores}.add("§5§m------------------------------")
-		{_lores}.add("§f[§d§l効果§f]")
-		loop {_lore-effect.yml::*}:
-			set {_looplore} to loop-value
-			{_lores}.add({_looplore})
-
-		if {_cooltime.yml} is set:
-			{_lores}.add("")
-			{_lores}.add("§bCoolTime§7: §a%{_cooltime.yml}%")
-		{_lores}.add("§5§m------------------------------")
-
-		if {_lore-additional.yml::1} is set:
-			{_lores}.add("§f[§9§l補足§f]")
-			loop {_lore-additional.yml::*}:
-				set {_looplore} to loop-value
-				{_lores}.add({_looplore})
-			{_lores}.add("§5§m------------------------------")
-		
-		if {_difficulty.yml} is 1:
-			set {_color.dif} to "§d"
-			set {_text.dif} to "超簡単"
-			set {_star.dif} to "★☆☆☆☆"
-		else if {_difficulty.yml} is 2:
-			set {_color.dif} to "§b"
-			set {_text.dif} to "簡単"
-			set {_star.dif} to "★★☆☆☆"
-		else if {_difficulty.yml} is 3:
-			set {_color.dif} to "§a"
-			set {_text.dif} to "普通"
-			set {_star.dif} to "★★★☆☆"
-		else if {_difficulty.yml} is 4:
-			set {_color.dif} to "§e"
-			set {_text.dif} to "難関"
-			set {_star.dif} to "★★★★☆"
-		else if {_difficulty.yml} is 5:
-			set {_color.dif} to "§c"
-			set {_text.dif} to "超難関"
-			set {_star.dif} to "★★★★★"
-		
-		{_lores}.add("§f[§6§l難易度§f]")
-		{_lores}.add("§8- %{_color.dif}%§l%{_text.dif}% §6[%{_color.dif}%%{_star.dif}%§6]")
-
-		{_ItemMeta}.setLore({_lores})
-
-		# Consumable / Food
-		set {_consumable-animation.yml} to yml value "consumable-animation" from "build.%{_name}%"
-		if {_consumable-animation.yml} is set:
-			set {_Consumable} to {_ItemMeta}.getConsumable()
-			set {_Animation} to Animation.valueOf({_consumable-animation.yml})
-			{_Consumable}.setAnimation({_Animation})
-			{_Consumable}.setConsumeParticles(false)
-			{_Consumable}.setConsumeSeconds(2147483647)
-			{_ItemMeta}.setConsumable({_Consumable})
-
-			set {_Food} to {_ItemMeta}.getFood()
-			{_Food}.setCanAlwaysEat(true)
-			{_Food}.setNutrition(0)
-			{_Food}.setSaturation(0)
-			{_ItemMeta}.setFood({_Food})
-
-		# Item Model
-		set {_type.yml} to yml value "type" from "build.%{_name}%"
-		set {_namespacedkey} to NamespacedKey.minecraft({_type.yml})
-		{_ItemMeta}.setItemModel({_namespacedkey})
-
-		{_ItemStack}.setItemMeta({_ItemMeta})
-
 	else if {_type} is "weapon":
-		load yml "plugins/skript-yaml/Kit Loadouts/Weapons/%{_kit}%/%{_name}%.yml" as "build.%{_name}%"
-		set {_type.yml} to yml value "type" from "build.%{_name}%"
 		set {_weapon-type.yml} to yml value "weapon-type" from "build.%{_name}%"
 		set {_material} to getWeaponItemType({_type.yml}, {_weapon-type.yml})
-		set {_amount} to yml value "amount" from "build.%{_name}%"
-		set {_amount} to 1 if {_amount} is not set
-		set {_ItemStack} to new ItemStack({_material}, {_amount})
+
+	set {_amount} to yml value "amount" from "build.%{_name}%"
+	set {_amount} to 1 if {_amount} is not set
+	set {_ItemStack} to new ItemStack({_material}, {_amount})
+	set {_ItemMeta} to {_ItemStack}.getItemMeta()
+
+	# Attributes
+	loop yaml node keys "attributes" from "build.%{_name}%":
+		set {_node} to loop-node
+		set {_key} to {_node}
+		replace "attributes." with "" in {_key}
+		set {_attribute} to yml value {_node} from "build.%{_name}%"
 		
-		# Attributes
-		
+	# Enchantment
+	
+	# Custom Name
+	set {_name.yml} to yml value "name" from "build.%{_name}%"
+	set {_name-color.yml} to yml value "name-color" from "build.%{_name}%"
+	set {_name-shadow-color.yml} to yml value "name-shadow-color" from "build.%{_name}%"
 
-		# Custom Name
-		set {_name.yml} to yml value "name" from "build.%{_name}%"
-		set {_name-color.yml} to yml value "name-color" from "build.%{_name}%"
-		set {_name-shadow-color.yml} to yml value "name-shadow-color" from "build.%{_name}%"
+	if {_name-shadow-color.yml} is set:
+		set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(TextColor.fromCSSHexString({_name-shadow-color.yml}))
+	else:
+		set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false)
+	{_ItemMeta}.customName({_Component})
 
-		set {_ItemMeta} to {_ItemStack}.getItemMeta()
-		if {_name-shadow-color.yml} is set:
-			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(TextColor.fromCSSHexString({_name-shadow-color.yml}))
-		else:
-			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false)
-		{_ItemMeta}.customName({_Component})
+	# Lore
+	set {_lore-summary.yml} to yml value "lore-summary" from "build.%{_name}%"
+	set {_lore-effect.yml::*} to yml list "lore-effect" from "build.%{_name}%"
+	set {_lore-additional.yml::*} to yml list "lore-additional" from "build.%{_name}%"
+	set {_cooltime.yml} to yml value "cooltime" from "build.%{_name}%"
+	set {_difficulty.yml} to yml value "difficulty" from "build.%{_name}%"
 
-		# Lore
-		set {_lore-summary.yml} to yml value "lore-summary" from "build.%{_name}%"
-		set {_lore-effect.yml::*} to yml list "lore-effect" from "build.%{_name}%"
-		set {_lore-additional.yml::*} to yml list "lore-additional" from "build.%{_name}%"
-		set {_cooltime.yml} to yml value "cooltime" from "build.%{_name}%"
-		set {_difficulty.yml} to yml value "difficulty" from "build.%{_name}%"
+	set {_lores} to Lists.newArrayList()
+	set {_lore.1} to "§f%{_lore.summary.yml}%"
+	{_lores}.add({_lore.1})
+	{_lores}.add("§5§m------------------------------")
+	{_lores}.add("§f[§d§l効果§f]")
+	loop {_lore-effect.yml::*}:
+		set {_looplore} to loop-value
+		{_lores}.add({_looplore})
 
-		set {_lores} to Lists.newArrayList()
-		set {_lore.1} to "§f%{_lore.summary.yml}%"
-		{_lores}.add({_lore.1})
-		{_lores}.add("§5§m------------------------------")
-		{_lores}.add("§f[§d§l効果§f]")
-		loop {_lore-effect.yml::*}:
+	if {_cooltime.yml} is set:
+		{_lores}.add("")
+		{_lores}.add("§bCoolTime§7: §a%{_cooltime.yml}%")
+	{_lores}.add("§5§m------------------------------")
+
+	if {_lore-additional.yml::1} is set:
+		{_lores}.add("§f[§9§l補足§f]")
+		loop {_lore-additional.yml::*}:
 			set {_looplore} to loop-value
 			{_lores}.add({_looplore})
-
-		if {_cooltime.yml} is set:
-			{_lores}.add("")
-			{_lores}.add("§bCoolTime§7: §a%{_cooltime.yml}%")
 		{_lores}.add("§5§m------------------------------")
+	
+	if {_difficulty.yml} is 1:
+		set {_color.dif} to "§d"
+		set {_text.dif} to "超簡単"
+		set {_star.dif} to "★☆☆☆☆"
+	else if {_difficulty.yml} is 2:
+		set {_color.dif} to "§b"
+		set {_text.dif} to "簡単"
+		set {_star.dif} to "★★☆☆☆"
+	else if {_difficulty.yml} is 3:
+		set {_color.dif} to "§a"
+		set {_text.dif} to "普通"
+		set {_star.dif} to "★★★☆☆"
+	else if {_difficulty.yml} is 4:
+		set {_color.dif} to "§e"
+		set {_text.dif} to "難関"
+		set {_star.dif} to "★★★★☆"
+	else if {_difficulty.yml} is 5:
+		set {_color.dif} to "§c"
+		set {_text.dif} to "超難関"
+		set {_star.dif} to "★★★★★"
+	
+	{_lores}.add("§f[§6§l難易度§f]")
+	{_lores}.add("§8- %{_color.dif}%§l%{_text.dif}% §6[%{_color.dif}%%{_star.dif}%§6]")
 
-		if {_lore-additional.yml::1} is set:
-			{_lores}.add("§f[§9§l補足§f]")
-			loop {_lore-additional.yml::*}:
-				set {_looplore} to loop-value
-				{_lores}.add({_looplore})
-			{_lores}.add("§5§m------------------------------")
-		
-		if {_difficulty.yml} is 1:
-			set {_color.dif} to "§d"
-			set {_text.dif} to "超簡単"
-			set {_star.dif} to "★☆☆☆☆"
-		else if {_difficulty.yml} is 2:
-			set {_color.dif} to "§b"
-			set {_text.dif} to "簡単"
-			set {_star.dif} to "★★☆☆☆"
-		else if {_difficulty.yml} is 3:
-			set {_color.dif} to "§a"
-			set {_text.dif} to "普通"
-			set {_star.dif} to "★★★☆☆"
-		else if {_difficulty.yml} is 4:
-			set {_color.dif} to "§e"
-			set {_text.dif} to "難関"
-			set {_star.dif} to "★★★★☆"
-		else if {_difficulty.yml} is 5:
-			set {_color.dif} to "§c"
-			set {_text.dif} to "超難関"
-			set {_star.dif} to "★★★★★"
-		
-		{_lores}.add("§f[§6§l難易度§f]")
-		{_lores}.add("§8- %{_color.dif}%§l%{_text.dif}% §6[%{_color.dif}%%{_star.dif}%§6]")
+	{_ItemMeta}.setLore({_lores})
 
-		{_ItemMeta}.setLore({_lores})
+	# Consumable / Food
+	set {_consumable-animation.yml} to yml value "consumable-animation" from "build.%{_name}%"
+	if {_consumable-animation.yml} is set:
+		set {_Consumable} to {_ItemMeta}.getConsumable()
+		set {_Animation} to Animation.valueOf({_consumable-animation.yml})
+		{_Consumable}.setAnimation({_Animation})
+		{_Consumable}.setConsumeParticles(false)
+		{_Consumable}.setConsumeSeconds(2147483647)
+		{_ItemMeta}.setConsumable({_Consumable})
 
-		# Consumable / Food
-		set {_consumable-animation.yml} to yml value "consumable-animation" from "build.%{_name}%"
-		if {_consumable-animation.yml} is set:
-			set {_Consumable} to {_ItemMeta}.getConsumable()
-			set {_Animation} to Animation.valueOf({_consumable-animation.yml})
-			{_Consumable}.setAnimation({_Animation})
-			{_Consumable}.setConsumeParticles(false)
-			{_Consumable}.setConsumeSeconds(2147483647)
-			{_ItemMeta}.setConsumable({_Consumable})
+		set {_Food} to {_ItemMeta}.getFood()
+		{_Food}.setCanAlwaysEat(true)
+		{_Food}.setNutrition(0)
+		{_Food}.setSaturation(0)
+		{_ItemMeta}.setFood({_Food})
 
-			set {_Food} to {_ItemMeta}.getFood()
-			{_Food}.setCanAlwaysEat(true)
-			{_Food}.setNutrition(0)
-			{_Food}.setSaturation(0)
-			{_ItemMeta}.setFood({_Food})
+	# Item Model
+	set {_type.yml} to yml value "type" from "build.%{_name}%"
+	set {_namespacedkey} to NamespacedKey.minecraft({_type.yml})
+	{_ItemMeta}.setItemModel({_namespacedkey})
 
-		# Item Model
-		set {_type.yml} to yml value "type" from "build.%{_name}%"
-		set {_namespacedkey} to NamespacedKey.minecraft({_type.yml})
-		{_ItemMeta}.setItemModel({_namespacedkey})
-
-		{_ItemStack}.setItemMeta({_ItemMeta})
+	{_ItemStack}.setItemMeta({_ItemMeta})
 
 	unload yml "build.%{_name}%"
 	return {_ItemStack}
