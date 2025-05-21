@@ -217,25 +217,25 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.BOOLEAN, {_expendable})
 
 	# functions
-	set {_node} to "function.key"
-	set {_key} to "function-key"
-	set {_value} to yml value {_node} from "build.%{_name}%"
+	loop yaml node keys "function" from "build.%{_name}%":
+		set {_node::*} to loop-node
+		set {_node} to {_node::1}
+		add {_node} to {_nodes::*}
+		set {_key} to {_node}
+		replace "function." with "" in {_key}
+		set {_key} to "function-%{_key}%"
+		set {_value} to yml value {_node} from "build.%{_name}%"
 
-	if {_value} is set:
 		set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
-		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.STRING, {_key})
+		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.BOOLEAN, {_value})
 
-		loop yaml node keys "function" from "build.%{_name}%":
-			set {_node::*} to loop-node
-			set {_node} to {_node::1}
-			set {_key} to {_node}
-			continue if {_key} is "function.key"
-			replace "function." with "" in {_key}
-			set {_key} to "function-%{_key}%"
-			set {_value} to yml value {_node} from "build.%{_name}%"
+	if (size of {_nodes::*}) > 0:
+		set {_key} to "function-key"
+		set {_value} to {_name}
+		replace " " with "" in {_value}
 
-			set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
-			{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.BOOLEAN, {_key})
+		set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
+		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.STRING, {_value})
 
 	# Custom Name
 	set {_name.yml} to yml value "name" from "build.%{_name}%"
@@ -258,24 +258,25 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	set {_lore.1} to "§f%{_lore.summary.yml}%"
 	{_lores}.add({_lore.1})
 	{_lores}.add("§5§m------------------------------")
-	{_lores}.add("§f[§d§l効果§f]")
-	loop {_lore-effect.yml::*}:
-		set {_looplore} to loop-value
-		{_lores}.add({_looplore})
+	if {_lore-effect.yml::1} is set:
+		{_lores}.add("§f[§d§l効果§f]")
+		loop {_lore-effect.yml::*}:
+			set {_looplore} to loop-value
+			{_lores}.add({_looplore})
 
-	if {_cooltime.yml} is set:
-		{_lores}.add("")
-		{_lores}.add("§bCoolTime§7: §a%{_cooltime.yml}%")
-	
-	if {_type} is "skill":
-		if {_cooldown.yml} is set:
+		if {_cooltime.yml} is set:
 			{_lores}.add("")
-			{_lores}.add("§9発動間隔§7: §a%{_cooldown.yml}%")
-	
-	if {_expendable.yml} is set:
-		{_lores}.add("")
-		{_lores}.add("§cConsumable")
-	{_lores}.add("§5§m------------------------------")
+			{_lores}.add("§bCoolTime§7: §a%{_cooltime.yml}%")
+		
+		if {_type} is "skill":
+			if {_cooldown.yml} is set:
+				{_lores}.add("")
+				{_lores}.add("§9発動間隔§7: §a%{_cooldown.yml}%")
+		
+		if {_expendable.yml} is set:
+			{_lores}.add("")
+			{_lores}.add("§cConsumable")
+		{_lores}.add("§5§m------------------------------")
 
 	if {_lore-additional.yml::1} is set:
 		{_lores}.add("§f[§9§l補足§f]")
@@ -285,36 +286,42 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 		{_lores}.add("§5§m------------------------------")
 	
 	if {_type} is "weapon":
-		{_lores}.add("§f[§b§l性能§f]")
-		# arrow-damage
-		if {_arrow-damage.yml} is set:
-			{_lores}.add("§9威力§7: §ex%{_arrow-damage.yml}%")
-		# attributes
-		loop {_attributes::*}:
-			set {_name.attribute} to loop-index
-			set {_value.attribute} to loop-value
-			if {_name.attribute} is "attack_damage":
-				set {_hearts} to ({_value.attribute} + 1) / 2
-				{_lores}.add("§9攻撃力§7: §4❤%{_hearts}%")
-				continue
-			
-			set {_display.attribute} to attributeDisplay({_name.attribute}, {_value.attribute})
-			{_lores}.add({_display.attribute})
-
-		# enchants
-		if (size of {_enchants::*}) > 0:
-			{_lores}.add("§9エンチャント§7:")
-			loop {_enchants::*}:
-				set {_name.enchant} to loop-index
-				set {_value.enchant} to loop-value
+		if any:
+			{_cooldown.yml} is set
+			{_arrow-damage.yml} is set
+			size of {_attributes::*} > 0
+			size of {_enchants::*} > 0
+		then:
+			{_lores}.add("§f[§b§l性能§f]")
+			# arrow-damage
+			if {_arrow-damage.yml} is set:
+				{_lores}.add("§9威力§7: §ex%{_arrow-damage.yml}%")
+			# attributes
+			loop {_attributes::*}:
+				set {_name.attribute} to loop-index
+				set {_value.attribute} to loop-value
+				if {_name.attribute} is "attack_damage":
+					set {_hearts} to ({_value.attribute} + 1) / 2
+					{_lores}.add("§9攻撃力§7: §4❤%{_hearts}%")
+					continue
 				
-				set {_display.enchant} to enchantDisplay({_name.enchant}, {_value.enchant})
-				{_lores}.add({_display.enchant})
+				set {_display.attribute} to attributeDisplay({_name.attribute}, {_value.attribute})
+				{_lores}.add({_display.attribute})
 
-		# cooldown
-		if {_cooldown.yml} is set:
-			{_lores}.add("")
-			{_lores}.add("§9発動間隔§7: §a%{_cooldown.yml}%")
+			# enchants
+			if (size of {_enchants::*}) > 0:
+				{_lores}.add("§9エンチャント§7:")
+				loop {_enchants::*}:
+					set {_name.enchant} to loop-index
+					set {_value.enchant} to loop-value
+					
+					set {_display.enchant} to enchantDisplay({_name.enchant}, {_value.enchant})
+					{_lores}.add({_display.enchant})
+
+			# cooldown
+			if {_cooldown.yml} is set:
+				{_lores}.add("")
+				{_lores}.add("§9発動間隔§7: §a%{_cooldown.yml}%")
 	
 	if {_difficulty.yml} is 1:
 		set {_color.dif} to "§d"
