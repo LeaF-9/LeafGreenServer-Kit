@@ -4,8 +4,13 @@ import:
 	net.kyori.adventure.text.format.TextDecoration
 	org.bukkit.Material
 	org.bukkit.inventory.ItemStack
+	org.bukkit.Registry
 	org.bukkit.NamespacedKey
-	org.bukkit.inventory.meta.components.consumable.ConsumableComponent$Animation
+	org.bukkit.persistence.PersistentDataType
+	org.bukkit.attribute.AttributeModifier
+	org.bukkit.attribute.AttributeModifier$Operation
+	org.bukkit.inventory.EquipmentSlotGroup
+	org.bukkit.inventory.meta.components.consumable.ConsumableComponent
 	com.google.common.collect.Lists
 
 options:
@@ -159,13 +164,79 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 
 	# Attributes
 	loop yaml node keys "attributes" from "build.%{_name}%":
-		set {_node} to loop-node
+		set {_node::*} to loop-node
+		set {_node} to {_node::1}
 		set {_key} to {_node}
 		replace "attributes." with "" in {_key}
-		set {_attribute} to yml value {_node} from "build.%{_name}%"
+		set {_value} to yml value {_node} from "build.%{_name}%"
+		set {_attributes::%{_key}%} to {_value}
+
+		set {_Namespacedkey} to NamespacedKey.minecraft({_key})
+		set {_Attribute} to Registry.ATTRIBUTE.get({_Namespacedkey})
+		set {_AttributeModifier} to new AttributeModifier({_Namespacedkey}, {_value}, Operation.ADD_NUMBER, EquipmentSlotGroup.getByName("MAINHAND"))
+
+		{_ItemMeta}.addAttributeModifier({_Attribute}, {_AttributeModifier})
 		
-	# Enchantment
+	# Enchants
+	loop yaml node keys "enchants" from "build.%{_name}%":
+		set {_node::*} to loop-node
+		set {_node} to {_node::1}
+		replace "enchants." with "" in {_key}
+		set {_value} to yml value {_node} from "build.%{_name}%"
+		set {_enchants::%{_key}%} to {_value}
+
+		set {_Namespacedkey} to NamespacedKey.minecraft({_key})
+		set {_Enchantment} to Registry.ENCHANTMENT.get({_Namespacedkey})
+
+		{_ItemMeta}.addEnchant({_Enchantment}, {_value}, true)
 	
+	# Custom Tag
+	add "cooltime" to {_customs::*}
+	add "cooldown" to {_customs::*}
+	add "arrow-damage" to {_customs::*}
+	add "custom-tag.target-ally" to {_customs::*}
+	add "custom-tag.target-enemy" to {_customs::*}
+	add "custom-tag.around-ally" to {_customs::*}
+	add "custom-tag.around-enemy" to {_customs::*}
+
+	loop {_customs::*}:
+		set {_ymlkey} to loop-value
+		set {_value} to yml value {_ymlkey} from "build.%{_name}%"
+		continue if {_value} is not set
+
+		set {_key} to {_ymlkey}
+		replace "custom-tag." with "" in {_key}
+		set {_%{_key}%.yml} to {_value}
+		set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
+		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.INTEGER, {_value})
+	
+	set {_expendable} to yml value "expendable" from "build.%{_name}%"
+	if {_expendable} is set:
+		set {_expendable.yml} to {_expendable}
+		set {_Namespacedkey} to new NamespacedKey("leafgreen", "expendable")
+		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.BOOLEAN, {_expendable})
+
+	# functions
+	set {_node} to "function.key"
+	set {_key} to "function-key"
+	set {_value} to yml value {_node} from "build.%{_name}%"
+
+	if {_value} is set:
+		set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
+		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.STRING, {_key})
+
+		loop yaml node keys "function" from "build.%{_name}%":
+			set {_node::*} to loop-node
+			set {_node} to {_node::1}
+			set {_key} to {_node}
+			continue if {_key} is "function.key"
+			replace "function." with "" in {_key}
+			set {_key} to "function-%{_key}%"
+			set {_value} to yml value {_node} from "build.%{_name}%"
+
+			set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
+			{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.BOOLEAN, {_key})
+
 	# Custom Name
 	set {_name.yml} to yml value "name" from "build.%{_name}%"
 	set {_name-color.yml} to yml value "name-color" from "build.%{_name}%"
@@ -181,7 +252,6 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	set {_lore-summary.yml} to yml value "lore-summary" from "build.%{_name}%"
 	set {_lore-effect.yml::*} to yml list "lore-effect" from "build.%{_name}%"
 	set {_lore-additional.yml::*} to yml list "lore-additional" from "build.%{_name}%"
-	set {_cooltime.yml} to yml value "cooltime" from "build.%{_name}%"
 	set {_difficulty.yml} to yml value "difficulty" from "build.%{_name}%"
 
 	set {_lores} to Lists.newArrayList()
@@ -196,6 +266,15 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	if {_cooltime.yml} is set:
 		{_lores}.add("")
 		{_lores}.add("§bCoolTime§7: §a%{_cooltime.yml}%")
+	
+	if {_type} is "skill":
+		if {_cooldown.yml} is set:
+			{_lores}.add("")
+			{_lores}.add("§9発動間隔§7: §a%{_cooldown.yml}%")
+	
+	if {_expendable.yml} is set:
+		{_lores}.add("")
+		{_lores}.add("§cConsumable")
 	{_lores}.add("§5§m------------------------------")
 
 	if {_lore-additional.yml::1} is set:
@@ -204,6 +283,38 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 			set {_looplore} to loop-value
 			{_lores}.add({_looplore})
 		{_lores}.add("§5§m------------------------------")
+	
+	if {_type} is "weapon":
+		{_lores}.add("§f[§b§l性能§f]")
+		# arrow-damage
+		if {_arrow-damage.yml} is set:
+			{_lores}.add("§9威力§7: §ex%{_arrow-damage.yml}%")
+		# attributes
+		loop {_attributes::*}:
+			set {_name.attribute} to loop-index
+			set {_value.attribute} to loop-value
+			if {_name.attribute} is "attack_damage":
+				set {_hearts} to ({_value.attribute} + 1) / 2
+				{_lores}.add("§9攻撃力§7: §4❤%{_hearts}%")
+				continue
+			
+			set {_display.attribute} to attributeDisplay({_name.attribute}, {_value.attribute})
+			{_lores}.add({_display.attribute})
+
+		# enchants
+		if (size of {_enchants::*}) > 0:
+			{_lores}.add("§9エンチャント§7:")
+			loop {_enchants::*}:
+				set {_name.enchant} to loop-index
+				set {_value.enchant} to loop-value
+				
+				set {_display.enchant} to enchantDisplay({_name.enchant}, {_value.enchant})
+				{_lores}.add({_display.enchant})
+
+		# cooldown
+		if {_cooldown.yml} is set:
+			{_lores}.add("")
+			{_lores}.add("§9発動間隔§7: §a%{_cooldown.yml}%")
 	
 	if {_difficulty.yml} is 1:
 		set {_color.dif} to "§d"
@@ -235,7 +346,7 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	set {_consumable-animation.yml} to yml value "consumable-animation" from "build.%{_name}%"
 	if {_consumable-animation.yml} is set:
 		set {_Consumable} to {_ItemMeta}.getConsumable()
-		set {_Animation} to Animation.valueOf({_consumable-animation.yml})
+		set {_Animation} to ConsumableComponent.Animation.valueOf({_consumable-animation.yml})
 		{_Consumable}.setAnimation({_Animation})
 		{_Consumable}.setConsumeParticles(false)
 		{_Consumable}.setConsumeSeconds(2147483647)
@@ -246,6 +357,12 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 		{_Food}.setNutrition(0)
 		{_Food}.setSaturation(0)
 		{_ItemMeta}.setFood({_Food})
+
+	# Unbreakable
+	{_ItemMeta}.setUnbreakable(true)
+
+	# Hide Tooltips
+	{_ItemMeta}.setHideTooltip(true)
 
 	# Item Model
 	set {_type.yml} to yml value "type" from "build.%{_name}%"
@@ -259,14 +376,14 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 
 local function getSkillItemType(kit: text, num: number) :: object:
 	if {_kit} is "Thief":
-		return Material.ANGLER_POTTERY_SHARD if {_num} is 1
-		return Material.ARCHER_POTTERY_SHARD if {_num} is 2
-		return Material.BLADE_POTTERY_SHARD if {_num} is 3
-		return Material.BREWER_POTTERY_SHARD if {_num} is 4
-		return Material.BURN_POTTERY_SHARD if {_num} is 5
-		return Material.DANGER_POTTERY_SHARD if {_num} is 6
-		return Material.EXPLORER_POTTERY_SHARD if {_num} is 7
-		return Material.FLOW_POTTERY_SHARD if {_num} is 8
+		return Material.ANGLER_POTTERY_SHERD if {_num} is 1
+		return Material.ARCHER_POTTERY_SHERD if {_num} is 2
+		return Material.BLADE_POTTERY_SHERD if {_num} is 3
+		return Material.BREWER_POTTERY_SHERD if {_num} is 4
+		return Material.BURN_POTTERY_SHERD if {_num} is 5
+		return Material.DANGER_POTTERY_SHERD if {_num} is 6
+		return Material.EXPLORER_POTTERY_SHERD if {_num} is 7
+		return Material.FLOW_POTTERY_SHERD if {_num} is 8
 	return Material.FLOWER_BANNER_PATTERN if {_num} is 1
 	return Material.CREEPER_BANNER_PATTERN if {_num} is 2
 	return Material.SKULL_BANNER_PATTERN if {_num} is 3
@@ -279,6 +396,132 @@ local function getSkillItemType(kit: text, num: number) :: object:
 local function getWeaponItemType(type: text, weapontype: text) :: object:
 	return Material.STICK if {_weapontype} is "melee"
 	return Material.valueOf({_type})
+
+local function attributeDisplay(attribute: text, value: number) :: text:
+	if {_attribute} is "movement_speed":
+		set {_displayName} to "移動速度"
+	else if {_attribute} is "entity_interaction_range":
+		set {_displayName} to "攻撃範囲"
+	
+	if {_value} >= 0:
+		set {_displayValue} to "§a+%{_value}%%%"
+	else:
+		set {_displayValue} to "§c-%{_value}%%%"
+	
+	set {_display} to "§9%{_displayName}%§7: %{_displayValue}%"
+	return {_display}
+
+local function enchantDisplay(enchant: text, value: number) :: text:
+	if {_enchant} is "aqua_affinity":
+		set {_displayName} to "水中採掘"
+	else if {_enchant} is "bane_of_arthropods":
+		set {_displayName} to "虫特効"
+	else if {_enchant} is "binding_curse":
+		set {_displayName} to "束縛の呪い"
+	else if {_enchant} is "blast_protection":
+		set {_displayName} to "爆発耐性"
+	else if {_enchant} is "breach":
+		set {_displayName} to "防具貫通"
+	else if {_enchant} is "channeling":
+		set {_displayName} to "召雷"
+	else if {_enchant} is "density":
+		set {_displayName} to "重撃"
+	else if {_enchant} is "depth_strider":
+		set {_displayName} to "水中歩行"
+	else if {_enchant} is "efficiency":
+		set {_displayName} to "効率強化"
+	else if {_enchant} is "feather_falling":
+		set {_displayName} to "落下耐性"
+	else if {_enchant} is "fire_aspect":
+		set {_displayName} to "火属性"
+	else if {_enchant} is "fire_protection":
+		set {_displayName} to "火炎耐性"
+	else if {_enchant} is "flame":
+		set {_displayName} to "フレイム"
+	else if {_enchant} is "fortune":
+		set {_displayName} to "幸運"
+	else if {_enchant} is "frost_walker":
+		set {_displayName} to "氷渡り"
+	else if {_enchant} is "impaling":
+		set {_displayName} to "水生特効"
+	else if {_enchant} is "infinity":
+		set {_displayName} to "無限"
+	else if {_enchant} is "knockback":
+		set {_displayName} to "ノックバック"
+	else if {_enchant} is "looting":
+		set {_displayName} to "ドロップ増加"
+	else if {_enchant} is "loyalty":
+		set {_displayName} to "忠誠"
+	else if {_enchant} is "luck_of_the_sea":
+		set {_displayName} to "宝釣り"
+	else if {_enchant} is "lure":
+		set {_displayName} to "入れ食い"
+	else if {_enchant} is "mending":
+		set {_displayName} to "修繕"
+	else if {_enchant} is "multishot":
+		set {_displayName} to "拡散"
+	else if {_enchant} is "piercing":
+		set {_displayName} to "貫通"
+	else if {_enchant} is "power":
+		set {_displayName} to "射撃ダメージ増加"
+	else if {_enchant} is "projectile_protection":
+		set {_displayName} to "飛び道具耐性"
+	else if {_enchant} is "protection":
+		set {_displayName} to "ダメージ軽減"
+	else if {_enchant} is "punch":
+		set {_displayName} to "パンチ"
+	else if {_enchant} is "quick_charge":
+		set {_displayName} to "高速装填"
+	else if {_enchant} is "respiration":
+		set {_displayName} to "水中呼吸"
+	else if {_enchant} is "riptide":
+		set {_displayName} to "激流"
+	else if {_enchant} is "sharpness":
+		set {_displayName} to "ダメージ増加"
+	else if {_enchant} is "silk_touch":
+		set {_displayName} to "シルクタッチ"
+	else if {_enchant} is "smite":
+		set {_displayName} to "アンデッド特効"
+	else if {_enchant} is "soul_speed":
+		set {_displayName} to "ソウルスピード"
+	else if {_enchant} is "sweeping_edge":
+		set {_displayName} to "範囲ダメージ増加"
+	else if {_enchant} is "swift_sneak":
+		set {_displayName} to "スニーク速度上昇"
+	else if {_enchant} is "thorns":
+		set {_displayName} to "棘の鎧"
+	else if {_enchant} is "unbreaking":
+		set {_displayName} to "耐久力"
+	else if {_enchant} is "vanishing_curse":
+		set {_displayName} to "消滅の呪い"
+	else if {_enchant} is "wind_burst":
+		set {_displayName} to "ウィンドバースト"
+	
+	if {_value} is 1:
+		set {_displayValue} to "§bI"
+	else if {_value} is 2:
+		set {_displayValue} to "§bII"
+	else if {_value} is 3:
+		set {_displayValue} to "§bIII"
+	else if {_value} is 4:
+		set {_displayValue} to "§bIV"
+	else if {_value} is 5:
+		set {_displayValue} to "§bV"
+	else if {_value} is 6:
+		set {_displayValue} to "§bVI"
+	else if {_value} is 7:
+		set {_displayValue} to "§bVII"
+	else if {_value} is 8:
+		set {_displayValue} to "§bVIII"
+	else if {_value} is 9:
+		set {_displayValue} to "§bIX"
+	else if {_value} is 10:
+		set {_displayValue} to "§bX"
+	
+	set {_display} to "§8- §5%{_displayName}% %{_displayValue}%"
+	return {_display}
+
+
 
 # 変更予定 (β1.5.0)
 command /kitskillgive <text>:
