@@ -217,19 +217,14 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.BOOLEAN, {_expendable})
 
 	# functions
-	loop yaml node keys "function" from "build.%{_name}%":
-		set {_node::*} to loop-node
-		set {_node} to {_node::1}
-		add {_node} to {_nodes::*}
-		set {_key} to {_node}
-		replace "function." with "" in {_key}
-		set {_key} to "function-%{_key}%"
-		set {_value} to yml value {_node} from "build.%{_name}%"
+	set {_functions.yml::*} to yml list "functions" from "build.%{_name}%"
+	loop {_functions.yml::*}:
+		set {_key} to "function-%loop-value%"
 
 		set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
-		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.BOOLEAN, {_value})
+		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.BOOLEAN, true)
 
-	if (size of {_nodes::*}) > 0:
+	if (size of {_functions.yml::*}) > 0:
 		set {_key} to "function-key"
 		set {_value} to {_name}
 		replace " " with "" in {_value}
@@ -268,10 +263,9 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 			{_lores}.add("")
 			{_lores}.add("§bCoolTime§7: §a%{_cooltime.yml}%")
 		
-		if {_type} is "skill":
-			if {_cooldown.yml} is set:
-				{_lores}.add("")
-				{_lores}.add("§9発動間隔§7: §a%{_cooldown.yml}%")
+		if {_cooldown.yml} is set:
+			{_lores}.add("")
+			{_lores}.add("§9発動間隔§7: §a%{_cooldown.yml}%")
 		
 		if {_expendable.yml} is set:
 			{_lores}.add("")
@@ -317,11 +311,6 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 					
 					set {_display.enchant} to enchantDisplay({_name.enchant}, {_value.enchant})
 					{_lores}.add({_display.enchant})
-
-			# cooldown
-			if {_cooldown.yml} is set:
-				{_lores}.add("")
-				{_lores}.add("§9発動間隔§7: §a%{_cooldown.yml}%")
 	
 	if {_difficulty.yml} is 1:
 		set {_color.dif} to "§d"
