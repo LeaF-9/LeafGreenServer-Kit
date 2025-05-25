@@ -1,7 +1,9 @@
 import:
+	java.lang.Integer
 	net.kyori.adventure.text.Component
 	net.kyori.adventure.text.format.TextColor
 	net.kyori.adventure.text.format.TextDecoration
+	org.bukkit.Color
 	org.bukkit.Material
 	org.bukkit.inventory.ItemStack
 	org.bukkit.Registry
@@ -152,7 +154,9 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	load yml "plugins/skript-yaml/Kit Loadouts/%{_dirname}%/%{_kit}%/%{_name}%.yml" as "build.%{_name}%"
 	set {_type.yml} to yml value "type" from "build.%{_name}%"
 	if {_type} is "skill":
-		set {_material} to getSkillItemType({_kit}, {_num})
+		set {_skill-type.yml} to yml value "skill-type" from "build.%{_name}%"
+		set {_skill-type.yml} to "normal" if {_skill-type.yml} is not set
+		set {_material} to getSkillItemType({_kit}, {_num}, {_skill-type.yml})
 	else if {_type} is "weapon":
 		set {_weapon-type.yml} to yml value "weapon-type" from "build.%{_name}%"
 		set {_material} to getWeaponItemType({_type.yml}, {_weapon-type.yml})
@@ -161,6 +165,17 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	set {_amount} to 1 if {_amount} is not set
 	set {_ItemStack} to new ItemStack({_material}, {_amount})
 	set {_ItemMeta} to {_ItemStack}.getItemMeta()
+
+	# Potion Color
+	set {_potion-color.yml} to yml value "potion-color" from "build.%{_name}%"
+	if {_potion-color.yml} is set:
+		replace "#" with "" in {_potion-color.yml}
+		set {_potion.red} to Integer.parseInt({_potion-color.yml}.substring(0, 2), 16)
+		set {_potion.blue} to Integer.parseInt({_potion-color.yml}.substring(2, 4), 16)
+		set {_potion.green} to Integer.parseInt({_potion-color.yml}.substring(4, 6), 16)
+		set {_PotionColor} to Color.fromRGB({_potion.red}, {_potion.green}, {_potion.blue})
+
+		{_ItemMeta}.setColor({_PotionColor})
 
 	# Attributes
 	loop yaml node keys "attributes" from "build.%{_name}%":
@@ -381,7 +396,10 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	unload yml "build.%{_name}%"
 	return {_ItemStack}
 
-local function getSkillItemType(kit: text, num: number) :: object:
+local function getSkillItemType(kit: text, num: number, skilltype: text) :: object:
+	if {_skilltype} is not "normal":
+		return Material.valueOf({_skilltype})
+
 	if {_kit} is "Thief":
 		return Material.ANGLER_POTTERY_SHERD if {_num} is 1
 		return Material.ARCHER_POTTERY_SHERD if {_num} is 2
