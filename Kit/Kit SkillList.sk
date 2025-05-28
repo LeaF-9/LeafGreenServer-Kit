@@ -1,8 +1,14 @@
 import:
 	java.lang.Integer
+	java.util.regex.Pattern
+	java.util.regex.Matcher
+
+	net.md_5.bungee.api.ChatColor
+
 	net.kyori.adventure.text.Component
 	net.kyori.adventure.text.format.TextColor
 	net.kyori.adventure.text.format.TextDecoration
+
 	org.bukkit.Color
 	org.bukkit.Material
 	org.bukkit.inventory.ItemStack
@@ -13,6 +19,7 @@ import:
 	org.bukkit.attribute.AttributeModifier$Operation
 	org.bukkit.inventory.EquipmentSlotGroup
 	org.bukkit.inventory.meta.components.consumable.ConsumableComponent
+
 	com.google.common.collect.Lists
 
 options:
@@ -249,14 +256,32 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 
 	# Custom Name
 	set {_name.yml} to yml value "name" from "build.%{_name}%"
-	set {_name-color.yml} to yml value "name-color" from "build.%{_name}%"
-	set {_name-shadow-color.yml} to yml value "name-shadow-color" from "build.%{_name}%"
+	if {_name.yml} is set:
+		set {_name-color.yml} to yml value "name-color" from "build.%{_name}%"
+		set {_name-shadow-color.yml} to yml value "name-shadow-color" from "build.%{_name}%"
 
-	if {_name-shadow-color.yml} is set:
-		set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(TextColor.fromCSSHexString({_name-shadow-color.yml}))
+		if {_name-shadow-color.yml} is set:
+			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(TextColor.fromCSSHexString({_name-shadow-color.yml}))
+		else:
+			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false)
+		{_ItemMeta}.customName({_Component})
+
 	else:
-		set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false)
-	{_ItemMeta}.customName({_Component})
+		set {_name-detail.yml} to yml value "name-detail" from "build.%{_name}%"
+
+		set {_Pattern} to Pattern.compile("<#[a-fA-F0-9]{6}>")
+		set {_Matcher} to {_Pattern}.matcher({_name-detail.yml})
+
+		while {_Matcher}.find():
+			set {_color} to {_name-detail.yml}.substring({_Matcher}.start(), {_Matcher}.end())
+			set {_coloruse} to {_color}
+			replace "<" with "" in {_coloruse}
+			replace ">" with "" in {_coloruse}
+			set {_colorcode} to ChatColor.of({_coloruse})
+			replace {_color} with "%{_colorcode}%" in {_name-detail.yml}
+			set {_Matcher} to {_Pattern}.matcher({_name-detail.yml})
+
+		{_ItemMeta}.setDisplayName({_name-detail.yml})
 
 	# Lore
 	set {_lore-summary.yml} to yml value "lore-summary" from "build.%{_name}%"
