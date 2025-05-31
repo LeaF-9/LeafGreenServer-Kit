@@ -218,6 +218,7 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	add "arrow-damage" to {_customs::*}
 	add "custom-tag.target-ally" to {_customs::*}
 	add "custom-tag.target-enemy" to {_customs::*}
+	add "custom-tag.target-location" to {_customs::*}
 	add "custom-tag.around-ally" to {_customs::*}
 	add "custom-tag.around-enemy" to {_customs::*}
 
@@ -294,7 +295,18 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	{_lores}.add({_lore.1})
 	{_lores}.add("§5§m------------------------------")
 	if {_lore-effect.yml::1} is set:
-		{_lores}.add("§f[§d§l効果§f]")
+		set {_lore.prefix} to "§f[§d§l効果§f]"
+		if {_target-ally.yml} is set:
+			set {_lore.prefix} to "%{_lore.prefix}% §a<§2§l味方指定型§7(§f%{_target-ally.yml}%m§7)§a>"
+		else if {_target-enemy.yml} is set:
+			set {_lore.prefix} to "%{_lore.prefix}% §c<§4§l相手指定型§7(§f%{_target-enemy.yml}%m§7)§c>"
+		else if {_target-location.yml} is set:
+			if {_target-location.yml} <= 5:
+				set {_lore.prefix} to "%{_lore.prefix}% §b<§9§l機械設置型§b>"
+			else:
+				set {_lore.prefix} to "%{_lore.prefix}% §e<§6§l地点指定型§7(§f%{_target-location.yml}%m§7)§e>"
+		{_lores}.add({_lore.prefix})
+
 		loop {_lore-effect.yml::*}:
 			set {_looplore} to loop-value
 			{_lores}.add({_looplore})
