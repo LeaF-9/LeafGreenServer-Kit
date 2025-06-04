@@ -10,6 +10,7 @@ import:
 	net.kyori.adventure.text.format.TextDecoration
 
 	org.bukkit.Color
+	org.bukkit.DyeColor
 	org.bukkit.Material
 	org.bukkit.inventory.ItemStack
 	org.bukkit.Registry
@@ -19,6 +20,8 @@ import:
 	org.bukkit.attribute.AttributeModifier$Operation
 	org.bukkit.inventory.EquipmentSlotGroup
 	org.bukkit.inventory.meta.components.consumable.ConsumableComponent
+	org.bukkit.inventory.meta.BannerMeta
+	org.bukkit.inventory.meta.ShieldMeta
 
 	com.google.common.collect.Lists
 
@@ -183,6 +186,20 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 		set {_PotionColor} to Color.fromRGB({_potion.red}, {_potion.green}, {_potion.blue})
 
 		{_ItemMeta}.setColor({_PotionColor})
+	
+	# Banner Pattern
+	set {_banner-base-color.yml} to yml value "banner-patterns.base-color" from "build.%{_name}%"
+	if {_banner-base-color.yml} is set:
+		{_ItemMeta}.setBaseColor(DyeColor.valueOf({_banner-base-color.yml}))
+
+		set {_banner-loopnum} to 100
+		set {_loopnum} to 0
+		loop {_banner-loopnum} times:
+			add 1 to {_loopnum}
+			set {_pattern} to yml value "banner-patterns.pattern-%{_loopnum}%"
+			exit loop if {_pattern} is not set
+
+			# もしバナーパターンを使う時期が来たらここ書いてね
 
 	# Attributes
 	loop yaml node keys "attributes" from "build.%{_name}%":
