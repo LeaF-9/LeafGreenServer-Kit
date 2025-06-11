@@ -1,3 +1,7 @@
+import:
+	org.bukkit.NamespacedKey
+	org.bukkit.persistence.PersistentDataType
+
 function playerCoolTimer(player: player):
 	if {CoolTimer::%{_player}%} is true:
 		stop
@@ -104,19 +108,27 @@ every a second:
 			set {CoolTimer::%loop-value%} to false
 			playerCoolTimer(loop-value)
 
-function detectCT(player: player, skill: item, count: boolean = true):
-	set {_name} to display name of {_skill}
-	set {_lore::*} to lore of {_skill}
-	loop {_lore::*}:
-		loop-value contains "§bCoolTime§7: §a"
-		set {_ct} to loop-value
+function detectCT(player: player, skill: item):
+	# ### LoreからCTを取得する方法 ###
+	# set {_name} to display name of {_skill}
+	# set {_lore::*} to lore of {_skill}
+	# loop {_lore::*}:
+	# 	loop-value contains "§bCoolTime§7: §a"
+	# 	set {_ct} to loop-value
+	# if {_ct} is not set:
+	# 	stop
+	# replace every "§bCoolTime§7: §a" with "" in {_ct}
+	# set {_ct} to {_ct} parsed as number
+	set {_ItemMeta} to {_skill}.getItemMeta()
+	set {_Namespacedkey} to new NamespacedKey("leafgreen", "cooltime")
+	set {_ct} to {_ItemMeta}.getPersistentDataContainer().get({_Namespacedkey}, PersistentDataType.INTEGER)
 	if {_ct} is not set:
+		log "%display name of {_skill}%のクールタイムを取得できませんでした"
 		stop
-	replace every "§bCoolTime§7: §a" with "" in {_ct}
-	set {_ct} to {_ct} parsed as number
-	setCT({_player}, {_name}, {_ct}, {_count})
 
-function setCT(player: player, skill: text, second: number, count: boolean = true):
+	setCT({_player}, {_name}, {_ct})
+
+function setCT(player: player, skill: text, second: number):
 	set {CT.%{_player}%::%{_skill}%} to {_second}
 	playerCoolTimer({_player})
 	# if {_count} is true:
@@ -176,13 +188,22 @@ command /ctreset <player=%player%>:
 
 # 武器Cooldown
 function setItemCT(player: player, item: item):
-	set {_lore::*} to lore of {_item}
-	loop {_lore::*}:
-		loop-value contains "§9発射間隔§7: §a"
-		set {_ct} to loop-value
+	# ### LoreからCTを取得する方法 ###
+	# set {_lore::*} to lore of {_item}
+	# loop {_lore::*}:
+	# 	loop-value contains "§9発動間隔§7: §a"
+	# 	set {_ct} to loop-value
+	# if {_ct} is not set:
+	# 	stop
+	# replace every "§9発動間隔§7: §a" with "" in {_ct}
+
+	set {_ItemMeta} to {_item}.getItemMeta()
+	set {_Namespacedkey} to new NamespacedKey("leafgreen", "cooldown")
+	set {_ct} to {_ItemMeta}.getPersistentDataContainer().get({_Namespacedkey}, PersistentDataType.INTEGER)
 	if {_ct} is not set:
+		log "%display name of {_item}%のクールダウンを取得できませんでした"
 		stop
-	replace every "§9発射間隔§7: §a" with "" in {_ct}
+
 	set {_ct} to "%{_ct}% seconds" parsed as time span
 	set item cooldown of {_item} for {_player} to {_ct}
 
