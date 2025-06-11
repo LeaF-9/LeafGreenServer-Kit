@@ -4,6 +4,10 @@ options:
 	draw-time: "BOW-draw time"
 	draw-start: "BOW-draw start"
 
+import:
+	org.bukkit.NamespacedKey
+	org.bukkit.persistence.PersistentDataType
+
 on rightclick holding a bow:
 	set {_time} to 0
 	set metadata value {@draw-time} of player to {_time}
@@ -54,14 +58,13 @@ on shoot:
 	set {_tool} to tool of shooter
 	type of {_tool} is bow or crossbow
 	kitItemTypeChecker({_tool}) is "Weapon"
-	set {_lores::*} to lore of {_tool}
-	loop {_lores::*}:
-		loop-value contains "§9威力§7: §ex"
-		set {_pow} to loop-value
-		replace "§9威力§7: §ex" with "" in {_pow}
-		set {_pow} to {_pow} parsed as number
-	if {_pow} is set:
-		set metadata value "arrowmultiple" of projectile to {_pow}
+
+	set {_ItemMeta} to {_tool}.getItemMeta()
+	set {_Namespacedkey} to new NamespacedKey("leafgreen", "arrow-damage")
+	set {_pow} to {_ItemMeta}.getPersistentDataContainer().get({_Namespacedkey}, PersistentDataType.FLOAT)
+
+	stop if {_pow} is not set
+	set metadata value "arrowmultiple" of projectile to {_pow}
 
 
 
