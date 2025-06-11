@@ -1,7 +1,3 @@
-import:
-	org.bukkit.NamespacedKey
-	org.bukkit.persistence.PersistentDataType
-
 function playerCoolTimer(player: player):
 	if {CoolTimer::%{_player}%} is true:
 		stop
@@ -119,9 +115,7 @@ function detectCT(player: player, skill: item):
 	# 	stop
 	# replace every "§bCoolTime§7: §a" with "" in {_ct}
 	# set {_ct} to {_ct} parsed as number
-	set {_ItemMeta} to {_skill}.getItemMeta()
-	set {_Namespacedkey} to new NamespacedKey("leafgreen", "cooltime")
-	set {_ct} to {_ItemMeta}.getPersistentDataContainer().get({_Namespacedkey}, PersistentDataType.INTEGER)
+	set {_ct} to getNamespacedKey({_skill}, "cooltime", "float")
 	if {_ct} is not set:
 		log "%display name of {_skill}%のクールタイムを取得できませんでした"
 		stop
@@ -197,9 +191,7 @@ function setItemCT(player: player, item: item):
 	# 	stop
 	# replace every "§9発動間隔§7: §a" with "" in {_ct}
 
-	set {_ItemMeta} to {_item}.getItemMeta()
-	set {_Namespacedkey} to new NamespacedKey("leafgreen", "cooldown")
-	set {_ct} to {_ItemMeta}.getPersistentDataContainer().get({_Namespacedkey}, PersistentDataType.INTEGER)
+	set {_ct} to getNamespacedKey({_item}, "cooldown", "float")
 	if {_ct} is not set:
 		log "%display name of {_item}%のクールダウンを取得できませんでした"
 		stop
