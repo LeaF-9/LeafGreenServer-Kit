@@ -1,0 +1,16 @@
+# このskriptで取得するNamespacedは「leafgreen」に限定されています
+# その他のNameSpaceは直接取得するか新たに処理を作成してください
+
+import:
+	org.bukkit.NamespacedKey
+	org.bukkit.persistence.PersistentDataType
+
+function getNameSpacedKey(key: text, type: text) :: object:
+	set {_NK} to new NamespacedKey("leafgreen", {_key})
+	
+	set {_PDT} to PersistentDataType.INTEGER if {_type} is "integer"
+	set {_PDT} to PersistentDataType.FLOAT if {_type} is "float"
+	set {_PDT} to PersistentDataType.STRING if {_type} is "string"
+
+	set {_value} to {_ItemMeta}.getPersistentDataContainer().get({_NK}, {_PDT})
+	return {_PDT}
