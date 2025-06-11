@@ -1,4 +1,4 @@
-function kitTargetPlayer(player: player, distance: number, ally: boolean = false):
+local function kitTargetPlayer(player: player, distance: number, ally: boolean = false):
 	set {_dis} to round({_distance})
 	set {_baseloc} to location of head of {_player}
 	loop {_dis} times:
@@ -32,7 +32,10 @@ function kitTargetPlayer(player: player, distance: number, ally: boolean = false
 			deleteKitStats({_player}, "SkillTarget")
 			packetUnglowing({_player}, {_former})
 
-function kitTargetLocation(player: player, distance: number):
+local function kitTargetLocation(player: player, distance: number):
+	set {_dustColor} to rgb(255, 255, 0)
+	set {_dustColor} to rgb(0, 255, 255) if {_distance} <= 5
+
 	set {_baseloc} to location of head of {_player}
 	delete {_ok}
 	set {_dis} to round({_distance}) * 10 
@@ -62,24 +65,40 @@ function kitTargetLocation(player: player, distance: number):
 				set {_blockok} to true
 				set {_loc} to location 0.1 meters above {_bl}
 				set y-coordinate of {_loc} to y-coordinate of location of block 0.1 meters above {_bl} - 0.5
-	if {_blockok} is true:
-		set {_rad} to 0
-		set yaw of {_loc} to 0
-		set pitch of {_loc} to 0
-		setKitStats({_player}, "SkillLocation", {_loc})
-		loop 36 times:
-			set {_el} to {_loc}
-			add sin({_rad}) to x-coordinate of {_el}
-			add cos({_rad}) to z-coordinate of {_el}
-			if {_distance} <= 5:
-				spawnParticle_Dust(rgb(0, 255, 255), 0.5, {_el}, {_player})
-			else:
-				spawnParticle_Dust(rgb(255, 265, 0), 0.5, {_el}, {_player})
-			add 10 to {_rad}
-	else:
+	
+	if {_blockok} is not set:
 		deleteKitStats({_player}, "SkillLocation")
+		stop
 
-function kitTargetReset(player: player):
+	set {_rad} to 0
+	set yaw of {_loc} to 0
+	set pitch of {_loc} to 0
+	setKitStats({_player}, "SkillLocation", {_loc})
+
+	set {_rotatevec} to vector(1, 0, 0)
+	loop 36 times:
+		rotate {_rotatevec} around y-axis by {_rad}
+		set {_el} to {_loc} ~ {_rotatevec}
+		spawnParticle_Dust({_dustColor}, 0.5, {_el}, {_player})
+		add 10 to {_rad}
+
+local function kitTargetAround(player: player, distance: number, isTeam: boolean = false):
+	set {_dustColor} to rgb(255, 0, 0)
+	set {_dustColor} to rgb(0, 255, 0) if {_isTeam} is true
+
+	set {_baseloc} to location 1 meter above {_player}
+	set {_rad} to 0
+	set {_rotatevec} to vector({_distance}, 0, 0)
+	set {_loopnum} to 100
+	set {_addrad} to 360 / {_loopnum}
+
+	loop {_loopnum} times:
+		rotate {_rotatevec} around y-axis by {_rad}
+		set {_el} to {_loc} ~ {_rotatevec}
+		spawnParticle_Dust({_dustColor}, 0.7, {_el}, {_player})
+		add {_addrad} to {_rad}
+
+local function kitTargetReset(player: player):
 	set {_skillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_skillTarget} is set:
 		set {_former} to {_skillTarget}
@@ -91,109 +110,133 @@ function kitTargetReset(player: player):
 
 function kitTargetTimer(player: player):
 	set {_class} to {Class::%{_player}%}
+	# Thiefの場合は常時発動の関数
 	if {_class} is "Thief":
 		kitTargetTimer_Thief({_player})
 		stop
-	set {_ok} to false
+
+	# ターゲットのリストを作成
+	set {_targettypes::*} to getTypes()
+	# ターゲットを発動するスキルの確認
 	loop all items in {_player}'s inventory:
-		if kitTargetChecker(loop-item) is not "none":
-			set {_ok} to true
-			set {_name} to display name of loop-item
-			set {_items::%{_name}%} to loop-item
-			set {_type} to kitTargetChecker(loop-item)
-			set {_meter} to kitMeterChecker(loop-item)
-			set {_type::%{_name}%} to {_type}
-			set {_meter::%{_name}%} to {_meter}
-	if {_ok} is true:
-		while {Class::%{_player}%} is {_class}:
-			set {_tool} to {_player}'s tool
-			set {_toolname} to display name of {_tool}
-			if {_items::*} contains {_tool}:
-				if {_type::%{_toolname}%} contains "human":
-					if {_type::%{_toolname}%} is "human-ally":
-						kitTargetPlayer({_player}, {_meter::%{_toolname}%}, true)
-					else:
-						kitTargetPlayer({_player}, {_meter::%{_toolname}%})
-				else if {_type::%{_toolname}%} contains "location":
-					kitTargetReset({_player})
-					kitTargetLocation({_player}, {_meter::%{_toolname}%})
-			else:
-				kitTargetReset({_player})
+		# アイテム一覧を保存 (keyが存在するアイテムのみ)
+		set {_itemkey} to getNamespacedKey(loop-item, "item-key", "string")
+		continue if {_itemkey} is not set
+		set {_loadouts::%{_itemkey}%} to true
+
+		# どのターゲットタグが存在しているか確認
+		delete {_existtarget}
+		loop {_targettypes::*}:
+			set {_loop-type} to loop-value-2
+			set {_typevalue} to getTypeValue(loop-item, {_loop-type})
+			continue if {_typevalue} is not set
+
+			# 存在時はその値を保存
+			set {_existtarget} to true
+			set {_existtype::%{_loop-type}%} to true
+			set {_targetvalue.%{_loop-type}%::%{_itemkey}%} to {_typevalue}
+		
+		# ターゲットタグが無いアイテムは一覧から削除
+		delete {_loadouts::%{_itemkey}%} if {_existtarget} is not set
+	
+	stop if size of {_loadouts::*} is 0  # 該当するアイテムが無ければ処理停止
+
+	# 存在しないターゲットタグを削除
+	loop {_targettypes::*}:
+		set {_loop-type} to loop-value
+		remove {_loop-type} from {_targettypes::*} if {_existtype::%{_loop-type}%} is not set
+
+	while {Class::%{_player}%} is {_class}:
+		set {_tool} to {_player}'s tool
+		set {_itemkey} to getNamespacedKey({_tool}, "item-key", "string")
+		if {_loadouts::%{_itemkey}%} is not set:
+			kitTargetReset({_player})
 			wait a tick
+			continue
+		
+		loop {_targettypes::*}:
+			set {_loop-type} to loop-value
+			set {_meter} to {_targetvalue.%{_loop-type}%::%{_itemkey}%}
+			continue if {_meter} is not set
+
+			if any:
+				{_loop-type} contains "location"
+				{_loop-type} contains "around"
+			then:
+				kitTargetReset({_player})
+
+			kitTargetPlayer({_player}, {_meter}, true) if {_loop-type} is "target-ally"
+			kitTargetPlayer({_player}, {_meter}) if {_loop-type} is "target-enemy"
+
+			kitTargetLocation({_player}, {_meter}) if {_loop-type} is "target-location"
+			
+			kitTargetAround({_player}, {_meter}, true) if {_looptype} is "around-ally"
+			kitTargetAround({_player}, {_meter}) if {_loop-type} is "around-enemy"
+		wait a tick
+	kitTargetReset({_player})
 
 local function kitTargetTimer_Thief(player: player):
+	set {_targettypes::*} to getTypes()
 	while {Class::%{_player}%} is "Thief":
 		set {_tool} to {_player}'s tool
-		set {_toolname} to display name of {_tool}
-		# Item一覧に含まれていない場合の処理
-		if {_items::*} does not contain {_tool}:
-			set {_items::%{_toolname}%} to {_toolname}
-			set {_type} to kitTargetChecker({_tool})
-			if {_type} is "none":  # 役割を持たないアイテムの場合はnoneに格納
-				set {_item.none::%{_toolname}%} to {_tool}
-			else:  # 役割を持つアイテムはタイプと距離を格納
-				set {_item.role::%{_toolname}%} to {_tool}
-				set {_type::%{_toolname}%} to {_type}
-				set {_meter::%{_toolname}%} to kitMeterChecker({_tool})
-		# 役割のあるアイテムを持っていた際の処理
-		if {_item.role::*} contains {_tool}:
-			if {_type::%{_toolname}%} contains "human":
-				if {_type::%{_toolname}%} is "human-ally":
-					kitTargetPlayer({_player}, {_meter::%{_toolname}%}, true)
-				else:
-					kitTargetPlayer({_player}, {_meter::%{_toolname}%})
-			else if {_type::%{_toolname}%} contains "location":
-				kitTargetReset({_player})
-				kitTargetLocation({_player}, {_meter::%{_toolname}%})
-		# そうではない場合はターゲット処理をリセット
-		else:
+		set {_itemkey} to getNamespacedKey(loop-item, "item-key", "string")
+		# Loadoutでないアイテムは除外
+		if {_itemkey} is not set:
 			kitTargetReset({_player})
-		wait a tick
-
-function kitItemTargetTimer(player: player, item: item):
-	set {_ok} to false
-	if kitTargetChecker({_item}) is not "none":
-		set {_ok} to true
-		set {_type} to kitTargetChecker({_item})
-		set {_meter} to kitMeterChecker({_item})
-	if {_ok} is true:
-		wait a tick
-		while {_player} has {_item}:
-			if {_player}'s tool is {_item}:
-				if {_type} contains "human":
-					if {_type} is "human-ally":
-						kitTargetPlayer({_player}, {_meter}, true)
-					else:
-						kitTargetPlayer({_player}, {_meter})
-				else if {_type} contains "location":
-					kitTargetReset({_player})
-					kitTargetLocation({_player}, {_meter})
-			else:
-				kitTargetReset({_player})
 			wait a tick
+			continue
 
-function kitTargetChecker(item: item) :: text:
-	set {_line} to line 3 of lore of {_item}
-	if {_line} contains "§a<":
-		return "human-ally"
-	else if {_line} contains "§c<":
-		return "human-enemy"
-	else if {_line} contains "§b<":
-		return "location-machine"
-	else if {_line} contains "§e<":
-		return "location-place"
-	else:
-		return "none"
+		# Item一覧に含まれていない場合の処理
+		if {_items::%{_itemkey}%} is not set:
+			set {_items::%{_itemkey}%} to true
+			# 役割の確認
+			loop {_targettypes::*}:
+				set {_loop-type} to loop-value
+				set {_typevalue} to getTypeValue({_tool}, {_loop-type})
+				continue if {_typevalue} is not set
 
-function kitMeterChecker(item: item) :: number:
-	set {_line} to line 3 of lore of {_item}
-	set {_a::*} to {_line} split at "("
-	if {_a::1} contains "§b<":
-		set {_meter} to 5
-	else:
-		set {_b::*} to {_a::2} split at ")"
-		set {_meter} to {_b::1}
-		replace "§f" with "" in {_meter}
-		replace "m§7" with "" in {_meter}
-		set {_meter} to {_meter} parsed as number
-	return {_meter}
+				# 役割の値を保存
+				set {_item.role::%{_itemkey}%} to true
+				# ##### 注意 #####
+				# このrolevalueは{_loop-type}と{_itemkey}の位置が逆になります
+				# これはアイテムごとにループされる役割を減らすための処置です
+				set {_rolevalue.%{_itemkey}%::%{_loop-type}%} to {_typevalue}
+
+		# 役割が無ければスキップ
+		if {_item.role::%{_itemkey}%} is not set:
+			kitTargetReset({_player})
+			wait a tick
+			continue
+
+		# 役割のあるアイテムを持っていた際の処理
+		loop {_rolevalue.%{_itemkey}%::*}:
+			set {_loop-type} to loop-index
+			set {_meter} to loop-value
+
+			if any:
+				{_loop-type} contains "location"
+				{_loop-type} contains "around"
+			then:
+				kitTargetReset({_player})
+
+			kitTargetPlayer({_player}, {_meter}, true) if {_loop-type} is "target-ally"
+			kitTargetPlayer({_player}, {_meter}) if {_loop-type} is "target-enemy"
+
+			kitTargetLocation({_player}, {_meter}) if {_loop-type} is "target-location"
+			
+			kitTargetAround({_player}, {_meter}, true) if {_looptype} is "around-ally"
+			kitTargetAround({_player}, {_meter}) if {_loop-type} is "around-enemy"
+		wait a tick
+	kitTargetReset({_player})
+
+local function getTypes() :: texts:
+	add "target-ally" to {_types::*}
+	add "target-enemy" to {_types::*}
+	add "around-ally" to {_types::*}
+	add "around-enemy" to {_types::*}
+	add "target-location" to {_types::*}
+	return {_types::*}
+
+local function getTypeValue(item: item, type: text) :: number:
+	set {_value} to getNamespacedKey({_item}, {_type}, "float")
+	return {_value}
