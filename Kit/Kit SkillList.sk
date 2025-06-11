@@ -249,18 +249,7 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 		set {_%{_key}%.yml} to {_value}
 		set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
 
-		set {_valueClass} to {_value}.getClass()
-		if any:
-			{_valueClass} contains "Integer"
-			{_valueClass} contains "Long"
-		then:
-			{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.INTEGER, {_value})
-		
-		if any:
-			{_valueClass} contains "Double"
-			{_valueClass} contains "Float"
-		then:
-			{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.FLOAT, {_value})
+		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.FLOAT, {_value})
 
 	set {_expendable} to yml value "expendable" from "build.%{_name}%"
 	if {_expendable} is set:
