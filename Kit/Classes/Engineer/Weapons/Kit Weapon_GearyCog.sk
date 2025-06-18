@@ -7,7 +7,7 @@ function kitEffect_GearyCog_Sneak(player: player, event: object):
 	if getKitStats({_player}, "GearyCog") is true:
 		stop
 	# ギアチェンジ
-	kitEffect_GearyCog_Change(player)
+	kitEffect_GearyCog_Change({_player})
 
 function kitEffect_GearyCog_DamageLow(player: player, object: event):
 	set {_victim} to {_player}
@@ -24,8 +24,8 @@ function kitEffect_GearyCog_AttackLow(player: player, object: event):
 		kitParticle_GearyCog_Positive(location of {_attacker}, location of {_victim})
 		kitEffect_GearyCog_Change({_attacker})
 	else:
-		setDamageModification_MUL(victim, 0.2)
-		kitParticle_GearyCog_Negative(location of {_attacker}, location of victim)
+		setDamageModification_MUL({_victim}, 0.2)
+		kitParticle_GearyCog_Negative(location of {_attacker}, location of {_victim})
 
 local function kitEffect_GearyCog_Change(player: player):
 	if getKitStats({_player}, "GearyCog") is true:

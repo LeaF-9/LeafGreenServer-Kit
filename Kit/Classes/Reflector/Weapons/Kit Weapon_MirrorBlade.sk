@@ -7,8 +7,12 @@ function kitEffect_MirrorBlade_DamageNormal(player: player, event: object):
 	{_attacker} is set
 	getKitStats({_victim}, "MirrorBlade") is true
 	deleteKitStats({_victim}, "MirrorBlade")
-	set {_dmg} to getDamageModification_ALL({_victim}, damage)
-	cancel event
+
+	set {_eventdamage} to {_event}.getDamage()
+	set {_eventdamage} to {_eventdamage} * 2
+	set {_dmg} to getDamageModification_ALL({_victim}, {_eventdamage})
+	{_event}.setCancelled(true)
+
 	kitMsg({_victim}, "§e§lパリィ§f成功!")
 	kitEffectDescription({_victim}, "§f§lパリィ")
 	kitEffectDescription({_attacker}, "§f§lパリィ")

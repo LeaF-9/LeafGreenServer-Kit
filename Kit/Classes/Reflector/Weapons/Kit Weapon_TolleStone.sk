@@ -2,10 +2,12 @@
 
 function kitEffect_TolleStone_DamageNormal(player: player, event: object):
 	set {_victim} to {_player}
-	victim is sneaking
+	{_victim} is sneaking
 	set {_attacker} to getAttacker({_victim})
 	getKitStats({_victim}, "TolleStone") is not set
-	set {_dmg} to getDamageModification_ALL({_victim}, damage)
+	set {_eventdamage} to {_event}.getDamage()
+	set {_eventdamage} to {_eventdamage} * 2
+	set {_dmg} to getDamageModification_ALL({_victim}, {_eventdamage})
 	if {_dmg} < 3:
 		stop
 

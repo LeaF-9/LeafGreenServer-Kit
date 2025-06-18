@@ -5,13 +5,13 @@ function kitEffect_ReflecTickle_DamageNormal(player: player, event: object):
 	set {_attacker} to getAttacker({_victim})
 	if getKitStats({_victim}, "ReflecTickle") is true:
 		checkDamagable({_victim}) is true
-		cancel event
+		{_event}.setCancelled(true)
 		kitDamageNull({_attacker}, {_victim}, 1, "反射の杖", true)
 		kitParticle_ReflecTickle_Damage({_victim})
 
 function kitEffect_ReflecTickle_AttackNormal(player: player, event: object):
 	set {_attacker} to {_player}
-	{_event}.setCancelled() if getKitStats({_attacker}, "ReflecTickle") is true
+	{_event}.setCancelled(true) if getKitStats({_attacker}, "ReflecTickle") is true
 
 function kitEffect_ReflecTickle_Sneak(player: player, event: object):
 	kitEffect_ReflecTickle({_player})
