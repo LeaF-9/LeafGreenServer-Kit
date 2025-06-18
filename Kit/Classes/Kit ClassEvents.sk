@@ -38,6 +38,10 @@ on sneak toggle:
 	stop if player is sneaking
 	kitRunnableExecution(player, event, "Sneak")
 
+on death:
+	set {_attacker} to getAttacker(victim)
+	kitRunnableExecution({_attacker}, event, "Kill") if checkEntityType({_attacker}, player) is true
+
 on damage with priority LOW:
 	set {_victim} to victim
 	kitRunnableExecution({_victim}, event, "Damage-Low") if checkEntityType({_victim}, player) is true
