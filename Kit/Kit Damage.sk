@@ -82,7 +82,17 @@ function getDamageModification_ALL(entity: entity, damage: num) :: number:
 # Damage Modificationを適用するイベント
 on damage with priority MONITOR:
 	set {_eventCancel} to event.isCancelled()
-	stop if {_eventCancel} is true
+	if {_eventCancel} is true:
+		removeDamageModification_ADD(victim)
+		removeDamageModification_MUL(victim)
+		removeDamageModification_SET(victim)
+		removeDamageModification_FIX(victim)
+
+		deleteAttacker(victim)
+
+		delete metadata value "raw damage" of victim
+		delete metadata value "kit damage" of victim
+		stop
 
 	# ダメージ量取得
 	set {_damage} to damage
