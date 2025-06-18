@@ -1,0 +1,39 @@
+# on rightclick holding a glowstone dust:
+# 	name of player's tool is "§eWealthy Present"
+# 	if {CT.%player%::%name of player's tool%} is not set:
+# 		set {_tp} to targeted player
+# 		if {_tp} is set:
+# 			if {team::%{_tp}%} is {team::%player%}:
+# 				if {CLS::%{_tp}%} is not "BSK":
+# 					set {CT.%player%::%name of player's tool%} to 40
+# 					message "{@prefix} §6%{_tp}% §eに金の加護を与えます!"
+# 					message "§e%player% §6に金の加護を授けられました!" to {_tp}
+# 					apply absorption 3 to {_tp} for 10 seconds
+# 					drawDot count 3, particle "mobspell", XYZ 255, 255, 0, center {_tp}, visibleRange 32, keepFor 10 second
+# 					loop 10 times:
+# 						play raw sound "random.orb" at {_tp} with pitch 1.5 volume 1
+# 						loop all blocks in radius 5 around {_tp}:
+# 							y-coordinate of loop-block is y-coordinate of block at {_tp}
+# 							loop-block is air
+# 							add location of loop-block to {_gs::*}
+# 						set {_n} to a random integer between 0 and 2
+# 						loop {_n} times:
+# 							set {_p} to a random location out of {_gs::*}
+# 							remove {_p} from {_gs::*}
+# 							if {-Stats.%player%::GoldBoost} is true:
+# 								drop a gold ingot named "%player%" at {_p}
+# 							else:
+# 								drop a gold nugget named "%player%" at {_p}
+# 							loop all dropped items in radius 1.5 around location of {_p}:
+# 								metadata value "delete" of loop-dropped item is not set
+# 								set metadata value "delete" of loop-dropped item to "%player%"
+# 						delete {_gs::*}
+# 						wait a second
+# 				else:
+# 					set action bar of player to "§c§lこのプレイヤーには付与したくありません"
+# 			else:
+# 				set action bar of player to "§c§l味方プレイヤーにのみ発動可能です"
+# 		else:
+# 			set action bar of player to "§c§l目先にプレイヤーがいません!"
+# 	else:
+# 		set action bar of player to "§c§lクールタイムが終わっていません!"

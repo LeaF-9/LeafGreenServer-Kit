@@ -1,0 +1,29 @@
+# on rightclick holding a gold nugget:
+# 	name of player's tool is "§6Gold Shower"
+# 	if {CT.%player%::%name of player's tool%} is not set:
+# 		set {_tb} to targeted block
+# 		if {_tb} is set:
+# 			set {CT.%player%::%name of player's tool%} to 40
+# 			set {_sb} to location of block 8 above {_tb}
+# 			set {_y} to y-coordinate of {_sb}
+# 			loop all blocks in radius 5 around {_sb}:
+# 				y-coordinate of loop-block is {_y}
+# 				add location of loop-block to {_gs::*}
+# 				drawDot count 5, particle "redstone", XYZ 255, 255, 0, center location of loop-block, visibleRange 32, keepFor 1 second
+# 			message "{@prefix} §e目先のブロック上空から金塊を降らせます!"
+# 			loop 10 times:
+# 				set {_p} to a random location out of {_gs::*}
+# 				if {-Stats.%player%::GoldBoost} is true:
+# 					drop a gold ingot named "%player%" at {_p}
+# 					play raw sound "random.orb" at {_p} with pitch 0.5 volume 1
+# 				else:
+# 					drop a gold nugget named "%player%" at {_p}
+# 					play raw sound "random.orb" at {_p} with pitch 3 volume 1
+# 				loop all dropped items in radius 1.5 around location of {_p}:
+# 					metadata value "delete" of loop-dropped item is not set
+# 					set metadata value "delete" of loop-dropped item to "%player%"
+# 				wait 2 ticks
+# 		else:
+# 			set action bar of player to "§c§l目先にブロックがありません!"
+# 	else:
+# 		set action bar of player to "§c§lクールタイムが終わっていません!"
