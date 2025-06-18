@@ -1,18 +1,21 @@
+import:
+	org.bukkit.NamespacedKey
+	org.bukkit.persistence.PersistentDataType
+
 # Item tag Checker
 function kitItemKitChecker(skill: item) :: text:
-	set {_nbt} to custom nbt of {_skill}
-	set {_kit} to string tag "kit" of {_nbt}
+	set {_checkkey} to "loadout-kit"
+	set {_kit} to getNamespacedKey({_skill}, {_checkkey}, "string")
 	return {_kit}
 
 function kitItemTypeChecker(skill: item) :: text:
-	set {_nbt} to custom nbt of {_skill}
-	set {_type} to string tag "type" of {_nbt}
+	set {_checkkey} to "loadout-type"
+	set {_type} to getNamespacedKey({_skill}, {_checkkey}, "string")
 	return {_type}
 
 function kitItemNumberChecker(skill: item) :: number:
-	set {_nbt} to custom nbt of {_skill}
-	set {_num} to int tag "number" of {_nbt}
-	set {_num} to "%{_num}%" parsed as number
+	set {_checkkey} to "loadout-number"
+	set {_num} to getNamespacedKey({_skill}, {_checkkey}, "integer")
 	return {_num}
 
 function kitItemAllChecker(skill: item, kit: text, type: text, num: number) :: boolean:
@@ -20,20 +23,26 @@ function kitItemAllChecker(skill: item, kit: text, type: text, num: number) :: b
 		if kitItemTypeChecker({_skill}) is {_type}:
 			if kitItemNumberChecker({_skill}) is {_num}:
 				return true
-			else:
-				return false
-		else:
-			return false
-	else:
-		return false
+	return false
 
 function kitItemTagChanger(skill: item, kit: text, type: text, num: number) :: item:
-	set {_nbt} to nbt compound of {_skill}
-	set string tag "kit" of {_nbt} to {_kit}
-	set string tag "type" of {_nbt} to {_type}
-	set int tag "number" of {_nbt} to {_num}
-	set {_newitem} to {_skill} with custom nbt {_nbt}
-	return {_newitem}
+	set {_ItemMeta} to {_skill}.getItemMeta()
+
+	set {_key} to "loadout-kit"
+	set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
+	{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.STRING, {_kit})
+
+	set {_key} to "loadout-type"
+	set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
+	{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.STRING, {_type})
+
+	set {_key} to "loadout-number"
+	set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
+	set {_num} to {_num}.intValue()
+	{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.INTEGER, {_num})
+
+	{_skill}.setItemMeta({_ItemMeta})
+	return {_skill}
 
 # Player Choosing Checker
 function kitSelectChecker_Weapon(player: player, kit: text) :: number:
