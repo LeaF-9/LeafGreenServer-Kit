@@ -212,11 +212,6 @@ command /class <text> <player=%player%> <boolean=true>:
 
 			kitUnitSetting(arg 2, arg 1)
 
-			# Counting
-			if {Kit-tochu} is true:
-				{Join::%arg 2%} is "Kit"
-				kitUseCounting(arg 2, arg 1, {_weapon.main}, {_skills::*})
-
 			set metadata value "gametype" of arg 2 to "Kit"
 			kitCheckUltimate(arg 2)
 			kitTargetTimer(arg 2)
@@ -283,6 +278,11 @@ local function kitUnitSetting(player: player, kit: text):
 		set {_skill} to kitPlayerSkillItem({_player}, {_kit}, loop-number)
 		give {_skill} to {_player}
 		add {_skill} to {_skills::*}
+	
+	# Counting
+	if {Kit-tochu} is true:
+		{Join::%{_player}%} is "Kit"
+		kitUseCounting({_player}, {_kit}, {_weapon.main}, {_skills::*})
 	
 	# Ultimate Skill Slot
 	give a structure void named "§7§oUltimate Skill" to {_player}
