@@ -18,10 +18,15 @@ import:
 	org.bukkit.persistence.PersistentDataType
 	org.bukkit.attribute.AttributeModifier
 	org.bukkit.attribute.AttributeModifier$Operation
+	org.bukkit.inventory.ItemFlag
 	org.bukkit.inventory.EquipmentSlotGroup
-	org.bukkit.inventory.meta.components.consumable.ConsumableComponent
+	# org.bukkit.inventory.meta.components.consumable.ConsumableComponent
 	org.bukkit.inventory.meta.BannerMeta
 	org.bukkit.inventory.meta.ShieldMeta
+
+	io.papermc.paper.datacomponent.DataComponentTypes
+	io.papermc.paper.datacomponent.item.Consumable
+	io.papermc.paper.datacomponent.item.consumable.ItemUseAnimation
 
 	com.google.common.collect.Lists
 
@@ -124,11 +129,11 @@ command /kitskillsave <text>:
 				continue
 
 			set {_skillitem} to buildLoadout({_kit}, "skill", {_skilltag}, {_num})
-			kitItemTagChanger({_skillitem}, {_Kit}, "Skill", {_num})
-			set yml value "skill.%{_num}%.item" from "classloading" to {_skillitem}
+			set {_skillitem.tagged} to kitItemTagChanger({_skillitem}, {_kit}, "Skill", {_num})
+			set yml value "skill.%{_num}%.item" from "classloading" to {_skillitem.tagged}
 		
 		save yml "classloading"
-		message formatted "§a%{_kit}% §bのSkillを再設定しました" to command sender
+		message formatted "§a%{_kit}% §bの§c§lSkill§bを再設定しました" to command sender
 
 command /kitweaponsave <text>:
 	usage: /kitweaponsave <kit>
@@ -150,11 +155,11 @@ command /kitweaponsave <text>:
 				continue
 
 			set {_weaponitem} to buildLoadout({_kit}, "weapon", {_weapontag})
-			kitItemTagChanger({_weaponitem}, {_Kit}, "Weapon", {_num})
-			set yml value "weapon.%{_num}%.item" from "classloading" to {_weaponitem}
+			set {_weaponitem.tagged} to kitItemTagChanger({_weaponitem}, {_Kit}, "Weapon", {_num})
+			set yml value "weapon.%{_num}%.item" from "classloading" to {_weaponitem.tagged}
 
 		save yml "classloading"
-		message formatted "§a%{_kit}% §bのSkillを再設定しました" to command sender
+		message formatted "§a%{_kit}% §bの§c§lWeapon§bを再設定しました" to command sender
 
 # LoadousファイルからItemStackをビルドする関数
 local function buildLoadout(kit: text, type: text, name: text, num: number = 0) :: item:
@@ -249,6 +254,7 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 		set {_%{_key}%.yml} to {_value}
 		set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
 
+		set {_value} to {_value}.floatValue()
 		{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.FLOAT, {_value})
 
 	set {_expendable} to yml value "expendable" from "build.%{_name}%"
@@ -309,7 +315,7 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	set {_difficulty.yml} to yml value "difficulty" from "build.%{_name}%"
 
 	set {_lores} to Lists.newArrayList()
-	set {_lore.1} to "§f%{_lore.summary.yml}%"
+	set {_lore.1} to "§f%{_lore-summary.yml}%"
 	{_lores}.add({_lore.1})
 	{_lores}.add("§5§m------------------------------")
 	if {_lore-effect.yml::1} is set:
@@ -381,6 +387,7 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 					
 					set {_display.enchant} to enchantDisplay({_name.enchant}, {_value.enchant})
 					{_lores}.add({_display.enchant})
+			{_lores}.add("§5§m------------------------------")
 	
 	if {_difficulty.yml} is 1:
 		set {_color.dif} to "§d"
@@ -411,12 +418,18 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	# Consumable / Food
 	set {_consumable-animation.yml} to yml value "consumable-animation" from "build.%{_name}%"
 	if {_consumable-animation.yml} is set:
-		set {_Consumable} to {_ItemMeta}.getConsumable()
-		set {_Animation} to ConsumableComponent.Animation.valueOf({_consumable-animation.yml})
-		{_Consumable}.setAnimation({_Animation})
-		{_Consumable}.setConsumeParticles(false)
-		{_Consumable}.setConsumeSeconds(2147483647)
-		{_ItemMeta}.setConsumable({_Consumable})
+		# Spigotでの処理
+		# set {_Consumable} to {_ItemMeta}.getConsumable()
+		# set {_Animation} to ConsumableComponent.Animation.valueOf({_consumable-animation.yml})
+		# {_Consumable}.setAnimation({_Animation})
+		# {_Consumable}.setConsumeParticles(false)
+		# {_Consumable}.setConsumeSeconds(2147483647)
+		# {_ItemMeta}.setConsumable({_Consumable})
+
+		# Paperでの処理
+		set {_consumable-animation.value} to {_consumable-animation.yml} in upper case
+		set {_Animation} to ItemUseAnimation.valueOf({_consumable-animation.value})
+		{_ItemStack}.setData(DataComponentTypes.CONSUMABLE, Consumable.consumable().animation({_Animation}).consumeSeconds(2147483647).hasConsumeParticles(false).build())
 
 		set {_Food} to {_ItemMeta}.getFood()
 		{_Food}.setCanAlwaysEat(true)
@@ -427,8 +440,9 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	# Unbreakable
 	{_ItemMeta}.setUnbreakable(true)
 
-	# Hide Tooltips
-	{_ItemMeta}.setHideTooltip(true)
+	# Hide ItemFlags
+	set {_ItemFlags} to ItemFlag.values()
+	{_ItemMeta}.addItemFlags({_ItemFlags})
 
 	# Item Model
 	set {_type.yml} to yml value "type" from "build.%{_name}%"
@@ -469,13 +483,18 @@ local function getWeaponItemType(type: text, weapontype: text) :: object:
 local function attributeDisplay(attribute: text, value: number) :: text:
 	if {_attribute} is "movement_speed":
 		set {_displayName} to "移動速度"
+		set {_value} to {_value} * 500
+		if {_value} >= 0:
+			set {_displayValue} to "§a+%{_value}%%%"
+		else:
+			set {_displayValue} to "§c%{_value}%%%"
+
 	else if {_attribute} is "entity_interaction_range":
 		set {_displayName} to "攻撃範囲"
-	
-	if {_value} >= 0:
-		set {_displayValue} to "§a+%{_value}%%%"
-	else:
-		set {_displayValue} to "§c-%{_value}%%%"
+		if {_value} >= 0:
+			set {_displayValue} to "§a+%{_value}%m"
+		else:
+			set {_displayValue} to "§c%{_value}%m"
 	
 	set {_display} to "§9%{_displayName}%§7: %{_displayValue}%"
 	return {_display}
@@ -1029,8 +1048,11 @@ function kitWeaponItem(kit: text, num: number) :: item:
 # KitのSkillリストを取得
 function kitSkillList(kit: text) :: items:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_kit}%"
-	loop yaml node keys "skill" from "class.%{_kit}%":
-		set {_skill} to yml value "%loop-node%" from "class.%{_kit}%"
+	set {_amount} to 8
+	set {_ln} to 0
+	loop {_amount} times:
+		add 1 to {_ln}
+		set {_skill} to yml value "skill.%{_ln}%.item" from "class.%{_kit}%"
 		add {_skill} to {_skills::*}
 	unload yml "class.%{_kit}%"
 	return {_skills::*}
@@ -1038,8 +1060,11 @@ function kitSkillList(kit: text) :: items:
 # KitのWeaponリストを取得
 function kitWeaponList(kit: text) :: items:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_kit}%"
-	loop yaml node keys "weapon" from "class.%{_kit}%":
-		set {_weapon} to yml value "%loop-node%" from "class.%{_kit}%"
+	set {_amount} to 3
+	set {_ln} to 0
+	loop {_amount} times:
+		add 1 to {_ln}
+		set {_weapon} to yml value "weapon.%{_ln}%.item" from "class.%{_kit}%"
 		add {_weapon} to {_weapons::*}
 	unload yml "class.%{_kit}%"
 	return {_weapons::*}
