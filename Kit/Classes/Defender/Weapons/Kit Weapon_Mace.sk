@@ -1,15 +1,11 @@
 # Mace
 
-on damage of player:
-	set {_attacker} to getAttacker(victim)
-	metadata value "gametype" of {_attacker} is "Kit"
-	damage was caused by attack
-	{Class::%{_attacker}%} is "Defender"
-	set {_tool} to {_attacker}'s tool
-	kitItemAllChecker({_tool}, "Defender", "Weapon", 2) is true
+function kitEffect_Mace_AttackNormal(player: player, event: object):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
 	{_attacker} is sneaking
-	playSound("entity.iron_golem.damage", 1, 1, victim)
-	kitStun(victim, 10)
+	playSound("entity.iron_golem.damage", 1, 1, {_victim})
+	kitStun({_victim}, 10)
 	loop 10 times:
-		set {_el} to aroundEffect(victim)
+		set {_el} to aroundEffect({_victim})
 		spawnParticle_Block(dirt, {_el})

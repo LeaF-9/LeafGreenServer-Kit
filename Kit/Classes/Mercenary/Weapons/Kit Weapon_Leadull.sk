@@ -1,20 +1,17 @@
 # Leadull
 
-on damage with priority LOW:
-	set {_attacker} to getAttacker(victim)
-	metadata value "gametype" of {_attacker} is "Kit"
-	{Class::%{_attacker}%} is "Mercenary"
-	damage was caused by attack
-	{_attacker} is sneaking
-	set {_tool} to {_attacker}'s tool
-	kitItemAllChecker({_tool}, "Mercenary", "Weapon", 1) is true
-	setDamageModification_SET(victim, 1)
-	if "%type of victim%" is not "player":
+function kitEffect_Leadull_AttackLow(player: player, event: object):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
+	stop if {_attacker} is not sneaking
+
+	setDamageModification_SET({_victim}, 1)
+	if "%type of {_victim}%" is not "player":
 		stop
-	if getDebuffs(victim, "Blood") is true:
+	if getDebuffs({_victim}, "Blood") is true:
 		stop
-	kitBlood(victim)
-	kitParticle_Leadull(victim)
+	kitBlood({_victim})
+	kitParticle_Leadull({_victim})
 
 local function kitParticle_Leadull(player: player):
 	playSound("block.stone.break", 1, 0.6, {_player})

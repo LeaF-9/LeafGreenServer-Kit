@@ -1,10 +1,6 @@
 # Poison Dagger
 
-on damage:
-	set {_attacker} to getAttacker(victim)
-	metadata value "gametype" of {_attacker} is "Kit"
-	damage was caused by attack
-	{Class::%{_attacker}%} is "Assassin"
-	set {_tool} to {_attacker}'s tool
-	if kitItemAllChecker({_tool}, "Assassin", "Weapon", 1) is true:
-		apply poison 1 to victim for 3 seconds replacing existing effect
+function kitEffect_PoisonDagger_AttackNormal(player: player, event: object):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
+	apply poison 1 to {_victim} for 3 seconds replacing existing effect

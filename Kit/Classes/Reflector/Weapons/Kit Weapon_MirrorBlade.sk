@@ -1,28 +1,24 @@
 # weapon-name: Mirror Blade
 
-on damage of player with priority NORMAL:
-	{Class::%victim%} is "Reflector"
-	checkDamagable(victim) is true
-	set {_attacker} to getAttacker(victim)
+function kitEffect_MirrorBlade_DamageNormal(player: player, event: object):
+	set {_victim} to {_player}
+	set {_attacker} to getAttacker({_victim})
+	checkDamagable({_victim}) is true
 	{_attacker} is set
-	getKitStats(victim, "MirrorBlade") is true
-	deleteKitStats(victim, "MirrorBlade")
-	set {_dmg} to getDamageModification_ALL(victim, damage)
+	getKitStats({_victim}, "MirrorBlade") is true
+	deleteKitStats({_victim}, "MirrorBlade")
+	set {_dmg} to getDamageModification_ALL({_victim}, damage)
 	cancel event
-	kitMsg(victim, "§e§lパリィ§f成功!")
-	kitEffectDescription(victim, "§f§lパリィ")
+	kitMsg({_victim}, "§e§lパリィ§f成功!")
+	kitEffectDescription({_victim}, "§f§lパリィ")
 	kitEffectDescription({_attacker}, "§f§lパリィ")
-	kitParticle_MirrorBlade_Parry(victim)
-	kitDamageNull(victim, {_attacker}, {_dmg}, "パリィ")
+	kitParticle_MirrorBlade_Parry({_victim})
+	kitDamageNull({_victim}, {_attacker}, {_dmg}, "パリィ")
 
-on sneak toggle:
-	{Class::%player%} is "Reflector"
-	player is not sneaking
-	set {_tool} to player's tool
-	kitItemAllChecker({_tool}, "Reflector", "Weapon", 2) is true
-	checkItemCT(player, {_tool}) is true
-	set item cooldown of {_tool} for player to 1 second
-	kitEffect_MirrorBlade(player)
+function kitEffect_MirrorBlade_Sneak(player: player, event: object):
+	set {_tool} to {_player}'s tool
+	set item cooldown of {_tool} for {_player} to 1 second
+	kitEffect_MirrorBlade({_player})
 
 
 

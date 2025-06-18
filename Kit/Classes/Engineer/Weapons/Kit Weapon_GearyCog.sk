@@ -1,39 +1,31 @@
 # Weapon-Name: Geary Cog
 
-on sneak toggle:
-	# 条件
-	{Class::%player%} is "Engineer"
-	player is not sneaking
-	set {_tool} to player's tool
-	if kitItemAllChecker({_tool}, "Engineer", "Weapon", 2) is false:
-		stop
+function kitEffect_GearyCog_Sneak(player: player, event: object):
 	# Fuel Check
-	if checkFuel(player, 2, "Weapon") is false:
+	if checkFuel({_player}, 2, "Weapon") is false:
 		stop
-	if getKitStats(player, "GearyCog") is true:
+	if getKitStats({_player}, "GearyCog") is true:
 		stop
 	# ギアチェンジ
 	kitEffect_GearyCog_Change(player)
 
-on damage with priority LOW:
-	set {_attacker} to getAttacker(victim)
+function kitEffect_GearyCog_DamageLow(player: player, object: event):
+	set {_victim} to {_player}
+	kitSelectChecker_Weapon({_victim}, "Engineer") is 2
+	getKitStats({_victim}, "GearyCog") is true
+	kitEffect_GearyCog_Change({_victim})
+
+function kitEffect_GearyCog_AttackLow(player: player, object: event):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
 	# Geary Cogでの攻撃時
-	if {Class::%{_attacker}%} is "Engineer":
-		set {_tool} to {_attacker}'s tool
-		if kitItemAllChecker({_tool}, "Engineer", "Weapon", 2) is false:
-			stop
-		if getKitStats({_attacker}, "GearyCog") is true:
-			setDamageModification_MUL(victim, 2)
-			kitParticle_GearyCog_Positive(location of {_attacker}, location of victim)
-			kitEffect_GearyCog_Change({_attacker})
-		else:
-			setDamageModification_MUL(victim, 0.2)
-			kitParticle_GearyCog_Negative(location of {_attacker}, location of victim)
-	# Geary Cog選択時のダメージ
-	if {Class::%victim%} is "Engineer":
-		kitSelectChecker_Weapon(victim, "Engineer") is 2
-		getKitStats(victim, "GearyCog") is true
-		kitEffect_GearyCog_Change(victim)
+	if getKitStats({_attacker}, "GearyCog") is true:
+		setDamageModification_MUL({_victim}, 2)
+		kitParticle_GearyCog_Positive(location of {_attacker}, location of {_victim})
+		kitEffect_GearyCog_Change({_attacker})
+	else:
+		setDamageModification_MUL(victim, 0.2)
+		kitParticle_GearyCog_Negative(location of {_attacker}, location of victim)
 
 local function kitEffect_GearyCog_Change(player: player):
 	if getKitStats({_player}, "GearyCog") is true:

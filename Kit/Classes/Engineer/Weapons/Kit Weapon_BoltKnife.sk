@@ -1,14 +1,11 @@
 # Weapon-Name: Bolt Knife
 
-on damage with priority LOW:
-	set {_attacker} to getAttacker(victim)
-	{Class::%{_attacker}%} is "Engineer"
-	damage was caused by attack
-	set {_tool} to {_attacker}'s tool
-	kitItemAllChecker({_tool}, "Engineer", "Weapon", 1) is true
+function kitEffect_BoltKnife_AttackLow(player: player, event: object):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
 	kitEffect_BoltKnife({_attacker}) is true
-	setDamageModification_MUL(victim, 1.2)
-	kitParticle_BoltKnife({_attacker}, victim)
+	setDamageModification_MUL({_victim}, 1.2)
+	kitParticle_BoltKnife({_attacker}, {_victim})
 
 local function kitEffect_BoltKnife(player: player) :: boolean:
 	set {_bool} to false

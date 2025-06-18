@@ -1,15 +1,11 @@
 # Club
 
-on damage with priority LOW:
-	set {_attacker} to getAttacker(victim)
-	metadata value "gametype" of {_attacker} is "Kit"
-	damage was caused by attack
-	{Class::%{_attacker}%} is "Defender"
-	set {_tool} to {_attacker}'s tool
-	kitItemAllChecker({_tool}, "Defender", "Weapon", 1) is true
-	victim's facing is {_attacker}'s facing
-	setDamageModification_MUL(victim, 1.5)
-	playSound("entity.iron_golem.damage", 1, 0.5, victim)
+function kitEffect_Club_AttackLow(player: player, event: object):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
+	{_victim}'s facing is {_attacker}'s facing
+	setDamageModification_MUL({_victim}, 1.5)
+	playSound("entity.iron_golem.damage", 1, 0.5, {_victim})
 	loop 10 times:
-		set {_el} to aroundEffect(victim)
+		set {_el} to aroundEffect({_victim})
 		spawnParticle_Block(oak log, {_el})

@@ -1,34 +1,28 @@
 # Weapon-Name: Venom Rosalie
 
 # スニーク時のパーティクル表記
-on sneak toggle:
-	{Class::%player%} is "Thief"
-	player is not sneaking
-	set {_tool} to player's tool
-	kitItemAllChecker({_tool}, "Thief", "Weapon", 3) is true
+function kitEffect_VenomRosalie_Sneak(player: player, event: object):
 	wait a tick
 	set {_true} to true
 	set {_count} to 0
 	while {_true} is true:
-		set {_tool} to player's tool
-		if player is not sneaking:
+		set {_tool} to {_player}'s tool
+		if {_player} is not sneaking:
 			set {_true} to false
 			continue
 		if kitItemAllChecker({_tool}, "Thief", "Weapon", 3) is false:
 			set {_true} to false
 			continue
 		add 1 to {_count}
-		kitParticle_VenomRosalie_Ivy(player, {_count})
+		kitParticle_VenomRosalie_Ivy({_player}, {_count})
 		wait a tick
 
-on damage of player:
-	set {_attacker} to getAttacker(victim)
-	attacker is set
-	victim is sneaking
-	{Class::%victim%} is "Thief"
-	set {_tool} to victim's tool
-	kitItemAllChecker({_tool}, "Thief", "Weapon", 3) is true
-	set {_c} to kitPercentDuel(victim, {_attacker}, 30)
+function kitEffect_VenomRosalie_DamageNormal(player: player, event: object):
+	set {_victim} to {_player}
+	set {_attacker} to getAttacker({_victim})
+	{_attacker} is set
+	{_victim} is sneaking
+	set {_c} to kitPercentDuel({_victim}, {_attacker}, 30)
 	chance of {_c}%:
 		kitBlood({_attacker})
 

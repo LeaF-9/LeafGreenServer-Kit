@@ -1,15 +1,13 @@
 # Erasure Rapier
 
-on death of player:
-	metadata value "gametype" of attacker is "Kit"
-	{Class::%attacker%} is "Necromancer"
-	set {_tool} to attacker's tool
-	kitItemAllChecker({_tool}, "Necromancer", "Weapon", 2) is true
-	kitAddNecromance(attacker, 3)
-	set {Kit-NoCorpse::%victim%} to true
-	playSound("entity.zombie.infect", 1, 2, victim)
+function kitEffect_ErasureRapier_Kill(player: player, event: object):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
+	kitAddNecromance({_attacker}, 3)
+	set {Kit-NoCorpse::%{_victim}%} to true
+	playSound("entity.zombie.infect", 1, 2, {_victim})
 	loop 5 times:
-		set {_baseloc} to location of victim
+		set {_baseloc} to location of {_victim}
 		add 0.4 to {_y}
 		add {_y} to y-coordinate of {_baseloc}
 		set {_rad} to 0

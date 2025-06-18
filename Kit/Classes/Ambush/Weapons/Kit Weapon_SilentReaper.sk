@@ -5,14 +5,7 @@ options:
 	invisible-tick: 60
 	metadata-spyaction: "Spy Action - Active"
 
-on damage of player with priority HIGH:
-	set {_attacker} to getAttacker(victim)
-	{Class::%{_attacker}%} is "Ambush"
-	set {_tool} to tool of {_attacker}
-	kitItemAllChecker({_tool}, "Ambush", "Weapon", 3) is true
-	kitEffect_SilentReaper_Attack(attacker, event)
-
-local function kitEffect_SilentReaper_Attack(player: player, event: event):
+function kitEffect_SilentReaper_AttackHigh(player: player, event: object):
 	stop if metadata value {@metadata-spyaction} of {_player} is not true
 
 	kitMsg({_player}, "<##4f4343>§l潜伏攻撃<##8e1212>が成功した...!")

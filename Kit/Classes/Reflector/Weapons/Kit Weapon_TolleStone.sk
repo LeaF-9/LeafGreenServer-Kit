@@ -1,20 +1,18 @@
 # weapon-name: Tolle Stone
 
-on damage of player with priority NORMAL:
-	{Class::%victim%} is "Reflector"
+function kitEffect_TolleStone_DamageNormal(player: player, event: object):
+	set {_victim} to {_player}
 	victim is sneaking
-	set {_attacker} to getAttacker(victim)
-	set {_tool} to victim's tool
-	kitItemAllChecker({_tool}, "Reflector", "Weapon", 3) is true
-	getKitStats(victim, "TolleStone") is not set
-	set {_dmg} to getDamageModification_ALL(victim, damage)
+	set {_attacker} to getAttacker({_victim})
+	getKitStats({_victim}, "TolleStone") is not set
+	set {_dmg} to getDamageModification_ALL({_victim}, damage)
 	if {_dmg} < 3:
 		stop
 
-	setDamageModification_ADD(victim, -1.5)
-	setKitStats(victim, "TolleStone", true)
-	kitMsg(victim, "§cダメージ<##f068d2>を<##bf23e6>§lチャージ<##f068d2>した!")
-	kitParticle_TolleStone_Charge(victim)
+	setDamageModification_ADD({_victim}, -1.5)
+	setKitStats({_victim}, "TolleStone", true)
+	kitMsg({_victim}, "§cダメージ<##f068d2>を<##bf23e6>§lチャージ<##f068d2>した!")
+	kitParticle_TolleStone_Charge({_victim})
 
 
 

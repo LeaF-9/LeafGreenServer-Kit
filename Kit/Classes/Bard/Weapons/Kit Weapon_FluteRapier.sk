@@ -1,15 +1,10 @@
 # weapon-name: Flute Rapier
 
-on damage:
-	set {_attacker} to getAttacker(victim)
-	{_attacker} is set
-	metadata value "gametype" of {_attacker} is "Kit"
-	damage was caused by attack
-	{Class::%{_attacker}%} is "Bard"
-	set {_tool} to {_attacker}'s tool
-	kitItemAllChecker({_tool}, "Bard", "Weapon", 1) is true
+function kitEffect_FluteRapier_AttackNormal(player: player, event: object):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
 	if {_attacker} is sneaking:
-		kitEffect_FluteRapier({_attacker}, victim)
+		kitEffect_FluteRapier({_attacker}, {_victim})
 		stop
 	kitSound_FluteRapier_Normal({_attacker})
 

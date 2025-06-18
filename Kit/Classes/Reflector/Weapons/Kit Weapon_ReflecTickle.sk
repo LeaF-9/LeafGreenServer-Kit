@@ -1,21 +1,20 @@
 # weapon-name: Reflec Tickle
 
-on damage with priority NORMAL:
-	set {_attacker} to getAttacker(victim)
-	if getKitStats({_attacker}, "ReflecTickle") is true:
+function kitEffect_ReflecTickle_DamageNormal(player: player, event: object):
+	set {_victim} to {_player}
+	set {_attacker} to getAttacker({_victim})
+	if getKitStats({_victim}, "ReflecTickle") is true:
+		checkDamagable({_victim}) is true
 		cancel event
-	if getKitStats(victim, "ReflecTickle") is true:
-		checkDamagable(victim) is true
-		cancel event
-		kitDamageNull({_attacker}, victim, 1, "反射の杖", true)
-		kitParticle_ReflecTickle_Damage(victim)
+		kitDamageNull({_attacker}, {_victim}, 1, "反射の杖", true)
+		kitParticle_ReflecTickle_Damage({_victim})
 
-on sneak toggle:
-	{Class::%player%} is "Reflector"
-	player is not sneaking
-	set {_tool} to player's tool
-	kitItemAllChecker({_tool}, "Reflector", "Weapon", 1) is true
-	kitEffect_ReflecTickle(player)
+function kitEffect_ReflecTickle_AttackNormal(player: player, event: object):
+	set {_attacker} to {_player}
+	{_event}.setCancelled() if getKitStats({_attacker}, "ReflecTickle") is true
+
+function kitEffect_ReflecTickle_Sneak(player: player, event: object):
+	kitEffect_ReflecTickle({_player})
 
 
 

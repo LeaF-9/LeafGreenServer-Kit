@@ -1,14 +1,10 @@
 # Weapon-Name: Fay Stick
 
-on damage of player with priority LOW:
-	if {Class::%attacker%} is "Paladin":
-		damage was caused by attack
-		set {_attacker} to getAttacker(victim)
-		set {_tool} to {_attacker}'s tool
-		kitItemAllChecker({_tool}, "Paladin", "Weapon", 2) is true
-		kitCheckAlive(attacker) is true
-		if {_attacker} is sneaking:
-			kitHeal({_attacker}, 0.5)
-		else:
-			{_attacker} does not have regeneration
-			applyEffect({_attacker}, regeneration, 1, 60)
+function kitEffect_FayStick_AttackLow(player: player, event: object):
+	set {_attacker} to {_player}
+	kitCheckAlive({_attacker}) is true
+	if {_attacker} is sneaking:
+		kitHeal({_attacker}, 0.5)
+	else:
+		{_attacker} does not have regeneration
+		applyEffect({_attacker}, regeneration, 1, 60)

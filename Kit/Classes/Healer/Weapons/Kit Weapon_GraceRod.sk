@@ -1,55 +1,50 @@
 # Grace Rod
 
-on sneak toggle:
-	metadata value "gametype" of player is "Kit"
-	{Class::%player%} is "Healer"
-	player is not sneaking
-	set {_tool} to player's tool
-	kitItemAllChecker({_tool}, "Healer", "Weapon", 1) is true
+function kitEffect_GraceRod_Sneak(player: player, event: object):
 	set {_charge} to 0
 	set {_charged} to 0
 	set {_true} to true
-	playSound("block.beacon.ambient", 1, 2, player)
+	playSound("block.beacon.ambient", 1, 2, {_player})
 	wait a tick
 	while {_true} is true:
-		set {_tool} to player's tool
+		set {_tool} to {_player}'s tool
 		if kitItemAllChecker({_tool}, "Healer", "Weapon", 1) is false:
 			delete {_true}
-		else if player is not sneaking:
+		else if {_player} is not sneaking:
 			delete {_true}
 		else:
 			add 1 to {_charge}
 			# --- Action Bar ---
 			set {_bar} to ({_charge} - (100 * {_charged})) / 2
-			chargeActionBar(player, {_bar}, 50)
+			chargeActionBar({_player}, {_bar}, 50)
 			# ------------------
 			# --- 効果 ---
 			if mod({_charge}, 100) is 0:
 				add 1 to {_charged}
-				add 5 to {Kit-Odo::%player%}
-				kitMsg(player, "<##ffb6c1>オドを回復しました!")
+				add 5 to {Kit-Odo::%{_player}%}
+				kitMsg({_player}, "<##ffb6c1>オドを回復しました!")
 				# --- チャージ完了時の音の演出 ---
-				playSound("block.conduit.activate", 1, 2, player)
+				playSound("block.conduit.activate", 1, 2, {_player})
 				# ----------------------------
 				# --- チャージ完了時のパーティクルの演出 ---
-				set {_y} to y-coordinate of player + 2
+				set {_y} to y-coordinate of {_player} + 2
 				loop 10 times:
-					set {_el} to aroundEffect(player)
+					set {_el} to aroundEffect({_player})
 					set y-coordinate of {_el} to {_y}
 					spawnParticle(sculk_charge, {_el})
 				# ------------------------------------
 			# -----------
 			# --- チャージ中の音の演出 ---
 			if mod({_charge}, 40) is 0:
-				playSound("block.conduit.ambient", 1, 2, player)
+				playSound("block.conduit.ambient", 1, 2, {_player})
 			# ------------------------
 			# --- チャージ中のパーティクルの演出 ---
 			set {_mod} to mod({_charge}, 100)
 			set {_add.y} to {_mod} / 50
-			set {_base.y} to y-coordinate of player
+			set {_base.y} to y-coordinate of {_player}
 			set {_y} to {_base.y} + {_add.y}
 			loop 3 times:
-				set {_el} to aroundEffect(player)
+				set {_el} to aroundEffect({_player})
 				set y-coordinate of {_el} to {_y}
 				spawnParticle(sculk_charge_pop, {_el})
 			# ---------------------------------

@@ -1,16 +1,13 @@
 # Pluto
 
-on damage:
-	set {_attacker} to getAttacker(victim)
-	metadata value "gametype" of {_attacker} is "Kit"
-	damage was caused by attack
-	{Class::%{_attacker}%} is "Warrior"
-	set {_tool} to {_attacker}'s tool
+function kitEffect_Pluto_AttackNormal(player: player, event: object):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
 	if getKitStats({_attacker}, "PlutoCharge") is true:
 		subtract 1 from {_attacker}'s health
-		kitStun(victim, 100)
-		playSound("entity.wither.break_block", 1, 0.9, victim)
-		loop all blocks in radius 3 around victim:
+		kitStun({_victim}, 100)
+		playSound("entity.wither.break_block", 1, 0.9, {_victim})
+		loop all blocks in radius 3 around {_victim}:
 			loop-block is air
 			block below loop-block is not air
 			set {_loc} to location of loop-block
@@ -18,58 +15,54 @@ on damage:
 			spawnParticle_Block(dirt, {_loc})
 		deleteKitStats({_attacker}, "PlutoCharge")
 
-on sneak toggle:
-	{Class::%player%} is "Warrior"
-	player is not sneaking
-	set {_tool} to player's tool
-	getKitStats(player, "PlutoCharge") is not set
-	if kitItemAllChecker({_tool}, "Warrior", "Weapon", 2) is true:
-		set {_num} to 0
-		wait a tick
-		set {_true} to false
-		while {_true} is false:
-			set {_tool} to player's tool
-			if player is not sneaking:
-				delete {_true}
-			else if kitItemAllChecker({_tool}, "Warrior", "Weapon", 2) is false:
-				delete {_true}
-			else if {_num} is 100:
-				set {_true} to true
-			else:
-				add 1 to {_num}
-				set {_linenum} to round({_num} / 2)
-				chargeActionBar(player, {_linenum}, 50)
-				# --- チャージ中の音の演出 ---
-				set {_sp} to {_num} / 200 + 0.5
-				playSound("block.lava.pop", 0.5, {_sp}, player)
-				# --------------------------
-				# --- チャージ中のパーティクルの演出 ---
-				kitEffect_Pluto_1(player)
-				# ------------------------------------
-				wait a tick
-		if {_true} is true:
-			setKitStats(player, "PlutoCharge", true)
-			# --- チャージ完了時の音の演出 ---
-			playSound("entity.warden.roar", 1, 2, player)
-			# ------------------------------
-			while {_true} is true:
-				set {_tool} to player's tool
-				if kitItemAllChecker({_tool}, "Warrior", "Weapon", 2) is false:
-					delete {_true}
-				else if getKitStats(player, "PlutoCharge") is not set:
-					set {_true} to false
-				else:
-					send action bar "§7§lPluto §bのチャージが完了しました!" to player
-					# --- チャージ完了中のパーティクルの演出 ---
-					chance of 10%:
-						kitEffect_Pluto_2(player)
-					# ---------------------------------------
-					wait a tick
-			if {_true} is not set:
-				send action bar "§cチャージが中断されました!" to player
-				deleteKitStats(player, "PlutoCharge")
+function kitEffect_Pluto_Sneak(player: player, event: object):
+	getKitStats({_player}, "PlutoCharge") is not set
+	set {_num} to 0
+	wait a tick
+	set {_true} to false
+	while {_true} is false:
+		set {_tool} to {_player}'s tool
+		if {_player} is not sneaking:
+			delete {_true}
+		else if kitItemAllChecker({_tool}, "Warrior", "Weapon", 2) is false:
+			delete {_true}
+		else if {_num} is 100:
+			set {_true} to true
 		else:
-			send action bar "§8チャージに失敗しました" to player
+			add 1 to {_num}
+			set {_linenum} to round({_num} / 2)
+			chargeActionBar({_player}, {_linenum}, 50)
+			# --- チャージ中の音の演出 ---
+			set {_sp} to {_num} / 200 + 0.5
+			playSound("block.lava.pop", 0.5, {_sp}, {_player})
+			# --------------------------
+			# --- チャージ中のパーティクルの演出 ---
+			kitEffect_Pluto_1({_player})
+			# ------------------------------------
+			wait a tick
+	if {_true} is true:
+		setKitStats({_player}, "PlutoCharge", true)
+		# --- チャージ完了時の音の演出 ---
+		playSound("entity.warden.roar", 1, 2, {_player})
+		# ------------------------------
+		while {_true} is true:
+			set {_tool} to {_player}'s tool
+			if kitItemAllChecker({_tool}, "Warrior", "Weapon", 2) is false:
+				delete {_true}
+			else if getKitStats({_player}, "PlutoCharge") is not set:
+				set {_true} to false
+			else:
+				send action bar "§7§lPluto §bのチャージが完了しました!" to {_player}
+				# --- チャージ完了中のパーティクルの演出 ---
+				chance of 10%:
+					kitEffect_Pluto_2({_player})
+				# ---------------------------------------
+				wait a tick
+		if {_true} is not set:
+			send action bar "§cチャージが中断されました!" to {_player}
+			deleteKitStats({_player}, "PlutoCharge")
+	else:
+		send action bar "§8チャージに失敗しました" to {_player}
 
 function kitEffect_Pluto_1(player: player):
 	set {_baseloc} to location of {_player}

@@ -1,25 +1,21 @@
 # Titan
 
-on damage:
-	set {_attacker} to getAttacker(victim)
-	metadata value "gametype" of {_attacker} is "Kit"
-	damage was caused by attack
-	{Class::%{_attacker}%} is "Warrior"
-	set {_tool} to {_attacker}'s tool
-	if kitItemAllChecker({_tool}, "Warrior", "Weapon", 1) is true:
-		set {_c} to kitPercentDuel({_attacker}, victim, 10)
-		chance of {_c}%:
-			apply slowness 3 to victim for 3 seconds
-			playSound("entity.phantom.hurt", 1, 0.75, victim)
-			loop 5 times:
-				set {_baseloc} to location of victim
-				add 0.4 to {_y}
-				add {_y} to y-coordinate of {_baseloc}
-				set {_rad} to 0
-				loop 10 times:
-					set {_effloc} to {_baseloc}
-					add 0.5 * sin({_rad}) to x-coordinate of {_effloc}
-					add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
-					spawnParticle_Color(entity_effect, rgb(71, 38, 110), {_effloc})
-					add 36 to {_rad}
-				wait a tick
+function kitEffect_Titan_AttackNormal(player: player, event: object):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
+	set {_c} to kitPercentDuel({_attacker}, {_victim}, 10)
+	chance of {_c}%:
+		apply slowness 3 to {_victim} for 3 seconds
+		playSound("entity.phantom.hurt", 1, 0.75, {_victim})
+		loop 5 times:
+			set {_baseloc} to location of {_victim}
+			add 0.4 to {_y}
+			add {_y} to y-coordinate of {_baseloc}
+			set {_rad} to 0
+			loop 10 times:
+				set {_effloc} to {_baseloc}
+				add 0.5 * sin({_rad}) to x-coordinate of {_effloc}
+				add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
+				spawnParticle_Color(entity_effect, rgb(71, 38, 110), {_effloc})
+				add 36 to {_rad}
+			wait a tick

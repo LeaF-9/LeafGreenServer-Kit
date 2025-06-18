@@ -1,12 +1,7 @@
 # Weapon-Name: Anima Massa
 
-on sneak toggle:
-	{Class::%player%} is "Ghost"
-	getKitStats(player, "SpareSoul") is not set
-	player is not sneaking
-	set {_tool} to player's tool
-	if kitItemAllChecker({_tool}, "Ghost", "Weapon", 2) is false:
-		stop
+function kitEffect_AnimaMassa_Sneak(player: player, event: object):
+	getKitStats({_player}, "SpareSoul") is not set
 	set {_num} to 0
 	set {_lore::*} to lore of {_tool}
 	loop {_lore::*}:
@@ -17,17 +12,17 @@ on sneak toggle:
 	wait a tick
 	set {_true} to false
 	while {_true} is false:
-		set {_tool} to player's tool
-		if player is not sneaking:
+		set {_tool} to {_player}'s tool
+		if {_player} is not sneaking:
 			delete {_true}
 			continue
 		if kitItemAllChecker({_tool}, "Ghost", "Weapon", 2) is false:
 			delete {_true}
 			continue
-		if {Kit-Spirits::%player%} < {_spirit}:
+		if {Kit-Spirits::%{_player}%} < {_spirit}:
 			delete {_true}
 			continue
-		if getKitStats(player, "SpareSoul") is true:
+		if getKitStats({_player}, "SpareSoul") is true:
 			delete {_true}
 			continue
 		if {_num} is 200:
@@ -35,21 +30,21 @@ on sneak toggle:
 			continue
 		add 1 to {_num}
 		set {_linenum} to round({_num} / 4)
-		chargeActionBar(player, {_linenum}, 50)
+		chargeActionBar({_player}, {_linenum}, 50)
 		# --- チャージ中の演出 ---
-		kitParticle_AnimaMassa_Charge(player, {_num})
+		kitParticle_AnimaMassa_Charge({_player}, {_num})
 		# ------------------------------------
 		wait a tick
 	if {_true} is not set:
-		send action bar "§8チャージに失敗しました" to player
+		send action bar "§8チャージに失敗しました" to {_player}
 		stop
-	if kitCheckSpirit(player, "Anima Massa") is false:
+	if kitCheckSpirit({_player}, "Anima Massa") is false:
 		stop
-	setKitStats(player, "SpareSoul", true)
-	setKitStats(player, "Resurrection", true)
+	setKitStats({_player}, "SpareSoul", true)
+	setKitStats({_player}, "Resurrection", true)
 	set {_memsg} to kitGhostMessage("§5Spare Soul §8を獲得した...", true)
-	kitMsg(player, {_memsg})
-	kitParticle_AnimaMassa_Complete(player)
+	kitMsg({_player}, {_memsg})
+	kitParticle_AnimaMassa_Complete({_player})
 
 function kitParticle_AnimaMassa_Charge(player: player, prog: number):
 	playSound("block.campfire.crackle", 0.5, 2, {_player})
