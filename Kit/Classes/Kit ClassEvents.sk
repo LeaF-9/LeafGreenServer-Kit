@@ -12,14 +12,15 @@ local function kitRunnableExecution(player: player, event: object, title: text =
 
 	set {_itemkey} to getNamespacedKey({_item}, "item-key", "string")
 
-	set {_behindkey} to ""
-
-	if {_title} is not "RightClick":
+	if {_title} is "RightClick":
+		set {_func::run} to function reference "kitEffect_%{_itemkey}%" called with ({_player})
+	
+	else:
 		set {_behindkey} to {_title}
 		replace "-" with "" in {_behindkey}
 		set {_behindkey} to "_%{_behindkey}%"
+		set {_func::run} to function reference "kitEffect_%{_itemkey}%%{_behindkey}%" called with ({_player}, {_event})
 
-	set {_func::run} to function reference "kitEffect_%{_itemkey}%%{_behindkey}%" called with ({_player}, {_event})
 	set {_interact} to new proxy instance of Runnable using {_func::*}
 	{_interact}.run()
 
