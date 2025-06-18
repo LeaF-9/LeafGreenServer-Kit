@@ -34,25 +34,23 @@ on shoot:
 on leftclick:
 	kitRunnableExecution(player, event, "LeftClick")
 
-on damage with priority LOWEST:
-	kitRunnableExecution(attacker, event, "Attack-Lowest") if checkEntityType(attacker, player) is true
-	kitRunnableExecution(victim, event, "Damage-Lowest") if checkEntityType(victim, player) is true
-
 on damage with priority LOW:
-	kitRunnableExecution(attacker, event, "Attack-Low") if checkEntityType(attacker, player) is true
-	kitRunnableExecution(victim, event, "Damage-Low") if checkEntityType(victim, player) is true
+	set {_victim} to victim
+	kitRunnableExecution({_victim}, event, "Damage-Low") if checkEntityType({_victim}, player) is true
+	set {_attacker} to getAttacker({_victim})
+	kitRunnableExecution({_attacker}, event, "Attack-Low") if checkEntityType({_attacker}, player) is true
 
 on damage with priority NORMAL:
-	kitRunnableExecution(attacker, event, "Attack-Normal") if checkEntityType(attacker, player) is true
-	kitRunnableExecution(victim, event, "Damage-Normal") if checkEntityType(victim, player) is true
+	set {_victim} to victim
+	kitRunnableExecution({_victim}, event, "Damage-Normal") if checkEntityType({_victim}, player) is true
+	set {_attacker} to getAttacker({_victim})
+	kitRunnableExecution({_attacker}, event, "Attack-Normal") if checkEntityType({_attacker}, player) is true
 
 on damage with priority HIGH:
-	kitRunnableExecution(attacker, event, "Attack-High") if checkEntityType(attacker, player) is true
-	kitRunnableExecution(victim, event, "Damage-High") if checkEntityType(victim, player) is true
-
-on damage with priority HIGHEST:
-	kitRunnableExecution(attacker, event, "Attack-Highest") if checkEntityType(attacker, player) is true
-	kitRunnableExecution(victim, event, "Damage-Highest") if checkEntityType(victim, player) is true
+	set {_victim} to victim
+	kitRunnableExecution({_victim}, event, "Damage-High") if checkEntityType({_victim}, player) is true
+	set {_attacker} to getAttacker({_victim})
+	kitRunnableExecution({_attacker}, event, "Attack-High") if checkEntityType({_attacker}, player) is true
 
 local function itemChecker(player: player) :: boolean:
 	return false if metadata value "gametype" of {_player} is not "Kit"
