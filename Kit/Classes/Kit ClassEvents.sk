@@ -2,19 +2,13 @@ import:
     java.lang.Runnable
 
 local function kitRunnableExecution(player: player, event: object, title: text = ""):
-	metadata value "gametype" of {_player} is "Kit"
+	stop if itemChecker({_player}) is false
+
 	set {_item} to {_player}'s tool
-	set {_itemkit} to kitItemKitChecker({_item})
-	stop if {_itemkit} is not set
-
-	set {_itemtype} to kitItemTypeChecker({_item})
-	stop if {_itemtype} is not set
-	
-	set {_itemnum} to kitItemNumberChecker({_item})
-	stop if {_itemnum} is not set
-
-	checkCT({_player}, name of {_item}) is true
-	checkItemCT({_player}, {_item}) is true
+	set {_titlelower} to {_title} in lowercase
+	set {_functionkey} to "function-%{_titlelower}%"
+	set {_nsk} to getNamespacedKey({_item}, {_functionkey}, "boolean")
+	stop if {_nsk} is not true
 
 	if {_title} is "RightClick":
 		set {_func::run} to function reference "kit%{_itemtype}%_%{_itemkit}%_%{_itemnum}%" called with ({_player})
@@ -37,3 +31,21 @@ on shoot:
 
 on leftclick:
 	kitRunnableExecution(player, event, "LeftClick")
+
+local function itemChecker(player: player) :: boolean:
+	return false if metadata value "gametype" of {_player} is not "Kit"
+
+	set {_item} to {_player}'s tool
+	set {_itemkit} to kitItemKitChecker({_item})
+	return false if {_itemkit} is not set
+
+	set {_itemtype} to kitItemTypeChecker({_item})
+	return false if {_itemtype} is not set
+	
+	set {_itemnum} to kitItemNumberChecker({_item})
+	return false if {_itemnum} is not set
+
+	return false if checkCT({_player}, name of {_item}) is false
+	return false if checkItemCT({_player}, {_item}) is false
+
+	return true
