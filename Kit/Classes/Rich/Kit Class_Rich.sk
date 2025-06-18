@@ -1,0 +1,61 @@
+# Richのスキル Ver1.0.0
+
+# Passives
+function kitDropGolds_Rich(player: player, loc: location, num: number = 1):
+	loop {_num} times:
+		set {_droploc} to dropLocation({_loc})
+		set {_gold} to a gold nugget
+		set {_healamount} to 0.5
+		if getKitStats({_player}, "Fortune Boost") is set:
+			set {_gold} to a gold ingot
+			set {_healamount} to 1
+
+		drop {_gold} named "%{_player}%" at {_droploc}
+		set metadata value "gametype" of last dropped item to "Kit"
+		set metadata value "delete" of last dropped item to "%{_player}%"
+		set metadata value "undelete" of last dropped item to true
+		set metadata value "Rich Gold" of last dropped item to {_player}
+		set metadata value "Rich Healing" of last dropped item to {_healamount}
+		set metadata value "Jewelry" of last dropped item to {_player}
+		kitParticle_RichDropGolds({_loc})
+
+local function dropLocation(loc: location) :: location:
+	set {_ok} to false
+	set {_loopnum} to 0
+	while {_ok} is false:
+		add 1 to {_loopnum}
+		if {_loopnum} > 30:
+			set {_returnloc} to {_loc}
+			set {_ok} to true
+			continue
+		
+		set {_pow} to a random number between 0 and 1.5
+		set {_vec} to randomVector({_pow})
+		set {_returnloc} to {_loc} ~ {_vec}
+		if block at {_returnloc} is passable:
+			set {_ok} to true
+			continue
+	return {_returnloc}
+
+# 金をドロップした際の演出 小さくキラキラした感じ
+local function kitParticle_RichDropGolds(loc: location):
+	# のちほど
+
+on pick up:
+	stop if {Class::%player%} is "Thief"
+
+	set {_dropper} to metadata value "Rich Gold" of event-dropped item
+	stop if {_dropper} is player
+	set {_healamount} to metadata value "Rich Healing" of event-dropped item
+
+	set {_goldloc} to location od event-dropped item
+	delete event-dropped item
+	kitEffect_AurumCure(player, {_healamount}, {_goldloc})
+
+local function kitEffect_AurumCure(player: player, heal: number, loc: location):
+	kitHeal({_player}, {_heal}, 1)
+	kitParticle_AurumCure({_player}, {_loc})
+
+# ゴールド所持者に向けてキラキラパーティクル
+local function kitParticle_AurumCure(player: player, loc: location):
+	# のちほど
