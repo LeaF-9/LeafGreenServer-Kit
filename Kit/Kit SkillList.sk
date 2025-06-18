@@ -592,7 +592,6 @@ local function enchantDisplay(enchant: text, value: number) :: text:
 
 
 
-# 変更予定 (β1.5.0)
 command /kitskillgive <text>:
 	usage: /kitskillgive <kit>
 	permission: sk.admin
@@ -603,7 +602,6 @@ command /kitskillgive <text>:
 		loop {_skills::*}:
 			give loop-value to player
 
-# 変更予定 (β1.5.0)
 command /kitweapongive <text>:
 	usage: /kitweapongive <kit>
 	permission: sk.admin
@@ -1017,14 +1015,14 @@ command /kitweaponusage <text>:
 # Kitの特定のSkillを取得
 function kitSkillItem(kit: text, num: number) :: item:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_kit}%"
-	set {_item} to yml value "skill.%{_num}%" from "class.%{_kit}%"
+	set {_item} to yml value "skill.%{_num}%.item" from "class.%{_kit}%"
 	unload yml "class.%{_kit}%"
 	return {_item}
 
 # Kitの特定のWeaponを取得
 function kitWeaponItem(kit: text, num: number) :: item:
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.%{_kit}%"
-	set {_item} to yml value "weapon.%{_num}%" from "class.%{_kit}%"
+	set {_item} to yml value "weapon.%{_num}%.item" from "class.%{_kit}%"
 	unload yml "class.%{_kit}%"
 	return {_item}
 
@@ -1052,7 +1050,7 @@ function kitPlayerSkillItem(player: player, kit: text, slot: number) :: item:
 	set {_uuid} to UUID of {_player}
 	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%{_player}%.kit"
 	set {_num} to yml value "custom.%{_kit}%.skill.%{_slot}%" from "player.%{_player}%.kit"
-	set {_item} to yml value "skill.%{_num}%" from "class.%{_player}%.kit"
+	set {_item} to yml value "skill.%{_num}%.item" from "class.%{_player}%.kit"
 	unload yml "class.%{_player}%.kit"
 	unload yml "player.%{_player}%.kit"
 	return {_item}
@@ -1063,7 +1061,7 @@ function kitPlayerWeaponItem(player: player, kit: text) :: item:
 	set {_uuid} to UUID of {_player}
 	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "player.%{_player}%.kit"
 	set {_num} to yml value "custom.%{_kit}%.weapon" from "player.%{_player}%.kit"
-	set {_item} to yml value "weapon.%{_num}%" from "class.%{_player}%.kit"
+	set {_item} to yml value "weapon.%{_num}%.item" from "class.%{_player}%.kit"
 	unload yml "class.%{_player}%.kit"
 	unload yml "player.%{_player}%.kit"
 	return {_item}
