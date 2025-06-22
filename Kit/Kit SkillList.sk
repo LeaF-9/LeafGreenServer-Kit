@@ -1,5 +1,6 @@
 import:
 	java.lang.Integer
+	java.lang.StringBuilder
 	java.util.regex.Pattern
 	java.util.regex.Matcher
 
@@ -8,6 +9,7 @@ import:
 	net.kyori.adventure.text.Component
 	net.kyori.adventure.text.format.TextColor
 	net.kyori.adventure.text.format.TextDecoration
+	net.kyori.adventure.text.format.ShadowColor
 
 	org.bukkit.Color
 	org.bukkit.DyeColor
@@ -113,6 +115,7 @@ command /kitskillsave <text>:
 	usage: /kitskillsave <kit>
 	permission: sk.admin
 	trigger:
+		clear player's inventory
 		set {_kit} to arg 1
 
 		set {_skillamount} to 8
@@ -131,6 +134,7 @@ command /kitskillsave <text>:
 			set {_skillitem} to buildLoadout({_kit}, "skill", {_skilltag}, {_num})
 			set {_skillitem.tagged} to kitItemTagChanger({_skillitem}, {_kit}, "Skill", {_num})
 			set yml value "skill.%{_num}%.item" from "classloading" to {_skillitem.tagged}
+			give {_skillitem.tagged} to player
 		
 		save yml "classloading"
 		message formatted "§a%{_kit}% §bの§c§lSkill§bを再設定しました" to command sender
@@ -139,6 +143,7 @@ command /kitweaponsave <text>:
 	usage: /kitweaponsave <kit>
 	permission: sk.admin
 	trigger:
+		clear player's inventory
 		set {_kit} to arg 1
 
 		set {_weaponamount} to 3
@@ -157,6 +162,7 @@ command /kitweaponsave <text>:
 			set {_weaponitem} to buildLoadout({_kit}, "weapon", {_weapontag})
 			set {_weaponitem.tagged} to kitItemTagChanger({_weaponitem}, {_Kit}, "Weapon", {_num})
 			set yml value "weapon.%{_num}%.item" from "classloading" to {_weaponitem.tagged}
+			give {_weaponitem.tagged} to player
 
 		save yml "classloading"
 		message formatted "§a%{_kit}% §bの§c§lWeapon§bを再設定しました" to command sender
@@ -286,7 +292,11 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 		set {_name-shadow-color.yml} to yml value "name-shadow-color" from "build.%{_name}%"
 
 		if {_name-shadow-color.yml} is set:
-			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(TextColor.fromCSSHexString({_name-shadow-color.yml}))
+			set {_sb} to new StringBuilder({_name-shadow-color.yml})
+			{_sb}.insert(7, "ff")
+			set {_name-shadow-color.yml} to {_sb}.toString()
+
+			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(ShadowColor.fromHexString({_name-shadow-color.yml}))
 		else:
 			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false)
 		{_ItemMeta}.customName({_Component})
@@ -426,10 +436,9 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 		# {_Consumable}.setConsumeSeconds(2147483647)
 		# {_ItemMeta}.setConsumable({_Consumable})
 
-		# Paperでの処理
+		# Paperでの処理 (Consumableは値の保存のみ)
 		set {_consumable-animation.value} to {_consumable-animation.yml} in upper case
 		set {_Animation} to ItemUseAnimation.valueOf({_consumable-animation.value})
-		{_ItemStack}.setData(DataComponentTypes.CONSUMABLE, Consumable.consumable().animation({_Animation}).consumeSeconds(2147483647).hasConsumeParticles(false).build())
 
 		set {_Food} to {_ItemMeta}.getFood()
 		{_Food}.setCanAlwaysEat(true)
@@ -452,6 +461,8 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	{_ItemStack}.setItemMeta({_ItemMeta})
 
 	unload yml "build.%{_name}%"
+	# Consumableの付与 (Paperのみ)
+	{_ItemStack}.setData(DataComponentTypes.CONSUMABLE, Consumable.consumable().animation({_Animation}).consumeSeconds(2147483647).hasConsumeParticles(false).build()) if {_Animation} is set
 	return {_ItemStack}
 
 local function getSkillItemType(kit: text, num: number, skilltype: text) :: object:
@@ -617,7 +628,7 @@ command /kitskillgive <text>:
 	executable by: player
 	trigger:
 		set {_skills::*} to kitSkillList(arg 1)
-		remove all items from player's inventory
+		clear player's inventory
 		loop {_skills::*}:
 			give loop-value to player
 
@@ -627,7 +638,7 @@ command /kitweapongive <text>:
 	executable by: player
 	trigger:
 		set {_weapons::*} to kitWeaponList(arg 1)
-		remove all items from player's inventory
+		clear player's inventory
 		loop {_weapons::*}:
 			give loop-value to player
 
