@@ -174,12 +174,15 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 
 	load yml "plugins/skript-yaml/Kit Loadouts/%{_dirname}%/%{_kit}%/%{_name}%.yml" as "build.%{_name}%"
 	set {_type.yml} to yml value "type" from "build.%{_name}%"
+	set {_type.yml} to {_type.yml} in upper case
 	if {_type} is "skill":
 		set {_skill-type.yml} to yml value "skill-type" from "build.%{_name}%"
+		set {_skill-type.yml} to {_skill-type.yml} in upper case
 		set {_skill-type.yml} to "normal" if {_skill-type.yml} is not set
 		set {_material} to getSkillItemType({_kit}, {_num}, {_skill-type.yml})
 	else if {_type} is "weapon":
 		set {_weapon-type.yml} to yml value "weapon-type" from "build.%{_name}%"
+		set {_weapon-type.yml} to {_weapon-type.yml} in upper case
 		set {_material} to getWeaponItemType({_type.yml}, {_weapon-type.yml})
 
 	set {_amount} to yml value "amount" from "build.%{_name}%"
@@ -192,8 +195,8 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	if {_potion-color.yml} is set:
 		replace "#" with "" in {_potion-color.yml}
 		set {_potion.red} to Integer.parseInt({_potion-color.yml}.substring(0, 2), 16)
-		set {_potion.blue} to Integer.parseInt({_potion-color.yml}.substring(2, 4), 16)
-		set {_potion.green} to Integer.parseInt({_potion-color.yml}.substring(4, 6), 16)
+		set {_potion.green} to Integer.parseInt({_potion-color.yml}.substring(2, 4), 16)
+		set {_potion.blue} to Integer.parseInt({_potion-color.yml}.substring(4, 6), 16)
 		set {_PotionColor} to Color.fromRGB({_potion.red}, {_potion.green}, {_potion.blue})
 
 		{_ItemMeta}.setColor({_PotionColor})
@@ -201,6 +204,7 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	# Banner Pattern
 	set {_banner-base-color.yml} to yml value "banner-patterns.base-color" from "build.%{_name}%"
 	if {_banner-base-color.yml} is set:
+		set {_banner-base-color.yml} to {_banner-base-color.yml} in upper case
 		{_ItemMeta}.setBaseColor(DyeColor.valueOf({_banner-base-color.yml}))
 
 		set {_banner-loopnum} to 100
@@ -231,6 +235,7 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	loop yaml node keys "enchants" from "build.%{_name}%":
 		set {_node::*} to loop-node
 		set {_node} to {_node::1}
+		set {_key} to {_node}
 		replace "enchants." with "" in {_key}
 		set {_value} to yml value {_node} from "build.%{_name}%"
 		set {_enchants::%{_key}%} to {_value}
@@ -287,23 +292,8 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 
 	# Custom Name
 	set {_name.yml} to yml value "name" from "build.%{_name}%"
-	if {_name.yml} is set:
-		set {_name-color.yml} to yml value "name-color" from "build.%{_name}%"
-		set {_name-shadow-color.yml} to yml value "name-shadow-color" from "build.%{_name}%"
-
-		if {_name-shadow-color.yml} is set:
-			set {_sb} to new StringBuilder({_name-shadow-color.yml})
-			{_sb}.insert(7, "ff")
-			set {_name-shadow-color.yml} to {_sb}.toString()
-
-			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(ShadowColor.fromHexString({_name-shadow-color.yml}))
-		else:
-			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false)
-		{_ItemMeta}.customName({_Component})
-
-	else:
-		set {_name-detail.yml} to yml value "name-detail" from "build.%{_name}%"
-
+	set {_name-detail.yml} to yml value "name-detail" from "build.%{_name}%"
+	if {_name-detail.yml} is set:
 		set {_Pattern} to Pattern.compile("<#[a-fA-F0-9]{6}>")
 		set {_Matcher} to {_Pattern}.matcher({_name-detail.yml})
 
@@ -317,6 +307,20 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 			set {_Matcher} to {_Pattern}.matcher({_name-detail.yml})
 
 		{_ItemMeta}.setDisplayName({_name-detail.yml})
+
+	else:
+		set {_name-color.yml} to yml value "name-color" from "build.%{_name}%"
+		set {_name-shadow-color.yml} to yml value "name-shadow-color" from "build.%{_name}%"
+
+		if {_name-shadow-color.yml} is set:
+			set {_sb} to new StringBuilder({_name-shadow-color.yml})
+			{_sb}.insert(7, "ff")
+			set {_name-shadow-color.yml} to {_sb}.toString()
+
+			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false).shadowColor(ShadowColor.fromHexString({_name-shadow-color.yml}))
+		else:
+			set {_Component} to Component.text({_name.yml}).color(TextColor.fromCSSHexString({_name-color.yml})).decoration(TextDecoration.ITALIC, false)
+		{_ItemMeta}.customName({_Component})
 
 	# Lore
 	set {_lore-summary.yml} to yml value "lore-summary" from "build.%{_name}%"
@@ -455,12 +459,16 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 
 	# Item Model
 	set {_type.yml} to yml value "type" from "build.%{_name}%"
+	set {_type.yml} to {_type.yml} in lower case
 	set {_namespacedkey} to NamespacedKey.minecraft({_type.yml})
 	{_ItemMeta}.setItemModel({_namespacedkey})
 
 	{_ItemStack}.setItemMeta({_ItemMeta})
 
 	unload yml "build.%{_name}%"
+	# Max Stack Sizeの変更
+	set {_stack} to 64
+	{_ItemStack}.setData(DataComponentTypes.MAX_STACK_SIZE, {_stack}.intValue()) if {_amount} > 1
 	# Consumableの付与 (Paperのみ)
 	{_ItemStack}.setData(DataComponentTypes.CONSUMABLE, Consumable.consumable().animation({_Animation}).consumeSeconds(2147483647).hasConsumeParticles(false).build()) if {_Animation} is set
 	return {_ItemStack}
@@ -882,7 +890,7 @@ function openKitSkillCustom(player: player, kit: text):
 			set slot {_num} of {_player}'s current inventory to a red stained glass pane named "§c§l⇩ §a§lSkill Select §c§l⇩"
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "skill" from "class.custom.%{_kit}%":
-		set {_skill} to yml value "%loop-node%" from "class.custom.%{_kit}%"
+		set {_skill} to yml value "%loop-node%.item" from "class.custom.%{_kit}%"
 		add {_skill} to {_skills::*}
 	unload yml "class.custom.%{_kit}%"
 	loop {_skills::*}:
@@ -910,7 +918,7 @@ function openKitWeaponCustom(player: player, kit: text):
 
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "weapon" from "class.custom.%{_kit}%":
-		set {_main} to yml value "%loop-node%" from "class.custom.%{_kit}%"
+		set {_main} to yml value "%loop-node%.item" from "class.custom.%{_kit}%"
 		add {_main} to {_main-weapon::*}
 		# set {_sub} to yml value "%loop-node%.sub" from "class.custom.%{_kit}%"
 		# add {_sub} to {_sub-weapon::*}
