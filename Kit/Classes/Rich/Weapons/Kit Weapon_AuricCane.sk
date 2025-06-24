@@ -1,31 +1,35 @@
-# on rightclick holding a blaze spawn egg:
-# 	name of player's tool is "§6Gold Pinata"
-# 	cancel event
-# 	if {CT.%player%::%name of player's tool%} is not set:
-# 		set {CT.%player%::%name of player's tool%} to 50
-# 		play raw sound "random.orb" at the player with pitch 1.5 volume 1
-# 		set {_p} to location of player
-# 		add 1 to y-coordinate of {_p}
-# 		shoot a falling gold block from location of {_p} at speed 1
-# 		push shot entity upwards at speed 1.2
-# 		set metadata value "goldpinata" of shot entity to "%player%"
-# 		drawDot count 5, particle "redstone", XYZ 255, 255, 0, center shot entity, visibleRange 32, keepFor 0.5 second
-# 		wait 0.5 seconds
-# 		loop all falling gold blocks:
-# 			metadata value "goldpinata" of loop-falling gold block is "%player%"
-# 			set {_l} to location of loop-falling gold block
-# 			delete loop-falling gold block
-# 			make a fake explosion at {_l}
-# 			set {_n} to a random integer between 10 and 15
-# 			loop {_n} times:
-# 				if {-Stats.%player%::GoldBoost} is true:
-# 					drop a gold ingot named "%player%" at {_l}
-# 				else:
-# 					drop a gold nugget named "%player%" at {_l}
-# 			loop all dropped items in radius 1 around location of {_l}:
-# 				push loop-dropped item north at speed random number from -1 to 1
-# 				push loop-dropped item east at speed random number from -1 to 1
-# 				if metadata value "delete" of loop-dropped item is not set:
-# 					set metadata value "delete" of loop-dropped item to "%player%"
-# 	else:
-# 		set action bar of player to "§c§lクールタイムが終わっていません!"
+# weapon-name: Auric Cane
+
+options:
+	max-distance: 5
+	max-tick: 10
+	explosion-power: 3
+	gold-min: 0
+	gold-max: 2
+
+function kitEffect_AuricCane(player: player):
+	nameItemCT({_player}, "Auric Cane")
+	set {_baseloc} to head of {_player}
+
+	set {_m} to 0
+	set {_addm} to {@max-distance} / {@max-tick}
+	loop {@max-tick} times:
+		if {_hit}:
+			continue
+
+		add {_addm} to {_m}
+		set {_bulletloc} to location {_m} meters in front of {_baseloc}
+		# entity hit check
+		loop all entities in radius 1.5 around {_bulletloc}:
+			kitCheckTeam(loop-entity, {_player}, false, true) is true
+			set {_hit} to true
+
+		# block hit check
+		if block at {_bulletloc} is not passable:
+			set {_bulletloc} to location {_addm} meters behind {_bulletloc}
+			set {_hit} to true
+
+		wait a tick
+	kitExplosion({_player}, {@explosion-power}, {_bulletloc})
+	set {_goldnum} to a random integer between {@gold-min} and {@gold-max}
+	kitDropGolds_Rich({_player}, {_bulletloc}, {_goldnum})
