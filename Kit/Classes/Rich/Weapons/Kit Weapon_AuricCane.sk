@@ -10,6 +10,7 @@ options:
 function kitEffect_AuricCane(player: player):
 	nameItemCT({_player}, "Auric Cane")
 	set {_baseloc} to head of {_player}
+	set {_bulletentity} to spawnBullet({_player}, {_baseloc})
 
 	set {_m} to 0
 	set {_addm} to {@max-distance} / {@max-tick}
@@ -33,3 +34,6 @@ function kitEffect_AuricCane(player: player):
 	kitExplosion({_player}, {@explosion-power}, {_bulletloc})
 	set {_goldnum} to a random integer between {@gold-min} and {@gold-max}
 	kitDropGolds_Rich({_player}, {_bulletloc}, {_goldnum})
+
+local function spawnBullet(player: player, loc: location) :: entity:
+	set {_display} to kitSpawnMob({_player}, item display, {_loc})
