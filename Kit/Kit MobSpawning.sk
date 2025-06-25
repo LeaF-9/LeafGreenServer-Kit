@@ -1,10 +1,16 @@
 import:
 	org.bukkit.RegionAccessor
 	org.bukkit.Bukkit
+	org.bukkit.entity.EntityType
 
-function kitSpawnMob(summoner: player, mob: entity type, loc: location) :: entity:
+function kitSpawnMob(summoner: player, mob: entity type, loc: location, showDisplay: boolean = true) :: entity:
 	set {_world} to world of {_loc}
-	set {_mob} to {_world}.spawnEntity({_loc}, {_mob})
+
+	set {_mobString} to "%{_mob}%" in upper case
+	replace " " with "_" in {_mobString}
+	set {_mobtype} to EntityType.valueOf({_mobString})
+
+	set {_mob} to {_world}.spawnEntity({_loc}, {_mobtype})
 
 	set display name of {_mob} to "%{_summoner}%"
 	set metadata value "gametype" of {_mob} to "Kit"
@@ -12,10 +18,12 @@ function kitSpawnMob(summoner: player, mob: entity type, loc: location) :: entit
 	set {_uuid} to {_mob}.getUniqueId()
 	set metadata value "uuid" of {_mob} to {_uuid}
 
+	{_mob}.setCustomNameVisible(false) if {_showDisplay} is false
+
 	set {_scoreboard} to Bukkit.getScoreboardManager().getMainScoreboard()
 	set {_playerteam} to getTeam({_summoner})
 	set {_team} to {_scoreboard}.getTeam("kit-%{_playerteam}%")
-	{_team}.addEntry({_uuid})
+	{_team}.addEntity({_mob})
 	return {_mob}
 
 function kitSpawnMob_NBT(summoner: player, mob: entity type, loc: location, tag: text) :: entity:
