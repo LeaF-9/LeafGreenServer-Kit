@@ -7,3 +7,19 @@ function kitEffect_GoldenGladius_AttackNormal(player: player, event: object):
 	set {_droploc} to location 1 meter above {_victim}
 	set {_dropnum} to a random integer between 1 and 3
 	kitDropGolds_Rich({_attacker}, {_droploc}, {_dropnum})
+	sound({_victim}, {_dropnum})
+
+local function sound(entity: entity, num: number):
+	set {_loc} to location of {_entity}
+	loop {_num} times:
+		soundRandom({_loc})
+		wait 2 ticks
+
+local function soundRandom(loc: location):
+	set {_dice} to dice(3)
+
+	set {_pitch} to 1.189 if {_dice} is 1
+	set {_pitch} to 1.414 if {_dice} is 2
+	set {_pitch} to 1.888 if {_dice} is 3
+
+	playSound("block.note_block.bell", 0.8, {_pitch}, {_loc})
