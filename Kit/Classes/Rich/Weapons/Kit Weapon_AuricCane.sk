@@ -11,15 +11,25 @@ function kitEffect_AuricCane(player: player):
 	nameItemCT({_player}, "Auric Cane")
 	set {_baseloc} to head of {_player}
 	set {_bulletentity} to spawnBullet({_player}, {_baseloc})
+	particleSpawnBullet({_baseloc})
+	soundShootBullet({_player})
 
 	set {_m} to 0
 	set {_addm} to {@max-distance} / {@max-tick}
+	set {_yaw} to 0
+	set {_addyaw} to 50
+	set {_ln} to 0
 	loop {@max-tick} times:
 		if {_hit}:
 			continue
 
+		add 1 to {_ln}
 		add {_addm} to {_m}
+		add {_addyaw} to {_yaw}
 		set {_bulletloc} to location {_m} meters in front of {_baseloc}
+		add {_yaw} to yaw of {_bulletloc}
+		particleBulletAura({_bulletloc}, {_ln})
+		teleport {_bulletentity} to {_bulletloc}
 		# entity hit check
 		loop all entities in radius 1.5 around {_bulletloc}:
 			kitCheckTeam(loop-entity, {_player}, false, true) is true
@@ -32,8 +42,104 @@ function kitEffect_AuricCane(player: player):
 
 		wait a tick
 	kitExplosion({_player}, {@explosion-power}, {_bulletloc})
+	particleBulletExplosion({_bulletloc})
 	set {_goldnum} to a random integer between {@gold-min} and {@gold-max}
 	kitDropGolds_Rich({_player}, {_bulletloc}, {_goldnum})
 
 local function spawnBullet(player: player, loc: location) :: entity:
 	set {_display} to kitSpawnMob({_player}, item display, {_loc})
+	set metadata value "Auric Cane - Bullet" to true
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+	setDisplayItem({_display}, gold block)
+	
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	set {_scale} to getVector3f(1, 1, 1)
+
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	{_display}.setTransformation({_transformation})
+
+	return {_display}
+
+
+
+local function particleSpawnBullet(loc: location):
+	set {_amount} to 30
+
+	set {_baseloc} to location 1 meter in front of {_loc}
+	set {_basevec} to setVector({_loc}, {_baseloc})
+	set {_aboveloc} to {_loc}
+	add -90 to pitch of {_aboveloc}
+	set {_rotatevec} to setVector({_loc}, location 1 meter in front of {_aboveloc})
+
+	set {_rad} to 0
+	set {_addrad} to 360 / {_amount}
+	loop {_amount} times:
+		add {_addrad} to {_rad}
+		set {_el} to {_baseloc}
+		set {_vec} to {_rotatevec}
+		rotate {_vec} around {_basevec} by {_rad}
+		spawnParticle_Vector(end_rod, {_vec}, 0.75, {_baseloc})
+
+local function particleBulletAura(loc: location, num: number):
+	set {_radius} to 1
+	set {_amount} to 4
+
+	add rgb(240, 237, 61) to {_colors::*}
+	add rgb(220, 189, 35) to {_colors::*}
+	add rgb(239, 239, 115) to {_colors::*}
+
+	set {_basevec} to setVector({_loc}, location 1 meter in front of {_loc})
+	set {_rotateloc} to {_loc}
+	add -90 to pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 1 meter in front of {_rotateloc}, {_radius})
+
+	set {_rad} to {_num} * 20
+	set {_addrad} to 360 / {_amount}
+
+	loop {_amount} times:
+		add {_addrad} to {_rad}
+
+		set {_vec} to {_rotateloc}
+		rotate {_vec} around {_basevec} by {_rad}
+		set {_el} to {_loc} ~ {_vec}
+
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 1, {_el})
+
+local function particleBulletExplosion(loc: location):
+	set {_amount.dust} to 30
+	set {_amount.block} to 50
+	set {_amount, trail} to 100
+	set {_radius.max} to 5
+
+	add rgb(163, 147, 26) to {_colors::*}
+	add rgb(211, 195, 13) to {_colors::*}
+	add rgb(210, 169, 35) to {_colors::*}
+
+	loop {_amount.dust} times:
+		set {_m} to a random numbet between 0 and {_radius.max}
+		set {_vec} to randomVector({_m})
+		set {_el} to {_loc} ~ {_vec}
+		set {_color} to a random element out of {_colors::*}
+		set {_size} to a random number between 1.5 and 2.5
+		spawnParticle_Dust({_color}, {_size}, {_el})
+	
+	loop {_amount.block} times:
+		set {_m} to a random number between 0 and {_radius.max}
+		set {_vec} to randomVector({_m})
+		set {_el} to {_loc} ~ {_vec}
+		spawnParticle_Block(gold block, {_el})
+
+	loop {_amount.trail} times:
+		set {_m} to {_radius.max}
+		set {_vec} to randomVector({_m})
+		set {_el} to {_loc} ~ {_vec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Trail({_color}, {_el}, 10 ticks, {_loc})
+
+
+
+local function soundShootBullet(player: player):
