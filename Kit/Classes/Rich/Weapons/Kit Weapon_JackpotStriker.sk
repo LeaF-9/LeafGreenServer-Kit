@@ -1,6 +1,11 @@
 # weapon-name: Jackpot Striker
 
 options:
+	bullet-mps: 50
+	max-range: 200
+
+	coin-multiply: 5
+
 	accuracy-meter: 10
 	accuracy-meter-gold: 30
 	accuracy-meter-multiply: 20
@@ -15,6 +20,7 @@ options:
 	gold-pick-radius: 5
 
 function kitEffect_JackpotStriker(player: player):
+	nameItemCT({_player}, "Jackpot Striker")
 	if {_player} is sneaking:
 		shootMultiply({_player})
 		stop
@@ -22,9 +28,216 @@ function kitEffect_JackpotStriker(player: player):
 	shoot({_player})
 
 function kitEffect_JackpotStriker_Sneak(player: player, event: object):
+	set {_weapon} to tool of {_player}
+	wait a tick
+	set {_launch} to true
+	set {_count} to 0
+	while {_launch}:
+		stop if {_player} is not sneaking
+		stop if tool of {_player} is not {_weapon}
+
+		set {_loc} to location of {_player}
+		particleSuction({_loc})
+
+		loop all entities in radius {@gold-pick-radius} around {_loc}:
+			continue if loop-entity.getType().toString() is not "ITEM"
+			continue if metadata value "Rich Gold" of loop-entity is not {_player}
+
+			set {_entityLoc} to location of loop-entity
+			set {_v} to setVector({_entityLoc}, {_loc}, 0.15)
+			set velocity of loop-entity to {_v}
+			particleItem({_entityLoc})
+
+		add 1 to {_count}
+		if {_count} > 20:
+			set {_count} to 0
+			soundSuction({_player})
+		wait a tick
 
 function kitEffect_JackpotStriker_PickUp(player: player, event: object):
+	stop if {_player} is not sneaking
+	set {_itemEntity} to {_event}.getItem()
+	stop if metadata value "Rich Gold" of {_itemEntity} is not {_player}
+
+	{_itemEntity}.remove()
+	set {_gold} to getKitStats({_player}, "Coin-Bullet")
+	add 1 to {_gold}
+	setKitStats({_player}, "Coin-Bullet", {_gold})
+	particlePickup({_player})
+	soundPickup({_player})
 
 local function shoot(player: player):
+	if getKitStats({_player}, "Coin-Bullet") > 0:
+		shootCoin({_player})
+		stop
+	
+	soundShoot({_player})
+	set {_baseloc} to head of {_player}
+	bullet({_player}, {_baseloc}, {@accuracy-meter}, {@damage})
+
+local function shootCoin(player: player):
+	set {_nowcoin} to getKitStats({_player}, "Coin-Bullet")
+	subtract 1 from {_nowcoin}
+	setKitStats({_player}, "Coin-Bullet", {_nowcoin})
+	soundShoot({_player}, 2)
+	set {_baseloc} to head of {_player}
+	bullet({_player}, {_baseloc}, {@accuracy-meter-gold}, {@damage-gold}, {@stun-base})
 
 local function shootMultiply(player: player):
+	set {_coin} to getKitStats({_player}, "Coin-Bullet")
+	if {_coin} < 5:
+		soundShoot({_player})
+		set {_baseloc} to head of {_player}
+		bullet({_player}, {_baseloc}, {@accuracy-meter}, {@damage})
+		stop
+	
+	set {_multiply} to floor({_coin} / 5)
+	set {_nowcoin} to {_coin} - ({_multiply} * 5)
+	setKitStats({_player}, "Coin-Bullet", {_nowcoin})
+
+	soundShoot({_player}, 3)
+	set {_baseloc} to head of {_player}
+	set {_accuracy} to {@accuracy-meter} + ({@accuracy-meter-multiply} * {_multiply})
+	set {_damage} to {@damage} + ({@damage-multiply} * {_multiply})
+	set {_stun} to {@stun-base} + ({@stun-multiply} * {_multiply})
+	bullet({_player}, {_baseloc}, {_accuracy}, {_damage}, {_stun})
+
+local function bullet(player: player, baseloc: location, trajectory: number, damage: number, stun: number = 0):
+	set {_gravity} to vector(0, -0.002, 0)
+	set {_bulletDensity} to 0.2  # 1ループあたりに進む距離
+	set {_bulletSpeed} to {@bullet-mps} / 20  # 1 tickのディレイをかけるのに必要なメートル
+	set {_maxCount} to {@max-range} / {_bulletDensity}  # 最大射程を示す最大ループ数
+	set {_meterTotal} to 0  # 現在の射程を示すメーター
+
+	set {_nowloc} to {_baseloc}
+	loop {_maxCount} times:
+		stop if {_hit} is set
+
+		add {_bulletDensity} to {_meterTotal}
+		# 重力を無視して飛ぶ射程を超えた際の処理
+		if {_meterTotal} > {_trajectory}:
+			set {_vector} to setVector({_nowloc}, location {_bulletDensity} meters in front of {_nowloc}, {_bulletDensity})
+			set {_vector} to {_vector} + {_gravity}
+			set {_nowloc} to setDirToVec({_nowloc}, {_vector})
+			set {_nowloc} to location {_bulletDensity} meters in front of {_nowloc}
+		
+		else:
+			set {_nowloc} to location {_bulletDensity} meters in front of {_nowloc}
+		
+		particleTrajectory({_nowloc}, {_stun})
+
+		# ヒット確認 (entity)
+		set {_hit::*} to checkHitEntities({_nowloc})
+		loop {_hit::*}:
+			set {_entity} to loop-value-2
+			kitCheckTeam({_player}, {_entity}, false, true) is true
+			hit({_player}, {_entity}, {_damage}, {_stun})
+			stop
+
+		# ヒット確認 (block)
+		if block at {_nowloc} is not passable:
+			soundHitBlock({_nowloc})
+			stop
+
+		wait a tick if mod({_meterTotal}, {_bulletSpeed}) is 0
+
+local function hit(player: player, target: entity, damage: number, stun: number):
+	soundHitEntity({_player}, {_target}, {_stun})
+	particleHit({_target}, {_stun})
+
+	kitDamage({_player}, {_target}, {_damage}, "コイン弾")
+	stop if {_stun} is 0
+
+	kitStun({_target}, {_stun})
+
+
+
+local function particleSuction(loc: location):
+	add rgb(230, 179, 12) to {_colors::*}
+	add rgb(233, 181, 68) to {_colors::*}
+	add rgb(216, 185, 11) to {_colors::*}
+
+	add 0.1 to y-pos of {_loc}
+	set {_vector} to vector({@gold-pick-radius}, 0, 0)
+	set {_amount} to 30
+	set {_rad} to a random number between 0 and 360
+	set {_addrad} to 360 / {_amount}
+
+	loop {_amount} times:
+		add {_addrad} to {_rad}
+		set {_v} to {_vector}
+		rotate {_v} around y-axis by {_rad}
+		set {_fromloc} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Trail({_color}, {_loc}, 10 ticks, {_fromloc})
+
+local function particleItem(loc: location):
+	spawnParticle(wax_on, {_loc})
+
+local function particlePickup(player: player):
+	loop 3 times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle(wax_on, {_el})
+
+local function particleTrajectory(loc: location, stun: number):
+	add rgb(230, 226, 12) to {_colors::*}
+	add rgb(239, 241, 107) to {_colors::*}
+	add rgb(240, 238, 147) to {_colors::*}
+
+	add rgb(160, 158, 44) to {_colors.trans::*}
+	add rgb(172, 173, 87) to {_colors.trans::*}
+	add rgb(185, 184, 100) to {_colors.trans::*}
+
+	set {_color} to a random element out of {_colors::*}
+	set {_color.trans} to a random element out of {_colors.trans::*}
+	spawnParticle_DustTransition({_color}, {_color.trans}, 0.55, {_loc})
+
+	chance of {_stun}%:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		spawnParticle(wax_on, {_el})
+
+local function particleHit(entity: entity, num: number):
+	add rgb(230, 226, 12) to {_colors::*}
+	add rgb(239, 241, 107) to {_colors::*}
+	add rgb(240, 238, 147) to {_colors::*}
+
+	set {_amount.firework} to 10 + ({_num} / 2)
+	set {_amount.potion} to 5 + ({_num} / 3)
+
+	set {_baseloc} to location 1 meter above {_entity}
+	loop {_amount.firework} times:
+		set {_vec} to randomVector(1)
+		spawnParticle_Vector(firework, {_vec}, 0.75, {_baseloc})
+	
+	loop {_amount.potion} times:
+		set {_color} to a random element out of {_colors::*}
+		set {_el} to aroundEffect({_entity})
+		spawnParticle_Color(entity_effect, {_color}, {_el})
+
+
+
+local function soundSuction(player: player):
+	playSound("block.beacon.deactivate", 1, 1.9, {_player})
+
+local function soundPickup(player: player):
+	playSound("block.amethyst_block.resonate", 1, 1.6, {_player})
+
+local function soundShoot(player: player, weight: number = 1):
+	set {_sub} to 0.2 * ({_weight} - 1)
+	set {_pitch} to 0.95 - {_sub}
+	playSound("block.netherite_block.break", 1, {_pitch}, {_player})
+
+local function soundHitBlock(loc: location):
+	loop 3 times:
+		set {_pitch} to a random number between 1.3 and 1.5
+		playSound("block.nether_bricks.break", 1, {_pitch}, {_loc})
+		wait a tick
+
+local function soundHitEntity(player: player, target: entity, stun: number):
+	set {_pitch.target} to 0.8
+	set {_pitch.target} to 0.65 if {_stun} is not 0
+	set {_pitch.player} to 1.25
+	set {_pitch.player} to 0.85 if {_stun} is not 0
+
+	playSound("entity.firework_rocket.twinkle", 1, {_pitch.target}, {_target})
+	playSound("block.bell.use", 1, {_pitch.player}, {_player}, {_player})
