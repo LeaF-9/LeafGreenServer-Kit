@@ -29,7 +29,9 @@ function kitEffect_AuricCane(player: player):
 		set {_bulletloc} to location {_m} meters in front of {_baseloc}
 		add {_yaw} to yaw of {_bulletloc}
 		particleBulletAura({_bulletloc}, {_ln})
-		teleport {_bulletentity} to {_bulletloc}
+		set {_bulletTeleportLoc} to {_bulletloc}
+		set pitch of {_bulletTeleportLoc} to 0
+		teleport {_bulletentity} to {_bulletTeleportLoc}
 		# entity hit check
 		loop all entities in radius 1.5 around {_bulletloc}:
 			kitCheckTeam(loop-entity, {_player}, false, true) is true
@@ -41,14 +43,15 @@ function kitEffect_AuricCane(player: player):
 			set {_hit} to true
 
 		wait a tick
+	{_bulletentity}.remove()
 	kitExplosion({_player}, {@explosion-power}, {_bulletloc})
 	particleBulletExplosion({_bulletloc})
 	set {_goldnum} to a random integer between {@gold-min} and {@gold-max}
 	kitDropGolds_Rich({_player}, {_bulletloc}, {_goldnum})
 
 local function spawnBullet(player: player, loc: location) :: entity:
-	set {_display} to kitSpawnMob({_player}, item display, {_loc})
-	set metadata value "Auric Cane - Bullet" to true
+	set {_display} to kitSpawnMob({_player}, item display, {_loc}, false)
+	set metadata value "Auric Cane - Bullet" of {_display} to true
 	{_display}.setTeleportDuration(1)
 	{_display}.setInterpolationDuration(1)
 	{_display}.setViewRange(1000)
@@ -120,7 +123,7 @@ local function particleBulletExplosion(loc: location):
 	add rgb(210, 169, 35) to {_colors::*}
 
 	loop {_amount.dust} times:
-		set {_m} to a random numbet between 0 and {_radius.max}
+		set {_m} to a random number between 0 and {_radius.max}
 		set {_vec} to randomVector({_m})
 		set {_el} to {_loc} ~ {_vec}
 		set {_color} to a random element out of {_colors::*}
@@ -143,3 +146,4 @@ local function particleBulletExplosion(loc: location):
 
 
 local function soundShootBullet(player: player):
+	playSound("block.amethyst_cluster.break", 1, 0.7, {_player})
