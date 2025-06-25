@@ -88,7 +88,7 @@ local function particleSpawnBullet(loc: location):
 
 local function particleBulletAura(loc: location, num: number):
 	set {_radius} to 1
-	set {_amount} to 4
+	set {_amount} to 16
 
 	add rgb(240, 237, 61) to {_colors::*}
 	add rgb(220, 189, 35) to {_colors::*}
@@ -105,12 +105,12 @@ local function particleBulletAura(loc: location, num: number):
 	loop {_amount} times:
 		add {_addrad} to {_rad}
 
-		set {_vec} to {_rotateloc}
+		set {_vec} to {_rotatevec}
 		rotate {_vec} around {_basevec} by {_rad}
 		set {_el} to {_loc} ~ {_vec}
 
 		set {_color} to a random element out of {_colors::*}
-		spawnParticle_Dust({_color}, 1, {_el})
+		spawnParticle_Dust({_color}, 0.7, {_el})
 
 local function particleBulletExplosion(loc: location):
 	set {_amount.dust} to 30
