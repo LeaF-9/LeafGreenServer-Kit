@@ -1,12 +1,82 @@
-# on rightclick holding a blaze rod:
-# 	name of player's tool is "§6Gold Boost"
-# 	if {CT.%player%::%name of player's tool%} is not set:
-# 		set {CT.%player%::%name of player's tool%} to 60
-# 		play raw sound "random.orb" at the player with pitch 0.5 volume 1
-# 		message "{@prefix} §e10秒間、ドロップするアイテムが§6金インゴット§eになります!"
-# 		set {-Stats.%player%::GoldBoost} to true
-# 		wait 10 seconds
-# 		delete {-Stats.%player%::GoldBoost}
-# 		message "{@prefix} §e効果が切れました"
-# 	else:
-# 		set action bar of player to "§c§lクールタイムが終わっていません!"
+# skill-name: Fortune Boost
+
+options:
+	effect-tick: 200
+
+function kitEffect_FortuneBoost(player: player):
+	nameCT({_player}, "Fortune Boost")
+	kitMsg({_player}, "<##ebdc0f>幸運により<##fffd87>§l金<##ebdc0f>を強化します!")
+	set {_now} to now
+	setKitStats({_player}, "Fortune Boost", {_now})
+	sendTimeBossbar_GREEN({_player}, "Fortune Boost", {@effect-tick})
+
+	sound({_player})
+	particle({_player}, {_now})
+	loop {@effect-tick} times:
+		wait a tick
+
+	stop if getKitStats({_player}, "Fortune Boost") is not {_now}
+	deleteKitStats({_player}, "Fortune Boost")
+	kitMsg({_player}, "<##afa62c>幸運ブーストが切れました")
+
+
+
+local function particle(player: player, time: date):
+	set {_centerloc} to location 1 meter above {_player}
+	loop 100 times:
+		set {_pow} to a random number between 0.5 and 1.5
+		set {_vec} to randomVector({_pow})
+		spawnParticle_Vector(end_rod, {_vec}, 0.75, {_centerloc})
+	
+	set {_count.dp} to 4
+	set {_rad.dp} to 0
+	set {_addrad.dp} to 360 / {_count.dp}
+	set {_baseadd.dp} to 400 / 40
+	set {_vec.dp} to vector(0.5, 0, 0)
+
+	add rgb(247, 245, 124) to {_colors::*}
+	add rgb(238, 221, 146) to {_colors::*}
+	add rgb(221, 238, 126) to {_colors::*}
+
+	set {_count.ee} to 8
+	set {_addrad.ee} to 360 / {_count.ee}
+	set {_vec.ee} to vector(0.5, 0, 0)
+
+	loop {@effect-tick} times:
+		stop if getKitStats({_player}, "Fortune Boost") is not {_time}
+		set {_baseloc} to location of {_player}
+
+		add {_baseadd.dp} to {_rad.dp}
+		loop {_count.dp} times:
+			add {_addrad.dp} to {_rad.dp}
+			set {_v} to {_vec.dp}
+			rotate {_v} around y-axis by {_rad.dp}
+			set {_el} to {_baseloc} ~ {_v}
+			spawnParticle_BlockData(dust_pillar, gold_block, {_el})
+		
+		set {_rad.ee} to 0
+		loop {_count.ee} times:
+			add {_addrad.ee} to {_rad.ee}
+			set {_v} to {_vec.ee}
+			rotate {_v} around y-axis by {_rad.ee}
+			set {_el} to {_baseloc} ~ {_v}
+			set {_addy} to a random number between 0 and 1.8
+			add {_addy} to y-pos of {_el}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Color(entity_effect, {_color}, {_el})
+
+		wait a tick
+
+
+
+local function sound(player: player):
+	set {_ln} to 0
+	loop 5 times:
+		add 1 to {_ln}
+		set {_pitch} to 0.7937 if {_ln} is 1
+		set {_pitch} to 1 if {_ln} is 2
+		set {_pitch} to 1.189 if {_ln} is 3
+		set {_pitch} to 1.587 if {_ln} is 4
+		set {_pitch} to 2 if {_ln} is 5
+		playSound("block.note_block.chime", 1, {_pitch}, {_player})
+		wait 2 ticks
