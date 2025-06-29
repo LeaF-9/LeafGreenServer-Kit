@@ -764,7 +764,7 @@ on inventory click:
 				set {_weapon} to event-item
 				load yml "plugins/skript-yaml/Kit Classes/%loop-value%.yml" as "class.%loop-value%"
 				loop yaml node keys "weapon" from "class.%loop-value%":
-					set {_main} to yml value "%loop-node%" from "class.%loop-value-1%"
+					set {_main} to yml value "%loop-node%.item" from "class.%loop-value-1%"
 					add {_main} to {_main-weapon::*}
 				unload yml "class.%loop-value%"
 				loop {_main-weapon::*}:
@@ -785,7 +785,7 @@ on inventory click:
 
 				load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.select.%{_kit}%"
 				loop yaml node keys "skill" from "class.select.%{_kit}%":
-					set {_sk} to yml value "%loop-node%" from "class.select.%{_kit}%"
+					set {_sk} to yml value "%loop-node%.item" from "class.select.%{_kit}%"
 					add {_sk} to {_skills::*}
 				unload yml "class.select.%{_kit}%"
 
@@ -952,7 +952,7 @@ local function saveCustomKitSkill(player: player, kit: text):
 	set {_skill3} to slot 16 of {_player}'s current inventory
 	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "class.custom.%{_kit}%"
 	loop yaml node keys "skill" from "class.custom.%{_kit}%":
-		set {_skill} to yml value "%loop-node%" from "class.custom.%{_kit}%"
+		set {_skill} to yml value "%loop-node%.item" from "class.custom.%{_kit}%"
 		add {_skill} to {_skills::*}
 	unload yml "class.custom.%{_kit}%"
 	loop {_skills::*}:
