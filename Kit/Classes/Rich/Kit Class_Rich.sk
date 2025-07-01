@@ -59,3 +59,13 @@ local function kitEffect_AurumCure(player: player, heal: number, loc: location):
 # ゴールド所持者に向けてキラキラパーティクル
 local function kitParticle_AurumCure(player: player, loc: location):
 	# のちほど
+
+# Timer
+function kitTimerRich(player: player):
+	set {_tool} to kitPlayerWeaponItem({_player}, "Rich")
+	stop if kitItemAllChecker({_tool}, "Rich", "Weapon", 3) is false
+
+	while {Class::%{_player}%} is "Rich":
+		set {_nowtool} to tool of {_player}
+		kitEffect_JackpotStriker_Remain({_player}) if {_nowtool} is {_tool}
+		wait 5 ticks

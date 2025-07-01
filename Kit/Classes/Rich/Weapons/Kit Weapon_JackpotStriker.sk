@@ -66,6 +66,23 @@ function kitEffect_JackpotStriker_PickUp(player: player, event: object):
 	particlePickup({_player})
 	soundPickup({_player})
 
+function kitEffect_JackpotStriker_Remain(player: player):
+	set {_bullet} to getKitStats({_player}, "Coin-Bullet")
+	set {_bullet} to 0 if {_bullet} is not set
+
+	set {_bar} to "§4§l[ "
+	set {_ln} to 0
+	loop 50 times:
+		if {_bullet} > 50:
+			set {_bar} to "%{_bar}%§6|"
+			continue
+		add 1 to {_ln}
+		set {_bar} to "%{_bar}%§8|" if {_bullet} < {_ln}
+		set {_bar} to "%{_bar}%§e|" if {_bullet} >= {_ln}
+	set {_bar} to "%{_bar}% §4§l]"
+
+	send action bar {_bar} to {_player}
+
 local function shoot(player: player):
 	if getKitStats({_player}, "Coin-Bullet") > 0:
 		shootCoin({_player})
