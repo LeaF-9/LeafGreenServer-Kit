@@ -13,44 +13,203 @@ options:
 
 	hit-damage: 1
 
+	metadata-rain: "Gold Shower - Rain"
+
 function kitEffect_GoldShower(player: player):
 	nameCT({_player}, "Gold Shower")
 	kitMsg({_player}, "<##ccbf0e>§l黄金の雨<##f3ec8b>が降り注ぐ!")
-	
-	set {_baseloc} to location of {_player}
-	loop {@rain-amount} times:
 
+	set {_baseloc} to location of {_player}
+	soundLaunchRainBullet({_baseloc})
+	particleLaunchRain({_baseloc})
+
+	wait 20 ticks
+
+	set {_cloudloc} to location {@rain-height} meters above {_baseloc}
+	soundCloud({_baseloc})
+	particleCloud({_cloudloc})
+	loop {@rain-amount} times:
+		set {_dist} to a random number between 0 and {@rain-radius}
+		set {_vec} to randomVector({_dist})
+		set {_rainloc} to {_cloudloc} ~ {_vec}
+
+		effectRainDrop({_player}, {_rainloc})
 
 		loop {@rain-interval} times:
 			wait a tick
 
+local function effectRainDrop(player: player, loc: location):
+	shoot a snowball from {_loc} at speed 1 downward
+	set {_proj} to shot snowball
+	set item of {_proj} to gold block
+	setShooter({_proj}, {_player})
+	set metadata value {@metadata-rain} of {_proj} to {_player}
+	soundRain({_loc})
+	particleRainTrail({_proj})
 
-# on rightclick holding a gold nugget:
-# 	name of player's tool is "§6Gold Shower"
-# 	if {CT.%player%::%name of player's tool%} is not set:
-# 		set {_tb} to targeted block
-# 		if {_tb} is set:
-# 			set {CT.%player%::%name of player's tool%} to 40
-# 			set {_sb} to location of block 8 above {_tb}
-# 			set {_y} to y-coordinate of {_sb}
-# 			loop all blocks in radius 5 around {_sb}:
-# 				y-coordinate of loop-block is {_y}
-# 				add location of loop-block to {_gs::*}
-# 				drawDot count 5, particle "redstone", XYZ 255, 255, 0, center location of loop-block, visibleRange 32, keepFor 1 second
-# 			message "{@prefix} §e目先のブロック上空から金塊を降らせます!"
-# 			loop 10 times:
-# 				set {_p} to a random location out of {_gs::*}
-# 				if {-Stats.%player%::GoldBoost} is true:
-# 					drop a gold ingot named "%player%" at {_p}
-# 					play raw sound "random.orb" at {_p} with pitch 0.5 volume 1
-# 				else:
-# 					drop a gold nugget named "%player%" at {_p}
-# 					play raw sound "random.orb" at {_p} with pitch 3 volume 1
-# 				loop all dropped items in radius 1.5 around location of {_p}:
-# 					metadata value "delete" of loop-dropped item is not set
-# 					set metadata value "delete" of loop-dropped item to "%player%"
-# 				wait 2 ticks
-# 		else:
-# 			set action bar of player to "§c§l目先にブロックがありません!"
-# 	else:
-# 		set action bar of player to "§c§lクールタイムが終わっていません!"
+on projectile hit:
+	projectile is a snowball
+	metadata value {@metadata-rain} of projectile is set
+
+	set {_player} to metadata value {@metadata-rain} of projectile
+	set {_dropLoc} to location of projectile
+	soundHit({_dropLoc})
+	set {_dropNum} to a random integer between {@drop-min} and {@drop-max}
+	kitDropGolds_Rich({_player}, {_dropLoc}, {_dropNum})
+
+on damage with priority LOW:
+	damage was caused by projectile
+	projectile is a snowball
+	metadata value {@metadata-rain} of projectile is set
+
+	set {_attacker} to metadata value {@metadata-rain} of projectile
+	set {_victim} to victim
+	setDamageModification_SET({_victim}, {@hit-damage})
+	stop if checkEntityType({_victim}, player) is false
+
+	set {_dropLoc} to location of {_victim}
+	kitDropGolds_Rich({_attacker}, {_dropLoc}, {@drop-hit-add})
+	particleDamage({_victim})
+	soundDamage({_victim})
+
+
+
+local function particleLaunchRain(loc: location):
+	add rgb(245, 248, 102) to {_colors.ee::*}
+	add rgb(222, 225, 40) to {_colors.ee::*}
+	add rgb(220, 208, 33) to {_colors.ee::*}
+
+	add rgb(145, 147, 19) to {_colors.du::*}
+	add rgb(125, 126, 43) to {_colors.du::*}
+	add rgb(131, 110, 9) to {_colors.du::*}
+
+	set {_raiseDensity} to 0.5
+	set {_raiseCount} to {@rain-height} / {_raiseDensity}
+	set {_raiseMod} to 2
+
+	set {_spiralRadius} to 0.5
+	set {_spiralBasevec} to vector({_spiralRadius}, 0, 0)
+	set {_spiralRad} to 0
+	set {_spiralAddrad} to 800 / {_raiseCount}
+	set {_loopnum} to 0
+	loop {_raiseCount} times:
+		add 1 to {_loopnum}
+		set {_raiseLoc} to location ({_raiseDensity} * {_loopnum}) meters above {_loc}
+		spawnParticle_BlockData(block_crumble, gold block, {_raiseLoc})
+
+		add {_spiralAddrad} to {_spiralRad}
+		set {_spiralVec} to {_spiralBasevec}
+		rotate {_spiralVec} around y-axis by {_spiralRad}
+		set {_spiralLoc} to {_raiseLoc} ~ {_spiralVec}
+		set {_color.ee} to a random element out of {_colors.ee::*}
+		spawnParticle_Color(entity_effect, {_color.ee}, {_spiralLoc})
+
+		if mod({_loopnum}, {_raiseMod}) is 0:
+			wait a tick
+	
+	set {_expRadius} to {@rain-radius}
+	set {_expCount.du} to 50
+	set {_expCount.bl} to 100
+	set {_expCount.er} to 30
+	set {_expCount.fw} to 100
+	set {_sizeMin.du} to 1.5
+	set {_sizeMax.du} to 2.5
+
+	loop {_expCount.du} times:
+		set {_radius} to a random number between 0 and {_expRadius}
+		set {_vec} to randomVector({_radius})
+		set {_size} to a random number between {_sizeMin.du} and {_sizeMax.du}
+		set {_color} to a random element out of {_colors.du::*}
+		set {_el} to {_raiseLoc} ~ {_vec}
+		spawnParticle_Dust({_color}, {_size}, {_el})
+	
+	loop {_expCount.bl} times:
+		set {_radius} to a random number between 0 and {_expRadius}
+		set {_vec} to randomVector({_radius})
+		set {_el} to {_raiseLoc} ~ {_vec}
+		spawnParticle_Block(gold block, {_el})
+	
+	loop {_expCount.er} times:
+		set {_pow} to a random number between 0 and 1
+		set {_vec} to randomVector({_pow})
+		spawnParticle_Vector(end_rod, {_vec}, 0.8, {_raiseLoc})
+	
+	loop {_expCount.fw} times:
+		set {_pow} to a random number between 0 and 1
+		set {_vec} to randomVector({_pow})
+		spawnParticle_Vector(firework, {_vec}, 0.8, {_raiseLoc})
+
+local function particleCloud(loc: location):
+	add rgb(227, 230, 59) to {_colors::*}
+	add rgb(226, 230, 16) to {_colors::*}
+	add rgb(189, 177, 17) to {_colors::*}
+
+	add rgb(122, 123, 79) to {_colors.t::*}
+	add rgb(140, 141, 97) to {_colors.t::*}
+	add rgb(167, 162, 85) to {_colors.t::*}
+
+	set {_loopCount} to {@rain-amount} * {@rain-interval}
+	set {_particleCount.min} to 10
+	set {_particleCount.max} to 20
+	set {_size.min} to 0.8
+	set {_size.max} to 2.5
+	set {_waxChance} to 1
+
+	loop {_loopCount} times:
+		set {_particles} to a random integer between {_particleCount.min} and {_particleCount.max}
+		loop {_particles} times:
+			set {_pow} to a random number between 0 and {@rain-radius}
+			set {_vec} to randomVector({_pow})
+			set {_el} to {_loc} ~ {_vec}
+			set {_size} to a random number between {_size.min} and {_size.max}
+			set {_color} to a random element out of {_colors::*}
+			set {_color.t} to a random element out of {_colors.t::*}
+			spawnParticle_Dust({_color}, {_color.t}, {_size}, {_el})
+
+			chance of {_waxChance}%:
+				set {_vec} to randomVector(0.5)
+				set {_el} to {_el} ~ {_vec}
+				spawnParticle(wax_on, {_el})
+
+
+
+local function particleRainTrail(proj: projectile):
+	add rgb(233, 235, 96) to {_colors::*}
+	add rgb(234, 236, 108) to {_colors::*}
+	add rgb(231, 221, 87) to {_colors::*}
+
+	loop 20 times:
+		set {_el} to location of {_proj}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 0.6, {_el})
+		wait a tick
+
+local function particleDamage(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_count} to 30
+	loop {_count} times:
+		set {_pow} to a random number between 0.5 and 1.5
+		set {_vec} to randomVector({_pow})
+		spawnParticle_Vector(electric_spark, {_vec}, 0.7, {_baseloc})
+
+local function soundLaunchRainBullet(baseloc: location):
+	set {_pitch} to 0.85
+	set {_addpitch} to 0.15
+	loop 5 times:
+		playSound("block.amethyst_block.place", 1, {_pitch}, {_baseloc})
+		add {_addpitch} to {_pitch}
+		wait 2 ticks
+	playSound("block.amethyst_block.break", 1, 0.6, {_baseloc})
+
+local function soundCloud(loc: location):
+	playSound("block.amethyst_block.chime", 1, 0.7, {_loc})
+
+local function soundRain(loc: location):
+	set {_pitch} to a random number between 1.3 and 1.6
+	playSound("block.amethyst_block.step", 0.75, {_pitch}, {_loc})
+
+local function soundHit(loc: location):
+	playSound("block.amethyst_block.resonate", 0.75, 1.9, {_loc})
+
+local function soundDamage(loc: location):
+	playSound("block.bell.use", 0.9, 1.95, {_loc})
