@@ -1,7 +1,10 @@
 # skill-name: Gold Shower
 
+import:
+	org.bukkit.Material
+
 options:
-	rain-amount: 15
+	rain-amount: 20
 	rain-interval: 2
 	rain-height: 10
 	rain-radius: 7
@@ -41,7 +44,8 @@ function kitEffect_GoldShower(player: player):
 local function effectRainDrop(player: player, loc: location):
 	shoot a snowball from {_loc} at speed 1 downward
 	set {_proj} to shot snowball
-	set item of {_proj} to gold block
+	set {_block} to new ItemStack(Material.RAW_GOLD_BLOCK)
+	set item of {_proj} to {_block}
 	setShooter({_proj}, {_player})
 	set metadata value {@metadata-rain} of {_proj} to {_player}
 	soundRain({_loc})
@@ -90,7 +94,7 @@ local function particleLaunchRain(loc: location):
 	set {_spiralRadius} to 0.5
 	set {_spiralBasevec} to vector({_spiralRadius}, 0, 0)
 	set {_spiralRad} to 0
-	set {_spiralAddrad} to 800 / {_raiseCount}
+	set {_spiralAddrad} to 400 / {_raiseCount}
 	set {_loopnum} to 0
 	loop {_raiseCount} times:
 		add 1 to {_loopnum}
@@ -151,8 +155,8 @@ local function particleCloud(loc: location):
 	set {_loopCount} to {@rain-amount} * {@rain-interval}
 	set {_particleCount.min} to 10
 	set {_particleCount.max} to 20
-	set {_size.min} to 0.8
-	set {_size.max} to 2.5
+	set {_size.min} to 2
+	set {_size.max} to 3
 	set {_waxChance} to 1
 
 	loop {_loopCount} times:
@@ -164,12 +168,13 @@ local function particleCloud(loc: location):
 			set {_size} to a random number between {_size.min} and {_size.max}
 			set {_color} to a random element out of {_colors::*}
 			set {_color.t} to a random element out of {_colors.t::*}
-			spawnParticle_Dust({_color}, {_color.t}, {_size}, {_el})
+			spawnParticle_DustTransition({_color}, {_color.t}, {_size}, {_el})
 
 			chance of {_waxChance}%:
 				set {_vec} to randomVector(0.5)
 				set {_el} to {_el} ~ {_vec}
 				spawnParticle(wax_on, {_el})
+		wait a tick
 
 
 
@@ -181,7 +186,7 @@ local function particleRainTrail(proj: projectile):
 	loop 20 times:
 		set {_el} to location of {_proj}
 		set {_color} to a random element out of {_colors::*}
-		spawnParticle_Dust({_color}, 0.6, {_el})
+		spawnParticle_Dust({_color}, 0.9, {_el})
 		wait a tick
 
 local function particleDamage(player: player):
@@ -190,7 +195,7 @@ local function particleDamage(player: player):
 	loop {_count} times:
 		set {_pow} to a random number between 0.5 and 1.5
 		set {_vec} to randomVector({_pow})
-		spawnParticle_Vector(electric_spark, {_vec}, 0.7, {_baseloc})
+		spawnParticle_Vector(wax_off, {_vec}, 10, {_baseloc})
 
 local function soundLaunchRainBullet(baseloc: location):
 	set {_pitch} to 0.85
