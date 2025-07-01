@@ -1,39 +1,98 @@
-# on rightclick holding a glowstone dust:
-# 	name of player's tool is "§eWealthy Present"
-# 	if {CT.%player%::%name of player's tool%} is not set:
-# 		set {_tp} to targeted player
-# 		if {_tp} is set:
-# 			if {team::%{_tp}%} is {team::%player%}:
-# 				if {CLS::%{_tp}%} is not "BSK":
-# 					set {CT.%player%::%name of player's tool%} to 40
-# 					message "{@prefix} §6%{_tp}% §eに金の加護を与えます!"
-# 					message "§e%player% §6に金の加護を授けられました!" to {_tp}
-# 					apply absorption 3 to {_tp} for 10 seconds
-# 					drawDot count 3, particle "mobspell", XYZ 255, 255, 0, center {_tp}, visibleRange 32, keepFor 10 second
-# 					loop 10 times:
-# 						play raw sound "random.orb" at {_tp} with pitch 1.5 volume 1
-# 						loop all blocks in radius 5 around {_tp}:
-# 							y-coordinate of loop-block is y-coordinate of block at {_tp}
-# 							loop-block is air
-# 							add location of loop-block to {_gs::*}
-# 						set {_n} to a random integer between 0 and 2
-# 						loop {_n} times:
-# 							set {_p} to a random location out of {_gs::*}
-# 							remove {_p} from {_gs::*}
-# 							if {-Stats.%player%::GoldBoost} is true:
-# 								drop a gold ingot named "%player%" at {_p}
-# 							else:
-# 								drop a gold nugget named "%player%" at {_p}
-# 							loop all dropped items in radius 1.5 around location of {_p}:
-# 								metadata value "delete" of loop-dropped item is not set
-# 								set metadata value "delete" of loop-dropped item to "%player%"
-# 						delete {_gs::*}
-# 						wait a second
-# 				else:
-# 					set action bar of player to "§c§lこのプレイヤーには付与したくありません"
-# 			else:
-# 				set action bar of player to "§c§l味方プレイヤーにのみ発動可能です"
-# 		else:
-# 			set action bar of player to "§c§l目先にプレイヤーがいません!"
-# 	else:
-# 		set action bar of player to "§c§lクールタイムが終わっていません!"
+# skill-name: Wealthy Present
+
+options:
+	effect-tick: 200
+	drop-interval: 20
+	drop-radius: 10
+	
+	drop-min: 0
+	drop-max: 2
+
+	absorption-level: 3
+
+	stats-name: "Wealthy Present"
+
+function kitEffect_WealthyPresent(player: player):
+	set {_target} to getKitStats({_player}, "SkillTarget")
+	if {_target} is not set:
+		send action bar "§c§l対象を指定してください" to {_player}
+		stop
+
+	nameCT({_player}, "Wealthy Present")
+	kitMsg({_player}, "<##f7f470>%{_target}%<##dfd657>に <##f7d336>§l金運 <##dfd657>を付与します!")
+	message formatted "<##f7d336>§l金運状態 <##dfd879>§lにより <##fbff02>§l黄金の治癒力 <##dfd879>が身に付いた!" to {_target}
+
+	soundApply({_target})
+	particleApply({_target}, {_player})
+
+	applyEffect({_target}, absorption, {@absorption-level}, {@effect-tick})
+	set {_now} to now
+	setKitStats({_target}, {@stats-name}, {_now})
+	sendTimeBossbar_GREEN({_target}, "§e§l金運状態" {@effect-tick})
+
+	set {_ln} to 0
+	loop {@effect-tick} times:
+		stop if getKitStats({_target}, {@stats-name}) is not {_now}
+
+		add 1 to {_ln}
+		dropGold({_target}, {_player}) if mod({_ln}, {@drop-interval})
+		wait a tick
+
+	stop if getKitStats({_target}, {@stats-name}) is not {_now}
+	deleteKitStats({_target}, {@stats-name})
+	message formatted "<##f7d336>§l金運状態 §8が切れました" to {_target}
+
+local function dropGold(player: player, applier: player):
+	soundDrop({_player})
+	particleDrop({_player})
+
+	set {_loc} to location of {_player}
+	set {_dropCount} to a random integer between {@drop-min} and {@drop-max}
+	loop {_dropCount} times:
+		set {_ok} to false
+		set {_loopnum} to 0
+		while {_ok} is false:
+			add 1 to {_loopnum}
+			if {_loopnum} > 30:
+				set {_ok} to true
+				continue
+			
+			set {_pow} to a random number between 0 and {@drop-radius}
+			set {_vec} to randomVector({_pow})
+			set {_returnloc} to {_loc} ~ {_vec}
+			if block at {_returnloc} is passable:
+				set {_ok} to true
+				continue
+		
+		kitDropGolds_Rich({_applier}, {_returnloc})
+
+
+
+local function particleApply(player: player, applier: player):
+
+local function particleDrop(player: player):
+	set {_baseloc} to location of {_player}
+	set {_count} to a random integer between 5 and 10
+	loop {_count} times:
+		set {_pow} to a random number between 0 and {@drop-radius}
+		set {_vec} to randomVector({_pow})
+		set y of {_vec} to (y of {_vec}) * -1 if (y of {_vec}) < 0
+		set {_el} to {_baseloc} ~ {_el}
+		spawnParticle(totem_of_undying, {_el})
+
+local function soundApply(player: player):
+	set {_ln} to 0
+	loop 6 times:
+		add 1 to {_ln}
+		set {_pitch} to 0.943 if {_ln} is 1
+		set {_pitch} to 0.707 if {_ln} is 2
+		set {_pitch} to 1.19 if {_ln} is 3
+		set {_pitch} to 0.943 if {_ln} is 4
+		set {_pitch} to 1.41 if {_ln} is 5
+		set {_pitch} to 1.89 if {_ln} is 6
+		playSound("block.note_block.chime", 1, {_pitch}, {_player})
+		wait 2 ticks
+
+local function soundDrop(player: player):
+	set {_pitch} to a random number between 1.65 and 1.85
+	playSound("entity.allay.item_thrown", 1, {_pitch}, {_player})
