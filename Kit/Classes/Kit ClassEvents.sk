@@ -2,14 +2,9 @@ import:
     java.lang.Runnable
 
 local function kitRunnableExecution(player: player, event: object, title: text = ""):
-	stop if itemChecker({_player}) is false
+	stop if itemChecker({_player}, {_title}) is false
 
 	set {_item} to {_player}'s tool
-	set {_titlelower} to {_title} in lowercase
-	set {_functionkey} to "function-%{_titlelower}%"
-	set {_nsk} to getNamespacedKey({_item}, {_functionkey}, "boolean")
-	stop if {_nsk} is not true
-
 	set {_itemkey} to getNamespacedKey({_item}, "item-key", "string")
 
 	if {_title} is "RightClick":
@@ -66,7 +61,7 @@ on damage with priority HIGH:
 	set {_attacker} to getAttacker({_victim})
 	kitRunnableExecution({_attacker}, event, "Attack-High") if checkEntityType({_attacker}, player) is true
 
-local function itemChecker(player: player) :: boolean:
+local function itemChecker(player: player, title: text) :: boolean:
 	return false if metadata value "gametype" of {_player} is not "Kit"
 
 	set {_item} to {_player}'s tool
@@ -78,6 +73,11 @@ local function itemChecker(player: player) :: boolean:
 	
 	set {_itemnum} to kitItemNumberChecker({_item})
 	return false if {_itemnum} is not set
+
+	set {_titlelower} to {_title} in lowercase
+	set {_functionkey} to "function-%{_titlelower}%"
+	set {_nsk} to getNamespacedKey({_item}, {_functionkey}, "boolean")
+	return false if {_nsk} is not true
 
 	return false if checkCT({_player}, name of {_item}) is false
 	return false if checkItemCT({_player}, {_item}) is false
