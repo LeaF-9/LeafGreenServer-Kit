@@ -22,13 +22,13 @@ function kitEffect_WealthyPresent(player: player):
 	kitMsg({_player}, "<##f7f470>%{_target}%<##dfd657>に <##f7d336>§l金運 <##dfd657>を付与します!")
 	message formatted "<##f7d336>§l金運状態 <##dfd879>§lにより <##fbff02>§l黄金の治癒力 <##dfd879>が身に付いた!" to {_target}
 
-	soundApply({_target})
-	particleApply({_target}, {_player})
-
 	applyEffect({_target}, absorption, {@absorption-level}, {@effect-tick})
 	set {_now} to now
 	setKitStats({_target}, {@stats-name}, {_now})
 	sendTimeBossbar_GREEN({_target}, "§e§l金運状態" {@effect-tick})
+
+	soundApply({_target})
+	particleApply({_target}, {_player})
 
 	set {_ln} to 0
 	loop {@effect-tick} times:
@@ -69,6 +69,81 @@ local function dropGold(player: player, applier: player):
 
 
 local function particleApply(player: player, applier: player):
+	set {_now} to getKitStats({_player}, {@stats-name})
+
+	add rgb(179, 226, 49) to {_colors::*}
+	add rgb(197, 239, 100) to {_colors::*}
+	add rgb(164, 222, 29) to {_colors::*}
+
+	set {_fromloc} to location 1 meter above {_applier}
+	set {_toloc} to location 1 meter above {_player}
+	set {_basevector} to setVector({_fromloc}, {_toloc})
+	set {_fromloc} to setDirToVec({_fromloc}, {_basevector})
+
+	set {_rotateloc} to {_fromloc}
+	add -90 to pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, (location 1 meter in front of {_rotateloc}), 1)
+
+	set {_distance} to distance between {_fromloc} and {_toloc}
+	set {_m} to 0
+	set {_addm} to 0.5
+	set {_count} to round({_distance} / 0.5)
+
+	set {_rad} to 0
+	set {_addrad} to 180
+	set {_secondrad} to 90
+	set {_plusadd} to 20
+	
+	loop {_count} times:
+		add {_addm} to {_m}
+		set {_el} to location {_m} meters in front of {_fromloc}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 2, {_el})
+
+		loop 2 times:
+			set {_vec} to {_rotatevec}
+			rotate {_rotatevec} around {_basevector} by {_rad}
+			set {_el.spiral} to {_el} ~ {_vec}
+			spawnParticle(wax_off, {_el.spiral})
+			add {_addrad} to {_rad}
+
+		add {_secondrad} to {_rad}
+		loop 2 times:
+			set {_vec} to {_rotatevec}
+			rotate {_rotatevec} around {_basevector} by {_rad}
+			set {_el.spiral} to {_el} ~ {_vec}
+			spawnParticle(wax_on, {_el.spiral})
+			add {_addrad} to {_rad}
+		
+		add ({_secondrad} + {_plusadd}) to {_rad}
+	
+	set {_rad} to 0
+	set {_plusadd} to 10
+	loop {@effect-tick} times:
+		stop if getKitStats({_player}, {@stats-name}) is not {_now}
+
+		set {_baseloc} to location 1 meter above {_player}
+		loop 2 times:
+			set {_vec} to {_rotatevec}
+			rotate {_rotatevec} around {_basevector} by {_rad}
+			set {_el.spiral} to {_baseloc} ~ {_vec}
+			spawnParticle_BlockData(falling_dust, white wool, {_el.spiral})
+			add {_addrad} to {_rad}
+
+		add {_secondrad} to {_rad}
+		loop 2 times:
+			set {_vec} to {_rotatevec}
+			rotate {_rotatevec} around {_basevector} by {_rad}
+			set {_el.spiral} to {_baseloc} ~ {_vec}
+			spawnParticle_BlockData(falling_dust, yellow wool, {_el.spiral})
+			add {_addrad} to {_rad}
+		
+		chance of 10%:
+			set {_el} to aroundEffect({_player})
+			spawnParticle_BlockData(block_crumble, gold block, {_el})
+		
+		add ({_secondrad} + {_plusadd}) to {_rad}
+		wait a tick
 
 local function particleDrop(player: player):
 	set {_baseloc} to location of {_player}
