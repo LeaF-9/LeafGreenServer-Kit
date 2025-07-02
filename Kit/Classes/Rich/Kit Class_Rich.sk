@@ -1,7 +1,7 @@
 # Richのスキル Ver1.0.0
 
 # Passives
-function kitDropGolds_Rich(player: player, loc: location, num: number = 1):
+function kitDropGolds_Rich(player: player, loc: location, num: number = 1) :: entity:
 	loop {_num} times:
 		set {_droploc} to dropLocation({_loc})
 		set {_gold} to a gold nugget
@@ -11,13 +11,15 @@ function kitDropGolds_Rich(player: player, loc: location, num: number = 1):
 			set {_healamount} to 1
 
 		drop {_gold} named "%{_player}%" at {_droploc}
-		set metadata value "gametype" of last dropped item to "Kit"
-		set metadata value "delete" of last dropped item to "%{_player}%"
-		set metadata value "undelete" of last dropped item to true
-		set metadata value "Rich Gold" of last dropped item to {_player}
-		set metadata value "Rich Healing" of last dropped item to {_healamount}
-		set metadata value "Jewelry" of last dropped item to {_player}
+		set {_lastdrop} to last dropped item
+		set metadata value "gametype" of {_lastdrop} to "Kit"
+		set metadata value "delete" of {_lastdrop} to "%{_player}%"
+		set metadata value "undelete" of {_lastdrop} to true
+		set metadata value "Rich Gold" of {_lastdrop} to {_player}
+		set metadata value "Rich Healing" of {_lastdrop} to {_healamount}
+		set metadata value "Jewelry" of {_lastdrop} to {_player}
 		kitParticle_RichDropGolds({_loc})
+	return {_lastdrop}
 
 local function dropLocation(loc: location) :: location:
 	set {_ok} to false
