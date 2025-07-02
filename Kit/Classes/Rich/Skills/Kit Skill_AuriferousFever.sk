@@ -1,0 +1,190 @@
+# skill-name: Auriferous Fever
+
+options:
+	drop-min: 20
+	drop-max: 30
+
+	effect-tick: 100
+	effect-radius: 10
+
+	metadata-display: "Auriferous Fever - Display"
+	metadata-drop: "Auriferous Fever - Drop Item"
+
+	particle-height: 5
+	particle-begin-size: 1.5
+	particle-tick: 10
+
+function kitEffect_AuriferousFever(player: player):
+	nameCT({_player}, "Auriferous Fever")
+	kitMsg({_player}, "<##f5f36d>§l刹那の黄金<##e6ed17>が舞い落ちる!")
+
+	soundLaunch({_player})
+	particleLaunch({_player})
+	launchDisplay({_player})
+
+	loop {@particle-tick} times:
+		wait a tick
+	
+	sendTimeBossbar_GREEN({_player}, "Auriferous Fever", {@effect-tick})
+	set {_uuid} to a random uuid
+	set {_remainLoc} to location of {_player}
+	set {_dropNum} to a random integer between {@drop-min} and {@drop-max}
+	loop {_dropNum} times:
+		set {_ok} to false
+		set {_checkNum} to 0
+		while {_ok} is false:
+			add 1 to {_checkNum}
+			if {_checkNum} > 30:
+				set {_dropLoc} to {_remainLoc}
+				set {_ok} to true
+				continue
+			
+			set {_pow} to a random number between 0 and {@effect-radius}
+			set {_vec} to randomVector({_pow})
+			set y of {_vec} to (y of {_vec}) * -1 if (y of {_vec}) < 0
+			set {_dropLoc} to {_remainLoc} ~ {_vec}
+			if block at {_dropLoc} is passable:
+				set {_ok} to true
+				continue
+		set {_dropGold} to kitDropGolds_Rich({_player}, {_dropLoc})
+		add {_dropGold} to {_drops::*}
+		particleDrop({_dropGold})
+		set metadata value {@metadata-drop} of {_dropGold} to {_uuid}
+	
+	loop {@effect-tick} times:
+		wait a tick
+	
+	loop {_drops::*}:
+		set {_dropEntity} to loop-value
+		particleRemove({_dropEntity})
+		{_dropEntity}.remove()
+
+local function launchDisplay(player: player):
+	set {_baseloc} to location of {_player}
+	set yaw of {_baseloc} to 0
+	set pitch of {_baseloc} to 0
+
+	set {_display} to kitSpawnMob({_player}, item display, {_baseloc}, false)
+	set {_uuid} to a random uuid
+	set metadata value {@metadata-display} of {_display} to {_uuid}
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+	setDisplayItem({_display}, ochre froglight)
+
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	set {_scale} to getVector3f({@particle-begin-size}, {@particle-begin-size}, {@particle-begin-size})
+
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	{_display}.setTransformation({_transformation})
+
+	set {_rad} to 0
+	set {_addrad} to 40
+	set {_height} to 0
+	set {_addheight} to {@particle-height} / {@particle-tick}
+	set {_trans} to {@particle-begin-size}
+	set {_subTrans} to {@particle-begin-size} / {@particle-tick}
+
+	loop {@particle-tick} times:
+		set {_tploc} to {_baseloc}
+		add {_height} to y-pos of {_tploc}
+		add {_rad} to yaw of {_tploc}
+		set {_scale} to getVector3f({_trans}, {_trans}, {_trans})
+		set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+
+		teleport {_display} to {_tploc}
+		{_display}.setTransformation({_transformation})
+
+		add {_addrad} to {_rad}
+		add {_addheight} to {_height}
+		subtract {_subTrans} from {_trans}
+
+		wait a tick
+	
+	{_display}.remove()
+	# 花火の演出 (API FireworksをNBTから脱却させるのが先)
+
+
+
+local function particleLaunch(player: player):
+	set {_baseloc} to location of {_player}
+	set {_basevec} to vector(1.5, 0 ,0)
+
+	set {_count} to 4
+	set {_rad} to 0
+	set {_addrad} to 360 / {_count}
+	set {_plusrad} to 20
+	set {_height} to 0
+	set {_addheight} to {@particle-height} / {@particle-tick}
+
+	loop {@particle-tick} times:
+		set {_baseel} to location {_height} meters above {_baseloc}
+		spawnParticle_Block(gold block, {_baseel})
+
+		loop {_count} times:
+			add {_addrad} to {_rad}
+			set {_vec} to {_basevec}
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_baseel} ~ {_vec}
+			
+			set {_d} to dice(3)
+			set {_block} to white wool if {_d} is 1
+			set {_block} to yellow wool if {_d} is 2
+			set {_block} to orange wool if {_d} is 3
+
+			spawnParticle_BlockData(falling_dust, {_block}, {_el})
+
+		add {_plusrad} to {_rad}
+		add {_addheight} to {_height}
+		wait a tick
+	
+	set {_baseloc} to location {@particle-height} meters above {_baseloc}
+	loop 100 times:
+		set {_v} to randomVector(10)
+		set y of {_v} to 3 if (y of {_v}) > 3
+		set y of {_v} to -3 if (y of {_v}) < -3
+		set {_el} to {_baseloc} ~ {_v}
+		spawnParticle_BlockData(block_crumble, gold block, {_el})
+
+local function particleDrop(entity: entity):
+	add rgb(217, 223, 134) to {_colors::*}
+	add rgb(224, 237, 107) to {_colors::*}
+	add rgb(227, 202, 102) to {_colors::*}
+
+	set {_baseloc} to location of {_entity}
+	set {_count} to a random integer between 3 and 8
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_baseloc}, 0.5)
+		spawnParticle(wax_on, {_el})
+	
+	loop {@effect-tick} times:
+		stop if {_entity}.isDead()
+
+		set {_loc} to location of {_entity}
+		set {_count} to a random integer between 0 and 2
+		loop {_count} times:
+			set {_el} to moveRandomLocation({_loc}, 0.5)
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 0.5, {_el})
+		wait a tick
+
+local function particleRemove(entity: entity):
+	set {_loc} to location of {_entity}
+	loop 3 times:
+		set {_vec} to randomVector()
+		spawnParticle_Vector(smoke, {_vec}, 0.3, {_loc})
+
+local function soundLaunch(player: player):
+	set {_baseloc} to location of {_player}
+	playSound("block.bell.use", 1, 1.9, {_baseloc})
+	playSound("block.bell.resonate", 1, 1.9, {_baseloc})
+
+	wait 10 ticks
+
+	set {_highloc} to location {@particle-height} meters above {_baseloc}
+	set {_pitch} to 0.7
+	loop 3 times:
+		playSound("block.large_amethyst_bud.break", 1, {_pitch}, {_highloc})
+		subtract 0.1 from {_pitch}
+		wait a tick
