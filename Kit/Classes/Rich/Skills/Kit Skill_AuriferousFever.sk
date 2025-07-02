@@ -56,6 +56,8 @@ function kitEffect_AuriferousFever(player: player):
 	
 	loop {_drops::*}:
 		set {_dropEntity} to loop-value
+		if {_dropEntity}.isDead():
+			continue
 		particleRemove({_dropEntity})
 		{_dropEntity}.remove()
 
@@ -103,7 +105,13 @@ local function launchDisplay(player: player):
 		wait a tick
 	
 	{_display}.remove()
-	# 花火の演出 (API FireworksをNBTから脱却させるのが先)
+	
+	set {_highloc} to location {@particle-height} meters above {_baseloc}
+	add rgb(243, 240, 47) to {_colors::*}
+	add rgb(248, 221, 68) to {_colors::*}
+	add rgb(248, 250, 109) to {_colors::*}
+	set {_explosion} to setFireWorksExplosion("ball", {_colors::*}, {_colors::*})
+	spawnFireworks({_highloc}, 0, {_explosion})
 
 
 
@@ -159,7 +167,8 @@ local function particleDrop(entity: entity):
 		spawnParticle(wax_on, {_el})
 	
 	loop {@effect-tick} times:
-		stop if {_entity}.isDead()
+		if {_entity}.isDead():
+			stop
 
 		set {_loc} to location of {_entity}
 		set {_count} to a random integer between 0 and 2
