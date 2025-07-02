@@ -41,7 +41,10 @@ local function dropLocation(loc: location) :: location:
 
 # 金をドロップした際の演出 小さくキラキラした感じ
 local function kitParticle_RichDropGolds(loc: location):
-	# のちほど
+	set {_count} to a random integer between 1 and 3
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		spawnParticle_Block(gold block, {_el})
 
 on pick up:
 	stop if {Class::%player%} is "Thief"
@@ -52,15 +55,39 @@ on pick up:
 
 	set {_goldloc} to location of event-dropped item
 	delete event-dropped item
-	kitEffect_AurumCure(player, {_healamount}, {_goldloc})
+	kitEffect_AurumCure({_dropper}, {_healamount}, {_goldloc})
 
-local function kitEffect_AurumCure(player: player, heal: number, loc: location):
+function kitEffect_AurumCure(player: player, heal: number, loc: location):
 	kitHeal({_player}, {_heal}, 1)
 	kitParticle_AurumCure({_player}, {_loc})
 
 # ゴールド所持者に向けてキラキラパーティクル
 local function kitParticle_AurumCure(player: player, loc: location):
-	# のちほど
+	add rgb(241, 228, 150) to {_colors::*}
+	add rgb(240, 233, 133) to {_colors::*}
+	add rgb(237, 238, 176) to {_colors::*}
+	kitSound_AurumCure({_player}, {_loc})
+
+	set {_toloc} to location 1 meter above {_player}
+	set {_time} to 5 ticks
+	set {_count} to 5
+	loop {_count} times:
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Trail({_color}, {_toloc}, {_time}, {_loc})
+		wait a tick
+
+local function kitSound_AurumCure(player: player, loc: location):
+	set {_pitch} to 1.5
+	set {_addmin} to 0.1
+	set {_addmax} to 0.25
+	loop 3 times:
+		playSound("entity.experience_orb.pickup", 1, {_pitch}, {_player}, {_player})
+		playSound("entity.experience_orb.pickup", 0.75, {_pitch}, {_loc})
+		set {_add} to a random number between {_addmin} and {_addmax}
+		add {_add} to {_pitch}
+		wait a tick
+
+
 
 # Timer
 function kitTimerRich(player: player):
