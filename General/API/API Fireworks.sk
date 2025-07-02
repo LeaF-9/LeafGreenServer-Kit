@@ -1,35 +1,76 @@
-function spawnFireworks(loc: location, lifetime: number, explosion: text):
-	set {_tag} to "{Silent:1b,LifeTime:%{_lifetime}%,FireworksItem:{id:""minecraft:firework_rocket"",count:1,components:{""minecraft:fireworks"":{explosions:%{_explosion}%}}}}"
-	
-	set {_nbt} to nbt compound from {_tag}
-	spawn a firework rocket at {_loc} with nbt {_nbt}
+import:
+	org.bukkit.Color
+	org.bukkit.FireworkEffect
+	org.bukkit.FireworkEffect$Type
+	org.bukkit.Location
+	org.bukkit.World
+	org.bukkit.entity.EntityType
+	org.bukkit.entity.Firework
+	org.bukkit.inventory.meta.FireworkMeta
 
-function spawnFireworks_PLAYER(player: player, loc: location, lifetime: number, explosion: text) :: entity:
-	set {_tag} to "{Silent:1b,LifeTime:%{_lifetime}%,FireworksItem:{id:""minecraft:firework_rocket"",count:1,components:{""minecraft:fireworks"":{explosions:%{_explosion}%}}}}"
-	set {_entity} to kitSpawnMob_NBT({_player}, firework rocket, {_loc}, {_tag})
+	com.google.common.collect.Lists
 
-	return {_entity}
+
+
+function spawnFireworks(loc: location, lifetime: number, explosion: object):
+	set {_world} to world of {_loc}
+
+	set {_mobString} to "FIREWORK_ROCKET"
+	set {_mobtype} to EntityType.valueOf({_mobString})
+
+	set {_firework} to {_world}.spawnEntity({_loc}, {_mobtype})
+	set {_meta} to {_firework}.getFireworkMeta()
+	{_meta}.addEffect({_explosion})
+
+	{_firework}.setSilent(true)
+
+	{_firework}.setFireworkMeta({_meta})
+	{_firework}.setTicksFlown({_lifetime})
+	{_firework}.detonate() if {_lifetime} is 0
+
+function spawnFireworks_PLAYER(player: player, loc: location, lifetime: number, explosion: object) :: entity:
+	set {_firework} to kitSpawnMob({_player}, firework rocket, {_loc}, false)
+
+	set {_meta} to {_firework}.getFireworkMeta()
+	{_meta}.addEffect({_explosion})
+
+	{_firework}.setSilent(true)
+
+	{_firework}.setFireworkMeta({_meta})
+	{_firework}.setTicksFlown({_lifetime})
+	{_firework}.detonate() if {_lifetime} is 0
+
+	return {_firework}
 
 # typeList:
-# - small_ball
-# - large_ball
+# - ball
+# - ball_large
 # - star
 # - creeper
 # - burst
-function setFireWorksExplosion(type: text, colors: colors, fadeColors: colors, twinkle: boolean = false, trail: boolean = false) :: text:
-	set {_inColor} to ""
+function setFireWorksExplosion(type: text, colors: colors, fadeColors: colors, twinkle: boolean = false, trail: boolean = false) :: object:
+	set {_size.in} to size of {_colors::*}
+	set {_inColorArray} to new Color[{_size.in}]
+
+	set {_index} to 0
 	loop {_colors::*}:
-		set {_dataColor} to convertColorToDataColor(loop-value)
-		if {_inColor} is not "":
-			set {_inColor} to "%{_inColor}%,"
-		set {_inColor} to "%{_inColor}%%{_dataColor}%"
+		set {_loopColor} to loop-value
+		set {_dataColor} to {_loopColor}.asBukkitColor()
+		set {_inColorArray}[{_index}] to {_dataColor}
+		add 1 to {_index}
 	
-	set {_outColor} to ""
+	set {_size.out} to size of {_fadeColors::*}
+	set {_outColorArray} to new Color[{_size.out}]
+
+	set {_index} to 0
 	loop {_fadeColors::*}:
-		set {_dataColor} to convertColorToDataColor(loop-value)
-		if {_outColor} is not "":
-			set {_outColor} to "%{_outColor}%,"
-		set {_outColor} to "%{_outColor}%%{_dataColor}%"
+		set {_loopColor} to loop-value
+		set {_dataColor} to {_loopColor}.asBukkitColor()
+		set {_outColorArray}[{_index}] to {_dataColor}
+		add 1 to {_index}
 	
-	set {_explosion} to "[{shape:""%{_type}%"",has_twinkle:%{_twinkle}%,has_trail:%{_trail}%,colors:[I;%{_inColor}%],fade_colors:[I;%{_inColor}%]}]"
+	set {_type} to {_type} in upper case
+	set {_fireworkType} to Type.valueOf({_type})
+
+	set {_explosion} to FireworkEffect.builder().withColor({_inColorArray}).withFade({_outColorArray}).with({_fireworkType}).flicker({_twinkle}).trail({_trail}).build()
 	return {_explosion}
