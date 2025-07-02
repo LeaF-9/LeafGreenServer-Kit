@@ -25,7 +25,7 @@ function kitEffect_WealthyPresent(player: player):
 	applyEffect({_target}, absorption, {@absorption-level}, {@effect-tick})
 	set {_now} to now
 	setKitStats({_target}, {@stats-name}, {_now})
-	sendTimeBossbar_GREEN({_target}, "§e§l金運状態" {@effect-tick})
+	sendTimeBossbar_GREEN({_target}, "§e§l金運状態", {@effect-tick})
 
 	soundApply({_target})
 	particleApply({_target}, {_player})
@@ -35,7 +35,7 @@ function kitEffect_WealthyPresent(player: player):
 		stop if getKitStats({_target}, {@stats-name}) is not {_now}
 
 		add 1 to {_ln}
-		dropGold({_target}, {_player}) if mod({_ln}, {@drop-interval})
+		dropGold({_target}, {_player}) if mod({_ln}, {@drop-interval}) is 0
 		wait a tick
 
 	stop if getKitStats({_target}, {@stats-name}) is not {_now}
@@ -65,6 +65,15 @@ local function dropGold(player: player, applier: player):
 				continue
 		
 		kitDropGolds_Rich({_applier}, {_returnloc})
+
+on pick up:
+	stop if getKitStats({_target}, {@stats-name}) is not set
+	set {_dropper} to metadata value "Rich Gold" of event-dropped item
+	stop if {_dropper} is not set
+	set {_healamount} to metadata value "Rich Healing" of event-dropped item
+
+	set {_goldloc} to location of event-dropped item
+	kitEffect_AurumCure(player, {_healamount}, {_goldloc})
 
 
 
@@ -117,6 +126,7 @@ local function particleApply(player: player, applier: player):
 		
 		add ({_secondrad} + {_plusadd}) to {_rad}
 	
+	set {_rotatevec} to vector(0.8, 0, 0)
 	set {_rad} to 0
 	set {_plusadd} to 10
 	loop {@effect-tick} times:
@@ -125,7 +135,7 @@ local function particleApply(player: player, applier: player):
 		set {_baseloc} to location 1 meter above {_player}
 		loop 2 times:
 			set {_vec} to {_rotatevec}
-			rotate {_rotatevec} around {_basevector} by {_rad}
+			rotate {_rotatevec} around y-axis by {_rad}
 			set {_el.spiral} to {_baseloc} ~ {_vec}
 			spawnParticle_BlockData(falling_dust, white wool, {_el.spiral})
 			add {_addrad} to {_rad}
@@ -133,7 +143,7 @@ local function particleApply(player: player, applier: player):
 		add {_secondrad} to {_rad}
 		loop 2 times:
 			set {_vec} to {_rotatevec}
-			rotate {_rotatevec} around {_basevector} by {_rad}
+			rotate {_rotatevec} around y-axis by {_rad}
 			set {_el.spiral} to {_baseloc} ~ {_vec}
 			spawnParticle_BlockData(falling_dust, yellow wool, {_el.spiral})
 			add {_addrad} to {_rad}
