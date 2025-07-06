@@ -1,0 +1,79 @@
+# skill-name: Brilliant Aegis
+
+options:
+	effect-tick: 200
+	effect-radius: 7
+
+	cut-multiplier: 0.7
+
+	drop-damage-min: 1
+	drop-damage-max: 2
+
+	drop-end-min: 3
+	drop-end-max: 5
+
+	drop-break-min: 5
+	drop-break-max: 10
+
+	metadata-aegis: "Brilliant Aegis - Entity"
+	metadata-shield: "Brilliant Aegis - Shield"
+
+function kitEffect_BrilliantAegis(player: player):
+	nameCT({_player}, "Brilliant Aegis")
+	kitMsg({_player}, "<##f7ea33>黄金の像<##f2f39f>を設置します!")
+
+	set {_placeloc} to location of {_player}
+	particlePlace({_placeloc})
+	soundPlace({_placeloc})
+
+	set {_head} to getKitItems("Rich", "Brilliant Aegis - Head")
+	set {_chest} to getKitItems("Rich", "Brilliant Aegis - Chestplate")
+	set {_leggs} to getKitItems("Rich", "Brilliant Aegis - Leggings")
+	set {_boots} to getKitItems("Rich", "Brilliant Aegis - Boots")
+
+	set {_aegis} to kitSpawnMob({_player}, armor stand, {_placeloc}, false)
+	{_aegis}.setHelmet({_head})
+	{_aegis}.setChestplate({_head})
+	{_aegis}.setLeggings({_head})
+	{_aegis}.setBoots({_head})
+
+	{_aegis}.setArms(false)
+	{_aegis}.setBasePlate(false)
+	{_aegis}.setCanMove(false)
+
+	{_aegis}.setGravity(false)
+	{_aegis}.setPersistent(true)
+	{_aegis}.setSilent(true)
+
+	set {_uuid} to a random uuid
+	set metadata value {@metadata-aegis} of {_aegis} to {_uuid}
+
+	loop {@effect-tick} times:
+		if {_aegis}.isDead():
+			continue
+		
+		set {_aegisloc} to location of {_aegis}
+		particleAura({_aegisloc})
+		loop all entities in radius {@effect-radius} around {_aegisloc}:
+			kitCheckTeam({_player}, loop-entity, true) is true
+			add loop-entity to {_entered::*} if {_entered::*} does not contain loop-entity
+			if {_entering::*} does not contain loop-entity:
+				add loop-entity to {_entering::*} if {_entering::*}
+				applyAegisShield(loop-entity)
+			particleEntering(loop-entity)
+
+
+		wait a tick
+
+local function applyAegisShield(entity: entity):
+
+
+
+
+local function particlePlace(loc: location):
+
+local function particleAura(loc: location):
+
+local function particleEntering(entity: entity):
+
+local function soundPlace(loc: location):
