@@ -18,3 +18,9 @@ command /kit-item <text> <text> <text>:
 				message formatted "§b%player% §eに §6§l%arg 3% §eのアイテムを渡しました" to player
 		else:
 			message formatted "§cこのClassは存在しません" to player
+
+function getKitItems(kit: text, name: text) :: item:
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as "kititem.load"
+	set {_kititem} to yml value "kititems.%{_name}%" from "kititem.load"
+	unload yml "kititem.load"
+	return {_kititem}
