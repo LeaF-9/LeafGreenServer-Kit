@@ -47,26 +47,68 @@ function kitEffect_BrilliantAegis(player: player):
 
 	set {_uuid} to a random uuid
 	set metadata value {@metadata-aegis} of {_aegis} to {_uuid}
+	sendTimeBossbar_GREEN({_player}, "Brilliant Aegis", {@effect-tick})
 
 	loop {@effect-tick} times:
 		if {_aegis}.isDead():
+			set {_dead} to true
 			continue
 		
 		set {_aegisloc} to location of {_aegis}
 		particleAura({_aegisloc})
+		delete {_entering::*}
 		loop all entities in radius {@effect-radius} around {_aegisloc}:
 			kitCheckTeam({_player}, loop-entity, true) is true
 			add loop-entity to {_entered::*} if {_entered::*} does not contain loop-entity
 			if {_entering::*} does not contain loop-entity:
 				add loop-entity to {_entering::*} if {_entering::*}
-				applyAegisShield(loop-entity)
+				applyAegisShield(loop-entity, {_uuid})
 			particleEntering(loop-entity)
+		
+		loop {_entered::*}:
+			set {_loop-entity} to loop-value-2
+			continue if {_entering::*} contains {_loop-entity}
 
+			remove {_loop-entity} from {_entered::*}
+			removeAegisShield({_loop-entity}, {_uuid})
 
 		wait a tick
+	
+	set {_drop} to a random integer between {@drop-end-min} and {@drop-end-max}
+	if {_dead}:
+		set {_drop} to a random integer between {@drop-break-min} and {@drop-break-max}
+		particleBreak({_aegisloc})
+		soundBreak({_aegisloc})
+	
+	else:
+		particleEclipse({_aegisloc})
+		soundEclipse({_aegisloc})
+	
+	kitDropGolds_Rich({_player}, {_aegisloc}, {_drop})
+	{_aegis}.remove()
+	loop all entities:
+		removeAegisShield(loop-entity, {_uuid})
 
-local function applyAegisShield(entity: entity):
+local function applyAegisShield(entity: entity, uuid: uuid):
+	set metadata value {@metadata-shield} of {_entity} to {_uuid}
+	particleApply({_entity})
+	soundApply({_entity})
 
+local function removeAegisShield(entity: entity, uuid: uuid):
+	stop if metadata value {@metadata-shield} of {_entity} is not {_uuid}
+	delete metadata value {@metadata-shield} of {_entity}
+	particleLeave({_entity})
+	soundLeave({_entity})
+
+on damage with priority HIGH:
+	set {_victim} to victim
+	metadata value {@metadata-shield} of {_victim} is set
+
+	setDamageModification_MUL({_victim}, 0.7)
+	particleDamage({_victim})
+	soundDamage({_victim})
+
+	kitEffectDescription({_victim}, "§a§lx0.7")
 
 
 
@@ -74,6 +116,20 @@ local function particlePlace(loc: location):
 
 local function particleAura(loc: location):
 
+local function particleApply(loc: location):
+
 local function particleEntering(entity: entity):
 
+local function particleLeave(entity: entity):
+
+local function particleBreak(loc: location):
+
+local function particleDamage(entity: entity):
+
 local function soundPlace(loc: location):
+
+local function soundLeave(entity: entity):
+
+local function soundBreak(loc: location):
+
+local function soundDamage(entity: entity):
