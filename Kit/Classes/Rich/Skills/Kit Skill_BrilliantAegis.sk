@@ -17,6 +17,7 @@ options:
 
 	metadata-aegis: "Brilliant Aegis - Entity"
 	metadata-shield: "Brilliant Aegis - Shield"
+	metadata-dropper: "Brilliant Aegis - Dropper"
 
 function kitEffect_BrilliantAegis(player: player):
 	nameCT({_player}, "Brilliant Aegis")
@@ -62,7 +63,7 @@ function kitEffect_BrilliantAegis(player: player):
 			add loop-entity to {_entered::*} if {_entered::*} does not contain loop-entity
 			if {_entering::*} does not contain loop-entity:
 				add loop-entity to {_entering::*} if {_entering::*}
-				applyAegisShield(loop-entity, {_uuid})
+				applyAegisShield(loop-entity, {_uuid}, {_aegis})
 			particleEntering(loop-entity)
 		
 		loop {_entered::*}:
@@ -89,21 +90,32 @@ function kitEffect_BrilliantAegis(player: player):
 	loop all entities:
 		removeAegisShield(loop-entity, {_uuid})
 
-local function applyAegisShield(entity: entity, uuid: uuid):
+local function applyAegisShield(entity: entity, uuid: uuid, aegis: entity):
 	set metadata value {@metadata-shield} of {_entity} to {_uuid}
+	set metadata value {@metadata-dropper} of {_entity} to {_aegis}
 	particleApply({_entity})
 	soundApply({_entity})
 
 local function removeAegisShield(entity: entity, uuid: uuid):
 	stop if metadata value {@metadata-shield} of {_entity} is not {_uuid}
 	delete metadata value {@metadata-shield} of {_entity}
+	delete metadata valie {@metadata-location} of {_entity}
 	particleLeave({_entity})
 	soundLeave({_entity})
+
+local function dropWhenDamaged(player: player):
+	set {_aegis} to metadata value {@metadata-dropper} of {_player}
+	set {_summoner} to metadata value "summon-player" of {_aegis}
+
+	set {_droploc} to location of {_aegis}
+	set {_dropnum} to a random integer between {@drop-damage-min} and {@dropdamage-max}
+	kitDropGolds_Rich({_summoner}, {_droploc}, {_dropnum})
 
 on damage with priority HIGH:
 	set {_victim} to victim
 	metadata value {@metadata-shield} of {_victim} is set
 
+	dropWhenDamaged({_victim})
 	setDamageModification_MUL({_victim}, 0.7)
 	particleDamage({_victim})
 	soundDamage({_victim})
