@@ -1,0 +1,95 @@
+# skill-name: Avaricious Lust
+
+options:
+	effect-radius: 15
+	effect-tick: 100
+
+	metadata-gold: "Avaricious Lust - Gold"
+
+function kitEffect_AvariciousLust(player: player):
+	loop all entities:
+		metadata value "Rich Gold" of loop-entity is {_player}
+		add loop-entity to {_golds::*}
+	if (size of {_golds::*}) is 0:
+		kitMsg({_player}, "§c§lこの場に金が存在しません!")
+		stop
+
+	loop all players in radius {@effect-radius} around {_player}:
+		kitCheckTeam(loop-player, {_player}, false) is true
+		add loop-player to {_targets::*}
+	if (size of {_targets::*}) is 0:
+		kitMsg({_player}, "§c§l効果対象となるプレイヤーが存在しません!")
+		stop
+
+	nameCT({_player}, "Avaricious Lust")
+	kitMsg({_player}, "<##816a04>金への欲望を掻き立てます...")
+
+	particleAura({_player})
+	soundLaunch({_player})
+
+	loop {_targets::*}:
+		set {_loop-player} to loop-value
+		particleApplied({_loop-player})
+		soundApplied({_loop-player})
+
+		delete {_targetGold}
+		set {_mindis} to 10000
+		loop {_drops::*}:
+			set {_dropGold} to loop-value-2
+			set {_dis} to distance between {_loop-player} and {_dropGold}
+			continue if {_dis} > {_mindis}
+
+			set {_mindis} to {_dis}
+			set {_targetGold} to {_dropGold}
+		continue if {_targetGold} is not set
+
+		charmedGold({_loop-player}, {_targetGold})
+
+local function charmedGold(player: player, gold: entity):
+	sendTimeBossbar_RED({_player}, "<##69760a>§l金欲状態", {@effect-tick})
+	message formatted "<##8f8316>金に目が眩む..." to {_player}
+
+	set metadata value {@metadata-gold} of {_player} to {_gold}
+	loop {@effect-tick} times:
+		continue if {_gold}.isDead()
+
+		particleCharmed({_player}, {_gold})
+		changeDirection({_player}, {_gold})
+		packetGlowing({_player}, {_gold})
+		wait a tick
+	delete metadata value {@metadata-gold} of {_player}
+
+local function changeDirection(player: player, target: entity):
+	set {_from} to head of {_player}
+	set {_to} to location of {_target}
+	set {_vector} to setVector({_from}, {_to})
+	
+	set yaw of {_player} to yaw of {_vector}
+	set pitch of {_player} to pitch of {_vector}
+
+on pick up:
+	stop if metadata value {@metadata-gold} of player is not set
+
+	set {_targetGold} to metadata value {@metadata-gold} of player
+	stop if {_targetGold} is not event-dropped item
+
+	delete metadata value {@metadata-gold} of player
+	particleDelete(player)
+	soundDelete(player)
+
+
+
+local function particleAura(player: player):
+
+local function particleApplied(player: player):
+
+# playerにのみ表示
+local function particleCharmed(player: player, gold: entity):
+
+local function particleDelete(player: player)
+
+local function soundLaunch(player: player):
+
+local function soundApplied(player: player):
+
+local function soundDelete(player: player):
