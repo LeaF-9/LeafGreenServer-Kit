@@ -113,6 +113,22 @@ on damage with priority HIGH:
 
 
 local function particlePlace(loc: location):
+	set {_amount.du} to 10
+	add rgb(240, 228, 120) to {_colors::*}
+	add rgb(233, 214, 44) to {_colors::*}
+	add rgb(244, 253, 159) to {_colors::*}
+
+	set {_baseloc} to location 1 meter above {_loc}
+	loop {_amount.du} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 2.5, {_el})
+
+	set {_amount.er} to 30
+
+	loop {_amount.er} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(end_rod, {_v}, 0.5, {_baseloc})
 
 local function particleAura(loc: location):
 
@@ -127,6 +143,7 @@ local function particleBreak(loc: location):
 local function particleDamage(entity: entity):
 
 local function soundPlace(loc: location):
+	playSound("entity.allay.ambient_without_item", 1, 1.2, {_loc})
 
 local function soundLeave(entity: entity):
 
