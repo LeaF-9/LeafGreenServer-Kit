@@ -1,0 +1,175 @@
+# skill-name: Miracle Roulette
+
+options:
+	gold-radius: 10
+	gold-required: 10
+
+	roulette-tick: 40
+
+	two-hit-drop: 20
+
+	three-hit-drop: 30
+	three-hit-tick: 200
+
+	seven-hit-drop: 50
+	seven-hit-tick: 400
+
+	stats-roulette: "Roulette Numbers"
+
+function kitEffect_MiracleRoulette(player: player):
+	loop all entities in radius {@gold-radius} around {_player}:
+		metadata value "Rich Gold" of loop-entity is {_player}
+		add loop-entity to {_dropGolds::*}
+	
+	if (size of {_dropGolds::*}) < {@gold-required}:
+		kitMsg({_player}, "§c§l周囲の金が足りません!")
+		stop
+
+	nameCT({_player}, "Miracle Roulette")
+	kitMsg({_player}, "<##ff8801>運命のルーレット...")
+
+	particleGoldDelete({_dropGolds::*})
+	soundRoulette({_player})
+
+	setRouletteNumbers({_player})
+	spawnRoulette({_player})
+
+	setKitStats({_player}, {@stats-roulette}, true)
+	setKitStats({_player}, "Invincible", true)
+
+	loop {@roulette-tick} times:
+		if getKitStats({_player}, {@stats-roulette}) is not true:
+			deleteKitStats({_player}, "Invincible")
+			stop
+		wait a tick
+	deleteKitStats({_player}, {@stats-roulette})
+	deleteKitStats({_player}, "Invincible")
+	effectRoulette({_player})
+
+local function setRouletteNumbers(player: player):
+	set {_ln} to 0
+	loop 3 times:
+		add 1 to {_ln}
+		set {_num} to a random integer between 0 and 9
+		set {_statsName} to "{@stats-roulette}-%{_ln}%"
+		setKitStats({_player}, {_statsName}, {_num})
+
+local function spawnRoulette(player: player):
+	set {_loc} to location of {_player}
+
+
+local function effectRoulette(player: player):
+	set {_ln} to 0
+	loop 3 times:
+		add 1 to {_ln}
+		set {_num.%{_ln}%} to getKitStats({_player}, "{@stats-roulette}-%{_ln}%")
+		deleteKitStats({_player}, "{@stats-roulette}-%{_ln}%")
+
+	if:
+		{_num.1} is 7
+		{_num.2} is 7
+		{_num.3} is 7
+	then:
+		rouletteSeven({_player})
+		stop
+	
+	if:
+		{_num.1} = {_num.2}
+		{_num.2} = {_num.3}
+	then:
+		rouletteThree({_player})
+		stop
+	
+	if any:
+		{_num.1} = {_num.2}
+		{_num.2} = {_num.3}
+		{_num.3} = {_num.1}
+	then:
+		rouletteTwo({_player})
+		stop
+	
+	rouletteZero({_player})
+
+local function rouletteSeven(player: player):
+	soundSeven({_player})
+	particleSeven({_player})
+	kitMsg({_player}, "<##ff0000>§lオ<##ff8800>§lー<##fffb00>§lル<##2bff00>§lセ<##00fffb>§lブ<##2600ff>§lン<##e600ff>§l!")
+
+	applyEffect({_player}, regeneration, 3, {@seven-hit-tick})
+	applyEffect({_player}, resistance, 3, {@seven-hit-tick})
+
+	loop {@seven-hit-drop} times:
+		set {_loc} to dropLocation({_player})
+		set {_dropGold} to kitDropGolds_Rich({_player}, {_loc})
+		particleDrop({_loc})
+
+local function rouletteThree(player: player):
+	soundThree({_player})
+	particleThree({_player})
+	kitMsg({_player}, "<##ffd500>§l大当たり!")
+
+	applyEffect({_player}, regeneration, 3, {@three-hit-tick})
+
+	loop {@three-hit-drop} times:
+		set {_loc} to dropLocation({_player})
+		set {_dropGold} to kitDropGolds_Rich({_player}, {_loc})
+		particleDrop({_loc})
+
+local function rouletteTwo(player: player):
+	soundTwo({_player})
+	particleTwo({_player})
+	kitMsg({_player}, "<##ebf09b>§l当たり!")
+
+	loop {@two-hit-drop} times:
+		set {_loc} to dropLocation({_player})
+		set {_dropGold} to kitDropGolds_Rich({_player}, {_loc})
+		particleDrop({_loc})
+
+local function rouletteZero(player: player):
+	soundZero({_player})
+	particleZero({_player})
+	kitMsg({_player}, "<##8c098a>§oハズレ...")
+
+local function dropLocation(player: player) :: location:
+	set {_ok} to false
+	set {_checkNum} to 0
+	while {_ok} is false:
+		add 1 to {_checkNum}
+		if {_checkNum} > 30:
+			set {_dropLoc} to {_remainLoc}
+			set {_ok} to true
+			continue
+		
+		set {_pow} to a random number between 0 and {@gold-radius}
+		set {_vec} to randomVector({_pow})
+		set y of {_vec} to (y of {_vec}) * -1 if (y of {_vec}) < 0
+		set {_dropLoc} to {_remainLoc} ~ {_vec}
+		if block at {_dropLoc} is passable:
+			set {_ok} to true
+			continue
+	
+	return {_dropLoc}
+
+
+
+local function particleGoldDelete(entities: entities):
+
+local function particleDrop(entity: entity):
+
+local function particleSeven(player: player):
+
+local function particleThree(player: player):
+
+local function particleTwo(player: player):
+
+local function particleZero(player: player):
+
+local function soundRoulette(player: player):
+
+local functon soundSeven(player: player):
+
+local function soundThree(player: player):
+
+local function soundTwo(player: player):
+
+local function soundZero(player: player):
