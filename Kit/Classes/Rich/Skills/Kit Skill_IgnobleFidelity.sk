@@ -1,0 +1,157 @@
+# skill-name: Ignoble Fidelity
+
+options:
+	max-distance: 20
+	tick-per-meter: 1
+
+	effect-radius: 10
+	effect-tick: 20
+
+	metadata-marker: "Ignoble Fidelity - Marker"
+
+	drop-golds: 10
+
+import:
+	com.destroystokyo.paper.entity.Pathfinder
+
+function kitEffect_IgnobleFidelity(player: player):
+	kitMsg({_player}, "<##5a5a0e>醜い忠誠を誘います...")
+	set {_tool} to tool of {_player}
+
+	set {_baseloc} to head of {_player}
+	set {_m} to 0
+	set {_addm} to {@tick-per-meter}
+
+	soundLaunch({_player})
+	particleLaunch({_player})
+
+	set {_true} to true
+	while {_true} is true:
+		if checkEating({_player}) is false:
+			set {_delete} to true
+		set {_nowtool} to tool of {_player}
+		if {_nowtool} is not {_tool}:
+			set {_delete} to true
+		if {_m} >= {@max-distance}:
+			set {_delete} to true
+
+		if {_delete} is true:
+			delete {_true}
+			continue
+		set {_playerloc} to location of {_player}
+		set yaw of {_baseloc} to yaw of {_playerloc}
+		set pitch of {_baseloc} to pitch of {_playerloc}
+
+		add {_addm} to {_m}
+		set {_loc} to location {_m} meters in front of {_baseloc}
+
+		particleBeam({_loc})
+		wait a tick
+	
+	set {_centerloc} to {_loc}
+	detectCT({_player}, {_tool})
+	particleBlast({_centerloc})
+	soundBlast({_centerloc})
+	forceMove({_player}, {_centerloc})
+
+local function forceMove(player: player, dest: location):
+	loop all entities in radius {@effect-radius} around {_player}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		if checkEntityType(loop-entity, "player") is true:
+			message formatted "<##c9bb20>§o身体が金に釣られていく!" to loop-entity
+			sendTimeBossbar_RED(loop-entity, "忠金状態", {@effect-tick})
+			add loop-entity to {_targets.player::*}
+		else:
+			add loop-entity to {_targets.entity::*}
+		particleHit(loop-entity)
+		soundHit(loop-entity)
+	
+	set {_sizeCheck} to (size of {_targets.player::*}) + (size of {_targets.entity::*})
+	if {_sizeCheck} is 0:
+		kitMsg({_player}, "<##7e350b>§o誰も釣れませんでした...")
+		stop
+	
+	loop {_targets.player::*}:
+		set {_loop-player} to loop-value
+
+		set {_spawnloc} to location of {_loop-player}
+		set {_entity} to kitSpawnMob({_player}, skeleton, {_spawnloc}, false)
+
+		set metadata value {@metadata-marker} of {_entity} to true
+		applyEffect({_entity}, invisibility, 1, 600 seconds, true, "none")
+		applyEffect({_entity}, weakness, 10, 600 seconds, true, "none")
+		{_entity}.setSilent(true)
+
+		set {_markers::%{_loop-player}%} to {_entity}
+	
+	loop {@effect-tick} times:
+		loop {_targets.player::*}:
+			set {_loop-player} to loop-value-2
+			set {_marker} to {_markers::%{_loop-player}%}
+
+			set {_path} to {_marker}.getPathfinder()
+			{_path}.moveTo({_dest})
+
+			teleport {_loop-player} to {_marker}
+
+			set {_distance} to distance between {_loop-player} and {_dest}
+			if {_distance} <= 0.5:
+				dropGolds({_player}, {_dest})
+				particleGoal({_loop-player})
+				soundGoal({_loop-player})
+				remove {_loop-player} from {_targets.player::*}
+
+		loop {_targets.entity::*}:
+			set {_loop-entity} to loop-value-2
+			set {_path} to {_loop-entity}.getPathfinder()
+			{_path}.moveTo({_dest})
+
+			set {_distance} to distance between {_loop-entity} and {_dest}
+			if {_distance} <= 0.5:
+				dropGolds({_player}, {_dest})
+				particleGoal({_loop-entity})
+				soundGoal({_loop-entity})
+				remove {_loop-entity} from {_targets.entity::*}
+
+		wait a tick
+	
+	loop {_markers::*}:
+		loop-value.remove()
+	
+	particleDelete({_dest})
+	soundDelete({_player}, {_dest})
+
+local function dropGolds(player: player, loc: location):
+	particleDrop({_loc})
+	soundDrop({_player}, {_loc})
+
+	kitDropGolds_Rich({_player}, {_loc}, {@drop-golds})
+
+
+
+local function particleLaunch(player: player):
+	set {_loc} to location 1 meter above {_player}
+
+local function particleBeam(loc: location):
+
+local function particleBlast(loc: location):
+
+local function particleHit(entity: entity):
+
+local function particleGoal(entity: entity):
+
+local function particleDelete(loc: location):
+
+local function particleDrop(loc: location):
+
+local function soundLaunch(player: player):
+
+local function soundBlast(loc: location):
+
+local function soundHit(entity: entity):
+
+local function soundGoal(entity: entity):
+
+local function soundDelete(player: player, loc: location):
+
+local function soundDrop(player: player, loc: location):
