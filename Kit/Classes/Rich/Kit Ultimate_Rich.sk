@@ -1,0 +1,86 @@
+# Nouveau Riche
+
+options:
+	drop-min: 1
+	drop-max: 5
+
+	drop-radius: 10
+
+	drop-interval: 20
+	drop-time: 10
+
+	heal-amount: 2
+	absorption-tick: 100
+
+	stats-player: "Nouveau Riche"
+	metadata-gold: "Nouveau Riche - Gold Block"
+
+function kitUltRich(player: player):
+	setKitStats({_player}, {@stats-player}, true)
+	loop {@drop-time} times:
+		stop if getKitStats({_player}, {@stats-player}) is not set
+		dropGolds({_player})
+
+		loop {@drop-interval} times:
+			wait a tick
+	deleteKitStats({_player}, {@stats-player})
+
+local function dropGolds(player: player):
+	set {_count} to a random integer between {@drop-min} and {@drop-max}
+	loop {_count} times:
+		set {_baseloc} to location of {_player}
+		set {_droploc} to dropLocation({_baseloc})
+
+		drop {_gold} named "%{_player}%" at {_droploc}
+		set {_lastdrop} to last dropped item
+		set metadata value "gametype" of {_lastdrop} to "Kit"
+		set metadata value "delete" of {_lastdrop} to "%{_player}%"
+		set metadata value "undelete" of {_lastdrop} to true
+		set metadata value {@metadata-gold} of {_lastdrop} to {_player}
+		set metadata value "Jewelry" of {_lastdrop} to {_player}
+		particleDrop({_droploc})
+		soundDrop({_player})
+
+local function dropLocation(loc: location) :: location:
+	set {_ok} to false
+	set {_loopnum} to 0
+	while {_ok} is false:
+		add 1 to {_loopnum}
+		if {_loopnum} > 30:
+			set {_returnloc} to {_loc}
+			set {_ok} to true
+			continue
+		
+		set {_pow} to a random number between 0 and {@drop-radius}
+		set {_vec} to randomVector({_pow})
+		set {_returnloc} to {_loc} ~ {_vec}
+		if block at {_returnloc} is passable:
+			set {_ok} to true
+			continue
+	return {_returnloc}
+
+on pick up:
+	stop if {Class::%player%} is "Thief"
+
+	set {_dropper} to metadata value {@metadata-gold} of event-dropped item
+	stop if kitCheckTeam({_dropper}, player, true, true) is false
+
+	set {_goldloc} to location of event-dropped item
+	delete event-dropped item
+	heal(player)
+
+local function heal(player: player):
+	kitHeal({_player}, {@heal-amount}, 1)
+	applyEffect({_player}, absorption, 1, {@absorption-tick}, true)
+	particleHeal({_player})
+	soundHeal({_player})
+
+
+
+local function particleDrop(loc: location):
+
+local function particleHeal(player: player):
+
+local function soundDrop(player: player):
+
+local function soundHeal(player: player):

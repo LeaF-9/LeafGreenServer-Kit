@@ -406,43 +406,8 @@ on rightclick holding a nether star:
 		kitUltPaladin(player)
 	else if {Class::%player%} is "Reflector":
 		kitUltReflector(player)
-#	else if {Class::%player%} is "Rich":
-#		loop all players:
-#			set {_ok} to true
-#			if {_silent} is true:
-#				if loop-player is not player:
-#					delete {_ok}
-#			{_ok} is true
-#			send loop-player title "<%{TrueTeam::%player%}%>§l§oNouveau Riche" with subtitle "§bー 金を持て余しすぎた大富豪 ー" for 3 seconds
-#		message "§c全てのドロップアイテムを金インゴットに変更します!"
-#		message "§c1秒おきに1~5個の金ブロックを周辺に投下します!"
-#		message "§cこの金ブロックを拾った味方及び自分を2回復+衝撃吸収 1を5秒付与します!"
-#		loop all dropped items:
-#			drawDot count 1, particle "happyvillager", center loop-dropped item, visibleRange 30, pulseDelay 0, keepFor 10 ticks
-#			set {_loc} to location of loop-dropped item
-#			delete loop-dropped item
-#			drop a golden ingot named "%player%" at {_loc}
-#			loop all dropped items in radius 1.5 around location of {_loc}:
-#				metadata value "delete" of loop-dropped item-2 is not set
-#				set metadata value "delete" of loop-dropped item-2 to "%player%"
-#			play raw sound "random.orb" at {_loc} with pitch 5 volume 0.1
-#		loop 10 times:
-#			set {_sb} to location of block 5 above player
-#			set {_y} to y-coordinate of {_sb}
-#			loop all blocks in radius 5 around {_sb}:
-#				y-coordinate of loop-block is {_y}
-#				add location of loop-block to {_gs::*}
-#			set {_ln} to a random integer between 1 and 3
-#			loop {_ln} times:
-#				set {_p} to a random location out of {_gs::*}
-#				remove {_p} from {_gs::*}
-#				drop a gold block named "%player%" at {_p}
-#				loop all dropped items in radius 1.5 around location of {_p}:
-#					metadata value "delete" of loop-dropped item is not set
-#					set metadata value "delete" of loop-dropped item to "%player%"
-#			play raw sound "random.orb" at {_p} with pitch 0.5 volume 1
-#			delete {_gs::*}
-#			wait a second
+	else if {Class::%player%} is "Rich":
+		kitUltRich(player)
 #	else if {Class::%player%} is "Astronaut":
 #		loop all players:
 #			set {_ok} to true
