@@ -5,6 +5,9 @@ options:
 	gold-required: 10
 
 	roulette-tick: 40
+	roulette-first-tick: 20
+	roulette-second-tick: 10
+	roulette-remain-tick: 60
 
 	two-hit-drop: 20
 
@@ -15,6 +18,8 @@ options:
 	seven-hit-tick: 400
 
 	stats-roulette: "Roulette Numbers"
+	metadata-display: "Miracle Roulette - Number"
+	metadata-roulette: "Miracle Roulette - Roulette"
 
 function kitEffect_MiracleRoulette(player: player):
 	loop all entities in radius {@gold-radius} around {_player}:
@@ -54,7 +59,12 @@ local function setRouletteNumbers(player: player):
 		set {_statsName} to "{@stats-roulette}-%{_ln}%"
 		setKitStats({_player}, {_statsName}, {_num})
 
+# TitleはDisplayと同じメソッドで処理
 local function spawnRoulette(player: player):
+	# send title
+	set {_titletick} to "{@roulette-first-tick} ticks" parsed as time span
+	sendTitle({_player}, "§e§l§k0 §f- §e§l§k0 §f- §e§l§k0", "", {_titletick}, 0 tick, 0 tick)
+
 	set {_baseloc} to location of {_player}
 
 	set {_yaw} to yaw of {_baseloc}
@@ -67,8 +77,77 @@ local function spawnRoulette(player: player):
 		add -2 to {_leftNum}
 
 		set {_spawnLoc} to location {_leftNum} meters to the right of {_baseloc}
+		add 2.5 to y-pos of {_spawnLoc}
+		set {_display} to spawnDisplay({_spawnLoc}, {_ln})
+		set {_displays::%{_ln}%} to {_display}
+	
+	loop {@roulette-first-tick} times:
+		set {_tploc} to location of {_player}
+		set yaw of {_tploc} to {_yaw}
+		set pitch of {_tploc} to {_pitch}
+		teleport {_display} to {_tploc}
+		wait a tick
+	
+	set {_ln} to 1
+	set {_displayEntity} to {_displays::%{_ln}%}
+	set {_slotNumber} to getKitStats({_player}, "{@stats-roulette}-%{_ln}%")
+	set {_displayText} to "§6§l%{_slotNumber}%"
+	{_displayEntity}.setText({_displayText})
 
+	# send title
+	set {_titleNumber.%{_ln}%} to {_slotNumber}
+	set {_titletick} to "{@roulette-second-tick} ticks" parsed as time span
+	sendTitle({_player}, "§6§l%{_titleNumber.1}% §f- §e§l§k0 §f- §e§l§k0", "", {_titletick}, 0 tick, 0 tick)
 
+	loop 2 times:
+		add 1 to {_ln}
+		loop {@roulette-second-tick} times:
+			set {_tploc} to location of {_player}
+			set yaw of {_tploc} to {_yaw}
+			set pitch of {_tploc} to {_pitch}
+			teleport {_display} to {_tploc}
+			wait a tick
+		
+		set {_displayEntity} to {_displays::%{_ln}%}
+		set {_slotNumber} to getKitStats({_player}, "{@stats-roulette}-%{_ln}%")
+		set {_displayText} to "§6§l%{_slotNumber}%"
+		{_displayEntity}.setText({_displayText})
+
+		# send title
+		set {_titleNumber.%{_ln}%} to {_slotNumber}
+		if {_titleNumber.3} is not set:
+			sendTitle({_player}, "§6§l%{_titleNumber.1}% §f- §6§l%{_titleNumber.2}% §f- §e§l§k0", "", {_titletick}, 0 tick, 0 tick)
+		else:
+			sendTitle({_player}, "§4§l%{_titleNumber.1}% §f- §4§l%{_titleNumber.2}% §f- §4§l%{_titleNumber.3}%", "", {_titletick}, 0 tick, 0 tick)
+	# Displayのヒット演出はeffectRoulette側で制御
+
+import:
+	org.bukkit.Color
+
+local function spawnDisplay(loc: location, num: number) :: entity:
+	set {_world} to world of {_loc}
+	set {_mobtype} to EntityType.valueOf("TEXT_DISPLAY")
+	set {_textDisplay} to {_world}.spawnEntity({_loc}, {_mobtype})
+	set metadata value {@metadata-display} of {_textDisplay} to {_num}
+	set {_rouletteNumber} to getKitStats({_player}, "{@stats-roulette}-%{_num}%")
+	set metadata value {@metadata-roulette} of {_textDisplay} to {_rouletteNumber}
+
+	setBrightness({_textDisplay})
+	{_textDisplay}.setBillboard(Billboard.CENTER)
+	{_textDisplay}.setTeleportDuration(1)
+	{_textDisplay}.setViewRange(100)
+	{_textDisplay}.setDefaultBackground(false)
+	set {_background} to new Color(255, 255, 255, 255)
+	{_textDisplay}.setBackgroundColor({_background})
+	set {_axisAngle4f} to getQuaternionf(0, 0, 0, 1)
+	set {_scale} to getVector3f(3, 3, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	setTransformation({_textDisplay}, {_axisAngle4f}, {_axisAngle4f}, {_translation}, {_scale})
+
+	set {_display} to "§e§l§k0"
+	{_textDisplay}.setText({_display})
+
+	return {_textDisplay}
 
 local function effectRoulette(player: player):
 	set {_ln} to 0
@@ -114,11 +193,46 @@ local function rouletteSeven(player: player):
 		set {_loc} to dropLocation({_player})
 		set {_dropGold} to kitDropGolds_Rich({_player}, {_loc})
 		particleDrop({_loc})
+	
+	displaySeven({_player})
+
+local function displaySeven(player: player):
+	set {_backgrounds::0} to new Color(255, 255, 0, 0)
+	set {_backgrounds::1} to new Color(255, 255, 136, 0)
+	set {_backgrounds::2} to new Color(255, 255, 255, 0)
+	set {_backgrounds::3} to new Color(255, 43, 255, 0)
+	set {_backgrounds::4} to new Color(255, 0, 255, 251)
+	set {_backgrounds::5} to new Color(255, 38, 0, 255)
+	set {_backgrounds::6} to new Color(255, 230, 0, 255)
+
+	loop all text displays:
+		set {_textDisplay} to loop-text display
+		metadata value {@metadata-display} of {_textDisplay} is set
+		{_textDisplay}.setText("§f§l7")
+		add {_textDisplay} to {_displays::*}
+	
+	set {_loopnum} to 7 * 3
+	set {_waittick} to 3 ticks
+
+	set {_ln} to 0
+	loop {_loopnum} times:
+		loop {_displays::*}:
+			set {_displayEntity} to loop-value
+			set {_background} to {_backgrounds::%{_ln}%}
+			{_displayEntity}.setBackgroundColor({_background})
+		add 1 to {_ln}
+		set {_ln} to 0 if {_ln} > 6
+		wait {_waittick}
+	
+	loop {_displays::*}:
+		set {_displayEntity} to loop-value
+		{_displayEntity}.remove()
+
 
 local function rouletteThree(player: player):
 	soundThree({_player})
 	particleThree({_player})
-	kitMsg({_player}, "<##ffd500>§l大当たり!")
+	kitMsg({_player}, "<##ff0000>§l大当たり!")
 
 	applyEffect({_player}, regeneration, 3, {@three-hit-tick})
 
@@ -126,21 +240,79 @@ local function rouletteThree(player: player):
 		set {_loc} to dropLocation({_player})
 		set {_dropGold} to kitDropGolds_Rich({_player}, {_loc})
 		particleDrop({_loc})
+	
+	displayThree({_player})
+
+local function displayThree(player: player):
+	loop all text displays:
+		metadata value {@metadata-display} of loop-text display is set
+		add loop-text display to {_displays::*}
+
+	loop {_displays::*}:
+		set {_displayEntity} to loop-value
+		set {_background} to new Color(255, 255, 0, 0)
+		{_displayEntity}.setBackgroundColor({_background})
+
+	loop {@roulette-remain-tick} times:
+		wait a tick
+	
+	loop {_displays::*}:
+		set {_displayEntity} to loop-value
+		{_displayEntity}.remove()
 
 local function rouletteTwo(player: player):
 	soundTwo({_player})
 	particleTwo({_player})
-	kitMsg({_player}, "<##ebf09b>§l当たり!")
+	kitMsg({_player}, "<##ffd500>§l当たり!")
 
 	loop {@two-hit-drop} times:
 		set {_loc} to dropLocation({_player})
 		set {_dropGold} to kitDropGolds_Rich({_player}, {_loc})
 		particleDrop({_loc})
+	displayTwo({_player})
+
+local function displayTwo(player: player):
+	loop all text displays:
+		metadata value {@metadata-display} of loop-text display is set
+		add loop-text display to {_displays::*}
+
+	loop {_displays::*}:
+		set {_displayEntity} to loop-value
+		set {_background} to new Color(255, 255, 213, 0)
+		{_displayEntity}.setBackgroundColor({_background})
+
+	loop {@roulette-remain-tick} times:
+		wait a tick
+	
+	loop {_displays::*}:
+		set {_displayEntity} to loop-value
+		{_displayEntity}.remove()
 
 local function rouletteZero(player: player):
 	soundZero({_player})
 	particleZero({_player})
 	kitMsg({_player}, "<##8c098a>§oハズレ...")
+	displayZero({_player})
+
+local function displayZero(player: player):
+	loop all text displays:
+		set {_textDisplay} to loop-text display
+		metadata value {@metadata-display} of {_textDisplay} is set
+		set {_rouletteNumber} to metadata value {@metadata-roulette} of {_textDisplay}
+		{_textDisplay}.setText("§0§l%{_rouletteNumber}%")
+		add {_textDisplay} to {_displays::*}
+
+	loop {_displays::*}:
+		set {_displayEntity} to loop-value
+		set {_background} to new Color(255, 140, 9, 138)
+		{_displayEntity}.setBackgroundColor({_background})
+
+	loop {@roulette-remain-tick} times:
+		wait a tick
+	
+	loop {_displays::*}:
+		set {_displayEntity} to loop-value
+		{_displayEntity}.remove()
 
 local function dropLocation(player: player) :: location:
 	set {_ok} to false
