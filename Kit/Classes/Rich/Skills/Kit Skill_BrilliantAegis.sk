@@ -20,6 +20,10 @@ options:
 	metadata-dropper: "Brilliant Aegis - Dropper"
 
 function kitEffect_BrilliantAegis(player: player):
+	if {_player}.isOnGround() is false:
+		kitMsg({_player}, "§c§l黄金の像は地上にしか設置できません!")
+		stop
+
 	nameCT({_player}, "Brilliant Aegis")
 	kitMsg({_player}, "<##f7ea33>黄金の像<##f2f39f>を設置します!")
 
@@ -34,9 +38,9 @@ function kitEffect_BrilliantAegis(player: player):
 
 	set {_aegis} to kitSpawnMob({_player}, armor stand, {_placeloc}, false)
 	{_aegis}.setHelmet({_head})
-	{_aegis}.setChestplate({_head})
-	{_aegis}.setLeggings({_head})
-	{_aegis}.setBoots({_head})
+	{_aegis}.setChestplate({_chest})
+	{_aegis}.setLeggings({_leggs})
+	{_aegis}.setBoots({_boots})
 
 	{_aegis}.setArms(false)
 	{_aegis}.setBasePlate(false)
@@ -56,13 +60,14 @@ function kitEffect_BrilliantAegis(player: player):
 			continue
 		
 		set {_aegisloc} to location of {_aegis}
-		particleAura({_aegisloc})
+		particleAura({_aegisloc}, loop-number)
 		delete {_entering::*}
 		loop all entities in radius {@effect-radius} around {_aegisloc}:
+			loop-entity is not {_aegis}
 			kitCheckTeam({_player}, loop-entity, true) is true
-			add loop-entity to {_entered::*} if {_entered::*} does not contain loop-entity
-			if {_entering::*} does not contain loop-entity:
-				add loop-entity to {_entering::*} if {_entering::*}
+			add loop-entity to {_entering::*}
+			if {_entered::*} does not contain loop-entity:
+				add loop-entity to {_entered::*}
 				applyAegisShield(loop-entity, {_uuid}, {_aegis})
 			particleEntering(loop-entity)
 		
@@ -99,7 +104,6 @@ local function applyAegisShield(entity: entity, uuid: uuid, aegis: entity):
 local function removeAegisShield(entity: entity, uuid: uuid):
 	stop if metadata value {@metadata-shield} of {_entity} is not {_uuid}
 	delete metadata value {@metadata-shield} of {_entity}
-	delete metadata valie {@metadata-location} of {_entity}
 	particleLeave({_entity})
 	soundLeave({_entity})
 
@@ -108,7 +112,7 @@ local function dropWhenDamaged(player: player):
 	set {_summoner} to metadata value "summon-player" of {_aegis}
 
 	set {_droploc} to location of {_aegis}
-	set {_dropnum} to a random integer between {@drop-damage-min} and {@dropdamage-max}
+	set {_dropnum} to a random integer between {@drop-damage-min} and {@drop-damage-max}
 	kitDropGolds_Rich({_summoner}, {_droploc}, {_dropnum})
 
 on damage with priority HIGH:
@@ -121,6 +125,16 @@ on damage with priority HIGH:
 	soundDamage({_victim})
 
 	kitEffectDescription({_victim}, "§a§lx0.7")
+
+on damage of armor stand:
+	stop if attacker is not set
+	stop if metadata value {@metadata-aegis} of victim is not set
+	set {_summoner} to metadata value "summon-player" of victim
+	if kitCheckTeam({_summoner}, attacker, true) is true:
+		cancel event
+		stop
+
+	victim.remove()
 
 
 
@@ -142,23 +156,127 @@ local function particlePlace(loc: location):
 		set {_v} to randomVector()
 		spawnParticle_Vector(end_rod, {_v}, 0.5, {_baseloc})
 
-local function particleAura(loc: location):
+local function particleAura(loc: location, num: number):
+	add rgb(248, 247, 160) to {_colors::*}
+	add rgb(252, 239, 169) to {_colors::*}
+	add rgb(246, 248, 119) to {_colors::*}
 
-local function particleApply(loc: location):
+	set {_baseloc} to location 1 meter above {_loc}
+
+	set {_amount.aura} to 4
+	set {_baseaddrad} to 360 / {_amount.aura}
+	set {_baseplusrad} to 9
+	set {_baserad} to {_baseplusrad} * {_num}
+	set {_basevec.aura} to vector({@effect-radius}, 0, 0)
+
+	set {_amount.twinkle} to 2
+	set {_twiaddrad} to 360 / {_amount.twinkle}
+	set {_twiplusrad} to 20
+	set {_twirad} to {_twiplusrad} * {_num}
+
+	loop {_amount.aura} times:
+		set {_vector} to {_basevec.aura}
+		rotate {_vector} around y-axis by {_baserad}
+		set {_el} to {_baseloc} ~ {_vector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 2, {_el})
+
+		set {_twiloc} to {_el}
+		set yaw of {_twiloc} to yaw of {_vector}
+		set pitch of {_twiloc} to 0
+		add 90 to yaw of {_twiloc}
+		set {_twibasevec} to setVector({_twiloc}, location 10 meters in front of {_twiloc})
+		loop {_amount.twinkle} times:
+			set {_twivec} to vector(0, 0.5, 0)
+			rotate {_twivec} around {_twibasevec} by {_twirad}
+			set {_el.twi} to {_el} ~ {_twivec}
+			spawnParticle(electric_spark, {_el.twi})
+
+			add {_twiaddrad} to {_twirad}
+
+		add {_baseaddrad} to {_baserad}
+
+local function particleApply(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+	set {_amount} to 20
+	loop {_amount} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(end_rod, {_v}, 0.5, {_baseloc})
 
 local function particleEntering(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+
+	chance of 30%:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_Block(gold block, {_el})
+		chance of 10%:
+			set {_el} to moveRandomLocation({_baseloc}, 1)
+			spawnParticle_BlockData(falling_dust, gold_block, {_el})
 
 local function particleLeave(entity: entity):
+	set {_amount} to a random integer between 10 and 20
+	set {_baseloc} to location 1 meter above {_entity}
+
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(falling_dust, white wool, {_el})
 
 local function particleBreak(loc: location):
+	set {_baseloc} to location 1 meter above {_loc}
+
+	set {_amount.block} to 20
+	loop {_amount.block} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1.2)
+		spawnParticle_Block(gold block, {_el})
+
+	set {_amount.end} to 50
+	loop {_amount.end} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(end_rod, {_v}, 0.75, {_baseloc})
 
 local function particleDamage(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+
+	add rgb(240, 247, 177) to {_colors::*}
+	add rgb(252, 244, 171) to {_colors::*}
+	add rgb(255, 228, 179) to {_colors::*}
+
+	set {_amount} to 10
+	set {_rad} to 0
+	set {_addrad} to 360 / {_amount}
+	set {_basevec} to vector(0.6, 0, 0)
+
+	loop {_amount} times:
+		set {_vec} to {_basevec}
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_vec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(entity_effect, {_color}, {_el})
+
+		add {_addrad} to {_rad}
+
+local function particleEclipse(loc: location):
+	set {_baseloc} to location 1 meter above {_loc}
+	set {_amount} to a random integer between 15 and 25
+
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(block_crumble, gold block, {_el})
 
 local function soundPlace(loc: location):
 	playSound("entity.allay.ambient_without_item", 1, 1.2, {_loc})
 
+local function soundApply(entity: entity):
+	playSound("entity.allay.item_given", 1, 1.35, {_entity})
+
 local function soundLeave(entity: entity):
+	playSound("entity.allay.item_taken", 1, 1.75, {_entity})
 
 local function soundBreak(loc: location):
+	playSound("block.respawn_anchor.deplete", 1, 1.55, {_loc})
 
 local function soundDamage(entity: entity):
+	playSound("block.respawn_anchor.charge", 1, 1.85, {_entity})
+
+local function soundEclipse(loc: location):
+	playSound("entity.creaking.deactivate", 1, 1.2, {_loc})
