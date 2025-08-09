@@ -6,6 +6,9 @@ options:
 
 	metadata-gold: "Avaricious Lust - Gold"
 
+import:
+	io.papermc.paper.entity.LookAnchor
+
 function kitEffect_AvariciousLust(player: player):
 	loop all entities:
 		metadata value "Rich Gold" of loop-entity is {_player}
@@ -34,7 +37,7 @@ function kitEffect_AvariciousLust(player: player):
 
 		delete {_targetGold}
 		set {_mindis} to 10000
-		loop {_drops::*}:
+		loop {_golds::*}:
 			set {_dropGold} to loop-value-2
 			set {_dis} to distance between {_loop-player} and {_dropGold}
 			continue if {_dis} > {_mindis}
@@ -51,21 +54,24 @@ local function charmedGold(player: player, gold: entity):
 
 	set metadata value {@metadata-gold} of {_player} to {_gold}
 	loop {@effect-tick} times:
-		continue if {_gold}.isDead()
+		continue if {_gold}.isDead() is true
 
 		particleCharmed({_player}, {_gold})
 		changeDirection({_player}, {_gold})
 		packetGlowing({_player}, {_gold})
 		wait a tick
+	packetUnglowing({_player}, {_gold})
 	delete metadata value {@metadata-gold} of {_player}
 
 local function changeDirection(player: player, target: entity):
 	set {_from} to head of {_player}
 	set {_to} to location of {_target}
-	set {_vector} to setVector({_from}, {_to})
-	
-	set yaw of {_player} to yaw of {_vector}
-	set pitch of {_player} to pitch of {_vector}
+	add 0.5 to y-pos of {_to}
+
+	set {_x} to x-pos of {_to}
+	set {_y} to y-pos of {_to}
+	set {_z} to z-pos of {_to}
+	{_player}.lookAt({_x}, {_y}, {_z}, LookAnchor.EYES)
 
 on pick up:
 	stop if metadata value {@metadata-gold} of player is not set
@@ -80,16 +86,96 @@ on pick up:
 
 
 local function particleAura(player: player):
+	add rgb(228, 230, 114) to {_colors::*}
+	add rgb(233, 230, 39) to {_colors::*}
+	add rgb(228, 193, 119) to {_colors::*}
+
+	set {_baseloc} to location 1 meter above {_player}
+
+	set {_timetick} to 15
+	set {_radius} to 0
+	set {_add.radius} to {@effect-radius} / {_timetick}
+
+	set {_rad} to 0
+	set {_circlecount} to 30
+	set {_addrad} to 360 / {_circlecount}
+	set {_plusrad} to 20
+
+	loop {_timetick} times:
+		add {_add.radius} to {_radius}
+		set {_basevec} to vector({_radius}, 0, 0)
+
+		loop {_circlecount} times:
+			add {_addrad} to {_rad}
+			set {_vec} to {_basevec}
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_vec}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Color(entity_effect, {_color}, {_el})
+
+			chance of 10%:
+				set {_el.2} to moveRandomLocation({_el}, 0.5)
+				spawnParticle_BlockData(block_crumble, gold_block, {_el.2})
+		
+		add {_plusrad} to {_rad}
+		wait a tick
 
 local function particleApplied(player: player):
+	add rgb(156, 163, 56) to {_colors::*}
+	add rgb(143, 151, 28) to {_colors::*}
+	add rgb(148, 118, 19) to {_colors::*}
+
+	set {_baseloc} to location 1 meter above {_player}
+	set {_basevec} to vector(0.5, 0, 0)
+
+	set {_count} to 8
+	set {_rad} to 0
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		add {_addrad} to {_rad}
+		set {_vec} to {_basevec}
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_vec}
+		add {_el} to {_els::*}
+
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 2.5, {_el})
+	
+	wait 10 ticks
+
+	set {_baseloc} to location 1 meter above {_player}
+	loop {_count} times:
+		add {_addrad} to {_rad}
+		set {_vec} to {_basevec}
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_vec}
+
+		set {_v} to randomVector(0.5)
+		spawnParticle_Vector(end_rod, {_v}, 0.3, {_el})
 
 # playerにのみ表示
 local function particleCharmed(player: player, gold: entity):
+	set {_from} to head of {_player}
+	set {_to} to location of {_gold}
 
-local function particleDelete(player: player)
+	set {_color} to rgb(252, 245, 148)
+	set {_time} to 20 ticks
+	spawnParticle_Trail({_color}, {_to}, {_time}, {_from}, {_player})
+
+local function particleDelete(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_amount} to a random integer between 15 and 25
+	loop {_amount} times:
+		set {_loc} to moveRandomLocation({_baseloc}, 1)
+		set {_vec} to randomVector()
+		set y of {_vec} to -1
+		spawnParticle_Vector(trial_spawner_detection, {_vec}, 0.8, {_loc})
 
 local function soundLaunch(player: player):
+	playSound("block.conduit.deactivate", 1, 1.2, {_player})
 
 local function soundApplied(player: player):
+	playSound("block.bubble_column.whirlpool_inside", 1, 0.8, {_player})
 
 local function soundDelete(player: player):
+	playSound("entity.creaking.unfreeze", 1, 1.35, {_player})
