@@ -347,21 +347,81 @@ local function particleGoldDelete(entities: entities):
 			spawnParticle_Vector(smoke, {_v}, 0.5, {_el})
 
 local function particleDrop(entity: entity):
+	set {_amount} to a random integer between 1 and 3
+	set {_baseloc} to location 0.5 meters above {_entity}
+
+	loop {_amount} times:
+		set {_v} to randomVector(3)
+		spawnParticle_Vector(wax_on, {_v}, 3, {_baseloc})
 
 local function particleSeven(player: player):
 
 local function particleThree(player: player):
+	add rgb(243, 237, 53) to {_colors::*}
+	add rgb(228, 247, 63) to {_colors::*}
+	add rgb(240, 220, 45) to {_colors::*}
+
+	add rgb(252, 250, 180) to {_colors.fade::*}
+	add rgb(243, 255, 200) to {_colors.fade::*}
+	add rgb(247, 241, 163) to {_colors.fade::*}
+
+	playSound("entity.firework_rocket.launch", 1, 1, {_player})
+	loop 6 times:
 
 local function particleTwo(player: player):
+	set {_baseloc} to location of {_player}
+	add rgb(252, 250, 180) to {_colors::*}
+	add rgb(243, 255, 200) to {_colors::*}
+	add rgb(247, 241, 163) to {_colors::*}
+
+	set {_explosion} to setFireWorksExplosion("ball", {_colors::*}, {_colors::*})
+	spawnFireworks({_baseloc}, 20, {_explosion})
+	playSound("entity.firework_rocket.launch", 1, 1, {_player})
+
+	set {_amount} to a random integer between 10 and 20
+	set {_baseloc} to location 1 meter above {_player}
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(entity_effect, {_color}, {_el})
 
 local function particleZero(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_amount} to a random integer between 15 and 20
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(falling_dust, yellow terracotta, {_el})
+		chance of 10%:
+			set {_el} to moveRandomLocation({_baseloc}, 1)
+			spawnParticle_BlockData(falling_dust, orange terracotta, {_el})
 
 local function soundRoulette(player: player):
+	set {_timeNum} to 0
+	set {_pitchMod.1} to 1.26
+	set {_pitchMod.2} to 1.59
+	set {_pitchMod.3} to 1.89
+	set {_pitchMod.4} to 1.59
+	set {_pitchMod.0} to 1.59
+
+	loop 20 times:
+		add 1 to {_timeNum}
+		set {_mod} to mod({_timeNum}, 4)
+		set {_pitch} to {_pitchMod.%{_mod}%}
+		playSound("block.note_block.bit", 1, {_pitch}, {_player})
+
+		playSound("block.note_block.pling", 1, 1, {_player}) if {_timeNum} is 10
+		playSound("block.note_block.pling", 1, 1, {_player}) if {_timeNum} is 15
+		playSound("block.note_block.pling", 1, 2, {_player}) if {_timeNum} is 20
+		wait 2 ticks
 
 local functon soundSeven(player: player):
+	playSound("ui.toast.challenge_complete", 10, 0.7, {_player})
 
 local function soundThree(player: player):
+	playSound("entity.player.levelup", 2, 0.6, {_player})
 
 local function soundTwo(player: player):
+	playSound("entity.experience_orb.pickup", 1, 0.5, {_player})
 
 local function soundZero(player: player):
+	playSound("block.note_block.bass", 1, 0.8, {_player})
