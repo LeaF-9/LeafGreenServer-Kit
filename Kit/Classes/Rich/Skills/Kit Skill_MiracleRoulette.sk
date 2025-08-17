@@ -355,6 +355,94 @@ local function particleDrop(entity: entity):
 		spawnParticle_Vector(wax_on, {_v}, 3, {_baseloc})
 
 local function particleSeven(player: player):
+	set {_baseloc.endrod} to location 1 meter above {_player}
+	set {_count.endrod} to a random integer between 30 and 50
+	loop {_count.endrod} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(end_rod, {_v}, 1, {_baseloc.endrod})
+
+	set {_colors::1} to rgb(255, 0, 0)
+	set {_colors::2} to rgb(255, 136, 0)
+	set {_colors::3} to rgb(255, 255, 0)
+	set {_colors::4} to rgb(43, 255, 0)
+	set {_colors::5} to rgb(0, 255, 251)
+	set {_colors::6} to rgb(38, 0, 255)
+	set {_colors::7} to rgb(230, 0, 255)
+
+	set {_colors.fade::1} to rgb(254, 128, 128)
+	set {_colors.fade::2} to rgb(252, 176, 88)
+	set {_colors.fade::3} to rgb(255, 255, 130)
+	set {_colors.fade::4} to rgb(160, 251, 142)
+	set {_colors.fade::5} to rgb(160, 255, 253)
+	set {_colors.fade::6} to rgb(154, 142, 222)
+	set {_colors.fade::7} to rgb(230, 154, 239)
+
+	add "ball" to {_typeList::*}
+	add "ball_large" to {_typeList::*}
+	add "star" to {_typeList::*}
+	add "creeper" to {_typeList::*}
+	add "burst" to {_typeList::*}
+
+	add true to {_boolean::*}
+	add false to {_boolean::*}
+
+	set {_counttick} to {@seven-hit-tick}
+	set {_nowtick} to 0
+
+	set {_count.firework} to 11
+	set {_tick.firework} to 10
+	set {_nowcount.firework} to 0
+	set {_launching.firework} to true
+
+	set {_count.dust} to 4
+	set {_rad.dust} to 0
+	set {_addrad.dust} to 360 / 4
+	set {_plusrad} to 20
+	set {_basevec.dust} to vector(0.5, 0, 0)
+
+	set {_y.dust} to 0
+	set {_addy.dust} to 0.2
+	set {_maxy.dust} to 2
+
+	loop {_counttick} times:
+		set {_baseloc.firework} to location 1 meter above {_player}
+		set {_baseloc.dust} to location of {_player}
+		if {_launching.firework}:
+			if mod({_nowtick}, {_tick.firework}) is 0 or 10:
+				add 1 to {_nowcount.firework}
+
+				playSound("entity.firework_rocket.launch", 1, 1, {_player})
+				set {_colornumber.firework} to dice(7)
+				set {_type} to a random element out of {_typeList::*}
+				set {_twinkle} to a random element out of {_boolean::*}
+				set {_trail} to a random element out of {_boolean::*}
+				set {_explosion} to setFireWorksExplosion({_type}, {_colors::%{_colornumber.firework}%}, {_colors.fade::%{_colornumber.firework}%}, {_twinkle}, {_trail})
+				set {_time} to 20
+				set {_fl} to moveRandomLocation({_baseloc.firework}, 1)
+				spawnFireworks({_fl}, {_time}, {_explosion})
+
+				if {_nowcount} > {_count.firework}:
+					set {_launching.firework} to false
+		
+		loop {_count.dust} times:
+			set {_v} to {_basevec.dust}
+			rotate {_v} around y-axis by {_rad.dust}
+			set {_el.dust} to {_baseloc.dust} ~ {_v}
+			add {_y.dust} to y-pos of {_el.dust}
+
+			set {_colornum.dust} to dice(7)
+			spawnParticle_DustTransition({_colors::%{_colornum.dust}%}, {_colors.fade::%{_colornum.dust}%}, 1.1, {_el.dust})
+			
+			add {_addrad.dust} to {_rad.dust}
+
+		add {_plusrad.dust} to {_rad.dust}
+		add {_addy.dust} to {_y.dust}
+		set {_y.dust} to 0 if {_y.dust} > {_maxy.dust}
+
+		add 1 to {_nowtick}
+		wait a tick
+
+
 
 local function particleThree(player: player):
 	add rgb(243, 237, 53) to {_colors::*}
@@ -365,8 +453,54 @@ local function particleThree(player: player):
 	add rgb(243, 255, 200) to {_colors.fade::*}
 	add rgb(247, 241, 163) to {_colors.fade::*}
 
+	add "ball" to {_typeList::*}
+	add "ball_large" to {_typeList::*}
+	add "star" to {_typeList::*}
+
 	playSound("entity.firework_rocket.launch", 1, 1, {_player})
-	loop 6 times:
+	set {_baseloc} to location of {_player}
+	set {_basevec} to vector(1, 0, 0)
+	set {_fwcount} to 6
+	set {_rad} to 0
+	set {_addrad} to 360 / {_fwcount}
+	loop {_fwcount} times:
+		add {_addrad} to {_rad}
+		set {_vec} to {_basevec}
+		rotate {_vec} around y-axis by {_rad}
+		set {_fl} to {_baseloc} ~ {_vec}
+
+		set {_type} to a random element out of {_typeList::*}
+		set {_explosion} to setFireWorksExplosion({_type}, {_colors::*}, {_colors.fade::*})
+		set {_time} to a random integer between 10 and 30
+		spawnFireworks({_fl}, {_time}, {_explosion})
+	
+	set {_height} to 2
+	set {_perh} to 0.5
+	set {_count.h} to (2 / 0.5) + 1
+
+	set {_y} to 0
+	set {_addy} to {_perh}
+	set {_count.c} to 10
+	set {_addrad} to 360 / {_count.c}
+	set {_basevec} to vector(0.5, 0, 0)
+	loop {_count.h} times:
+		set {_loc} to location {_y} meters above {_baseloc}
+
+		set {_rad} to 0
+		loop {_count.c} times:
+			add {_addrad} to {_rad}
+			set {_v} to {_basevec}
+			rotate {_v} around y-axis by {_rad}
+			set {_el} to {_loc} ~ {_v}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Color(entity_effect, {_color}, {_el})
+		add {_addy} to {_y}
+	
+	set {_baseloc} to location 1 meter above {_player}
+	set {_amount} to a random integer between 20 and 30
+	loop {_amount} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(trial_spawner_detection, {_v}, 1, {_baseloc})
 
 local function particleTwo(player: player):
 	set {_baseloc} to location of {_player}
