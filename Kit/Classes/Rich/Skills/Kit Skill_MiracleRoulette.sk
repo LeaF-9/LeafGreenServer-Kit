@@ -33,7 +33,11 @@ function kitEffect_MiracleRoulette(player: player):
 	nameCT({_player}, "Miracle Roulette")
 	kitMsg({_player}, "<##ff8801>運命のルーレット...")
 
-	particleGoldDelete({_dropGolds::*})
+	loop {@gold-required} times:
+		set {_deleteGold} to a random element out of {_dropGolds::*}
+		add {_deleteGold} to {_deleteGolds::*}
+		{_deleteGold}.remove()
+	particleGoldDelete({_deleteGolds::*})
 	soundRoulette({_player})
 
 	setRouletteNumbers({_player})
@@ -56,7 +60,7 @@ local function setRouletteNumbers(player: player):
 	loop 3 times:
 		add 1 to {_ln}
 		set {_num} to a random integer between 0 and 9
-		set {_statsName} to "{@stats-roulette}-%{_ln}%"
+		set {_statsName} to {@stats-roulette} + "-%{_ln}%"
 		setKitStats({_player}, {_statsName}, {_num})
 
 # TitleはDisplayと同じメソッドで処理
@@ -67,8 +71,7 @@ local function spawnRoulette(player: player):
 
 	set {_baseloc} to location of {_player}
 
-	set {_yaw} to yaw of {_baseloc}
-	set {_pitch} to pitch to {_baseloc}
+	set pitch of {_baseloc} to 0
 
 	set {_leftNum} to 4
 	set {_ln} to 0
@@ -78,19 +81,29 @@ local function spawnRoulette(player: player):
 
 		set {_spawnLoc} to location {_leftNum} meters to the right of {_baseloc}
 		add 2.5 to y-pos of {_spawnLoc}
-		set {_display} to spawnDisplay({_spawnLoc}, {_ln})
+		set {_display} to spawnDisplay({_player}, {_spawnLoc}, {_ln})
 		set {_displays::%{_ln}%} to {_display}
-	
+
 	loop {@roulette-first-tick} times:
-		set {_tploc} to location of {_player}
-		set yaw of {_tploc} to {_yaw}
-		set pitch of {_tploc} to {_pitch}
-		teleport {_display} to {_tploc}
+		set {_baseloc} to location of {_player}
+		set pitch of {_baseloc} to 0
+		set {_leftNum} to 4
+		set {_ln.tp} to 0
+		loop 3 times:
+			add 1 to {_ln.tp}
+			add -2 to {_leftNum}
+
+			set {_tploc} to location {_leftNum} meters to the right of {_baseloc}
+			add 2.5 to y-pos of {_tploc}
+
+			set {_display} to {_displays::%{_ln.tp}%}
+			teleport {_display} to {_tploc}
 		wait a tick
 	
 	set {_ln} to 1
 	set {_displayEntity} to {_displays::%{_ln}%}
-	set {_slotNumber} to getKitStats({_player}, "{@stats-roulette}-%{_ln}%")
+	set {_statsName} to {@stats-roulette} + "-%{_ln}%"
+	set {_slotNumber} to getKitStats({_player}, {_statsName})
 	set {_displayText} to "§6§l%{_slotNumber}%"
 	{_displayEntity}.setText({_displayText})
 
@@ -102,14 +115,24 @@ local function spawnRoulette(player: player):
 	loop 2 times:
 		add 1 to {_ln}
 		loop {@roulette-second-tick} times:
-			set {_tploc} to location of {_player}
-			set yaw of {_tploc} to {_yaw}
-			set pitch of {_tploc} to {_pitch}
-			teleport {_display} to {_tploc}
+			set {_baseloc} to location of {_player}
+			set pitch of {_baseloc} to 0
+			set {_leftNum} to 4
+			set {_ln.tp} to 0
+			loop 3 times:
+				add 1 to {_ln.tp}
+				add -2 to {_leftNum}
+
+				set {_tploc} to location {_leftNum} meters to the right of {_baseloc}
+				add 2.5 to y-pos of {_tploc}
+
+				set {_display} to {_displays::%{_ln.tp}%}
+				teleport {_display} to {_tploc}
 			wait a tick
 		
 		set {_displayEntity} to {_displays::%{_ln}%}
-		set {_slotNumber} to getKitStats({_player}, "{@stats-roulette}-%{_ln}%")
+		set {_statsName} to {@stats-roulette} + "-%{_ln}%"
+		set {_slotNumber} to getKitStats({_player}, {_statsName})
 		set {_displayText} to "§6§l%{_slotNumber}%"
 		{_displayEntity}.setText({_displayText})
 
@@ -118,18 +141,21 @@ local function spawnRoulette(player: player):
 		if {_titleNumber.3} is not set:
 			sendTitle({_player}, "§6§l%{_titleNumber.1}% §f- §6§l%{_titleNumber.2}% §f- §e§l§k0", "", {_titletick}, 0 tick, 0 tick)
 		else:
-			sendTitle({_player}, "§4§l%{_titleNumber.1}% §f- §4§l%{_titleNumber.2}% §f- §4§l%{_titleNumber.3}%", "", {_titletick}, 0 tick, 0 tick)
+			sendTitle({_player}, "§4§l%{_titleNumber.1}% §f- §4§l%{_titleNumber.2}% §f- §4§l%{_titleNumber.3}%", "", 60 ticks, 0 tick, 0 tick)
 	# Displayのヒット演出はeffectRoulette側で制御
 
 import:
 	org.bukkit.Color
+	org.bukkit.entity.EntityType
+	org.bukkit.entity.Display$Billboard
 
-local function spawnDisplay(loc: location, num: number) :: entity:
+local function spawnDisplay(player: player, loc: location, num: number) :: entity:
 	set {_world} to world of {_loc}
 	set {_mobtype} to EntityType.valueOf("TEXT_DISPLAY")
 	set {_textDisplay} to {_world}.spawnEntity({_loc}, {_mobtype})
 	set metadata value {@metadata-display} of {_textDisplay} to {_num}
-	set {_rouletteNumber} to getKitStats({_player}, "{@stats-roulette}-%{_num}%")
+	set {_statsName} to {@stats-roulette} + "-%{_num}%"
+	set {_rouletteNumber} to getKitStats({_player}, {_statsName})
 	set metadata value {@metadata-roulette} of {_textDisplay} to {_rouletteNumber}
 
 	setBrightness({_textDisplay})
@@ -153,8 +179,9 @@ local function effectRoulette(player: player):
 	set {_ln} to 0
 	loop 3 times:
 		add 1 to {_ln}
-		set {_num.%{_ln}%} to getKitStats({_player}, "{@stats-roulette}-%{_ln}%")
-		deleteKitStats({_player}, "{@stats-roulette}-%{_ln}%")
+		set {_statsName} to {@stats-roulette} + "-%{_ln}%"
+		set {_num.%{_ln}%} to getKitStats({_player}, {_statsName})
+		deleteKitStats({_player}, {_statsName})
 
 	if:
 		{_num.1} is 7
@@ -191,7 +218,7 @@ local function rouletteSeven(player: player):
 
 	loop {@seven-hit-drop} times:
 		set {_loc} to dropLocation({_player})
-		set {_dropGold} to kitDropGolds_Rich({_player}, {_loc})
+		kitDropGolds_Rich({_player}, {_loc})
 		particleDrop({_loc})
 	
 	displaySeven({_player})
@@ -216,10 +243,21 @@ local function displaySeven(player: player):
 
 	set {_ln} to 0
 	loop {_loopnum} times:
+		set {_baseloc} to location of {_player}
+		set pitch of {_baseloc} to 0
+		set {_leftNum} to 4
 		loop {_displays::*}:
-			set {_displayEntity} to loop-value
+			set {_displayEntity} to loop-value-2
 			set {_background} to {_backgrounds::%{_ln}%}
 			{_displayEntity}.setBackgroundColor({_background})
+
+			add -2 to {_leftNum}
+
+			set {_tploc} to location {_leftNum} meters to the right of {_baseloc}
+			add 2.5 to y-pos of {_tploc}
+
+			teleport {_displayEntity} to {_tploc}
+
 		add 1 to {_ln}
 		set {_ln} to 0 if {_ln} > 6
 		wait {_waittick}
@@ -238,7 +276,7 @@ local function rouletteThree(player: player):
 
 	loop {@three-hit-drop} times:
 		set {_loc} to dropLocation({_player})
-		set {_dropGold} to kitDropGolds_Rich({_player}, {_loc})
+		kitDropGolds_Rich({_player}, {_loc})
 		particleDrop({_loc})
 	
 	displayThree({_player})
@@ -254,6 +292,18 @@ local function displayThree(player: player):
 		{_displayEntity}.setBackgroundColor({_background})
 
 	loop {@roulette-remain-tick} times:
+		set {_baseloc} to location of {_player}
+		set pitch of {_baseloc} to 0
+		set {_leftNum} to 4
+		loop {_displays::*}:
+			set {_displayEntity} to loop-value-2
+
+			add -2 to {_leftNum}
+
+			set {_tploc} to location {_leftNum} meters to the right of {_baseloc}
+			add 2.5 to y-pos of {_tploc}
+
+			teleport {_displayEntity} to {_tploc}
 		wait a tick
 	
 	loop {_displays::*}:
@@ -267,7 +317,7 @@ local function rouletteTwo(player: player):
 
 	loop {@two-hit-drop} times:
 		set {_loc} to dropLocation({_player})
-		set {_dropGold} to kitDropGolds_Rich({_player}, {_loc})
+		kitDropGolds_Rich({_player}, {_loc})
 		particleDrop({_loc})
 	displayTwo({_player})
 
@@ -282,6 +332,18 @@ local function displayTwo(player: player):
 		{_displayEntity}.setBackgroundColor({_background})
 
 	loop {@roulette-remain-tick} times:
+		set {_baseloc} to location of {_player}
+		set pitch of {_baseloc} to 0
+		set {_leftNum} to 4
+		loop {_displays::*}:
+			set {_displayEntity} to loop-value-2
+
+			add -2 to {_leftNum}
+
+			set {_tploc} to location {_leftNum} meters to the right of {_baseloc}
+			add 2.5 to y-pos of {_tploc}
+
+			teleport {_displayEntity} to {_tploc}
 		wait a tick
 	
 	loop {_displays::*}:
@@ -308,6 +370,18 @@ local function displayZero(player: player):
 		{_displayEntity}.setBackgroundColor({_background})
 
 	loop {@roulette-remain-tick} times:
+		set {_baseloc} to location of {_player}
+		set pitch of {_baseloc} to 0
+		set {_leftNum} to 4
+		loop {_displays::*}:
+			set {_displayEntity} to loop-value-2
+
+			add -2 to {_leftNum}
+
+			set {_tploc} to location {_leftNum} meters to the right of {_baseloc}
+			add 2.5 to y-pos of {_tploc}
+
+			teleport {_displayEntity} to {_tploc}
 		wait a tick
 	
 	loop {_displays::*}:
@@ -317,6 +391,7 @@ local function displayZero(player: player):
 local function dropLocation(player: player) :: location:
 	set {_ok} to false
 	set {_checkNum} to 0
+	set {_remainLoc} to location of {_player}
 	while {_ok} is false:
 		add 1 to {_checkNum}
 		if {_checkNum} > 30:
@@ -346,9 +421,9 @@ local function particleGoldDelete(entities: entities):
 			set {_v} to randomVector(0.5)
 			spawnParticle_Vector(smoke, {_v}, 0.5, {_el})
 
-local function particleDrop(entity: entity):
+local function particleDrop(loc: location):
 	set {_amount} to a random integer between 1 and 3
-	set {_baseloc} to location 0.5 meters above {_entity}
+	set {_baseloc} to location 0.25 meters above {_loc}
 
 	loop {_amount} times:
 		set {_v} to randomVector(3)
@@ -394,10 +469,10 @@ local function particleSeven(player: player):
 	set {_nowcount.firework} to 0
 	set {_launching.firework} to true
 
-	set {_count.dust} to 4
+	set {_count.dust} to 8
 	set {_rad.dust} to 0
-	set {_addrad.dust} to 360 / 4
-	set {_plusrad} to 20
+	set {_addrad.dust} to 360 / {_count.dust}
+	set {_plusrad.dust} to 20
 	set {_basevec.dust} to vector(0.5, 0, 0)
 
 	set {_y.dust} to 0
@@ -458,7 +533,7 @@ local function particleThree(player: player):
 	add "star" to {_typeList::*}
 
 	playSound("entity.firework_rocket.launch", 1, 1, {_player})
-	set {_baseloc} to location of {_player}
+	set {_baseloc} to location 1 meter above {_player}
 	set {_basevec} to vector(1, 0, 0)
 	set {_fwcount} to 6
 	set {_rad} to 0
@@ -503,7 +578,7 @@ local function particleThree(player: player):
 		spawnParticle_Vector(trial_spawner_detection, {_v}, 1, {_baseloc})
 
 local function particleTwo(player: player):
-	set {_baseloc} to location of {_player}
+	set {_baseloc} to location 1 meter above {_player}
 	add rgb(252, 250, 180) to {_colors::*}
 	add rgb(243, 255, 200) to {_colors::*}
 	add rgb(247, 241, 163) to {_colors::*}
@@ -548,7 +623,7 @@ local function soundRoulette(player: player):
 		playSound("block.note_block.pling", 1, 2, {_player}) if {_timeNum} is 20
 		wait 2 ticks
 
-local functon soundSeven(player: player):
+local function soundSeven(player: player):
 	playSound("ui.toast.challenge_complete", 10, 0.7, {_player})
 
 local function soundThree(player: player):
