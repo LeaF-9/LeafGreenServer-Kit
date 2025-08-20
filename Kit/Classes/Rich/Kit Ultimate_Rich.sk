@@ -31,7 +31,7 @@ local function dropGolds(player: player):
 		set {_baseloc} to location of {_player}
 		set {_droploc} to dropLocation({_baseloc})
 
-		drop {_gold} named "%{_player}%" at {_droploc}
+		drop gold block named "%{_player}%" at {_droploc}
 		set {_lastdrop} to last dropped item
 		set metadata value "gametype" of {_lastdrop} to "Kit"
 		set metadata value "delete" of {_lastdrop} to "%{_player}%"
@@ -72,6 +72,7 @@ on pick up:
 local function heal(player: player):
 	kitHeal({_player}, {@heal-amount}, 1)
 	applyEffect({_player}, absorption, 1, {@absorption-tick}, true)
+	kitEffectDescription({_player}, "§d❤{@heal-amount} §7& §e❤2")
 	particleHeal({_player})
 	soundHeal({_player})
 
