@@ -45,7 +45,7 @@ function kitEffect_IgnobleFidelity(player: player):
 		add {_addm} to {_m}
 		set {_loc} to location {_m} meters in front of {_baseloc}
 
-		particleBeam({_loc})
+		particleBeam({_player}, {_loc})
 		wait a tick
 	
 	set {_centerloc} to {_loc}
@@ -93,6 +93,7 @@ local function forceMove(player: player, dest: location):
 			{_path}.moveTo({_dest})
 
 			teleport {_loop-player} to {_marker}
+			particleControl({_loop-player})
 
 			set {_distance} to distance between {_loop-player} and {_dest}
 			if {_distance} <= 0.5:
@@ -119,39 +120,87 @@ local function forceMove(player: player, dest: location):
 		loop-value.remove()
 	
 	particleDelete({_dest})
-	soundDelete({_player}, {_dest})
+	soundDelete({_dest})
 
 local function dropGolds(player: player, loc: location):
-	particleDrop({_loc})
-	soundDrop({_player}, {_loc})
-
 	kitDropGolds_Rich({_player}, {_loc}, {@drop-golds})
 
 
 
 local function particleLaunch(player: player):
 	set {_loc} to location 1 meter above {_player}
+	set {_amount} to a random integer between 20 and 30
+	loop {_amount} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(trial_spawner_detection, {_v}, 0.7, {_loc})
 
-local function particleBeam(loc: location):
+local function particleBeam(player, player, loc: location):
+	set {_baseloc} to head of {_player}
+	set {_color.trail} to rgb(201, 183, 44)
+	spawnParticle_Trail({_color.trail}, {_loc}, 2 tick, {_baseloc})
+
+	add rgb(174, 200, 26) to {_colors::*}
+	add rgb(151, 151, 13) to {_colors::*}
+	add rgb(158, 130, 19) to {_colors::*}
+
+	set {_color.dust} to a random element out of {_colors::*}
+	spawnParticle_Dust({_color}, 2.3, {_loc})
 
 local function particleBlast(loc: location):
+	spawnParticle(flash, {_loc})
+	set {_amount} to a random integer between 25 adn 35
+	loop {_amount} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(firework, {_v}, 0.8, {_loc})
 
 local function particleHit(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+	set {_amount} to a random integer between 20 and 30
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle(dripping_honey, {_el})
+
+local function particleControl(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+	chance of 30%:
+		stop
+	set {_el} to moveRandomLocation({_baseloc}, 1)
+	spawnParticle(falling_honey, {_el})
 
 local function particleGoal(entity: entity):
+	add rgb(178, 169, 8) to {_colors::*}
+	add rgb(197, 170, 47) to {_colors::*}
+	add rgb(155, 158, 67) to {_colors::*}
+
+	set {_count} to 5
+	loop {_count} times:
+		set {_baseloc} to location 1 meter above {_entity}
+		set {_amount} to a random integer between 0 and 3
+		loop {_amount} times:
+			set {_el} to moveRandomLocation({_baseloc}, 1)
+			set {_size} to a random number between 2 and 3
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, {_size}, {_el})
+		wait a tick
 
 local function particleDelete(loc: location):
-
-local function particleDrop(loc: location):
+	set {_amount} to a random integer between 15 and 25
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_loc}, 0.75)
+		set {_v} to randomVector()
+		spawnParticle_Vector(smoke, {_v}, 0.5, {_el})
 
 local function soundLaunch(player: player):
+	playSound("entity.zombie_villager.converted", 1, 1.15, {_player})
 
 local function soundBlast(loc: location):
+	playSound("entity.zombie.death", 1, 0.8, {_loc})
 
 local function soundHit(entity: entity):
+	playSound("entity.elder_guardian.curse", 1, 1.6, {_entity})
 
 local function soundGoal(entity: entity):
+	playSound("entity.firework_rocket.large_blast", 1, 0.8, {_entity})
 
-local function soundDelete(player: player, loc: location):
-
-local function soundDrop(player: player, loc: location):
+local function soundDelete(loc: location):
+	playSound("entity.zombie.infect", 2, 1.3, {_loc})
