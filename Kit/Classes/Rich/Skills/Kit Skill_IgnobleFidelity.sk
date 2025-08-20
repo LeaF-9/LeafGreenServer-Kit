@@ -13,6 +13,9 @@ options:
 
 import:
 	com.destroystokyo.paper.entity.Pathfinder
+	org.bukkit.inventory.ItemStack
+	org.bukkit.Material
+	org.bukkit.attribute.Attribute
 
 function kitEffect_IgnobleFidelity(player: player):
 	kitMsg({_player}, "<##5a5a0e>醜い忠誠を誘います...")
@@ -57,7 +60,7 @@ function kitEffect_IgnobleFidelity(player: player):
 local function forceMove(player: player, dest: location):
 	loop all entities in radius {@effect-radius} around {_player}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
-		if checkEntityType(loop-entity, "player") is true:
+		if checkEntityType(loop-entity, player) is true:
 			message formatted "<##c9bb20>§o身体が金に釣られていく!" to loop-entity
 			sendTimeBossbar_RED(loop-entity, "忠金状態", {@effect-tick})
 			add loop-entity to {_targets.player::*}
@@ -71,6 +74,8 @@ local function forceMove(player: player, dest: location):
 		kitMsg({_player}, "<##7e350b>§o誰も釣れませんでした...")
 		stop
 	
+	spawnGoldDisplay({_dest})
+	
 	loop {_targets.player::*}:
 		set {_loop-player} to loop-value
 
@@ -78,9 +83,20 @@ local function forceMove(player: player, dest: location):
 		set {_entity} to kitSpawnMob({_player}, skeleton, {_spawnloc}, false)
 
 		set metadata value {@metadata-marker} of {_entity} to true
-		applyEffect({_entity}, invisibility, 1, 600 seconds, true, "none")
-		applyEffect({_entity}, weakness, 10, 600 seconds, true, "none")
+		applyEffect({_entity}, invisibility, 1, 12000, true, "none")
+		applyEffect({_entity}, weakness, 10, 12000, true, "none")
+		applyEffect({_entity}, speed, 5, 12000, true, "none")
 		{_entity}.setSilent(true)
+		{_entity}.getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(0)
+
+		set {_equipment} to {_entity}.getEquipment()
+		set {_air} to new ItemStack(Material.AIR)
+		{_equipment}.setHelmet({_air})
+		{_equipment}.setChestplate({_air})
+		{_equipment}.setLeggings({_air})
+		{_equipment}.setBoots({_air})
+		{_equipment}.setItemInMainHand({_air})
+		{_equipment}.setItemInOffHand({_air})
 
 		set {_markers::%{_loop-player}%} to {_entity}
 	
@@ -89,14 +105,22 @@ local function forceMove(player: player, dest: location):
 			set {_loop-player} to loop-value-2
 			set {_marker} to {_markers::%{_loop-player}%}
 
+			delete target of {_marker}
 			set {_path} to {_marker}.getPathfinder()
 			{_path}.moveTo({_dest})
 
-			teleport {_loop-player} to {_marker}
+			set {_tploc} to location of {_marker}
+			set {_fromloc} to location 1.5 meters above {_tploc}
+			set {_direction} to setVector({_fromloc}, {_dest})
+			set yaw of {_tploc} to yaw of {_direction}
+			set pitch of {_tploc} to pitch of {_direction}
+
+			teleport {_loop-player} to {_tploc}
 			particleControl({_loop-player})
 
-			set {_distance} to distance between {_loop-player} and {_dest}
-			if {_distance} <= 0.5:
+			set {_nowloc} to location 1 meter above {_loop-player}
+			set {_distance} to distance between {_nowloc} and {_dest}
+			if {_distance} <= 1.5:
 				dropGolds({_player}, {_dest})
 				particleGoal({_loop-player})
 				soundGoal({_loop-player})
@@ -107,8 +131,9 @@ local function forceMove(player: player, dest: location):
 			set {_path} to {_loop-entity}.getPathfinder()
 			{_path}.moveTo({_dest})
 
-			set {_distance} to distance between {_loop-entity} and {_dest}
-			if {_distance} <= 0.5:
+			set {_nowloc} to location 1 meter above {_loop-entity}
+			set {_distance} to distance between {_nowloc} and {_dest}
+			if {_distance} <= 2:
 				dropGolds({_player}, {_dest})
 				particleGoal({_loop-entity})
 				soundGoal({_loop-entity})
@@ -125,16 +150,44 @@ local function forceMove(player: player, dest: location):
 local function dropGolds(player: player, loc: location):
 	kitDropGolds_Rich({_player}, {_loc}, {@drop-golds})
 
+local function spawnGoldDisplay(loc: location):
+	spawn an item display at {_loc}
+	set {_entity} to spawned item display
+
+	setBrightness({_entity})
+	set {_color} to rgb(255, 238, 0).asBukkitColor()
+	{_entity}.setGlowColorOverride({_color})
+	{_entity}.setGlowing(true)
+	{_entity}.setTeleportDuration(1)
+	{_entity}.setViewRange(1000)
+	{_entity}.setInterpolationDuration(1)
+	set {_axisAngle4f} to getQuaternionf(0, 0, 0, 1)
+	set {_scale} to getVector3f(1.5, 1.5, 1.5)
+	set {_translation} to getVector3f(0, 0, 0)
+	setTransformation({_entity}, {_axisAngle4f}, {_axisAngle4f}, {_translation}, {_scale})
+	setDisplayItem({_entity}, gold block)
+
+	set {_tploc} to {_loc}
+	set pitch of {_tploc} to 0
+	set {_addrad} to 30
+
+	loop {@effect-tick} times:
+		add {_addrad} to yaw of {_tploc}
+		teleport {_entity} to {_tploc}
+		wait a tick
+	
+	{_entity}.remove()
+
 
 
 local function particleLaunch(player: player):
 	set {_loc} to location 1 meter above {_player}
-	set {_amount} to a random integer between 20 and 30
+	set {_amount} to a random integer between 30 and 50
 	loop {_amount} times:
 		set {_v} to randomVector()
 		spawnParticle_Vector(trial_spawner_detection, {_v}, 0.7, {_loc})
 
-local function particleBeam(player, player, loc: location):
+local function particleBeam(player: player, loc: location):
 	set {_baseloc} to head of {_player}
 	set {_color.trail} to rgb(201, 183, 44)
 	spawnParticle_Trail({_color.trail}, {_loc}, 2 tick, {_baseloc})
@@ -144,11 +197,11 @@ local function particleBeam(player, player, loc: location):
 	add rgb(158, 130, 19) to {_colors::*}
 
 	set {_color.dust} to a random element out of {_colors::*}
-	spawnParticle_Dust({_color}, 2.3, {_loc})
+	spawnParticle_Dust({_color.dust}, 2.3, {_loc})
 
 local function particleBlast(loc: location):
 	spawnParticle(flash, {_loc})
-	set {_amount} to a random integer between 25 adn 35
+	set {_amount} to a random integer between 25 and 35
 	loop {_amount} times:
 		set {_v} to randomVector()
 		spawnParticle_Vector(firework, {_v}, 0.8, {_loc})
@@ -175,13 +228,13 @@ local function particleGoal(entity: entity):
 	set {_count} to 5
 	loop {_count} times:
 		set {_baseloc} to location 1 meter above {_entity}
-		set {_amount} to a random integer between 0 and 3
+		set {_amount} to a random integer between 1 and 3
 		loop {_amount} times:
 			set {_el} to moveRandomLocation({_baseloc}, 1)
 			set {_size} to a random number between 2 and 3
 			set {_color} to a random element out of {_colors::*}
 			spawnParticle_Dust({_color}, {_size}, {_el})
-		wait a tick
+		wait 2 ticks
 
 local function particleDelete(loc: location):
 	set {_amount} to a random integer between 15 and 25
