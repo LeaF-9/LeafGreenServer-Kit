@@ -78,9 +78,41 @@ local function heal(player: player):
 
 
 local function particleDrop(loc: location):
+	set {_amount.wax} to a random integer between 3 and 5
+	set {_amount.block} to a random integer between 3 and 8
+
+	add rgb(228, 186, 37) to {_colors::*}
+	add rgb(241, 204, 80) to {_colors::*}
+	add rgb(241, 231, 32) to {_colors::*}
+
+	set {_color} to a random element out of {_colors::*}
+	set {_size} to a random number between 2.5 and 3
+	spawnParticle_Dust({_color}, {_size}, {_loc})
+
+	loop {_amount.wax} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(wax_on, {_v}, 3, {_loc})
+	
+	loop {_amount.block} times:
+		set {_el} to moveRandomLocation({_loc}, 1.5)
+		spawnParticle_Block(gold block, {_el})
 
 local function particleHeal(player: player):
+	set {_amount.totem} to a random integer between 10 and 20
+	set {_amount.rod} to a random integer between 10 and 20
+
+	set {_baseloc} to location 1 meter above {_player}
+
+	loop {_amount.totem} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle(totem_of_undying, {_el})
+	
+	loop {_amount.rod} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(end_rod, {_v}, 0.4, {_baseloc})
 
 local function soundDrop(player: player):
+	playSound("block.bell.use", 2, 1.6, {_player})
 
 local function soundHeal(player: player):
+	playSound("block.amethyst_block.resonate", 1, 0.75, {_player})
