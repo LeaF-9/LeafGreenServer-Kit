@@ -111,6 +111,32 @@ function kitHealthDisplay_Shield(entity: entity, amount: number):
 	deleteFormer({_entity}, "Shield") if getFormer({_entity}, "Shield") is {_textDisplay}
 	{_textDisplay}.remove()
 
+# ShieldDamage
+function kitHealthDisplay_ShieldDamage(entity: entity, amount: number):
+	set {_former} to getFormer({_entity}, "Shield_Damage")
+	{_former}.remove() if {_former} is set
+
+	set {_l} to randomDisplayLocation({_entity})
+
+	set {_display} to "§3❤%{_amount}%"
+	set {_textDisplay} to spawnHealthDisplay({_l}, {_display})
+	set {_uuid} to a random uuid
+	set metadata value "health-display-uuid" of {_textDisplay} to {_uuid}
+	setFormer({_entity}, "Shield_Damage", {_textDisplay})
+	loop 2 times:
+		wait a tick
+		set {_ml} to location of {_textDisplay}
+		add 0.25 to y-pos of {_ml}
+		teleport {_textDisplay} to {_ml}
+	loop 4 times:
+		wait a tick
+		set {_ml} to location of {_textDisplay}
+		add -0.125 to y-pos of {_ml}
+		teleport {_textDisplay} to {_ml}
+	wait 6 ticks
+	deleteFormer({_entity}, "Shield_Damage") if getFormer({_entity}, "Shield_Damage") is {_textDisplay}
+	{_textDisplay}.remove()
+
 # Absorption
 function kitHealthDisplay_Absorption(entity: entity, amount: number):
 	set {_former} to getFormer({_entity}, "Absorption")
