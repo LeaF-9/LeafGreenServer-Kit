@@ -6,11 +6,13 @@ options:
 	debuff-rate: 0.5
 	fear-time: 100
 
+	metadata-hit: "Barbaric Torment - Hit"
+
 
 
 on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
-	set {_bt} to metadata value "Barbaric Torment - Hit" of {_attacker}
+	set {_bt} to metadata value {@metadata-hit} of {_attacker}
 	if {_bt} is set:
 		set {_enabled} to true
 		setDamageModification_MUL(victim, 0.5)
@@ -26,15 +28,14 @@ on damage with priority LOW:
 function kitEffect_BarbaricTorment(player: player):
 	nameCT({_player}, "Barbaric Torment")
 	kitMsg({_player}, "§5§l残忍な本性§5を開放します...")
-	set {_now} to now
-	setKitStats({_player}, "BarbaricTorment", {_now})
-	set metadata value "Barbaric Torment - Hit" of {_player} to {_player}
+	set {_launchUUID} to a random uuid
+	setKitStats({_player}, "BarbaricTorment", {_launchUUID})
+	set metadata value {@metadata-hit} of {_player} to {_launchUUID}
 	sendTimeBossbar_GREEN({_player}, "Barbaric Torment", {@effect-tick})
 	kitParticle_BarbaricTorment_Launch({_player})
 
 	loop {@effect-tick} times:
-		if getKitStats({_player}, "BarbaricTorment") is not {_now}:
-			stop
+		continue if getKitStats({_player}, "BarbaricTorment") is not {_launchUUID}
 		
 		delete {_hit.now::*}
 		loop all entities in radius {@debuff-radius} around {_player}:
@@ -42,24 +43,25 @@ function kitEffect_BarbaricTorment(player: player):
 			add loop-entity to {_hit.now::*}
 			if {_hit.past::*} does not contain loop-entity:
 				add loop-entity to {_hit.past::*}
-			set metadata value "Barbaric Torment - Hit" of loop-entity to {_player}
+			set metadata value {@metadata-hit} of loop-entity to {_launchUUID}
 			kitParticle_BarbaricTorment_Hit(loop-entity)
 		
 		loop {_hit.past::*}:
 			set {_loop-entity} to loop-value-2
 			{_hit.now::*} does not contain {_loop-entity}
 			remove {_loop-entity} from {_hit.past::*}
-			delete metadata value "Barbaric Torment - Hit" of {_loop-entity}
+			delete metadata value {@metadata-hit} of {_loop-entity}
 
 			
 		kitParticle_BarbaricTorment_Aura({_player}, loop-number)
 		wait a tick
 
-	deleteKitStats({_player}, "BarbaricTorment")
-	delete metadata value "Barbaric Torment - Hit" of {_player}
+	deleteKitStats({_player}, "BarbaricTorment") if getKitStats({_player}, "BarbaricTorment") is {_launchUUID}
+	delete metadata value {@metadata-hit} of {_player}
 	loop {_hit.past::*}:
 		set {_loop-entity} to loop-value
-		delete metadata value "Barbaric Torment - Hit" of {_loop-entity}
+		metadata value {@metadata-hit} of {_loop-entity} is {_launchUUID}
+		delete metadata value {@metadata-hit} of {_loop-entity}
 
 
 
