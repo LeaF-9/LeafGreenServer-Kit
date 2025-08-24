@@ -4,31 +4,40 @@ function kitEffect_HarmfulPotion_Shoot(player: player, event: object):
 	metadata value "gametype" of {_player} is "Kit"
 	set {_proj} to {_event}.getEntity()
 	"%{_proj}%" is "thrown potion"
-	set metadata value "kit-harmful" of {_proj} to "true"
+	set metadata value "kit-harmful" of {_proj} to {_player}
 
-on damage of player with priority HIGH:
-	damage was caused by potion
-	metadata value "kit-harmful" of projectile is "true"
-	cancel event
+on projectile hit:
+	set {_player} to metadata value "kit-harmful" of projectile
+	{_player} is set
+	set {_loc} to location of projectile
+	spill({_player}, {_loc})
 
-	set {_hp} to victim's health
+local function spill(player: player, loc: location):
+	loop all entities in radius 4 around {_loc}:
+		kitCheckTeam({_player}, loop-entity, false) is true
+		hit({_player}, loop-entity)
+
+local function hit(player: player, victim: entity):
+	LastKiller({_victim}, {_player})
+
+	set {_hp} to health of {_victim}
 	set {_addhp} to {_hp} * 0.25 * 0.1
-	if getDebuffs(victim, "Blood") is true:
+	if getDebuffs({_victim}, "Blood") is true:
 		set {_firsthp} to {_hp} * 0.25
 	else:
 		set {_firsthp} to {_hp} * 0.5
-	set victim's health to {_firsthp}
+	set health of {_victim} to {_firsthp}
 
 	set {_sub.health} to {_firsthp} + ({_addhp} * 10)
-	kitEffectDescription(victim, "§4❤%{_sub.health}%")
-	kitHarmfulEffect(victim)
+	kitEffectDescription({_victim}, "§4❤%{_sub.health}%")
+	kitHarmfulEffect({_victim})
 
 	loop 10 times:
 		wait 2 tick
-		if kitCheckAlive(victim) is true:
-			add {_addhp} to victim's health
+		if kitCheckAlive({_victim}) is true:
+			add {_addhp} to health of {_victim}
 
-function kitHarmfulEffect(player: player):
+function kitHarmfulEffect(player: entity):
 	set {_bl} to location of {_player}
 	set {_y} to -0.5
 	loop 5 times:
