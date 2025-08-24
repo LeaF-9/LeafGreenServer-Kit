@@ -2,6 +2,7 @@ import:
 	org.bukkit.RegionAccessor
 	org.bukkit.Bukkit
 	org.bukkit.entity.EntityType
+	org.bukkit.attribute.Attribute
 
 function kitSpawnMob(summoner: player, mob: entity type, loc: location, showDisplay: boolean = true) :: entity:
 	set {_world} to world of {_loc}
@@ -36,3 +37,10 @@ function kitSpawnMob_NBT(summoner: player, mob: entity type, loc: location, tag:
 	set {_uuid} to {_mob}.getUniqueId()
 	set metadata value "uuid" of {_mob} to {_uuid}
 	return {_mob}
+
+function setAttribute(entity: entity, attribute: text, value: number):
+	set {_atext} to {_attribute} in upper case
+	replace " " with "_" in {_atext}
+
+	set {_attributeName} to Attribute.valueOf({_atext})
+	{_entity}.getAttribute({_attributeName}).setBaseValue({_value})
