@@ -116,7 +116,11 @@ function kitSpawn_Necromancer_Zombie(player: player, loc: location) :: entity:
 		set {_color} to rgb(255, 0, 255)
 	
 	set {_helmet} to leather helmet
-	{_helmet}.setColor({_color})
+
+	set {_meta} to {_helmet}.getItemMeta()
+	set {_color} to {_color}.asBukkitColor()
+	{_meta}.setColor({_color})
+	{_helmet}.setItemMeta({_meta})
 
 	set {_mob} to kitSpawnMob({_player}, zombie, {_loc})
 	{_mob}.setBaby(false)
@@ -147,7 +151,11 @@ function kitSpawn_Necromancer_Skeleton(player: player, loc: location) :: entity:
 		set {_color} to rgb(255, 0, 255)
 	
 	set {_helmet} to leather helmet
-	{_helmet}.setColor({_color})
+
+	set {_meta} to {_helmet}.getItemMeta()
+	set {_color} to {_color}.asBukkitColor()
+	{_meta}.setColor({_color})
+	{_helmet}.setItemMeta({_meta})
 
 	set {_mob} to kitSpawnMob({_player}, skeleton, {_loc})
 	setEntityArmor({_mob}, "helmet", {_helmet})
@@ -176,7 +184,11 @@ function kitSpawn_Necromancer_BabyZombie(player: player, loc: location):
 		set {_color} to rgb(255, 0, 255)
 
 	set {_helmet} to leather helmet
-	{_helmet}.setColor({_color})
+
+	set {_meta} to {_helmet}.getItemMeta()
+	set {_color} to {_color}.asBukkitColor()
+	{_meta}.setColor({_color})
+	{_helmet}.setItemMeta({_meta})
 
 	set {_mob} to kitSpawnMob({_player}, zombie, {_loc})
 	{_mob}.setBaby(true)
@@ -261,8 +273,11 @@ function kitSpawn_Necromancer_Vengeful(player: player, loc: location):
 	set {_mob} to kitSpawnMob({_player}, skeleton, {_loc}, false)
 
 	set {_chestplate} to leather chestplate
-	set {_color} to rgb(31, 106, 56)
-	{_chestplate}.setColor({_color})
+	set {_color} to rgb(31, 106, 56).asBukkitColor()
+
+	set {_meta} to {_chestplate}.getItemMeta()
+	{_meta}.setColor({_color})
+	{_chestplate}.setItemMeta({_meta})
 
 	setEntityArmor({_mob}, "helmet", zombie head)
 	setEntityArmor({_mob}, "chestplate", {_chestplate})
@@ -295,11 +310,17 @@ on damage with priority HIGHEST:
 
 function kitSpawn_Necromancer_Ghost(player: player, loc: location, head: boolean):
 	set {_chestplate} to leather chestplate
-	set {_color} to rgb(0, 0, 0)
-	{_chestplate}.setColor({_color})
+	set {_color} to rgb(0, 0, 0).asBukkitColor()
 
-	set {_ghostHead} to player head
-	set skull owner of {_ghostHead} to {_player} if {_head} is true
+	set {_meta} to {_chestplate}.getItemMeta()
+	{_meta}.setColor({_color})
+	{_chestplate}.setItemMeta({_meta})
+
+	if {_head} is true:
+		set {_ghostHead} to player head
+		set skull owner of {_ghostHead} to {_player}
+	else:
+		set {_ghostHead} to wither skeleton skull
 
 	set {_mob} to kitSpawnMob({_player}, wither skeleton, {_loc}, false)
 	
