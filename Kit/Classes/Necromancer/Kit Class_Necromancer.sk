@@ -105,17 +105,29 @@ command /necroset <number>:
 
 function kitSpawn_Necromancer_Zombie(player: player, loc: location) :: entity:
 	if {team::%{_player}%} is "red":
-		set {_color} to "16711680"
+		set {_color} to rgb(255, 0, 0)
 	else if {team::%{_player}%} is "blue":
-		set {_color} to "255"
+		set {_color} to rgb(0, 0, 255)
 	else if {team::%{_player}%} is "yellow":
-		set {_color} to "16776960"
+		set {_color} to rgb(255, 255, 0)
 	else if {team::%{_player}%} is "green":
-		set {_color} to "65280"
+		set {_color} to rgb(0, 255, 0)
 	else:
-		set {_color} to "16711935"
-	set {_nbt} to "{IsBaby:0,ArmorItems:[{},{},{},{id:""minecraft:leather_helmet"",components:{dyed_color:{rgb:%{_color}%}},Count:1b}],HandItems:[{},{}]}"
-	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt})
+		set {_color} to rgb(255, 0, 255)
+	
+	set {_helmet} to leather helmet
+	{_helmet}.setColor({_color})
+
+	set {_mob} to kitSpawnMob({_player}, zombie, {_loc})
+	{_mob}.setBaby(false)
+
+	setEntityArmor({_mob}, "helmet", {_helmet})
+	setEntityArmor({_mob}, "chestplate", air)
+	setEntityArmor({_mob}, "leggings", air)
+	setEntityArmor({_mob}, "boots", air)
+	setEntityArmor({_mob}, "mainhand", air)
+	setEntityArmor({_mob}, "offhand", air)
+
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-undead" of {_mob} to "zombie"
 	set metadata value "necromancer-entity-undead-timer" of {_mob} to 0
@@ -124,17 +136,27 @@ function kitSpawn_Necromancer_Zombie(player: player, loc: location) :: entity:
 
 function kitSpawn_Necromancer_Skeleton(player: player, loc: location) :: entity:
 	if {team::%{_player}%} is "red":
-		set {_color} to "16711680"
+		set {_color} to rgb(255, 0, 0)
 	else if {team::%{_player}%} is "blue":
-		set {_color} to "255"
+		set {_color} to rgb(0, 0, 255)
 	else if {team::%{_player}%} is "yellow":
-		set {_color} to "16776960"
+		set {_color} to rgb(255, 255, 0)
 	else if {team::%{_player}%} is "green":
-		set {_color} to "65280"
+		set {_color} to rgb(0, 255, 0)
 	else:
-		set {_color} to "16711935"
-	set {_nbt} to "{ArmorItems:[{},{},{},{id:""minecraft:leather_helmet"",components:{dyed_color:{rgb:%{_color}%}},Count:1b}],HandItems:[{},{}]}"
-	set {_mob} to kitSpawnMob_NBT({_player}, skeleton, {_loc}, {_nbt})
+		set {_color} to rgb(255, 0, 255)
+	
+	set {_helmet} to leather helmet
+	{_helmet}.setColor({_color})
+
+	set {_mob} to kitSpawnMob({_player}, skeleton, {_loc})
+	setEntityArmor({_mob}, "helmet", {_helmet})
+	setEntityArmor({_mob}, "chestplate", air)
+	setEntityArmor({_mob}, "leggings", air)
+	setEntityArmor({_mob}, "boots", air)
+	setEntityArmor({_mob}, "mainhand", air)
+	setEntityArmor({_mob}, "offhand", air)
+	
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-undead" of {_mob} to "skeleton"
 	set metadata value "necromancer-entity-undead-timer" of {_mob} to 0
@@ -143,34 +165,71 @@ function kitSpawn_Necromancer_Skeleton(player: player, loc: location) :: entity:
 
 function kitSpawn_Necromancer_BabyZombie(player: player, loc: location):
 	if {team::%{_player}%} is "red":
-		set {_color} to "16711680"
+		set {_color} to rgb(255, 0, 0)
 	else if {team::%{_player}%} is "blue":
-		set {_color} to "255"
+		set {_color} to rgb(0, 0, 255)
 	else if {team::%{_player}%} is "yellow":
-		set {_color} to "16776960"
+		set {_color} to rgb(255, 255, 0)
 	else if {team::%{_player}%} is "green":
-		set {_color} to "65280"
+		set {_color} to rgb(0, 255, 0)
 	else:
-		set {_color} to "16711935"
-	set {_nbt} to "{IsBaby:1,ArmorItems:[{},{},{},{id:""minecraft:leather_helmet"",components:{dyed_color:{rgb:%{_color}%}},Count:1b}],HandItems:[{},{}]}"
-	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt})
+		set {_color} to rgb(255, 0, 255)
+
+	set {_helmet} to leather helmet
+	{_helmet}.setColor({_color})
+
+	set {_mob} to kitSpawnMob({_player}, zombie, {_loc})
+	{_mob}.setBaby(true)
+
+	setEntityArmor({_mob}, "helmet", {_helmet})
+	setEntityArmor({_mob}, "chestplate", air)
+	setEntityArmor({_mob}, "leggings", air)
+	setEntityArmor({_mob}, "boots", air)
+	setEntityArmor({_mob}, "mainhand", air)
+	setEntityArmor({_mob}, "offhand", air)
+
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-babyzombie" of {_mob} to true
 	set max health of {_mob} to 1
 	wait 10 seconds
 	{_mob} is alive
-	kill {_mob}
+	{_mob}.remove()
+	removeBabyZombie({_mob})
 
 on damage with priority HIGHEST:
 	set {_attacker} to getAttacker(victim)
 	if metadata value "necromancer-entity-babyzombie" of victim is true:
-		setDamageModification_FIX(victim, 100)
+		victim.remove()
+		removeBabyZombie(victim)
 	else if metadata value "necromancer-entity-babyzombie" of {_attacker} is true:
 		setDamageModification_FIX(victim, 1)
 
+local function removeBabyZombie(entity: entity):
+	set {_loc} to location of {_entity}
+	playSound("entity.zombie.destroy_egg", 1, 0.7, {_loc})
+
+	set {_baseloc} to location 1 meter above {_loc}
+	loop 20 times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_Item(rotten flesh, {_el})
+
 function kitSpawn_Necromancer_Grudge(player: player, loc: location):
-	set {_nbt} to "{Silent:1,IsBaby:0,ArmorItems:[{},{},{},{id:""minecraft:player_head"",components:{profile:{id:[I;907160796,1821854615,-1727336627,-176309982],properties:[{name:""textures"",value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGFhOGZjOGRlNjQxN2I0OGQ0OGM4MGI0NDNjZjUzMjZlM2Q5ZGE0ZGJlOWIyNWZjZDQ5NTQ5ZDk2MTY4ZmMwIn19fQ==""}]}},Count:1b}],HandItems:[{},{}],active_effects:[{id:slowness,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-	set {_mob} to kitSpawnMob_NBT({_player}, zombie, {_loc}, {_nbt})
+	set {_mob} to kitSpawnMob({_player}, zombie, {_loc}, false)
+	{_mob}.setSilent(true)
+	{_mob}.setBaby(false)
+
+	set {_head} to getKitItems("Necromancer", "Grudge Head")
+
+	setEntityArmor({_mob}, "helmet", {_head})
+	setEntityArmor({_mob}, "chestplate", air)
+	setEntityArmor({_mob}, "leggings", air)
+	setEntityArmor({_mob}, "boots", air)
+	setEntityArmor({_mob}, "mainhand", air)
+	setEntityArmor({_mob}, "offhand", air)
+
+	applyEffect({_mob}, slowness, 3, 12000, true, "none")
+	applyEffect({_mob}, invisibility, 1, 12000, true, "none")
+
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-grudgesoul" of {_mob} to true
 	wait 30 seconds
@@ -199,8 +258,22 @@ on damage with priority HIGHEST:
 			wait a tick
 
 function kitSpawn_Necromancer_Vengeful(player: player, loc: location):
-	set {_nbt} to "{ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",components:{dyed_color:{rgb:16750230}},Count:1b},{id:""minecraft:zombie_head"",Count:1b}],HandItems:[{},{}],active_effects:[{id:speed,duration:12000,amplifier:0,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-	set {_mob} to kitSpawnMob_NBT({_player}, skeleton, {_loc}, {_nbt})
+	set {_mob} to kitSpawnMob({_player}, skeleton, {_loc}, false)
+
+	set {_chestplate} to leather chestplate
+	set {_color} to rgb(31, 106, 56)
+	{_chestplate}.setColor({_color})
+
+	setEntityArmor({_mob}, "helmet", zombie head)
+	setEntityArmor({_mob}, "chestplate", {_chestplate})
+	setEntityArmor({_mob}, "leggings", air)
+	setEntityArmor({_mob}, "boots", air)
+	setEntityArmor({_mob}, "mainhand", air)
+	setEntityArmor({_mob}, "offhand", air)
+
+	applyEffect({_mob}, speed, 1, 12000, true, "none")
+	applyEffect({_mob}, invisibility, 1, 12000, true, "none")
+
 	set max health of {_mob} to 5
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-vengefulspirit" of {_mob} to 5
@@ -221,11 +294,25 @@ on damage with priority HIGHEST:
 		applyEffect(victim, wither, 3, 20, true)
 
 function kitSpawn_Necromancer_Ghost(player: player, loc: location, head: boolean):
-	if {_head} is true:
-		set {_nbt} to "{ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",components:{dyed_color:{rgb:0}},Count:1b},{id:""minecraft:player_head"",components:{profile:%{_player}%},Count:1b}],HandItems:[{},{}],active_effects:[{id:speed,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-	else:
-		set {_nbt} to "{ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",components:{dyed_color:{rgb:0}},Count:1b},{id:""minecraft:wither_skeleton_skull"",Count:1b}],HandItems:[{},{}],active_effects:[{id:speed,duration:12000,amplifier:2,show_particles:0b},{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-	set {_mob} to kitSpawnMob_NBT({_player}, wither skeleton, {_loc}, {_nbt})
+	set {_chestplate} to leather chestplate
+	set {_color} to rgb(0, 0, 0)
+	{_chestplate}.setColor({_color})
+
+	set {_ghostHead} to player head
+	set skull owner of {_ghostHead} to {_player} if {_head} is true
+
+	set {_mob} to kitSpawnMob({_player}, wither skeleton, {_loc}, false)
+	
+	setEntityArmor({_mob}, "helmet", {_ghostHead})
+	setEntityArmor({_mob}, "chestplate", {_chestplate})
+	setEntityArmor({_mob}, "leggings", air)
+	setEntityArmor({_mob}, "boots", air)
+	setEntityArmor({_mob}, "mainhand", air)
+	setEntityArmor({_mob}, "offhand", air)
+
+	applyEffect({_mob}, speed, 3, 12000, true, "none")
+	applyEffect({_mob}, invisibility, 1, 12000, true, "none")
+
 	set metadata value "necromancer-entity" of {_mob} to {_player}
 	set metadata value "necromancer-entity-ghost" of {_mob} to true
 	wait 10 seconds

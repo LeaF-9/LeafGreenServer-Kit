@@ -14,13 +14,20 @@ function kitEffect_SallyFatalities(player: player):
 		metadata value "necromancer-entity-undead" of loop-entity is set
 		set {_type} to metadata value "necromancer-entity-undead" of loop-entity
 		if {_type} is "zombie":
-			set {_undeadHorse} to kitSpawnMob_NBT({_player}, undead horse, location of loop-entity, "{attributes:[{id:""movement_speed"",base:0.35f},{id:""jump_strength"",base:0.6f}],Age:0}")
+			set {_undeadHorse} to kitSpawnMob({_player}, undead horse, location of loop-entity)
 			kitParticle_SallyFatalities_Undead({_undeadHorse})
+
 		else if {_type} is "skeleton":
-			set {_undeadHorse} to kitSpawnMob_NBT({_player}, skeleton horse, location of loop-entity, "{attributes:[{id:""movement_speed"",base:0.35f},{id:""jump_strength"",base:0.6f}],Age:0}")
+			set {_undeadHorse} to kitSpawnMob({_player}, skeleton horse, location of loop-entity)
 			kitParticle_SallyFatalities_Skeleton({_undeadHorse})
+			
 		else:
 			continue
+		
+		{_undeadHorse}.setAdult()
+		setAttribute({_undeadHorse}, "movement_speed", 0.35)
+		setAttribute({_undeadHorse}, "jump_strength", 0.6)
+
 		set {_uuid} to metadata value "uuid" of {_undeadHorse}
 		set metadata value "sally-fatalities" of loop-entity to {_uuid}
 		set metadata value "sally-fatalities-horse" of {_undeadHorse} to {_player}
