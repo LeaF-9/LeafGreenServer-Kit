@@ -35,9 +35,19 @@ local function kitEffect_MagicMissile_Summon(player: player):
 	set {_MagicMissile} to getKitStats({_player}, "MagicMissile")
 	add 1 to {_MagicMissile}
 	setKitStats({_player}, "MagicMissile", {_MagicMissile})
-	set {_mmentity} to kitSpawnMob_NBT({_player}, armor stand, location of {_player}, "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b,Small:1b,CustomNameVisible:0b,ArmorItems:[{},{},{},{id:""minecraft:player_head"",count:1,components:{""minecraft:profile"":{id:[I;-110805139,1605126504,-1314409618,-754615504],properties:[{	name:""textures"",value:""eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWYxNzhhM2U3MDU4YTEzYWFjNTBkMTkyOWE1NGQ0ODRkYmRmZmMwMzg1MzI0YzE5YjE4ZGZlMzQ0MWI0Yzc5ZSJ9fX0=""}]}}}],HandItems:[{},{}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F]}")
-	set {_nbt} to nbt compound of {_mmentity}
-	set byte tag "CustomNameVisible" of {_nbt} to 0
+
+	set {_mmentity} to kitSpawnMob({_player}, armor stand, location of {_player}, false)
+	{_mmentity}.setInvulnerable(true)
+	{_mmentity}.setPersistent(true)
+	{_mmentity}.setBasePlate(false)
+	{_mmentity}.setGravity(false)
+	{_mmentity}.setMarker(true)
+	{_mmentity}.setInvisible(true)
+	{_mmentity}.setSmall(true)
+
+	set {_head} to getKitItems("Wizard", "Magic Missile - Head")
+	setEntityArmor({_mmentity}, "helmet", {_head})
+
 	set metadata value "magicmissile" of {_mmentity} to {_MagicMissile}
 	set metadata value "magicmissile-launched" of {_mmentity} to false
 	kitEffect_MagicMissile_Timer({_player})
