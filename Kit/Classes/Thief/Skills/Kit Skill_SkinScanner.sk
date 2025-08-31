@@ -7,12 +7,30 @@ function kitOpenSkinScanner(player: player):
 	wait a tick
 	open chest with 3 row named "§6§lSkin Scanner" to {_player}
 	wait a tick
-	set {_slot} to 0
-	loop all players in radius 30 around {_player}:
-		metadata value "gametype" of loop-player is "Kit"
-		loop-player is not {_player}
-		set slot {_slot} of {_player}'s current inventory to loop-player's head named "§f§l%name of loop-player%"
-		add 1 to {_slot}
+	set {_close} to false
+	while {_close} is false:
+		if {_player}.getOpenInventory().getTitle() is not "§6§lSkin Scanner":
+			set {_close} to true
+		stop if {_close} is true
+
+		set {_slot} to 0
+		loop all players in radius 30 around {_player}:
+			metadata value "gametype" of loop-player is "Kit"
+			loop-player is not {_player}
+
+			set {_title} to "§f§l%name of loop-player%"
+
+			delete {_lores::*}
+			add "§eKit§7: §6§l%{Class::%loop-player%}%" to {_lores::*}
+
+			set slot {_slot} of {_player}'s current inventory to loop-player's head named "§f§l%name of loop-player%" with lore {_lores::*}
+			add 1 to {_slot}
+		
+		loop (3 * 9 - {_slot}) times:
+			set slot {_slot} of {_player}'s current inventory to air
+			add 1 to {_slot}
+
+		wait a tick
 
 function kitSetSkinScanner(player: player, target: player):
 	nameCT({_player}, "Skin Scanner")
