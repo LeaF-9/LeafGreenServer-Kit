@@ -30,8 +30,14 @@ local function jump(player: player, hook: object, vector: vector):
 	playSound("entity.zombie.infect", 1, 2, {_player})
 	setCT({_player}, "Grappling Hook", 7)
 
-	set {_from} to head of {_player}
-	set {_to} to location of {_hook}
+	set {_head} to head of {_player}
+	set {_foot} to location of {_player}
+	set {_hooked} to location of {_hook}
+	set {_from} to {_head}
+	if (y-pos of {_hooked}) < (y-pos of {_head}):
+		set {_from} to {_foot}
+	set {_to} to {_hooked}
+
 	set {_vector} to setVector({_from}, {_to}, 0)
 	set {_pow} to 0.165
 	set {_vec} to {_vector} * vector({_pow}, {_pow}, {_pow})
