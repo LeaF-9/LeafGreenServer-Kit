@@ -2,10 +2,11 @@
 function particleLocation_Circle(baseloc: location, count: number, radius: number, a: number = 0) :: locations:
 	set {_count} to floor({_count})
 	set {_rad} to 0 + {_a}
+	set {_basevec} to vector({_radius}, 0, 0)
 	loop {_count} times:
-		set {_el} to {_baseloc}
-		add {_radius} * sin({_rad}) to x-pos of {_el}
-		add {_radius} * cos({_rad}) to z-pos of {_el}
+		set {_v} to {_basevec}
+		rotate {_v} around y-axis by {_rad}		
+		set {_el} to {_baseloc} ~ {_v}
 		add {_el} to {_returnlocs::*}
 		add 360 / {_count} to {_rad}
 	return {_returnlocs::*}
@@ -13,23 +14,12 @@ function particleLocation_Circle(baseloc: location, count: number, radius: numbe
 # Sphere
 function particleLocation_Sphere(baseloc: location, count: number, radius: number, chance: number = 100) :: locations:
 	set {_count} to floor({_count})
-	set {_s} to 0
-	set {_t} to 0
-	loop {_count} + 1 time:
-		set {_countdouble} to {_count} * 2
-		loop {_countdouble} time:
-			set {_el} to {_baseloc}
-			set {_x} to x-pos of {_el}
-			set {_y} to y-pos of {_el}
-			set {_z} to z-pos of {_el}
-			set x-pos of {_el} to {_x} + ( {_radius} * sin({_s}) * cos({_t}) )
-			set y-pos of {_el} to {_y} + ( {_radius} * cos({_s}) )
-			set z-pos of {_el} to {_z} + ( {_radius} * sin({_s}) * sin({_t}) )
-			chance of {_chance}%:
-				if {_returnlocs::*} does not contain {_el}:
-					add {_el} to {_returnlocs::*}
-			add 360 / {_countdouble} to {_t}
-		add 360 / {_countdouble} to {_s}
+	loop {_count} times:
+		set {_v} to randomVector({_radius})
+		set {_el} to {_baseloc} ~ {_v}
+		chance of {_chance}%:
+			if {_returnlocs::*} does not contain {_el}:
+				add {_el} to {_returnlocs::*}
 	return {_returnlocs::*}
 
 # Spiral
@@ -41,6 +31,7 @@ function particleLocation_Spiral(baseloc: location, count: number, density: numb
 	if {_density} <= 0:
 		log "Densityの値が不正です"
 		stop
+	set {_basevec} to vector({_radius}, 0, 0)
 	set {_count} to floor({_count})
 	set {_rad} to {_arad}
 	set {_addrad} to 360 / {_count}
@@ -54,9 +45,9 @@ function particleLocation_Spiral(baseloc: location, count: number, density: numb
 		loop {_count} times:
 			if y-pos of {_baseloc} - {_basey} > {_height}:
 				continue
-			set {_el} to {_baseloc}
-			add {_radius} * sin({_rad}) to x-pos of {_el}
-			add {_radius} * cos({_rad}) to z-pos of {_el}
+			set {_v} to {_basevec}
+			rotate {_v} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_v}
 			add {_el} to {_returnlocs::*}
 			add {_addy} to y-pos of {_baseloc}
 			add {_addrad} to {_rad}
@@ -88,9 +79,10 @@ function particleLocation_Tornado(baseloc: location, count: number, density: num
 			if y-pos of {_baseloc} - {_basey} > {_height}:
 				continue
 			add {_addm} to {_meter}
-			set {_el} to {_baseloc}
-			add {_meter} * sin({_rad}) to x-pos of {_el}
-			add {_meter} * cos({_rad}) to z-pos of {_el}
+			set {_basevec} to vector({_meter}, 0, 0)
+			set {_v} to {_basevec}
+			rotate {_v} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_v}
 			add {_el} to {_returnlocs::*}
 			add {_addy} to y-pos of {_baseloc}
 			add {_addrad} to {_rad}
@@ -99,20 +91,16 @@ function particleLocation_Tornado(baseloc: location, count: number, density: num
 # vertical circle
 function particleLocation_CircleV(baseloc: location, count: number, radius: number) :: locations:
 	set {_count} to floor({_count})
+
+	set {_basevec} to setVector({_baseloc}, location 10 meters in front of {_baseloc})
+	set {_rotateloc} to {_baseloc}
+	add 90 to pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 10 meters in front of {_rotateloc}, {_radius})
 	set {_rad} to 0
 	loop {_count} times:
-		set {_el} to {_baseloc}
-		set {_m1} to {_el}
-		set pitch of {_m1} to pitch of {_m1} - 90
-		set {_test1} to {_radius} * cos({_rad})
-		set {_t1} to location {_test1} meters in front of {_m1}
-		set {_m2} to {_el}
-		set pitch of {_m2} to 0
-		set {_test2} to {_radius} * sin({_rad})
-		set {_t2} to location {_test2} meters to the right of {_m2}
-		set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
-		set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
-		set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+		set {_v} to {_rotatevec}
+		rotate {_v} around {_basevec} by {_rad}
+		set {_el} to {_baseloc} ~ {_v}
 		add {_el} to {_returnlocs::*}
 		add 360 / {_count} to {_rad}
 	return {_ returnlocs::*}
@@ -123,6 +111,12 @@ function particleLocation_SpiralV(baseloc: location, count: number, density: num
 		log "Densityの値が不正です"
 		stop
 	set {_count} to floor({_count})
+
+	set {_basevec} to setVector({_baseloc}, location 10 meters in front of {_baseloc})
+	set {_rotateloc} to {_baseloc}
+	add 90 to pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 10 meters in front of {_rotateloc}, {_radius})
+
 	set {_rad} to {_arad}
 	set {_addrad} to 360 / {_count}
 	if {_clockwize} is false:
@@ -136,18 +130,11 @@ function particleLocation_SpiralV(baseloc: location, count: number, density: num
 		loop {_count} times:
 			if {_m} > {_front}:
 				continue
-			set {_el} to location {_m} meters in front of {_baseloc}
-			set {_m1} to {_el}
-			set pitch of {_m1} to pitch of {_m1} - 90
-			set {_test1} to {_radius} * cos({_rad})
-			set {_t1} to location {_test1} meters in front of {_m1}
-			set {_m2} to {_el}
-			set pitch of {_m2} to 0
-			set {_test2} to {_radius} * sin({_rad})
-			set {_t2} to location {_test2} meters to the right of {_m2}
-			set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
-			set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
-			set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+			set {_v} to {_rotatevec}
+			rotate {_v} around {_basevec} by {_rad}
+
+			set {_loc} to location {_m} meters in front of {_baseloc}
+			set {_el} to {_loc} ~ {_v}
 			add {_el} to {_returnlocs::*}
 			add {_addf} to {_m}
 			add {_addrad} to {_rad}
@@ -156,9 +143,15 @@ function particleLocation_SpiralV(baseloc: location, count: number, density: num
 # vertical tornado
 function particleLocation_TornadoV(baseloc: location, count: number, density: number, radius: number, front: number, arad: number = 0, clockwize: boolean = true) :: locations:
 	if {_density} <= 0:
-		log "Densityの値が不正です"
+		log "Densityの値が不正です / %{_density}%"
 		stop
 	set {_count} to floor({_count})
+
+	set {_basevec} to setVector({_baseloc}, location 10 meters in front of {_baseloc})
+	set {_rotateloc} to {_baseloc}
+	add 90 to pitch of {_rotateloc}
+	set {_rotatevec} to setVector({_rotateloc}, location 10 meters in front of {_rotateloc})
+
 	set {_rad} to {_arad}
 	set {_addrad} to 360 / {_count}
 	if {_clockwize} is false:
@@ -174,19 +167,15 @@ function particleLocation_TornadoV(baseloc: location, count: number, density: nu
 		loop {_count} times:
 			if {_m} > {_front}:
 				continue
+
 			add {_addr} to {_sumr}
-			set {_el} to location {_m} meters in front of {_baseloc}
-			set {_m1} to {_el}
-			set pitch of {_m1} to pitch of {_m1} - 90
-			set {_test1} to {_sumr} * cos({_rad})
-			set {_t1} to location {_test1} meters in front of {_m1}
-			set {_m2} to {_el}
-			set pitch of {_m2} to 0
-			set {_test2} to {_sumr} * sin({_rad})
-			set {_t2} to location {_test2} meters to the right of {_m2}
-			set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
-			set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
-			set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+			set {_v} to {_rotatevec}
+			set {_v} to {_v} * vector({_sumr}, {_sumr}, {_sumr})
+			rotate {_v} around {_basevec} by {_rad}
+
+			set {_loc} to location {_m} meters in front of {_baseloc}
+			set {_el} to {_loc} ~ {_v}
+
 			add {_el} to {_returnlocs::*}
 			add {_addf} to {_m}
 			add {_addrad} to {_rad}
