@@ -1,0 +1,118 @@
+# Weapon-Name: Soul Lure
+
+options:
+	effect-radius: 5
+	effect-tick: 100
+	effect-damage: 0.5
+	effect-duration: 20
+
+	slowness-level: 3
+
+function kitEffect_SoulLure_Pick(player: player, loc: location):
+	particleLaunch({_loc})
+	soundLaunch({_loc})
+
+	loop {@effect-tick} times:
+		loop all entities in radius {@effect-radius} around {_loc}:
+			kitCheckTeam({_player}, loop-entity, false, true) is true
+			{_hitting::*} does not contain loop-entity
+
+			add loop-entity to {_hitting::*}
+			set {_hitTick.%loop-entity%} to ({@effect-duration} + 1)
+
+			kitDamage({_player}, loop-entity, {@effect-damage}, "青炎地帯")
+			applyEffect(loop-entity, slowness, {@slowness-level}, {@effect-duration})
+		
+		loop {_hitting::*}:
+			set {_loop-entity} to loop-value-2
+			subtract 1 from {_hitTick.%{_loop-entity}%}
+			if {_hitTick.%{_loop-entity}%} <= 0:
+				remove {_loop-entity} from {_hitting::*}
+				delete {_hitTick.%{_loop-entity}%}
+
+		wait a tick
+
+
+local function particleLaunch(loc: location):
+	set {_circleBaseLoc} to location 1 meter above {_loc}
+	set {_amount.fire} to 50
+	set {_amount.smoke} to 30
+
+	loop {_amount.fire} times:
+		set {_v} to randomVector()
+		set (y of {_v}) to (y of {_v}) * (-1) if (y of {_v}) < 0
+		spawnParticle_Vector(soul_fire_flame, {_v}, 1, {_circleBaseLoc})
+	
+	loop {_amount.smoke} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(spit, {_v}, 0.7, {_circleBaseLoc})
+	
+	set {_rad} to 0
+	set {_count} to 4
+	set {_addrad} to 360 / {_count}
+	set {_plusrad} to 20
+	set {_basevec} to vector({@effect-radius}, 0, 0)
+	set {_fireChance} to 10
+	set {_soulChance} to 1
+
+	add rgb(79, 13, 165) to {_colors::*}
+	add rgb(16, 66, 114) to {_colors::*}
+	add rgb(30, 24, 107) to {_colors::*}
+
+	loop {@effect-tick} times:
+		loop {_count} times:
+			add {_addrad} to {_rad}
+			set {_vec} to {_basevec}
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_circleBaseLoc} ~ {_vec}
+
+			set {_color} to a random element out of {_colors::*}
+			set {_size} to a random number between 2 and 3
+			spawnParticle_Dust({_color}, {_size}, {_el})
+
+			chance of {_fireChance}%:
+				set {_fireVec} to randomVector()
+				set {_pow} to a random number between 0.2 and 0.5
+				spawnParticle_Vector(soul_fire_flame, {_fireVec}, {_pow}, {_el})
+			
+			chance of {_soulChance}%:
+				particleSoul({_el})
+		
+		set {_fireCount} to a random integer between 5 and 20
+		loop {_fireCount} times:
+			set {_vec.x} to a random number between ({@effect-radius} * (-1)) and {@effect-radius}
+			set {_vec.z} to a random number between ({@effect-radius} * (-1)) and {@effect-radius}
+			set {_groundVec} to vector({_vec.x}, 0, {_vec.z})
+			set {_el.ground} to {_loc} ~ {_groundVec}
+			spawnParticle(soul_fire_flame, {_el.ground})
+		
+		add {_plusrad} to {_rad}
+		wait a tick
+
+local function particleSoul(loc: location):
+	set {_tick} to 10
+	set {_basevec} to randomVector(1)
+
+	loop {_tick} times:
+		set {_addm} to a random number between 0.1 and 0.5
+		set {_directionVector} to {_basevec} * vector({_addm}, {_addm}, {_addm})
+		set {_loc} to {_loc} ~ {_directionVector}
+		spawnParticle(soul, {_loc})
+
+		set {_v.x} to a random number between 0 and 0.15
+		set {_v.y} to a random number between 0 and 0.15
+		set {_v.z} to a random number between 0 and 0.15
+		set {_addvec} to vector({_v.x}, {_v.y}, {_v.z})
+		set {_basevec} to {_basevec} + {_addvec}
+
+		wait a tick
+
+local function soundLaunch(loc: location):
+	playSound("entity.drowned.death_water", 1, 0.75, {_loc})
+	playSound("entity.blaze.shoot", 1, 0.65, {_loc})
+
+	set {_chance} to 5
+	loop {@effect-tick} times:
+		chance of {_chance}%:
+			playSound("particle.soul_escape", 1, 0.9, {_loc})
+		wait a tick
