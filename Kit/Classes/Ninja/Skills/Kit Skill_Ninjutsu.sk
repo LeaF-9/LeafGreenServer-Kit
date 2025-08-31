@@ -3,99 +3,95 @@
 on load:
 	register item tag named "ninjutsu-dye" using orange dye, light blue dye, yellow dye, lime dye, gray dye, cyan dye, blue dye, red dye
 
-on leftclick holding a bone meal:
-	set {_tool} to player's tool
-	kitItemAllChecker({_tool}, "Ninja", "Skill", 5) is true
-	cancel event
-	playSound("ui.button.click", 1, 1, player, true)
-	if getKitStats(player, "Ninjutsu1") is not set:
-		setKitStats(player, "Ninjutsu1", "L")
-		send action bar "§a§lL §6- §7§l? §6- §7§l?" to player
+function kitEffect_Ninjutsu_LeftClick(player: player):
+	set {_tool} to {_player}'s tool
+	playSound("ui.button.click", 1, 1, {_player}, true)
+	if getKitStats({_player}, "Ninjutsu1") is not set:
+		setKitStats({_player}, "Ninjutsu1", "L")
+		send action bar "§a§lL §6- §7§l? §6- §7§l?" to {_player}
 		set {_now} to now
-		setKitStats(player, "NinTime", {_now})
+		setKitStats({_player}, "NinTime", {_now})
 		wait 3 seconds
-		if getKitStats(player, "NinTime") is {_now}:
-			deleteKitStats(player, "Ninjutsu1")
-	else if getKitStats(player, "Ninjutsu1") is set:
-		if getKitStats(player, "Ninjutsu2") is not set:
-			setKitStats(player, "Ninjutsu2", "L")
-			set {_Nin1} to getKitStats(player, "Ninjutsu1")
-			send action bar "§a§l%{_Nin1}% §6- §a§lL §6- §7§l?" to player
+		if getKitStats({_player}, "NinTime") is {_now}:
+			deleteKitStats({_player}, "Ninjutsu1")
+	else if getKitStats({_player}, "Ninjutsu1") is set:
+		if getKitStats({_player}, "Ninjutsu2") is not set:
+			setKitStats({_player}, "Ninjutsu2", "L")
+			set {_Nin1} to getKitStats({_player}, "Ninjutsu1")
+			send action bar "§a§l%{_Nin1}% §6- §a§lL §6- §7§l?" to {_player}
 			set {_now} to now
-			setKitStats(player, "NinTime", {_now})
+			setKitStats({_player}, "NinTime", {_now})
 			wait 3 seconds
-			if getKitStats(player, "NinTime") is {_now}:
-				deleteKitStats(player, "Ninjutsu1")
-				deleteKitStats(player, "Ninjutsu2")
+			if getKitStats({_player}, "NinTime") is {_now}:
+				deleteKitStats({_player}, "Ninjutsu1")
+				deleteKitStats({_player}, "Ninjutsu2")
 		else:
-			deleteKitStats(player, "NinTime")
-			setKitStats(player, "Ninjutsu3", "L")
-			set {_Nin1} to getKitStats(player, "Ninjutsu1")
-			set {_Nin2} to getKitStats(player, "Ninjutsu2")
-			set {_Nin3} to getKitStats(player, "Ninjutsu3")
-			send action bar "§a§l%{_Nin1}% §6- §a§l%{_Nin2}% §6- §a§lL" to player
-			kitMsg(player, "§f§l印を結びました!")
-			playSound("entity.item.pickup", 1, 0.5, player, true)
+			deleteKitStats({_player}, "NinTime")
+			setKitStats({_player}, "Ninjutsu3", "L")
+			set {_Nin1} to getKitStats({_player}, "Ninjutsu1")
+			set {_Nin2} to getKitStats({_player}, "Ninjutsu2")
+			set {_Nin3} to getKitStats({_player}, "Ninjutsu3")
+			send action bar "§a§l%{_Nin1}% §6- §a§l%{_Nin2}% §6- §a§lL" to {_player}
+			kitMsg({_player}, "§f§l印を結びました!")
+			playSound("entity.item.pickup", 1, 0.5, {_player}, true)
 			set {_nin} to "%{_Nin1}% - %{_Nin2}% - %{_Nin3}%"
-			deleteKitStats(player, "Ninjutsu1")
-			deleteKitStats(player, "Ninjutsu2")
-			deleteKitStats(player, "Ninjutsu3")
+			deleteKitStats({_player}, "Ninjutsu1")
+			deleteKitStats({_player}, "Ninjutsu2")
+			deleteKitStats({_player}, "Ninjutsu3")
 			if {_nin} is "L - L - L":
-				set player's tool to light blue dye named "§5Ninjutsu §9[§b風§9]" with lore "§f敵を吹き飛ばす風遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d現在地点§7に§e竜巻§7を§6§l設置 §b5秒", "§8- §d竜巻内§4の敵§7を§6§l吹き飛ばして§4❤0.5§c§lダメージ" and "§8- §3空中で発動時§7,§d上方向§7に§6§l大ジャンプ"
+				set {_player}'s tool to light blue dye named "§5Ninjutsu §9[§b風§9]" with lore "§f敵を吹き飛ばす風遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d現在地点§7に§e竜巻§7を§6§l設置 §b5秒", "§8- §d竜巻内§4の敵§7を§6§l吹き飛ばして§4❤0.5§c§lダメージ" and "§8- §3空中で発動時§7,§d上方向§7に§6§l大ジャンプ"
 			else if {_nin} is "L - R - L":
-				set player's tool to lime dye named "§5Ninjutsu §9[§2木§9]" with lore "§f生命力を奪う木遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §e根を張る植物§7を§d6方向§7に§6§l発射", "§8- §d着弾点周辺5m§7の§4敵§7に§6§l吸収効果 §b5秒" and "§8- §e根§7は§b5秒後§7に§6§l消滅"
+				set {_player}'s tool to lime dye named "§5Ninjutsu §9[§2木§9]" with lore "§f生命力を奪う木遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §e根を張る植物§7を§d6方向§7に§6§l発射", "§8- §d着弾点周辺5m§7の§4敵§7に§6§l吸収効果 §b5秒" and "§8- §e根§7は§b5秒後§7に§6§l消滅"
 			else if {_nin} is "R - L - L":
-				set player's tool to red dye named "§5Ninjutsu §9[§4火§9]" with lore "§f周辺を燃やす火遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d周辺5m§cの§4敵§7に§4❤2§c§lダメージ", "§8- §d周辺5m§7に§e炎上フィールド§7を§6§l展開 §b5秒" and "§8- §dフィールド内§cの§4敵§7を§6§l着火 §b5秒"
+				set {_player}'s tool to red dye named "§5Ninjutsu §9[§4火§9]" with lore "§f周辺を燃やす火遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d周辺5m§cの§4敵§7に§4❤2§c§lダメージ", "§8- §d周辺5m§7に§e炎上フィールド§7を§6§l展開 §b5秒" and "§8- §dフィールド内§cの§4敵§7を§6§l着火 §b5秒"
 			else if {_nin} is "R - R - L":
-				set player's tool to orange dye named "§5Ninjutsu §9[§6土§9]" with lore "§f逃げ場を抑える土遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d半径5m§7の§e土壁§7を§6§l設置" and "§8- §2自身§7と§d周辺5m§§2の味方§7に§a耐性 I§7を§6§l付与 §b5秒"
+				set {_player}'s tool to orange dye named "§5Ninjutsu §9[§6土§9]" with lore "§f逃げ場を抑える土遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d半径5m§7の§e土壁§7を§6§l設置" and "§8- §2自身§7と§d周辺5m§§2の味方§7に§a耐性 I§7を§6§l付与 §b5秒"
 
-on rightclick holding a bone meal:
-	set {_tool} to player's tool
-	kitItemAllChecker({_tool}, "Ninja", "Skill", 5) is true
-	cancel event
-	playSound("ui.button.click", 1, 1, player, true)
-	if getKitStats(player, "Ninjutsu1") is not set:
-		setKitStats(player, "Ninjutsu1", "R")
-		send action bar "§a§lR §6- §7§l? §6- §7§l?" to player
+function kitEffect_Ninjutsu(player: player):
+	set {_tool} to {_player}'s tool
+	playSound("ui.button.click", 1, 1, {_player}, true)
+	if getKitStats({_player}, "Ninjutsu1") is not set:
+		setKitStats({_player}, "Ninjutsu1", "R")
+		send action bar "§a§lR §6- §7§l? §6- §7§l?" to {_player}
 		set {_now} to now
-		setKitStats(player, "NinTime", {_now})
+		setKitStats({_player}, "NinTime", {_now})
 		wait 3 seconds
-		if getKitStats(player, "NinTime") is {_now}:
-			deleteKitStats(player, "Ninjutsu1")
-	else if getKitStats(player, "Ninjutsu1") is set:
-		if getKitStats(player, "Ninjutsu2") is not set:
-			setKitStats(player, "Ninjutsu2", "R")
-			set {_Nin1} to getKitStats(player, "Ninjutsu1")
-			send action bar "§a§l%{_Nin1}% §6- §a§lR §6- §7§l?" to player
+		if getKitStats({_player}, "NinTime") is {_now}:
+			deleteKitStats({_player}, "Ninjutsu1")
+	else if getKitStats({_player}, "Ninjutsu1") is set:
+		if getKitStats({_player}, "Ninjutsu2") is not set:
+			setKitStats({_player}, "Ninjutsu2", "R")
+			set {_Nin1} to getKitStats({_player}, "Ninjutsu1")
+			send action bar "§a§l%{_Nin1}% §6- §a§lR §6- §7§l?" to {_player}
 			set {_now} to now
-			setKitStats(player, "NinTime", {_now})
+			setKitStats({_player}, "NinTime", {_now})
 			wait 3 seconds
-			if getKitStats(player, "NinTime") is {_now}:
-				deleteKitStats(player, "Ninjutsu1")
-				deleteKitStats(player, "Ninjutsu2")
+			if getKitStats({_player}, "NinTime") is {_now}:
+				deleteKitStats({_player}, "Ninjutsu1")
+				deleteKitStats({_player}, "Ninjutsu2")
 		else:
-			deleteKitStats(player, "NinTime")
-			setKitStats(player, "Ninjutsu3", "R")
-			set {_Nin1} to getKitStats(player, "Ninjutsu1")
-			set {_Nin2} to getKitStats(player, "Ninjutsu2")
-			set {_Nin3} to getKitStats(player, "Ninjutsu3")
-			send action bar "§a§l%{_Nin1}% §6- §a§l%{_Nin2}% §6- §a§lR" to player
-			kitMsg(player, "§f§l印を結びました!")
-			playSound("entity.item.pickup", 1, 0.5, player, true)
-			remove a bone meal named "§fNinjutsu" from the player
+			deleteKitStats({_player}, "NinTime")
+			setKitStats({_player}, "Ninjutsu3", "R")
+			set {_Nin1} to getKitStats({_player}, "Ninjutsu1")
+			set {_Nin2} to getKitStats({_player}, "Ninjutsu2")
+			set {_Nin3} to getKitStats({_player}, "Ninjutsu3")
+			send action bar "§a§l%{_Nin1}% §6- §a§l%{_Nin2}% §6- §a§lR" to {_player}
+			kitMsg({_player}, "§f§l印を結びました!")
+			playSound("entity.item.pickup", 1, 0.5, {_player}, true)
+			remove a bone meal named "§fNinjutsu" from {_player}
 			set {_nin} to "%{_Nin1}% - %{_Nin2}% - %{_Nin3}%"
-			deleteKitStats(player, "Ninjutsu1")
-			deleteKitStats(player, "Ninjutsu2")
-			deleteKitStats(player, "Ninjutsu3")
+			deleteKitStats({_player}, "Ninjutsu1")
+			deleteKitStats({_player}, "Ninjutsu2")
+			deleteKitStats({_player}, "Ninjutsu3")
 			wait a tick
 			if {_nin} is "L - L - R":
-				set player's tool to gray dye named "§5Ninjutsu §9[§8爆§9]" with lore "§f木っ端微塵にする爆遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §b3秒後§7に§6爆発§7する§eTNT§7を§d6方向§7に§6§l投擲 §d6個", "§8- §3TNT爆発時§7,§d爆発地点§7に§b1秒後§e爆発する小爆弾§7を§6§l展開 §d2個" and "§8- §3小爆弾爆発時§7,§b1秒後§e爆発する火薬§7を§6§l展開 §b3個"
+				set {_player}'s tool to gray dye named "§5Ninjutsu §9[§8爆§9]" with lore "§f木っ端微塵にする爆遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §b3秒後§7に§6爆発§7する§eTNT§7を§d6方向§7に§6§l投擲 §d6個", "§8- §3TNT爆発時§7,§d爆発地点§7に§b1秒後§e爆発する小爆弾§7を§6§l展開 §d2個" and "§8- §3小爆弾爆発時§7,§b1秒後§e爆発する火薬§7を§6§l展開 §b3個"
 			else if {_nin} is "L - R - R":
-				set player's tool to blue dye named "§5Ninjutsu §9[§1水§9]" with lore "§f心身を癒やす水遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d周辺5m§7に§e水のベール§7を§6§l展開 §b5秒" and "§8- §dベール内の§2自身§dと§2味方§7を§6§l消火§7し§a再生能力 II§6§l付与"
+				set {_player}'s tool to blue dye named "§5Ninjutsu §9[§1水§9]" with lore "§f心身を癒やす水遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d周辺5m§7に§e水のベール§7を§6§l展開 §b5秒" and "§8- §dベール内の§2自身§dと§2味方§7を§6§l消火§7し§a再生能力 II§6§l付与"
 			else if {_nin} is "R - L - R":
-				set player's tool to cyan dye named "§5Ninjutsu §9[§3氷§9]" with lore "§f動きを固める氷遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §b1秒後§7,§d周辺5m§cの§4敵§7に§6§l凍結効果 §b2秒", "§8- §d周辺5m§7に§e氷結フィールド§7を§6§l展開 §b5秒", "§8- §dエリア内の§4敵§7に§c移動速度低下 I§6§l付与" and "§8- §b1秒間継続§7で§dエリア内にいる§4敵§7に§6§l凍結効果 §b0.25秒"
+				set {_player}'s tool to cyan dye named "§5Ninjutsu §9[§3氷§9]" with lore "§f動きを固める氷遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §b1秒後§7,§d周辺5m§cの§4敵§7に§6§l凍結効果 §b2秒", "§8- §d周辺5m§7に§e氷結フィールド§7を§6§l展開 §b5秒", "§8- §dエリア内の§4敵§7に§c移動速度低下 I§6§l付与" and "§8- §b1秒間継続§7で§dエリア内にいる§4敵§7に§6§l凍結効果 §b0.25秒"
 			else if {_nin} is "R - R - R":
-				set player's tool to yellow dye named "§5Ninjutsu §9[§e雷§9]" with lore "§f痺れを与える雷遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d周辺5m§cの§4敵§に§e固定§4❤2§c§lダメージ§7と§6§l麻痺効果 §b5秒" and "§8- §dヒットした§4敵§7を§d5m内§7に§6§l拘束 §b5秒"
+				set {_player}'s tool to yellow dye named "§5Ninjutsu §9[§e雷§9]" with lore "§f痺れを与える雷遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d周辺5m§cの§4敵§に§e固定§4❤2§c§lダメージ§7と§6§l麻痺効果 §b5秒" and "§8- §dヒットした§4敵§7を§d5m内§7に§6§l拘束 §b5秒"
 
 on rightclick:
 	set {_tool} to player's tool
