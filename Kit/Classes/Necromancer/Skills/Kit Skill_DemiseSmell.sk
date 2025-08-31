@@ -230,10 +230,19 @@ local function kitWraith_Potion_Throw(player: player, loc: location):
 	shoot {_potion} from {_loc} at speed 0
 	set {_shotpotion} to shot entity
 	setShooter({_shotpotion}, {_player})
+
+	set {_color.R} to a random integer between 0 and 100
+	set {_color.G} to a random integer between 0 and 100
+	set {_color.B} to a random integer between 0 and 100
+	set {_color} to rgb({_color.R}, {_color.G}, {_color.B})
+	set {_meta} to {_shotpotion}.getPotionMeta()
+	{_meta}.setColor({_color}.asBukkitColor())
+	{_shotpotion}.setPotionMeta({_meta})
+
 	kitWraith_Potion_Particle({_shotpotion})
 
 local function kitWraith_Potion_Select() :: object:
-	set {_dice} to dice(3)
+	set {_dice} to 2
 	set {_potion} to thrown potion of slowness if {_dice} is 1
 	set {_potion} to thrown potion of harming if {_dice} is 2
 	set {_potion} to thrown potion of poison if {_dice} is 3
