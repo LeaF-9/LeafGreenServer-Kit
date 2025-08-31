@@ -5,16 +5,14 @@ function kitEffect_HolyBow_Shoot(player: player, event: object):
 	{Class::%{_player}%} is "Archer"
 	{_player} is sneaking
 
-	set {_pow} to getBowDrawTime({_player})
-	{_pow} >= 24
 	set {_arrow} to amount of arrow in {_player}'s inventory
 	{_arrow} >= 3
 
+	nameItemCT({_player}, "Holy Bow")
 	loop 2 times:
 		remove an arrow from {_player}
 	set {_projectile} to {_event}.getEntity()
 	set glowing of {_projectile} to true
-	set metadata value "arrowdamage" of shot arrow to 3
 	set metadata value "holy bow" of {_projectile} to true
 	# --- 音の演出 ---
 	playSound("block.amethyst_cluster.break", 1, 0.5, {_player})
@@ -34,8 +32,8 @@ function kitEffect_HolyBow_Shoot(player: player, event: object):
 			kitCheckTeam(loop-entity, {_player}, false, true) is true
 			{_hit.%uuid of loop-entity%} is not set
 			set {_hit.%uuid of loop-entity%} to true
-			kitDamage({_player}, loop-entity, 2, "神聖の矢撃", true)
-			kitPalsy(loop-entity, 60)
+			kitDamage({_player}, loop-entity, 3, "神聖の矢撃", true)
+			kitPalsy(loop-entity, 30)
 			kitParticle_HolyBow_Hit({_player}, loop-entity)
 			playSound("block.amethyst_block.resonate", 1, 1.5, {_player}, true)
 		wait a tick
@@ -94,7 +92,7 @@ on projectile hit:
 	metadata value "holy bow" of projectile is true
 	set metadata value "holy bow" of projectile to false
 	set {_baseloc} to location of projectile
-	strike lightning effect at projectile
+	playSound("entity.lightning_bolt.thunder", 1, 2, {_baseloc})
 	# --- 着弾点がはじけ飛ぶ演出 ---
 	loop 30 times:
 		set {_v} to randomVector(5)
@@ -105,5 +103,4 @@ on projectile hit:
 on damage:
 	damage was caused by projectile
 	metadata value "holy bow" of projectile is set
-	kitPalsy(victim, 100)
-	applyEffect(victim, glowing, 1, 100)
+	cancel event
