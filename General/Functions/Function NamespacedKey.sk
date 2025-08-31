@@ -16,3 +16,17 @@ function getNamespacedKey(item: item, key: text, type: text) :: object:
 
 	set {_value} to {_ItemMeta}.getPersistentDataContainer().get({_NK}, {_PDT})
 	return {_value}
+
+function setNamespacedKey(item: item, key: text, type: text, value: object) :: item:
+	set {_ItemMeta} to {_item}.getItemMeta()
+	set {_NK} to new NamespacedKey("leafgreen", {_key})
+	
+	set {_PDT} to PersistentDataType.INTEGER if {_type} is "integer"
+	set {_PDT} to PersistentDataType.FLOAT if {_type} is "float"
+	set {_PDT} to PersistentDataType.STRING if {_type} is "string"
+	set {_PDT} to PersistentDataType.BOOLEAN if {_type} is "boolean"
+
+	{_ItemMeta}.getPersistentDataContainer().set({_NK}, {_PDT}, {_value})
+	{_item}.setItemMeta({_ItemMeta})
+
+	return {_item}
