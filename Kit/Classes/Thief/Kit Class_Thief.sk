@@ -4,8 +4,7 @@
 on drop:
 	{Class::%player%} is "Thief"
 	set {_item} to event-item
-	set {_nbt} to nbt compound of {_item}
-	set {_tag} to string tag "stolen" of {_nbt}
+	set {_tag} to getNamespacedKey({_item}, "stolen", "string")
 	if {_tag} is not set:
 		stop
 	loop {StealItem-%{_tag}%.%player%::*}:

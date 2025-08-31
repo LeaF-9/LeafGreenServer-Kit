@@ -42,9 +42,8 @@ function kitEffect_PerfectRobbery(player: player):
 	setKitStats({_player}, "Stealing.Perfect Robbery", true)
 	loop {_own::*}:
 		remove loop-value from {_tg}
-		set {_nbt} to nbt compound of loop-value
-		set string tag "stolen" of {_nbt} to "Perfect Robbery"
-		set {_stolenskill} to loop-value with custom nbt {_nbt}
+
+		set {_stolenskill} to setNamespacedKey(loop-value, "stolen", "string", "Perfect Robbery")
 		add {_stolenskill} to {_giveitems::*}
 	set {StealItem-Perfect Robbery.%{_player}%::*} to {_giveitems::*}
 	remove {_tool} from {_player}
