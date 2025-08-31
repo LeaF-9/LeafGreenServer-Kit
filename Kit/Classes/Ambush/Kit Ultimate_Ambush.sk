@@ -17,11 +17,6 @@ function kitUltAmbush(player: player):
 	kitEffect_AbyssalEclipse({_player})
 
 local function kitEffect_AbyssalEclipse(player: player):
-	# player effect
-	set metadata value {@metadata-name} of {_player} to true
-	set gamemode of {_player} to spectator
-	sendTimeBossbar_PURPLE({_player}, "Abyssal Eclipse - BLINDNESS", {@before-bossbar-tick})
-
 	# enemy effect
 	loop all players:
 		kitCheckTeam({_player}, loop-player, false, true) is true
@@ -29,6 +24,11 @@ local function kitEffect_AbyssalEclipse(player: player):
 		applyEffect(loop-player, glowing, 1, {@before-bossbar-tick})
 		message formatted "<##08035f>§l日食により視界が暗転する..." to loop-player
 		kitParticle_AbyssalEclipse_Enemy(loop-player)
+	
+	# player effect
+	set metadata value {@metadata-name} of {_player} to true
+	set gamemode of {_player} to spectator
+	sendTimeBossbar_PURPLE({_player}, "Abyssal Eclipse - BLINDNESS", {@before-bossbar-tick})
 	
 	loop {@before-bossbar-tick} times:
 		wait 1 tick
