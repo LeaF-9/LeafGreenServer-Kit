@@ -11,8 +11,9 @@ function kitEffect_CheerEncore(player: player):
 	kitMsg({_player}, "§b%{_target}% §eに§6§lアンコール§eを授けました!")
 	message formatted "§6アンコール§dにより§e§l復活効果§dと§e§lCTリセット§dが授けられました!" to {_target}
 	setSupporter({_target}, {_player})
-	setKitStats({_target}, "Resurrection", true)
 	set {CT.%{_target}%::*} to 0
+	delete {CTStop.%{_target}%::*}
+	setKitStats({_target}, "Resurrection", true)
 	set {_sec} to 100
 	if getKitStats({_player}, "Fortissimo") is true:
 		set {_sec} to 200
@@ -24,7 +25,7 @@ function kitEffect_CheerEncore(player: player):
 		if getKitStats({_target}, "Resurrection") is not set:
 			stop
 		wait a tick
-	deleteKitStats({_target}, "Ressurection")
+	deleteKitStats({_target}, "Resurrection")
 	message formatted "§6アンコール§5の効果が切れました" to {_target}
 	kitParticle_CheerEncore_End({_target})
 
