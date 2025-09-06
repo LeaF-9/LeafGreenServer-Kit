@@ -1,5 +1,9 @@
 # Legendary Aura
 
+import:
+	org.bukkit.Material
+	org.bukkit.inventory.ItemStack
+
 function kitEffect_LegendaryAura(player: player):
 	set {_tool} to slot 0 of {_player}
 	if kitItemTypeChecker({_tool}) is not "Weapon":
@@ -20,19 +24,29 @@ function kitEffect_LegendaryAura(player: player):
 
 	set {_loc.display} to {_loc}
 	set pitch of {_loc.display} to 0
-	set {_item} to raw name of {_weapon}
-	set {_transformation} to "[-0.0000f,-1.0000f,0.0000f,0.0000f,1.0000f,-0.0000f,0.0000f,0.2500f,0.0000f,0.0000f,1.0000f,0.0000f,0.0000f,0.0000f,0.0000f,1.0000f]"
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},teleport_duration:1}"
-	spawn an item display at {_loc.display} with nbt {_nbt}
-	set metadata value "legendary-aura" of spawned entity to "%{_player}%"
+
+	set {_display} to kitSpawnMob({_player}, item display, {_loc.display}, false)
+	setBrightness({_display})
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+
+	set {_ItemMeta} to {_weapon}.getItemMeta()
+	set {_item} to {_ItemMeta}.getItemModel()
+	set {_itemname} to "%{_item}%"
+	replace "minecraft:" with "" in {_itemname}
+	set {_itemname} to {_itemname} in upper case
+	set {_modelitem} to new ItemStack(Material.valueOf({_itemname}))
+	setDisplayItem({_display}, {_modelitem})
+
+	set {_matrix} to getAdjustedMatrix4f(-0, -1, 0, 0, 1, -0, 0, 0.25, 0, 0, 1, 0, 0, 0, 0, 1)
+	{_display}.setTransformationMatrix({_matrix})
 
 	loop 5 times:
 		kitEffect_LegendaryAura_Wave({_player}, {_loc})
 		wait a second
 
-	loop all entities:
-		metadata value "legendary-aura" of loop-entity is "%{_player}%"
-		delete loop-entity
+	{_display}.remove()
 	if getKitStats({_player}, "LegendaryAura") is true:
 		set slot 0 of {_player} to {_weapon}
 	deleteKitStats({_player}, "LegendaryAura")

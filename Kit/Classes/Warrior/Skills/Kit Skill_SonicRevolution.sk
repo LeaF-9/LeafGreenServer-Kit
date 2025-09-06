@@ -1,5 +1,9 @@
 # Sonic Revolution
 
+import:
+	org.bukkit.Material
+	org.bukkit.inventory.ItemStack
+
 function kitEffect_SonicRevolution(player: player):
 	set {_tool} to slot 0 of {_player}
 	if kitItemTypeChecker({_tool}) is not "Weapon":
@@ -19,11 +23,22 @@ function kitEffect_SonicRevolution(player: player):
 	add 1 to y-pos of {_baseloc}
 	set pitch of {_baseloc} to 0
 
-	set {_item} to raw name of {_weapon}
-	set {_transformation} to "[2.1213f,2.1213f,0.0000f,0.0000f,0.0000f,-0.0000f,-3.0000f,0.0000f,-2.1213f,2.1213f,-0.0000f,2.0000f,0.0000f,0.0000f,0.0000f,1.0000f]"
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},teleport_duration:1}"
-	spawn an item display at {_baseloc} with nbt {_nbt}
-	set metadata value "sonic-revolution" of spawned entity to "%{_player}%"
+	set {_display} to kitSpawnMob({_player}, item display, {_baseloc}, false)
+	setBrightness({_display})
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+
+	set {_ItemMeta} to {_tool}.getItemMeta()
+	set {_item} to {_ItemMeta}.getItemModel()
+	set {_itemname} to "%{_item}%"
+	replace "minecraft:" with "" in {_itemname}
+	set {_itemname} to {_itemname} in upper case
+	set {_modelitem} to new ItemStack(Material.valueOf({_itemname}))
+	setDisplayItem({_display}, {_modelitem})
+
+	set {_matrix} to getAdjustedMatrix4f(2.1213, 2.1213, 0, 0, 0, -0, -3, 0, -2.1213, 2.1213, -0, 2, 0, 0, 0, 1)
+	{_display}.setTransformationMatrix({_matrix})
 
 	set {_yaw} to yaw of {_baseloc}
 	loop 60 times:
@@ -35,9 +50,7 @@ function kitEffect_SonicRevolution(player: player):
 		if {_yaw} > 360:
 			set {_yaw} to {_yaw} - 360
 		set yaw of {_loc} to {_yaw}
-		loop all entities:
-			metadata value "sonic-revolution" of loop-entity is "%{_player}%"
-			teleport loop-entity to {_loc}
+		teleport {_display} to {_loc}
 		delete {_forn}
 		loop 5 times:
 			add 1 to {_forn}
@@ -49,9 +62,7 @@ function kitEffect_SonicRevolution(player: player):
 			kitDamage({_player}, loop-entity, 1.5, "回転斬り")
 			kitEffectDescription(loop-entity, "§4❤1.5")
 		wait a tick
-	loop all entities:
-		metadata value "sonic-revolution" of loop-entity is "%{_player}%"
-		delete loop-entity
+	{_display}.remove()
 	if getKitStats({_player}, "SonicRevolution") is true:
 		set slot 0 of {_player} to {_weapon}
 		apply nausea 1 to {_player} for 10 seconds
