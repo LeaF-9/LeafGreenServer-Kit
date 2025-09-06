@@ -38,8 +38,8 @@ local function kitEffect_MarkSound_Hit(player: player, target: player):
 		set {_time} to 8 seconds
 		set {_tick} to 160
 		kitParticle_Fortissimo({_player})
-	kitParticle_MarkRequiem_Hit({_target}, {_tick})
 	setKitStats({_target}, "MarkRequiem", {_player})
+	kitParticle_MarkRequiem_Hit({_target}, {_tick}, {_player})
 	message formatted "§4§lマークされた! §cマーク中§6ダメージが増大してしまう!" to {_target}
 	kitEffectDescription({_target}, "§5§lマーク")
 	sendTimeBossbar_RED({_target}, "§5§lマーク", {_tick})
@@ -75,7 +75,7 @@ local function kitParticle_MarkRequiem_Beam(loc: location, num: number):
 		spawnParticle_NoteOption({_color}, {_el})
 		add 360 / {_count} to {_rad}
 
-local function kitParticle_MarkRequiem_Hit(player: player, time: number):
+local function kitParticle_MarkRequiem_Hit(player: player, time: number, applier: player):
 	playSound("block.beacon.deactivate", 1, 1.15, {_player})
 	set {_baseloc} to location 1 meter above {_player}
 	loop 10 times:
@@ -84,6 +84,8 @@ local function kitParticle_MarkRequiem_Hit(player: player, time: number):
 			set {_v} to {_v} * vector(1, -1, 1)
 		spawnParticle_Vector(soul_fire_flame, {_v}, 0.3, {_baseloc})
 	loop {_time} times:
+		if getKitStats({_player}, "MarkRequiem") is not {_applier}:
+			stop
 		set {_baseloc} to location 1 meter above {_player}
 		set {_circles::*} to particleLocation_Circle({_baseloc}, 6, 0.6)
 		loop {_circles::*}:
