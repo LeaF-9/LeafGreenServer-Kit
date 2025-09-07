@@ -35,7 +35,11 @@ function kitVoteSetting():
 		set {Kit-VoteStage::%loop-number%} to {_stage}
 
 import:
+	org.bukkit.Material
+	org.bukkit.inventory.ItemStack
 	org.bukkit.inventory.ItemFlag
+	org.bukkit.Registry
+	org.bukkit.NamespacedKey
 
 on inventory click:
 	type of event-inventory is chest inventory
@@ -66,16 +70,20 @@ on inventory click:
 	if {_bool} is true:
 		message formatted "{@prefix} §6§l%{_name}% §eに投票しました" to player
 		set {_lores::4} to "§a§l§n投票済"
-		set {_item} to lime concrete named "§6§l%{_name}%" with lore {_lores::*}
-
-		set {_Namespacedkey} to NamespacedKey.minecraft("UNBREAKING")
-		set {_Enchantment} to Registry.ENCHANTMENT.get({_Namespacedkey})
+		set {_item} to new ItemStack(Material.LIME_CONCRETE)
+		set name of {_item} to "§6§l%{_name}%"
+		set lore of {_item} to {_lores::*}
 
 		set {_ItemMeta} to {_item}.getItemMeta()
-		{_ItemMeta}.addEnchant({_Enchantment}, {_value}, true)
+
+		set {_Namespacedkey} to NamespacedKey.minecraft("unbreaking")
+		set {_Enchantment} to Registry.ENCHANTMENT.get({_Namespacedkey})
+
+		{_ItemMeta}.addEnchant({_Enchantment}, 1.intValue(), true)
 
 		set {_ItemFlags} to ItemFlag.values()
 		{_ItemMeta}.addItemFlags({_ItemFlags})
+
 		{_item}.setItemMeta({_ItemMeta})
 	else:
 		message formatted "{@prefix} §6§l%{_name}% §9への投票を取り消しました" to player
@@ -105,9 +113,21 @@ function kitOpenVoting(player: player):
 		set {_bool} to {Kit-Vote.%{_player}%::%loop-number%}
 		if {_bool} is true:
 			set {_lores::4} to "§a§l§n投票済"
-			set {_slotitem} to lime concrete named "§6§l%{_name}%" with lore {_lores::*}
-			set {_slotitem} to {_slotitem} with nbt from "{enchantments:{levels:{unbreaking:1},show_in_tooltip:false}}"
+			set {_slotitem} to new ItemStack(Material.LIME_CONCRETE)
+			set name of {_slotitem} to "§6§l%{_name}%"
+			set lore of {_slotitem} to {_lores::*}
 
+			set {_ItemMeta} to {_slotitem}.getItemMeta()
+
+			set {_Namespacedkey} to NamespacedKey.minecraft("unbreaking")
+			set {_Enchantment} to Registry.ENCHANTMENT.get({_Namespacedkey})
+
+			{_ItemMeta}.addEnchant({_Enchantment}, 1.intValue(), true)
+
+			set {_ItemFlags} to ItemFlag.values()
+			{_ItemMeta}.addItemFlags({_ItemFlags})
+
+			{_slotitem}.setItemMeta({_ItemMeta})
 
 		set slot {_slot} of current inventory of {_player} to {_slotitem}
 		add 1 to {_slot}
