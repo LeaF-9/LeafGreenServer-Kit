@@ -14,13 +14,17 @@ function kitEffect_BiologicStriker(player: player):
 	loop 3 times:
 		set {_rl} to a random location out of {_loc::*}
 		remove {_rl} from {_loc::*}
-		spawn a creeper at {_rl} with nbt compound from "{attributes:[{id:""movement_speed"",base:0.4f}],Silent:1,Fuse:1}"
-		set spawned creeper's display name to "%{_player}%"
-		set metadata value "gametype" of spawned creeper to "Kit"
-		set metadata value "biologic-bomb" of spawned creeper to "%{_player}%"
-		set metadata value "kit-bomber" of spawned creeper to 2.5
-		set metadata value "attacker" of spawned creeper to "%{_player}%"
-		kitParticle_BiologicStriker_Spell(spawned creeper)
+
+		set {_creeper} to kitSpawnMob({_player}, creeper, {_rl})
+		set metadata value "biologic-bomb" of {_creeper} to "%{_player}%"
+		set metadata value "kit-bomber" of {_creeper} to 2.5
+		set metadata value "attacker" of {_creeper} to "%{_player}%"
+
+		setAttribute({_creeper}, "movement_speed", 0.4)
+		{_creeper}.setSilent(true)
+		{_creeper}.setMaxFuseTicks(1)
+
+		kitParticle_BiologicStriker_Spell({_creeper})
 
 function kitParticle_BiologicStriker_Spell(entity: entity):
 	loop 60 times:
