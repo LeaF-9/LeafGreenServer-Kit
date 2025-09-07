@@ -63,7 +63,7 @@ local function kitEffect_FlameBlast_Explosion(player: player, loc: location):
 
 
 
-local function kitParticle_FlameBlast_Fireball(proj: projectile):
+local function kitParticle_FlameBlast_Fireball(proj: entity):
 	playSound("entity.ghast.shoot", 1, 0.8, location of {_proj})
 	set {_enable} to true
 	set {_rad} to 0
@@ -79,7 +79,13 @@ local function kitParticle_FlameBlast_Fireball(proj: projectile):
 				delete {_enable}
 				continue
 			
-			set {_fromloc} to setDirToVec(location 0.5 meters above {_proloc}, setVector({_proloc}, {_loc}))
+			set {_radius} to 0.75
+			set {_basevec} to setVector({_proloc}, {_loc})
+			set {_fromloc} to setDirToVec(location 0.5 meters above {_proloc}, {_basevec})
+			set {_rotateloc} to {_fromloc}
+			add 90 to pitch of {_rotateloc}
+			set {_rotatevec} to setVector({_rotateloc}, location 1 meter in front of {_rotateloc}, {_radius})
+
 			set {_distance} to distance between {_proloc} and {_loc}
 			set {_loopnum} to ceil({_distance} * 2)
 			set {_m} to 0
@@ -88,23 +94,13 @@ local function kitParticle_FlameBlast_Fireball(proj: projectile):
 				set {_baseel} to location {_m} meters in front of {_fromloc}
 				set {_baserad} to {_rad}
 
-				set {_radius} to 0.75
 				set {_ln} to 0
 				loop 2 times:
 					set {_elrad} to {_baserad} + (180 * {_ln})
 
-					set {_el} to {_baseel}
-					set {_m1} to {_el}
-					set pitch of {_m1} to pitch of {_m1} - 90
-					set {_test1} to {_radius} * cos({_elrad})
-					set {_t1} to location {_test1} meters in front of {_m1}
-					set {_m2} to {_el}
-					set pitch of {_m2} to 0
-					set {_test2} to {_radius} * sin({_elrad})
-					set {_t2} to location {_test2} meters to the right of {_m2}
-					set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
-					set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
-					set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+					set {_vec} to {_rotatevec}
+					rotate {_vec} around {_basevec} by {_elrad}
+					set {_el} to {_baseel} ~ {_vec}
 					spawnParticle(flame, {_el})
 
 					add 1 to {_ln}
