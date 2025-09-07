@@ -8,14 +8,35 @@ function kitEffect_Bunshin(player: player):
 	playSound("block.fire.extinguish", 1, 2, player)
 	delete {_player}'s tool
 	loop 3 times:
-		set {_nbt} to nbt compound from "{IsBaby:0,Silent:1,attributes:[{id:""movement_speed"",base:0.6f}],ArmorItems:[{},{},{id:""minecraft:leather_chestplate"",components:{dyed_color:{rgb:0}},Count:1b},{id:""minecraft:player_head"",components:{profile:%{_player}%},Count:1b}],HandItems:[{},{}],active_effects:[{id:jump_boost,duration:12000,amplifier:2,show_particles:0b}]}"
-		spawn a zombie at {_player} with nbt {_nbt}
-		set metadata value "gametype" of spawned zombie to "Kit"
-		set metadata value "bunshin" of spawned zombie to "%{_player}%"
-		set spawned zombie's display name to "%{_player}%"
+		set {_bunshin} to kitSpawnMob({_player}, zombie, location of {_player})
+
+		{_bunshin}.setAdult()
+		{_bunshin}.setSilent(true)
+		setAttribute({_bunshin}, "movement speed", 0.6)
+
+		set {_head} to player head
+		set skull owner of {_head} to {_player}
+
+		set {_chestplate} to leather chestplate
+		set {_color} to rgb(0, 0, 0).asBukkitColor()
+
+		set {_meta} to {_chestplate}.getItemMeta()
+		{_meta}.setColor({_color})
+		{_chestplate}.setItemMeta({_meta})
+
+		setEntityArmor({_bunshin}, "helmet", {_head})
+		setEntityArmor({_bunshin}, "chestplate", {_chestplate})
+		setEntityArmor({_bunshin}, "leggings", air)
+		setEntityArmor({_bunshin}, "boots", air)
+		setEntityArmor({_bunshin}, "mainhand", air)
+		setEntityArmor({_bunshin}, "offhand", air)
+
+		applyEffect({_bunshin}, jump boost, 3, 12000, true, "none")
+
+		set metadata value "bunshin" of {_bunshin} to "%{_player}%"
+		add {_bunshin} to {_bunshins::*}
 	kunaiNinjutsu({_player}, "Bunshin")
 	wait 5 seconds
-	loop all zombies:
-		metadata value "bunshin" of loop-zombie is "%{_player}%"
-		delete loop-zombie
+	loop {_bunshins::*}:
+		loop-value.remove()
 	send action bar "§7§l分身は解除された!" to {_player}
