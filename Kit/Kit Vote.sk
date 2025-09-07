@@ -34,6 +34,9 @@ function kitVoteSetting():
 		remove {_stage} from {_stages::*}
 		set {Kit-VoteStage::%loop-number%} to {_stage}
 
+import:
+	org.bukkit.inventory.ItemFlag
+
 on inventory click:
 	type of event-inventory is chest inventory
 	name of event-inventory contains "§6§lMap Vote"
@@ -64,7 +67,16 @@ on inventory click:
 		message formatted "{@prefix} §6§l%{_name}% §eに投票しました" to player
 		set {_lores::4} to "§a§l§n投票済"
 		set {_item} to lime concrete named "§6§l%{_name}%" with lore {_lores::*}
-		set {_item} to {_item} with nbt from "{enchantments:{levels:{unbreaking:1},show_in_tooltip:false}}"
+
+		set {_Namespacedkey} to NamespacedKey.minecraft("UNBREAKING")
+		set {_Enchantment} to Registry.ENCHANTMENT.get({_Namespacedkey})
+
+		set {_ItemMeta} to {_item}.getItemMeta()
+		{_ItemMeta}.addEnchant({_Enchantment}, {_value}, true)
+
+		set {_ItemFlags} to ItemFlag.values()
+		{_ItemMeta}.addItemFlags({_ItemFlags})
+		{_item}.setItemMeta({_ItemMeta})
 	else:
 		message formatted "{@prefix} §6§l%{_name}% §9への投票を取り消しました" to player
 		set {_lores::4} to "§7§o未投票"
