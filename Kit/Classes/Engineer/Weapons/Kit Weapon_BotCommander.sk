@@ -345,13 +345,27 @@ function engineerBotGenerator(player: player):
 					setKitStats({_player}, "BotList_%loop-number%", {_uuid})
 					setKitStats({_player}, "Bot_UUID_%{_uuid}%", loop-number)
 					set {_number} to loop-number
-			spawn a skeleton at {_player} with nbt compound from "{NoGravity:1b,ArmorItems:[{},{},{},{}],HandItems:[{},{}],ArmorDropChances:[0.085F,0.085F,0.085F,0.0F],CanPickUpLoot:0b,NoAI:1,Silent:1,Team:""noCollision"",active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-			set spawned skeleton's display name to "%{_player}%"
-			set metadata value "gametype" of spawned skeleton to "Kit"
-			set metadata value "Bot Owner" of spawned skeleton to "%{_player}%"
-			set metadata value "Bot UUID" of spawned skeleton to {_uuid}
-			set metadata value "Bot Number" of spawned skeleton to {_number}
+			
+			set {_botEntity} to kitSpawnMob({_player}, skeleton, location of {_player}, false)
+			{_botEntity}.setGravity(false)
+			{_botEntity}.setCanPickupItems(false)
+			{_botEntity}.setAI(false)
+			{_botEntity}.setSilent(true)
+
+			setEntityArmor({_botEntity}, "chestplate", air)
+			setEntityArmor({_botEntity}, "leggings", air)
+			setEntityArmor({_botEntity}, "boots", air)
+			setEntityArmor({_botEntity}, "mainhand", air)
+			setEntityArmor({_botEntity}, "offhand", air)
+
+			applyEffect({_botEntity}, invisibility, 1, 12000, true, "none")
+
+			set metadata value "gametype" of {_botEntity} to "Kit"
+			set metadata value "Bot Owner" of {_botEntity} to "%{_player}%"
+			set metadata value "Bot UUID" of {_botEntity} to {_uuid}
+			set metadata value "Bot Number" of {_botEntity} to {_number}
 			load yml "plugins/skript-yaml/Kit Classes/Engineer.yml" as "botgen.%{_player}%"
 			set {_BotBlue} to yml value "kititems.Bot Blue" from "botgen.%{_player}%"
 			unload yml "botgen.%{_player}%"
-			set spawned skeleton's helmet to {_BotBlue}
+
+			setEntityArmor({_botEntity}, "helmet", {_BotBlue})
