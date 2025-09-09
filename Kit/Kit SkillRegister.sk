@@ -153,7 +153,7 @@ on inventory click:
 
 function openKitUnitGenre(player: player, genre: text):
 	wait a tick
-	open chest with 1 row named "§bKit: §9Unit Customize" to {_player}
+	open chest inventory named "§bKit: §9Unit Customize" with 1 row to {_player}
 	wait a tick
 	set {_slot} to 0
 	load yml "plugins/skript-yaml/Kit Classes/All Classes.yml" as "class.all"
@@ -178,7 +178,7 @@ function openKitUnitGenre(player: player, genre: text):
 
 function openKitUnitList(player: player, kit: text):
 	wait a tick
-	open chest with 6 row named "§bKit: §6%{_kit}%§9's Unit" to {_player}
+	open chest inventory named "§bKit: §6%{_kit}%§9's Unit" with 6 row to {_player}
 	wait a tick
 	set {_uuid} to UUID of {_player}
 	load yml "plugins/skript-yaml/Kit Players/%{_uuid}%.yml" as "class.%{_player}%.unit"
@@ -217,7 +217,7 @@ function openKitUnitDetail(player: player, kit: text, num: number):
 	set {_slot-w} to yml value "unit.%{_kit}%.%{_num}%.weapon" from "class.%{_player}%.unit"
 	unload yml "class.%{_player}%.unit"
 	wait a tick
-	open chest with 3 row named "§6%{_kit}%§e's Unit Detail§7: §9§l%{_num}%" to {_player}
+	open chest inventory named "§6%{_kit}%§e's Unit Detail§7: §9§l%{_num}%" with 3 row to {_player}
 	wait a tick
 	set slot 0 of {_player}'s current inventory to red stained glass pane named "§4§lWeapon:"
 	if {_slot-w} is not 0:
@@ -248,7 +248,7 @@ function openKitUnitCustom(player: player, kit: text, num: number):
 	set {_slot-w} to yml value "unit.%{_kit}%.%{_num}%.weapon" from "class.%{_player}%.unit"
 	unload yml "class.%{_player}%.unit"
 	wait a tick
-	open chest with 5 row named "§6%{_kit}%§e's Unit Custom§7: §9§l%{_num}%" to {_player}
+	open chest inventory named "§6%{_kit}%§e's Unit Custom§7: §9§l%{_num}%" with 5 row to {_player}
 	wait a tick
 	set {_num} to 0
 	loop 27 times:
@@ -289,14 +289,14 @@ function openKitUnitRemove(player: player, kit: text, num: number):
 	set {_name} to yml value "unit.%{_kit}%.%{_num}%.name" from "class.%{_player}%.unit"
 	unload yml "class.%{_player}%.unit"
 	wait a tick
-	open chest with 3 row named "§6%{_kit}%§eのUnit%{_num}%§7: §9§l%{_name}%§eを削除しますか?" to {_player}
+	open chest inventory named "§6%{_kit}%§eのUnit%{_num}%§7: §9§l%{_name}%§eを削除しますか?" with 3 row to {_player}
 	wait a tick
 	set slot 1,2,3,10,11,12,19,20,21 of {_player}'s current inventory to lime concrete named "§2§lはい"
 	set slot 5,6,7,14,15,16,23,24,25 of {_player}'s current inventory to red concrete named "§4§lいいえ"
 
 function openKitUnitCreate(player: player, kit: text):
 	wait a tick
-	open chest with 5 row named "§6%{_kit}%§a's New Unit" to {_player}
+	open chest inventory named "§6%{_kit}%§a's New Unit" with 5 row to {_player}
 	wait a tick
 	set {_num} to 0
 	loop 27 times:
@@ -377,7 +377,7 @@ function kitUnitSelect(player: player, kit: text, num: number):
 
 function openKitUnitWeapon(player: player, kit: text, num: number):
 	wait a tick
-	open chest with 2 row named "§6%{_kit}%§c's Unit Weapon§7: §9§l%{_num}%" to {_player}
+	open chest inventory named "§6%{_kit}%§c's Unit Weapon§7: §9§l%{_num}%" with 2 row to {_player}
 	wait a tick
 	set slot 0 of {_player}'s current inventory to a red stained glass pane named "§4§lMain Weapon" with lore "§fKitのメインとなる武器です" and "§aこの列のアイテムを選択して下さい"
 	set slot 9 of {_player}'s current inventory to a yellow stained glass pane named "§e§lSub Weapon" with lore "§fKitのオフハンドに装備する武器です" and "§cこの列のアイテムは選択できません"
@@ -461,7 +461,7 @@ command /kit-unitlist <text> <player>:
 	permission: sk.admin
 	trigger:
 		wait a tick
-		open chest with 6 row named "§bKit: §6%arg 1%§a's Unit" to arg 2
+		open chest inventory named "§bKit: §6%arg 1%§a's Unit" with 6 row to arg 2
 		wait a tick
 		set {_uuid} to UUID of arg 2
 		set {_kit} to arg 1
