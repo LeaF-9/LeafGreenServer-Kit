@@ -4,12 +4,27 @@ function playerCoolTimer(player: player):
 	set {CoolTimer::%{_player}%} to true
 	set {_timer} to true
 	while {_timer} is true:
+		# 麻痺時の処理
 		if getDebuffs({_player}, "Palsy") is true:
+			loop {CT.%{_player}%::*}:
+				{_ctitem.%loop-index%} is set
+				set {_palsied::%loop-index%} to true
+				set item cooldown of {_ctitem.%loop-index%} for {_player} to 10000 seconds
 			wait a tick
 			continue
+
+		# 麻痺終了時の処理
+		if (size of {_palsied::*}) is not 0:
+			loop {_palsied::*}:
+				delete {_palsied::%loop-index%}
+				{CT.%{_player}%::%loop-index%} is not set
+				set item cooldown of {_ctitem.%loop-index%} for {_player} to 0 seconds
+
+		# CT未存在時はタイマーストップ
 		if size of {CT.%{_player}%::*} is 0:
 			delete {_timer}
 			continue
+
 		loop {CT.%{_player}%::*}:
 			if {_ctitem.%loop-index%} is not set:
 				loop all items in {_player}'s inventory:
