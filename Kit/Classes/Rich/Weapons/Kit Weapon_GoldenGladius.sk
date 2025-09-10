@@ -6,10 +6,30 @@ function kitEffect_GoldenGladius_AttackNormal(player: player, event: object):
 
 	stop if checkEntityType({_victim}, player) is false
 
+	nameItemCT({_player}, "Golden Gladius")
 	set {_droploc} to location 1 meter above {_victim}
-	set {_dropnum} to a random integer between 1 and 3
+	set {_droploc} to dropLocation({_droploc})
+	set {_dropnum} to a random integer between 1 and 2
 	kitDropGolds_Rich({_attacker}, {_droploc}, {_dropnum})
 	sound({_victim}, {_dropnum})
+
+local function dropLocation(loc: location) :: location:
+	set {_ok} to false
+	set {_loopnum} to 0
+	while {_ok} is false:
+		add 1 to {_loopnum}
+		if {_loopnum} > 30:
+			set {_returnloc} to {_loc}
+			set {_ok} to true
+			continue
+		
+		set {_pow} to a random number between 0 and 5
+		set {_vec} to randomVector({_pow})
+		set {_returnloc} to {_loc} ~ {_vec}
+		if block at {_returnloc} is passable:
+			set {_ok} to true
+			continue
+	return {_returnloc}
 
 local function sound(entity: entity, num: number):
 	set {_loc} to location of {_entity}
