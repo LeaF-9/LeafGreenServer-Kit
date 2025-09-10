@@ -25,9 +25,10 @@ function playerCoolTimer(player: player):
 		# 麻痺終了時の処理
 		if (size of {_palsied::*}) is not 0:
 			loop {_palsied::*}:
+				set {_loop-item} to {_palsied::%loop-index%}
 				delete {_palsied::%loop-index%}
 				{CT.%{_player}%::%loop-index%} is not set
-				set item cooldown of {_palsied::%loop-index%} for {_player} to 0 seconds
+				set item cooldown of {_loop-item} for {_player} to 0 seconds
 
 		# CT未存在時はタイマーストップ
 		if size of {CT.%{_player}%::*} is 0:
