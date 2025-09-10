@@ -182,20 +182,23 @@ local function kitWraith_Charge(player: player, wraith: entity):
 local function kitWraith_Charge_Particle_1(wraith: entity):
 	set {_baseloc} to location 1 meters above {_wraith}
 	set {_fromloc} to {_baseloc}
-	add a random number between -3 and 3 to x-coordinate of {_fromloc}
-	add a random number between -3 and 3 to y-coordinate of {_fromloc}
-	add a random number between -3 and 3 to z-coordinate of {_fromloc}
-	set {_dis} to distance between {_baseloc} and {_fromloc} / 5
+	add (a random number between -3 and 3) to (x-pos of {_fromloc})
+	add (a random number between -3 and 3) to (y-pos of {_fromloc})
+	add (a random number between -3 and 3) to (z-pos of {_fromloc})
+	set {_dis} to (distance between {_baseloc} and {_fromloc}) / 5
 	set {_v} to setVector({_fromloc}, {_baseloc})
-	set yaw of {_fromloc} to yaw of {_v}
-	set pitch of {_fromloc} to pitch of {_v}
+	set (yaw of {_fromloc}) to (yaw of {_v})
+	set (pitch of {_fromloc}) to (pitch of {_v})
 	loop 5 times:
-		set {_el} to location {_dis} * loop-number meters in front of {_fromloc}
+		set {_el} to location ({_dis} * loop-number) meters in front of {_fromloc}
 		spawnParticle(end_rod, {_el})
 
 local function kitWraith_Charge_Particle_2(wraith: entity, vector: vector):
 	set {_newVector} to {_vector} * vector(-1, -1, -1)
-	set {_newVector} to {_newVector} + vector(a random number between -1 and 1, a random number between -1 and 1, a random number between -1 and 1)
+	set {_new.x} to a random number between -1 and 1
+	set {_new.y} to a random number between -1 and 1
+	set {_new.z} to a random number between -1 and 1
+	set {_newVector} to {_newVector} + vector({_new.x}, {_new.y}, {_new.z})
 	spawnParticle_Vector(smoke, {_newVector}, 0.5, location of {_wraith})
 
 
@@ -286,8 +289,8 @@ local function kitWraith_Dark(player: player, wraith: entity):
 			add 1 to {_num.rad}
 			set {_rad} to {_baserad} + (90 * {_num.rad})
 			set {_el} to {_baseloc}
-			add {_m} * sin({_rad}) to x-coordinate of {_el}
-			add {_m} * cos({_rad}) to z-coordinate of {_el}
+			add ({_m} * sin({_rad})) to (x-pos of {_el})
+			add ({_m} * cos({_rad})) to (z-pos of {_el})
 			spawnParticle_Dust(rgb(89, 66, 85), 1, {_el})
 		add 15 to {_baserad}
 		wait a tick
@@ -310,7 +313,7 @@ local function kitWraith_Dark(player: player, wraith: entity):
 			continue
 		
 		loop all entities in radius 10 around {_baseloc}:
-			loop-entity has blindness
+			loop-entity has potion blindness
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			set {_from} to location of loop-entity
 			set {_vec} to setVector({_from}, {_baseloc}, 0.5)
@@ -328,13 +331,15 @@ local function kitWraith_Dark_Particle_Launch(baseloc: location):
 	loop 10 times:
 		set {_el} to {_baseloc}
 		add 36 to {_rad}
-		add 5 * sin({_rad}) to x-coordinate of {_el}
-		add 5 * cos({_rad}) to z-coordinate of {_el}
+		add (5 * sin({_rad})) to (x-pos of {_el})
+		add (5 * cos({_rad})) to (z-pos of {_el})
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
 	loop 15 times:
 		set {_el} to {_baseloc}
-		add a random number between -5 and 5 to x-coordinate of {_el}
-		add a random number between -5 and 5 to z-coordinate of {_el}
+		set {_random.x} to a random number between -5 and 5
+		set {_random.z} to a random number between -5 and 5
+		add {_random.x} to (x-pos of {_el})
+		add {_random.x} to (z-pos of {_el})
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
 	# -----------------------
 
@@ -356,8 +361,8 @@ local function kitWraith_Dark_Particle_Vortex(loc: location, num: number):
 		# 円
 		loop {_count} times:
 			set {_el} to {_baseloc}
-			add {_meter} * sin({_rad}) to x-pos of {_el}
-			add {_meter} * cos({_rad}) to z-pos of {_el}
+			add ({_meter} * sin({_rad})) to (x-pos of {_el})
+			add ({_meter} * cos({_rad})) to (z-pos of {_el})
 			spawnParticle_Dust(colorRandomizer(0, 0, 0, 50, 0, 50), 1.5, {_el})
 			add {_addrad} to {_rad}
 
@@ -367,9 +372,12 @@ local function kitWraith_Dark_Particle_Hit(entity: entity, vector: vector):
 	set {_baseloc} to setDirToVec(location 1 meter above {_entity}, {_vector})
 	loop 3 times:
 		set {_baseel} to {_baseloc}
-		add a random number between -1 and 1 to x-pos of {_baseel}
-		add a random number between -1 and 1 to y-pos of {_baseel}
-		add a random number between -1 and 1 to z-pos of {_baseel}
+		set {_random.x} to a random number between -1 and 1
+		set {_random.y} to a random number between -1 and 1
+		set {_random.z} to a random number between -1 and 1
+		add {_random.x} to (x-pos of {_baseel})
+		add {_random.y} to (y-pos of {_baseel})
+		add {_random.z} to (z-pos of {_baseel})
 
 
 

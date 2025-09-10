@@ -54,7 +54,7 @@ function kitEffect_VoodooDoll(player: player):
 		spawnParticle(end_rod, {_el})
 	while getKitStats({_player}, "VoodooDoll") is {_now}:
 		delete {_exist}
-		if {_tg} does not have wither:
+		if {_tg} does not have potion wither:
 			apply wither 1 to {_tg} for 10 seconds
 		loop all entities:
 			type of loop-entity is an armor stand
@@ -143,11 +143,11 @@ local function kitEffect_VoodooDoll_Pathfind(player: player, target: player, cou
 			if pass(block above {_child}) is false:
 				continue
 
-			if pass(block under {_child}):
+			if pass(block under {_child}) is true:
 				if y-pos of {_start} < y-pos of {_child}:
 					continue
 
-				if pass(block under {_parent}):
+				if pass(block under {_parent}) is true:
 					y-pos of {_parent} <= y-pos of {_child}
 					continue
 
