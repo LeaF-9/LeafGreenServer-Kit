@@ -94,6 +94,12 @@ on break:
 							{Join::%loop-player%} is "Kit"
 							{TrueTeam::%loop-player%} is {_teamname}
 							send title "§4§lコア: %{_corename}%が破壊された!" to loop-player
+						
+						loop all magma cubes:
+							metadata value "kit-corelocation" of loop-magma cube is {_corename}
+							set {_coreMarker} to loop-magma cube
+							{_coreMarker}.remove()
+							
 						make a fake explosion at {Kit-GameStageCoreLocation::%{_corename}%}
 						set block at {Kit-GameStageCoreLocation::%{_corename}%} to bedrock
 						subtract 1 from {Kit-GameStage::corenumber-%{_teamname}%}
