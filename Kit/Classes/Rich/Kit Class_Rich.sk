@@ -93,9 +93,34 @@ local function kitSound_AurumCure(player: player, loc: location):
 # Timer
 function kitTimerRich(player: player):
 	set {_tool} to kitPlayerWeaponItem({_player}, "Rich")
-	stop if kitItemAllChecker({_tool}, "Rich", "Weapon", 3) is false
+	set {_JS} to true if kitItemAllChecker({_tool}, "Rich", "Weapon", 3) is true
+
+	set {_waitspan} to 5 ticks
+	set {_secloop} to 4
+	set {_nowloop} to 0
 
 	while {Class::%{_player}%} is "Rich":
 		set {_nowtool} to tool of {_player}
 		kitEffect_JackpotStriker_Remain({_player}) if {_nowtool} is {_tool}
-		wait 5 ticks
+
+		add 1 to {_nowloop}
+		if {_nowloop} >= {_secloop}:
+			set {_nowloop} to 0
+			goldCounting({_player})
+		wait {_waitspan}
+
+options:
+	gold-timer-limit: 30
+
+local function goldCounting(player: player):
+	loop all entities:
+		metadata value "Rich Gold" of loop-entity is {_player}
+		set {_timer} to metadata value "Rich Timer" of loop-entity
+		set {_timer} to 0 if {_timer} is not set
+
+		add 1 to {_timer}
+		if {_timer} >= {@gold-timer-limit}:
+			loop-entity.remove()
+			continue
+		
+		set metadata value "Rich Timer" of loop-entity to {_timer}
