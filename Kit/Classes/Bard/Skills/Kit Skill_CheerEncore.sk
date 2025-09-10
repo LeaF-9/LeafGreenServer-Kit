@@ -11,7 +11,8 @@ function kitEffect_CheerEncore(player: player):
 	kitMsg({_player}, "§b%{_target}% §eに§6§lアンコール§eを授けました!")
 	message formatted "§6アンコール§dにより§e§l復活効果§dと§e§lCTリセット§dが授けられました!" to {_target}
 	setSupporter({_target}, {_player})
-	set {CT.%{_target}%::*} to 0
+	loop {CT.%{_target}%::*}:
+		subtract 100 from {CT.%{_target}%::%loop-index%}
 	delete {CTStop.%{_target}%::*}
 	setKitStats({_target}, "Resurrection", true)
 	set {_sec} to 100
