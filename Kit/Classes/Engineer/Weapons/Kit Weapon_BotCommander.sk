@@ -59,7 +59,7 @@ function kitEffect_BotCommander(player: player):
 			loop all skeletons:
 				metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
 				set metadata value "Bot Pattern" of loop-skeleton to "Attack"
-				set spawned skeleton's helmet to {_BotHead}
+				setEntityArmor(loop-skeleton, "helmet", {_BotHead})
 		else:
 			setKitStats({_player}, "BotPattern", "Defence")
 			kitMsg({_player}, "§6行動パターンを変更しました§a: §1§l防衛モード")
@@ -67,7 +67,7 @@ function kitEffect_BotCommander(player: player):
 			loop all skeletons:
 				metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
 				set metadata value "Bot Pattern" of loop-skeleton to "Defence"
-				set spawned skeleton's helmet to {_BotHead}
+				setEntityArmor(loop-skeleton, "helmet", {_BotHead})
 		unload yml "bot.%{_player}%"
 
 function kitSub_Engineer_3(player: player):
@@ -170,7 +170,7 @@ function engineerBotAI(player: player):
 			# head properties
 			loop all skeletons:
 				metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
-				set loop-skeleton's helmet to {_BotBlue}
+				setEntityArmor(loop-skeleton, "helmet", {_BotBlue})
 				set metadata value "Bot Pattern" of loop-skeleton to "Defence"
 				set {_num} to metadata value "Bot Number" of loop-skeleton
 				teleport loop-skeleton to {_loc%{_num}%}
@@ -222,8 +222,8 @@ function engineerBotAI(player: player):
 							loop all skeletons:
 								metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
 								metadata value "Bot Number" of loop-skeleton is loop-number-1
-								if loop-skeleton's helmet is not {_BotRed}:
-									set loop-skeleton's helmet to {_BotRed}
+								if helmet of loop-skeleton is not {_BotRed}:
+									setEntityArmor(loop-skeleton, "helmet", {_BotRed})
 								teleport loop-skeleton to {_aloc.%loop-number-1%}
 						
 						# stray bots
@@ -235,7 +235,7 @@ function engineerBotAI(player: player):
 								loop all skeletons:
 									metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
 									metadata value "Bot Number" of loop-skeleton is loop-number-1
-									set loop-skeleton's helmet to {_BotRed}
+									setEntityArmor(loop-skeleton, "helmet", {_BotRed})
 									set {_from} to vector of location of loop-skeleton's head
 									set {_vector} to {_to} - {_from}
 									set {_vector} to normalized {_vector}
@@ -273,7 +273,7 @@ function engineerBotAI(player: player):
 								loop all skeletons:
 									metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
 									metadata value "Bot Number" of loop-skeleton is loop-number-1
-									set loop-skeleton's helmet to {_BotRed}
+									setEntityArmor(loop-skeleton, "helmet", {_BotRed})
 									set metadata value "Bot Pattern" of loop-skeleton to "Attack"
 									teleport loop-skeleton to {_aloc.%loop-number-1%}
 				
@@ -282,7 +282,7 @@ function engineerBotAI(player: player):
 					loop all skeletons:
 						metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
 						metadata value "Bot Pattern" of loop-skeleton is not "Inactive"
-						set loop-skeleton's helmet to {_BotInactive}
+						setEntityArmor(loop-skeleton, "helmet", {_BotInactive})
 						set metadata value "Bot Pattern" of loop-skeleton to "Inactive"
 						set {_tl} to location of loop-skeleton
 						set pitch of {_tl} to 75
@@ -294,7 +294,7 @@ function engineerBotAI(player: player):
 				loop all skeletons:
 					metadata value "Bot Owner" of loop-skeleton is "%{_player}%"
 					metadata value "Bot Pattern" of loop-skeleton is not "Inactive"
-					set loop-skeleton's helmet to {_BotInactive}
+					setEntityArmor(loop-skeleton, "helmet", {_BotInactive})
 					set metadata value "Bot Pattern" of loop-skeleton to "Inactive"
 					set {_tl} to location of loop-skeleton
 					set pitch of {_tl} to 75
