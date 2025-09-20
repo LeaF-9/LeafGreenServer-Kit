@@ -74,40 +74,49 @@ command /skclass <text> <text="none">:
 			loop all players:
 				if arg 1 is "%loop-player%":
 					set {_player} to loop-player
-			if {_player} is set:
-				load yml "plugins/skript-yaml/General Classes/%arg 2%.yml" as "skclass.%arg 2%"
-				clear {_player}'s inventory
-				clear all potion effects of {_player}
-				set {_invnum} to 0
-				loop 36 times:
-					if yml value "items.item%{_invnum}%" from "skclass.%arg 2%" is set:
-						set {_invitem} to yml value "items.item%{_invnum}%" from "skclass.%arg 2%"
-						set slot {_invnum} of {_player} to {_invitem}
-					add 1 to {_invnum}
-				if yml value "armors.helmet" from "skclass.%arg 2%" is set:
-					set {_invitem} to yml value "armors.helmet" from "skclass.%arg 2%"
-					set helmet of {_player} to {_invitem}
-				if yml value "armors.chestplate" from "skclass.%arg 2%" is set:
-					set {_invitem} to yml value "armors.chestplate" from "skclass.%arg 2%"
-					set chestplate of {_player} to {_invitem}
-				if yml value "armors.leggings" from "skclass.%arg 2%" is set:
-					set {_invitem} to yml value "armors.leggings" from "skclass.%arg 2%"
-					set leggings of {_player} to {_invitem}
-				if yml value "armors.boots" from "skclass.%arg 2%" is set:
-					set {_invitem} to yml value "armors.boots" from "skclass.%arg 2%"
-					set boots of {_player} to {_invitem}
-				if yml value "armors.offhand" from "skclass.%arg 2%" is set:
-					set {_invitem} to yml value "armors.offhand" from "skclass.%arg 2%"
-					set offhand tool of {_player} to {_invitem}
-				loop yaml node keys "effects" from "skclass.%arg 2%":
-					set {_effect} to potionChanger("%loop-key%")
-					set {_level} to yml value "%loop-node%" from "skclass.%arg 2%"
-					# set {_level} to {_level} parsed as number
-					apply infinite {_effect} {_level} without particles to {_player}
-				unload yml "skclass.%arg 2%"
-				message formatted "{@prefix} §a%{_player}% §7に §eClass: §6§l%arg 2% §7を配布しました" to player
-			else:
+			if {_player} is not set:
 				message formatted "{@prefix} §cプレイヤーが見つかりません" to player
+				stop
+			skClassGive({_player}, arg 2)
+			message formatted "{@prefix} §a%{_player}% §7に §eClass: §6§l%arg 2% §7を配布しました" to player
+
+function skClassGive(player: player, key: text):
+	load yml "plugins/skript-yaml/General Classes/%{_key}%.yml" as "skclass.%{_key}%"
+	clear {_player}'s inventory
+	clear all potion effects of {_player}
+
+	set {_invnum} to 0
+	loop 36 times:
+		if yml value "items.item%{_invnum}%" from "skclass.%{_key}%" is set:
+			set {_invitem} to yml value "items.item%{_invnum}%" from "skclass.%{_key}%"
+			set slot {_invnum} of {_player} to {_invitem}
+		add 1 to {_invnum}
+
+	if yml value "armors.helmet" from "skclass.%{_key}%" is set:
+		set {_invitem} to yml value "armors.helmet" from "skclass.%{_key}%"
+		set helmet of {_player} to {_invitem}
+	if yml value "armors.chestplate" from "skclass.%{_key}%" is set:
+		set {_invitem} to yml value "armors.chestplate" from "skclass.%{_key}%"
+		set chestplate of {_player} to {_invitem}
+	if yml value "armors.leggings" from "skclass.%{_key}%" is set:
+		set {_invitem} to yml value "armors.leggings" from "skclass.%{_key}%"
+		set leggings of {_player} to {_invitem}
+	if yml value "armors.boots" from "skclass.%{_key}%" is set:
+		set {_invitem} to yml value "armors.boots" from "skclass.%{_key}%"
+		set boots of {_player} to {_invitem}
+	if yml value "armors.offhand" from "skclass.%{_key}%" is set:
+		set {_invitem} to yml value "armors.offhand" from "skclass.%{_key}%"
+		set offhand tool of {_player} to {_invitem}
+
+	loop yaml node keys "effects" from "skclass.%{_key}%":
+		set {_effect} to potionChanger("%loop-key%")
+		set {_level} to yml value "%loop-node%" from "skclass.%{_key}%"
+		# set {_level} to {_level} parsed as number
+		apply infinite {_effect} {_level} without particles to {_player}
+
+	unload yml "skclass.%{_key}%"
+
+
 
 function potionChanger(potion: text) :: potion effect type:
 	if {_potion} is "DOLPHINS_GRACE":
