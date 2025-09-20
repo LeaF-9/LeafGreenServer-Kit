@@ -139,6 +139,19 @@ function kitFlagDrop_CTF(holder: player):  # holderがflagを持っていた際�
 			if {_true} is true:
 				set {_baseloc} to {_loc}
 			# --------------------------------
+		if block below {_baseloc} is air:  # 死んだ位置が空中
+			# ---地面が見つかるまでドロップ位置を変更
+			set {_true} to false
+			set {_loc} to {_baseloc}
+			while {_true} is false:
+				set {_loc} to location 1 meters below {_loc}
+				if block below {_loc} is not air:
+					set {_true} to true
+				else if y-coordinate of {_loc} < -64:
+					set {_true} to true
+			if {_true} is true:
+				set {_baseloc} to {_loc}
+			# --------------------------------
 		if y-coordinate of {_baseloc} > 320:  # 死んだ位置が天空
 			joinPlayerMsg("Kit", "§6§lFlag所持者§cの死亡地点が不正であった為,§f§lFlag§cの所有権は消滅しました")
 		else if y-coordinate of {_baseloc} < -64:  # 死んだ位置が奈落
