@@ -16,21 +16,21 @@ function kitEffect_ShadowMurder(player: player):
 		if {_ok} is not set:
 			add 1 to {_num}
 			set {_loc} to location {_num} meters above {_tl}
-			if block at {_loc} is not passable:
+			if (block at {_loc}) is not passable:
 				set {_ok} to true
 				set {_loc} to location below {_loc}
-	set {_yaw} to yaw of {_player}
+	set {_yaw} to (yaw of {_player})
 	add 180 to {_yaw}
 	if {_yaw} > 360:
-		set {_yaw} to {_yaw} - 360
-	set yaw of {_loc} to {_yaw}
+		set {_yaw} to ({_yaw} - 360)
+	set (yaw of {_loc}) to {_yaw}
 	kitMsg({_player}, "<##8a2be2>背後より暗殺を試みる...")
 	playSound("entity.enderman.teleport", 1, 0.75, {_player})
 	kitParticle_ShadowMurder_Spell({_player})
 	teleport {_player} to {_loc}
 	loop 100 times:
 		if {_ok2} is not set:
-			if block 0.1 meters below {_player} is not passable:
+			if (block 0.1 meters below ({_player})) is not passable:
 				set {_ok2} to true
 			wait a tick
 	if {_ok2} is true:
@@ -40,16 +40,16 @@ function kitEffect_ShadowMurder(player: player):
 				kitSleep(loop-player, {@sleep-tick})
 				kitEffectDescription(loop-player, "§b§l睡眠")
 		set {_bnm} to 1
-		set {_addbnm} to {@effect-radius} / 5
-		set {_pl} to location of block at {_player}
+		set {_addbnm} to ({@effect-radius} / 5)
+		set {_pl} to (location of (block at ({_player})))
 		loop 5 times:
 			loop all blocks in radius {_bnm} around {_player}:
 				loop-block is air
-				block below loop-block is not air
-				set {_bl} to location of loop-block
+				(block below (loop-block)) is not air
+				set {_bl} to (location of loop-block)
 				set {_bn} to {_bnm} - 1
-				if distance between {_bl} and {_pl} >= {_bn}:
-					add -0.3 to y-coordinate of {_bl}
+				if (distance between {_bl} and {_pl}) >= {_bn}:
+					add -0.3 to (y-pos of {_bl})
 					spawnParticle(witch, {_bl})
 			add {_addbnm} to {_bnm}
 			wait a tick

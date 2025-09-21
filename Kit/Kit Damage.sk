@@ -254,10 +254,15 @@ function kitHeal(player: entity, heart: number, particle: number = 5):
 
 function healEffect(player: entity, count: number = 5):
 	loop {_count} times:
-		set {_loc} to location of {_player}
-		add a random number between -1 and 1 to x-coordinate of {_loc}
-		add a random number between 0 and 2 to y-coordinate of {_loc}
-		add a random number between -1 and 1 to z-coordinate of {_loc}
+		set {_loc} to location 1 meter above {_player}
+
+		set {_add.x} to a random number between -1 and 1
+		set {_add.y} to a random number between -1 and 1
+		set {_add.z} to a random number between -1 and 1
+
+		add {_add.x} to x-pos of {_loc}
+		add {_add.y} to y-pos of {_loc}
+		add {_add.z} to z-pos of {_loc}
 		spawnParticle(heart, {_loc})
 
 

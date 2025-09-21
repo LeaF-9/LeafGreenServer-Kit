@@ -1,10 +1,10 @@
 local function kitTargetPlayer(player: player, distance: number, ally: boolean = false):
 	set {_dis} to round({_distance})
-	set {_baseloc} to location of head of {_player}
+	set {_baseloc} to head of {_player}
 	loop {_dis} times:
 		{_ng} is not set
 		{_target} is not set
-		set {_loc} to location loop-number meters in front of {_baseloc}
+		set {_loc} to location (loop-number) meters in front of {_baseloc}
 		if block at {_loc} is not passable:
 			set {_ng} to true
 		else:
@@ -36,7 +36,7 @@ local function kitTargetLocation(player: player, distance: number):
 	set {_dustColor} to rgb(255, 255, 0)
 	set {_dustColor} to rgb(0, 255, 255) if {_distance} <= 5
 
-	set {_baseloc} to location of head of {_player}
+	set {_baseloc} to head of {_player}
 	delete {_ok}
 	set {_dis} to round({_distance}) * 10 
 	loop {_dis} times:
@@ -53,7 +53,7 @@ local function kitTargetLocation(player: player, distance: number):
 				if block at {_bl} is passable:
 					set {_blockok} to true  #有効ブロック感知時有効
 					set {_loc} to {_bl}
-					set y-coordinate of {_loc} to y-coordinate of location of block at {_bl} - 0.5  # y座標を地面にあわせる
+					set (y-pos of {_loc}) to ((y-pos of (location of (block at {_bl}))) - 0.5)  # y座標を地面にあわせる
 	if {_ok} is not set:  # 前方に固形ブロックが見つからなかった場合
 		delete {_blockok}
 		delete {_bn}
@@ -64,7 +64,7 @@ local function kitTargetLocation(player: player, distance: number):
 			if block at {_bl} is not passable:
 				set {_blockok} to true
 				set {_loc} to location 0.1 meters above {_bl}
-				set y-coordinate of {_loc} to y-coordinate of location of block 0.1 meters above {_bl} - 0.5
+				set y-pos of {_loc} to ((y-pos of (location of (block 0.1 meters above {_bl}))) - 0.5)
 	
 	if {_blockok} is not set:
 		deleteKitStats({_player}, "SkillLocation")

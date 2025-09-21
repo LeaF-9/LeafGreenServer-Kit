@@ -25,12 +25,12 @@ on rightclick:
 	if {_UltAssassin} is true:
 		set {_tp} to target player
 		{_tp} is set
-		set {_dis} to the distance between player and {_tp}
+		set {_dis} to (distance between (player) and ({_tp}))
 		{_dis} <= 10
-		set {_yaw} to yaw of player
-		set {_tploc} to location of {_tp}
-		set {_tploc}'s yaw to {_yaw}
-		set {_tploc}'s pitch to 0
+		set {_yaw} to (yaw of player)
+		set {_tploc} to (location of {_tp})
+		set (yaw of {_tploc}) to {_yaw}
+		set (pitch of {_tploc}) to 0
 		set {_tploc} to location 1 meter behind {_tploc}
 		teleport player to {_tploc}
 
@@ -39,16 +39,16 @@ on damage with priority LOW:
 	{Class::%{_attacker}%} is "Assassin"
 	set {_UltAssassin} to getKitStats({_attacker}, "UltAssassin")
 	if {_UltAssassin} is true:
-		if victim's facing is {_attacker}'s facing:
+		if (victim's facing) is ({_attacker}'s facing):
 			setDamageModification_FIX(victim, 100)
 			send action bar "§0§l暗殺に成功した..." to {_attacker}
-			message "<##8b0000>暗殺されてしまった..." to victim
+			message formatted "<##8b0000>暗殺されてしまった..." to victim
 			playSound("entity.wither.spawn", 1, 1, victim)
-			set {_l} to location of victim
+			set {_l} to (location of victim)
 			loop 10 times:
 				set {_e} to aroundEffect(victim, 5)
 				set {_r} to a random number between 0 and 5
-				set y-coordinate of {_e} to y-coordinate of victim + {_r}
+				set (y-pos of {_e}) to ((y-pos of victim) + {_r})
 				spawnParticle(witch, {_e})
 		else:
 			setDamageModification_FIX(victim, 1)

@@ -195,7 +195,8 @@ function kitPalsy(player: player, tick: number, eff: boolean = true):
 function kitEffect_Palsy(player: player):
 	set {_baseloc} to location of {_player}
 	set {_yaw} to a random number between 0 and 360
-	add a random number between 0.6 and 2 to y-coordinate of {_baseloc}
+	set {_add.y} to a random number between 0.6 and 2
+	add {_add.y} to y-pos of {_baseloc}
 	set yaw of {_baseloc} to {_yaw}
 	set pitch of {_baseloc} to 0
 	set {_effloc} to location 0.5 meters in front of {_baseloc}
@@ -207,22 +208,22 @@ function kitEffect_Palsy(player: player):
 		loop 2 times:
 			# --- ギザギザ上 ---
 			set {_bl} to {_effloc}
-			subtract {_dy} from y-coordinate of {_bl}
+			subtract {_dy} from y-pos of {_bl}
 			set pitch of {_bl} to 45
 			set {_mc} to 0
 			loop {_metercount} times:
 				add 1 to {_mc}
-				set {_el} to location {_fm} * {_mc} meters in front of {_bl}
+				set {_el} to location ({_fm} * {_mc}) meters in front of {_bl}
 				spawnParticle_DustTransition(rgb(255, 255, 0), rgb(255, 215, 0), 0.3, {_el})
 			# -----------------
 			# --- ギザギザ下 ---
 			set {_bl} to location 0.05 meters in front of {_effloc}
-			subtract {_dy} + 0.05 from y-coordinate of {_bl}
+			subtract ({_dy} + 0.05) from y-pos of {_bl}
 			set pitch of {_bl} to -45
 			set {_mc} to 0
 			loop {_metercount} times:
 				add 1 to {_mc}
-				set {_el} to location {_fm} * {_mc} meters in front of {_bl}
+				set {_el} to location ({_fm} * {_mc}) meters in front of {_bl}
 				spawnParticle_DustTransition(rgb(255, 255, 0), rgb(255, 215, 0), 0.3, {_el})
 			# -----------------
 			add 0.1 to {_dy}
@@ -322,10 +323,17 @@ function kitSleep(player: player, tick: number):
 
 		# パーティクル処理
 		set {_el} to location of head of {_player}
-		add a random number between -0.5 and 0.5 to x-coordinate of {_el}
-		add a random number between -0.5 and 0.5 to y-coordinate of {_el}
-		add a random number between -0.5 and 0.5 to z-coordinate of {_el}
-		spawnParticle_Vector(sculk_charge_pop, vector(0, 0.1, 0), 0.1, {_el})
+
+		set {_add.x} to a random number between -0.5 and 0.5
+		set {_add.y} to a random number between -0.5 and 0.5
+		set {_add.z} to a random number between -0.5 and 0.5
+
+		add {_add.x} to x-pos of {_el}
+		add {_add.y} to y-pos of {_el}
+		add {_add.z} to z-pos of {_el}
+
+		set {_vector} to vector(0, 0.1, 0)
+		spawnParticle_Vector(sculk_charge_pop, {_vector}, 0.1, {_el})
 		# DebuffTime処理
 		subtractDebuffTime({_player}, "Sleep")
 		wait a tick
@@ -394,10 +402,12 @@ function kitStun(player: player, tick: number):
 
 		# パーティクル処理
 		set {_el} to location of {_player}
-		add 2 to y-coordinate of {_el}
+		add 2 to y-pos of {_el}
+		set {_vec} to vector(0.5, 0, 0)
+
 		add 36 to {_rad}
-		add 0.5 * sin({_rad}) to x-coordinate of {_el}
-		add 0.5 * cos({_rad}) to z-coordinate of {_el}
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_el} ~ {_vec}
 		spawnParticle(crit, {_el})
 
 		# DebuffTime処理
@@ -413,8 +423,10 @@ on shoot:
 	metadata value "gametype" of shooter is "Kit"
 	if getDebuffs(shooter, "Stun") is true:
 		wait a tick
-		push projectile to the left at speed random number from -1 to 1
-		push projectile upwards at speed random number from -1 to 1
+		set {_push.lr} to random number from -1 to 1
+		set {_push.ud} to random number from -1 to 1
+		push projectile to the left at speed {_push.lr}
+		push projectile upwards at speed {_push.ud}
 
 # 恐怖
 function kitFear(player: player, tick: number):
@@ -507,7 +519,10 @@ function kitTrail(player: player, tick: number, from: location = location(0.0, 0
 	set {_prog} to 100 / {_tick}
 	set {_ticknumber} to {_tick}
 	# from-location設定
-	set {_sum.xyz} to x-pos of {_from} + y-pos of {_from} + z-pos of {_from}
+	set {_x.from} to x-pos of {_from}
+	set {_y.from} to y-pos of {_from}
+	set {_z.from} to z-pos of {_from}
+	set {_sum.xyz} to {_x} + {_y} + {_z}
 	if {_sum.xyz} = 0:
 		set {_from} to location of {_player}
 	add {_from} to {_traillocs::*}
@@ -539,8 +554,8 @@ function kitTrail(player: player, tick: number, from: location = location(0.0, 0
 			set {_loc} to location of {_player}
 			set {_index.last} to size of {_traillocs::*}
 			set {_lastloc} to {_traillocs::%{_index.last}%}
-			set yaw of {_lastloc} to yaw of {_loc}
-			set pitch of {_lastloc} to pitch of {_loc}
+			set (yaw of {_lastloc}) to (yaw of {_loc})
+			set (pitch of {_lastloc}) to (pitch of {_loc})
 			if {_lastloc} is not {_loc}:
 				add {_loc} to {_traillocs::*}
 				# 追跡過程にポイント召喚
@@ -558,14 +573,16 @@ function kitTrail(player: player, tick: number, from: location = location(0.0, 0
 			if {_loc.from} is {_loc.to}:
 				add 0.01 to y-pos of {_loc.to}
 			set {_vector} to setVector({_loc.from}, {_loc.to})
-			set yaw of {_loc.from} to yaw of {_vector}
-			set pitch of {_loc.from} to pitch of {_vector}
-			set {_loc.progress} to distance between {_loc.from} and {_loc.to} / 10
+			set (yaw of {_loc.from}) to (yaw of {_vector})
+			set (pitch of {_loc.from}) to (pitch of {_vector})
+			set {_distance} to distance between {_loc.from} and {_loc.to}
+			set {_prognum} to {_distance} / 10
+			set {_loc.progress} to {_prognum}
 			set {_loc.ln} to 0
 			# 追跡パーティクル
 			loop 10 times:
 				add 1 to {_loc.ln}
-				set {_el} to location {_loc.progress} * {_loc.ln} meters in front of {_loc.from}
+				set {_el} to location ({_loc.progress} * {_loc.ln}) meters in front of {_loc.from}
 				spawnParticle_Dust(rgb(230, 230, 250), 0.5, {_el})
 				# 追跡を踏んだプレイヤー検知
 				loop all players in radius 1.5 around {_el}:
@@ -629,10 +646,7 @@ function kitLuck(player: player, pluslvl: number, absolute: boolean = false):
 		message formatted "<##2e8b57>§l不運<##2e8b57>だ! 確率が悪くなりそうだ... <##ffd700>幸運レベル§7: §e§l%{Kit-Luck::%{_player}%}%" to {_player}
 	# パーティクル
 	loop 10 times:
-		set {_loc} to location of {_player}
-		add a random number between -1 and 1 to x-coordinate of {_loc}
-		add a random number between 0 and 2 to y-coordinate of {_loc}
-		add a random number between -1 and 1 to z-coordinate of {_loc}
+		set {_loc} to aroundEffect({_player})
 		spawnParticle(totem_of_undying, {_loc})
 	# サウンド
 	set {_pitchlvl} to {Kit-Luck::%{_player}%}

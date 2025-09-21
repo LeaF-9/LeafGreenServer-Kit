@@ -16,26 +16,24 @@ on projectile hit:
 	sendTimeBossbar_GREEN(shooter, "Poison Mist", 100)
 	set {_l} to location of projectile
 	playSound("block.fungus.break", 1.5, 0.5, {_l})
+
+	add rgb(0, 100, 0) to {_colors::*}
+	add rgb(47, 122, 63) to {_colors::*}
+	add rgb(94, 126, 84) to {_colors::*}
+
 	loop 100 times:
 		delete {_jc}
 		delete {_eg::*}
-		set {_s} to 0
-		set {_t} to 0
-		set {_pl} to {_l}
-		loop 19 time:
-			loop 36 time:
-				set {_loc} to {_pl}
-				set {_vector} to {_loc}
-				set {_x} to x-coordinate of {_loc}
-				set {_y} to y-coordinate of {_loc}
-				set {_z} to z-coordinate of {_loc}
-				set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
-				set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
-				set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
-				chance of 10%:
-					spawnParticle_Dust(rgb(0, 100, 0), 3, {_vector})
-				add 10 to {_t}
-			add 10 to {_s}
+
+		loop 20 times:
+			chance of 10%:
+				continue
+			set {_el} to {_pl}
+			set {_vec} to randomVector(5)
+			set {_el} to {_el} ~ {_vec}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 3, {_el})
+
 		loop all blocks in radius 5 around {_l}:
 			loop-block is passable
 			chance of 1%:

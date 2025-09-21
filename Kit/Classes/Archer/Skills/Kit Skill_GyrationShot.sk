@@ -36,10 +36,13 @@ local function kitParticle_GyrationShot_Prepare(player: player):
 		set {_baseloc} to location of {_player}
 		loop 4 times:
 			set {_el} to {_baseloc}
-			set {_tr} to {_rad} + 90 * loop-number-2
-			add 0.5 * sin({_tr}) to x-coordinate of {_el}
-			add 0.5 * cos({_tr}) to z-coordinate of {_el}
-			add {_y} to y-coordinate of {_el}
+			set {_tr} to ({_rad}) + (90 * (loop-number-2))
+
+			set {_vec} to vector(0.5, 0, 0)
+			rotate {_vec} around y-axis by {_tr}
+			set {_el} to {_el} ~ {_vec}
+
+			add {_y} to y-pos of {_el}
 			spawnParticle(end_rod, {_el})
 		add 18 to {_rad}
 		add 0.1 to {_y}

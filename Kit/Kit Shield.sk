@@ -41,7 +41,7 @@ local function shieldParticles(player: player, now: date):
 		else:
 			set {_y} to {_dy}
 
-		add {_y} to y-coordinate of {_baseloc}
+		add {_y} to y-pos of {_baseloc}
 		add 9 to {_baserad}
 		set {_ln} to -1
 		loop 8 times:
@@ -53,8 +53,9 @@ local function shieldParticles(player: player, now: date):
 				continue
 			
 			set {_rad} to {_baserad} + (45 * {_ln})
-			add 0.5 * sin({_rad}) to x-coordinate of {_baseloc}
-			add 0.5 * cos({_rad}) to z-coordinate of {_baseloc}
+			set {_vec} to vector(0.5, 0, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_baseloc} to {_baseloc} ~ {_vec}
 			spawnParticle_Dust(colorRandomizer(0, 163, 175, 0, 0, 10), 0.8, {_baseloc})
 		wait a tick
 
