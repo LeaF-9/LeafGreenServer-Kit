@@ -44,13 +44,13 @@ function kitTimerHealer(player: player):
 			set {_g} to 255 * {_per}
 			set {_r} to 255 * (1 - {_per})
 			set {_baseloc} to location of loop-player
-			add 2 to y-coordinate of {_baseloc}
+			add 2 to y-pos of {_baseloc}
 			set {_rad} to 0
 			loop 5 times:
 				add 72 to {_rad}
-				set {_el} to {_baseloc}
-				add 0.5 * sin({_rad}) to x-coordinate of {_el}
-				add 0.5 * cos({_rad}) to z-coordinate of {_el}
+				set {_vec} to vector(0.5, 0, 0)
+				rotate {_vec} around y-axis by {_rad}
+				set {_el} to {_baseloc} ~ {_vec}
 				spawnParticle_Dust(rgb({_r}, {_g}, 0), 1, {_el}, {_player})
 		# --------------------------
 		wait a tick

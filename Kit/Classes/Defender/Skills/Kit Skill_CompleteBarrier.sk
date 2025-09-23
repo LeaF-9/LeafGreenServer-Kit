@@ -11,11 +11,13 @@ function kitEffect_CompleteBarrier(player: player):
 		set {_y} to 0
 		set {_baseloc} to location of {_player}
 		loop 3 times:
-			set {_el} to {_baseloc}
 			add 0.5 to {_y}
-			add 0.5 * sin({_rad}) to x-coordinate of {_el}
-			add 0.5 * cos({_rad}) to z-coordinate of {_el}
-			add {_y} to y-coordinate of {_el}
+
+			set {_vec} to vector(0.5, 0, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_vec}
+
+			add {_y} to y-pos of {_el}
 			spawnParticle_Dust(rgb(0, 0, 200), 1, {_el})
 		wait a tick
 	deleteKitStats({_player}, "Invincible")

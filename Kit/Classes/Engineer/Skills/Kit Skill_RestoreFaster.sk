@@ -170,16 +170,16 @@ local function kitParticle_RestoreFaster(player: player, bool: boolean):
 		set {_loc} to location of {_player}
 		add 0.5 to {_up}
 		if {_bool} is true:
-			add {_up} to y-coordinate of {_loc}
+			add {_up} to y-pos of {_loc}
 		else:
-			add 2 to y-coordinate of {_loc}
-			subtract {_up} from y-coordinate of {_loc}
+			add 2 to y-pos of {_loc}
+			subtract {_up} from y-pos of {_loc}
 		set {_rad} to 0
 		loop 10 times:
-			set {_el} to {_loc}
 			add 36 to {_rad}
-			add 0.5 * sin({_rad}) to x-coordinate of {_el}
-			add 0.5 * cos({_rad}) to z-coordinate of {_el}
+			set {_vec} to vector(0.5, 0, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_loc} ~ {_vec}
 			if {_bool} is true:
 				spawnParticle_Color(entity_effect, rgb(255, 255, 0), {_el})
 			else:

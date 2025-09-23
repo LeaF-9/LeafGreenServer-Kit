@@ -51,9 +51,12 @@ local function kitParticle_MoonLuster_Beam(loc: location):
 	loop 3 times:
 		chance of 10%:
 			set {_el} to {_loc}
-			add a random number between -1 and 1 to x-pos of {_el}
-			add a random number between -1 and 1 to y-pos of {_el}
-			add a random number between -1 and 1 to z-pos of {_el}
+			set {_add.x} to a random number between -1 and 1
+			set {_add.y} to a random number between -1 and 1
+			set {_add.z} to a random number between -1 and 1
+			add {_add.x} to x-pos of {_el}
+			add {_add.y} to y-pos of {_el}
+			add {_add.z} to z-pos of {_el}
 			spawnParticle_BlockData(falling_dust, yellow wool, {_el})
 
 local function kitParticle_MoonLuster_Moonlight(baseloc: location):
@@ -65,8 +68,10 @@ local function kitParticle_MoonLuster_Moonlight(baseloc: location):
 		set {_effwideminus} to {_effwide} * -1
 		loop {_effcount} times:
 			set {_loc} to location {_count} meters above {_baseloc}
-			add a random number between {_effwideminus} and {_effwide} to x-coordinate of {_loc}
-			add a random number between {_effwideminus} and {_effwide} to z-coordinate of {_loc}
+			set {_add.x} to a random number between {_effwideminus} and {_effwide}
+			set {_add.z} to a random number between {_effwideminus} and {_effwide}
+			add {_add.x} to x-pos of {_loc}
+			add {_add.z} to z-pos of {_loc}
 			spawnParticle(end_rod, {_loc})
 		subtract 1 from {_count}
 		wait a tick

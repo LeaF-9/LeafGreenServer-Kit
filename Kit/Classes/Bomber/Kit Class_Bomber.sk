@@ -18,11 +18,14 @@ on death of player:
 		add 1 to y-coordinate of {_v}
 		loop 3 times:
 			spawn a primed tnt at {_v}
-			push spawned primed tnt east at speed random number from -0.5 to 0.5
-			push spawned primed tnt north at speed random number from -0.5 to 0.5
-			set metadata value "attacker" of spawned primed tnt to victim
-			set metadata value "kit-bomber-dying" of spawned primed tnt to true
-			setFuseTime(spawned primed tnt, 20)
+			set {_tnt} to spawned primed tnt
+			set {_speed.e} to a random number from -0.5 to 0.5
+			set {_speed.n} to a random number from -0.5 to 0.5
+			push {_tnt} east at speed {_speed.e}
+			push {_tnt} north at speed {_speed.n}
+			set metadata value "attacker" of {_tnt} to victim
+			set metadata value "kit-bomber-dying" of {_tnt} to true
+			setFuseTime({_tnt}, 20)
 	if {Class::%{LastKiller::%victim%}%} is "Bomber":
 		give 2 tnt to {LastKiller::%victim%}
 		give 4 arrow to {LastKiller::%victim%}

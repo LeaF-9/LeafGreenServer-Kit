@@ -64,20 +64,12 @@ on leftclick:
 	set {_s} to 0
 	set {_t} to 0
 	set {_pl} to {_l}
-	loop 19 time:
-		loop 36 time:
-			set {_loc} to {_pl}
-			set {_vector} to {_loc}
-			set {_x} to x-coordinate of {_loc}
-			set {_y} to y-coordinate of {_loc}
-			set {_z} to z-coordinate of {_loc}
-			set x-coordinate of {_vector} to {_x} + ( 5 * sin({_s}) * cos({_t}) )
-			set y-coordinate of {_vector} to {_y} + ( 5 * cos({_s}) )
-			set z-coordinate of {_vector} to {_z} + ( 5 * sin({_s}) * sin({_t}) )
-			chance of 30%:
-				spawnParticle_Dust(rgb(0, 0, 0), 2, {_vector})
-			add 10 to {_t}
-		add 10 to {_s}
+
+	loop 30 times:
+		set {_vec} to randomVector(5)
+		set {_el} to {_pl} ~ {_vec}
+		spawnParticle_Dust(rgb(0, 0, 0), 2, {_vector})
+
 
 function kitParticle_HellishOccultism_Attack(entity: entity):
 	loop 60 times:

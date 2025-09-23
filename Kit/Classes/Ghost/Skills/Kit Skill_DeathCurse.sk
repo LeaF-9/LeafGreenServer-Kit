@@ -90,10 +90,14 @@ function kitEffect_DeathCurse(player: player):
 		loop {_cursed::*}:
 			loop 3 times:
 				set {_l} to loop-value-2
-				add a random number between -1 and 1 to x-coordinate of {_l}
-				add a random number between -1 and 1 to z-coordinate of {_l}
-				add a random number between 0 and 3 to y-coordinate of {_l}
-				spawnParticle_Color(entity_effect, rgb(0, 0, 0), {_l})
+				set {_add.x} to a random number between -1 and 1
+				set {_add.z} to a random number between -1 and 1
+				set {_add.y} to a random number between 0 and 3
+
+				add {_add.x} to x-pos of {_l}
+				add {_add.z} to z-pos of {_l}
+				add {_add.y} to y-pos of {_l}
+				spawnParticle_Color(entity_effect, rgb(7, 4, 4), {_l})
 		wait a tick
 
 on damage of player:
@@ -112,6 +116,6 @@ local function kitParticle_DeathCurse_Targeting(player: player, target: player):
 		set {_meter} to {_distance} / {_count}
 		loop {_count} times:
 			set {_loopnum.2} to loop-number-2
-			set {_el} to location {_loopnum.2} * {_meter} meters in front of {_baseloc}
+			set {_el} to location ({_loopnum.2} * {_meter}) meters in front of {_baseloc}
 			spawnParticle_Dust(rgb(0, 0, 0), 1.5, {_el})
 		wait a tick

@@ -40,9 +40,10 @@ function kitEffect_SensorMine(player: player):
 		set {_rad} to 0
 		loop 10 times:
 			add 36 to {_rad}
-			set {_el} to {_l}
-			add 3 * sin({_rad}) to x-coordinate of {_el}
-			add 3 * cos({_rad}) to z-coordinate of {_el}
+			
+			set {_vec} to vector(3, 0, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_l} ~ {_vec}
 			spawnParticle_Dust(rgb(240, 230, 140), 1, {_el}, {_player})
 		loop all players in radius 3 around {_l}:
 			kitCheckTeam({_player}, loop-player, false) is true
@@ -62,9 +63,10 @@ function kitEffect_SensorMine_Boom(player: player, loc: location):
 			playSound("block.note_block.pling", 1, 2, {_loc})
 		loop 10 times:
 			add 36 to {_rad}
-			set {_el} to {_loc}
-			add 3 * sin({_rad}) to x-coordinate of {_el}
-			add 3 * cos({_rad}) to z-coordinate of {_el}
+
+			set {_vec} to vector(3, 0, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_loc} ~ {_vec}
 			spawnParticle_Dust(rgb(139, 0, 0), 1.5, {_el})
 		wait a tick
 	kitExplosion({_player}, 3.1, {_loc})

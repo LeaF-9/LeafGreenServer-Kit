@@ -59,10 +59,12 @@ local function kitParticle_GearyCog_Positive(fromloc: location, toloc: location)
 			set {_mt} to 0
 			loop 10 times:
 				add 0.1 to {_mt}
-				add {_mt} * sin({_tmprad}) to x-coordinate of {_el}
-				add {_mt} * cos({_tmprad}) to z-coordinate of {_el}
+				set {_vec} to vector({_mt}, 0, 0)
+				rotate {_vec} around y-axis by {_tmprad}
+				set {_el} to {_el} ~ {_vec}
+
 				spawnParticle_Dust(rgb(255, 243, 82), 0.5, {_el})
-				set {_sub} to loop-number-3 * loop-number-3 / 10
+				set {_sub} to ((loop-number-3) * (loop-number-3) / 10)
 				subtract {_sub} from {_tmprad}
 		add 10 to {_rad}
 		wait a tick
@@ -77,13 +79,14 @@ local function kitParticle_GearyCog_Negative(fromloc: location, toloc: location)
 	add 1 to y-pos of {_fromloc}
 	set {_rad} to 0
 	loop 5 times:
-		set {_m} to {_distance} / 5 * loop-number
+		set {_m} to (({_distance}) / 5 * (loop-number))
 		set {_centerloc} to location {_m} meters in front of {_fromloc}
 		loop 8 times:
-			set {_tmprad} to {_rad} + (45 * loop-number-2)
-			set {_el} to {_centerloc}
-			add 1 * sin({_tmprad}) to x-coordinate of {_el}
-			add 1 * cos({_tmprad}) to z-coordinate of {_el}
+			set {_tmprad} to ({_rad} + (45 * (loop-number-2)))
+			set {_vec} to vector(1, 0, 0)
+			rotate {_vec} around y-axis by {_tmprad}
+			set {_el} to {_centerloc} ~ {_vec}
+
 			spawnParticle_Dust(rgb(90, 68, 152), 0.5, {_el})
 		add 10 to {_rad}
 		wait a tick
@@ -102,9 +105,9 @@ local function kitParticle_GearyCog_Change(baseloc: location):
 		set {_m.right} to 0.5 * sin({_rad})
 		set {_loc.right} to location {_m.right} meters to the right of {_baseloc}
 		set {_el} to {_baseloc}
-		set x-coordinate of {_el} to x-pos of {_loc.upper} + x-pos of {_loc.right} - x-pos of {_el}
-		set y-coordinate of {_el} to y-pos of {_loc.upper} + y-pos of {_loc.right} - y-pos of {_el}
-		set z-coordinate of {_el} to z-pos of {_loc.upper} + z-pos of {_loc.right} - z-pos of {_el}
+		set (x-pos of {_el}) to ((x-pos of {_loc.upper}) + (x-pos of {_loc.right}) - (x-pos of {_el}))
+		set (y-pos of {_el}) to ((y-pos of {_loc.upper}) + (y-pos of {_loc.right}) - (y-pos of {_el}))
+		set (z-pos of {_el}) to ((z-pos of {_loc.upper}) + (z-pos of {_loc.right}) - (z-pos of {_el}))
 		set {_circles::%{_rad}%} to {_el}
 	# 回転中のギア
 	set {_baserad} to 0

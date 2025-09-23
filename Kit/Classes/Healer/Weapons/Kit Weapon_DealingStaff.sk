@@ -67,11 +67,11 @@ local function kitParticle_DealingStaff_Launch(player: player):
 		add 24 to {_baserad}
 		set {_rad} to {_baserad}
 		loop 4 times:
-			set {_el} to {_baseloc}
 			add 90 to {_rad}
-			add {_y} to y-coordinate of {_el}
-			add 10 * sin({_rad}) to x-coordinate of {_el}
-			add 10 * cos({_rad}) to z-coordinate of {_el}
+			set {_vec} to vector(10, 0, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_vec}
+			add {_y} to y-pos of {_el}
 			spawnParticle(witch, {_el})
 		if mod(loop-number, 3) is 0:
 			wait a tick

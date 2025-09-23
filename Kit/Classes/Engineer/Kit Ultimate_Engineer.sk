@@ -101,18 +101,18 @@ function kitUltEngineer(player: player):
 		if {_tpy} <= 0:
 			set {_tpy} to 0.5
 		loop 4 times:
-			set {_ln} to loop-number - 1
+			set {_ln} to ((loop-number) - 1)
 			set {_temploc} to {_tpeffbase}
-			add 0.5 * {_ln} + {_tpy} to y-coordinate of {_temploc}
+			add ((0.5 * {_ln}) + {_tpy}) to (y-pos of {_temploc})
 			add {_temploc} to {_tpeffs::*}
 		loop {_tpeffs::*}:
 			set {_tpeff} to loop-value
 			set {_rad} to 0
 			loop 10 times:
 				add 36 to {_rad}
-				set {_eff} to {_tpeff}
-				add sin({_rad}) * 0.5 to x-coordinate of {_eff}
-				add cos({_rad}) * 0.5 to z-coordinate of {_eff}
+				set {_vec} to vector(0.5, 0, 0)
+				rotate {_vec} around y-axis by {_rad}
+				set {_eff} to {_tpeff} ~ {_vec}
 				spawnParticle_Dust(rgb(34, 58, 112), 1, {_eff})
 		loop {_fromloc::*}:
 			set {_fromeffbase} to loop-value
@@ -122,16 +122,17 @@ function kitUltEngineer(player: player):
 			loop 4 times:
 				set {_ln} to loop-number - 1
 				set {_temploc} to {_fromeffbase}
-				add 0.5 * {_ln} + {_fromy} to y-coordinate of {_temploc}
+				add ((0.5 * {_ln}) + {_fromy}) to y-pos of {_temploc}
 				add {_temploc} to {_fromeffs::*}
 			loop {_fromeffs::*}:
 				set {_fromeff} to loop-value-2
 				set {_rad} to 0
 				loop 36 times:
 					add 10 to {_rad}
-					set {_eff} to {_fromeff}
-					add sin({_rad}) * 3 to x-coordinate of {_eff}
-					add cos({_rad}) * 3 to z-coordinate of {_eff}
+					set {_vec} to vector(3, 0, 0)
+					rotate {_vec} around y-axis by {_rad}
+
+					set {_eff} to {_fromeff} ~ {_vec}
 					spawnParticle_Dust(rgb(34, 58, 112), 1, {_eff})
 #	存在確認	
 		set {_exist} to kitFakeCheck({_player}, "Machine-Transport Lift")

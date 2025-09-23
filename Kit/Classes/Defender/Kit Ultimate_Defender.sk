@@ -10,20 +10,12 @@ function kitUltDefender(player: player):
 			set {_t} to 0
 			set {_pl} to location of loop-player
 			add 1 to y-coordinate of {_pl}
-			loop 19 time:
-				loop 36 time:
-					set {_loc} to {_pl}
-					set {_vector} to {_loc}
-					set {_x} to x-coordinate of {_loc}
-					set {_y} to y-coordinate of {_loc}
-					set {_z} to z-coordinate of {_loc}
-					set x-coordinate of {_vector} to {_x} + ( 1 * sin({_s}) * cos({_t}) )
-					set y-coordinate of {_vector} to {_y} + ( 1 * cos({_s}) )
-					set z-coordinate of {_vector} to {_z} + ( 1 * sin({_s}) * sin({_t}) )
-					chance of 1%:
-						spawnParticle_Dust(rgb(0, 255, 255), 1, {_vector})
-					add 10 to {_t}
-				add 10 to {_s}
+
+			loop 20 times:
+				set {_vec} to randomVector(1)
+				set {_el} to {_pl} ~ {_vec}
+				spawnParticle_Dust(rgb(0, 255, 255), 1, {_el})
+
 		loop all players in radius 2 around {_player}:
 			loop-player is not {_player}
 			kitCheckTeam({_player}, loop-player, true, true) is true

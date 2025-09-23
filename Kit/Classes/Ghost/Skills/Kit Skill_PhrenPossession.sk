@@ -80,9 +80,9 @@ local function kitParticle_PhrenPossession_Control(player: player):
 	set {_effbaseloc} to location of {_player}
 	set {_rad} to 0
 	loop 6 times:
-		set {_el} to {_effbaseloc}
 		add 60 to {_rad}
-		add 0.5 * sin({_rad}) to x-coordinate of {_el}
-		add 0.5 * cos({_rad}) to z-coordinate of {_el}
-		add 2 to y-coordinate of {_el}
+		set {_vec} to vector(0.5, 0, 0)
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_effbaseloc} ~ {_vec}
+		add 2 to y-pos of {_el}
 		spawnParticle_Color(entity_effect, rgb(50, 0, 0), {_el})

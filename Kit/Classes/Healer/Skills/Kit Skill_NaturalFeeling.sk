@@ -22,9 +22,10 @@ function kitEffect_NaturalFeeling(player: player):
 		set {_angle} to 0
 		loop 36 times:
 			set {_loc} to location of {_player}
-			add 10 * sin({_angle}) to x-coordinate of {_loc}
-			add 10 * cos({_angle}) to z-coordinate of {_loc}
-			add 1 to y-coordinate of {_loc}
+			set {_vec} to vector(10, 0, 0)
+			rotate {_vec} around y-axis by {_angle}
+			set {_loc} to {_loc} ~ {_vec}
+			add 1 to y-pos of {_loc}
 			spawnParticle_Dust(rgb(121, 192, 110), 1, {_loc})
 			add 10 to {_angle}
 		if getKitStats({_player}, "NaturalFeeling") <= 0:
