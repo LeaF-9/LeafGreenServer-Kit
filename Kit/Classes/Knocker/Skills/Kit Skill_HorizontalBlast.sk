@@ -43,3 +43,65 @@ function kitEffect_HorizontalBlast(player: player):
 	loop all players:
 		getKitStats(loop-player, "FallRemove") is {_now}
 		deleteKitStats(loop-player, "FallRemove")
+
+
+
+local function particlePrepare(loc: location):
+	add rgb(0, 255, 255) to {_colors::*}
+	add rgb(157, 241, 241) to {_colors::*}
+	add rgb(80, 231, 231) to {_colors::*}
+
+	set {_axisVector} to setVector(({_loc}), (location 10 meters in front of {_loc}))
+	set {_rotateVector} to setVector(({_loc}), (location 10 meters to the left of {_loc}), 5)
+
+	set {_spiralCount} to 4
+	set {_m} to 0
+	set {_rad} to 0
+	set {_addrad} to (360 / {_spiralCount})
+	set {_plusrad} to 20
+	loop 50 times:
+		add 1 to {_m}
+		set {_baseloc} to location {_m} meters in front of {_loc}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(entity_effect, {_color}, {_baseloc})
+
+		loop {_spiralCount} times:
+			add {_addrad} to {_rad}
+			set {_vec} to {_rotateVector}
+			rotate {_vec} around {_axisVector} by {_rad}
+			set {_el} to {_baseloc} ~ {_vec}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Color(entity_effect, {_color}, {_el})
+		
+		add {_plusrad} to {_rad}
+
+		wait a tick if mod({_m}, 10) = 0
+
+local function particleBlast(loc: location, a: number):
+	add rgb(0, 255, 255) to {_colors::*}
+	add rgb(157, 241, 241) to {_colors::*}
+	add rgb(80, 231, 231) to {_colors::*}
+
+	set {_axisVector} to setVector(({_loc}), (location 10 meters in front of {_loc}))
+	set {_rotateVector} to setVector(({_loc}), (location 10 meters to the left of {_loc}), 5)
+
+	set {_spiralCount} to 8
+	set {_m} to 0
+	set {_rad} to ((10 - {_a}) * 40)
+	set {_addrad} to (360 / {_spiralCount})
+	set {_plusrad} to 20
+
+	loop 50 times:
+		add 1 to {_m}
+		set {_baseloc} to location {_m} meters in front of {_loc}
+
+		loop {_spiralCount} times:
+			add {_addrad} to {_rad}
+			set {_vec} to {_rotateVector}
+			rotate {_vec} around {_axisVector} by {_rad}
+			set {_el} to {_baseloc} ~ {_vec}
+			set {_color} to a random element out of {_colors::*}
+			chance of 30%:
+				spawnParticle_Dust({_color}, 2.5, {_el})
+		
+		add {_plusrad} to {_rad}

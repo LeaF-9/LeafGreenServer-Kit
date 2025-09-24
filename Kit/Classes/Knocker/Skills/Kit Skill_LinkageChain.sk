@@ -50,125 +50,82 @@ function kitEffect_LinkageChain(player: player):
 options:
 	radiusm: 0.25
 
-function kitKnockerChainParticles(baseloc: location, meter: number):
+local function kitKnockerChainParticles(baseloc: location, meter: number):
 	set {_m} to 0
 	loop {_meter} times:
 		add 1 to {_m}
 		set {_horim} to {_m} - 0.75
 		set {_vertm} to {_m} - 0.25
 		set {_horiloc} to location {_horim} meters in front of {_baseloc}
+		set {_horiCreateLoc} to {_baseloc}
+		add 90 to pitch of {_horiCreateLoc}
+		set {_horiBaseVec} to setVector(({_horiCreateLoc}), (location 10 meters in front of {_horiCreateLoc}))
+
 		set {_vertloc} to location {_vertm} meters in front of {_baseloc}
+		set {_vertBaseVec} to setVector(({_baseloc}), (location 10 meters to the left of {_baseloc}))
+
+		set {_rotateVec} to setVector(({_baseloc}), (location 10 meters in front of {_baseloc}), ({@radiusm}))
+
 		# horizontal(水平) chain作成
 		set {_rad} to 0
 		loop 10 times:
-			set {_h.eb} to {_horiloc}
-			# 縦方向
-			set {_h.m1} to {_horiloc}
-			set {_h.r1} to {@radiusm} * cos({_rad})
-			set {_h.t1} to location {_h.r1} meters in front of {_h.m1}
-			# 横方向
-			set {_h.m2} to {_horiloc}
-			set pitch of {_h.m2} to 0
-			set {_h.r2} to {@radiusm} * sin({_rad})
-			set {_h.t2} to location {_h.r2} meters to the right of {_h.m2}
-			set x-coordinate of {_h.eb} to x-coordinate of {_h.t1} + x-coordinate of {_h.t2} - x-coordinate of {_h.eb}
-			set y-coordinate of {_h.eb} to y-coordinate of {_h.t1} + y-coordinate of {_h.t2} - y-coordinate of {_h.eb}
-			set z-coordinate of {_h.eb} to z-coordinate of {_h.t1} + z-coordinate of {_h.t2} - z-coordinate of {_h.eb}
+			set {_vec} to {_rotateVec}
+			rotate {_vec} around {_horiBaseVec} by {_rad}
+			set {_h.eb} to {_horiloc} ~ {_vec}
 			chance of 10%:
 				spawnParticle_Dust(rgb(119, 136, 153), 1, {_h.eb})
 			add 36 to {_rad}
+
 		# vertical(垂直) chain作成
 		set {_rad} to 0
 		loop 10 times:
-			set {_v.eb} to {_vertloc}
-			# 縦方向
-			set {_v.m1} to {_vertloc}
-			set {_p} to pitch of {_v.m1}
-			if {_p} < 0:
-				set {_p} to -1 * 90 - {_p}
-				set {_y} to yaw of {_v.m1}
-				add 180 to {_y}
-				if {_y} >= 360:
-					set {_y} to {_y} - 360
-				set yaw of {_v.m1} to {_y}
-			else:
-				set {_p} to {_p} - 90
-			set pitch of {_v.m1} to {_p}
-			set {_v.r1} to {@radiusm} * cos({_rad})
-			set {_v.t1} to location {_v.r1} meters in front of {_v.m1}
-			# 横方向
-			set {_v.m2} to {_vertloc}
-			set pitch of {_v.m2} to 0
-			set {_v.r2} to {@radiusm} * sin({_rad})
-			set {_v.t2} to location {_v.r2} meters in front of  {_v.m2}
-			set x-coordinate of {_v.eb} to x-coordinate of {_v.t1} + x-coordinate of {_v.t2} - x-coordinate of {_v.eb}
-			set y-coordinate of {_v.eb} to y-coordinate of {_v.t1} + y-coordinate of {_v.t2} - y-coordinate of {_v.eb}
-			set z-coordinate of {_v.eb} to z-coordinate of {_v.t1} + z-coordinate of {_v.t2} - z-coordinate of {_v.eb}
+			set {_vec} to {_rotateVec}
+			rotate {_vec} around {_vertBaseVec} by {_rad}
+			set {_v.eb} to {_vertloc} ~ {_vec}
 			chance of 10%:
 				spawnParticle_Dust(rgb(112, 128, 144), 1, {_v.eb})
 			add 36 to {_rad}
 
-function kitKnockerConnectParticles(player1: player, player2: player):
+local function kitKnockerConnectParticles(player1: player, player2: player):
 	set {_dis} to distance between {_player1} and {_player2}
 	set {_dis} to round({_dis})
 	set {_vector} to setVector({_player1}, {_player2})
 	set {_baseloc} to location of {_player1}
-	add 1 to y-coordinate of {_baseloc}
+	add 1 to y-pos of {_baseloc}
 	set yaw of {_baseloc} to yaw of {_vector}
 	set pitch of {_baseloc} to pitch of {_vector}
+
 	set {_m} to 0
 	loop {_dis} times:
 		add 1 to {_m}
 		set {_horim} to {_m} - 0.75
 		set {_vertm} to {_m} - 0.25
 		set {_horiloc} to location {_horim} meters in front of {_baseloc}
+		set {_horiCreateLoc} to {_baseloc}
+		add 90 to pitch of {_horiCreateLoc}
+		set {_horiBaseVec} to setVector(({_horiCreateLoc}), (location 10 meters in front of {_horiCreateLoc}))
+
 		set {_vertloc} to location {_vertm} meters in front of {_baseloc}
+		set {_vertBaseVec} to setVector(({_baseloc}), (location 10 meters to the left of {_baseloc}))
+
+		set {_rotateVec} to setVector(({_baseloc}), (location 10 meters in front of {_baseloc}), ({@radiusm}))
+
 		# horizontal(水平) chain作成
 		set {_rad} to 0
 		loop 10 times:
-			set {_h.eb} to {_horiloc}
-			# 縦方向
-			set {_h.m1} to {_horiloc}
-			set {_h.r1} to {@radiusm} * cos({_rad})
-			set {_h.t1} to location {_h.r1} meters in front of {_h.m1}
-			# 横方向
-			set {_h.m2} to {_horiloc}
-			set pitch of {_h.m2} to 0
-			set {_h.r2} to {@radiusm} * sin({_rad})
-			set {_h.t2} to location {_h.r2} meters to the right of {_h.m2}
-			set x-coordinate of {_h.eb} to x-coordinate of {_h.t1} + x-coordinate of {_h.t2} - x-coordinate of {_h.eb}
-			set y-coordinate of {_h.eb} to y-coordinate of {_h.t1} + y-coordinate of {_h.t2} - y-coordinate of {_h.eb}
-			set z-coordinate of {_h.eb} to z-coordinate of {_h.t1} + z-coordinate of {_h.t2} - z-coordinate of {_h.eb}
+			set {_vec} to {_rotateVec}
+			rotate {_vec} around {_horiBaseVec} by {_rad}
+			set {_h.eb} to {_horiloc} ~ {_vec}
 			chance of 10%:
 				spawnParticle_Dust(rgb(119, 136, 153), 1, {_h.eb})
 			add 36 to {_rad}
+
 		# vertical(垂直) chain作成
 		set {_rad} to 0
 		loop 10 times:
-			set {_v.eb} to {_vertloc}
-			# 縦方向
-			set {_v.m1} to {_vertloc}
-			set {_p} to pitch of {_v.m1}
-			if {_p} < 0:
-				set {_p} to -1 * 90 - {_p}
-				set {_y} to yaw of {_v.m1}
-				add 180 to {_y}
-				if {_y} >= 360:
-					set {_y} to {_y} - 360
-				set yaw of {_v.m1} to {_y}
-			else:
-				set {_p} to {_p} - 90
-			set pitch of {_v.m1} to {_p}
-			set {_v.r1} to {@radiusm} * cos({_rad})
-			set {_v.t1} to location {_v.r1} meters in front of {_v.m1}
-			# 横方向
-			set {_v.m2} to {_vertloc}
-			set pitch of {_v.m2} to 0
-			set {_v.r2} to {@radiusm} * sin({_rad})
-			set {_v.t2} to location {_v.r2} meters in front of {_v.m2}
-			set x-coordinate of {_v.eb} to x-coordinate of {_v.t1} + x-coordinate of {_v.t2} - x-coordinate of {_v.eb}
-			set y-coordinate of {_v.eb} to y-coordinate of {_v.t1} + y-coordinate of {_v.t2} - y-coordinate of {_v.eb}
-			set z-coordinate of {_v.eb} to z-coordinate of {_v.t1} + z-coordinate of {_v.t2} - z-coordinate of {_v.eb}
+			set {_vec} to {_rotateVec}
+			rotate {_vec} around {_vertBaseVec} by {_rad}
+			set {_v.eb} to {_vertloc} ~ {_vec}
 			chance of 10%:
 				spawnParticle_Dust(rgb(112, 128, 144), 1, {_v.eb})
 			add 36 to {_rad}
