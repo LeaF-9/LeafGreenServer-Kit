@@ -8,6 +8,15 @@ function kitEffect_SylphyMischief(player: player):
 	set {_baseloc} to location of head of {_player}
 	loop 10 times:
 		add {_baseloc} to {_sylphies::*}
+	
+	add rgb(152, 251, 152) to {_colors.sylphy::*}
+	add rgb(172, 238, 186) to {_colors.sylphy::*}
+	add rgb(118, 243, 156) to {_colors.sylphy::*}
+
+	add rgb(127, 255, 212) to {_colors.aura::*}
+	add rgb(101, 238, 215) to {_colors.aura::*}
+	add rgb(161, 238, 221) to {_colors.aura::*}
+
 	loop 200 times:
 		loop {_sylphies::*}:
 			set {_sl} to loop-value-2
@@ -24,28 +33,20 @@ function kitEffect_SylphyMischief(player: player):
 				set {_m} to a random number between 0 and 1
 				set {_sl} to location {_m} meters in front of {_dl}
 				set {_sylphies::%loop-index%} to {_sl}
-			loop a random integer between 0 and 2 times:
-				set {_el} to {_sl}
-				add a random number between 0 and 0.5 to x-coordinate of {_el}
-				add a random number between 0 and 0.5 to y-coordinate of {_el}
-				add a random number between 0 and 0.5 to z-coordinate of {_el}
-				spawnParticle_Dust(rgb(152, 251, 152), 1, {_el})
-			set {_s} to 0
-			set {_t} to 0
-			loop 10 time:
-				loop 9 time:
-					set {_el} to {_sl}
-					set {_v} to {_el}
-					set {_x} to x-coordinate of {_el}
-					set {_y} to y-coordinate of {_el}
-					set {_z} to z-coordinate of {_el}
-					set x-coordinate of {_v} to {_x} + ( 3 * sin({_s}) * cos({_t}) )
-					set y-coordinate of {_v} to {_y} + ( 3 * cos({_s}) )
-					set z-coordinate of {_v} to {_z} + ( 3 * sin({_s}) * sin({_t}) )
-					chance of 1%:
-						spawnParticle_Color(entity_effect, rgb(127, 255, 212), {_v})
-					add 40 to {_t}
-				add 20 to {_s}
+			
+			set {_count} to a random integer between 0 and 2
+			loop {_count} times:
+				set {_el} to moveRandomLocation({_sl}, 0.5)
+				set {_color} to a random element out of {_colors.sylphy::*}
+				spawnParticle_Dust({_color}, 1, {_el})
+			
+			loop 20 times:
+				set {_vec} to randomVector(3)
+				set {_el} to {_sl} ~ {_vec}
+				chance of 3%:
+					set {_color} to a random element out of {_colors.aura::*}
+					spawnParticle_Color(entity_effect, {_color}, {_el})
+
 			loop all entities in radius 3 around {_sl}:
 				kitCheckTeam(loop-entity, {_player}, false) is true
 				LastKiller(loop-entity, {_player})
