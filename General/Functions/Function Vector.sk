@@ -19,3 +19,29 @@ function setVector(from: location, to: location, power: number = 1) :: vector:
 		set {_vector} to normalized {_vector}
 		set {_vector} to {_vector} * vector({_power}, {_power}, {_power})
 	return {_vector}
+
+function getVectorFromYawAxis(player: player) :: vector:
+	set {_playerLoc} to location of {_player}
+
+	set {_toLoc} to location of {_player}
+	add 90 to pitch of {_toLoc}
+	set {_toLoc} to location 10 meters in front of {_toLoc}
+
+	set {_vector} to setVector({_playerLoc}, {_toLoc})
+	return {_vector}
+
+function getVectorFromPitchAxis(player: player) :: vector:
+	set {_playerLoc} to location of {_player}
+
+	set {_toLoc} to location 10 meters to the left of ({_playerLoc})
+
+	set {_vector} to setVector({_playerLoc}, {_toLoc})
+	return {_vector}
+
+function getVectorFromRollAxis(player: player) :: vector:
+	set {_playerLoc} to location of {_player}
+
+	set {_toLoc} to location 10 meters in front of {_playerLoc}
+
+	set {_vector} to setVector({_playerLoc}, {_toLoc})
+	return {_vector}
