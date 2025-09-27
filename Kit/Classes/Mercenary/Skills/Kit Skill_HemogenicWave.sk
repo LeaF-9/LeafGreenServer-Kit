@@ -44,7 +44,7 @@ local function kitParticle_HemogenicWave_Edge(baseloc: location):
 
 	set {_rad} to 0
 	loop 60 times:
-		set {_loc} to location loop-number / 2 meters in front of {_baseloc}
+		set {_loc} to location (loop-number / 2) meters in front of {_baseloc}
 		playSound("entity.guardian.attack", 0.75, 2, {_loc})
 
 		add 6 to {_rad}
@@ -53,13 +53,13 @@ local function kitParticle_HemogenicWave_Edge(baseloc: location):
 			set {_tmprad} to {_rad} + (90 * (loop-number-2))
 			set {_mt} to 0
 			loop 10 times:
-				add 0.1 to {_mt}
+				add 0.5 to {_mt}
 				set {_vec} to vector({_mt}, 0, 0)
 				rotate {_vec} around y-axis by {_tmprad}
 				set {_el} to {_bl} ~ {_vec}
 
 				set {_color} to a random element out of {_colors::*}
-				spawnParticle_DustTransition({_color}, rgb(50, 0, 0), 1, {_el})
+				spawnParticle_DustTransition({_color}, rgb(50, 0, 0), 1.5, {_el})
 				set {_sub} to (loop-number-3) * (loop-number-3) / 5
 				subtract {_sub} from {_tmprad}
 		wait a tick

@@ -20,7 +20,11 @@ function setVector(from: location, to: location, power: number = 1) :: vector:
 		set {_vector} to {_vector} * vector({_power}, {_power}, {_power})
 	return {_vector}
 
-function getVectorFromYawAxis(baseloc: location, power: number = 1) :: vector:
+function getVectorFromYawAxis(baseloc: object, power: number = 1) :: vector:
+	set {_class.Target} to {_baseloc}.getClass().toString()
+	if {_class.Target} contains "entity":
+		set {_baseloc} to {_baseloc}.getLocation()
+
 	set {_playerLoc} to {_baseloc}
 
 	set {_toLoc} to {_baseloc}
@@ -30,7 +34,11 @@ function getVectorFromYawAxis(baseloc: location, power: number = 1) :: vector:
 	set {_vector} to setVector({_playerLoc}, {_toLoc}, {_power})
 	return {_vector}
 
-function getVectorFromPitchAxis(baseloc: location, power: number = 1) :: vector:
+function getVectorFromPitchAxis(baseloc: object, power: number = 1) :: vector:
+	set {_class.Target} to {_baseloc}.getClass().toString()
+	if {_class.Target} contains "entity":
+		set {_baseloc} to {_baseloc}.getLocation()
+
 	set {_playerLoc} to {_baseloc}
 
 	set {_toLoc} to location 10 meters to the left of ({_playerLoc})
@@ -38,7 +46,11 @@ function getVectorFromPitchAxis(baseloc: location, power: number = 1) :: vector:
 	set {_vector} to setVector({_playerLoc}, {_toLoc}, {_power})
 	return {_vector}
 
-function getVectorFromRollAxis(baseloc: location, power: number = 1) :: vector:
+function getVectorFromRollAxis(baseloc: object, power: number = 1) :: vector:
+	set {_class.Target} to {_baseloc}.getClass().toString()
+	if {_class.Target} contains "entity":
+		set {_baseloc} to {_baseloc}.getLocation()
+
 	set {_playerLoc} to {_baseloc}
 
 	set {_toLoc} to location 10 meters in front of {_playerLoc}
