@@ -7,40 +7,43 @@ function kitEffect_StaxisScythe(player: player):
 	playSound("item.trident.riptide_1", 1, 0.75, {_player})
 	# ---------------------
 	set {_baseloc} to location of head of {_player}
-	set {_directloc} to {_baseloc}
-	set pitch of {_directloc} to 0
+
+	# locsリスト変数は基準点 この点を始点として前方に攻撃判定を走らせる
+
 	# --- mid ---
 	set {_locs::mid} to {_baseloc}
 	# -----------
+
+	# left/right基準点を作るためのaxisVector作成
+	set {_yawAxisVector} to getVectorFromYawAxis({_baseloc})
+
 	# --- left ---
-	set {_temloc} to {_directloc}
-	set {_sightloc} to location 10 meters to the left of {_temloc}
-	set pitch of {_sightloc} to pitch of {_baseloc}
-	set {_sightloc} to location 15 meters in front of {_sightloc}
-	set {_vector} to setVector({_baseloc}, {_sightloc})
-	set {_leftloc} to {_baseloc}
-	set yaw of {_leftloc} to yaw of {_vector}
-	set pitch of {_leftloc} to pitch of {_vector}
+	set {_playerRollVector} to getVectorFromRollAxis({_baseloc})
+	rotate {_playerRollVector} around {_yawAxisVector} by -45
+	
+	set {_leftloc} to setDirToVec({_baseloc}, {_playerRollVector})
 	set {_locs::left} to {_leftloc}
 	# ------------
 	# --- right ---
-	set {_temloc} to {_directloc}
-	set {_sightloc} to location 10 meters to the right of {_temloc}
-	set pitch of {_sightloc} to pitch of {_baseloc}
-	set {_sightloc} to location 15 meters in front of {_sightloc}
-	set {_vector} to setVector({_baseloc}, {_sightloc})
-	set {_rightloc} to {_baseloc}
-	set yaw of {_rightloc} to yaw of {_vector}
-	set pitch of {_rightloc} to pitch of {_vector}
+	set {_playerRollVector} to getVectorFromRollAxis({_baseloc})
+	rotate {_playerRollVector} around {_yawAxisVector} by 45
+	
+	set {_rightloc} to setDirToVec({_baseloc}, {_playerRollVector})
 	set {_locs::right} to {_rightloc}
+
 	# -------------
 	loop 20 times:  # 溜め時間
 		set {_basenum} to loop-number
+
+		# hittingリスト関数はその鎌がヒットしたかどうかの確認
+		# 鎌はヒットしたら消える
+
 		loop {_locs::*}:
 			set {_index} to loop-index
 			set {_valoc} to loop-value-2
 			{_hitting::%{_index}%} is not set
 			kitEffect_StaxisScythe_1({_locs::%{_index}%}, mod({_basenum}, 5))
+
 			# --- マーク判定 ---
 			set {_m} to 0
 			loop 15 times:
@@ -105,43 +108,52 @@ function kitEffect_StaxisScythe(player: player):
 			# ----------------
 		wait a tick
 
+# 鎌の演出 5段階
 local function kitEffect_StaxisScythe_1(baseloc: location, num: number):  # 鎌の回転演出の関数
-	if {_num} is 0:
-		set pitch of {_baseloc} to -90
-	else if {_num} is 1:
-		set pitch of {_baseloc} to -18
-	else if {_num} is 2:
-		set pitch of {_baseloc} to 54
-	else if {_num} is 3:
-		add 180 to yaw of {_baseloc}
-		set pitch of {_baseloc} to 54
-	else if {_num} is 4:
-		add 180 to yaw of {_baseloc}
-		set pitch of {_baseloc} to -18
+	set {_yawAxis} to getVectorFromYawAxis({_baseloc})
+	set {_pitchAxis} to getVectorFromPitchAxis({_baseloc})
+	set {_rollAxis} to getVectorFromRollAxis({_baseloc})
+
+	set {_vec} to {_rollAxis}
+
+	set {_rotateAmount} to -90 if {_num} is 0
+	set {_rotateAmount} to -18 if {_num} is 1
+	set {_rotateAmount} to 54 if {_num} is 2
+	set {_rotateAmount} to 126 if {_num} is 3
+	set {_rotateAmount} to 198 if {_num} is 4
+
+	rotate {_vec} around {_pitchAxis} by {_rotateAmount}
+	set {_baseloc} to setDirToVec({_baseloc}, {_vec})
+
 	set {_ln.1} to 0
 	set {_R} to a random number out of 106 and 108
 	set {_G} to a random number out of 25 and 39
 	set {_B} to a random number out of 23 and 45
-	spawnParticle_Color(entity_effect, rgb({_R}, {_G}, {_B}), {_el})
+	spawnParticle_Color(entity_effect, rgb({_R}, {_G}, {_B}), {_baseloc})
+
+	# 3回円を描くことで厚みがかるように
+	# ちょっと尖ったように見えるよう、回数を重ねるごとに真ん中のlengthを増やす
+	# degreeの値が0に近いほどvector lengthを伸ばすように設計
+	# ループ回数が増えるごとにlengthを伸ばすように設計
 	loop 3 times:
 		add 1 to {_ln.1}
-		set {_setmeter.above} to 1.5 + (0.25 * ({_ln.1} - 1))
-		set {_rad} to 45
+		set {_rad} to -45
+
+		# maxLengthは 1.5 - 2 の幅
+		set {_maxLength} to (1.25 + ({_ln.1} / 4))
+		set {_minLength} to 1.5
+		set {_minusLength} to (({_maxLength}) - ({_minLength}))
+
 		loop 6 times:
-			set {_el} to {_baseloc}
-			set {_m1} to {_baseloc}
-			set {_t1} to location {_setmeter.above} * cos({_rad}) meters in front of {_m1}
-			set {_m2} to {_baseloc}
-			if pitch of {_m2} >= 0:  # 2,3
-				add -90 to pitch of {_m2}
-			else:  # 0,1,4
-				add 180 to yaw of {_m2}
-				set {_setpitch} to (90 - abs(pitch of {_m})) * -1
-				set pitch of {_m2} to {_setpitch}
-			set {_t2} to location 1.5 * sin({_rad}) meters in front of {_m2}
-			set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
-			set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
-			set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+			set {_length} to {_minLength}
+			set {_absDegree} to ((45 - (abs({_rad}))) / 45)
+			set {_plusLength} to {_minusLength} * {_absDegree}
+			set {_trueLength} to {_minLength} + {_plusLength}
+
+			set {_vec} to getVectorFromRollAxis({_baseloc}, {_trueLength})
+			rotate {_vec} around {_yawAxis} by {_rad}
+			set {_el} to {_baseloc} ~ {_vec}
+
 			set {_R} to a random integer between 20 and 100
 			spawnParticle_Dust(rgb({_R}, 0, 0), 1, {_el})
 			add 15 to {_rad}
@@ -151,7 +163,7 @@ local function kitEffect_StaxisScythe_2(target: entity, directloc: location):  #
 	set {_rn} to a random integer between 5 and 10
 	loop {_rn} times:
 		set {_playerloc} to location of {_target}
-		add 1 to y-coordinate of {_playerloc}
+		add 1 to y-pos of {_playerloc}
 		set yaw of {_playerloc} to yaw of {_directloc}
 		set pitch of {_playerloc} to 0
 		set {_addyaw} to a random number between -30 and 30
@@ -161,27 +173,22 @@ local function kitEffect_StaxisScythe_2(target: entity, directloc: location):  #
 		loop 5 times:
 			add 1 to {_ln}
 			set {_bl} to {_playerloc}
-			set {_setyaw} to yaw of {_bl} + {_addyaw} / (6 - {_ln})
-			set {_setpitch} to {_addpitch} / (6 - {_ln})
+			set {_setyaw} to ((yaw of ({_bl})) + ({_addyaw}) / (6 - ({_ln})))
+			set {_setpitch} to (({_addpitch}) / (6 - ({_ln})))
 			set yaw of {_bl} to {_setyaw}
 			set pitch of {_bl} to {_setpitch}
 			set {_el} to location {_ln} meters in front of {_bl}
 			spawnParticle_Dust(rgb({_R}, 0, 0), 1, {_el})
 	# -----------------------
 	# --- 鎌側の演出 ---
+	set {_basevec} to getVectorFromPitchAxis({_directloc})
 	set {_rad} to 0
 	loop 10 times:
 		add 36 to {_rad}
+		set {_vec} to getVectorFromRollAxis({_directloc}, 1.5)
+		rotate {_vec} around {_basevec} by {_rad}
+		set {_el} to {_directloc} ~ {_vec}
+
 		set {_R} to a random number between 50 and 150
-		set {_el} to {_directloc}
-		set {_m1} to {_directloc}
-		set pitch of {_m1} to -90
-		set {_t1} to location 1.5 * cos({_rad}) meters in front of {_m1}
-		set {_m2} to {_directloc}
-		set pitch of {_m2} to 0
-		set {_t2} to location 1.5 * sin({_rad}) meters in front of {_m2}
-		set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
-		set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
-		set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
 		spawnParticle_Color(entity_effect, rgb({_R}, 0, 0), {_el})
 	# -----------------
