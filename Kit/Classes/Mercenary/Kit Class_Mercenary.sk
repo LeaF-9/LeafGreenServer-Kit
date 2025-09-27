@@ -7,12 +7,12 @@ function kitTimerMercenary(player: player):
 			kitCheckTeam({_player}, loop-player, false) is true
 			getDebuffs(loop-player, "Blood") is true
 			set {_bbl} to location of loop-player
-			add 1 to y-coordinate of {_bbl}
+			add 1 to y-pos of {_bbl}
 			set {_rad} to 0
 			loop 5 times:
 				add 72 to {_rad}
-				set {_bel} to {_bbl}
-				add 0.5 * sin({_rad}) to x-coordinate of {_bel}
-				add 0.5 * cos({_rad}) to z-coordinate of {_bel}
+				set {_vec} to vector(0.5, 0, 0)
+				rotate {_vec} around y-axis by {_rad}
+				set {_bel} to {_bbl} ~ {_vec}
 				spawnParticle_Dust(rgb(255, 0, 0), 1, {_bel}, {_player})
 		wait a tick

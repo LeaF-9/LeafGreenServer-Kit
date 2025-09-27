@@ -5,16 +5,17 @@ function kitUltMercenary(player: player):
 	setKitStats({_player}, "UltMercenary", true)
 	loop 30 times:
 		shoot a falling redstone block from block above {_player} at speed 1 upwards
-		set metadata value "kit-merult" of shot falling redstone block to "%{_player}%"
-		push shot falling redstone block north at speed random number from -1 to 1
-		push shot falling redstone block east at speed random number from -1 to 1
+		set {_redstone} to shot falling redstone block
+		set metadata value "kit-merult" of {_redstone} to "%{_player}%"
+		push {_redstone} north at speed {_power.n}
+		push {_redstone} east at speed {_power.e}
 	loop 200 times:
 		loop all falling redstone blocks:
-			metadata value "kit-merult" of loop-falling redstone block is "%{_player}%"
-			set {_l} to location of block at loop-falling redstone block
+			metadata value "kit-merult" of (loop-falling redstone block) is "%{_player}%"
+			set {_l} to (location of (block at (loop-falling redstone block)))
 			if block at {_l} is air:
 				if block below {_l} is not passable:
-					delete loop-falling redstone block
+					delete (loop-falling redstone block)
 					if {_lb::*} does not contain {_l}:
 						add {_l} to {_lb::*}
 						playSound("entity.slime.jump", 0.5, 2, {_l})
@@ -48,9 +49,12 @@ local function kitParticle_SanguinaryMurder_Kill(player: player):
 	loop 10 times:
 		loop 3 times:
 			set {_el} to {_baseloc}
-			add a random number between -1 and 1 to x-coordinate of {_el}
-			add a random number between -1 and 1 to z-coordinate of {_el}
-			add a random number between 0 and 2 to y-coordinate of {_el}
+			set {_add.x} to a random number between -1 and 1
+			set {_add.z} to a random number between -1 and 1
+			set {_add.y} to a random number between 0 and 2
+			add {_add.x} to x-pos of {_el}
+			add {_add.y} to z-pos of {_el}
+			add {_add.z} to y-pos of {_el}
 			spawnParticle(explosion_emitter, {_el})
 		wait a tick
 

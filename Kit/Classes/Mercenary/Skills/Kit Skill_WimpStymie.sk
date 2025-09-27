@@ -52,11 +52,11 @@ local function kitParticle_WimpStymie_Aura(player: player):
 	loop 5 times:
 		set {_rad} to 0
 		loop {_loopnum} times:
-			set {_effectloc} to {_bl}
 			add {_addrad} to {_rad}
-			add {@effect-radius} * sin({_rad}) to x-coordinate of {_effectloc}
-			add {@effect-radius} * cos({_rad}) to z-coordinate of {_effectloc}
-			add {_y} to y-coordinate of {_effectloc}
+			set {_vec} to vector({@effect-radius}, 0, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_effectloc} to {_bl} ~ {_vec}
+			add {_y} to y-pos of {_effectloc}
 			set {_color} to a random element out of {_colors::*}
 			spawnParticle_Color(entity_effect, {_color}, {_effectloc})
 		add 0.25 to {_y}
