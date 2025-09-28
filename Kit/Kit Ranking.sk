@@ -42,12 +42,21 @@ command /setranking-position <text>:
 			string tag "custom;ranking-type" of {_nbt} is arg 1
 			set {_exist} to true
 		{_exist} is not set
-		set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b}"
-		spawn an armor stand at {_loc} with nbt {_nbt}
+		spawn an armor stand at {_loc}
 		set {_spawnedmob} to spawned armor stand
+
+		{_spawnedmob}.setInvisible(true)
+		{_spawnedmob}.setInvulnerable(true)
+		{_spawnedmob}.setPersistent(true)
+		{_spawnedmob}.setBasePlate(false)
+		{_spawnedmob}.setGravity(false)
+		{_spawnedmob}.setMarker(true)
+
 		set {_nbt} to nbt compound of {_spawnedmob}
 		set {_custom} to string tag "custom" of {_nbt}
 		set string tag "ranking-type" of {_custom} to arg 1
+
+
 
 # 指定したランキングのベースエンティティを返す関数
 function kitGetRankingBase(type: text) :: entity:
@@ -61,9 +70,16 @@ function kitGetRankingBase(type: text) :: entity:
 		load yml "plugins/skript-yaml/General Options/Rankings.yml" as "ranking.position.get"
 		set {_loc} to invertLocation("%{_type}%.position", "ranking.position.get")
 		unload yml "ranking.position.get"
-		set {_nbt} to nbt compound from "{Invisible:1b,Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Marker:1b}"
-		spawn an armor stand at {_loc} with nbt {_nbt}
+		spawn an armor stand at {_loc}
 		set {_rankingentity} to spawned armor stand
+
+		{_rankingentity}.setInvisible(true)
+		{_rankingentity}.setInvulnerable(true)
+		{_rankingentity}.setPersistent(true)
+		{_rankingentity}.setBasePlate(false)
+		{_rankingentity}.setGravity(false)
+		{_rankingentity}.setMarker(true)
+
 		set {_nbt} to nbt compound of {_rankingentity}
 		set string tag "custom;{@nbt-tag-type}" of {_nbt} to {_type}
 	return {_rankingentity}
