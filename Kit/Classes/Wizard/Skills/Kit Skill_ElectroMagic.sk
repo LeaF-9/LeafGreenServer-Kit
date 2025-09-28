@@ -32,8 +32,8 @@ local function kitParticle_ElectroMagic_Hit(entity: entity):
 		loop 10 times:
 			set {_el} to location of {_entity}
 			add 36 to {_rad}
-			add 0.5 * sin({_rad}) to x-coordinate of {_el}
-			add 0.5 * cos({_rad}) to z-coordinate of {_el}
-			add {_h} to y-coordinate of {_el}
+			set {_vec} to vector(0.5, {_h}, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_el} ~ {_vec}
 			spawnParticle_Color(entity_effect, rgb(100, 100, 0), {_el})
 		wait a tick

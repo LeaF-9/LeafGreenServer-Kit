@@ -10,12 +10,11 @@ function kitEffect_Titan_AttackNormal(player: player, event: object):
 		loop 5 times:
 			set {_baseloc} to location of {_victim}
 			add 0.4 to {_y}
-			add {_y} to y-coordinate of {_baseloc}
 			set {_rad} to 0
 			loop 10 times:
-				set {_effloc} to {_baseloc}
-				add 0.5 * sin({_rad}) to x-coordinate of {_effloc}
-				add 0.5 * cos({_rad}) to z-coordinate of {_effloc}
+				set {_vec} to vector(0.5, {_y}, 0)
+				rotate {_vec} around y-axis by {_rad}
+				set {_effloc} to {_baseloc} ~ {_vec}
 				spawnParticle_Color(entity_effect, rgb(71, 38, 110), {_effloc})
 				add 36 to {_rad}
 			wait a tick
