@@ -4,7 +4,7 @@ function kitEffect_HemogenicWave(player: player):
 	nameCT({_player}, "Hemogenic Wave")
 	kitMsg({_player}, "§4§l血の刃§5を展開します...")
 	set {_baseloc} to location of {_player}
-	add 1 to y-coordinate of {_baseloc}
+	add 1 to y-pos of {_baseloc}
 	set pitch of {_baseloc} to 0
 	kitParticle_HemogenicWave_Edge({_baseloc})
 
@@ -44,23 +44,23 @@ local function kitParticle_HemogenicWave_Edge(baseloc: location):
 
 	set {_rad} to 0
 	loop 60 times:
-		set {_loc} to location loop-number / 2 meters in front of {_baseloc}
+		set {_loc} to location (loop-number / 2) meters in front of {_baseloc}
 		playSound("entity.guardian.attack", 0.75, 2, {_loc})
 
 		add 6 to {_rad}
 		set {_bl} to {_loc}
 		loop 4 times:
-			set {_tmprad} to {_rad} + (90 * loop-number-2)
-			set {_el} to {_bl}
+			set {_tmprad} to {_rad} + (90 * (loop-number-2))
 			set {_mt} to 0
 			loop 10 times:
-				add 0.1 to {_mt}
-				add {_mt} * sin({_tmprad}) to x-coordinate of {_el}
-				add {_mt} * cos({_tmprad}) to z-coordinate of {_el}
+				add 0.5 to {_mt}
+				set {_vec} to vector({_mt}, 0, 0)
+				rotate {_vec} around y-axis by {_tmprad}
+				set {_el} to {_bl} ~ {_vec}
 
 				set {_color} to a random element out of {_colors::*}
-				spawnParticle_DustTransition({_color}, rgb(50, 0, 0), 1, {_el})
-				set {_sub} to loop-number-3 * loop-number-3 / 5
+				spawnParticle_DustTransition({_color}, rgb(50, 0, 0), 1.5, {_el})
+				set {_sub} to (loop-number-3) * (loop-number-3) / 5
 				subtract {_sub} from {_tmprad}
 		wait a tick
 

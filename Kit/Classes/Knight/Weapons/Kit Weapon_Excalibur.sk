@@ -27,10 +27,11 @@ local function excaliburEffect(player: player, bool: boolean):
 			loop 2 times:
 				add {_baserad} to {_rad}
 				add 180 to {_rad}
-				set {_el} to {_baseloc}
-				add 0.5 * sin({_rad}) to x-coordinate of {_el}
-				add 0.5 * cos({_rad}) to z-coordinate of {_el}
-				add {_y} to y-coordinate of {_el}
+				set {_vec} to vector(0.5, 0, 0)
+				rotate {_vec} around y-axis by {_rad}
+
+				set {_el} to {_baseloc} ~ {_vec}
+				add {_y} to y-pos of {_el}
 				spawnParticle(end_rod, {_el})
 			wait a tick
 	else:
@@ -42,9 +43,10 @@ local function excaliburEffect(player: player, bool: boolean):
 			delete {_rad}
 			loop 8 times:
 				add 45 to {_rad}
-				set {_el} to {_baseloc}
-				add 0.5 * sin({_rad}) to x-coordinate of {_el}
-				add 0.5 * cos({_rad}) to z-coordinate of {_el}
-				add {_y} to y-coordinate of {_el}
+				set {_vec} to vector(0.5, 0, 0)
+				rotate {_vec} around y-axis by {_rad}
+
+				set {_el} to {_baseloc} ~ {_vec}
+				add {_y} to y-pos of {_el}
 				spawnParticle_Color(entity_effect, rgb(0, 0, 205), {_el})
 			wait a tick

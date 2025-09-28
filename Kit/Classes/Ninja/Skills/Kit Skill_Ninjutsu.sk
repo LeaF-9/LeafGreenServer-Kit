@@ -168,10 +168,10 @@ function kitNinjutsu_KAZE(player: player, l: location):
 				add 9 to {_rad}
 				add 0.25 to {_y}
 				add 0.5 to {_m}
-				set {_el} to {_l}
-				add {_y} to y-coordinate of {_el}
-				add {_m} * sin({_rad}) to x-coordinate of {_el}
-				add {_m} * cos({_rad}) to z-coordinate of {_el}
+
+				set {_vec} to vector({_m}, {_y}, 0)
+				rotate {_vec} around y-axis by {_rad}
+				set {_el} to {_l} ~ {_vec}
 				spawnParticle_DustTransition(rgb(0, 175, 204), rgb(161, 216, 226), 1.5, {_el})
 			add 10 to {_rad}
 		# ----------------------
@@ -203,8 +203,8 @@ on explosion:
 			set metadata value "undelete" of last dropped item to true
 			spawnParticle(flame, last dropped item)
 			push last dropped item upwards at speed 0.2
-			push last dropped item north at speed random number from -1 to 1
-			push last dropped item east at speed random number from -1 to 1
+			push last dropped item north at speed (random number from -1 to 1)
+			push last dropped item east at speed (random number from -1 to 1)
 		wait 20 ticks
 		loop all dropped items:
 			metadata value "ninjutsu-baku-2" of loop-dropped item is "%{_act}%"
@@ -221,8 +221,8 @@ on explosion:
 				set metadata value "undelete" of last dropped item to true
 				spawnParticle(smoke, last dropped item)
 				push last dropped item upwards at speed 0.1
-				push last dropped item north at speed random number from -1 to 1
-				push last dropped item east at speed random number from -1 to 1
+				push last dropped item north at speed (random number from -1 to 1)
+				push last dropped item east at speed (random number from -1 to 1)
 		wait 20 ticks
 		delete {_dloc::*}
 		loop all dropped items:
@@ -307,13 +307,12 @@ function kitParticle_Ninjutsu_MOKU(loc: location):
 
 # Ninjutsu -水-
 function kitNinjutsu_MIZU(player: player, l: location):
-	set {_y} to y-coordinate of block at {_l}
 	# --- 座標の追加 ---
-	set {_y} to y-coordinate of block at {_player}
+	set {_y} to (y-pos of (block at ({_player})))
 	loop all blocks in radius 5 around {_l}:
-		distance between location of block at {_l} and location of loop-block >= 4
-		y-coordinate of loop-block is {_y}
-		add location of loop-block to {_base::*}
+		(distance between (location of (block at ({_l}))) and (location of (loop-block))) >= 4
+		y-pos of loop-block is {_y}
+		add (location of loop-block) to {_base::*}
 	# ----------------
 	# --- 水のベール展開 ---
 	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 水 -", 110)
@@ -324,7 +323,7 @@ function kitNinjutsu_MIZU(player: player, l: location):
 	loop 10 times:
 		loop {_base::*}:
 			set {_bl} to loop-value-2
-			set {_s} to abs(x-pos of {_bl} - x-pos of location of block at {_l}) / 5
+			set {_s} to (abs((x-pos of ({_bl}) - (x-pos of (location of (block at ({_l})))))) / 5)
 			if {_nm} is between 0 and (4 + {_s} * 3):
 				set {_ch} to 1
 			else:
@@ -431,13 +430,10 @@ function kitParticle_Ninjutsu_HONO_1(baseloc: location):
 		loop 5 times:  # 上3m(0.6mおき)
 			set {_elbase} to {_baseloc}
 			add 0.6 to {_y}
-			add {_y} to y-coordinate of {_elbase}
 			loop 8 times:  # 回転
 				add 45 to {_rad}
-				set {_el} to {_elbase}
-				add 5 * sin({_rad}) to x-coordinate of {_el}
-				add 5 * cos({_rad}) to z-coordinate of {_el}
-				add {_y} to y-coordinate of {_el}
+				set {_vec} to vector(5, {_y}, 0)
+				set {_el} to {_elbase} ~ {_vec}
 				chance of 10%:
 					spawnParticle(flame, {_el})
 			add 10 to {_rad}
@@ -620,19 +616,19 @@ function kitNinjutsu_RAI(player: player, loc: location):
 function kitParticle_Ninjutsu_RAI_1(loc: location):
 	loop 36 times:
 		add 10 to {_rad}
-		set {_el} to {_loc}
-		add 5 * sin({_rad}) to x-pos of {_el}
-		add 5 * cos({_rad}) to z-pos of {_el}
+		set {_vec} to vector(5, 0, 0)
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_loc} ~ {_vec}
 		spawnParticle(enchanted_hit, {_el})
 
 function kitParticle_Ninjutsu_RAI_2(player: player):
 	set {_baseloc} to location of {_player}
 	add 1 to y-pos of {_baseloc}
 	loop 4 times:
-		set {_el} to {_baseloc}
 		add 90 to {_rad}
-		add 0.5 * sin({_rad}) to x-pos of {_el}
-		add 0.5 * cos({_rad}) to z-pos of {_el}
+		set {_vec} to vector(0.5, 0, 0)
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_vec}
 		spawnParticle(enchanted_hit, {_el})
 
 function kitParticle_Ninjutsu_RAI_3(toplayer: player, fromloc: location):

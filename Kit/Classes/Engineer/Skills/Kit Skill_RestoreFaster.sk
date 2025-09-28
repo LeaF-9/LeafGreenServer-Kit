@@ -188,4 +188,6 @@ local function kitParticle_RestoreFaster(player: player, bool: boolean):
 
 local function kitParticle_RestoreFaster_Clock(baseloc: location):
 	set {_yaw} to (yaw of {_baseloc}) * 2
-	spawnParticle_DustTransition(rgb(243, 243, 57), rgb(243, 243, 179), 1, particleLocation_Circle({_baseloc}, 4, 1.2, {_yaw}))
+	set {_locs::*} to particleLocation_Circle({_baseloc}, 4, 1.2, {_yaw})
+	loop {_locs::*}:
+		spawnParticle_DustTransition(rgb(243, 243, 57), rgb(243, 243, 179), 1, loop-value)

@@ -11,14 +11,17 @@ function kitEffect_BloodRain(player: player):
 		add 0.2 to {_meter}
 		set {_skying} to location {_meter} meters in front of {_sky}
 		loop all blocks in radius 5 around {_skying}:
-			y-coordinate of loop-block is y-coordinate of location of block at {_skying}
+			(y-pos of loop-block) is (y-pos of (location of (block at ({_skying}))))
 			loop-block is passable
 			loop 3 times:
 				chance of 10%:
 					set {_sel} to location of loop-block
-					add a random number between -0.5 and 0.5 to x-coordinate of {_sel}
-					add a random number between -0.5 and 0.5 to y-coordinate of {_sel} 
-					add a random number between -0.5 and 0.5 to z-coordinate of {_sel}
+					set {_add.x} to a random number between -0.5 and 0.5
+					set {_add.y} to a random number between -0.5 and 0.5
+					set {_add.z} to a random number between -0.5 and 0.5
+					add {_add.x} to x-pos of {_sel}
+					add {_add.y} to y-pos of {_sel} 
+					add {_add.z} to z-pos of {_sel}
 					spawnParticle_Dust(rgb(150, 0, 0), 2, {_sel})
 			chance of 5%:
 				shoot a snowball from loop-block at speed 1 downward

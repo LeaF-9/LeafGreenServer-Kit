@@ -4,7 +4,10 @@ function kitEffect_JobSwitch(player: player):
 	set {_tool} to {_player}'s tool
 	nameCT({_player}, "Job Switch")
 	kitMsg({_player}, "§2光線を発射します...")
-	set {_baseloc} to location of head of {_player}
+	set {_baseloc} to head of {_player}
+	set {_axisVector} to getVectorFromRollAxis({_baseloc})
+	set {_rotateVector} to getVectorFromYawAxis({_baseloc}, 0.5)
+
 	loop 30 times:
 		{_tg} is not set
 		add 1 to {_front}
@@ -17,28 +20,10 @@ function kitEffect_JobSwitch(player: player):
 		playSound("entity.experience_orb.pickup", 1, 0.05 * {_front}, {_loc})
 		spawnParticle(happy_villager, {_loc})
 	# 円を描くパーティクル ##########
-		set {_eb} to {_loc}
-		set {_m1} to {_eb}
-		set {_p} to pitch of {_m1}
-		if {_p} < 0:
-			set {_p} to -1 * 90 - {_p}
-			set {_y} to yaw of {_m1}
-			add 180 to {_y}
-			if {_y} >= 360:
-				set {_y} to {_y} - 360
-			set yaw of {_m1} to {_y}
-		else:
-			set {_p} to {_p} - 90
-		set pitch of {_m1} to {_p}
-		set {_test1} to 0.5 * cos({_rad})
-		set {_t1} to location {_test1} meters in front of {_m1}
-		set {_m2} to {_eb}
-		set pitch of {_m2} to 0
-		set {_test2} to 0.5 * sin({_rad})
-		set {_t2} to location {_test2} meters to the right of {_m2}
-		set x-coordinate of {_eb} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_eb}
-		set y-coordinate of {_eb} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_eb}
-		set z-coordinate of {_eb} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_eb}
+		set {_vec} to {_rotateVector}
+		rotate {_vec} around {_axisVector} by {_rad}
+		set {_eb} to {_loc} ~ {_vec}
+	
 		spawnParticle(happy_villager, {_eb})
 	# #############################
 		wait a tick

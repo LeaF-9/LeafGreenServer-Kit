@@ -27,10 +27,10 @@ function kitEffect_UltWarrior(player: player):
 			set {_y} to 2 - ({_dy} - 2)
 		else:
 			set {_y} to {_dy}
-		add {_y} to y-coordinate of {_loc}
 		add 9 to {_rad}
-		add 0.5 * sin({_rad}) to x-coordinate of {_loc}
-		add 0.5 * cos({_rad}) to z-coordinate of {_loc}
+		set {_vec} to vector(0.5, {_y}, 0)
+		rotate {_vec} around y-axis by {_rad}
+		set {_loc} to {_loc} ~ {_vec}
 		spawnParticle(angry_villager, {_loc})
 		wait a tick
 

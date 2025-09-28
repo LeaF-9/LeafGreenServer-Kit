@@ -203,10 +203,14 @@ local function kitParticle_RecipientGenie_Cover(player: player, target: player):
 	add rgb(122, 197, 247) to {_colors.trail::*}
 	add rgb(118, 138, 250) to {_colors.trail::*}
 
-	set {_color} to a random element out of {_colors.fairy::*}
-	spawnParticle_Dust({_color}, 1, particleLocation_Circle({_loc.player}, 10, 1))
-	set {_color} to a random element out of {_colors.fairy::*}
-	spawnParticle_Dust({_color}, 0.8, particleLocation_Circle({_loc.target}, 10, 0.5))
+	set {_locs::*} to particleLocation_Circle({_loc.player}, 10, 1)
+	loop {_locs::*}:
+		set {_color} to a random element out of {_colors.fairy::*}
+		spawnParticle_Dust({_color}, 1, loop-value)
+	set {_locs::*} to particleLocation_Circle({_loc.target}, 10, 0.5)
+	loop {_locs::*}:
+		set {_color} to a random element out of {_colors.fairy::*}
+		spawnParticle_Dust({_color}, 0.8, loop-value)
 
 	set {_count} to 10
 	set {_distance} to distance between {_loc.player} and {_loc.target}

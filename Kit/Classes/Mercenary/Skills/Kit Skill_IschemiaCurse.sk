@@ -54,32 +54,35 @@ local function kitParticle_IschemiaCurse_Square(point: location):
 	# 弧を描く
 	set {_n.k} to 0
 	loop 30 times:
-		set {_effbaseloc} to {_point}
-		add 6 * sin({_n.k}) to x-coordinate of {_effbaseloc}
-		add 6 * cos({_n.k}) to z-coordinate of {_effbaseloc}
+		set {_vec} to vector(6, 0, 0)
+		rotate {_vec} around y-axis by {_n.k}
+		set {_effbaseloc} to {_point} ~ {_vec}
 		kitParticle_IschemiaCurse_Magic({_effbaseloc})
 		add 12 to {_n.k}
 	# 弦を描く
 		if {_l.A} is not set:
-			set {_l.A} to {_point}
-			set yaw of {_l.A} to 120
+			set {_vec} to vector(6, 0, 0)
+			rotate {_vec} around y-axis by 90
+			set {_l.A} to {_point} ~ {_vec}
+			set yaw of {_l.A} to 30
 			set pitch of {_l.A} to 0
-			add 6 * sin(90) to x-coordinate of {_l.A}
-			add 6 * cos(90) to z-coordinate of {_l.A}
+
 		if {_l.B} is not set:
-			set {_l.B} to {_point}
-			set yaw of {_l.B} to 0
+			set {_vec} to vector(6, 0, 0)
+			rotate {_vec} around y-axis by 210
+			set {_l.B} to {_point} ~ {_vec}
+			set yaw of {_l.B} to 270
 			set pitch of {_l.B} to 0
-			add 6 * sin(210) to x-coordinate of {_l.B}
-			add 6 * cos(210) to z-coordinate of {_l.B}
+
 		if {_l.C} is not set:
-			set {_l.C} to {_point}
-			set yaw of {_l.C} to 240
+			set {_vec} to vector(6, 0, 0)
+			rotate {_vec} around y-axis by 330
+			set {_l.C} to {_point} ~ {_vec}
+			set yaw of {_l.C} to 150
 			set pitch of {_l.C} to 0
-			add 6 * sin(330) to x-coordinate of {_l.C}
-			add 6 * cos(330) to z-coordinate of {_l.C}
+
 	loop 12 times:
-		add sqrt(3) / 2 to {_n.g}
+		add ((sqrt(3)) / 2) to {_n.g}
 #	A-B
 		set {_loc.g} to location {_n.g} meters in front of {_l.A}
 		kitParticle_IschemiaCurse_Magic({_loc.g})
@@ -92,7 +95,7 @@ local function kitParticle_IschemiaCurse_Square(point: location):
 
 local function kitParticle_IschemiaCurse_Magic(loc: location):
 	loop 200 times:
-		spawnParticle_Dust(rgb(100, 1, 37), 1, {_loc})
+		spawnParticle_Dust(rgb(100, 1, 37), 1.25, {_loc})
 		wait a tick
 
 local function kitParticle_IschemiaCurse_Apply(player: player):

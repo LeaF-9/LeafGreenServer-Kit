@@ -20,25 +20,26 @@ function kitEffect_SeparateField(player: player):
 			set {_to} to location of loop-entity
 			set {_vector} to setVector({_from}, {_to}, 0.5)
 			set velocity of loop-entity to {_vector}
-		set {_s} to 0
-		set {_t} to 0
-		loop 19 time:
-			loop 36 time:
-				set {_el} to {_from}
-				set {_v} to {_el}
-				set {_x} to x-coordinate of {_el}
-				set {_y} to y-coordinate of {_el}
-				set {_z} to z-coordinate of {_el}
-				set x-coordinate of {_v} to {_x} + ( 10 * sin({_s}) * cos({_t}) )
-				set y-coordinate of {_v} to {_y} + ( 10 * cos({_s}) )
-				set z-coordinate of {_v} to {_z} + ( 10 * sin({_s}) * sin({_t}) )
-				chance of 20%:
-					spawnParticle_Dust(rgb(100, 255, 255), 1.5, {_v})
-				add 10 to {_t}
-			add 10 to {_s}
+		
+		particleSphere({_from})
 		wait a tick
 	kitMsg({_player}, "§7§lSeparate Field §9の効果が切れました")
 	wait 3 seconds
 	loop all players:
 		getKitStats(loop-player, "FallRemove") is {_now}
 		deleteKitStats(loop-player, "FallRemove")
+
+
+
+local function particleSphere(loc: location):
+	add rgb(100, 255, 255) to {_colors::*}
+	add rgb(95, 196, 243) to {_colors::*}
+	add rgb(141, 243, 235) to {_colors::*}
+
+	set {_count} to 100
+	loop {_count} times:
+		set {_vec} to randomVector(10)
+		set {_el} to {_loc} ~ {_vec}
+		chance of 50%:
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 1.5, {_el})

@@ -20,17 +20,19 @@ function kitEffect_TornadoWind(player: player):
 		loop 40 times:
 			add 10 to {_rad}
 			add 0.1 to {_y}
-			set {_el} to {_center}
-			add 10 * sin({_rad}) to x-coordinate of {_el}
-			add 10 * cos({_rad}) to z-coordinate of {_el}
-			add {_y} to y-coordinate of {_el}
-			spawnParticle_Dust(rgb(199, 227, 255), 1, {_el})
+			set {_vec} to vector(10, 0, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_center} ~ {_vec}
+			add {_y} to y-pos of {_el}
+			spawnParticle_Dust(rgb(199, 227, 255), 3, {_el})
+
 			loop {_dm::*}:
 				set {_el} to loop-value-3
-				add 1 * sin({_rad}) to x-coordinate of {_el}
-				add 1 * cos({_rad}) to z-coordinate of {_el}
-				add {_y} to y-coordinate of {_el}
-				spawnParticle_Dust(rgb(199, 227, 255), 1, {_el})
+				set {_vec} to vector(1, 0, 0)
+				rotate {_vec} around y-axis by {_rad}
+				set {_el} to {_el} ~ {_vec}
+				add {_y} to y-pos of {_el}
+				spawnParticle_Dust(rgb(199, 227, 255), 2, {_el})
 		wait a tick
 	wait 5 seconds
 	loop all players:

@@ -11,20 +11,11 @@ on projectile hit:
 			set {_vector} to setVector({_from}, {_to})
 			set velocity of loop-entity to {_vector}
 		playSound("entity.elder_guardian.hurt", 1, 1, {_from})
-		loop 10 time:
-			loop 18 time:
-				set {_el} to {_from}
-				set {_v} to {_el}
-				set {_x} to x-coordinate of {_el}
-				set {_y} to y-coordinate of {_el}
-				set {_z} to z-coordinate of {_el}
-				set x-coordinate of {_v} to {_x} + ( 3 * sin({_s}) * cos({_t}) )
-				set y-coordinate of {_v} to {_y} + ( 3 * cos({_s}) )
-				set z-coordinate of {_v} to {_z} + ( 3 * sin({_s}) * sin({_t}) )
-				chance of 50%:
-					spawnParticle_Dust(rgb(112, 128, 144), 1, {_v})
-				add 20 to {_t}
-			add 20 to {_s}
+
+		loop 80 times:
+			set {_vec} to randomVector(3)
+			set {_el} to {_from} ~ {_vec}
+			spawnParticle_Dust(rgb(112, 128, 144), 2, {_el})
 
 function kitEffect_Impulser_Shoot(player: player, event: object):
 	metadata value "gametype" of {_player} is "Kit"

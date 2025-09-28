@@ -277,107 +277,107 @@ local function kitWraith_Potion_Particle(entity: entity):
 
 # 暗闇攻撃 (未実装)
 # 周囲のプレイヤーに盲目を付与し、更に盲目が付与されているプレイヤーを自身の位置に吸引する
-local function kitWraith_Dark(player: player, wraith: entity):
-	set {_baseloc} to location of {_wraith}
-	set {_baserad} to 0
-	set {_m} to 0
-	playSound("entity.warden.tendril_clicks", 1, 0.85, {_baseloc})
-	loop 10 times:
-		add 0.5 to {_m}
-		set {_num.rad} to 0
-		loop 4 times:
-			add 1 to {_num.rad}
-			set {_rad} to {_baserad} + (90 * {_num.rad})
-			set {_el} to {_baseloc}
-			add ({_m} * sin({_rad})) to (x-pos of {_el})
-			add ({_m} * cos({_rad})) to (z-pos of {_el})
-			spawnParticle_Dust(rgb(89, 66, 85), 1, {_el})
-		add 15 to {_baserad}
-		wait a tick
-	# --- 暗闇効果付与 ---
-	loop all entities in radius 10 around {_baseloc}:
-		kitCheckTeam(loop-entity, {_player}, false) is true
-		applyEffect(loop-entity, blindness, 1, 60)
-		setSupporter(loop-entity, {_player})
-	# ------------------
-	kitWraith_Dark_Particle_Launch({_baseloc})
-	wait 10 ticks
-	set {_count} to 0
-	loop 40 times:
-		playSound("entity.warden.attack_impact", 1, 1.2, {_baseloc})
-		set {_baseloc} to location of {_wraith}
-		add 1 to {_count}
-		kitWraith_Dark_Particle_Vortex({_baseloc}, {_count})
-		if mod({_count}, 5) is not 0:
-			wait a tick
-			continue
+# local function kitWraith_Dark(player: player, wraith: entity):
+# 	set {_baseloc} to location of {_wraith}
+# 	set {_baserad} to 0
+# 	set {_m} to 0
+# 	playSound("entity.warden.tendril_clicks", 1, 0.85, {_baseloc})
+# 	loop 10 times:
+# 		add 0.5 to {_m}
+# 		set {_num.rad} to 0
+# 		loop 4 times:
+# 			add 1 to {_num.rad}
+# 			set {_rad} to {_baserad} + (90 * {_num.rad})
+# 			set {_el} to {_baseloc}
+# 			add ({_m} * sin({_rad})) to (x-pos of {_el})
+# 			add ({_m} * cos({_rad})) to (z-pos of {_el})
+# 			spawnParticle_Dust(rgb(89, 66, 85), 1, {_el})
+# 		add 15 to {_baserad}
+# 		wait a tick
+# 	# --- 暗闇効果付与 ---
+# 	loop all entities in radius 10 around {_baseloc}:
+# 		kitCheckTeam(loop-entity, {_player}, false) is true
+# 		applyEffect(loop-entity, blindness, 1, 60)
+# 		setSupporter(loop-entity, {_player})
+# 	# ------------------
+# 	kitWraith_Dark_Particle_Launch({_baseloc})
+# 	wait 10 ticks
+# 	set {_count} to 0
+# 	loop 40 times:
+# 		playSound("entity.warden.attack_impact", 1, 1.2, {_baseloc})
+# 		set {_baseloc} to location of {_wraith}
+# 		add 1 to {_count}
+# 		kitWraith_Dark_Particle_Vortex({_baseloc}, {_count})
+# 		if mod({_count}, 5) is not 0:
+# 			wait a tick
+# 			continue
 		
-		loop all entities in radius 10 around {_baseloc}:
-			loop-entity has potion blindness
-			kitCheckTeam(loop-entity, {_player}, false) is true
-			set {_from} to location of loop-entity
-			set {_vec} to setVector({_from}, {_baseloc}, 0.5)
-			set velocity of loop-entity to {_vec}
-			kitWraith_Dark_Particle_Hit(loop-entity, {_vec})
-		wait a tick
+# 		loop all entities in radius 10 around {_baseloc}:
+# 			loop-entity has potion blindness
+# 			kitCheckTeam(loop-entity, {_player}, false) is true
+# 			set {_from} to location of loop-entity
+# 			set {_vec} to setVector({_from}, {_baseloc}, 0.5)
+# 			set velocity of loop-entity to {_vec}
+# 			kitWraith_Dark_Particle_Hit(loop-entity, {_vec})
+# 		wait a tick
 
 
-local function kitWraith_Dark_Particle_Launch(baseloc: location):
-	# --- 音の演出 ---
-	playSound("block.sculk_catalyst.bloom", 1, 0.75, {_baseloc})
-	# --------------
-	# --- パーティクルの演出 ---
-	set {_rad} to 0
-	loop 10 times:
-		set {_el} to {_baseloc}
-		add 36 to {_rad}
-		add (5 * sin({_rad})) to (x-pos of {_el})
-		add (5 * cos({_rad})) to (z-pos of {_el})
-		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
-	loop 15 times:
-		set {_el} to {_baseloc}
-		set {_random.x} to a random number between -5 and 5
-		set {_random.z} to a random number between -5 and 5
-		add {_random.x} to (x-pos of {_el})
-		add {_random.x} to (z-pos of {_el})
-		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
+# local function kitWraith_Dark_Particle_Launch(baseloc: location):
+# 	# --- 音の演出 ---
+# 	playSound("block.sculk_catalyst.bloom", 1, 0.75, {_baseloc})
+# 	# --------------
+# 	# --- パーティクルの演出 ---
+# 	set {_rad} to 0
+# 	loop 10 times:
+# 		set {_el} to {_baseloc}
+# 		add 36 to {_rad}
+# 		add (5 * sin({_rad})) to (x-pos of {_el})
+# 		add (5 * cos({_rad})) to (z-pos of {_el})
+# 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
+# 	loop 15 times:
+# 		set {_el} to {_baseloc}
+# 		set {_random.x} to a random number between -5 and 5
+# 		set {_random.z} to a random number between -5 and 5
+# 		add {_random.x} to (x-pos of {_el})
+# 		add {_random.x} to (z-pos of {_el})
+# 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
 	# -----------------------
 
 
-local function kitWraith_Dark_Particle_Vortex(loc: location, num: number):
-	set {_baserad} to {_num} * 10
-	set {_baseloc} to location 1 meter above {_loc}
+# local function kitWraith_Dark_Particle_Vortex(loc: location, num: number):
+# 	set {_baserad} to {_num} * 10
+# 	set {_baseloc} to location 1 meter above {_loc}
 
-	set {_count} to 4
-	set {_radius} to 10
-	set {_loop} to 20
-	set {_rad} to {_baserad}
-	set {_addrad} to 360 / {_count}
-	set {_el} to {_baseloc}
-	set {_addm} to {_radius} / {_loop}
-	set {_meter} to 0
-	loop {_loop} times:
-		add {_addm} to {_meter}
-		# 円
-		loop {_count} times:
-			set {_el} to {_baseloc}
-			add ({_meter} * sin({_rad})) to (x-pos of {_el})
-			add ({_meter} * cos({_rad})) to (z-pos of {_el})
-			spawnParticle_Dust(colorRandomizer(0, 0, 0, 50, 0, 50), 1.5, {_el})
-			add {_addrad} to {_rad}
+# 	set {_count} to 4
+# 	set {_radius} to 10
+# 	set {_loop} to 20
+# 	set {_rad} to {_baserad}
+# 	set {_addrad} to 360 / {_count}
+# 	set {_el} to {_baseloc}
+# 	set {_addm} to {_radius} / {_loop}
+# 	set {_meter} to 0
+# 	loop {_loop} times:
+# 		add {_addm} to {_meter}
+# 		# 円
+# 		loop {_count} times:
+# 			set {_el} to {_baseloc}
+# 			add ({_meter} * sin({_rad})) to (x-pos of {_el})
+# 			add ({_meter} * cos({_rad})) to (z-pos of {_el})
+# 			spawnParticle_Dust(colorRandomizer(0, 0, 0, 50, 0, 50), 1.5, {_el})
+# 			add {_addrad} to {_rad}
 
-local function kitWraith_Dark_Particle_Hit(entity: entity, vector: vector):
-	chance of 10%:
-		playSound("entity.warden.nearby_close", 1, 2, {_entity})
-	set {_baseloc} to setDirToVec(location 1 meter above {_entity}, {_vector})
-	loop 3 times:
-		set {_baseel} to {_baseloc}
-		set {_random.x} to a random number between -1 and 1
-		set {_random.y} to a random number between -1 and 1
-		set {_random.z} to a random number between -1 and 1
-		add {_random.x} to (x-pos of {_baseel})
-		add {_random.y} to (y-pos of {_baseel})
-		add {_random.z} to (z-pos of {_baseel})
+# local function kitWraith_Dark_Particle_Hit(entity: entity, vector: vector):
+# 	chance of 10%:
+# 		playSound("entity.warden.nearby_close", 1, 2, {_entity})
+# 	set {_baseloc} to setDirToVec(location 1 meter above {_entity}, {_vector})
+# 	loop 3 times:
+# 		set {_baseel} to {_baseloc}
+# 		set {_random.x} to a random number between -1 and 1
+# 		set {_random.y} to a random number between -1 and 1
+# 		set {_random.z} to a random number between -1 and 1
+# 		add {_random.x} to (x-pos of {_baseel})
+# 		add {_random.y} to (y-pos of {_baseel})
+# 		add {_random.z} to (z-pos of {_baseel})
 
 
 
@@ -385,25 +385,25 @@ local function kitWraith_Dark_Particle_Hit(entity: entity, vector: vector):
 
 # 防御攻撃(未実装)
 # ダメージを完全に無効化し、ダメージを与えた敵にダメージを与える
-local function kitWraith_Barrier(player: player, wraith: entity):
-	playSound("entity.shulker.shoot", 1, 0.6, {_wraith})
-	set metadata value "abyss-barrier" of {_wraith} to true
-	loop 60 times:
-		if {_wraith} is dead:
-			stop
-		spawnParticle_Dust(rgb(73, 55, 89), 0.85, particleLocation_Sphere(location 1.5 meters above {_wraith}, 10, 1.5))
-		wait a tick
-	set metadata value "abyss-barrier" of {_wraith} to false
+# local function kitWraith_Barrier(player: player, wraith: entity):
+# 	playSound("entity.shulker.shoot", 1, 0.6, {_wraith})
+# 	set metadata value "abyss-barrier" of {_wraith} to true
+# 	loop 60 times:
+# 		if {_wraith} is dead:
+# 			stop
+# 		spawnParticle_Dust(rgb(73, 55, 89), 0.85, particleLocation_Sphere(location 1.5 meters above {_wraith}, 10, 1.5))
+# 		wait a tick
+# 	set metadata value "abyss-barrier" of {_wraith} to false
 
-on damage of wither skeleton with priority LOW:
-	metadata value "necromancer-entity-abyss" of victim is true
-	if metadata value "abyss-barrier" of victim is true:
-		cancel event
-		applyEffect(attacker, wither, 3, 20)
-		playSound("entity.shulker_bullet.hit", 1, 0.7, victim)
-		loop 10 times:
-			set {_v} to randomVector(1)
-			spawnParticle_Vector(sculk_charge_pop, {_v}, 0.5, location 1.5 meters above victim)
+# on damage of wither skeleton with priority LOW:
+# 	metadata value "necromancer-entity-abyss" of victim is true
+# 	if metadata value "abyss-barrier" of victim is true:
+# 		cancel event
+# 		applyEffect(attacker, wither, 3, 20)
+# 		playSound("entity.shulker_bullet.hit", 1, 0.7, victim)
+# 		loop 10 times:
+# 			set {_v} to randomVector(1)
+# 			spawnParticle_Vector(sculk_charge_pop, {_v}, 0.5, location 1.5 meters above victim)
 
 
 
@@ -419,8 +419,8 @@ local function kitWraith_Thunder(player: player, wraith: entity):
 	set {_count} to a random integer between 3 and 5
 	loop {_count} times:
 		set {_loc} to location of {_target}
-		add a random number between -5 and 5 to x-coordinate of {_loc}
-		add a random number between -5 and 5 to z-coordinate of {_loc}
+		add (a random number between -5 and 5) to x-pos of {_loc}
+		add (a random number between -5 and 5) to z-pos of {_loc}
 		kitWraith_Thunder_Particle_Warning({_loc})
 		add {_loc} to {_locs::*}
 
@@ -478,17 +478,21 @@ local function kitWraith_Thunder_Particle_Prepare(wraith: entity):
 		# 周囲に浮くふわふわパーティクル
 		loop 5 times:
 			set {_el} to {_baseloc}
-			add a random number between -3 and 3 to x-pos of {_el}
-			add a random number between -3 and 3 to y-pos of {_el}
-			add a random number between -3 and 3 to z-pos of {_el}
+			add (a random number between -3 and 3) to x-pos of {_el}
+			add (a random number between -3 and 3) to y-pos of {_el}
+			add (a random number between -3 and 3) to z-pos of {_el}
 			spawnParticle_Dust(colorRandomizer(255, 200, 255, 55, 0, 55), 2, {_el})
 		# クルクルパーティクル
-		spawnParticle(wax_off, particleLocation_Circle({_baseloc}, 2, 0.5, {_a}))
+		set {_locs::*} to particleLocation_Circle({_baseloc}, 2, 0.5, {_a})
+		loop {_locs::*}:
+			spawnParticle(wax_off, loop-value-2)
 		wait a tick
 
 local function kitWraith_Thunder_Particle_Warning(loc: location):
 	loop 20 times:
-		spawnParticle_Dust(rgb(255, 0, 43), 1, particleLocation_Circle({_loc}, 50, 1))
+		set {_locs::*} to particleLocation_Circle({_loc}, 50, 1)
+		loop {_locs::*}:
+			spawnParticle_Dust(rgb(255, 0, 43), 1, loop-value-2)
 		wait a tick
 
 local function kitWraith_Thunder_Particle_Lightning(loc: location):
@@ -507,8 +511,8 @@ local function kitWraith_Summon(player: player, wraith: entity):
 	playSound("entity.guardian.attack", 1, 1.5, {_baseloc})
 	loop a random integer between 3 and 5 times:
 		set {_loc} to {_baseloc}
-		add a random number between -5 and 5 to x-coordinate of {_loc}
-		add a random number between -5 and 5 to z-coordinate of {_loc}
+		add (a random number between -5 and 5) to x-pos of {_loc}
+		add (a random number between -5 and 5) to z-pos of {_loc}
 		delete {_true}
 		set {_am} to 0
 		while {_true} is not set:
@@ -569,7 +573,9 @@ local function kitWraith_Summon_Particle_Prepare(loc: location):
 	loop 20 times:
 		set {_el} to {_loc}
 		add {_y} to y-pos of {_el}
-		spawnParticle(wax_off, particleLocation_Circle({_el}, 4, 0.5, {_a}))
+		set {_locs::*} to particleLocation_Circle({_el}, 4, 0.5, {_a})
+		loop {_locs::*}:
+			spawnParticle(wax_off, loop-value-2)
 		add 20 to {_a}
 		add 0.1 to {_y}
 		wait a tick
@@ -606,9 +612,9 @@ local function kitWraith_Teleport_Particle_Path(from: location, to: location):
 
 local function kitWraith_Teleport_Particle_Line(loc: location):
 	set {_baseloc} to {_loc}
-	add a random number between -1 and 1 to x-pos of {_baseloc}
-	add a random number between -1 and 1 to y-pos of {_baseloc}
-	add a random number between -1 and 1 to z-pos of {_baseloc}
+	add (a random number between -1 and 1) to x-pos of {_baseloc}
+	add (a random number between -1 and 1) to y-pos of {_baseloc}
+	add (a random number between -1 and 1) to z-pos of {_baseloc}
 	set {_d} to dice(3)
 	if {_d} is 1:
 		set {_color} to rgb(77, 67, 152)
@@ -636,8 +642,8 @@ local function kitWraith_Beam(player: player, wraith: entity):
 	applyEffect({_wraith}, slowness, 10, 20, true, "none")
 
 	set {_target} to target of {_wraith}
-	set {_fromloc} to location of head of {_wraith}
-	set {_toloc} to location of head of {_target}
+	set {_fromloc} to head of {_wraith}
+	set {_toloc} to head of {_target}
 	set {_vector} to setVector({_fromloc}, {_toloc})
 	set yaw of {_fromloc} to yaw of {_vector}
 	set pitch of {_fromloc} to pitch of {_vector}
@@ -674,7 +680,7 @@ local function kitWraith_Beam_Particle_1(baseloc: location):
 				add 1 to {_loopradnum}
 				set {_el} to {_els::%{_loopradnum}%}
 				spawnParticle_DustTransition(rgb(122, 65, 113), rgb(79, 69, 92), 1, {_el})
-			playSound("block.nether_wood_button.click_on", 0.5, 0.5 + (0.15 * (loop-number-1 + -1)), {_baseel})
+			playSound("block.nether_wood_button.click_on", 0.5, (0.5 + (0.15 * (loop-number-1 + -1))), {_baseel})
 			add 5 to {_m}
 		add 36 to {_rad}
 		wait a tick
@@ -692,21 +698,15 @@ local function kitWraith_Beam_Particle_1(baseloc: location):
 		wait a tick
 
 local function kitWraith_Beam_Particle_2(baseloc: location):
+	set {_baseVector} to getVectorFromRollAxis({_baseloc})
+	set {_rotateVector} to getVectorFromYawAxis({_baseloc}, 0.25)
+
 	set {_rad} to 0
 	loop 4 times:
 		add 90 to {_rad}
-		set {_el} to {_baseloc}
-		set {_m1} to {_el}
-		set pitch of {_m1} to pitch of {_m1} - 90
-		set {_test1} to 0.25 * cos({_rad})
-		set {_t1} to location {_test1} meters in front of {_m1}
-		set {_m2} to {_el}
-		set pitch of {_m2} to 0
-		set {_test2} to 0.25 * sin({_rad})
-		set {_t2} to location {_test2} meters to the right of {_m2}
-		set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
-		set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
-		set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
+		set {_vec} to {_rotateVector}
+		rotate {_vec} around {_baseVector} by {_rad}
+		set {_el} to {_baseloc} ~ {_vec}
 		spawnParticle(witch, {_el})
 
 on damage of skeleton:
@@ -733,9 +733,9 @@ on damage of player with priority LOW:
 	{_attacker}.remove()
 	loop 5 times:
 		set {_el} to {_baseloc}
-		add a random number between -1 and 1 to x-coordinate of {_el}
-		add a random number between -1 and 1 to z-coordinate of {_el}
-		add a random number between 0 and 2 to y-coordinate of {_el}
+		add (a random number between -1 and 1) to x-pos of {_el}
+		add (a random number between -1 and 1) to z-pos of {_el}
+		add (a random number between 0 and 2) to y-pos of {_el}
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(70, 14, 68), 3, {_el})
 
 on damage of wither skeleton:
