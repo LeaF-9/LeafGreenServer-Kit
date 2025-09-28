@@ -9,12 +9,8 @@ function kitEffect_HerosCourage(player: player):
 	loop {CT.%{_player}%::*}:
 		if loop-index does not contain "Hero's Courage":
 			subtract 10 from {CT.%{_player}%::%loop-index%}
-	loop all blocks in radius 2 around {_player}:
-		set {_loc} to location of loop-block
-		add a random number between -0.5 and 0.5 to x-coordinate of {_loc}
-		add a random number between -0.5 and 0.5 to y-coordinate of {_loc}
-		add a random number between -0.5 and 0.5 to z-coordinate of {_loc}
-		kitParticle_HerosCourage({_loc})
+	
+	particleAura({_player})
 	loop all players in radius 5 around {_player}:
 		loop-player is not {_player}
 		kitCheckTeam(loop-player, {_player}, true) is true
@@ -22,7 +18,7 @@ function kitEffect_HerosCourage(player: player):
 		message formatted "<##ffd700>CT短縮<##daa520>と<##ffd700>回復<##daa520>という勇気をもらった!" to loop-player
 		kitHeal(loop-player, 2)
 		loop {CT.%loop-player%::*}:
-			if loop-index is not "§cHero's Courage":
+			if loop-index does not contain "Hero's Courage":
 				subtract 10 from {CT.%loop-player%::%loop-index%}
 		loop all blocks in radius 2 around loop-player:
 			set {_loc} to location of loop-block
@@ -45,7 +41,21 @@ function kitEffect_HerosCourage(player: player):
 		add 1 to {_bn}
 		wait a tick
 
-function kitParticle_HerosCourage(loc: location):
-	loop 5 times:
-		spawnParticle_Color(entity_effect, rgb(255, 255, 100), {_loc})
-		wait a tick
+
+
+local function particleAura(player: player):
+	add rgb(255, 255, 100) to {_colors::*}
+	add rgb(240, 240, 170) to {_colors::*}
+	add rgb(245, 227, 71) to {_colors::*}
+
+	set {_baseloc} to location of {_player}
+
+	set {_count} to 50
+	loop {_count} times:
+		set {_length} to a random number between 0 and 5
+		set {_vector} to randomVector({_length})
+		set y of {_vector} to 0
+		
+		set {_loc} to {_baseloc} ~ {_vector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(entity_effect, {_color}, {_loc})
