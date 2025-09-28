@@ -79,7 +79,9 @@ local function kitEffect_LegendaryAura_Wave(player: player, loc: location):
 
 
 local function kitParticle_LegendaryAura_Wave(baseloc: location, meter: number):
-	spawnParticle(electric_spark, particleLocation_Circle({_baseloc}, 180, {_meter}))
+	set {_locs::*} to particleLocation_Circle({_baseloc}, 180, {_meter})
+	loop {_locs::*}:
+		spawnParticle(electric_spark, loop-value)
 
 local function kitParticle_LegendaryAura_Hit(entity: entity):
 	playSound("entity.shulker.hurt_closed", 1, 0.65, location of {_entity})

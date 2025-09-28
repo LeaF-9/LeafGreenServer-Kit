@@ -74,7 +74,9 @@ local function kitParticle_HolyBow_Circle(loc: location):
 	set {_radius} to 0
 	loop 3 times:
 		add 1 to {_radius}
-		spawnParticle_DustTransition(colorRandomizer(255, 247, 173, 0, 0, 20), rgb(255, 255, 255), 0.75, particleLocation_CircleV({_loc}, 30, {_radius}))
+		set {_locs::*} to particleLocation_CircleV({_loc}, 30, {_radius})
+		loop {_locs::*}:
+			spawnParticle_DustTransition(colorRandomizer(255, 247, 173, 0, 0, 20), rgb(255, 255, 255), 0.75, loop-value-2)
 		wait a tick
 
 local function kitParticle_HolyBow_Hit(player: player, entity: entity):
@@ -85,7 +87,9 @@ local function kitParticle_HolyBow_Hit(player: player, entity: entity):
 	set {_radius} to 0
 	loop 4 times:
 		add 0.5 to {_radius}
-		spawnParticle_DustTransition(colorRandomizer(255, 243, 103, 0, 0, 50), rgb(255, 243, 203), 1, particleLocation_CircleV({_baseloc}, 60, {_radius}))
+		set {_locs::*} to particleLocation_CircleV({_baseloc}, 60, {_radius})
+		loop {_locs::*}:
+			spawnParticle_DustTransition(colorRandomizer(255, 243, 103, 0, 0, 50), rgb(255, 243, 203), 1, loop-value-2)
 		wait a tick
 
 on projectile hit:

@@ -79,5 +79,7 @@ local function kitParticle_WimpStymie_Hit(entity: entity):
 		add 0.25 to {_y}
 		set {_el} to location {_y} meters above {_baseloc}
 		set {_color} to a random element out of {_colors::*}
-		spawnParticle_DustTransition({_color}, rgb(0, 0, 0), 2, particleLocation_Circle({_el}, 10, 0.5))
+		set {_locs::*} to particleLocation_Circle({_el}, 10, 0.5)
+		loop {_locs::*}:
+			spawnParticle_DustTransition({_color}, rgb(0, 0, 0), 2, loop-value-2)
 		wait a tick

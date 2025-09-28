@@ -179,7 +179,9 @@ local function kitParticle_ForceSnipe_Impact(loc: location, power: number):
 	
 	set {_R} to 255 - (255 * ({_power} / 24))
 	set {_color} to rgb({_R}, 255, 255)
-	spawnParticle_Dust({_color}, 1.5, particleLocation_Sphere({_loc}, 50, {@effect-radius}))
+	set {_locs::*} to particleLocation_Sphere({_loc}, 50, {@effect-radius})
+	loop {_locs::*}:
+		spawnParticle_Dust({_color}, 1.5, loop-value)
 
 local function kitParticle_ForceSnipe_Hit(entity: entity, power: number):
 	playSound("entity.phantom.hurt", 1, 2, {_entity})
@@ -191,5 +193,7 @@ local function kitParticle_ForceSnipe_Hit(entity: entity, power: number):
 		add 0.4 to {_h}
 		set {_baseloc} to location of {_entity}
 		add {_h} to y-pos of {_baseloc}
-		spawnParticle_Color(entity_effect, {_color}, particleLocation_Circle({_baseloc}, 10, 0.5))
+		set {_locs::*} to particleLocation_Circle({_baseloc}, 10, 0.5)
+		loop {_locs::*}:
+			spawnParticle_Color(entity_effect, {_color}, loop-value)
 		wait a tick

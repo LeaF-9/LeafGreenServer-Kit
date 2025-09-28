@@ -122,7 +122,9 @@ local function kitParticle_ReligiousShelter_Chain(player: player):
 			set {_radius} to 0.5
 			if {_height} is 1:
 				set {_radius} to 0.75
-			spawnParticle(electric_spark, particleLocation_Circle({_el}, 10, {_radius}))
+			set {_locs::*} to particleLocation_Circle({_el}, 10, {_radius})
+			loop {_locs::*}:
+				spawnParticle(electric_spark, loop-value-3)
 			add 0.25 to {_height}
 		wait a tick	
 
@@ -143,7 +145,9 @@ local function kitParticle_ReligiousShelter_Aura(player: player):
 		
 		set {_baseloc} to location 1 meter above {_player}
 		set {_color} to a random element out of {_colors::*}
-		spawnParticle_Dust({_color}, 2.5, particleLocation_Circle({_baseloc}, 4, 3, {_rad}))
+		set {_locs::*} to particleLocation_Circle({_baseloc}, 4, 3, {_rad})
+		loop {_locs::*}:
+			spawnParticle_Dust({_color}, 2.5, loop-value-2)
 
 		loop 1 times:
 			set {_el} to moveRandomLocation({_baseloc}, 1)
@@ -165,11 +169,15 @@ local function kitParticle_ReligiousShelter_Shield(player: player):
 	loop 10 times:
 		set {_el.above} to location {_ln.1} * 0.5 meters above {_player}
 		spawnParticle(scrape, {_el.above})
-		spawnParticle_Vector(end_rod, randomVector(), 0.5, particleLocation_Circle({_el.above}, 6, 0.75))
+		set {_locs::*} to particleLocation_Circle({_el.above}, 6, 0.75)
+		loop {_locs::*}:
+			spawnParticle_Vector(end_rod, randomVector(), 0.5, loop-value-2)
 
 		set {_el.below} to location {_ln.1} * 0.5 meters below {_player}
 		spawnParticle(scrape, {_el.below})
-		spawnParticle_Vector(end_rod, randomVector(), 0.5, particleLocation_Circle({_el.below}, 6, 0.75))
+		set {_locs::*} to particleLocation_Circle({_el.below}, 6, 0.75)
+		loop {_locs::*}:
+			spawnParticle_Vector(end_rod, randomVector(), 0.5, loop-value-2)
 
 		add 1 to {_ln.1}
 

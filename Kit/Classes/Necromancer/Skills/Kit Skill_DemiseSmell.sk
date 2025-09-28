@@ -483,12 +483,16 @@ local function kitWraith_Thunder_Particle_Prepare(wraith: entity):
 			add (a random number between -3 and 3) to z-pos of {_el}
 			spawnParticle_Dust(colorRandomizer(255, 200, 255, 55, 0, 55), 2, {_el})
 		# クルクルパーティクル
-		spawnParticle(wax_off, particleLocation_Circle({_baseloc}, 2, 0.5, {_a}))
+		set {_locs::*} to particleLocation_Circle({_baseloc}, 2, 0.5, {_a})
+		loop {_locs::*}:
+			spawnParticle(wax_off, loop-value-2)
 		wait a tick
 
 local function kitWraith_Thunder_Particle_Warning(loc: location):
 	loop 20 times:
-		spawnParticle_Dust(rgb(255, 0, 43), 1, particleLocation_Circle({_loc}, 50, 1))
+		set {_locs::*} to particleLocation_Circle({_loc}, 50, 1)
+		loop {_locs::*}:
+			spawnParticle_Dust(rgb(255, 0, 43), 1, loop-value-2)
 		wait a tick
 
 local function kitWraith_Thunder_Particle_Lightning(loc: location):
@@ -569,7 +573,9 @@ local function kitWraith_Summon_Particle_Prepare(loc: location):
 	loop 20 times:
 		set {_el} to {_loc}
 		add {_y} to y-pos of {_el}
-		spawnParticle(wax_off, particleLocation_Circle({_el}, 4, 0.5, {_a}))
+		set {_locs::*} to particleLocation_Circle({_el}, 4, 0.5, {_a})
+		loop {_locs::*}:
+			spawnParticle(wax_off, loop-value-2)
 		add 20 to {_a}
 		add 0.1 to {_y}
 		wait a tick
