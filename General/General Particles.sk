@@ -1,37 +1,53 @@
-function spawnParticle(particle: particle, loc: locations, players: players = all players):
-	draw 1 of {_particle} at {_loc::*} with extra 0 with force for {_players::*}
+using for loops
 
-function spawnParticle_Block(block: block data, loc: locations, players: players = all players):
-	draw 1 of block particle using {_block} at {_loc::*} with force for {_players::*}
+import:
+	org.bukkit.Particle
+
+function spawnParticle(particle: particle, loc: location, players: players = all players):
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 1, null, true)
+
+function spawnParticle_Block(block: block data, loc: location, players: players = all players):
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle(Particle.BLOCK, {_loc}, 1, 0, 0, 0, 0, {_block}, true)
 
 function spawnParticle_BlockData(particle: particle, block: block data, loc: locations, players: players = all players):
-	draw 1 of {_particle} using {_block} at {_loc::*} with force for {_players::*}
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_block}, true)
 
-function spawnParticle_Color(particle: particle, color: color, loc: locations, players: players = all players):
+function spawnParticle_Color(particle: particle, color: color, loc: location, players: players = all players):
 	set {_R} to getColor_RED({_color})
 	set {_G} to getColor_GREEN({_color})
 	set {_B} to getColor_BLUE({_color})
 	set {_bukkitColor} to bukkitColor(255, {_R}, {_G}, {_B})
-	draw 1 of {_particle} using {_bukkitColor} at {_loc::*} with force for {_players::*}
 
-function spawnParticle_ColorAlpha(particle: particle, R: number, G: number, B: number, A: number, loc: locations, players: players = all players):
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_bukkitColor}, true)
+
+function spawnParticle_ColorAlpha(particle: particle, R: number, G: number, B: number, A: number, loc: location, players: players = all players):
 	set {_bukkitColor} to bukkitColor({_A}, {_R}, {_G}, {_B})
-	draw 1 of {_particle} using {_bukkitColor} at {_loc::*} with force for {_players::*}
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_bukkitColor}, true)
 
-function spawnParticle_Dust(color: color, size: number, loc: locations, players: players = all players):
+function spawnParticle_Dust(color: color, size: number, loc: location, players: players = all players):
 	set {_dustOption} to dustOption({_color}, {_size})
-	draw 1 of dust using {_dustOption} at {_loc::*} with force for {_players::*}
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle(Particle.DUST, {_loc}, 1, 0, 0, 0, 0, {_dustOption}, true)
 
-function spawnParticle_DustTransition(fColor: color, tColor: color, size: number, loc: locations, players: players = all players):
+function spawnParticle_DustTransition(fColor: color, tColor: color, size: number, loc: location, players: players = all players):
 	set {_dustTransition} to dustTransition({_fColor}, {_tColor}, {_size})
-	draw 1 of dust_color_transition using {_dustTransition} at {_loc::*} with force for {_players::*}
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle(Particle.DUST_COLOR_TRANSITION, {_loc}, 1, 0, 0, 0, 0, {_dustTransition}, true)
 
-function spawnParticle_Item(item: item type, loc: locations, players: players = all players):
-	draw 1 of item particle using {_item} at {_loc::*} with force for {_players::*}
+function spawnParticle_Item(item: item type, loc: location, players: players = all players):
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle(Particle.ITEM, {_loc}, 1, 0, 0, 0, 0, {_item}, true)
 
-function spawnParticle_Note(color: text, loc: locations, players: players = all players):
+function spawnParticle_Note(color: text, loc: location, players: players = all players):
 	set {_c} to noteColorOffset({_color})
-	draw 0 of note at {_loc::*} with offset vector({_c}, 0, 0) with extra 1 with force for {_players::*}
+	set {_colorDouble} to {_c}.doubleValue()
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle(Particle.NOTE, {_loc}, 0, {_colorDouble}, 0, 0, 1, null, true)
 
 function noteColorOffset(color: text) :: number:
 	if {_color} is "brown":
@@ -62,25 +78,35 @@ function noteColorOffset(color: text) :: number:
 		set {_offset} to 0
 	return {_offset}
 
-function spawnParticle_NoteOption(color: number, loc: locations, players: players = all players):
-	draw 0 of note at {_loc::*} with offset vector({_color}, 0, 0) with extra 1 with force for {_players::*}
+function spawnParticle_NoteOption(color: number, loc: location, players: players = all players):
+	set {_colorDouble} to {_color}.doubleValue()
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle(Particle.NOTE, {_loc}, 0, {_colorDouble}, 0, 0, 1, null, true)
 
-function spawnParticle_Number(particle: particle, num: number, loc: locations, players: players = all players):
-	draw 0 of {_particle} using {_num} at {_loc::*} with force for {_players::*}
+function spawnParticle_Number(particle: particle, num: number, loc: location, players: players = all players):
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle({_particle}, {_loc}, 0, 0, 0, 0, 1, {_num}, true)
 
-function spawnParticle_Speed(particle: particle, speed: number, loc: locations, players: players = all players):
-	draw 1 of {_particle} at {_loc::*} with extra {_speed} with force for {_players::*}
+function spawnParticle_Speed(particle: particle, speed: number, loc: location, players: players = all players):
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, {_speed}, null, true)
 
-function spawnParticle_Trail(color: color, target: location, duration: time span, loc: locations, players: players = all players):
+function spawnParticle_Trail(color: color, target: location, duration: time span, loc: location, players: players = all players):
 	set {_trailOption} to trail({_target}, {_color}, {_duration})
-	draw 1 of trail using {_trailOption} at {_loc::*} with force for {_players::*}
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle(Particle.TRAIL, {_loc}, 1, 0, 0, 0, 0, {_trailOption}, true)
 
-function spawnParticle_Vector(particle: particle, vector: vector, power: number, loc: locations, players: players = all players):
-	draw 0 of {_particle} at {_loc::*} with offset {_vector} with extra {_power} with force for {_players::*}
+function spawnParticle_Vector(particle: particle, vector: vector, power: number, loc: location, players: players = all players):
+	set {_x} to x of {_vector}
+	set {_y} to y of {_vector}
+	set {_z} to z of {_vector}
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle({_particle}, {_loc}, 0, {_x}, {_y}, {_z}, {_power}, null, true)
 
 function spawnParticle_Vibration(fromloc: location, toloc: location, speed: time span, players: players = all players):
 	set {_vibration} to vibration({_toloc}, {_speed})
-	draw 1 of vibration using {_vibration} at {_fromloc} with force for {_players::*}
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle(Particle.VIBRATION, {_fromloc}, 1, 0, 0, 0, 0, {_vibration}, true)
 
 
 
