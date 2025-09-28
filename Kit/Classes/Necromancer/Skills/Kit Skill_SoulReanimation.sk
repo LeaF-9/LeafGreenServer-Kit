@@ -18,10 +18,9 @@ function kitEffect_SoulReanimation(player: player):
 		add 0.5 to {_height}
 		set {_angle} to 0
 		loop 36 times:
-			set {_loc} to {_baseloc}
-			add 10 * sin({_angle}) to x-coordinate of {_loc}
-			add 10 * cos({_angle}) to z-coordinate of {_loc}
-			add {_height} to y-coordinate of {_loc}
+			set {_vector} to vector(10, {_height}, 0)
+			rotate {_vector} around y-axis by {_angle}
+			set {_loc} to {_baseloc} ~ {_vector}
 			spawnParticle_Color(entity_effect, rgb(72, 61, 139), {_loc})
 			add 10 to {_angle}
 		wait a tick

@@ -7,10 +7,9 @@ function kitEffect_Makibishi(player: player):
 	set {_baseloc} to location of {_player}
 	set {_rad} to 0
 	loop 3 times:
-		set {_el::%loop-number%} to {_baseloc}
-		add 120 to {_rad}
-		add 3 * sin({_rad}) to x-coordinate of {_el::%loop-number%}
-		add 3 * cos({_rad}) to z-coordinate of {_el::%loop-number%}
+		set {_vec} to vector(3, 0, 0)
+		rotate {_vec} around y-axis by {_rad}
+		set {_el::%loop-number%} to {_baseloc} ~ {_vec}
 	set {_hit} to false
 	loop 20 times:
 		if {_hit} is false:
@@ -24,7 +23,7 @@ function kitEffect_Makibishi(player: player):
 					set {_m} to 0
 					loop 3 times:
 						add 1 to {_m}
-						set {_e} to location 0.15 * loop-number-3 meters in front of {_el}
+						set {_e} to location (0.15 * loop-number-3) meters in front of {_el}
 						spawnParticle_Dust(rgb(245, 222, 179), 0.5, {_e})
 			loop all players in radius 3 around {_baseloc}:
 				kitCheckTeam({_player}, loop-player, false) is true
@@ -49,7 +48,7 @@ function kitEffect_Makibishi(player: player):
 						set {_m} to 0
 						loop 3 times:
 							add 1 to {_m}
-							set {_e} to location 0.15 * loop-number-3 meters in front of {_el}
+							set {_e} to location (0.15 * loop-number-3) meters in front of {_el}
 							spawnParticle_Dust(rgb(220, 220, 220), 0.5, {_e}, {_player})
 				loop all players in radius 3 around {_baseloc}:
 					kitCheckTeam(loop-player, {_player}, false) is true

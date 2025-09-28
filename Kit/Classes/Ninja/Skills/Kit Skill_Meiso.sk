@@ -19,10 +19,9 @@ function kitEffect_Meiso(player: player):
 			set {_rad} to 0
 			loop 10 times:
 				add 36 to {_rad}
-				set {_el} to {_bl}
-				add 0.6 * sin({_rad}) to x-coordinate of {_el}
-				add 0.6 * cos({_rad}) to z-coordinate of {_el}
-				add {_y} to y-coordinate of {_el}
+				set {_vec} to vector(0.6, {_y}, 0)
+				rotate {_vec} around y-axis by {_rad}
+				set {_el} to {_bl} ~ {_vec}
 				spawnParticle(end_rod, {_el})
 			wait a tick
 	getKitStats({_player}, "Meiso") is true

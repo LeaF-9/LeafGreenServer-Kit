@@ -90,15 +90,14 @@ on damage of player with priority HIGHEST:
 			add 0.4 to {_high}
 			loop 10 times:
 				add 36 to {_rad}
-				set {_el} to {_baseloc}
-				add 0.5 * sin({_rad}) to x-coordinate of {_el}
-				add 0.5 * cos({_rad}) to z-coordinate of {_el}
-				add {_high} to y-coordinate of {_el}
+				set {_vec} to vector(0.5, {_high}, 0)
+				rotate {_vec} around y-axis by {_rad}
+				set {_el} to {_baseloc} ~ {_vec}
 				set {_num} to 0
 				loop 3 times:
 					add 1 to {_num}
 					set {_color::%{_num}%} to a random integer between 0 and 255
-					spawnParticle_Color(entity_effect, rgb({_color::1}, {_color::2}, {_color::3}), {_el})
+				spawnParticle_Color(entity_effect, rgb({_color::1}, {_color::2}, {_color::3}), {_el})
 			wait a tick
 	else:
 		setKitStats(victim, "Ult_Paladin", {_ulthp})

@@ -22,66 +22,34 @@ function kitEffect_FortunatePixie(player: player):
 	kitMsg({_player}, "§d幸運の妖精が飛び回ります!")
 	# Particles
 	playSound("entity.player.levelup", 1, 0.5, {_player})
-	set {_baseloc} to location of head of {_player}
+	set {_baseloc} to head of {_player}
+	set {_axisVector} to getVectorFromRollAxis({_baseloc})
+	set {_rotateVector} to getVectorFromYawAxis({_baseloc}, 5)
+	set {_smallRotateVector} to getVectorFromYawAxis({_baseloc}, 0.5)
+
 	set {_baserad} to 0
 	set {_rad} to 0
 	set {_m} to 0
-	set {_pnum} to 0
+	set {_pnum} to 0  # 付与したプレイヤー数
 	loop 20 times:
 		add 0.5 to {_m}
 		set {_baseel} to location {_m} meters in front of {_baseloc}
 		delete {_pixieloc::*}
+
 		set {_ln} to 3 - {_pnum}
 		loop {_ln} times:
-			set {_pl} to {_baseel}
 			add 120 to {_baserad}
-			set {_m1} to {_pl}
-			set {_p} to pitch of {_m1}
-			if {_p} < 0:
-				set {_p} to -1 * 90 - {_p}
-				set {_y} to yaw of {_m1}
-				add 180 to {_y}
-				if {_y} >= 360:
-					set {_y} to {_y} - 360
-				set yaw of {_m1} to {_y}
-			else:
-				set {_p} to {_p} - 90
-			set pitch of {_m1} to {_p}
-			set {_test1} to 5 * cos({_baserad})
-			set {_t1} to location {_test1} meters in front of {_m1}
-			set {_m2} to {_pl}
-			set pitch of {_m2} to 0
-			set {_test2} to 5 * sin({_baserad})
-			set {_t2} to location {_test2} meters to the right of {_m2}
-			set x-coordinate of {_pl} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_pl}
-			set y-coordinate of {_pl} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_pl}
-			set z-coordinate of {_pl} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_pl}
+			set {_vec} to {_rotateVector}
+			rotate {_vec} around {_axisVector} by {_baserad}
+			set {_pl} to {_baseel} ~ {_vec}
 			add {_pl} to {_pixieloc::*}
+
 			loop 3 times:
-				set {_el} to {_pl}
 				add 120 to {_rad}
-				set {_m1} to {_el}
-				set {_p} to pitch of {_m1}
-				if {_p} < 0:
-					set {_p} to -1 * 90 - {_p}
-					set {_y} to yaw of {_m1}
-					add 180 to {_y}
-					if {_y} >= 360:
-						set {_y} to {_y} - 360
-					set yaw of {_m1} to {_y}
-				else:
-					set {_p} to {_p} - 90
-				set pitch of {_m1} to {_p}
-				set {_test1} to 0.5 * cos({_rad})
-				set {_t1} to location {_test1} meters in front of {_m1}
-				set {_m2} to {_el}
-				set pitch of {_m2} to 0
-				set {_test2} to 0.5 * sin({_rad})
-				set {_t2} to location {_test2} meters to the right of {_m2}
-				set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
-				set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
-				set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
-				spawnParticle_Dust(rgb(255, 192, 203), 1, {_el})
+				set {_vec} to {_smallRotateVector}
+				rotate {_vec} around {_axisVector} by {_rad}
+				set {_el} to {_pl} ~ {_vec}
+				spawnParticle_Dust(rgb(255, 192, 203), 1.5, {_el})
 
 		loop all players in radius 5 around {_baseel}:
 			{_pnum} < 3
@@ -93,9 +61,10 @@ function kitEffect_FortunatePixie(player: player):
 			set {_indnum} to 4 - {_pnum}
 			set {_fromloc} to {_pixieloc::%{_indnum}%}
 			kitEffect_FortunatePixie_Apply({_player}, loop-player, {_fromloc})
-		add 30 to {_baserad}
+		add 10 to {_baserad}
 		add 20 to {_rad}
 		wait a tick
+
 	wait 7 seconds
 	loop all players:
 		getKitStats(loop-player, "FortunatePixie") is {_player}
@@ -106,38 +75,21 @@ local function kitEffect_FortunatePixie_Apply(player: player, target: player, fr
 	# Particles
 	set {_rad} to 0
 	loop 20 times:
-		set {_to} to location of head of {_target}
+		set {_to} to head of {_target}
 		set {_dis} to distance between {_from} and {_to} / 20 * loop-number
-		set {_vector} to setVector({_from}, {_to})
-		set yaw of {_from} to yaw of {_vector}
-		set pitch of {_from} to pitch of {_vector}
+		set {_axisVector} to setVector({_from}, {_to})
+		set {_from} to setDirToVec({_from}, {_axisVector})
+		set {_rotateVector} to getVectorFromYawAxis({_from}, 0.5)
+
 		set {_baseel} to location {_dis} meters in front of {_from}
 		playSound("block.amethyst_cluster.hit", 1, 1, {_baseel})
+
 		loop 3 times:
 			add 120 to {_rad}
-			set {_el} to {_baseel}
-			set {_m1} to {_el}
-			set {_p} to pitch of {_m1}
-			if {_p} < 0:
-				set {_p} to -1 * 90 - {_p}
-				set {_y} to yaw of {_m1}
-				add 180 to {_y}
-				if {_y} >= 360:
-					set {_y} to {_y} - 360
-				set yaw of {_m1} to {_y}
-			else:
-				set {_p} to {_p} - 90
-			set pitch of {_m1} to {_p}
-			set {_test1} to 0.5 * cos({_rad})
-			set {_t1} to location {_test1} meters in front of {_m1}
-			set {_m2} to {_el}
-			set pitch of {_m2} to 0
-			set {_test2} to 0.5 * sin({_rad})
-			set {_t2} to location {_test2} meters to the right of {_m2}
-			set x-coordinate of {_el} to x-coordinate of {_t1} + x-coordinate of {_t2} - x-coordinate of {_el}
-			set y-coordinate of {_el} to y-coordinate of {_t1} + y-coordinate of {_t2} - y-coordinate of {_el}
-			set z-coordinate of {_el} to z-coordinate of {_t1} + z-coordinate of {_t2} - z-coordinate of {_el}
-			spawnParticle_Dust(rgb(255, 153, 238), 1, {_el})
+			set {_vec} to {_rotateVector}
+			rotate {_vec} around {_axisVector} by {_rad}
+			set {_el} to {_baseel} ~ {_vec}
+			spawnParticle_Dust(rgb(255, 153, 238), 1.5, {_el})
 		add 20 to {_rad}
 		wait a tick
 	
@@ -200,10 +152,9 @@ local function kitParticle_FortunatePixie_Heal(player: player):
 		loop 4 times:
 			add 1 to {_countnum}
 			set {_rad} to {_baserad} + 90 * ({_countnum} - 1)
-			set {_el} to {_baseloc}
-			add 0.5 * sin({_rad}) to x-pos of {_el}
-			add 0.5 * cos({_rad}) to z-pos of {_el}
-			add {_height} to y-pos of {_el}
+			set {_vec} to vector(0.5, {_height}, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_vec}
 			spawnParticle_Dust(rgb(255, 105, 180), 0.5, {_el})
 		add 10 to {_baserad}
 		add 0.1 to {_height}

@@ -9,8 +9,8 @@ on rightclick holding a zombie spawn egg:
 		kitMsg(player, "§5死者5体を召喚した...")
 		playSound("entity.zombie.ambient", 1, 0.5, player)
 		loop all blocks in radius 5 around player:
-			y-coordinate of loop-block is y-coordinate of block at player
-			add location of block 2 below loop-block to {_ls::*}
+			(y-pos of (loop-block)) is (y-pos of (block at (player)))
+			add (location of (block 2 below (loop-block))) to {_ls::*}
 		loop 5 times:
 			set {_l} to a random location out of {_ls::*}
 			remove {_l} from {_ls::*}
@@ -32,9 +32,9 @@ function kitParticle_SummonDead(baseloc: location):
 			add 0.2 to {_addy}
 			loop 10 times:
 				add 36 to {_rad}
-				set {_el} to {_baseloc}
-				add 0.5 * sin({_rad}) to x-pos of {_el}
-				add 0.5 * cos({_rad}) to z-pos of {_el}
+				set {_vec} to vector(0.5, 0, 0)
+				rotate {_vec} around y-axis by {_rad}
+				set {_el} to {_baseloc} ~ {_vec}
 				add {_addy} to y-pos of {_el}
 				spawnParticle_Color(entity_effect, rgb(100, 0, 100), {_el})
 		wait a tick
