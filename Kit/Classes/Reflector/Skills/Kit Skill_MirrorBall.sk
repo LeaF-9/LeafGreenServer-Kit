@@ -91,11 +91,21 @@ function kitEffect_MirrorBall(player: player):
 local function kitParticle_MirrorBall_Launch(player: player, location: location):
 	playSound("entity.shulker.open", 1, 0.7, {_location})
 	set pitch of {_location} to 0
-	set {_block} to "minecraft:glass"
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.75f,0f,-0.75f]", "[1.5f,1.5f,1.5f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""}}"
-	spawn a block display at {_location} with nbt {_nbt}
+	set {_block} to glass
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.75, 0, -0.75)
+	set {_scale} to getVector3f(1.5, 1.5, 1.5)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	spawn a block display at {_location}
 	set {_blockdisplay} to spawned block display
+
+	setBrightness({_blockdisplay})
+	{_blockdisplay}.setTeleportDuration(1)
+	{_blockdisplay}.setInterpolationDuration(1)
+	{_blockdisplay}.setViewRange(1000)
+	setDisplayBlock({_blockdisplay}, {_block})
+	{_blockdisplay}.setTransformation({_transformation})
+
 	set metadata value "gametype" of {_blockdisplay} to "Kit"
 	set metadata value "Mirror Ball" of {_blockdisplay} to "%{_player}%"
 	set metadata value "Mirror Ball - Location" of {_blockdisplay} to {_location}

@@ -62,12 +62,22 @@ function kitEffect_StickyGrenade(player: player):
 	set yaw of {_loc} to 0
 	set pitch of {_loc} to 0
 
-	set {_now} to now
-	set {_block} to "minecraft:slime_block"
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[0.75f,0.75f,0.75f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_block}%"",Count:1b},brightness:{block:15,sky:15},teleport_duration:1}"
 	spawn a item display at {_loc} with nbt {_nbt}
 	set {_sticked} to spawned item display
+
+	set {_now} to now
+	set {_item} to slime block
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	set {_scale} to getVector3f(0.75, 0.75, 0.75)
+
+	setBrightness({_sticked})
+	{_sticked}.setTeleportDuration(1)
+	{_sticked}.setInterpolationDuration(1)
+	{_sticked}.setViewRange(1000)
+	setDisplayItem({_sticked}, {_item})
+	{_sticked}.setTransformation({_transformation})
+
 	set metadata value "gametype" of {_sticked} to "Kit"
 	set metadata value "Sticky Grenade" of {_sticked} to {_player}
 	set metadata value "Sticky Grenade - Time" of {_sticked} to {_now}

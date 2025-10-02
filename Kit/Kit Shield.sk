@@ -138,3 +138,38 @@ function deleteShield(player: player):
 function deleteAllShield():
 	loop all players:
 		deleteShield(loop-player)
+
+
+
+import:
+	org.bukkit.RegionAccessor
+	org.bukkit.Bukkit
+	org.bukkit.entity.EntityType
+	org.bukkit.attribute.Attribute
+
+function spawnShieldEntity(player: player, loc: location) :: entity:
+	set {_world} to world of {_loc}
+	set {_mobtype} to EntityType.valueOf("SLIME")
+
+	set {_mob} to {_world}.spawnEntity({_loc}, {_mobtype})
+
+	set display name of {_mob} to "%{_player}%"
+	set metadata value "gametype" of {_mob} to "Kit"
+	set metadata value "summon-player" of {_mob} to {_summoner}
+	set metadata value "shield entity" of {_mob} to true
+	set {_uuid} to {_mob}.getUniqueId()
+	set metadata value "uuid" of {_mob} to {_uuid}
+
+	{_mob}.setCustomNameVisible(false)
+	{_mob}.setGravity(false)
+	{_mob}.setSize(1)
+	{_mob}.setPersistent(true)
+	{_mob}.setAI(false)
+	{_mob}.setSilent(true)
+	{_mob}.setDropItem(false)
+	{_mob}.setInvisible(true)
+
+	set {_scoreboard} to Bukkit.getScoreboardManager().getMainScoreboard()
+	set {_team} to {_scoreboard}.getTeam("noCollision")
+	{_team}.addEntity({_mob})
+	return {_mob}

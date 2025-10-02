@@ -61,14 +61,22 @@ local function kitEffect_WebCatcher_Location(loc: location) :: locations:
 # 蜘蛛の巣のDisplayを召喚する関数
 local function kitEffect_WebCatcher_Display(player: player, locs: locations):
 	set {_uuid} to a random uuid
-	set {_block} to "minecraft:cobweb"
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.5f,-0.5f,-0.5f]", "[1f,1f,1f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},teleport_duration:1}"
+	set {_block} to cobweb
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.5, -0.5, -0.5)
+	set {_scale} to getVector3f(0, 0, 0)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 
 	loop {_locs::*}:
 		set {_looploc} to loop-value
-		spawn a block display at {_looploc} with nbt {_nbt}
+		spawn a block display at {_looploc}
 		set {_blockdisplay} to spawned block display
+
+		setBrightness({_blockdisplay})
+		{_blockdisplay}.setViewRange(1000)
+		setDisplayBlock({_blockdisplay}, {_block})
+		{_blockdisplay}.setTransformation({_transformation})
+
 		set metadata value "gametype" of {_blockdisplay} to "Kit"
 		set metadata value {@metadata-display} of {_blockdisplay} to {_uuid}
 		add {_blockdisplay} to {_displays::*}

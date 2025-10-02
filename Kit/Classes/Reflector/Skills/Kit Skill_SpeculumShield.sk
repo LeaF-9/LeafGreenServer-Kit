@@ -16,11 +16,22 @@ function kitEffect_SpeculumShield(player: player):
 	# 見た目
 	set {_translation.up} to ({@height} - 3) * 0.5
 
-	set {_item} to "minecraft:light_gray_stained_glass_pane"
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,%{_translation.up}%f,0f]", "[{@width}f,{@height}f,1f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b}}"
-	spawn an item display at {_loc.shield} with nbt {_nbt}
+	set {_item} to light gray stained glass pane
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, {_translation.up}, 0)
+	set {_scale} to getVector3f({@width}, {@height}, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+
+	spawn an item display at {_loc.shield}
 	set {_itemdisplay} to spawned item display
+
+	setBrightness({_itemdisplay})
+	{_itemdisplay}.setTeleportDuration(1)
+	{_itemdisplay}.setInterpolationDuration(1)
+	{_itemdisplay}.setViewRange(1000)
+	setDisplayItem({_itemdisplay}, {_item})
+	{_itemdisplay}.setTransformation({_transformation})
+
 	set metadata value "gametype" of {_itemdisplay} to "Kit"
 	set metadata value "Speculum Shield" of {_itemdisplay} to "%{_player}%"
 	set metadata value "Speculum Shield - Time" of {_itemdisplay} to {_now}
@@ -35,13 +46,10 @@ function kitEffect_SpeculumShield(player: player):
 		loop {@width} * 2 times:
 			set {_loc.slime} to location {_w} meters to the right of {_loc.hit.height}
 			kitParticle_SpeculumShield_Launch({_loc.slime})
-			spawn a slime at {_loc.slime} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-			set {_slime} to spawned slime
-			set metadata value "gametype" of {_slime} to "Kit"
-			set metadata value "shield entity" of {_slime} to true
+			set {_slime} to spawnShieldEntity({_player}, {_loc.slime})
+
 			set metadata value "Speculum Shield" of {_slime} to "%{_player}%"
 			set metadata value "Speculum Shield - Time" of {_slime} to {_now}
-			set display name of {_slime} to "%{_player}%"
 			add 0.5 to {_w}
 		add 0.5 to {_h}
 	wait 10 seconds

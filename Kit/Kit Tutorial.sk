@@ -40,19 +40,26 @@ function kitTutorial():
 		teleport {_players::*} to {_tp}
 		set gamemode of {_players::*} to spectator
 		loop {Kit-GameStageRespawns.red::*}:
-			set {_nbt} to nbt compound of "{Invulnerable:1b,Invisible:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Glowing:1b}"
-			spawn an armor stand at loop-value with nbt {_nbt}
-			set metadata value "Tutorial-Spawn" of spawned entity to true
+			spawn an armor stand at loop-value
+			set {_tutorialEntity} to spawned armor stand
+
+			{_tutorialEntity}.setInvulnerable(true)
+			{_tutorialEntity}.setInvisible(true)
+			{_tutorialEntity}.setPersistent(true)
+			{_tutorialEntity}.setBasePlate(false)
+			{_tutorialEntity}.setGravity(false)
+			{_tutorialEntity}.setShowArms(true)
+			{_tutorialEntity}.setGlowing(true)
+
+			add {_tutorialEntity} to {_deleteEntities::*}
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_players::*}
 		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_players::*}
 		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
-		loop all entities:
-			type of loop-entity is an armor stand
-			metadata value "Tutorial-Spawn" of loop-entity is true
-			delete loop-entity
+		loop {_deleteEntities::*}:
+			loop-value.remove()
 #	(3) ゲームスタート
 		set {_players::*} to kitTutorialPlayers()
 		message formatted "§2------------------------------" to {_players::*}
@@ -75,19 +82,26 @@ function kitTutorial():
 		teleport {_players::*} to {_tp}
 		set gamemode of {_players::*} to spectator
 		loop {Kit-GameStageRespawns.red::*}:
-			set {_nbt} to nbt compound of "{Invulnerable:1b,Invisible:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Glowing:1b}"
-			spawn an armor stand at loop-value with nbt {_nbt}
-			set metadata value "Tutorial-Spawn" of spawned armor stand to true
+			spawn an armor stand at loop-value
+			set {_tutorialEntity} to spawned armor stand
+
+			{_tutorialEntity}.setInvulnerable(true)
+			{_tutorialEntity}.setInvisible(true)
+			{_tutorialEntity}.setPersistent(true)
+			{_tutorialEntity}.setBasePlate(false)
+			{_tutorialEntity}.setGravity(false)
+			{_tutorialEntity}.setShowArms(true)
+			{_tutorialEntity}.setGlowing(true)
+
+			add {_tutorialEntity} to {_deleteEntities::*}
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_players::*}
 		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_players::*}
 		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
-		loop all entities:
-			type of loop-entity is an armor stand
-			metadata value "Tutorial-Spawn" of loop-entity is true
-			delete loop-entity
+		loop {_deleteEntities::*}:
+			loop-value.remove()
 #	(3) コア地点
 		set {_players::*} to kitTutorialPlayers()
 		send title "§aコア地点" with subtitle "§bCore's Location" to {_players::*}
@@ -95,18 +109,29 @@ function kitTutorial():
 			{Kit-GameStageCore_red::*} contains loop-index
 			set {_loc} to loop-value
 			add -0.25 to y-pos of {_loc}
-			set {_nbt} to nbt compound of "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-			spawn a magma cube at {_loc} with nbt {_nbt}
-			set metadata value "Tutorial-Core" of spawned magma cube to true
+
+			spawn a magma cube at {_loc}
+			set {_tutorialEntity} to spawned magma cube
+
+			{_tutorialEntity}.setInvulnerable(true)
+			{_tutorialEntity}.setInvisible(true)
+			{_tutorialEntity}.setPersistent(true)
+			{_tutorialEntity}.setGravity(false)
+			{_tutorialEntity}.setGlowing(true)
+			{_tutorialEntity}.setSize(1)
+			{_tutorialEntity}.setAI(false)
+			{_tutorialEntity}.setSilent(true)
+			{_tutorialEntity}.setDropItem(false)
+
+			add {_tutorialEntity} to {_deleteEntities::*}
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§aコアの位置は§e発光§aが付与されている場所になります" to {_players::*}
 		message formatted "§aこのコアを§c全て破壊する§aことで勝利となります" to {_players::*}
 		message formatted "§aコアの耐久力は右にあるスコアボードに記載されます" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
-		loop all magma cubes:
-			metadata value "Tutorial-Core" of loop-magma cube is true
-			delete loop-magma cube
+		loop {_deleteEntities::*}:
+			loop-value.remove()
 #	(4) ゲームスタート
 		set {_players::*} to kitTutorialPlayers()
 		message formatted "§2------------------------------" to {_players::*}
@@ -131,9 +156,18 @@ function kitTutorial():
 		teleport {_players::*} to {_tp}
 		set gamemode of {_players::*} to spectator
 		loop {Kit-GameStageRespawns.red::*}:
-			set {_nbt} to nbt compound of "{Invulnerable:1b,Invisible:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Glowing:1b}"
-			spawn an armor stand at loop-value with nbt {_nbt}
-			set metadata value "Tutorial-Spawn" of spawned armor stand to true
+			spawn an armor stand at loop-value
+			set {_tutorialEntity} to spawned armor stand
+
+			{_tutorialEntity}.setInvulnerable(true)
+			{_tutorialEntity}.setInvisible(true)
+			{_tutorialEntity}.setPersistent(true)
+			{_tutorialEntity}.setBasePlate(false)
+			{_tutorialEntity}.setGravity(false)
+			{_tutorialEntity}.setShowArms(true)
+			{_tutorialEntity}.setGlowing(true)
+
+			add {_tutorialEntity} to {_deleteEntities::*}
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_players::*}
 		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_players::*}
@@ -141,19 +175,29 @@ function kitTutorial():
 		message formatted "§aFlag所有者がスポーン地点に近い場合は復活時間が長くなります" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
-		loop all entities:
-			type of loop-entity is an armor stand
-			metadata value "Tutorial-Spawn" of loop-entity is true
-			delete loop-entity
+		loop {_deleteEntities::*}:
+			loop-value.remove()
 #	(3) Flag Spawn地点
 		set {_players::*} to kitTutorialPlayers()
 		send title "§aFlagの出現地点" with subtitle "§bFlag Locations" to {_players::*}
 		loop {Kit-GameStageFlags::*}:
 			set {_loc} to loop-value
 			add -0.25 to y-pos of {_loc}
-			set {_nbt} to nbt compound of "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-			spawn a magma cube at {_loc} with nbt {_nbt}
-			set metadata value "Tutorial-Flag" of spawned magma cube to true
+
+			spawn a magma cube at {_loc}
+			set {_tutorialEntity} to spawned magma cube
+
+			{_tutorialEntity}.setInvulnerable(true)
+			{_tutorialEntity}.setInvisible(true)
+			{_tutorialEntity}.setPersistent(true)
+			{_tutorialEntity}.setGravity(false)
+			{_tutorialEntity}.setGlowing(true)
+			{_tutorialEntity}.setSize(1)
+			{_tutorialEntity}.setAI(false)
+			{_tutorialEntity}.setSilent(true)
+			{_tutorialEntity}.setDropItem(false)
+
+			add {_tutorialEntity} to {_deleteEntities::*}
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§bFlag§aは発光地点からスポーンします" to {_players::*}
 		message formatted "§bFlag§aは接近することで確保できます" to {_players::*}
@@ -162,9 +206,8 @@ function kitTutorial():
 		message formatted "§a敵が拾うと再度スポーン地点から現れます" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
-		loop all magma cubes:
-			metadata value "Tutorial-Flag" of loop-magma cube is true
-			delete loop-magma cube
+		loop {_deleteEntities::*}:
+			loop-value.remove()
 #	(4) ゲームスタート
 		set {_players::*} to kitTutorialPlayers()
 		message formatted "§2------------------------------" to {_players::*}
@@ -188,19 +231,26 @@ function kitTutorial():
 		teleport {_players::*} to {_tp}
 		set gamemode of {_players::*} to spectator
 		loop {Kit-GameStageRespawns.red::*}:
-			set {_nbt} to nbt compound of "{Invulnerable:1b,Invisible:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Glowing:1b}"
-			spawn an armor stand at loop-value with nbt {_nbt}
-			set metadata value "Tutorial-Spawn" of spawned armor stand to true
+			spawn an armor stand at loop-value
+			set {_tutorialEntity} to spawned armor stand
+
+			{_tutorialEntity}.setInvulnerable(true)
+			{_tutorialEntity}.setInvisible(true)
+			{_tutorialEntity}.setPersistent(true)
+			{_tutorialEntity}.setBasePlate(false)
+			{_tutorialEntity}.setGravity(false)
+			{_tutorialEntity}.setShowArms(true)
+			{_tutorialEntity}.setGlowing(true)
+
+			add {_tutorialEntity} to {_deleteEntities::*}
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_players::*}
 		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_players::*}
 		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
-		loop all entities:
-			type of loop-entity is an armor stand
-			metadata value "Tutorial-Spawn" of loop-entity is true
-			delete loop-entity
+		loop {_deleteEntities::*}:
+			loop-value.remove()
 #	(3) Sheepスポーン地点
 		set {_players::*} to kitTutorialPlayers()
 		set gamemode of {_players::*} to spectator
@@ -208,9 +258,21 @@ function kitTutorial():
 		loop {Kit-GameStage.Spawns::*}:
 			set {_loc} to loop-value
 			add -0.25 to y-pos of {_loc}
-			set {_nbt} to nbt compound of "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-			spawn a magma cube at {_loc} with nbt {_nbt}
-			set metadata value "Tutorial-WoolSpawn" of spawned magma cube to true
+
+			spawn a magma cube at {_loc}
+			set {_tutorialEntity} to spawned magma cube
+
+			{_tutorialEntity}.setInvulnerable(true)
+			{_tutorialEntity}.setInvisible(true)
+			{_tutorialEntity}.setPersistent(true)
+			{_tutorialEntity}.setGravity(false)
+			{_tutorialEntity}.setGlowing(true)
+			{_tutorialEntity}.setSize(1)
+			{_tutorialEntity}.setAI(false)
+			{_tutorialEntity}.setSilent(true)
+			{_tutorialEntity}.setDropItem(false)
+
+			add {_tutorialEntity} to {_deleteEntities::*}
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§b羊の出現場所§aは§e発光§aしている地点周辺です" to {_players::*}
 		message formatted "§c30秒おき§aにこの地点から§b羊§aが現れます" to {_players::*}
@@ -219,9 +281,8 @@ function kitTutorial():
 		message formatted "§6§lSpecial Sheep§aは貰えるポイントが3倍です" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
-		loop all magma cubes:
-			metadata value "Tutorial-WoolSpawn" of loop-magma cube is true
-			delete loop-magma cube
+		loop {_deleteEntities::*}:
+			loop-value.remove()
 #	(4) Sheep確保地点
 		set {_players::*} to kitTutorialPlayers()
 		send title "§a羊の確保場所" with subtitle "§bSheep Securing Points" to {_players::*}
@@ -229,18 +290,29 @@ function kitTutorial():
 		loop {Kit-GameStage.Places-Red::*}:
 			set {_loc} to loop-value
 			add -0.25 to y-pos of {_loc}
-			set {_nbt} to nbt compound of "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-			spawn a magma cube at {_loc} with nbt {_nbt}
-			set metadata value "Tutorial-WoolPlace" of spawned magma cube to true
+
+			spawn a magma cube at {_loc}
+			set {_tutorialEntity} to spawned magma cube
+
+			{_tutorialEntity}.setInvulnerable(true)
+			{_tutorialEntity}.setInvisible(true)
+			{_tutorialEntity}.setPersistent(true)
+			{_tutorialEntity}.setGravity(false)
+			{_tutorialEntity}.setGlowing(true)
+			{_tutorialEntity}.setSize(1)
+			{_tutorialEntity}.setAI(false)
+			{_tutorialEntity}.setSilent(true)
+			{_tutorialEntity}.setDropItem(false)
+
+			add {_tutorialEntity} to {_deleteEntities::*}
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§b羊§aは拠点付近にある§b確保エリア§aまで連れていきましょう" to {_players::*}
 		message formatted "§aこの地点まで連れて行くことでポイントとなります" to {_players::*}
 		message formatted "§a敵から羊を守りつつ,羊を集めて勝利を目指しましょう" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
-		loop all magma cubes:
-			metadata value "Tutorial-WoolPlace" of loop-magma cube is true
-			delete loop-magma cube
+		loop {_deleteEntities::*}:
+			loop-value.remove()
 #	(5) ゲームスタート
 		set {_players::*} to kitTutorialPlayers()
 		message formatted "§2------------------------------" to {_players::*}
@@ -264,28 +336,47 @@ function kitTutorial():
 		teleport {_players::*} to {_tp}
 		set gamemode of {_players::*} to spectator
 		loop {Kit-GameStageRespawns.red::*}:
-			set {_nbt} to nbt compound of "{Invulnerable:1b,Invisible:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,ShowArms:1b,Glowing:1b}"
-			spawn an armor stand at loop-value with nbt {_nbt}
-			set metadata value "Tutorial-Spawn" of spawned armor stand to true
+			spawn an armor stand at loop-value
+			set {_tutorialEntity} to spawned armor stand
+
+			{_tutorialEntity}.setInvulnerable(true)
+			{_tutorialEntity}.setInvisible(true)
+			{_tutorialEntity}.setPersistent(true)
+			{_tutorialEntity}.setBasePlate(false)
+			{_tutorialEntity}.setGravity(false)
+			{_tutorialEntity}.setShowArms(true)
+			{_tutorialEntity}.setGlowing(true)
+
+			add {_tutorialEntity} to {_deleteEntities::*}
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§aチュートリアルでは§cRed§aチームを参考にして紹介します" to {_players::*}
 		message formatted "§aスポーン地点は§e発光§aが付与されている場所になります" to {_players::*}
 		message formatted "§a複数ある場合は復活時にランダムで設定されます" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
-		loop all entities:
-			type of loop-entity is an armor stand
-			metadata value "Tutorial-Spawn" of loop-entity is true
-			delete loop-entity
+		loop {_deleteEntities::*}:
+			loop-value.remove()
 #	(3) エリア地点
 		set {_players::*} to kitTutorialPlayers()
 		send title "§aエリア地点" with subtitle "§bArea's Location" to {_players::*}
 		loop {Kit-GameStage.Areas::*}:
 			set {_loc} to loop-value
 			add -0.25 to y-pos of {_loc}
-			set {_nbt} to nbt compound of "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-			spawn a magma cube at {_loc} with nbt {_nbt}
-			set metadata value "Tutorial-Area" of spawned magma cube to true
+
+			spawn a magma cube at {_loc}
+			set {_tutorialEntity} to spawned magma cube
+
+			{_tutorialEntity}.setInvulnerable(true)
+			{_tutorialEntity}.setInvisible(true)
+			{_tutorialEntity}.setPersistent(true)
+			{_tutorialEntity}.setGravity(false)
+			{_tutorialEntity}.setGlowing(true)
+			{_tutorialEntity}.setSize(1)
+			{_tutorialEntity}.setAI(false)
+			{_tutorialEntity}.setSilent(true)
+			{_tutorialEntity}.setDropItem(false)
+
+			add {_tutorialEntity} to {_deleteEntities::*}
 		message formatted "§2------------------------------" to {_players::*}
 		message formatted "§aエリアの位置は§e発光§aが付与されている場所になります" to {_players::*}
 		message formatted "§aこのエリア内に入ると占拠が開始されます" to {_players::*}
@@ -294,9 +385,8 @@ function kitTutorial():
 		message formatted "§aエリアを上手く占拠して勝利につなげましょう" to {_players::*}
 		message formatted "§2------------------------------" to {_players::*}
 		wait {@time}
-		loop all magma cubes:
-			metadata value "Tutorial-Area" of loop-magma cube is true
-			delete loop-magma cube
+		loop {_deleteEntities::*}:
+			loop-value.remove()
 #	(4) ゲームスタート
 		set {_players::*} to kitTutorialPlayers()
 		message formatted "§2------------------------------" to {_players::*}

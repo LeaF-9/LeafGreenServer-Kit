@@ -40,11 +40,12 @@ local function kitEffect_GasSpray_Gas(player: player, proj: entity):
 	set {_l} to location of {_proj}
 	kitParticle_GasSpray_Gas({_l})
 
-	set {_block} to "minecraft:barrier"
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[1f,1f,1f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},teleport_duration:1}"
-	spawn a block display at {_l} with nbt {_nbt}
+	spawn a block display at {_l}
 	set {_marker} to spawned block display
+
+	set {_block} to barrier
+	setDisplayBlock({_marker}, {_block})
+
 	set metadata value "gametype" of {_marker} to "Kit"
 	set metadata value "gas spray - marker" of {_marker} to {_player}
 	set metadata value "gas spray - marker location" of {_marker} to {_l}
@@ -74,10 +75,8 @@ local function kitEffect_GasSpray_Gas(player: player, proj: entity):
 
 		wait a tick
 
+	{_marker}.remove()
 	loop all entities:
-		if loop-entity is {_marker}:
-			delete loop-entity
-			continue
 		{_eg::%uuid of loop-entity%} is true
 		{_jb::%uuid of loop-entity%} is true
 		remove poison from loop-entity

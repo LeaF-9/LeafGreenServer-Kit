@@ -1,5 +1,10 @@
 # Transport Lift
 
+import:
+	org.bukkit.Color
+	org.bukkit.entity.EntityType
+	org.bukkit.entity.Display$Billboard
+
 function kitUltEngineer(player: player):
 	set {_tploc} to location of {_player}
 	if {Kit-tochu} is true:
@@ -30,10 +35,23 @@ function kitUltEngineer(player: player):
 		add 2 to y-coordinate of {_armloc}
 		set pitch of {_armloc} to 0
 		set {_armloc} to location 3 meters in front of {_armloc}
-		spawn an armor stand at {_armloc} with nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
-		set metadata value "gametype" of spawned armor stand to "Kit"
-		set metadata value "Kit-EngineerUlt" of spawned armor stand to "%{_player}%"
-		set display name of spawned armor stand to "§3§lスニーク§7で§6§lテレポート§7します!"
+
+		set {_world} to world of {_armloc}
+		set {_mobtype} to EntityType.valueOf("TEXT_DISPLAY")
+		set {_textDisplay} to {_world}.spawnEntity({_armloc}, {_mobtype})
+		set metadata value "gametype" of {_textDisplay} to "Kit"
+		set metadata value "Kit-EngineerUlt" of {_textDisplay} to "%{_player}%"
+
+		setBrightness({_textDisplay})
+		{_textDisplay}.setBillboard(Billboard.CENTER)
+		{_textDisplay}.setViewRange(100)
+		set {_axisAngle4f} to getQuaternionf(0, 0, 0, 1)
+		set {_scale} to getVector3f(1.5, 1.5, 1)
+		set {_translation} to getVector3f(0, 0, 0)
+		setTransformation({_textDisplay}, {_axisAngle4f}, {_axisAngle4f}, {_translation}, {_scale})
+
+		set {_display} to "§3§lスニーク§7で§6§lテレポート§7します!"
+		{_textDisplay}.setText({_display})
 	set {_tpy} to 0.5
 	set {_fromy} to 0
 	while {Ult.%{_player}%::Engineer} is {_now}:
@@ -138,7 +156,4 @@ function kitUltEngineer(player: player):
 		set {_exist} to kitFakeCheck({_player}, "Machine-Transport Lift")
 		if {_exist} is false:
 			delete {Ult.%{_player}%::Engineer}
-	loop all entities:
-		type of loop-entity is armor stand
-		metadata value "Kit-EngineerUlt" of loop-entity is "%{_player}%"
-		delete loop-entity
+	{_textDisplay}.remove()

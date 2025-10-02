@@ -8,11 +8,20 @@ function kitEffect_Kusarigama(player: player):
 	set {_baseloc} to location of {_player}
 	add 1 to y-pos of {_baseloc}
 	set pitch of {_baseloc} to 0
-	set {_item} to "minecraft:iron_hoe"
-	set {_transformation} to "[1.0000f,0.0000f,0.0000f,-0.3750f,0.0000f,-0.0000f,-1.0000f,0.0000f,0.0000f,1.0000f,-0.0000f,0.4375f,0.0000f,0.0000f,0.0000f,1.0000f]"
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},teleport_duration:1}"
-	spawn an item display at {_baseloc} with nbt {_nbt}
+
+	set {_item} to iron hoe
+	set {_matrix} to getAdjustedMatrix4f(1, 0, 0, -0.375, 0, -0, -1, 0, 0, 1, -0, 0.4375, 0, 0, 0, 1)
+
+	spawn an item display at {_baseloc}
 	set {_itemdisplay} to spawned item display
+
+	setBrightness({_itemdisplay})
+	{_itemdisplay}.setTeleportDuration(1)
+	{_itemdisplay}.setInterpolationDuration(1)
+	{_itemdisplay}.setViewRange(1000)
+	setDisplayItem({_itemdisplay}, {_item})
+	{_itemdisplay}.setTransformationMatrix({_matrix})
+
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
 	set {_yaw} to yaw of {_baseloc}
 	loop 20 times:
