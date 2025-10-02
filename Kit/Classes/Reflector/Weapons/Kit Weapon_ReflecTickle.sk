@@ -42,14 +42,26 @@ local function kitParticle_ReflecTickle_Shield(player: player):
 		spawnParticle_Vector(wax_off, randomVector(), 3, {_effloc})
 	set yaw of {_baseloc} to 0
 	set pitch of {_baseloc} to 0
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,1f,0f]", "[1f,1f,1f]")
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 1, 0)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_item} to white stained glass pane
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	loop 3 times:
 		set {_loc} to {_baseloc}
-		add 120 * loop-number to yaw of {_loc}
+		add (120 * loop-number) to yaw of {_loc}
 		set {_loc} to location 0.5 meters in front of {_loc}
-		set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""minecraft:white_stained_glass_pane"",Count:1b}}"
-		spawn an item display at {_loc} with nbt {_nbt}
+
+		spawn an item display at {_loc}
 		set {_itemdisplay} to spawned item display
+
+		setBrightness({_itemdisplay})
+		{_itemdisplay}.setTeleportDuration(1)
+		{_itemdisplay}.setInterpolationDuration(1)
+		{_itemdisplay}.setViewRange(1000)
+		setDisplayItem({_itemdisplay}, {_item})
+		{_itemdisplay}.setTransformation({_transformation})
+
 		set metadata value "gametype" of {_itemdisplay} to "Kit"
 		set metadata value "reflectickle" of {_itemdisplay} to "%{_player}%"
 		set metadata value "reflectickle-number" of {_itemdisplay} to loop-number

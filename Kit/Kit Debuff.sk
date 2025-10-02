@@ -122,16 +122,14 @@ function kitFreeze(player: player, tick: number, msg: boolean = true):
 			set {_value} to value of bossbar {_bossbar.id}
 			subtract {_prog} from {_value}
 			set bossbar {_bossbar.id} value to {_value}
-			set {_nbt} to nbt compound of {_player}
-			set int tag "TicksFrozen" of {_nbt} to 130
+			{_player}.setFreezeTicks(130)
 		wait a tick
 	
 	if getDebuffDates({_player}, "Freeze") is {_now}:
 		removeDebuffs({_player}, "Freeze")
 	if {_msg} is true:
 		remove bossbar {_bossbar.id}
-		set {_nbt} to nbt compound of {_player}
-		set int tag "TicksFrozen" of {_nbt} to 0
+		{_player}.setFreezeTicks(0)
 
 on damage of player with priority NORMAL:
 	getDebuffs(victim, "Freeze") is true
