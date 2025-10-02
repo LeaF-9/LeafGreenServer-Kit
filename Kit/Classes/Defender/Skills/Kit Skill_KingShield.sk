@@ -45,18 +45,29 @@ function kitEffect_KingShield(player: player):
 	set {_groundloc} to location 1.5 meters in front of {_groundloc}
 
 	# 見た目
-	set {_item} to "minecraft:blue_stained_glass_pane"
-	if {_King-Shield} < 50:
-		set {_item} to "minecraft:white_stained_glass_pane"
-	else if {_King-Shield} < 100:
-		set {_item} to "minecraft:light_blue_stained_glass_pane"
-	else if {_King-Shield} < 150:
-		set {_item} to "minecraft:cyan_stained_glass_pane"
-
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[{@width}f,{@height}f,1f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},brightness:{block:15,sky:15},teleport_duration:1}"
-	spawn an item display at {_loc.shield} with nbt {_nbt}
+	spawn an item display at {_loc.shield}
 	set {_itemdisplay} to spawned item display
+
+	set {_item} to blue stained glass pane
+	if {_King-Shield} < 50:
+		set {_item} to white stained glass pane
+	else if {_King-Shield} < 100:
+		set {_item} to light blue stained glass pane
+	else if {_King-Shield} < 150:
+		set {_item} to cyan stained glass pane
+	
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	set {_scale} to getVector3f({@width}, {@height}, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+
+	setBrightness({_itemdisplay})
+	{_itemdisplay}.setTeleportDuration(1)
+	{_itemdisplay}.setInterpolationDuration(1)
+	{_itemdisplay}.setViewRange(1000)
+	setDisplayItem({_itemdisplay}, {_item})
+	{_itemdisplay}.setTransformation({_transformation})
+
 	set metadata value "gametype" of {_itemdisplay} to "Kit"
 	set metadata value "King Shield" of {_itemdisplay} to "%{_player}%"
 
@@ -88,13 +99,10 @@ function kitEffect_KingShield(player: player):
 		set {_w.count} to 0
 		loop {@width} * 2 times:
 			set {_loc.slime} to location {_w} meters to the right of {_loc.hit.height}
-			spawn a slime at {_loc.slime} with nbt compound from "{NoGravity:1b,Size:0.5,PersistenceRequired:1,NoAI:1,Silent:1,DropItem:0,Team:""noCollision"",active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-			set {_slime} to spawned slime
+			set {_slime} to spawnShieldEntity({_player}, {_loc.slime})
+
 			set {_slime::%{_h.count}%::%{_w.count}%} to {_slime}
-			set metadata value "gametype" of {_slime} to "Kit"
-			set metadata value "shield entity" of {_slime} to true
 			set metadata value "King Shield" of {_slime} to "%{_player}%"
-			set display name of {_slime} to "%{_player}%"
 			add 0.5 to {_w}
 			add 1 to {_w.count}
 		subtract {_subfront} from {_front}
@@ -125,27 +133,17 @@ function kitEffect_KingShield(player: player):
 			stop	
 
 		else if {_King-Shield} < 50:
-			set {_item.check} to "minecraft:white_stained_glass_pane"
+			set {_item.check} to white stained glass pane
 		else if {_King-Shield} < 100:
-			set {_item.check} to "minecraft:light_blue_stained_glass_pane"
+			set {_item.check} to light blue stained glass pane
 		else if {_King-Shield} < 150:
-			set {_item.check} to "minecraft:cyan_stained_glass_pane"
+			set {_item.check} to cyan stained glass pane
 		
 		if {_item.check} is not {_item}:
 			set {_item} to {_item.check}
-			loop all entities:
-				loop-entity is {_itemdisplay}
-				delete loop-entity
-			
-			set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[{@width}f,{@height}f,1f]")
-			set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},brightness:{block:15,sky:15},teleport_duration:1}"
-			spawn an item display at {_loc.shield} with nbt {_nbt}
-			set {_itemdisplay} to spawned item display
-			set metadata value "gametype" of {_itemdisplay} to "Kit"
-			set metadata value "King Shield" of {_itemdisplay} to "%{_player}%"
+			setDisplayItem({_itemdisplay}, {_item})
 		
-		else:
-			teleport {_itemdisplay} to {_loc.shield}
+		teleport {_itemdisplay} to {_loc.shield}
 
 		# 当たり判定 (左上ベース)
 		set {_height.mul} to cos({_pitch})

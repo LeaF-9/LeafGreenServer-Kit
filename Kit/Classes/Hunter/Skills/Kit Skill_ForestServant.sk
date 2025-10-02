@@ -24,8 +24,6 @@ function kitEffect_ForestServant(player: player):
 	set {_baseloc} to location of {_player}
 	set pitch of {_baseloc} to 0
 	set {_basevec} to setVector({_baseloc}, location 10 meters in front of {_baseloc}, 3)
-	
-	set {_nbt} to nbt compound from "{Team:""kit-%{TrueTeam::%{_player}%}%""}"
 
 	set {_rad} to 0
 	set {_addrad} to 120
@@ -37,11 +35,9 @@ function kitEffect_ForestServant(player: player):
 		set {_spawnloc} to {_baseloc} if (block 0.1 meters below {_spawnloc}) is passable
 
 		if loop-number is 1:
-			spawn a bogged at {_spawnloc} with nbt {_nbt}
-			set {_spawned} to spawned bogged
+			set {_spawned} to kitSpawnMob({_player}, bogged, {_spawnloc})
 		else:
-			spawn a cave spider at {_spawnloc} with nbt {_nbt}
-			set {_spawned} to spawned cave spider
+			set {_spawned} to kitSpawnMob({_player}, cave spider, {_spawnloc})
 		set display name of {_spawned} to "%{_player}%"
 		set metadata value {@metadata-name} of {_spawned} to true
 		kitParticle_ForestServant_Spawn({_spawned})

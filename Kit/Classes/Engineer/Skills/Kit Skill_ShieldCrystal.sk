@@ -23,9 +23,12 @@ function kitEffect_ShieldCrystal(player: player):
 	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Shield Crystal")
 	set {_block} to getBlockData(barrier)
 	kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Shield Crystal")
-	spawn end crystal at {_loc.core} with nbt compound from "{ShowBottom:false}"
-	set metadata value "gametype" of spawned end crystal to "Kit"
-	set metadata value "shield crystal" of spawned end crystal to "%{_player}%"
+	spawn end crystal at {_loc.core}
+	set {_crystal} to spawned end crystal
+
+	{_crystal}.setShowingBottom(false)
+	set metadata value "gametype" of {_crystal} to "Kit"
+	set metadata value "shield crystal" of {_crystal} to "%{_player}%"
 	kitMsg({_player}, "<##2CB4AD>Shield Crystal§1を設置しました!")
 	playSound("entity.ender_eye.death", 1, 0.5, {_loc.core})
 	while getKitStats({_player}, "ShieldCrystal-Time") is {_now}:
@@ -77,12 +80,13 @@ function kitEffect_ShieldCrystal(player: player):
 			metadata value "shield crystal" of loop-end crystal is "%{_player}%"
 			set {_exist.crystal} to true
 		if {_exist.crystal} is false:
-			spawn end crystal at {_loc.core} with nbt compound from "{ShowBottom:false}"
-			set metadata value "gametype" of spawned end crystal to "Kit"
-			set metadata value "shield crystal" of spawned end crystal to "%{_player}%"
-	loop all entities:
-		metadata value "shield crystal" of loop-entity is "%{_player}%"
-		delete loop-entity
+			{_crystal}.remove()
+			spawn end crystal at {_loc.core}
+			set {_crystal} to spawned end crystal
+			{_crystal}.setShowingBottom(false)
+			set metadata value "gametype" of {_crystal} to "Kit"
+			set metadata value "shield crystal" of {_crystal} to "%{_player}%"
+	{_crystal}.remove()
 
 on damage of end crystal:
 	metadata value "shield crystal" of victim is set

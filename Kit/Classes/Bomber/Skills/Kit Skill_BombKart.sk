@@ -27,23 +27,44 @@ function kitEffect_BombKart(player: player):
 	set {_moveloc} to {_baseloc}
 	add 0.5 to y-pos of {_baseloc}
 
-	set {_block} to "minecraft:blast_furnace"
-	set {_transformation} to "[-1.0000f,-0.0000f,-0.0000f,0.5000f,-0.0000f,-0.5000f,0.0000f,0.5000f,-0.0000f,0.0000f,1.2000f,-0.6250f,0.0000f,0.0000f,0.0000f,1.0000f]"
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},teleport_duration:1}"
-	spawn a block display at {_baseloc} with nbt {_nbt}
-	set metadata value "gametype" of spawned block display to "Kit"
-	set metadata value "bomb kart" of spawned block display to {_player}
-	set metadata value "bomb kart - time" of spawned block display to {_now}
-	add spawned block display to {_kartEntities::*}
+	spawn a block display at {_baseloc}
+	set {_blockdisplay} to spawned block display
 
-	set {_block} to "minecraft:tnt"
-	set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[-0.45f,0.05f,-0.45f]", "[0.9f,0.9f,0.9f]")
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,block_state:{Name:""%{_block}%""},brightness:{block:15,sky:15},teleport_duration:1}"
-	spawn a block display at {_baseloc} with nbt {_nbt}
-	set metadata value "gametype" of spawned block display to "Kit"
-	set metadata value "bomb kart" of spawned block display to {_player}
-	set metadata value "bomb kart - time" of spawned block display to {_now}
-	add spawned block display to {_kartEntities::*}
+	set {_block} to blast furnace
+	set {_matrix} to getAdjustedMatrix4f(-1, -0, -0, 0.5, -0, -0.5, 0, 0.5, -0, 0, 1.2, -0.625, 0, 0, 0, 1)
+
+	setBrightness({_blockdisplay})
+	{_blockdisplay}.setTeleportDuration(1)
+	{_blockdisplay}.setInterpolationDuration(1)
+	{_blockdisplay}.setViewRange(1000)
+	setDisplayBlock({_blockdisplay}, {_block})
+	{_blockdisplay}.setTransformationMatrix({_matrix})
+
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "bomb kart" of {_blockdisplay} to {_player}
+	set metadata value "bomb kart - time" of {_blockdisplay} to {_now}
+	add {_blockdisplay} to {_kartEntities::*}
+
+	spawn a block display at {_baseloc}
+	set {_blockdisplay} to spawned block display
+
+	set {_block} to tnt
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.45, 0.05, -0.45)
+	set {_scale} to getVector3f(0.9, 0.9, 0.9)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+
+	setBrightness({_blockdisplay})
+	{_blockdisplay}.setTeleportDuration(1)
+	{_blockdisplay}.setInterpolationDuration(1)
+	{_blockdisplay}.setViewRange(1000)
+	setDisplayBlock({_blockdisplay}, {_block})
+	{_blockdisplay}.setTransformation({_transformation})
+
+	set metadata value "gametype" of {_blockdisplay} to "Kit"
+	set metadata value "bomb kart" of {_blockdisplay} to {_player}
+	set metadata value "bomb kart - time" of {_blockdisplay} to {_now}
+	add {_blockdisplay} to {_kartEntities::*}
 
 	playSound("ui.button.click", 1, 0.8, {_player})
 	set {_pushing} to false

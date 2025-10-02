@@ -75,11 +75,19 @@ on projectile hit:
 	set {_dirloc} to setDirToVec({_baseloc}, {_v})
 	set {_kunailoc} to {_dirloc} ~ {_v}
 	setKitStats(shooter, "Kunai-Remaining", {_kunailoc})
-	set {_item} to "minecraft:arrow"
-	set {_transformation} to "[0.7071f,0.7071f,0.0000f,0.0000f,0.0000f,0.0000f,-1.0000f,0.0000f,-0.7071f,0.7071f,0.0000f,0.0000f,0.0000f,0.0000f,0.0000f,1.0000f]"
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b},teleport_duration:1}"
-	spawn an item display at {_kunailoc} with nbt {_nbt}
+	set {_item} to arrow
+	set {_matrix} to getAdjustedMatrix4f(0.7071, 0.7071, 0, 0, 0, 0, -1, 0, -0.7071, 0.7071, 0, 0, 0, 0, 0, 1)
+
+	spawn an item display at {_kunailoc}
 	set {_itemdisplay} to spawned item display
+
+	setBrightness({_itemdisplay})
+	{_itemdisplay}.setTeleportDuration(1)
+	{_itemdisplay}.setInterpolationDuration(1)
+	{_itemdisplay}.setViewRange(1000)
+	setDisplayItem({_itemdisplay}, {_item})
+	{_itemdisplay}.setTransformationMatrix({_matrix})
+
 	set metadata value "gametype" of {_itemdisplay} to "Kit"
 	set metadata value "kunai-remaining" of {_itemdisplay} to "%shooter%"
 	packetGlowing(shooter, {_itemdisplay})

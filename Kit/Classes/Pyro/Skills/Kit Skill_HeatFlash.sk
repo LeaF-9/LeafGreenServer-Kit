@@ -112,9 +112,20 @@ local function kitParticle_HeatFlash_Flash(loc: location):
 	set {_now} to now
 	set {_el} to {_loc}
 	add -0.25 to y-coordinate of {_el}
-	set {_nbt} to nbt compound of "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}]}"
-	spawn a magma cube at {_el} with nbt {_nbt}
-	set metadata value "Heat Flash - Glowing" of spawned magma cube to {_now}
+	spawn a magma cube at {_el}
+	set {_flashEntity} to spawned magma cube
+
+	{_flashEntity}.setGravity(false)
+	{_flashEntity}.setSize(1)
+	{_flashEntity}.setInvulnerable(true)
+	{_flashEntity}.setPersistent(true)
+	{_flashEntity}.setAI(false)
+	{_flashEntity}.setSilent(true)
+	{_flashEntity}.setGlowing(true)
+	{_flashEntity}.setDropItem(false)
+	{_flashEntity}.setInvisible(true)
+
+	set metadata value "Heat Flash - Glowing" of {_flashEntity} to {_now}
 
 
 	# フラッシュ

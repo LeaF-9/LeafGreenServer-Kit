@@ -16,11 +16,19 @@ local function kitEffect_Catastrophy(player: player):
 	kitParticle_Catastrophy_Throw({_baseloc})
 
 	# throwed entity
-	set {_item} to "minecraft:netherite_pickaxe"
-	set {_transformation} to "[-0.0000f,0.0000f,1.0000f,0.0000f,0.0000f,1.0000f,0.0000f,0.0000f,-1.0000f,0.0000f,-0.0000f,0.0000f,0.0000f,0.0000f,0.0000f,1.0000f]"
-	set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_item}%"",Count:1b}}"
-	spawn an item display at {_baseloc} with nbt {_nbt}
+	spawn an item display at {_baseloc}
 	set {_itemdisplay} to spawned item display
+
+	set {_item} to netherite netherite_pickaxe
+	set {_matrix} to getAdjustedMatrix4f(-0, 0, 1, 0, 0, 1, 0, 0, -1, 0, -0, 0, 0, 0, 0, 1)
+
+	setBrightness({_itemdisplay})
+	{_itemdisplay}.setTeleportDuration(1)
+	{_itemdisplay}.setInterpolationDuration(1)
+	{_itemdisplay}.setViewRange(1000)
+	setDisplayItem({_itemdisplay}, {_item})
+	{_itemdisplay}.setTransformationMatrix({_matrix})
+
 	set {_now} to now
 	set metadata value "Catastrophy - player" of {_itemdisplay} to {_player}
 	set metadata value "Catastrophy - time" of {_itemdisplay} to {_now}
