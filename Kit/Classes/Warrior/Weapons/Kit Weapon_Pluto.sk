@@ -1,11 +1,17 @@
 # Pluto
 
+options:
+	stun-tick: 60
+	charge-tick: 60
+
+
+
 function kitEffect_Pluto_AttackNormal(player: player, event: object):
 	set {_victim} to {_event}.getEntity()
 	set {_attacker} to {_player}
 	if getKitStats({_attacker}, "PlutoCharge") is true:
 		subtract 1 from {_attacker}'s health
-		kitStun({_victim}, 100)
+		kitStun({_victim}, {@stun-tick})
 		playSound("entity.wither.break_block", 1, 0.9, {_victim})
 		loop all blocks in radius 3 around {_victim}:
 			loop-block is air
@@ -18,6 +24,7 @@ function kitEffect_Pluto_AttackNormal(player: player, event: object):
 function kitEffect_Pluto_Sneak(player: player, event: object):
 	getKitStats({_player}, "PlutoCharge") is not set
 	set {_num} to 0
+
 	wait a tick
 	set {_true} to false
 	while {_true} is false:
@@ -26,14 +33,14 @@ function kitEffect_Pluto_Sneak(player: player, event: object):
 			delete {_true}
 		else if kitItemAllChecker({_tool}, "Warrior", "Weapon", 2) is false:
 			delete {_true}
-		else if {_num} is 100:
+		else if {_num} >= {@charge-tick}:
 			set {_true} to true
 		else:
 			add 1 to {_num}
-			set {_linenum} to round({_num} / 2)
+			set {_linenum} to round({_num} / {@charge-tick} * 50)
 			chargeActionBar({_player}, {_linenum}, 50)
 			# --- チャージ中の音の演出 ---
-			set {_sp} to {_num} / 200 + 0.5
+			set {_sp} to {_num} / ({@charge-tick} * 2) + 0.5
 			playSound("block.lava.pop", 0.5, {_sp}, {_player})
 			# --------------------------
 			# --- チャージ中のパーティクルの演出 ---
