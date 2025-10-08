@@ -1,0 +1,22 @@
+# skill-name: Ice Burst
+
+# 着弾時の音演出
+local function soundBurst(loc: location):
+	set {_pitch} to 0.5
+	loop 5 times:
+		playSound("block.glass.break", 1, {_pitch}, {_loc})
+		add 0.1 to {_pitch}
+		wait a tick
+	playSound("block.glass.break", 1, 0.5, {_loc})
+	wait a tick
+
+	set {_pitch.note::1} to 1.33
+	set {_pitch.note::2} to 1.78
+	set {_pitch.note::3} to 2
+	set {_index} to 1
+
+	loop 3 times:
+		set {_pitch} to {_pitch.note::%{_index}%}
+		playSound("block.note_block.chime", 1, {_pitch}, {_loc})
+		add 1 to {_index}
+		wait 2 tick
