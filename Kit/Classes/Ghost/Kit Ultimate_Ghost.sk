@@ -26,41 +26,46 @@ on leftclick:
 	getKitStats(player, "UltGhost") is true
 	checkCT(player, "Ghost Ult") is true
 	setCT(player, "Ghost Ult", 1)
-	set {_p} to location of head of player
-	shoot a falling coal block from {_p} at speed 1
+	set {_p} to location 1 meter above player
+	set {_shootFalling} to spawnFallingBlock({_p}, coal block)
+	set {_velocity} to setVector({_p}, (location 10 meters in front of {_p}), 1)
+	set velocity of {_shootFalling} to {_velocity}
+
 	set {_now} to now
-	set metadata value "kit-ghostult" of shot falling coal block to "%player%"
-	set metadata value "kit-ghostulttime" of shot falling coal block to "%{_now}%"
-	kitParticle_HellishOccultism_Attack(shot falling coal block)
+	set metadata value "kit-ghostult" of {_shootFalling} to "%player%"
+	set metadata value "kit-ghostulttime" of {_shootFalling} to "%{_now}%"
+	kitParticle_HellishOccultism_Attack({_shootFalling})
 	playSound("entity.wither.shoot", 1, 0.5, player)
+
+	set {_true} to false
 	loop 60 times:
-		{_true} is not set
-		loop all falling coal blocks:
-			metadata value "kit-ghostult" of loop-falling coal block is "%player%"
-			metadata value "kit-ghostulttime" of loop-falling coal block is "%{_now}%"
-			loop all players in radius 2 around loop-falling coal block:
-				{_true} is not set
-				kitCheckTeam(player, loop-player, false) is true
-				set {_true} to true
-				set {_l} to location of loop-falling coal block
-				make a fake explosion at {_l}
-			loop all blocks in radius 2 around loop-falling coal block:
-				{_true} is not set
-				loop-block is not passable
-				set {_true} to true
-				set {_l} to location of loop-falling coal block
-				make a fake explosion at {_l}
+		continue if {_true} is true
+		continue if {_shootFalling}.isDead() is true
+
+		set {_fallLoc} to location of {_shootFalling}
+		loop all players in radius 2 around {_fallLoc}:
+			{_true} is not set
+			kitCheckTeam(player, loop-player, false) is true
+			set {_true} to true
+			make a fake explosion at {_fallLoc}
+
+		loop all blocks in radius 2 around {_fallLoc}:
+			{_true} is not set
+			loop-block is not passable
+			set {_true} to true
+			make a fake explosion at {_fallLoc}
 		wait a tick
-	loop all falling coal blocks:
-		metadata value "kit-ghostult" of loop-falling coal block is "%player%"
-		metadata value "kit-ghostulttime" of loop-falling coal block is "%{_now}%"
-		delete loop-falling coal block
-	{_true} is true
-	loop all entities in radius 5 around {_l}:
+
+	{_shootFalling}.remove()
+
+	stop if {_true} is false
+
+	loop all entities in radius 5 around {_fallLoc}:
 		kitCheckTeam(player, loop-entity, false, true) is true
 		kitDamage(player, loop-entity, 2, "黒弾")
 		apply wither 3 to loop-entity for 3 seconds
 		playSound("entity.wither.spawn", 0.75, 0.5, loop-entity)
+
 	set {_s} to 0
 	set {_t} to 0
 	set {_pl} to {_l}

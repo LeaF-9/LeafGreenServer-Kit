@@ -3,22 +3,37 @@
 function kitUltMercenary(player: player):
 	kitParticle_SanguinaryMurder({_player})
 	setKitStats({_player}, "UltMercenary", true)
+
+	set {_spawnLoc} to location 1 meter above {_player}
 	loop 30 times:
-		shoot a falling redstone block from block above {_player} at speed 1 upwards
-		set {_redstone} to shot falling redstone block
-		set metadata value "kit-merult" of {_redstone} to "%{_player}%"
-		push {_redstone} north at speed {_power.n}
-		push {_redstone} east at speed {_power.e}
+		set {_shootFalling} to spawnFallingBlock({_spawnLoc}, redstone block)
+
+		set {_v.x} to a random number between -1 and 1
+		set {_v.z} to a random number between -1 and 1
+
+		set {_vector} to vector({_v.x}, 1, {_v.z})
+		set velocity of {_shootFalling} to {_vector}
+		set metadata value "kit-merult" of {_shootFalling} to "%{_player}%"
+		add {_shootFalling} to {_fallings::*}
+
 	loop 200 times:
-		loop all falling redstone blocks:
-			metadata value "kit-merult" of (loop-falling redstone block) is "%{_player}%"
-			set {_l} to (location of (block at (loop-falling redstone block)))
-			if block at {_l} is air:
-				if block below {_l} is not passable:
-					delete (loop-falling redstone block)
-					if {_lb::*} does not contain {_l}:
-						add {_l} to {_lb::*}
-						playSound("entity.slime.jump", 0.5, 2, {_l})
+		loop {_fallings::*}:
+			set {_loopFalling} to loop-value-2
+
+
+			set {_l} to (location of (block at ({_loopFalling})))
+			
+			continue if block at {_l} is not air
+			continue if block below {_l} is passable
+
+			remove {_loopFalling} from {_fallings::*}
+			{_loopFalling}.remove()
+			
+			continue if {_lb::*} contains {_l}
+			
+			add {_l} to {_lb::*}
+			playSound("entity.slime.jump", 0.5, 2, {_l})
+
 		loop all players:
 			kitCheckTeam({_player}, loop-player, false, true) is true
 			delete {_bl}
@@ -38,6 +53,9 @@ function kitUltMercenary(player: player):
 	deleteKitStats({_player}, "UltMercenary")
 	loop {_lb::*}:
 		make all players see block at loop-value as air
+	
+	loop {_fallings::*}:
+		loop-value.remove()
 
 function kitParticle_SanguinaryMurder(player: player):
 	loop 200 times:
