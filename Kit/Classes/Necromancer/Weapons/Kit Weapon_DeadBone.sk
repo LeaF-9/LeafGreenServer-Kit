@@ -1,5 +1,36 @@
 # Dead Bone
 
+options:
+	required-necromance: 3
+	charge-tick: 20
+
+function kitEffect_DeadBone(player: player):
+	set {_weaponTool} to tool of {_player}
+
+	set {_using} to true
+	set {_usingTick} to 0
+	loop {@charge-tick} times:
+		if checkEating({_player}) is false:
+			delete {_using}
+		if kitCheckNecromance({_player}, {_weaponTool}) is false:
+			delete {_using}
+		set {_nowTool} to tool of {_player}
+		if {_nowTool} is not {_weaponTool}:
+			delete {_using}
+
+		if {_using} is not true:
+			continue
+		
+		add 1 to {_usingTick}
+		particleChant({_player}, {_usingTick}, {@charge-tick})
+		wait a tick
+	
+	nameItemCT({_player}, "Dead Bone")
+	kitRemoveNecromance({_player}, {_weaponTool})
+	summonDeads({_player})
+
+local function summonDeads(player: player):
+
 function kitEffect_DeadBone_Pick(player: player, loc: location):
 	set {_count} to 3
 
@@ -16,3 +47,8 @@ function kitEffect_DeadBone_Pick(player: player, loc: location):
 			spawnParticle_Color(entity_effect, rgb(122, 65, 153), {_el})
 		add 30 to {_rad}
 		wait a tick
+
+
+
+# 詠唱中の演出
+local function particleChant(player: player, chantTick: number, maxTick: number):
