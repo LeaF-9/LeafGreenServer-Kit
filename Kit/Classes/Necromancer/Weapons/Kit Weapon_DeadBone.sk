@@ -23,7 +23,7 @@ function kitEffect_DeadBone(player: player):
 			continue
 		
 		add 1 to {_usingTick}
-		particleChant({_player}, {_usingTick}, {@charge-tick})
+		particleChant({_player}, {_usingTick})
 		wait a tick
 	
 	nameItemCT({_player}, "Dead Bone")
@@ -53,7 +53,36 @@ function kitEffect_DeadBone_Pick(player: player, loc: location):
 
 
 # 詠唱中の演出
-local function particleChant(player: player, chantTick: number, maxTick: number):
+local function particleChant(player: player, chantTick: number):
+	set {_baseloc} to location of {_player}
+	add rgb(49, 26, 134) to {_colors::*}
+	add rgb(11, 58, 119) to {_colors::*}
+	add rgb(15, 80, 124) to {_colors::*}
+
+	set {_maxTick} to {@charge-tick}
+	
+	set {_maxHeight} to 2
+	set {_maxRad} to 270
+
+	set {_ratioTick} to {_chantTick} / {_maxTick}
+	set {_y} to {_maxHeight} * {_ratioTick}
+	set {_baseRad} to {_maxRad} * {_ratioTick}
+
+	set {_baseVec} to vector(0.5, {_y}, 0)
+	set {_count} to 4
+	set {_rad} to {_baseRad}
+	set {_addRad} to 360 / {_count}
+	loop {_count} times:
+		set {_vec} to {_baseVec}
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_vec}
+
+		spawnParticle(trial_omen, {_el})
+		chance of 10%:
+			set {_el.2} to moveRandomLocation({_el}, 0.5)
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Color(instant_effect, {_color}, {_el.2})
+		add {_addRad} to {_rad}
 
 
 
