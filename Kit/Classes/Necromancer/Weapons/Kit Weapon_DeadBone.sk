@@ -33,6 +33,33 @@ function kitEffect_DeadBone(player: player):
 local function summonDeads(player: player):
 	soundSummon({_player})
 
+	set {_pushPower} to 1.5
+	set {_from} to location 1 meter above {_player}
+	set {_baseVec} to getVectorFromYawAxis({_from})
+	set {_rotateVec} to getVectorFromRollAxis({_from}, {_pushPower})
+	set {_rad} to -45
+	set {_addRad} to 45
+	set {_count} to 3
+
+	loop {_count} times:
+		set {_vector} to {_rotateVec}
+		rotate {_vector} around {_baseVec} by {_rad}
+		set {_pushEntity} to getUndead({_player}, {_from})
+		set velocity of {_pushEntity} to {_vector}
+		particleSummon({_pushEntity})
+		add {_addRad} to {_rad}
+
+local function getUndead(player: player, l: location) :: entity:
+	set {_z} to true
+	chance of 20%:
+		set {_z} to false
+
+	if {_z} is true:
+		set {_undead} to kitSpawn_Necromancer_Zombie({_player}, {_l})
+	else:
+		set {_undead} to kitSpawn_Necromancer_Skeleton({_player}, {_l})
+	return {_undead}
+
 function kitEffect_DeadBone_Pick(player: player, loc: location):
 	set {_count} to 3
 
@@ -84,8 +111,18 @@ local function particleChant(player: player, chantTick: number):
 			spawnParticle_Color(instant_effect, {_color}, {_el.2})
 		add {_addRad} to {_rad}
 
+local function particleSummon(entity: entity):
+	set {_tick} to 20
+	loop {_tick} times:
+		set {_baseLoc} to location 1 meter above {_entity}
+		set {_vec} to randomVector()
+		spawnParticle_Vector(witch, {_vec}, 0.8, {_baseLoc})
+		wait a tick
+
 
 
 local function soundChant(player: player):
+	playSound("entity.illusioner.cast_spell", 1.8, 1, {_player})
 
 local function soundSummon(player: player):
+	playSound("entity.zombie.infect", 0.7, 1, {_player})
