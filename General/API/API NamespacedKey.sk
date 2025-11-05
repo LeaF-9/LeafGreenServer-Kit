@@ -5,6 +5,8 @@ import:
 	org.bukkit.NamespacedKey
 	org.bukkit.persistence.PersistentDataType
 
+	com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
+
 # ItemのPDCを操作する関数郡
 function getNamespacedKey(item: item, key: text, type: text) :: object:
 	set {_ItemMeta} to {_item}.getItemMeta()
@@ -61,3 +63,17 @@ local function getType(type: text) :: object:
 	return PersistentDataType.TAG_CONTAINER if {_type} is "tag_container"
 	log "そのタイプは存在しません: %{_type}%"
 	stop
+
+# 残留metadataの削除処理
+on death:
+	metadata value "gametype" of victim is set
+	delete metadata value "gametype" of victim
+
+on quit:
+	metadata value "gametype" of player is set
+	delete metadata value "gametype" of player
+
+on EntityRemoveFromWorldEvent:
+	set {_entity} to event.getEntity()
+	metadata value "gametype" of {_entity} is set
+	delete metadata value "gametype" of {_entity}
