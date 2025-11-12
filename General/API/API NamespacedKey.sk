@@ -16,7 +16,7 @@ function getNamespacedKey(item: item, key: text, type: text) :: object:
 
 function setNamespacedKey(item: item, key: text, type: text, value: object) :: item:
 	set {_ItemMeta} to {_item}.getItemMeta()
-	setPersistentData({_ItemMeta}, {_key}, {_type}, {_value})
+	setPersistentData({_ItemMeta}, {_key}, {_value}, {_type})
 
 	{_item}.setItemMeta({_ItemMeta})
 	return {_item}
@@ -29,8 +29,9 @@ function getPersistentData(holder: object, key: text, type: text) :: object:
 	set {_value} to {_holder}.getPersistentDataContainer().get({_NK}, {_PDT})
 	return {_value}
 
-function setPersistentData(holder: object, key: text, type: text, value: object):
+function setPersistentData(holder: object, key: text, value: object, type: text = "auto"):
 	set {_NK} to getKey({_key})
+	set {_type} to getTypeString({_value}) if {_type} is "auto"
 	set {_PDT} to getType({_type})
 
 	{_holder}.getPersistentDataContainer().set({_NK}, {_PDT}, {_value})
@@ -62,6 +63,25 @@ local function getType(type: text) :: object:
 	return PersistentDataType.STRING if {_type} is "string"
 	return PersistentDataType.TAG_CONTAINER if {_type} is "tag_container"
 	log "そのタイプは存在しません: %{_type}%"
+	stop
+
+# PDCの入力値のタイプを推定する関数
+local function getTypeString(value: object) :: text:
+	set {_class} to {_value}.getClass().getSimpleName()
+	return "boolean" if {_class} is "Boolean"
+	return "byte" if {_class} is "Byte"
+	# return "byte_array" if {_class} is "Byte[]"
+	return "double" if {_class} is "Double
+	return "float" if {_class} is "Float"
+	return "integer" if {_class} is "Integer"
+	# return "integer_array" if {_class} is "Integer[]"
+	# return "list" if {_class} is "List"
+	return "long" if {_class} is "Long"
+	# return "long_array" if {_class} is "Long[]"
+	return "short" if {_class} is "Short"
+	return "string" if {_class} is "String"
+	# return "tag_container" if {_class} is "TagContainer"
+	log "そのタイプは存在しない,または未対応です: %{_class}%"
 	stop
 
 # 残留metadataの削除処理
