@@ -1,36 +1,66 @@
 # Erasure Rapier
 
+options:
+	required-necromance: 3
+	charge-tick: 20
+	effect-tick: 100
+
+	heal-amount: 2
+	get-necromance: 1
+
+function kitEffect_ErasureRapier(player: player):
+	soundChant({_player})
+	set {_weaponTool} to tool of {_player}
+
+	set {_using} to true
+	loop {@charge-tick} times:
+		if checkEating({_player}) is false:
+			delete {_using}
+		set {_nowTool} to tool of {_player}
+		if {_nowTool} is not {_weaponTool}:
+			delete {_using}
+
+		if {_using} is not true:
+			continue
+		
+		add 1 to {_usingTick}
+		particleChant({_player})
+		wait a tick
+	
+	stop if {_using} is not true
+	nameItemCT({_player}, "Erasure Rapier")
+	kitRemoveNecromance({_player}, {_weaponTool})
+	enchant({_player})
+
+
 function kitEffect_ErasureRapier_Kill(player: player, event: object):
 	set {_victim} to {_event}.getEntity()
 	set {_attacker} to {_player}
-	kitHeal({_attacker}, 2)
 	set {Kit-NoCorpse::%{_victim}%} to true
-	playSound("entity.zombie.infect", 1, 2, {_victim})
-	loop 5 times:
-		set {_baseloc} to location of {_victim}
-		add 0.4 to {_y}
-		set {_rad} to 0
-		loop 10 times:
-			set {_vec} to vector(0.5, {_y}, 0)
-			rotate {_vec} around y-axis by {_rad}
-			set {_effloc} to {_baseloc} ~ {_vec}
-			spawnParticle_Dust(rgb(75, 0, 130), 1, {_effloc})
-			add 36 to {_rad}
-		wait a tick
+	kitAddNecromance({_attacker}, {@get-necromance})
+	soundKill({_victim})
+	particleKill({_victim})
 
 function kitEffect_ErasureRapier_Pick(player: player):
+	kitHeal({_player}, {@heal-amount})
+	particleHeal({_player})
+	soundHeal({_player})
+
+local function enchant(player: player):
 	set {_now} to now
 	setKitStats({_player}, "Erasure Rapier", {_now})
-	playSound("block.enchantment_table.use", 1.1, 0.8, {_player})
-	set {_time} to 200
-	loop 200 times:
+	soundEnchant({_player})
+	particleEnchant({_player})
+
+	set {_time} to {@effect-tick}
+	loop {_time} times:
 		getKitStats({_player}, "Erasure Rapier") is {_now}
 		loop all items in {_player}'s inventory:
 			name of loop-item contains "Erasure Rapier"
 			loop-item is not enchanted
 			enchant loop-item with sharpness 3
 		
-		set {_active} to {_time} / (200 / 50)
+		set {_active} to {_time} / ({_time} / 50)
 		chargeActionBar_TimeDisplay({_player}, {_active}, 50, {_time})
 		subtract 1 from {_time}
 		wait a tick
@@ -38,3 +68,124 @@ function kitEffect_ErasureRapier_Pick(player: player):
 		loop all items in {_player}'s inventory:
 			name of loop-item contains "Erasure Rapier"
 			disenchant loop-item
+		deleteKitStats({_player}, "Erasure Rapier")
+
+
+
+local function particleChant(player: player):
+	add rgb(88, 13, 104) to {_colors::*}
+	add rgb(79, 14, 85) to {_colors::*}
+	add rgb(75, 10, 30) to {_colors::*}
+
+
+	set {_baseloc} to location 1 meter above {_player}
+	set {_vector} to randomVector(1)
+
+	set {_TICK} to 5
+	set {_CPT} to 2
+	set {_meter} to a random number between 1 and 3
+	set {_distPerTick} to {_meter} / ({_TICK} * {_CPT})
+
+	set {_nowMeter} to {_meter}
+	loop {_TICK} times:
+		loop {_CPT} times:
+			set {_dirvec} to {_vector} * vector({_nowMeter}, {_nowMeter}, {_nowMeter})
+			set {_effloc} to {_baseloc} ~ {_dirvec}
+
+			set {_color} to random element out of {_colors::*}
+			spawnParticle_Color(instant_effect, {_color}, {_effloc})
+
+			set {_nowMeter} to {_nowMeter} - {_distPerTick}
+		wait a tick
+
+local function particleEnchant(player: player):
+	set {_baseloc} to location of {_player}
+	particleDiffusion({_baseloc})
+	particleAscend({_baseloc})
+
+local function particleDiffusion(loc: location):
+	add 1 to y-pos of {_loc}
+	set {_COUNT} to 30
+	set {_MINPOWER} to 1
+	set {_MAXPOWER} to 2
+	loop {_COUNT} times:
+		set {_power} to a random number between {_MINPOWER} and {_MAXPOWER}
+		set {_vec} to randomVector({_power})
+		spawnParticle_Vector(witch, {_vec}, 0.85, {_loc})
+
+local function particleAscend(loc: location):
+	set {_COUNT} to 30
+	set {_MINDIST} to 0.3
+	set {_MAXDIST} to 0.7
+	set {_MINPOWER} to 0.5
+	set {_MAXPOWER} to 1
+	loop {_COUNT} times:
+		set {_dist} to a random number between {_MINDIST} and {_MAXDIST}
+		set {_vec} to vector({_dist}, 0, {_dist})
+		set {_rotation} to a random number between 0 and 360
+		rotate {_vec} around y-axis by {_rotation}
+		set {_effloc} to {_loc} ~ {_vec}
+		set {_power} to a random number between {_MINPOWER} and {_MAXPOWER}
+		set {_pushVec} to vector(0, {_power}, 0)
+		spawnParticle_Vector(trial_spawner_detection_ominous, {_vec}, 0.8, {_effloc})
+
+local function particleKill(player: player):
+	set {_baseloc} to location of {_player}
+	add rgb(75, 0, 130) to {_colors::*}
+	add rgb(47, 11, 72) to {_colors::*}
+	add rgb(44, 22, 94) to {_colors::*}
+
+	loop 5 times:
+		add 0.4 to {_y}
+		set {_rad} to 0
+		loop 10 times:
+			set {_vec} to vector(0.5, {_y}, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_effloc} to {_baseloc} ~ {_vec}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 1, {_effloc})
+			add 36 to {_rad}
+		wait a tick
+
+local function particleHeal(player: player):
+	set {_COUNT} to 10
+	set {_MOVETICK} to 3
+
+	set {_DIST.MIN} to 0.5
+	set {_DIST.MAX} to 1
+
+	set {_tick} to 0
+	loop {_MOVETICK} times:
+		set {_baseloc} to location 1 meter above {_player}
+		add 1 to {_tick}
+		set {_index} to 0
+		loop {_COUNT} times:
+			if {_dists::%{_index}%} is not set
+				set {_dist} to a random number between {_DIST.MIN} and {_DIST.MAX}
+				set {_dists::%{_index}%} to {_dist}
+			if {_vecs::%{_index}%} is not set
+				set {_vec} to randomVector(1)
+				set {_vecs::%{_index}%} to {_vec}
+			
+			set {_dist} to {_dists::%{_index}%}
+			set {_vec} to {_vecs::%{_index}%}
+			set {_mpt} to {_dist} / {_MOVETICK}
+			set {_meter} to {_dist} * ({_tick} / {_MOVETICK})
+			set {_effvec} to {_vec} * vector({_meter}, {_meter}, {_meter})
+			set {_effloc} to {_baseloc} ~ {_effvec}
+
+			spawnParticle(soul, {_effloc})
+			add 1 to {_index}
+		wait a tick
+
+local function soundChant(player: player):
+	playSound("entity.illusioner.cast_spell", 1.8, 1, {_player})
+
+local function soundEnchant(player: player):
+	playSound("block.enchantment_table.use", 1.1, 0.8, {_player})
+
+local function soundKill(player: player):
+	playSound("entity.zombie.infect", 1, 2, {_player})
+
+local function soundHeal(player: player):
+	playSound("entity.phantom.bite", 1, 1.35, {_player})
