@@ -4,6 +4,8 @@ import:
 	org.bukkit.entity.EntityType
 	org.bukkit.attribute.Attribute
 
+	java.util.UUID
+
 function kitSpawnMob(summoner: player, mob: entity type, loc: location, showDisplay: boolean = true) :: entity:
 	set {_world} to world of {_loc}
 
@@ -18,9 +20,8 @@ function kitSpawnMob(summoner: player, mob: entity type, loc: location, showDisp
 
 	set display name of {_mob} to "%{_summoner}%"
 	set metadata value "gametype" of {_mob} to "Kit"
-	set metadata value "summon-player" of {_mob} to {_summoner}
-	set {_uuid} to {_mob}.getUniqueId()
-	set metadata value "uuid" of {_mob} to {_uuid}
+	set {_summonerUUID} to {_summoner}.getUniqueId().toString()
+	setPersistentData({_mob}, "summon-player", {_summonerUUID})
 
 	{_mob}.setCustomNameVisible(false) if {_showDisplay} is false
 
@@ -36,10 +37,18 @@ function kitSpawnMob_NBT(summoner: player, mob: entity type, loc: location, tag:
 	set {_mob} to spawned entity
 	set display name of {_mob} to "%{_summoner}%"
 	set metadata value "gametype" of {_mob} to "Kit"
-	set metadata value "summon-player" of {_mob} to {_summoner}
-	set {_uuid} to {_mob}.getUniqueId()
-	set metadata value "uuid" of {_mob} to {_uuid}
+	set {_summonerUUID} to {_summoner}.getUniqueId().toString()
+	setPersistentData({_mob}, "summon-player", {_summonerUUID})
+
 	return {_mob}
+
+function getSummonPlayer(entity: entity) :: player:
+	set {_uuidString} to getPersistentData({_entity}, "summon-player", "string")
+	set {_uuid} to UUID.fromString({_uuidString})
+	set {_summoner} to Bukkit.getPlayer({_uuid})
+	return {_summoner}
+
+
 
 function setAttribute(entity: entity, attribute: text, value: number):
 	set {_atext} to {_attribute} in upper case

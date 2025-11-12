@@ -155,10 +155,9 @@ function spawnShieldEntity(player: player, loc: location) :: entity:
 
 	set display name of {_mob} to "%{_player}%"
 	set metadata value "gametype" of {_mob} to "Kit"
-	set metadata value "summon-player" of {_mob} to {_summoner}
-	set metadata value "shield entity" of {_mob} to true
-	set {_uuid} to {_mob}.getUniqueId()
-	set metadata value "uuid" of {_mob} to {_uuid}
+	set {_summonerUUID} to {_summoner}.getUniqueId().toString()
+	setPersistentData({_mob}, "summon-player", {_summonerUUID})
+	setPersistentData({_mob}, "shield-entity", true)
 
 	{_mob}.setCustomNameVisible(false)
 	{_mob}.setGravity(false)
