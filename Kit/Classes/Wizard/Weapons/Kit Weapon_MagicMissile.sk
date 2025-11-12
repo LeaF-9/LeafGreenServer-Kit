@@ -68,7 +68,8 @@ local function kitEffect_MagicMissile_Timer(player: player):
 		if {_timer} >= 61:
 			set {_timer} to 1
 		loop all entities:
-			metadata value "summon-player" of loop-entity is {_player}
+			set {_summoner} to getSummonPlayer(loop-entity)
+			{_summoner} is {_player}
 			metadata value "magicmissile" of loop-entity is set
 			if metadata value "magicmissile-blasted" of loop-entity is set:
 				delete loop-entity
@@ -81,7 +82,8 @@ local function kitEffect_MagicMissile_Timer(player: player):
 			teleport loop-entity to {_locs::%{_locid}%}
 		wait a tick
 	loop all entities:
-		metadata value "summon-player" of loop-entity is {_player}
+		set {_summoner} to getSummonPlayer(loop-entity)
+		{_summoner} is {_player}
 		metadata value "magicmissile" of loop-entity is set
 		delete loop-entity
 
@@ -96,7 +98,8 @@ function kitEffect_MagicMissile(player: player):
 	subtract 1 from {_MagicMissile}
 	setKitStats({_player}, "MagicMissile", {_MagicMissile})
 	loop all entities:
-		metadata value "summon-player" of loop-entity is {_player}
+		set {_summoner} to getSummonPlayer(loop-entity)
+		{_summoner} is {_player}
 		metadata value "magicmissile" of loop-entity is {_id}
 		metadata value "magicmissile-launched" of loop-entity is false
 		set {_bullet} to loop-entity

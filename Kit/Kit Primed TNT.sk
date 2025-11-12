@@ -25,6 +25,10 @@ on explode:
 		set {_bool} to false
 	kitExplosion({_attacker}, {_power}, {_loc}, {_bool})
 
+	delete metadata value "attacker" of {_entity}
+	delete metadata value "kit-bomber" of {_entity}
+	delete metadata value "TrueTeam" of {_entity}
+
 on damage of player with priority LOWEST:
 	if damage was caused by block explosion or entity explosion:
 		if metadata value "firework" of projectile is true:
@@ -49,7 +53,7 @@ function kitExplosion(attacker: player, power: number, loc: location, bool: bool
 		kitCheckTeam(loop-entity, {_attacker}, false, {_bool}) is true
 		if checkEntityType(loop-entity, player) is false:
 			# シールドエンティティの確認
-			if metadata value "shield entity" of loop-entity is true:
+			if getPersistentData(loop-entity, "shield-entity", "boolean") is true:
 				if {_shield} is set:
 					continue
 				set {_shield} to true

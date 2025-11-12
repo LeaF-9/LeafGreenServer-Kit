@@ -109,7 +109,7 @@ local function removeAegisShield(entity: entity, uuid: uuid):
 
 local function dropWhenDamaged(player: player):
 	set {_aegis} to metadata value {@metadata-dropper} of {_player}
-	set {_summoner} to metadata value "summon-player" of {_aegis}
+	set {_summoner} to getSummonPlayer({_aegis})
 
 	set {_droploc} to location of {_aegis}
 	set {_dropnum} to a random integer between {@drop-damage-min} and {@drop-damage-max}
@@ -129,7 +129,7 @@ on damage with priority HIGH:
 on damage of armor stand:
 	stop if attacker is not set
 	stop if metadata value {@metadata-aegis} of victim is not set
-	set {_summoner} to metadata value "summon-player" of victim
+	set {_summoner} to getSummonPlayer(victim)
 	if kitCheckTeam({_summoner}, attacker, true) is true:
 		cancel event
 		stop
