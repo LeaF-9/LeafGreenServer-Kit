@@ -60,15 +60,22 @@ local function enchant(player: player):
 			loop-item is not enchanted
 			enchant loop-item with sharpness 3
 		
-		set {_active} to {_time} / ({_time} / 50)
-		chargeActionBar_TimeDisplay({_player}, {_active}, 50, {_time})
-		subtract 1 from {_time}
+		timeBar({_player}, loop-number)
 		wait a tick
 	if getKitStats({_player}, "Erasure Rapier") is {_now}:
 		loop all items in {_player}'s inventory:
 			name of loop-item contains "Erasure Rapier"
 			disenchant loop-item
 		deleteKitStats({_player}, "Erasure Rapier")
+
+local function timeBar(player: player, tick: number):
+	set {_TIME.MAX} to {@effect-tick}
+	set {_BAR.MAX} to 50
+	set {_PROG} to {_BAR.MAX} / {_TIME.MAX}
+
+	set {_active} to ceil({_BAR.MAX} - ({_PROG} * {_tick}))
+	set {_showTime} to {_TIME.MAX} - {_tick} + 1
+	chargeActionBar_TimeDisplay({_player}, {_active}, {_BAR.MAX}, {_showTime})
 
 
 
@@ -93,7 +100,7 @@ local function particleChant(player: player):
 			set {_effloc} to {_baseloc} ~ {_dirvec}
 
 			set {_color} to random element out of {_colors::*}
-			spawnParticle_Color(instant_effect, {_color}, {_effloc})
+			spawnParticle_Spell(instant_effect, {_color}, 0, {_effloc})
 
 			set {_nowMeter} to {_nowMeter} - {_distPerTick}
 		wait a tick
@@ -105,13 +112,21 @@ local function particleEnchant(player: player):
 
 local function particleDiffusion(loc: location):
 	add 1 to y-pos of {_loc}
-	set {_COUNT} to 30
+	add rgb(99, 51, 133) to {_colors::*}
+	add rgb(116, 53, 124) to {_colors::*}
+	add rgb(81, 46, 146) to {_colors::*}
+
+	set {_COUNT} to 60
 	set {_MINPOWER} to 1
-	set {_MAXPOWER} to 2
+	set {_MAXPOWER} to 2.5
 	loop {_COUNT} times:
+		set {_locnum} to a random number between 0.5 and 1
+		set {_locvec} to randomVector({_locnum})
+		set {_el} to {_loc} ~ {_locvec}
+
 		set {_power} to a random number between {_MINPOWER} and {_MAXPOWER}
-		set {_vec} to randomVector({_power})
-		spawnParticle_Vector(witch, {_vec}, 0.85, {_loc})
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(effect, {_color}, {_power}, {_el})
 
 local function particleAscend(loc: location):
 	set {_COUNT} to 30
@@ -127,7 +142,7 @@ local function particleAscend(loc: location):
 		set {_effloc} to {_loc} ~ {_vec}
 		set {_power} to a random number between {_MINPOWER} and {_MAXPOWER}
 		set {_pushVec} to vector(0, {_power}, 0)
-		spawnParticle_Vector(trial_spawner_detection_ominous, {_vec}, 0.8, {_effloc})
+		spawnParticle_Vector(trial_spawner_detection_ominous, {_pushVec}, 0.3, {_effloc})
 
 local function particleKill(player: player):
 	set {_baseloc} to location of {_player}
