@@ -1,4 +1,4 @@
-# Erasure Rapier
+# Erapis
 
 options:
 	required-necromance: 3
@@ -8,13 +8,15 @@ options:
 	heal-amount: 2
 	get-necromance: 1
 
-function kitEffect_ErasureRapier(player: player):
+function kitEffect_Erapis(player: player):
 	soundChant({_player})
 	set {_weaponTool} to tool of {_player}
 
 	set {_using} to true
 	loop {@charge-tick} times:
 		if checkEating({_player}) is false:
+			delete {_using}
+		if kitCheckNecromance({_player}, {_weaponTool}) is false:
 			delete {_using}
 		set {_nowTool} to tool of {_player}
 		if {_nowTool} is not {_weaponTool}:
@@ -28,12 +30,12 @@ function kitEffect_ErasureRapier(player: player):
 		wait a tick
 	
 	stop if {_using} is not true
-	nameItemCT({_player}, "Erasure Rapier")
+	nameItemCT({_player}, "Erapis")
 	kitRemoveNecromance({_player}, {_weaponTool})
 	enchant({_player})
 
 
-function kitEffect_ErasureRapier_Kill(player: player, event: object):
+function kitEffect_Erapis_Kill(player: player, event: object):
 	set {_victim} to {_event}.getEntity()
 	set {_attacker} to {_player}
 	set {Kit-NoCorpse::%{_victim}%} to true
@@ -41,32 +43,32 @@ function kitEffect_ErasureRapier_Kill(player: player, event: object):
 	soundKill({_victim})
 	particleKill({_victim})
 
-function kitEffect_ErasureRapier_Pick(player: player):
+function kitEffect_Erapis_Pick(player: player):
 	kitHeal({_player}, {@heal-amount})
 	particleHeal({_player})
 	soundHeal({_player})
 
 local function enchant(player: player):
 	set {_now} to now
-	setKitStats({_player}, "Erasure Rapier", {_now})
+	setKitStats({_player}, "Erapis", {_now})
 	soundEnchant({_player})
 	particleEnchant({_player})
 
 	set {_time} to {@effect-tick}
 	loop {_time} times:
-		getKitStats({_player}, "Erasure Rapier") is {_now}
+		getKitStats({_player}, "Erapis") is {_now}
 		loop all items in {_player}'s inventory:
-			name of loop-item contains "Erasure Rapier"
+			name of loop-item contains "Erapis"
 			loop-item is not enchanted
 			enchant loop-item with sharpness 3
 		
 		timeBar({_player}, loop-number)
 		wait a tick
-	if getKitStats({_player}, "Erasure Rapier") is {_now}:
+	if getKitStats({_player}, "Erapis") is {_now}:
 		loop all items in {_player}'s inventory:
-			name of loop-item contains "Erasure Rapier"
+			name of loop-item contains "Erapis"
 			disenchant loop-item
-		deleteKitStats({_player}, "Erasure Rapier")
+		deleteKitStats({_player}, "Erapis")
 
 local function timeBar(player: player, tick: number):
 	set {_TIME.MAX} to {@effect-tick}
