@@ -1,12 +1,101 @@
 # Weapon-Name: Solure
 
+using for loops
+
 options:
+	fire-max-tick: 20
+	fire-max-meter: 10
+	fire-damage: 1
+	fire-tick: 60
+	fire-necromance: 1
+
+	fire-explode-radius: 1.5
+
 	effect-radius: 5
 	effect-tick: 100
 	effect-damage: 0.5
 	effect-duration: 20
 
 	slowness-level: 3
+
+function kitEffect_Solure(player: player):
+	soundSoulLaunch({_player})
+	set {_weaponTool} to tool of {_player}
+
+	set {_BASELOC} to head of {_player}  # 発射位置 (不動)
+	set {_soulLoc} to {_BASELOC}  # 炎の位置
+	set {_MAX.ANGLE} to 0.1
+
+	set {_nowMeter} to 0
+	set {_MPT} to {@fire-max-meter} / {@fire-max-tick}
+
+	set {_using} to true
+	loop {@fire-max-tick} times:
+		if checkEating({_player}) is false:
+			delete {_using}
+		set {_nowTool} to tool of {_player}
+		if {_nowTool} is not {_weaponTool}:
+			delete {_using}
+
+		if {_hit} is set:
+			delete {_using}
+
+		if {_using} is not true:
+			continue
+
+		add {_MPT} to {_nowMeter}
+		# 現在向いている方向
+		set {_frontloc} to location 10 meters in front of {_soulLoc}
+		set {_nowDirection} to setVector({_soulLoc}, {_frontloc}, 1)
+
+		# プレイヤーが向く目標の方向
+		set {_playerLoc} to head of {_player}
+		set {_frontloc} to location 10 meters in front of {_playerLoc}
+		set {_destDirection} to setVector({_playerLoc}, {_frontloc}, 1)
+
+		# ベクトル計算
+		set {_angleVector} to {_destDirection} - {_nowDirection}
+		if vector length of {_angleVector} > {_MAX.ANGLE}:
+			set vector length of {_angleVector} to {_MAX.ANGLE}
+		set {_plusVector} to {_nowDirection} + {_angleVector}
+		set {_soulLoc} to setDirToVec({_soulLoc}, {_plusVector})
+
+		set {_effectLoc} to location {_nowMeter} meters in front of {_soulLoc}
+		particleSoulFire({_effectLoc})
+
+		# ヒット確認
+		set {_playerUUID} to uuid of {_player}
+		set {_playerUUID} to "%{_playerUUID}%"
+		set {_hits::*} to checkHitEntities({_effectLoc})
+		for {_hitentity} in {_hits::*}:
+			{_hit} is not set
+			kitCheckTeam({_player}, {_hitentity}, false, true) is true
+			set {_hit} to true
+		wait a tick
+	
+	explode({_player}, {_soulLoc})
+
+local function explode(player: player, loc: location):
+	soundExplode({_loc})
+	particleExplode({_loc})
+
+	set {_uuid} to a random uuid
+	set {_loopradius} to {@fire-explode-radius} + 3
+	loop all entities in radius {_loopradius} around {_loc}:
+		checkHitting_Sphere(loop-entity, {_loc}, {@fire-explode-radius}) is true
+		kitCheckTeam({_player}, loop-entity, false, true) is true
+		kitDamage({_player}, loop-entity, {@fire-damage}, "魂炎")
+		ignite loop-entity for convertTickTime({@fire-tick})
+
+		continue if checkEntityType(loop-entity, player) is false
+		add loop-entity to {_hitExplodes::*}
+		# set metadata value "soul-fire-entity" of loop-entity to {_uuid}
+	
+	# wait a tick
+	# for {_entity} in {_hitExplodes::*}:
+	# 	if metadata value "soul-fire-entity" of {_entity} is {_uuid}:
+	# 		delete metadata value "soul-fire-entity" of {_entity}
+		
 
 function kitEffect_Solure_Pick(player: player, loc: location):
 	particleLaunch({_loc})
@@ -32,6 +121,11 @@ function kitEffect_Solure_Pick(player: player, loc: location):
 
 		wait a tick
 
+
+
+local function particleSoulFire(loc: location):
+
+local function particleExplode(loc: location):
 
 local function particleLaunch(loc: location):
 	set {_circleBaseLoc} to location 1 meter above {_loc}
@@ -106,6 +200,10 @@ local function particleSoul(loc: location):
 		set {_basevec} to {_basevec} + {_addvec}
 
 		wait a tick
+
+local function soundSoulLaunch(loc: location):
+
+local function soundExplode(loc: location):
 
 local function soundLaunch(loc: location):
 	playSound("entity.drowned.death_water", 1, 0.75, {_loc})
