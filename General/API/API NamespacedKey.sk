@@ -2,8 +2,11 @@
 # その他のNameSpaceは直接取得するか新たに処理を作成してください
 
 import:
+	java.util.ArrayList
+
 	org.bukkit.NamespacedKey
 	org.bukkit.persistence.PersistentDataType
+	org.bukkit.persistence.ListPersistentDataTypeProvider
 
 	com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 
@@ -94,8 +97,71 @@ function getMetadata(holder: object, key: text) :: object:
 function setMetadata(holder: object, key: text, value: object):
 
 # metadataのkeyを保存するPDCの操作関数
+# 追加
+local function addMetadataKey(holder: object, key: text):
+	set {_PDC} to {_holder}.getPersistentDataContainer()
+	set {_NK} to getKey("metadata_keys")
 
+	# String List用のTypeを記述
+	set {_listType} to ListPersistentDataTypeProvider.strings()
 
+	# 既存のListを取得 存在しなければ新規作成
+	set {_keyList} to {_PDC}.get({_NK}, {_listType})
+	if {_keyList} is not set:
+		set {_keyList} to new ArrayList()
+		
+	# keyが存在しない場合はListに追加
+	if {_keyList}.contains({_key}) is false:
+		{_keyList}.add({_key})
+	
+	# PDCに保存
+	{_PDC}.set({_NK}, {_listType}, {_keyList})
+
+# 削除
+local function removeMetadataKey(holder: object, key: text):
+	set {_PDC} to {_holder}.getPersistentDataContainer()
+	set {_NK} to getKey("metadata_keys")
+
+	# String List用のTypeを記述
+	set {_listType} to ListPersistentDataTypeProvider.strings()
+
+	# 既存のListを取得 存在しなければ終了
+	set {_keyList} to {_PDC}.get({_NK}, {_listType})
+	stop if {_keyList} is not set
+	
+	# keyが存在しなければ終了
+	stop if {_keyList}.contains({_key}) is false
+
+	# Listから削除
+	{_keyList}.remove({_key})
+
+	# Listが空ならPDCのデータ自体削除
+	if {_keyList}.isEmpty() is true:
+		{_PDC}.remove({_NK})
+		stop
+
+# 取得
+local function getMetadataKeys(holder: object) :: object:
+	set {_PDC} to {_holder}.getPersistentDataContainer()
+	set {_NK} to getKey("metadata_keys")
+
+	# String List用のTypeを記述
+	set {_listType} to ListPersistentDataTypeProvider.strings()
+
+	# 既存のListを取得 存在しなければ空のListを返す
+	set {_keyList} to {_PDC}.get({_NK}, {_listType})
+	if {_keyList} is not set:
+		set {_keyList} to new ArrayList()
+	
+	return {_keyList}
+
+# 全て削除
+local function clearMetadataKeys(holder: object):
+	set {_PDC} to {_holder}.getPersistentDataContainer()
+	set {_NK} to getKey("metadata_keys")
+
+	# PDCのデータ削除
+	{_PDC}.remove({_NK})
 
 # 残留metadataの削除処理
 on death:
