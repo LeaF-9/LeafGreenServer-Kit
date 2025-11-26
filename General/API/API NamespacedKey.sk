@@ -95,6 +95,19 @@ function getMetadata(holder: object, key: text) :: object:
 	return {_value}
 
 function setMetadata(holder: object, key: text, value: object):
+	set metadata value {_key} of {_holder} to {_value}
+	addMetadataKey({_holder}, {_key})
+
+function deleteMetadata(holder: object, key: text):
+	delete metadata value {_key} of {_holder}
+	removeMetadataKey({_holder}, {_key})
+
+function clearMetadata(holder: object):
+	set {_keyList} to getMetadataKeys({_holder})
+	loop ...{_keyList}:
+		set {_key} to loop-value
+		delete metadata value {_key} of {_holder}
+	clearMetadataKeys({_holder})
 
 # metadataのkeyを保存するPDCの操作関数
 # 追加
@@ -167,12 +180,15 @@ local function clearMetadataKeys(holder: object):
 on death:
 	metadata value "gametype" of victim is set
 	delete metadata value "gametype" of victim
+	clearMetadata(victim)
 
 on quit:
 	metadata value "gametype" of player is set
 	delete metadata value "gametype" of player
+	clearMetadata(player)
 
 on EntityRemoveFromWorldEvent:
 	set {_entity} to event.getEntity()
 	metadata value "gametype" of {_entity} is set
 	delete metadata value "gametype" of {_entity}
+	clearMetadata({_entity})
