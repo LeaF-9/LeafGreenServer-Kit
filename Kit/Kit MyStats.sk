@@ -1,3 +1,8 @@
+import:
+	org.bukkit.Registry
+	org.bukkit.NamespacedKey
+	org.bukkit.inventory.ItemFlag
+
 on inventory click:
 	type of event-inventory is chest inventory
 	set {_invname} to name of event-inventory
@@ -249,7 +254,18 @@ local function openKitStats(player: player, genre: text, type: text = "Kill"):
 		set {_lore::4} to "§8§mINACTIVE"
 		if {_type} is {_stats}:
 			set {_lore::4} to "§a§lACTIVE"
-			set {_item} to {_item} with nbt from "{enchantments:{levels:{unbreaking:1},show_in_tooltip:false}}"
+
+			set {_ItemMeta} to {_item}.getItemMeta()
+
+			set {_Namespacedkey} to NamespacedKey.minecraft("unbreaking")
+			set {_Enchantment} to Registry.ENCHANTMENT.get({_Namespacedkey})
+
+			{_ItemMeta}.addEnchant({_Enchantment}, 1.intValue(), true)
+
+			set {_ItemFlags} to ItemFlag.values()
+			{_ItemMeta}.addItemFlags({_ItemFlags})
+
+			{_item}.setItemMeta({_ItemMeta})
 
 		set lore of {_item} to {_lore::*}
 		set slot {_slot} of {_player}'s current inventory to {_item}
