@@ -22,8 +22,11 @@ function savePlayerNames():
 		{_looping} is true
 
 		set {_loopfile} to {_file}[{_loopnum}]
-		set {_looping} to false if {_loopfile} is not set
+		if {_loopfile} is not set:
+			set {_looping} to false
+			continue
 		set {_path} to {_loopfile}.getPath()
+		add 1 to {_loopnum}
 
 		load yml {_path} as "playerdata"
 		set {_name} to yml value "name" from "playerdata"
@@ -33,5 +36,3 @@ function savePlayerNames():
 		set {_uuid} to {_loopfile}.getName()
 		replace ".yml" with "" in {_uuid}
 		set {-UUID::%{_uuid}%} to {_name}
-
-		add 1 to {_loopnum}
