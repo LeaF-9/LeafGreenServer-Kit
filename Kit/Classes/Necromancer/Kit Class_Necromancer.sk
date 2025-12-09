@@ -43,9 +43,11 @@ function kitParticle_SummonDead(baseloc: location):
 on death:
 	if checkEntityType(victim, player) is false:  # 自分のMobが死亡した際の処理
 		metadata value "gametype" of victim is "Kit"
-		if metadata value "necromancer-entity" of victim is not set:
+		set {_necroEntity} to getPersistentData(victim, "necromancer-entity", "string")
+		if {_necroEntity} is not set:
 			stop
-		set {_summoner} to metadata value "necromancer-entity" of victim
+
+		set {_summoner} to getPlayer({_necroEntity})
 		kitAddNecromance({_summoner}, 1)
 		if metadata value "sally-fatalities" of victim is set:
 			kitEffect_SallyFatalities_Dead(victim)
@@ -132,9 +134,12 @@ function kitSpawn_Necromancer_Zombie(player: player, loc: location) :: entity:
 	setEntityArmor({_mob}, "mainhand", air)
 	setEntityArmor({_mob}, "offhand", air)
 
-	set metadata value "necromancer-entity" of {_mob} to {_player}
-	set metadata value "necromancer-entity-undead" of {_mob} to "zombie"
-	set metadata value "necromancer-entity-undead-timer" of {_mob} to 0
+	set {_uuid} to uuid of {_player}
+	set {_uuidString} to {_uuid}.toString()
+
+	setPersistentData({_mob}, "necromancer-entity", {_uuidString})
+	setPersistentData({_mob}, "necromancer-entity-undead", "zombie")
+	setPersistentData({_mob}, "necromancer-entity-undead-timer", 0)
 	set max health of {_mob} to 3
 	return {_mob}
 
@@ -165,9 +170,12 @@ function kitSpawn_Necromancer_Skeleton(player: player, loc: location) :: entity:
 	setEntityArmor({_mob}, "mainhand", air)
 	setEntityArmor({_mob}, "offhand", air)
 	
-	set metadata value "necromancer-entity" of {_mob} to {_player}
-	set metadata value "necromancer-entity-undead" of {_mob} to "skeleton"
-	set metadata value "necromancer-entity-undead-timer" of {_mob} to 0
+	set {_uuid} to uuid of {_player}set {_uuid} to uuid of {_player}
+	set {_uuidString} to {_uuid}.toString()
+
+	setPersistentData({_mob}, "necromancer-entity", {_uuidString})
+	setPersistentData({_mob}, "necromancer-entity-undead", "skeleton")
+	setPersistentData({_mob}, "necromancer-entity-undead-timer", 0)
 	set max health of {_mob} to 3
 	return {_mob}
 
@@ -200,8 +208,11 @@ function kitSpawn_Necromancer_BabyZombie(player: player, loc: location):
 	setEntityArmor({_mob}, "mainhand", air)
 	setEntityArmor({_mob}, "offhand", air)
 
-	set metadata value "necromancer-entity" of {_mob} to {_player}
-	set metadata value "necromancer-entity-babyzombie" of {_mob} to true
+	set {_uuid} to uuid of {_player}
+	set {_uuidString} to {_uuid}.toString()
+
+	setPersistentData({_mob}, "necromancer-entity", {_uuidString})
+	setPersistentData({_mob}, "necromancer-entity-babyzombie", true)
 	set max health of {_mob} to 1
 	wait 10 seconds
 	{_mob} is alive
@@ -242,8 +253,11 @@ function kitSpawn_Necromancer_Grudge(player: player, loc: location):
 	applyEffect({_mob}, slowness, 3, 12000, true, "none")
 	applyEffect({_mob}, invisibility, 1, 12000, true, "none")
 
-	set metadata value "necromancer-entity" of {_mob} to {_player}
-	set metadata value "necromancer-entity-grudgesoul" of {_mob} to true
+	set {_uuid} to uuid of {_player}
+	set {_uuidString} to {_uuid}.toString()
+
+	setPersistentData({_mob}, "necromancer-entity", {_uuidString})
+	setPersistentData({_mob}, "necromancer-entity-grudgesoul", true)
 	wait 30 seconds
 	{_mob} is alive
 	loop 5 times:
@@ -290,8 +304,12 @@ function kitSpawn_Necromancer_Vengeful(player: player, loc: location):
 	applyEffect({_mob}, invisibility, 1, 12000, true, "none")
 
 	set max health of {_mob} to 5
-	set metadata value "necromancer-entity" of {_mob} to {_player}
-	set metadata value "necromancer-entity-vengefulspirit" of {_mob} to 5
+
+	set {_uuid} to uuid of {_player}
+	set {_uuidString} to {_uuid}.toString()
+
+	setPersistentData({_mob}, "necromancer-entity", {_uuidString})
+	setPersistentData({_mob}, "necromancer-entity-vengefulspirit", 5)
 
 on damage with priority HIGHEST:
 	set {_attacker} to getAttacker(victim)
@@ -334,8 +352,11 @@ function kitSpawn_Necromancer_Ghost(player: player, loc: location, head: boolean
 	applyEffect({_mob}, speed, 3, 12000, true, "none")
 	applyEffect({_mob}, invisibility, 1, 12000, true, "none")
 
-	set metadata value "necromancer-entity" of {_mob} to {_player}
-	set metadata value "necromancer-entity-ghost" of {_mob} to true
+	set {_uuid} to uuid of {_player}
+	set {_uuidString} to {_uuid}.toString()
+
+	setPersistentData({_mob}, "necromancer-entity", {_uuidString})
+	setPersistentData({_mob}, "necromancer-entity-ghost", true)
 	wait 10 seconds
 	if {_mob} is alive:
 		kill {_mob}

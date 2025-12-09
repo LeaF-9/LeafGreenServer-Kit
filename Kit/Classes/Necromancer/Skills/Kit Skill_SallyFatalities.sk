@@ -9,10 +9,13 @@ function kitEffect_SallyFatalities(player: player):
 	kitMsg({_player}, "§4周辺のアンデッドに死霊馬を与える...")
 	playSound("entity.zombie_villager.cure", 1, 1.5, {_player})
 	set {_now} to now
+	set {_playerUUID} to "%uuid of {_player}%"
 	loop all entities in radius 10 around {_player}:
-		metadata value "necromancer-entity" of loop-entity is {_player}
-		metadata value "necromancer-entity-undead" of loop-entity is set
-		set {_type} to metadata value "necromancer-entity-undead" of loop-entity
+		set {_uuidString} to getPersistentData(loop-entity, "necromancer-entity", "string")
+		{_uuidString} is {_playerUUID}
+		set {_type} to getPersistentData(loop-entity, "necromancer-entity-undead", "string")
+		{_type} is set
+
 		if {_type} is "zombie":
 			set {_undeadHorse} to kitSpawnMob({_player}, zombie horse, location of loop-entity)
 			kitParticle_SallyFatalities_Undead({_undeadHorse})
