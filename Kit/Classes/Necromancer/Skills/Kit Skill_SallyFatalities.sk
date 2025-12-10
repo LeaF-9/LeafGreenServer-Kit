@@ -8,14 +8,17 @@ function kitEffect_SallyFatalities(player: player):
 	kitRemoveNecromance({_player}, {_tool})
 	kitMsg({_player}, "§4周辺のアンデッドに死霊馬を与える...")
 	playSound("entity.zombie_villager.cure", 1, 1.5, {_player})
-	set {_now} to now
-	set {_playerUUID} to "%uuid of {_player}%"
+
+	set {_randomUUID} to (a random UUID).toString()  # 召喚したタイミングを測るUUID
+	set {_playerUUID} to "%uuid of {_player}%"  # 召喚者を特定するUUID
 	loop all entities in radius 10 around {_player}:
+		# 発動者が召喚したUndeadであるかチェック
 		set {_uuidString} to getPersistentData(loop-entity, "necromancer-entity", "string")
 		{_uuidString} is {_playerUUID}
 		set {_type} to getPersistentData(loop-entity, "necromancer-entity-undead", "string")
 		{_type} is set
 
+		# typeを基に召喚する馬の種類を決定
 		if {_type} is "zombie":
 			set {_undeadHorse} to kitSpawnMob({_player}, zombie horse, location of loop-entity)
 			kitParticle_SallyFatalities_Undead({_undeadHorse})
@@ -27,29 +30,40 @@ function kitEffect_SallyFatalities(player: player):
 		else:
 			continue
 		
+		# 馬の設定
 		{_undeadHorse}.getInventory().setSaddle({_saddle})
 		{_undeadHorse}.setAdult()
 		setAttribute({_undeadHorse}, "movement_speed", 0.35)
 		setAttribute({_undeadHorse}, "jump_strength", 0.6)
 
-		set {_uuid} to metadata value "uuid" of {_undeadHorse}
-		set metadata value "sally-fatalities" of loop-entity to {_uuid}
-		set metadata value "sally-fatalities-horse" of {_undeadHorse} to {_player}
-		set metadata value "sally-fatalities-time" of {_undeadHorse} to {_now}
+		# 馬のPDC設定
+		set {_entityUUID} to (uuid of loop-entity).toString()  # UndeadのUUIDを保存
+		setPersistentData({_undeadHorse}, "sally-fatalities", {_entityUUID})  # UndeadのUUIDを格納
+		setPersistentData({_undeadHorse}, "sally-fatalities-id", {_randomUUID})  # 召喚時間を特定するUUIDを格納
 		make loop-entity ride {_undeadHorse}
 		set loop-entity's tool to a stone sword
 	wait 10 seconds
 	loop all entities:
-		metadata value "sally-fatalities-horse" of loop-entity is {_player}
-		metadata value "sally-fatalities-time" of loop-entity is {_now}
+		set {_summoner} to getSummonPlayer(loop-entity)
+		continue if {_summoner} is not {_player}
+		set {_checkData} to getPersistentData(loop-entity, "sally-fatalities", "string")
+		continue if {_checkData} is not {_randomUUID}
+
 		kitParticle_SallyFatalities_Death(loop-entity)
 		delete loop-entity
 
-function kitEffect_SallyFatalities_Dead(victim: entity):  # 馬に乗ったアンデッドが死亡した際に発火する関数
-	set {_uuid} to metadata value "sally-fatalities" of {_victim}
+on death:
+	# NecromancerのUndeadであることを確認
+	set {_undead} to getPersistentData(victim, "necromancer-entity-undead", "string")
+	stop if {_undead} is not set
+	kitEffect_SallyFatalities_Dead(victim)
+
+local function kitEffect_SallyFatalities_Dead(victim: entity):  # 馬に乗ったアンデッドが死亡した際に発火する関数
 	set {_player} to getSummonPlayer({_victim})
+	set {_uuid} to (uuid of {_victim}).toString()
 	loop all entities:
-		metadata value "uuid" of loop-entity is {_uuid}
+		set {_checkUUID} to getPersistentData(loop-entity, "sally-fatalities", "string")
+		continue if {_checkUUID} is not {_uuid}
 		kitParticle_SallyFatalities_Death(loop-entity)
 		delete loop-entity
 		kitAddNecromance({_player}, 1)
@@ -109,5 +123,5 @@ local function kitParticle_SallyFatalities_Death(horse: entity):
 		wait a tick
 
 on damage:
-	metadata value "sally-fatalities-horse" of victim is set
-	cancel event
+	set {_sally} to getPersistentData(victim, "sally-fatalities", "string")
+	cancel event if {_sally} is set

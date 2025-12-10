@@ -49,8 +49,6 @@ on death:
 
 		set {_summoner} to getPlayer({_necroEntity})
 		kitAddNecromance({_summoner}, 1)
-		if metadata value "sally-fatalities" of victim is set:
-			kitEffect_SallyFatalities_Dead(victim)
 	else:  # プレイヤーが死んだ際の処理
 		metadata value "gametype" of victim is "Kit"
 		if {Class::%victim%} is "Necromancer":
@@ -73,13 +71,13 @@ on rightclick:
 	set {_item.num} to kitItemNumberChecker({_tool})
 	{_item.type} is "Weapon"
 	loop all entities:
-		metadata value "targetdead.%player%" of loop-entity is true
+		getMetadata(loop-entity, "targetdead.%player%") is true
 		set {_tg} to loop-entity
 	{_tg} is set
 	checkEntityType({_tg}, armor stand) is true
 	distance between {_tg} and player <= 10
-	metadata value "deadplayer" of {_tg} is set
-	set {_dead} to metadata value "deadplayer" of {_tg}
+	getPersistentData({_tg}, "deadplayer", "string") is set
+	set {_dead} to getPersistentData({_tg}, "deadplayer", "string")
 	if {_item.num} is 3:
 		kitEffect_SoulLure_Pick(player, location of {_tg})
 	else if {_item.num} is 2:
@@ -91,7 +89,7 @@ on rightclick:
 	set {_dis} to round(distance between player and {_tg})
 	loop all entities:
 		type of loop-entity is an armor stand
-		metadata value "deadplayer" of loop-entity is {_dead}
+		getPersistentData(loop-entity, "deadplayer", "string") is {_dead}
 		delete loop-entity
 	set {_baseloc} to location of player
 	add 1 to y-coordinate of {_baseloc}
@@ -139,7 +137,7 @@ function kitSpawn_Necromancer_Zombie(player: player, loc: location) :: entity:
 
 	setPersistentData({_mob}, "necromancer-entity", {_uuidString})
 	setPersistentData({_mob}, "necromancer-entity-undead", "zombie")
-	setPersistentData({_mob}, "necromancer-entity-undead-timer", 0)
+	setPersistentData({_mob}, "necromancer-entity-undead-timer", 0, "integer")
 	set max health of {_mob} to 3
 	return {_mob}
 
@@ -175,7 +173,7 @@ function kitSpawn_Necromancer_Skeleton(player: player, loc: location) :: entity:
 
 	setPersistentData({_mob}, "necromancer-entity", {_uuidString})
 	setPersistentData({_mob}, "necromancer-entity-undead", "skeleton")
-	setPersistentData({_mob}, "necromancer-entity-undead-timer", 0)
+	setPersistentData({_mob}, "necromancer-entity-undead-timer", 0, "integer")
 	set max health of {_mob} to 3
 	return {_mob}
 
@@ -221,10 +219,10 @@ function kitSpawn_Necromancer_BabyZombie(player: player, loc: location):
 
 on damage with priority HIGHEST:
 	set {_attacker} to getAttacker(victim)
-	if metadata value "necromancer-entity-babyzombie" of victim is true:
+	if getPersistentData(victim, "necromancer-entity-babyzombie", "boolean") is true:
 		victim.remove()
 		removeBabyZombie(victim)
-	else if metadata value "necromancer-entity-babyzombie" of {_attacker} is true:
+	else if getPersistentData({_attacker}, "necromancer-entity-babyzombie", "boolean") is true:
 		setDamageModification_FIX(victim, 1)
 
 local function removeBabyZombie(entity: entity):
@@ -269,12 +267,13 @@ function kitSpawn_Necromancer_Grudge(player: player, loc: location):
 
 on damage with priority HIGHEST:
 	set {_attacker} to getAttacker(victim)
-	if metadata value "necromancer-entity-grudgesoul" of {_attacker} is true:
+	if getPersistentData({_attacker}, "necromancer-entity-grudgesoul", "boolean") is true:
 		set damage to 1
-	if metadata value "necromancer-entity-grudgesoul" of victim is true:
+	if getPersistentData(victim, "necromancer-entity-grudgesoul", "boolean") is true:
 		cancel event
 		if {_attacker} is set:
-			set {_victim} to metadata value "necromancer-entity" of victim
+			set {_victim} to getPersistentData(victim, "necromancer-entity", "string")
+			set {_victim} to getPlayer({_victim})
 			kitCheckTeam({_victim}, {_attacker}, false) is true
 			applyEffect({_attacker}, wither, 1, 100, true)
 		set {_el} to location of victim
@@ -309,20 +308,20 @@ function kitSpawn_Necromancer_Vengeful(player: player, loc: location):
 	set {_uuidString} to {_uuid}.toString()
 
 	setPersistentData({_mob}, "necromancer-entity", {_uuidString})
-	setPersistentData({_mob}, "necromancer-entity-vengefulspirit", 5)
+	setPersistentData({_mob}, "necromancer-entity-vengefulspirit", 5, "integer")
 
 on damage with priority HIGHEST:
 	set {_attacker} to getAttacker(victim)
 	damage cause is not sweep attack
-	if metadata value "necromancer-entity-vengefulspirit" of victim is set:
-		set {_hp} to metadata value "necromancer-entity-vengefulspirit" of victim
+	set {_hp} to getPersistentData(victim, "necromancer-entity-vengefulspirit", "integer")
+	if {_hp} is set:
 		subtract 1 from {_hp}
 		if {_hp} <= 0:
 			setDamageModification_FIX(victim, 100)
 		else:
 			setDamageModification_FIX(victim, 0.1)
-			set metadata value "necromancer-entity-vengefulspirit" of victim to {_hp}
-	else if metadata value "necromancer-entity-vengefulspirit" of {_attacker} is set:
+			setPersistentData(victim, "necromancer-entity-vengefulspirit", {_hp}, "integer")
+	else if getPersistentData({_attacker}, "necromancer-entity-vengefulspirit", "integer") is set:
 		setDamageModification_FIX(victim, 0)
 		applyEffect(victim, wither, 3, 20, true)
 
@@ -362,7 +361,7 @@ function kitSpawn_Necromancer_Ghost(player: player, loc: location, head: boolean
 		kill {_mob}
 
 on damage of wither skeleton with priority HIGHEST:
-	metadata value "necromancer-entity-ghost" of victim is true
+	getPersistentData(victim, "necromancer-entity-ghost", "boolean") is true
 	setDamageModification_SET(victim, 100)
 
 function kitAddNecromance(player: player, num: number):
@@ -422,10 +421,10 @@ function kitTimerNecromancer(player: player):
 			set {_timer} to 0
 		if {_timer} = 0:
 			loop all entities:
-				metadata value "necromancer-entity-undead" of loop-entity is set
-				set {_undeadtime} to metadata value "necromancer-entity-undead-timer" of loop-entity
+				getPersistentData(loop-entity, "necromancer-entity-undead", "string") is set
+				set {_undeadtime} to getPersistentData(loop-entity, "necromancer-entity-undead-timer", "integer")
 				add 1 to {_undeadtime}
-				set metadata value "necromancer-entity-undead-timer" of loop-entity to {_undeadtime}
+				setPersistentData(loop-entity, "necromancer-entity-undead-timer", {_undeadtime}, "integer")
 				if mod({_undeadtime}, 10) = 0:
 					subtract 1.2 from loop-entity's health
 		# -----------------
@@ -445,7 +444,7 @@ function kitTimerNecromancer(player: player):
 			set {_meterloc} to location {_m} meters in front of {_baseloc}
 			loop all entities in radius 1.5 around {_meterloc}:
 				checkEntityType(loop-entity, armor stand) is true
-				metadata value "deadplayer" of loop-entity is set
+				getPersistentData(loop-entity, "deadplayer", "string") is set
 				set {_tg} to loop-entity
 		# --- 例外処理 ---
 		if {_tg} is not set:
@@ -453,7 +452,7 @@ function kitTimerNecromancer(player: player):
 		if {_undetected} is true:
 			if {_targeted} is set:
 				# --- 発光消滅処理 ---
-				delete metadata value "targetdead.%{_player}%" of {_targeted}
+				deleteMetadata({_targeted}, "targetdead.%{_player}%")
 				packetUnglowing({_player}, {_targeted})
 				# ------------------
 			delete {_targeted}
@@ -463,10 +462,10 @@ function kitTimerNecromancer(player: player):
 		packetGlowing({_player}, {_tg})
 		if {_tg} is not {_targeted}:
 			# --- 発光消滅処理 ---
-			delete metadata value "targetdead.%{_player}%" of {_targeted}
+			deleteMetadata({_targeted}, "targetdead.%{_player}%")
 			packetUnglowing({_player}, {_targeted})
 			# ------------------
-		set metadata value "targetdead.%{_player}%" of {_tg} to true
+		setMetadata({_tg}, "targetdead.%{_player}%", true)
 		set {_targeted} to {_tg}
 		# ---------------------
 		wait a tick
