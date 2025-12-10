@@ -25,9 +25,12 @@ function setNamespacedKey(item: item, key: text, type: text, value: object) :: i
 	return {_item}
 
 # Itemに限らずPDCを操作する関数群
-function getPersistentData(holder: object, key: text, type: text) :: object:
+function getPersistentData(holder: object, key: text, type: text = "auto") :: object:
 	set {_NK} to getKey({_key})
-	set {_PDT} to getType({_type})
+	if {_type} is "auto":
+		set {_PDT} to searchType({_holder}, {_NK})
+	else:
+		set {_PDT} to getType({_type})
 
 	set {_value} to {_holder}.getPersistentDataContainer().get({_NK}, {_PDT})
 	return {_value}
@@ -86,6 +89,26 @@ local function getTypeString(value: object) :: text:
 	# return "tag_container" if {_class} is "TagContainer"
 	log "そのタイプは存在しない,または未対応です: %{_class}%"
 	stop
+
+# 取得しようとするNamespacedKeyのタイプを検索する関数
+local function searchType(holder: object, key: object) :: text:
+	set {_PDC} to {_holder}.getPersistentDataContainer()
+
+	set {_typeList} to new ArrayList()
+	{_typeList}.add("boolean")
+	{_typeList}.add("byte")
+	{_typeList}.add("double")
+	{_typeList}.add("float")
+	{_typeList}.add("integer")
+	{_typeList}.add("long")
+	{_typeList}.add("short")
+	{_typeList}.add("string")
+
+	loop ...{_typeList}:
+		set {_currentType} to loop-value
+		set {_PDT} to getType({_currentType})
+		if {_PDC}.has({_key}, {_PDT}) is true:
+			return {_PDT}
 
 
 

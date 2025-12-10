@@ -13,9 +13,9 @@ function kitEffect_SallyFatalities(player: player):
 	set {_playerUUID} to "%uuid of {_player}%"  # 召喚者を特定するUUID
 	loop all entities in radius 10 around {_player}:
 		# 発動者が召喚したUndeadであるかチェック
-		set {_uuidString} to getPersistentData(loop-entity, "necromancer-entity", "string")
+		set {_uuidString} to getPersistentData(loop-entity, "necromancer-entity")
 		{_uuidString} is {_playerUUID}
-		set {_type} to getPersistentData(loop-entity, "necromancer-entity-undead", "string")
+		set {_type} to getPersistentData(loop-entity, "necromancer-entity-undead")
 		{_type} is set
 
 		# typeを基に召喚する馬の種類を決定
@@ -46,7 +46,7 @@ function kitEffect_SallyFatalities(player: player):
 	loop all entities:
 		set {_summoner} to getSummonPlayer(loop-entity)
 		continue if {_summoner} is not {_player}
-		set {_checkData} to getPersistentData(loop-entity, "sally-fatalities", "string")
+		set {_checkData} to getPersistentData(loop-entity, "sally-fatalities")
 		continue if {_checkData} is not {_randomUUID}
 
 		kitParticle_SallyFatalities_Death(loop-entity)
@@ -54,7 +54,7 @@ function kitEffect_SallyFatalities(player: player):
 
 on death:
 	# NecromancerのUndeadであることを確認
-	set {_undead} to getPersistentData(victim, "necromancer-entity-undead", "string")
+	set {_undead} to getPersistentData(victim, "necromancer-entity-undead")
 	stop if {_undead} is not set
 	kitEffect_SallyFatalities_Dead(victim)
 
@@ -62,7 +62,7 @@ local function kitEffect_SallyFatalities_Dead(victim: entity):  # 馬に乗っ�
 	set {_player} to getSummonPlayer({_victim})
 	set {_uuid} to (uuid of {_victim}).toString()
 	loop all entities:
-		set {_checkUUID} to getPersistentData(loop-entity, "sally-fatalities", "string")
+		set {_checkUUID} to getPersistentData(loop-entity, "sally-fatalities")
 		continue if {_checkUUID} is not {_uuid}
 		kitParticle_SallyFatalities_Death(loop-entity)
 		delete loop-entity
@@ -123,5 +123,5 @@ local function kitParticle_SallyFatalities_Death(horse: entity):
 		wait a tick
 
 on damage:
-	set {_sally} to getPersistentData(victim, "sally-fatalities", "string")
+	set {_sally} to getPersistentData(victim, "sally-fatalities")
 	cancel event if {_sally} is set
