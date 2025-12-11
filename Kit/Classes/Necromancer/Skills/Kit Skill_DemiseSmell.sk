@@ -21,8 +21,10 @@ function kitEffect_DemiseSmell(player: player):
 
 local function kitSpawn_Necromancer_Wraith(player: player, loc: location):
 	set {_mob} to kitSpawnMob({_player}, wither skeleton, {_loc})
-	set metadata value "necromancer-entity" of {_mob} to {_player}
-	set metadata value "necromancer-entity-abyss" of {_mob} to true
+
+	set {_uuid} to getUUIDString({_player})
+	setPersistentData({_mob}, "necromancer-entity", {_uuid})
+	setPersistentData({_mob}, "necromancer-entity-abyss", true)
 
 	{_mob}.setPersistent(true)
 	{_mob}.setSilent(true)
@@ -149,8 +151,10 @@ local function kitWraithTimer(player: player, wraith: entity):
 		wait a second
 	{_wraith}.remove()
 	loop all entities:
-		metadata value "necromancer-entity" of loop-entity is {_player}
-		metadata value "necromancer-entity-wraith" of loop-entity is true
+		set {_uuidString} to getPersistentData(loop-entity, "necromancer-entity")
+		continue if {_uuidString} is not {_uuid}
+		set {_isWraith} to getPersistentData(loop-entity, "necromancer-entity-wraith")
+		continue if {_isWraith} is not true
 		loop-entity.remove()
 
 
@@ -529,11 +533,13 @@ local function kitWraith_Summon(player: player, wraith: entity):
 	
 	wait a second
 	playSound("entity.wither.spawn", 1, 0.9, {_baseloc})
+	set {_uuid} to getUUIDString({_player})
 	loop {_locs::*}:
 		set {_l} to loop-value
 		set {_mob} to kitSpawnMob({_player}, skeleton, {_l})
-		set metadata value "necromancer-entity" of {_mob} to {_player}
-		set metadata value "necromancer-entity-wraith" of {_mob} to true
+
+		setPersistentData({_mob}, "necromancer-entity", {_uuid})
+		setPersistentData({_mob}, "necromancer-entity-wraith", true)
 
 		{_mob}.setPersistent(true)
 		{_mob}.setSilent(true)
@@ -711,7 +717,8 @@ local function kitWraith_Beam_Particle_2(baseloc: location):
 
 on damage of skeleton:
 	set {_attacker} to getAttacker(victim)
-	metadata value "necromancer-entity-wraith" of victim is true
+	set {_isWraith} to getPersistentData(victim, "necromancer-entity-wraith")
+	stop if {_isWraith} is not true
 	cancel event
 	stop if kitCheckTeam(victim, {_attacker}, false) is false
 
@@ -725,7 +732,9 @@ on damage of skeleton:
 on damage of player with priority LOW:
 	metadata value "gametype" of victim is "Kit"
 	set {_attacker} to getAttacker(victim)
-	metadata value "necromancer-entity-wraith" of {_attacker} is set
+	set {_isWraith} to getPersistentData({_attacker}, "necromancer-entity-wraith")
+	stop if {_isWraith} is not true
+
 	setDamageModification_SET(victim, 3)
 	kitFear(victim, 100)
 	set {_baseloc} to location of victim
@@ -739,5 +748,6 @@ on damage of player with priority LOW:
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(70, 14, 68), 3, {_el})
 
 on damage of wither skeleton:
-	metadata value "necromancer-entity-abyss" of victim is true
+	set {_isAbyss} to getPersistentData(victim, "necromancer-entity-abyss")
+	stop if {_isAbyss} is not true
 	cancel event

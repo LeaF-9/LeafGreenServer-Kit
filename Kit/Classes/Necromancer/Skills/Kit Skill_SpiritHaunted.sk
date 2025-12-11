@@ -39,8 +39,9 @@ local function kitSpawn_Necromancer_Wander(player: player, loc: location, target
 
 	applyEffect({_mob}, invisibility, 1, 12000, true, "none")
 
-	set metadata value "necromancer-entity" of {_mob} to {_player}
-	set metadata value "necromancer-entity-wandersoul" of {_mob} to true
+	set {_uuid} to getUUIDString({_player})
+	setPersistentData({_mob}, "necromancer-entity", {_uuid})
+	setPersistentData({_mob}, "necromancer-entity-wandersoul", true)
 	set {_speed} to a random number between 0.1 and 1
 	set {_exists} to true
 	while {_exists} is true:
@@ -84,23 +85,27 @@ local function kitSpawn_Necromancer_Wander(player: player, loc: location, target
 
 on damage of zombie:
 	# Conditions
-	metadata value "necromancer-entity-wandersoul" of victim is set
+	set {_isWander} to getPersistentData(victim, "necromancer-entity-wandersoul")
+	stop if {_isWander} is not set
 	damage cause is not sweep attack
 	if attacker is not set:
 		cancel event
 		stop
 	# Effects
 	set {_baseloc} to location of victim
-	set {_attacker} to metadata value "necromancer-entity" of victim
+	set {_attackerUUID} to getPersistentData(victim, "necromancer-entity")
 	delete victim
 	kitAddNecromance({_attacker}, 1)
 	kitParticle_WanderSoul_Death({_baseloc})
 
 on death of player:
 	{Class::%victim%} is "Necromancer"
+	set {_victimUUID} to getUUIDString(victim)
 	loop all zombies:
-		metadata value "necromancer-entity" of loop-zombie is victim
-		metadata value "necromancer-entity-wandersoul" of loop-zombie is set
+		set {_uuid} to getPersistentData(loop-zombie, "necromancer-entity")
+		continue if {_uuid} is not {_victimUUID}
+		set {_isWander} to getPersistentData(loop-zombie, "necromancer-entity-wandersoul")
+		continue if {_isWander} is not set
 		delete loop-zombie
 
 local function kitParticle_WanderSoul_Death(baseloc: location):
