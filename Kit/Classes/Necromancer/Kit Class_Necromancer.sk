@@ -268,7 +268,13 @@ function kitSpawn_Necromancer_Grudge(player: player, loc: location):
 on damage with priority HIGHEST:
 	set {_attacker} to getAttacker(victim)
 	if getPersistentData({_attacker}, "necromancer-entity-grudgesoul") is true:
-		set damage to 1
+		setDamageModification_SET(victim, 1)
+
+		set {_summonerUUID} to getPersistentData({_attacker}, "necromancer-entity")
+		set {_summoner} to getPlayer({_summonerUUID})
+		kitAddNecromance({_summoner}, 1)
+
+		{_attacker}.remove()
 	if getPersistentData(victim, "necromancer-entity-grudgesoul") is true:
 		cancel event
 		if {_attacker} is set:

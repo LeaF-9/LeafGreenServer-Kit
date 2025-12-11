@@ -5,8 +5,13 @@ function kitEffect_SoulReanimation(player: player):
 	kitMsg({_player}, "<##483d8b>周辺のMobの魂を回収して怨魂を召喚します...")
 	playSound("entity.evoker.cast_spell", 1, 1, {_player})
 	loop all entities in radius 10 around {_player}:
-		metadata value "necromancer-entity" of loop-entity is {_player}
-		metadata value "necromancer-entity-undead" of loop-entity is set
+		set {_pd} to getPersistentData(loop-entity, "necromancer-entity")
+		continue if {_pd} is not set
+		set {_necroPlayer} to getPlayer({_pd})
+		continue if {_necroPlayer} is not {_player}
+
+		getPersistentData(loop-entity, "necromancer-entity-undead") is set
+
 		spawnParticle(witch, location of loop-entity)
 		set {_l} to location of loop-entity
 		delete loop-entity
