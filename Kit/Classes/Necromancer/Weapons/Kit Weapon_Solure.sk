@@ -124,8 +124,43 @@ function kitEffect_Solure_Pick(player: player, loc: location):
 
 
 local function particleSoulFire(loc: location):
+	add rgb(41, 14, 104) to {_colors.core::*}
+	add rgb(76, 17, 104) to {_colors.core::*}
+	add rgb(52, 48, 89) to {_colors.core::*}
+
+	add rgb(47, 9, 137) to {_colors.aura::*}
+	add rgb(8, 12, 132) to {_colors.aura::*}
+	add rgb(52, 60, 142) to {_colors.aura::*}
+
+	set {_color} to a random element out of {_colors.core::*}
+	spawnParticle_Dust({_color}, 2.65, {_loc})
+
+	set {_fireAmount} to a random integer between 1 and 3
+	loop {_fireAmount} times:
+		set {_v} to randomVector()
+		set {_pow} to a random number between 0.1 and 0.3
+		spawnParticle_Vector(soul_fire_flame, {_v}, {_pow}, {_loc})
+	
+	set {_auraAmount} to a random integer between 10 and 20
+	loop {_auraAmount} times:
+		set {_v} to randomVector(1)
+		set {_el} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors.aura::*}
+		spawnParticle_Spell(instant_effect, {_color}, 0, {_el})
 
 local function particleExplode(loc: location):
+	set {_amount.smoke} to a random integer between 5 and 20
+	loop {_amount.smoke} times:
+		set {_pow} to a random number between 0.3 and 0.5
+		set {_v} to randomVector({_pow})
+		spawnParticle_Vector(campfire_cosy_smoke, {_v}, 0.5, {_loc})
+
+	set {_amount.fire} to a random integer between 5 and 10
+	loop {_amount.fire} times:
+		set {_dis} to a random number between 0.3 and 1
+		set {_v} to randomVector({_dis})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle(soul_fire_flame, {_el})
 
 local function particleLaunch(loc: location):
 	set {_circleBaseLoc} to location 1 meter above {_loc}
@@ -202,8 +237,10 @@ local function particleSoul(loc: location):
 		wait a tick
 
 local function soundSoulLaunch(loc: location):
+	playSound("entity.wither.shoot", 1, 1.4, {_loc})
 
 local function soundExplode(loc: location):
+	playSound("item.bucket.empty_lava", 1, 1.2, {_loc})
 
 local function soundLaunch(loc: location):
 	playSound("entity.drowned.death_water", 1, 0.75, {_loc})
