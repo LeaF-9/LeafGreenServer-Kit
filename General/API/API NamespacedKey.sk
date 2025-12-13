@@ -31,6 +31,7 @@ function getPersistentData(holder: object, key: text, type: text = "auto") :: ob
 		set {_PDT} to searchType({_holder}, {_NK})
 	else:
 		set {_PDT} to getType({_type})
+	stop if {_PDT} is not set
 
 	set {_value} to {_holder}.getPersistentDataContainer().get({_NK}, {_PDT})
 	return {_value}
@@ -39,6 +40,11 @@ function setPersistentData(holder: object, key: text, value: object, type: text 
 	set {_NK} to getKey({_key})
 	set {_type} to getTypeString({_value}) if {_type} is "auto"
 	set {_PDT} to getType({_type})
+
+	set {_value} to {_value}.longValue() if {_type} is "long"
+	set {_value} to {_value}.intValue() if {_type} is "integer"
+	set {_value} to {_value}.doubleValue() if {_type} is "double"
+	set {_value} to {_value}.floatValue() if {_type} is "float"
 
 	{_holder}.getPersistentDataContainer().set({_NK}, {_PDT}, {_value})
 
@@ -77,12 +83,12 @@ local function getTypeString(value: object) :: text:
 	return "boolean" if {_class} is "Boolean"
 	return "byte" if {_class} is "Byte"
 	# return "byte_array" if {_class} is "Byte[]"
+	return "long" if {_class} is "Long"
+	return "integer" if {_class} is "Integer"
 	return "double" if {_class} is "Double"
 	return "float" if {_class} is "Float"
-	return "integer" if {_class} is "Integer"
 	# return "integer_array" if {_class} is "Integer[]"
 	# return "list" if {_class} is "List"
-	return "long" if {_class} is "Long"
 	# return "long_array" if {_class} is "Long[]"
 	return "short" if {_class} is "Short"
 	return "string" if {_class} is "String"
@@ -91,7 +97,7 @@ local function getTypeString(value: object) :: text:
 	stop
 
 # 取得しようとするNamespacedKeyのタイプを検索する関数
-local function searchType(holder: object, key: object) :: text:
+local function searchType(holder: object, key: object) :: object:
 	set {_PDC} to {_holder}.getPersistentDataContainer()
 
 	set {_typeList} to new ArrayList()
@@ -107,8 +113,8 @@ local function searchType(holder: object, key: object) :: text:
 	loop ...{_typeList}:
 		set {_currentType} to loop-value
 		set {_PDT} to getType({_currentType})
-		if {_PDC}.has({_key}, {_PDT}) is true:
-			return {_PDT}
+		set {_bool} to {_PDC}.has({_key}, {_PDT})
+		return {_PDT} if {_bool} is true
 
 
 
@@ -200,7 +206,7 @@ local function clearMetadataKeys(holder: object):
 	{_PDC}.remove({_NK})
 
 # 残留metadataの削除処理
-on death:
+on death with priority MONITOR:
 	metadata value "gametype" of victim is set
 	delete metadata value "gametype" of victim
 	clearMetadata(victim)
@@ -210,7 +216,7 @@ on quit:
 	delete metadata value "gametype" of player
 	clearMetadata(player)
 
-on EntityRemoveFromWorldEvent:
+on EntityRemoveFromWorldEvent with priority MONITOR:
 	set {_entity} to event.getEntity()
 	metadata value "gametype" of {_entity} is set
 	delete metadata value "gametype" of {_entity}
