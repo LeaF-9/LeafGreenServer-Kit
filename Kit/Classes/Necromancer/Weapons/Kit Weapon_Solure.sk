@@ -24,7 +24,7 @@ function kitEffect_Solure(player: player):
 
 	set {_BASELOC} to head of {_player}  # 発射位置 (不動)
 	set {_soulLoc} to {_BASELOC}  # 炎の位置
-	set {_MAX.ANGLE} to 0.1
+	set {_MAX.ANGLE} to 0.03
 
 	set {_nowMeter} to 0
 	set {_MPT} to {@fire-max-meter} / {@fire-max-tick}
@@ -73,7 +73,8 @@ function kitEffect_Solure(player: player):
 			set {_hit} to true
 		wait a tick
 	
-	explode({_player}, {_soulLoc})
+	nameItemCT({_player}, "Solure")
+	explode({_player}, {_effectLoc})
 
 local function explode(player: player, loc: location):
 	soundExplode({_loc})
@@ -149,18 +150,24 @@ local function particleSoulFire(loc: location):
 		spawnParticle_Spell(instant_effect, {_color}, 0, {_el})
 
 local function particleExplode(loc: location):
-	set {_amount.smoke} to a random integer between 5 and 20
+	set {_amount.smoke} to a random integer between 20 and 30
 	loop {_amount.smoke} times:
 		set {_pow} to a random number between 0.3 and 0.5
 		set {_v} to randomVector({_pow})
-		spawnParticle_Vector(campfire_cosy_smoke, {_v}, 0.5, {_loc})
+		spawnParticle_Vector(campfire_cosy_smoke, {_v}, 0.35, {_loc})
 
-	set {_amount.fire} to a random integer between 5 and 10
+	set {_amount.fire} to a random integer between 50 and 80
 	loop {_amount.fire} times:
-		set {_dis} to a random number between 0.3 and 1
+		set {_dis} to a random number between 0 and 3
 		set {_v} to randomVector({_dis})
 		set {_el} to {_loc} ~ {_v}
 		spawnParticle(soul_fire_flame, {_el})
+	
+	set {_amount.explode} to a random integer between 100 and 200
+	loop {_amount.explode} times:
+		set {_v} to randomVector({@fire-explode-radius} + 3)
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle(witch, {_el})
 
 local function particleLaunch(loc: location):
 	set {_circleBaseLoc} to location 1 meter above {_loc}
