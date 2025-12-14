@@ -1,5 +1,15 @@
 # Necronomicon
 
+options:
+	effect-radius: 15
+	effect-tick: 100
+	target-tick: 20
+
+	slowness-level: 1
+
+	wither-level: 3
+	wither-tick: 300
+
 function kitEffect_Necronomicon(player: player):
 	set {_tool} to kitNecromanceItem({_player}, "Necronomicon")
 	if kitCheckNecromance({_player}, {_tool}) is false:
@@ -12,46 +22,73 @@ function kitEffect_Necronomicon(player: player):
 
 	nameCT({_player}, "Necronomicon")
 	kitRemoveNecromance({_player}, {_tool})
-	kitMsg({_player}, "§5§l収集した魂が死を運ぶ...")
+	kitMsg({_player}, "<##612ba8>§l収集した魂が死を運ぶ...")
+
 	set {_point} to {_SkillLocation}
-	set {_ln} to 60
-	loop 60 times:
+	set {_ln} to {@effect-tick}
+	loop {@effect-tick} times:
 		kitParticle_Necronomicon({_point})
+		delete {_countdown}
+
+		# 音の演出
 		if mod({_ln}, 20) = 0:
+			set {_countdown} to true  # カウントダウン有効化
 			playSound("item.lodestone_compass.lock", 1, 0.5, {_point})
-		subtract 1 from {_ln}
-		loop all entities in radius 15 around {_point}:
+
+		delete {_nowEntering::*}
+		delete {_ln.second}
+		set {_ln.second} to ({_ln} / 20) if mod({_ln}, 20) is 0
+
+		loop all entities:
 			kitCheckTeam(loop-entity, {_player}, false) is true
-			applyEffect(loop-entity, slowness, 3, 1)
-			if mod({_ln}, 20) = 0:
-				set {_ln.second} to {_ln} / 20
-				kitEffectDescription(loop-entity, "§5§l%{_ln.second}%")
+			set {_uuid} to uuid of loop-entity
+
+			set {_entityLoc} to location of loop-entity
+			set {_distance} to distance between {_point} and {_entityLoc}
+			if {_distance} > {@effect-radius}:
+				delete {_counted::%{_uuid}%}
+				continue
+
+			add loop-entity to {_nowEntering::*}
+			# 侵入時間の換算
+			if {_targeteds::*} does not contain loop-entity:
+				set {_uuid} to uuid of loop-entity
+				add 1 to {_counted::%{_uuid}%}
+				if {_counted::%{_uuid}%} >= {@target-tick}:
+					set {_targeteds::%{_uuid}%} to loop-entity
+					hitEffect(loop-entity)
+
+			applyEffect(loop-entity, slowness, {@slowness-level}, 1)
+			kitEffectDescription(loop-entity, "§5§l%{_ln.second}%") if {_ln.second} is set
+		
+		loop {_targeteds::*}:
+			set {_loopEntity} to loop-value-2
+			particleHitting({_loopEntity}, {_point})
+			continue if {_nowEntering::*} contains {_loopEntity}
+			kitEffectDescription({_loopEntity}, "§5§l%{_ln.second}%") if {_ln.second} is set
+
+		subtract 1 from {_ln}
 		wait a tick
-	message formatted "<##493759>§l術が発動した..." to {_player}
+
+	kitMsg({_player}, "<##493759>§l術が発動した...")
 	playSound("entity.wither.death", 1, 0.9, {_point})
-	loop all entities in radius 15 around {_point}:
-		kitCheckTeam(loop-entity, {_player}, false) is true
-		if type of loop-entity is a player:
-			LastKiller(loop-entity, {_player})
-			message formatted "<##2e2930>魂の滅殺を受けてしまった..." to loop-entity
-			kitEffectDescription(loop-entity, "§c衰弱")
-			sendTimeBossbar_RED(loop-entity, "衰弱 III", 300)
-		add location of loop-entity to {_locs::*}
-		apply wither 3 to loop-entity for 15 seconds
-	set {_y} to 0
-	loop 5 times:
-		add 0.25 to {_y}
-		loop {_locs::*}:
-			set {_baseloc} to loop-value-2
-			set {_rad} to 0
-			loop 10 times:
-				add 36 to {_rad}
-				set {_vec} to vector(0.5, 0, 0)
-				rotate {_vec} around y-axis by {_rad}
-				set {_el} to {_baseloc} ~ {_vec}
-				add {_y} to y-pos of {_el}
-				spawnParticle_Color(entity_effect, rgb(50, 0, 70), {_el})
-		wait a tick
+
+	loop {_targeteds::*}:
+		set {_loopEntity} to loop-value
+		if checkEntityType({_loopEntity}, player) is true:
+			LastKiller({_loopEntity}, {_player})
+			message formatted "<##2e2930>§l魂の滅殺を受けてしまった..." to {_loopEntity}
+			kitEffectDescription({_loopEntity}, "§c衰弱")
+			sendTimeBossbar_RED({_loopEntity}, "衰弱 III", {@wither-tick})
+		applyEffect({_loopEntity}, wither, {@wither-level}, {@wither-tick})
+		particleWither({_loopEntity})
+
+local function hitEffect(entity: entity):
+	soundHit({_entity})
+	if checkEntityType({_entity}, player) is true:
+		message formatted "<##180b64>§l魂が補足された..." to {_entity}
+
+
 
 local function kitParticle_Necronomicon(point: location):
 	# 弧を描く
@@ -91,3 +128,67 @@ local function kitParticle_Necronomicon(point: location):
 			spawnParticle_Dust(rgb(50, 0, 70), 1.2, {_el})
 
 		add {_addrad} to {_rad}
+
+local function particleHitting(entity: entity, coreLoc: location):
+	add rgb(50, 0, 70) to {_colors::*}
+	add rgb(71, 21, 94) to {_colors::*}
+	add rgb(76, 55, 95) to {_colors::*}
+
+	set {_entityFootLoc} to location of {_entity}
+	set {_entityCenterLoc} to location 1 meter above {_entityFootLoc}
+	set {_vec} to setVector({_entityCenterLoc}, {_coreLoc}, 0)
+
+	set {_count.trail} to 3
+	loop {_count.trail} times:
+		set {_randomLoc} to moveRandomLocation({_entityCenterLoc}, 1)
+		set {_centerMoveLoc} to {_randomLoc} ~ {_vec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Trail({_color}, {_centerMoveLoc}, 20 ticks, {_randomLoc})
+
+	set {_y} to 0.5
+	set {_addy} to 1
+	set {_circleCount} to 10
+	set {_addrad} to (360 / {_circleCount})
+
+	set {_densCount} to 2
+	loop {_densCount} times:
+		set {_rad} to 0
+		loop {_circleCount} times:
+			set {_vec.circle} to vector(0.5, {_y}, 0)
+			rotate {_vec.circle} around y-axis by {_rad}
+			set {_el} to {_entityFootLoc} ~ {_vec.circle}
+			chance of 5%:
+				spawnParticle(soul_fire_flame, {_el})
+			add {_addrad} to {_rad}
+		add {_addy} to {_y}
+
+local function particleWither(entity: entity):
+	add rgb(50, 0, 70) to {_colors::*}
+	add rgb(71, 21, 94) to {_colors::*}
+	add rgb(76, 55, 95) to {_colors::*}
+
+	set {_baseloc} to location of {_entity}
+	set {_y} to 0
+
+	set {_count.soul} to a random integer between 10 and 20
+	loop {_count.soul} times:
+		set {_dis} to a random number between 0.5 and 1
+		set {_vec} to randomVector({_dis})
+		set {_el} to {_baseloc} ~ {_vec}
+		spawnParticle(soul, {_el})
+
+	loop 5 times:
+		add 0.25 to {_y}
+		set {_rad} to 0
+		loop 36 times:
+			add 10 to {_rad}
+			set {_vec} to vector(0.5, 0, 0)
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_vec}
+			add {_y} to y-pos of {_el}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Color(entity_effect, {_color}, {_el})
+		wait a tick
+
+local function soundHit(entity: entity):
+	playSound("particle.soul_escape", 1, 1.15, {_entity})
