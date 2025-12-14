@@ -1,0 +1,14 @@
+import:
+	org.bukkit.inventory.ItemStack
+	org.bukkit.Material
+
+function setSkullOwner(item: item, owner: offline player) :: item:
+	set {_ItemMeta} to {_item}.getItemMeta()
+	{_ItemMeta}.setOwningPlayer({_owner})
+	{_item}.setItemMeta({_ItemMeta})
+	return {_item}
+
+function getPlayerSkull(player: player) :: item:
+	set {_skull} to new ItemStack(Material.PLAYER_HEAD)
+	set {_skull} to setSkullOwner({_skull}, {_player})
+	return {_skull}
