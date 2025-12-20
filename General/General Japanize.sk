@@ -1,0 +1,302 @@
+import:
+	java.io.BufferedReader
+	java.io.InputStreamReader
+	java.lang.StringBuilder
+	java.net.URL
+	java.net.URLEncoder
+
+	com.google.common.collect.ImmutableMap
+	com.google.common.collect.ImmutableSortedMap
+	com.google.common.io.CharStreams
+	com.google.gson.Gson
+	com.google.gson.JsonArray
+	com.google.gson.JsonElement
+
+	org.apache.commons.lang3.StringUtils
+
+# Japanizer
+on load:
+	JapanizeList() if {-ROMAJI_LIST} is not set
+
+local function JapanizeList():
+	set {_builder} to ImmutableSortedMap.reverseOrder()
+
+	{_builder}.put("a", "あ")
+	{_builder}.put("i", "い").put("yi", "い")
+	{_builder}.put("u", "う").put("wu", "う").put("whu", "う")
+	{_builder}.put("e", "え")
+	{_builder}.put("o", "お")
+	{_builder}.put("la", "ぁ").put("xa", "ぁ")
+	{_builder}.put("li", "ぃ").put("xi", "ぃ").put("lyi", "ぃ").put("xyi", "ぃ")
+	{_builder}.put("lu", "ぅ").put("xu", "ぅ")
+	{_builder}.put("le", "ぇ").put("xe", "ぇ").put("lye", "ぇ").put("xye", "ぇ")
+	{_builder}.put("lo", "ぉ").put("xo", "ぉ")
+	{_builder}.put("ye", "いぇ")
+	{_builder}.put("wha", "うぁ")
+	{_builder}.put("whi", "うぃ")
+	{_builder}.put("whe", "うぇ")
+	{_builder}.put("who", "うぉ")
+
+	{_builder}.put("ka", "か").put("ca", "か")
+	{_builder}.put("ki", "き")
+	{_builder}.put("ku", "く").put("cu", "く").put("qu", "く")
+	{_builder}.put("ke", "け")
+	{_builder}.put("ko", "こ").put("co", "こ")
+	{_builder}.put("kya", "きゃ")
+	{_builder}.put("kyi", "きぃ")
+	{_builder}.put("kyu", "きゅ")
+	{_builder}.put("kye", "きぇ")
+	{_builder}.put("kyo", "きょ")
+	{_builder}.put("qya", "くゃ")
+	{_builder}.put("qyu", "くゅ")
+	{_builder}.put("qyo", "くょ")
+	{_builder}.put("qa", "くぁ").put("qwa", "くぁ")
+	{_builder}.put("qi", "くぃ").put("qwi", "くぃ").put("qyi", "くぃ")
+	{_builder}.put("qwu", "くぅ")
+	{_builder}.put("qe", "くぇ").put("qwe", "くぇ").put("qye", "くぇ")
+	{_builder}.put("qo", "くぉ").put("qwo", "くぉ")
+	{_builder}.put("lka", "ヵ").put("xka", "ヵ")
+	{_builder}.put("lke", "ヶ").put("xke", "ヶ")
+	{_builder}.put("ga", "が")
+	{_builder}.put("gi", "ぎ")
+	{_builder}.put("gu", "ぐ")
+	{_builder}.put("ge", "げ")
+	{_builder}.put("go", "ご")
+	{_builder}.put("gya", "ぎゃ")
+	{_builder}.put("gyi", "ぎぃ")
+	{_builder}.put("gyu", "ぎゅ")
+	{_builder}.put("gye", "ぎぇ")
+	{_builder}.put("gyo", "ぎょ")
+	{_builder}.put("gwa", "ぐぁ")
+	{_builder}.put("gwi", "ぐぃ")
+	{_builder}.put("gwu", "ぐぅ")
+	{_builder}.put("gwe", "ぐぇ")
+	{_builder}.put("gwo", "ぐぉ")
+
+	{_builder}.put("sa", "さ")
+	{_builder}.put("shi", "し")
+	{_builder}.put("su", "す")
+	{_builder}.put("se", "せ")
+	{_builder}.put("so", "そ")
+	{_builder}.put("sya", "しゃ").put("sha", "しゃ")
+	{_builder}.put("syi", "しぃ")
+	{_builder}.put("syu", "しゅ").put("shu", "しゅ")
+	{_builder}.put("sye", "しぇ").put("she", "しぇ")
+	{_builder}.put("syo", "しょ").put("sho", "しょ")
+	{_builder}.put("swa", "すぁ")
+	{_builder}.put("swi", "すぃ")
+	{_builder}.put("swu", "すぅ")
+	{_builder}.put("swe", "すぇ")
+	{_builder}.put("swo", "すぉ")
+	{_builder}.put("za", "ざ")
+	{_builder}.put("zi", "じ").put("ji", "じ")
+	{_builder}.put("zu", "ず")
+	{_builder}.put("ze", "ぜ")
+	{_builder}.put("zo", "ぞ")
+	{_builder}.put("zya", "じゃ").put("ja", "じゃ").put("jya", "じゃ")
+	{_builder}.put("zyi", "じぃ").put("jyi", "じぃ")
+	{_builder}.put("zyu", "じゅ").put("ju", "じゅ").put("jyu", "じゅ")
+	{_builder}.put("zye", "じぇ").put("je", "じぇ").put("jye", "じぇ")
+	{_builder}.put("zyo", "じょ").put("jo", "じょ").put("jyo", "じょ")
+
+	{_builder}.put("ta", "た")
+	{_builder}.put("ti", "ち").put("chi", "ち")
+	{_builder}.put("tu", "つ").put("tsu", "つ")
+	{_builder}.put("te", "て")
+	{_builder}.put("to", "と")
+	{_builder}.put("tya", "ちゃ").put("cha", "ちゃ").put("cya", "ちゃ")
+	{_builder}.put("tyi", "ちぃ").put("cyi", "ちぃ")
+	{_builder}.put("tyu", "ちゅ").put("chu", "ちゅ").put("cyu", "ちゅ")
+	{_builder}.put("tye", "ちぇ").put("che", "ちぇ").put("cye", "ちぇ")
+	{_builder}.put("tyo", "ちょ").put("cho", "ちょ").put("cyo", "ちょ")
+	{_builder}.put("tsa", "つぁ")
+	{_builder}.put("tsi", "つぃ")
+	{_builder}.put("tse", "つぇ")
+	{_builder}.put("tso", "つぉ")
+	{_builder}.put("tha", "てゃ")
+	{_builder}.put("thi", "てぃ")
+	{_builder}.put("thu", "てゅ")
+	{_builder}.put("the", "てぇ")
+	{_builder}.put("tho", "てょ")
+	{_builder}.put("twa", "とぁ")
+	{_builder}.put("twi", "とぃ")
+	{_builder}.put("twu", "とぅ")
+	{_builder}.put("twe", "とぇ")
+	{_builder}.put("two", "とぉ")
+	{_builder}.put("ltu", "っ").put("xtu", "っ").put("ltsu", "っ").put("xtsu", "っ")
+	{_builder}.put("da", "だ")
+	{_builder}.put("di", "ぢ")
+	{_builder}.put("du", "づ")
+	{_builder}.put("de", "で")
+	{_builder}.put("do", "ど")
+	{_builder}.put("dya", "ぢゃ")
+	{_builder}.put("dyi", "ぢぃ")
+	{_builder}.put("dyu", "ぢゅ")
+	{_builder}.put("dye", "ぢぇ")
+	{_builder}.put("dyo", "ぢょ")
+	{_builder}.put("dha", "でゃ")
+	{_builder}.put("dhi", "でぃ")
+	{_builder}.put("dhu", "でゅ")
+	{_builder}.put("dhe", "でぇ")
+	{_builder}.put("dho", "でょ")
+	{_builder}.put("dwa", "どぁ")
+	{_builder}.put("dwi", "どぃ")
+	{_builder}.put("dwu", "どぅ")
+	{_builder}.put("dwe", "どぇ")
+	{_builder}.put("dwo", "どぉ")
+
+	{_builder}.put("na", "な")
+	{_builder}.put("ni", "に")
+	{_builder}.put("nu", "ぬ")
+	{_builder}.put("ne", "ね")
+	{_builder}.put("no", "の")
+	{_builder}.put("nya", "にゃ")
+	{_builder}.put("nyi", "にぃ")
+	{_builder}.put("nyu", "にゅ")
+	{_builder}.put("nye", "にぇ")
+	{_builder}.put("nyo", "にょ")
+
+	{_builder}.put("ha", "は")
+	{_builder}.put("hi", "ひ")
+	{_builder}.put("fu", "ふ")
+	{_builder}.put("he", "へ")
+	{_builder}.put("ho", "ほ")
+	{_builder}.put("hya", "ひゃ")
+	{_builder}.put("hyi", "ひぃ")
+	{_builder}.put("hyu", "ひゅ")
+	{_builder}.put("hye", "ひぇ")
+	{_builder}.put("hyo", "ひょ")
+	{_builder}.put("fya", "ふゃ")
+	{_builder}.put("fyu", "ふゅ")
+	{_builder}.put("fyo", "ふょ")
+	{_builder}.put("fwa", "ふぁ").put("fa", "ふぁ")
+	{_builder}.put("fwi", "ふぃ").put("fi", "ふぃ").put("fyi", "ふぃ")
+	{_builder}.put("fwu", "ふぅ")
+	{_builder}.put("fwe", "ふぇ").put("fe", "ふぇ").put("fye", "ふぇ")
+	{_builder}.put("fwo", "ふぉ").put("fo", "ふぉ")
+	{_builder}.put("ba", "ば")
+	{_builder}.put("bi", "び")
+	{_builder}.put("bu", "ぶ")
+	{_builder}.put("be", "べ")
+	{_builder}.put("bo", "ぼ")
+	{_builder}.put("bya", "びゃ")
+	{_builder}.put("byi", "びぃ")
+	{_builder}.put("byu", "びゅ")
+	{_builder}.put("bye", "びぇ")
+	{_builder}.put("byo", "びょ")
+	{_builder}.put("va", "ゔぁ")
+	{_builder}.put("vi", "ゔぃ")
+	{_builder}.put("vu", "ゔ")
+	{_builder}.put("ve", "ゔぇ")
+	{_builder}.put("vo", "ゔぉ")
+	{_builder}.put("vya", "ゔゃ")
+	{_builder}.put("vyi", "ゔぃ")
+	{_builder}.put("vyu", "ゔゅ")
+	{_builder}.put("vye", "ゔぇ")
+	{_builder}.put("vyo", "ゔょ")
+	{_builder}.put("pa", "ぱ")
+	{_builder}.put("pi", "ぴ")
+	{_builder}.put("pu", "ぷ")
+	{_builder}.put("pe", "ぺ")
+	{_builder}.put("po", "ぽ")
+	{_builder}.put("pya", "ぴゃ")
+	{_builder}.put("pyi", "ぴぃ")
+	{_builder}.put("pyu", "ぴゅ")
+	{_builder}.put("pye", "ぴぇ")
+	{_builder}.put("pyo", "ぴょ")
+
+	{_builder}.put("ma", "ま")
+	{_builder}.put("mi", "み")
+	{_builder}.put("mu", "む")
+	{_builder}.put("me", "め")
+	{_builder}.put("mo", "も")
+	{_builder}.put("mya", "みゃ")
+	{_builder}.put("myi", "みぃ")
+	{_builder}.put("myu", "みゅ")
+	{_builder}.put("mye", "みぇ")
+	{_builder}.put("myo", "みょ")
+
+	{_builder}.put("ya", "や")
+	{_builder}.put("yu", "ゆ")
+	{_builder}.put("yo", "よ")
+	{_builder}.put("lya", "ゃ").put("xya", "ゃ")
+	{_builder}.put("lyu", "ゅ").put("xyu", "ゅ")
+	{_builder}.put("lyo", "ょ").put("xyo", "ょ")
+
+	{_builder}.put("ra", "ら")
+	{_builder}.put("ri", "り")
+	{_builder}.put("ru", "る")
+	{_builder}.put("re", "れ")
+	{_builder}.put("ro", "ろ")
+	{_builder}.put("rya", "りゃ")
+	{_builder}.put("ryi", "りぃ")
+	{_builder}.put("ryu", "りゅ")
+	{_builder}.put("rye", "りぇ")
+	{_builder}.put("ryo", "りょ")
+
+	{_builder}.put("wa", "わ")
+	{_builder}.put("wi", "ゐ")
+	{_builder}.put("we", "ゑ")
+	{_builder}.put("wo", "を")
+	{_builder}.put("n", "ん").put("nn", "ん").put("n'", "ん").put("xn", "ん")
+	
+	loop ...{_builder}.keySet():
+		set {_key} to loop-value
+		set {_value} to {_builder}.get({_key})
+
+		set {_notConsonant} to StringUtils.startsWithAny({_key}, "a", "i", "u", "e", "o", "n")
+		continue if {_notConsonant} is true
+
+		{_builder}.put({_key}.charAt(0) + {_key}, "っ" + {_value})
+	
+	{_builder}.put("-", "ー")
+	{_builder}.put(",", "、")
+	{_builder}.put(".", "。")
+	{_builder}.put("?", "？")
+	{_builder}.put("!", "！")
+
+	set {_map} to {_builder}.build()
+
+	set {-ROMAJI_LIST} to {_map}.keySet().toArray(new String[0])
+	set {-HIRAGANA_LIST} to {_map}.values().toArray(new String[0])
+
+function japanizer(text: text) :: text:
+	set {_result} to StringUtils.replaceEach({_text}, {-ROMAJI_LIST}, {-HIRAGANA_LIST})
+	return {_result}
+
+function isNeedJapanize(text: text) :: boolean:
+	if {_text}.matches("[ \\uFF61-\\uFF9F]+") is false:
+		return true
+	return false
+
+# Google IME
+options:
+	google-ime-url: "https://www.google.com/transliterate?langpair=ja-Hira|ja&text="
+
+function IMEResult(text: text) :: text:
+	set {_urlEncoded} to URLEncoder.encode({_text}, "UTF-8")
+
+	set {_baseURL} to {@google-ime-url} + {_urlEncoded}
+	set {_URL} to new URL({_baseURL})
+
+	set {_conn} to {_URL}.openConnection()
+	{_conn}.setRequestMethod("GET")
+	{_conn}.setInstanceFollowRedirects(false)
+	{_conn}.connect()
+
+	set {_reader} to new BufferedReader(new InputStreamReader({_conn}.getInputStream(), "UTF-8"))
+
+	set {_json} to CharStreams.toString({_reader})
+	set {_parsed} to parseJson({_json})
+
+	return {_parsed}
+
+local function parseJson(json: text) :: text:
+	set {_result} to new StringBuilder()
+
+	set {_gson} to new Gson().fromJson({_json}, JsonArray.class)
+	loop ...{_gson}:
+		set {_response} to loop-value
+		{_result}.append({_response}.getAsJsonArray().get(1).get(0).getAsString())
+	
+	return {_result}.toString()

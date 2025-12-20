@@ -149,25 +149,6 @@ on chat:
 			set {_time} to "§4Permanently"
 		cancel event
 		message "{@prefix} §8あなたは§6ミュート§8されています! §e期限§8: §a%{_time}%" to player
-	else:
-		if {team::%player%} is set:
-			if first characters of message is "!":
-				replace first characters of message with "" in message
-				stop
-			cancel event
-			set {_p} to player's prefix
-			set {_s} to player's suffix
-			replace every "&" with "§" in {_p}
-			replace every "&" with "§" in {_s}
-			loop all players:
-				delete {_ok}
-				if {team::%loop-player%} is {team::%player%}:
-					set {_ok} to true
-				if loop-player has permission "sk.teamchat":
-					{join::%loop-player%} is not set
-					set {_ok} to true
-				{_ok} is true
-				message formatted "§6[Team]§r%{_p}%§r%player's display name%§r%{_s}%§r§a:§r §6%message%" to loop-player
 
 command /lookup <offline player>:
 	trigger:
