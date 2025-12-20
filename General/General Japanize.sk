@@ -17,9 +17,9 @@ import:
 
 # Japanizer
 on load:
-	JapanizeList() if {-ROMAJI_LIST} is not set
+	japanizeList() if {-ROMAJI_LIST} is not set
 
-local function JapanizeList():
+local function japanizeList():
 	set {_builder} to ImmutableSortedMap.reverseOrder()
 
 	{_builder}.put("a", "あ")
@@ -75,7 +75,7 @@ local function JapanizeList():
 	{_builder}.put("gwo", "ぐぉ")
 
 	{_builder}.put("sa", "さ")
-	{_builder}.put("shi", "し")
+	{_builder}.put("si", "し").put("shi", "し")
 	{_builder}.put("su", "す")
 	{_builder}.put("se", "せ")
 	{_builder}.put("so", "そ")
@@ -241,14 +241,19 @@ local function JapanizeList():
 	{_builder}.put("wo", "を")
 	{_builder}.put("n", "ん").put("nn", "ん").put("n'", "ん").put("xn", "ん")
 	
-	loop ...{_builder}.keySet():
-		set {_key} to loop-value
-		set {_value} to {_builder}.get({_key})
+	set {_checkMap} to {_builder}.build().entrySet()
+
+	loop ...{_checkMap}:
+		set {_entryMap} to loop-value
+		set {_key} to {_entryMap}.getKey()
+		set {_value} to {_entryMap}.getValue()
 
 		set {_notConsonant} to StringUtils.startsWithAny({_key}, "a", "i", "u", "e", "o", "n")
 		continue if {_notConsonant} is true
 
-		{_builder}.put({_key}.charAt(0) + {_key}, "っ" + {_value})
+		set {_firstChar} to {_key}.charAt(0)
+		set {_setKey} to "%{_firstChar}%%{_key}%"
+		{_builder}.put({_setKey}, "っ" + {_value})
 	
 	{_builder}.put("-", "ー")
 	{_builder}.put(",", "、")
@@ -273,6 +278,11 @@ function isNeedJapanize(text: text) :: boolean:
 	then:
 		return false
 	return true
+
+command /japanizelist:
+	permission: sk.admin
+	trigger:
+		japanizeList()
 
 # Google IME
 options:
