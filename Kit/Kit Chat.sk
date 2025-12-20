@@ -20,26 +20,17 @@ on chat with priority lowest:
 		{TrueTeam::%player%} is not set
 		(first characters of {_message}) is "!"
 	then:
-		broadcast "%{_p}%§r%player's display name%§r%{_s}%§r§a:§r %{_message}%"
+		broadcast "%{_p}%§r%player's display name%§r%{_s}%§r§b:§r %{_message}%"
 		stop
 
-	if {TrueTeam::%player%} is set:
-		# if first characters of message is "!":
-		# 	replace (first characters of message) with "" in message
-		# 	stop
-		# cancel event
-		# set {_p} to player's prefix
-		# set {_s} to player's suffix
-		# replace every "&" with "§" in {_p}
-		# replace every "&" with "§" in {_s}
-		set {_color} to kitTeamColor({TrueTeam::%player%})
-		loop all players:
-			delete {_ok}
-			if {TrueTeam::%loop-player%} is {TrueTeam::%player%}:
-				set {_ok} to true
-			if loop-player has permission "sk.teamchat":
-				{join::%loop-player%} is not set
-				set {_ok} to true
-			{_ok} is true
+	set {_color} to kitTeamColor({TrueTeam::%player%})
+	loop all players:
+		delete {_ok}
+		if {TrueTeam::%loop-player%} is {TrueTeam::%player%}:
+			set {_ok} to true
+		if loop-player has permission "sk.teamchat":
+			{join::%loop-player%} is not set
+			set {_ok} to true
+		{_ok} is true
 
-			message formatted "§6[%{_color}%§l§nTeam§6]§r%{_p}%§r%player's display name%§r%{_s}%§r§6:§r §6%message%" to loop-player
+		message formatted "§6[%{_color}%§l§nTeam§6]§r%{_p}%§r%player's display name%§r%{_s}%§r§b:§r §6%{_message}%" to loop-player
