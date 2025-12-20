@@ -2,6 +2,7 @@ import:
 	java.io.BufferedReader
 	java.io.InputStreamReader
 	java.lang.StringBuilder
+	java.lang.reflect.Array
 	java.net.URL
 	java.net.URLEncoder
 
@@ -265,9 +266,13 @@ function japanizer(text: text) :: text:
 	return {_result}
 
 function isNeedJapanize(text: text) :: boolean:
-	if {_text}.matches("[ \\uFF61-\\uFF9F]+") is false:
-		return true
-	return false
+	set {_byteArray} to {_text}.getBytes()
+	if any:
+		Array.getLength({_byteArray}) is not {_text}.length()
+		{_text}.matches("[ \\uFF61-\\uFF9F]+") is true
+	then:
+		return false
+	return true
 
 # Google IME
 options:
