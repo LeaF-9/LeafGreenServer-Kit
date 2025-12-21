@@ -80,9 +80,9 @@ local function kitWraithTimer(player: player, wraith: entity):
 		delete {_target}
 		set {_dis} to 1000000
 		loop all players in radius 30 around {_baselocation}:
-			kitCheckTeam({_player}, loop-player, false) is true
-			delete {_nearRespawn.%loop-player%}
-			if {_forceEnable.%loop-player%} is not set:
+			{team::%{_player}%} is not {team::%loop-player%}
+			delete {_nearRespawn.%loop-player%}  # 現在リスポーン地点付近にいるかどうかの確認変数
+			if {_forceEnable.%loop-player%} is not set:  # 強制ターゲットの条件を満たしていなければ場所確認
 
 				set {_team} to {team::%loop-player%}
 				set {_loc.player} to location of loop-player
@@ -97,7 +97,9 @@ local function kitWraithTimer(player: player, wraith: entity):
 					set {_nearRespawn.%loop-player%} to true
 					set {_disableTimer.%loop-player%} to 11 if {_disableTimer.%loop-player%} is not set
 
-			if {_nearRespawn.%loop-player%} is set:
+			if {_nearRespawn.%loop-player%} is set:  # リスポーン地点にいる場合の処理
+				continue if metadata value "gametype" of loop-player is not "Kit"  # Kit未選択であればスキップ
+
 				subtract 1 from {_disableTimer.%loop-player%}
 				if {_disableTimer.%loop-player%} <= 0:
 					set {_forceEnable.%loop-player%} to true
