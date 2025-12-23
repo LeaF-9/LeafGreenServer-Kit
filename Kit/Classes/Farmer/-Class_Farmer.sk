@@ -476,14 +476,14 @@ on rightclick holding a cactus green:
 		set action bar of player to "§c§lクールタイムが終わっていません!"
 
 on death of player:
-	{CLS::%{LastKiller::%victim%}%} is "FAM"
+	{CLS::%{-LastKiller::%victim%}%} is "FAM"
 	set {_a} to 0
-	loop all items in {LastKiller::%victim%}'s inventory:
+	loop all items in {-LastKiller::%victim%}'s inventory:
 		loop-item is melon seeds
 		add 1 to {_a}
 	set {_fa} to 10 - {_a}
 	loop {_fa} times:
-		give a melon seeds named "§8Seeds" to {LastKiller::%victim%}
+		give a melon seeds named "§8Seeds" to {-LastKiller::%victim%}
 
 on pick up wheat item:
 	if name of item is name of player:
@@ -492,7 +492,7 @@ on pick up wheat item:
 	if {team::%name of item%} is {team::%player%}:
 		loop all players:
 			name of loop-player is name of item
-			add loop-player to {supporter.%player%::*}
+			add loop-player to {-supporter.%player%::*}
 		play raw sound "dig.grass" at player with pitch 2 volume 0.5
 		apply speed 1 to player for 3 seconds
 		wait a tick
@@ -510,7 +510,7 @@ on pick up potato:
 	if {team::%name of item%} is not {team::%player%}:
 		loop all players:
 			name of loop-player is name of item
-			add loop-player to {damager.%player%::*}
+			add loop-player to {-damager.%player%::*}
 			set {_p} to loop-player
 		play raw sound "random.explode" at player with pitch 2 volume 0.5
 		make {_p} damage player by 1
@@ -526,7 +526,7 @@ on pick up baked potato:
 	if {team::%name of item%} is not {team::%player%}:
 		loop all players:
 			name of loop-player is name of item
-			add loop-player to {damager.%player%::*}
+			add loop-player to {-damager.%player%::*}
 			set {_p} to loop-player
 		make a fake explosion at player
 		push player upwards at speed 0.5
@@ -543,8 +543,8 @@ on pick up poisonous potato:
 	if {team::%name of item%} is not {team::%player%}:
 		loop all players:
 			name of loop-player is name of item
-			set {LastKiller::%player%} to loop-player
-			add loop-player to {damager.%player%::*}
+			set {-LastKiller::%player%} to loop-player
+			add loop-player to {-damager.%player%::*}
 			set {_p} to loop-player
 		play raw sound "random.splash" at player with pitch 2 volume 0.5
 		apply poison 1 to player for 5 seconds
@@ -560,7 +560,7 @@ on pick up carrot:
 	if {team::%name of item%} is {team::%player%}:
 		loop all players:
 			name of loop-player is name of item
-			add loop-player to {supporter.%player%::*}
+			add loop-player to {-supporter.%player%::*}
 		play raw sound "random.eat" at player with pitch 2 volume 0.5
 		apply regeneration 1 to player for 3 seconds
 		wait a tick
@@ -575,7 +575,7 @@ on pick up golden carrot:
 	if {team::%name of item%} is {team::%player%}:
 		loop all players:
 			name of loop-player is name of item
-			add loop-player to {supporter.%player%::*}
+			add loop-player to {-supporter.%player%::*}
 		play raw sound "random.eat" at player with pitch 1 volume 0.5
 		apply regeneration 1 to player for 5 seconds
 		heal player by 1 hearts
@@ -588,7 +588,7 @@ on pick up apple:
 	if {team::%name of item%} is {team::%player%}:
 		loop all players:
 			name of loop-player is name of item
-			add loop-player to {supporter.%player%::*}
+			add loop-player to {-supporter.%player%::*}
 		play raw sound "random.levelup" at player with pitch 2 volume 0.5
 		heal player by 3 hearts
 		wait a tick
@@ -600,7 +600,7 @@ on pick up golden apple:
 	if {team::%name of item%} is {team::%player%}:
 		loop all players:
 			name of loop-player is name of item
-			add loop-player to {supporter.%player%::*}
+			add loop-player to {-supporter.%player%::*}
 		play raw sound "random.levelup" at player with pitch 1 volume 0.5
 		heal player by 10 hearts
 		apply regeneration 1 to player for 60 seconds

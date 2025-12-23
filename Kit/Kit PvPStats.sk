@@ -2,12 +2,12 @@ options:
 	prefix: §9[§bPvPStats§9]
 
 on death of player:
-	{LastKiller::%victim%} is set
+	{-LastKiller::%victim%} is set
 	set {_cause} to getLastDamage(victim)
 	if {_cause} is not set:
 		set {_damagecause} to damage cause
 		set {_cause} to {-DamageCause::%{_damagecause}%}
-	kitDeathEvent(victim, {LastKiller::%victim%}, {_cause})
+	kitDeathEvent(victim, {-LastKiller::%victim%}, {_cause})
 
 function kitDeathEvent(victim: player, attacker: player, damagecause: text):
 # 自殺であるかどうかの確認
@@ -34,7 +34,7 @@ function kitDeathEvent(victim: player, attacker: player, damagecause: text):
 # # 自身をAssist候補から省く
 	set {_true.%{_attacker}%} to true
 # # victimに攻撃を与えた者をループ
-	loop {damager.%{_victim}%::*}:
+	loop {-damager.%{_victim}%::*}:
 		loop-value is not {_attacker}  # アシスト者とキラーが同一人物でないかどうか
 		{TrueTeam::%loop-value%} is {TrueTeam::%{_attacker}%}  # チームが同一であるかどうか
 		{_true.%loop-value%} is not set  # 既にアシストとして換算済でないかどうか
@@ -46,7 +46,7 @@ function kitDeathEvent(victim: player, attacker: player, damagecause: text):
 		message "{@prefix} §e%{_victim}% §aのキルアシストをしました" to loop-value  # メッセージ送信
 		add 1 to {Kit-Soul::%loop-value's UUID%}  # Soulの贈与
 # Killerにアシストした者をループ
-	loop {supporter.%{_attacker}%::*}:
+	loop {-supporter.%{_attacker}%::*}:
 		loop-value is not {_attacker}  # アシスト者とキラーが同一人物でないかどうか
 		{TrueTeam::%loop-value%} is {TrueTeam::%{_attacker}%}  # チームが同一であるかどうか
 		{_true.%loop-value%} is not set  # 既にアシストとして換算済でないかどうか
@@ -61,10 +61,10 @@ function kitDeathEvent(victim: player, attacker: player, damagecause: text):
 	kitRuleDeathEvent({_attacker}, {_victim}, {_supporters::*})
 #
 	wait 5 ticks
-	delete {damager.%{_victim}%::*}
-	delete {supporter.%{_victim}%::*}
-	delete {supporter.%{_attacker}%::*}
-	delete {LastKiller::%{_victim}%}
+	delete {-damager.%{_victim}%::*}
+	delete {-supporter.%{_victim}%::*}
+	delete {-supporter.%{_attacker}%::*}
+	delete {-LastKiller::%{_victim}%}
 
 #command /topstatslist <text>:
 #	permission: sk.admin

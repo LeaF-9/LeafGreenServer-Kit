@@ -33,30 +33,30 @@ on damage of player:
 	cancel event
 
 on death of player:
-	{Class::%{LastKiller::%victim%}%} is "Ninja"
-	set {_skill::1} to kitPlayerSkillItem({LastKiller::%victim%}, "Ninja", 1)
-	set {_skill::2} to kitPlayerSkillItem({LastKiller::%victim%}, "Ninja", 2)
-	set {_skill::3} to kitPlayerSkillItem({LastKiller::%victim%}, "Ninja", 3)
+	{Class::%{-LastKiller::%victim%}%} is "Ninja"
+	set {_skill::1} to kitPlayerSkillItem({-LastKiller::%victim%}, "Ninja", 1)
+	set {_skill::2} to kitPlayerSkillItem({-LastKiller::%victim%}, "Ninja", 2)
+	set {_skill::3} to kitPlayerSkillItem({-LastKiller::%victim%}, "Ninja", 3)
 	loop {_skill::*}:
 		add 1 to {_ln}
 		set {_nin} to line 4 of lore of loop-value
 		{_nin} contains "忍術"
 		if display name of {_skill::%loop-index%} does not contain "Ninjutsu":
 			delete {_have}
-			loop all items in {LastKiller::%victim%}'s inventory:
+			loop all items in {-LastKiller::%victim%}'s inventory:
 				loop-item is {_skill::%loop-index%}
 				set {_have} to true
 			{_have} is not set
-			give {_skill::%{_ln}%} to {LastKiller::%victim%}
-			send action bar "%display name of {_skill::%{_ln}%}% §7を再習得した..." to {LastKiller::%victim%}
+			give {_skill::%{_ln}%} to {-LastKiller::%victim%}
+			send action bar "%display name of {_skill::%{_ln}%}% §7を再習得した..." to {-LastKiller::%victim%}
 		else:
 			delete {_have}
-			loop all items in {LastKiller::%victim%}'s inventory:
+			loop all items in {-LastKiller::%victim%}'s inventory:
 				display name of loop-item contains "Ninjutsu"
 				set {_have} to true
 			{_have} is not set
-			give {_skill::%{_ln}%} to {LastKiller::%victim%}
-			send action bar "%display name of {_skill::%{_ln}%}% §7を再習得した..." to {LastKiller::%victim%}
+			give {_skill::%{_ln}%} to {-LastKiller::%victim%}
+			send action bar "%display name of {_skill::%{_ln}%}% §7を再習得した..." to {-LastKiller::%victim%}
 
 #on jumping:
 #	if player's gamemode is not creative or spectator:

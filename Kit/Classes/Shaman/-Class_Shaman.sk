@@ -50,8 +50,8 @@ every 20 ticks:
 								message "§5目が疲れてしまった...!" to loop-player
 						play raw sound "mob.bat.hurt" at loop-player with pitch 1 volume 0.3
 						drawDot count 1, particle "redstone", RGB 10, 10, 10, center location of block 2 above {_tg}, visibleRange 30, pulseDelay 0, keepFor 20 ticks
-						set {LastKiller::%{_tg}%} to loop-player
-						add loop-player to {damager.%{_tg}%::*}
+						set {-LastKiller::%{_tg}%} to loop-player
+						add loop-player to {-damager.%{_tg}%::*}
 						if {-Stats.%loop-player%::Intensification} is true:
 							subtract 2 from health of {_tg}
 							apply wither 1 to {_tg} for 3 seconds
@@ -200,8 +200,8 @@ on rightclick holding a 399:
 						{team::%loop-player%} is not {team::%player%}
 						play raw sound "ambient.weather.thunder" at loop-player with pitch 1 volume 0.6
 						strike fake fake lightning at loop-player
-						set {LastKiller::%loop-player%} to player
-						add player to {damager.%loop-player%::*}
+						set {-LastKiller::%loop-player%} to player
+						add player to {-damager.%loop-player%::*}
 						subtract 4 from loop-player's health
 						chance of 80%:
 							execute console command "/palsy %loop-player% 8 seconds"
@@ -213,7 +213,7 @@ on rightclick holding a 399:
 					loop all players in radius 5 around location of {_tg}:
 						{team::%loop-player%} is {team::%player%}
 						{CLS::%loop-player%} is not "BSK"
-						add player to {supporter.%loop-player%::*}
+						add player to {-supporter.%loop-player%::*}
 						add loop-player to {_hera::*}
 						set {-Stats.%loop-player%::HeraResurrect} to {_now}
 						set {Resurrection::%loop-player%} to true
@@ -236,7 +236,7 @@ on rightclick holding a 399:
 					loop all players in radius 5 around location of {_tg}:
 						{team::%loop-player%} is {team::%player%}
 						{CLS::%loop-player%} is not "BSK"
-						add player to {supporter.%loop-player%::*}
+						add player to {-supporter.%loop-player%::*}
 						apply strength 1 to loop-player for 10 seconds
 						apply resistance 1 to loop-player for 10 seconds
 						message "§2§lアテナ §aの戦闘の加護を受けた!" to loop-player
@@ -306,8 +306,8 @@ on rightclick holding a 406:
 				delete {_tg}
 				set {_tg} to target of loop-zombie
 				if {_tg} is set:
-					set {LastKiller::%{_tg}%} to player
-					add player to {damager.%{_tg}%::*}
+					set {-LastKiller::%{_tg}%} to player
+					add player to {-damager.%{_tg}%::*}
 					subtract 0.5 from {_tg}'s health
 					if {_tg} does not have nausea:
 						apply nausea 1 to {_tg} for 10 seconds

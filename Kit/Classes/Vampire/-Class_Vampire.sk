@@ -23,7 +23,7 @@ on rightclick holding a nether wart item:
 		if {_target} is set:
 			if {team::%{_target}%} is not {team::%player%}:
 				set {CT.%player%::%name of player's tool%} to 20
-				add player to {damager.%{_target}%::*}
+				add player to {-damager.%{_target}%::*}
 				set {_thp} to target player's health
 				set {_shp} to {_thp} / 4
 				add {_shp} to player's health
@@ -51,7 +51,7 @@ on rightclick holding a fermented spider eye:
 					stop
 				else:
 					if player's health is more than {_hps}:
-						add player to {supporter.%target player%::*}
+						add player to {-supporter.%target player%::*}
 						damage the player by {_hps} hearts
 						heal {_tp} by {_hps} hearts
 						message "{@prefix} §4自分の体力を削って§c%target player%§4の体力を§d全回復しました！"
@@ -229,8 +229,8 @@ on rightclick holding a 263:
 				add 1 to {_damageamount.%loop-player%}
 		loop all players:
 			{_damagetrue.%loop-player%} is true
-			set {LastKiller::%loop-player%} to player
-			add player to {damager.%loop-player%::*}
+			set {-LastKiller::%loop-player%} to player
+			add player to {-damager.%loop-player%::*}
 			subtract {_damageamount.%loop-player%} from loop-player's health
 		loop all bats:
 			loop-bat's display name is "%player%"
@@ -261,8 +261,8 @@ on rightclick holding a nether star:
 
 on damage of player:
 	if {-Stats.%victim%::ProtectHealth} is true:
-		set {LastKiller::%attacker%} to victim
-		add victim to {damager.%attacker%::*}
+		set {-LastKiller::%attacker%} to victim
+		add victim to {-damager.%attacker%::*}
 		set {_dp} to damage
 		cancel event
 		damage attacker by {_dp} hearts
@@ -402,10 +402,10 @@ on death of player:
 	loop all bats:
 		loop-bat's display name is "%victim%'s Bat Shield"
 		delete loop-bat
-	{CLS::%{LastKiller::%victim%}%} is "VAM"
-	{-Stats.%{LastKiller::%victim%}%::BatMode} is true
-	spawn a bat at {LastKiller::%victim%}
-	set spawned bat's display name to "%{LastKiller::%victim%}%'s Bat Shield"
+	{CLS::%{-LastKiller::%victim%}%} is "VAM"
+	{-Stats.%{-LastKiller::%victim%}%::BatMode} is true
+	spawn a bat at {-LastKiller::%victim%}
+	set spawned bat's display name to "%{-LastKiller::%victim%}%'s Bat Shield"
 
 on damage of bat:
 	if victim's display name contains "%attacker%":

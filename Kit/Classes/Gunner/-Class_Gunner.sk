@@ -368,8 +368,8 @@ on rightclick holding a 69:
 					remove {_l} from {Block.%player%::*}
 					loop all players in radius 15 around location of {-Stats.%player%::C4Locate}:
 						{team::%loop-player%} is not {team::%player%}
-						set {LastKiller::%loop-player%} to player
-						add player to {damager.%loop-player%::*}
+						set {-LastKiller::%loop-player%} to player
+						add player to {-damager.%loop-player%::*}
 					create a safe explosion of power 10 at {-Stats.%player%::C4Locate}
 					delete {-Stats.%player%::C4Locate}
 					delete {-Stats.%player%::C4}
@@ -516,8 +516,8 @@ on projectile hit:
 				add loop-player to {_m::*}
 				set {-Stats.%loop-player%::BombCancel} to true
 			else:
-				set {LastKiller::%loop-player%} to shooter
-				add shooter to {damager.%loop-player%::*}
+				set {-LastKiller::%loop-player%} to shooter
+				add shooter to {-damager.%loop-player%::*}
 		make a safe explosion of force 4 at {_l}
 		wait a tick
 		loop {_m::*}:
