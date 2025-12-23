@@ -32,6 +32,14 @@ on projectile hit:
 	loop {_locs::*}:
 		spawnParticle(enchanted_hit, loop-value)
 
+on death of player:
+	set {_killer} to getLastKiller(victim)
+	{Class::%{_killer}%} is "Knocker"
+	set {_grenade} to kitSkillItem("Knocker", 6)
+	set {_grenade} to kitItemTagChanger({_grenade}, "Knocker", "Skill", 6)
+	set {_grenade} to {_grenade}.asOne()
+	give {_grenade} to {_killer}'s inventory
+
 
 
 local function kitParticle_ShockGrenade_Projectile(proj: projectile):
