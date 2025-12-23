@@ -28,9 +28,19 @@ function kitEffect_DeathCurse(player: player):
 	kitPalsy({_player}, 200, false)
 	apply glowing 1 to {_player} for 10 seconds
 	apply slowness 3 to {_player} for 10 seconds
-	setKitStats({_player}, "DeathCursing", true)
+	setKitStats({_player}, "DeathCursing", {_tg})
 	set {_health} to 10
+
 	loop 11 times:
+		continue if getKitStats({_player}, "DeathCursing") is not set
+
+		set {_targetPlayer} to getKitStats({_player}, "DeathCursing")
+		if kitCheckAlive({_targetPlayer}) is false:
+			deleteKitStats({_player}, "DeathCursing")
+			set {_failMsg} to kitGhostMessage("§8対象が死亡したため呪術は解除されました", true)
+			kitMsg({_player}, {_failMsg})
+			stop
+
 		if getKitStats({_player}, "DeathCursing") is set:
 			kitParticle_DeathCurse_Targeting({_player}, {_tg})
 			if {_health} is 0:
