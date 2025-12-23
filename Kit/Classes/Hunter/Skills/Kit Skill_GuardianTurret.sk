@@ -1,8 +1,9 @@
 # skill-name: Guardian Turret
 
 options:
-	shoot-interval: 60
+	shoot-interval: 100
 	arrow-damage: 2
+	arrow-amount: 10
 	poison-tier: 1
 	poison-tick: 60
 	search-radius: 30
@@ -61,6 +62,7 @@ function kitEffect_GuardianTurret(player: player):
 	set {_back.tick} to 20
 	set {_back.meter} to {_back.max} / {_back.tick}
 	set {_ln} to 0
+	set {_shotCount} to 0
 	while getKitStats({_player}, "GuardianTurret-Time") is {_now}:
 		wait a tick
 
@@ -73,6 +75,17 @@ function kitEffect_GuardianTurret(player: player):
 			subtract {_back.meter} from {_return}
 			delete {_return} if {_return} <= 0
 
+		# stop shooting
+		else if {_shotCount} >= {@arrow-amount}:
+			# head moving
+			set {_headloc} to {_loc.mark}
+			set yaw of {_headloc} to yaw of {_vector}
+			set pitch of {_headloc} to 45
+			teleport {_marker} to {_headloc}
+
+			deleteKitStats({_player}, "GuardianTurret-Time")
+			continue
+
 		add 1 to {_ln}
 		# shoot
 		if mod({_ln}, {@shoot-interval}) is 0 or {@shoot-interval}:
@@ -84,6 +97,7 @@ function kitEffect_GuardianTurret(player: player):
 			shoot an arrow from {_shootloc} at speed 5
 			set {_shotarrow} to shot arrow
 			setShooter({_shotarrow}, {_player})
+			add 1 to {_shotCount}
 			set metadata value "arrowdamage" of {_shotarrow} to {@arrow-damage}
 			setPersistentData({_shotarrow}, {@metadata-arrow}, true)
 			kitParticle_GuardianTurret_Arrow({_shotarrow})
