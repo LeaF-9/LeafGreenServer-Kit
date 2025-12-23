@@ -25,6 +25,17 @@ on inventory click:
 		replace "§8" with "" in {_lore}
 		replace "\" with "/" in {_lore}
 		setSkriptList(player, {_lore})
+
+	else if type of event-item is arrow:
+		set {_lore} to line 1 of lore of event-item
+		replace "§6§l" with "" in {_lore}
+		replace " §eページへ移動する" with "" in {_lore}
+		set {_page} to {_lore} parsed as number
+		set {_path} to line 3 of lore of event-item
+		replace "§8" with "" in {_path}
+		replace "\" with "/" in {_path}
+		setSkriptList(player, {_path}, {_page})
+
 	else if type of event-item is lime dye:
 		set {_file} to name of event-item
 		replace "§a" with "" in {_file}
@@ -40,6 +51,7 @@ on inventory click:
 			make player execute command "/sk %{_arg}% %{_file}%"
 		else:
 			make player execute command "/sk %{_arg}% %{_lore}%/%{_file}%"
+
 	else if type of event-item is gray dye:
 		set {_file} to name of event-item
 		replace "§8" with "" in {_file}
@@ -64,17 +76,32 @@ import:
 
 # Skript List表示用関数
 function setSkriptList(player: player, path: text = "plugins/Skript/scripts", page: number = 1):
+	# 初期化
 	set {_slot} to 0
-	loop 9 * {@rownum} times:
+	set {_maxslot} to (9 * {@rownum})
+	loop {_maxslot} times:
 		set slot {_slot} of {_player}'s current inventory to air
 		add 1 to {_slot}
 
+	# ファイル・ディレクトリ取得
 	set {_FileInst} to new File({_path})
 	set {_file} to {_FileInst}.listFiles()
-	set {_length} to 54
+
+	# ファイル数の確認・ページ調整
+	set {_length} to getArrayLength({_file})
+
+	set {_loopnum} to 0
+	set {_maxDisplay} to ({_maxslot} - 9)
+	if {_length} > {_maxDisplay}:
+		set {_length} to {_maxDisplay}
+		set {_loopnum} to ({_maxDisplay} * {_page})
+		
+		set {_hasPrevPage} to true if {_page} > 1
+		set {_hasNextPage} to true if ({_maxDisplay} * {_page}) < {_length}
+
 	set {_loopnum} to 0
 	set {_looping} to true
-	loop {_length} times:
+	loop {_maxDisplay} times:
 		{_looping} is true
 		set {_loopfile} to {_file}[{_loopnum}]
 		set {_looping} to false if {_loopfile} is not set
@@ -106,9 +133,21 @@ function setSkriptList(player: player, path: text = "plugins/Skript/scripts", pa
 		else:
 			set slot {_slot} of {_player}'s current inventory to lime dye named "§a%{_filename}%" with lore "§a左クリック §eで再読み込みする", "§a右クリック §eで無効化する", " " and "§8%{_clickpath}%"
 		add 1 to {_slot}
-	set {_pathnames::*} to {_path} split at "/"
-	set {_clickpath} to ""
-	size of {_pathnames::*} > 3
-	loop size of {_pathnames::*} - 1 times:
-		set {_clickpath} to "%{_clickpath}%%{_pathnames::%loop-number%}%\"
-	set slot 9 * {@rownum} - 1 of {_player}'s current inventory to book named "§6戻る" with lore "§a左クリック §eでディレクトリを開く", " " and "§8%{_clickpath}%"
+
+	# ページング処理
+	set {_lastSlot} to (9 * {@rownum}) - 1
+	set {_prevSlot} to {_lastSlot} - 5
+	set {_nextSlot} to {_lastSlot} - 3
+	if {_hasPrevPage} is true:
+		set {_prevPageCount} to ({_page} - 1)
+		set slot {_prevSlot} of {_player}'s current inventory to arrow named "§b前のページ" with lore "§6§l%{_prevPageCount}% §eページへ移動する", " " and "§8%{_path}%"
+	if {_hasNextPage} is true:
+		set {_nextPageCount} to ({_page} + 1)
+		set slot {_nextSlot} of {_player}'s current inventory to arrow named "§b次のページ" with lore "§6§l%{_nextPageCount}% §eページへ移動する", " " and "§8%{_path}%"
+
+	set {_pathClass} to getPathClass({_path})
+	set {_prevPath} to {_pathClass}.getParent()
+	stop if {_prevPath}.getNameCount() < 3
+
+	set {_clickpath} to {_prevPath}.toString()
+	set slot {_lastSlot} of {_player}'s current inventory to book named "§6戻る" with lore "§a左クリック §eでディレクトリを開く", " " and "§8%{_clickpath}%"
