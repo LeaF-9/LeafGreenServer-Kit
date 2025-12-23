@@ -40,18 +40,6 @@ on death of player:
 	{Class::%{LastKiller::%victim%}%} is "Knocker"
 	give 8 arrows to {LastKiller::%victim%}
 
-on damage of player with priority LOW:
-	metadata value "gametype" of victim is "Kit"
-	damage was caused by fall
-	if getKitStats(victim, "FallTiming") is set:
-		set {_FallDamage} to getKitStats(victim, "FallDamage")
-		setDamageModification_SET(victim, {_FallDamage})
-		deleteKitStats(victim, "FallTiming")
-		deleteKitStats(victim, "FallDamage")
-	else if getKitStats(victim, "FallRemove") is set:
-		setDamageModification_MUL(victim, 0.1)
-		deleteKitStats(victim, "FallRemove")
-
 # Timer
 function kitTimerKnocker(player: player):
 	while {Class::%{_player}%} is "Knocker":

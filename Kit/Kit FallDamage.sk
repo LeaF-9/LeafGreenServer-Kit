@@ -1,0 +1,60 @@
+options:
+	fall-damage-time: 10 seconds
+
+import:
+	org.bukkit.GameRule
+
+function setFallDamage(player: player, damage: number):
+	set {_world} to world of {_player}
+	set {_now} to now
+	setKitStats({_player}, "FallTiming", {_now})
+	setKitStats({_player}, "FallDamage", {_damage})
+	stop if getFallRule({_world}) is true
+	
+	fallTimer({_player})
+
+# 落下ダメージの軽減を設定する関数
+function setFallRemove(player: player):
+	set {_world} to world of {_player}
+	stop if getFallRule({_world}) is false
+	setKitStats({_player}, "FallRemove", true)
+
+on damage of player with priority LOW:
+	metadata value "gametype" of victim is "Kit"
+	damage was caused by fall
+	set {_fallTime} to getKitStats(victim, "FallTiming")
+	if {_fallTime} is set:
+		set {_FallDamage} to getKitStats(victim, "FallDamage")
+		deleteKitStats(victim, "FallTiming")
+		deleteKitStats(victim, "FallDamage")
+
+		set {_now} to now
+		set {_timeDiff} to difference between {_now} and {_fallTime}
+		stop if {_timeDiff} > {@fall-damage-time}
+
+		setDamageModification_SET(victim, {_FallDamage})
+		
+	else if getKitStats(victim, "FallRemove") is set:
+		setDamageModification_MUL(victim, 0.1)
+		deleteKitStats(victim, "FallRemove")
+
+# Worldが落下ダメージ無効化時に地面についたかどうか確認する関数
+local function fallTimer(player: player):
+	set {_tick} to getTicks({@fall-damage-time})
+	loop {_tick} times:
+		wait a tick
+		continue if {_player}.isOnGround() is false
+		
+		set {_FallDamage} to getKitStats(victim, "FallDamage")
+		damage {_player} by {_FallDamage} hearts with cause fall
+		deleteKitStats(victim, "FallTiming")
+		deleteKitStats(victim, "FallDamage")
+		stop
+
+# WorldのFallDamage状態を確認する関数
+local function getFallRule(world: world) :: boolean:
+	if {-WorldFallRules::%{_world}%} is not set:
+		set {_gamerule} to {_world}.getGameRuleValue(GameRule.FALL_DAMAGE)
+		set {-WorldFallRules::%{_world}%} to {_gamerule}
+
+	return {-WorldFallRules::%{_world}%}
