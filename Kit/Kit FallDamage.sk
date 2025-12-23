@@ -1,5 +1,5 @@
 options:
-	fall-damage-time: 10 seconds
+	fall-damage-time: 5 seconds
 
 import:
 	org.bukkit.GameRule
@@ -17,12 +17,14 @@ function setFallDamage(player: player, damage: number):
 function setFallRemove(player: player):
 	set {_world} to world of {_player}
 	stop if getFallRule({_world}) is false
-	setKitStats({_player}, "FallRemove", true)
+	set {_now} to now
+	setKitStats({_player}, "FallRemove", {_now})
 
 on damage of player with priority LOW:
 	metadata value "gametype" of victim is "Kit"
 	damage was caused by fall
 	set {_fallTime} to getKitStats(victim, "FallTiming")
+	set {_fallRemove} to getKitStats(victim, "FallRemove")
 	if {_fallTime} is set:
 		set {_FallDamage} to getKitStats(victim, "FallDamage")
 		deleteKitStats(victim, "FallTiming")
@@ -34,9 +36,14 @@ on damage of player with priority LOW:
 
 		setDamageModification_SET(victim, {_FallDamage})
 		
-	else if getKitStats(victim, "FallRemove") is set:
-		setDamageModification_MUL(victim, 0.1)
+	else if {_fallRemove} is set:
 		deleteKitStats(victim, "FallRemove")
+
+		set {_now} to now
+		set {_timeDiff} to difference between {_now} and {_fallRemove}
+		stop if {_timeDiff} > {@fall-damage-time}
+
+		setDamageModification_MUL(victim, 0.1)
 
 # Worldが落下ダメージ無効化時に地面についたかどうか確認する関数
 local function fallTimer(player: player):
