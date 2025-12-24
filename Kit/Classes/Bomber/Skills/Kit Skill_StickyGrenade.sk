@@ -11,21 +11,15 @@ function kitEffect_StickyGrenade(player: player):
 	nameCT({_player}, "Sticky Grenade")
 	kitMsg({_player}, "§2粘着ボムを投擲します...")
 	set {_loc} to location of {_player}
-	add 1.2 to y-coordinate of {_loc}
-	shoot a falling slime block from {_loc} at speed 1.5
-	set {_grenade} to shot entity
-	set metadata value "sticky-bomb" of {_grenade} to "%{_player}%"
+	add 1.5 to y-coordinate of {_loc}
+	set {_shotVec} to setVector({_loc}, (location 10 meters in front of {_loc}), 1.5)
+	set {_grenade} to spawnFallingBlock({_loc}, slime block)
+	set velocity of {_grenade} to {_shotVec}
 
 	playSound("entity.slime.jump", 1, 1, {_player})
 	loop 100 times:
-		if {_target} is set:
-			continue
-		set {_exist} to false
-		loop all falling blocks:
-			loop-falling block is {_grenade}
-			set {_exist} to true
-		if {_exist} is false:
-			continue
+		continue if {_target} is set
+		continue if {_grenade}.isDead() is true
 
 		kitParticle_StickyGrenade_Slime({_grenade})
 		set {_gl} to location of {_grenade}
@@ -53,16 +47,13 @@ function kitEffect_StickyGrenade(player: player):
 		wait a tick
 
 	set {_gl} to location of {_grenade}
-	loop all falling blocks:
-		loop-falling block is {_grenade}
-		delete loop-falling block
-	if {_target} is not set:
-		stop
+	{_grenade}.remove()
+	stop if {_target} is not set
 
 	set yaw of {_loc} to 0
 	set pitch of {_loc} to 0
 
-	spawn a item display at {_loc} with nbt {_nbt}
+	spawn a item display at {_loc}
 	set {_sticked} to spawned item display
 
 	set {_now} to now
@@ -79,8 +70,6 @@ function kitEffect_StickyGrenade(player: player):
 	{_sticked}.setTransformation({_transformation})
 
 	set metadata value "gametype" of {_sticked} to "Kit"
-	set metadata value "Sticky Grenade" of {_sticked} to {_player}
-	set metadata value "Sticky Grenade - Time" of {_sticked} to {_now}
 
 	loop 40 times:
 		if {_target} is not set:
@@ -106,10 +95,7 @@ function kitEffect_StickyGrenade(player: player):
 		kitParticle_StickyGrenade_Sticked({_loc})
 		wait a tick
 
-	loop all item displays:
-		metadata value "Sticky Grenade" of loop-item display is {_player}
-		metadata value "Sticky Grenade - Time" of loop-item display is {_now}
-		delete loop-item display
+	{_sticked}.remove()
 	if {_target} is set:
 		kitExplosion({_player}, {@explosion-power}, {_loc})
 
