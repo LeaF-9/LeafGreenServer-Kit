@@ -87,52 +87,62 @@ function setSkriptList(player: player, path: text = "plugins/Skript/scripts", pa
 	set {_FileInst} to new File({_path})
 	set {_file} to {_FileInst}.listFiles()
 
-	# ファイル数の確認・ページ調整
+	# ファイル数の確認
 	set {_length} to getArrayLength({_file})
 
+	# ページ調整
 	set {_loopnum} to 0
 	set {_maxDisplay} to ({_maxslot} - 9)
 	if {_length} > {_maxDisplay}:
-		set {_length} to {_maxDisplay}
-		set {_loopnum} to ({_maxDisplay} * {_page})
+		set {_loopnum} to ({_maxDisplay} * ({_page} - 1))
 		
 		set {_hasPrevPage} to true if {_page} > 1
 		set {_hasNextPage} to true if ({_maxDisplay} * {_page}) < {_length}
 
-	set {_loopnum} to 0
-	set {_looping} to true
-	loop {_maxDisplay} times:
-		{_looping} is true
-		set {_loopfile} to {_file}[{_loopnum}]
-		set {_looping} to false if {_loopfile} is not set
+	# ファイル・ディレクトリ振り分け
+	set {_index} to 0
+	loop ...{_file}:
+		set {_loopfile} to {_file}[{_index}]
 		if {_loopfile}.isDirectory():
 			add {_loopfile} to {_directories::*}
 		else:
 			add {_loopfile} to {_files::*}
-		add 1 to {_loopnum}
 
-	set {_slot} to 0
+		add 1 to {_index}
+	
+	# 表示処理
+	set {_slot} to ({_maxDisplay} * ({_page} - 1)) * (-1)
+	set {_looping} to true
 	loop {_directories::*}:
+		continue if {_looping} is false
 		set {_loopfile} to loop-value
 
 		set {_dirname} to {_loopfile}.getName()
 		{_dirname} does not contain ".git"
-		set slot {_slot} of {_player}'s current inventory to book named "§6%{_dirname}%" with lore "§a左クリック §eでディレクトリを開く", " " and "§8%{_loopfile}%"
+		if {_slot} >= 0:
+			set slot {_slot} of {_player}'s current inventory to book named "§6%{_dirname}%" with lore "§a左クリック §eでディレクトリを開く", " " and "§8%{_loopfile}%"
 		add 1 to {_slot}
+
+		set {_looping} to false if {_slot} >= {_maxDisplay}
+
 	set {_clickpath} to {_path}
 	replace "plugins/Skript/scripts" with "" in {_clickpath}
 	loop {_files::*}:
+		continue if {_looping} is false
 		set {_loopfile} to loop-value
 
 		set {_filename} to {_loopfile}.getName()
 		last 3 characters of {_filename} is ".sk"
 		replace ".sk" with "" in {_filename}
-		if first character of {_filename} is "-":
-			replace first characters of {_filename} with "" in {_filename}
-			set slot {_slot} of {_player}'s current inventory to gray dye named "§8%{_filename}%" with lore "§a右クリック §eで有効化する", " " and "§8%{_clickpath}%"
-		else:
-			set slot {_slot} of {_player}'s current inventory to lime dye named "§a%{_filename}%" with lore "§a左クリック §eで再読み込みする", "§a右クリック §eで無効化する", " " and "§8%{_clickpath}%"
+		if {_slot} >= 0:
+			if first character of {_filename} is "-":
+				replace first character of {_filename} with "" in {_filename}
+				set slot {_slot} of {_player}'s current inventory to gray dye named "§8%{_filename}%" with lore "§a右クリック §eで有効化する", " " and "§8%{_clickpath}%"
+			else:
+				set slot {_slot} of {_player}'s current inventory to lime dye named "§a%{_filename}%" with lore "§a左クリック §eで再読み込みする", "§a右クリック §eで無効化する", " " and "§8%{_clickpath}%"
 		add 1 to {_slot}
+
+		set {_looping} to false if {_slot} >= {_maxDisplay}
 
 	# ページング処理
 	set {_lastSlot} to (9 * {@rownum}) - 1
