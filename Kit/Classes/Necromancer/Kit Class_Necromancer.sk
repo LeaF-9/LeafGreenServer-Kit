@@ -294,13 +294,13 @@ function kitSpawn_Necromancer_Vengeful(player: player, loc: location):
 	set {_head} to getKitItems("Necromancer", "Vengeful Head")
 
 	set {_chestplate} to leather chestplate
-	set {_color} to rgb(204, 208, 209).asBukkitColor()
+	set {_color} to rgb(241, 243, 243).asBukkitColor()
 
 	set {_meta} to {_chestplate}.getItemMeta()
 	{_meta}.setColor({_color})
 	{_chestplate}.setItemMeta({_meta})
 
-	setEntityArmor({_mob}, "helmet", zombie head)
+	setEntityArmor({_mob}, "helmet", {_head})
 	setEntityArmor({_mob}, "chestplate", {_chestplate})
 	setEntityArmor({_mob}, "leggings", air)
 	setEntityArmor({_mob}, "boots", air)
@@ -309,6 +309,8 @@ function kitSpawn_Necromancer_Vengeful(player: player, loc: location):
 
 	applyEffect({_mob}, speed, 1, 12000, true, "none")
 	applyEffect({_mob}, invisibility, 1, 12000, true, "none")
+
+	{_mob}.setSilent(true)
 
 	set max health of {_mob} to 5
 
@@ -323,10 +325,13 @@ on damage with priority HIGHEST:
 	damage cause is not sweep attack
 	set {_hp} to getPersistentData(victim, "necromancer-entity-vengefulspirit")
 	if {_hp} is set:
+		set {_entityloc} to location of victim
 		subtract 1 from {_hp}
 		if {_hp} <= 0:
+			playSound("entity.creaking.death", 1, 1.9, {_entityloc})
 			setDamageModification_FIX(victim, 100)
 		else:
+			playSound("entity.creaking.attack", 1, 1.8, {_entityloc})
 			setDamageModification_FIX(victim, 0.1)
 			setPersistentData(victim, "necromancer-entity-vengefulspirit", {_hp}, "integer")
 	else if getPersistentData({_attacker}, "necromancer-entity-vengefulspirit") is set:
