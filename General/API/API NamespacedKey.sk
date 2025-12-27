@@ -12,12 +12,18 @@ import:
 
 # ItemのPDCを操作する関数郡
 function getNamespacedKey(item: item, key: text, type: text) :: object:
+	replace " " with "_" in {_key}
+	set {_key} to {_key}.toLowerCase()
+
 	set {_ItemMeta} to {_item}.getItemMeta()
 
 	set {_value} to getPersistentData({_ItemMeta}, {_key}, {_type})
 	return {_value}
 
 function setNamespacedKey(item: item, key: text, type: text, value: object) :: item:
+	replace " " with "_" in {_key}
+	set {_key} to {_key}.toLowerCase()
+
 	set {_ItemMeta} to {_item}.getItemMeta()
 	setPersistentData({_ItemMeta}, {_key}, {_value}, {_type})
 
@@ -56,6 +62,9 @@ function removePersistentData(holder: object, key: text):
 
 # leafgreen:{_key} を取得する関数  (ex: minecraft:oak_log)
 local function getKey(key: text) :: object:
+	replace " " with "_" in {_key}
+	set {_key} to {_key}.toLowerCase()
+
 	set {_NK} to new NamespacedKey("leafgreen", {_key})
 	return {_NK}
 
