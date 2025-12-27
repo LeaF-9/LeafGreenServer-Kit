@@ -48,14 +48,15 @@ on damage of player with priority LOW:
 # Worldが落下ダメージ無効化時に地面についたかどうか確認する関数
 local function fallTimer(player: player):
 	set {_tick} to getTicks({@fall-damage-time})
+	wait 3 ticks
 	loop {_tick} times:
 		wait a tick
 		continue if {_player}.isOnGround() is false
 		
-		set {_FallDamage} to getKitStats(victim, "FallDamage")
-		damage {_player} by {_FallDamage} hearts with cause fall
-		deleteKitStats(victim, "FallTiming")
-		deleteKitStats(victim, "FallDamage")
+		set {_FallDamage} to getKitStats({_player}, "FallDamage")
+		damage {_player} by {_FallDamage} hearts
+		deleteKitStats({_player}, "FallTiming")
+		deleteKitStats({_player}, "FallDamage")
 		stop
 
 # WorldのFallDamage状態を確認する関数
