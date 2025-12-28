@@ -11,7 +11,7 @@ function spawnParticle_Block(block: block data, loc: location, players: players 
 	for {_player} in {_players::*}:
 		{_player}.spawnParticle(Particle.BLOCK, {_loc}, 1, 0, 0, 0, 0, {_block}, true)
 
-function spawnParticle_BlockData(particle: particle, block: block data, loc: locations, players: players = all players):
+function spawnParticle_BlockData(particle: particle, block: block data, loc: location, players: players = all players):
 	for {_player} in {_players::*}:
 		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_block}, true)
 
@@ -95,6 +95,11 @@ function spawnParticle_Spell(particle: particle, color: color, power: number, lo
 	set {_spellOption} to particleSpell({_color}, {_power})
 	for {_player} in {_players::*}:
 		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 1, {_spellOption}, true) 
+
+function spawnParticle_SpellDot(particle: particle, color: color, loc: location, players: players = all players):
+	set {_spellOption} to particleSpell({_color}, 1.35)  # 1.3-1.4
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_spellOption}, true) 
 
 function spawnParticle_Trail(color: color, target: location, duration: time span, loc: location, players: players = all players):
 	set {_trailOption} to trail({_target}, {_color}, {_duration})
