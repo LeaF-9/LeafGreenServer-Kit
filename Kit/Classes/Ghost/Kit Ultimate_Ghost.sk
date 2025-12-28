@@ -18,7 +18,12 @@ function kitUltGhost(player: player):
 
 function kitParticle_HellishOccultism_Form(player: player):
 	loop 200 times:
-		spawnParticle_Color(entity_effect, rgb(50, 0, 50), {_player})
+		set {_baseloc} to location 1 meter above {_player}
+		set {_count} to a random integer between 1 and 3
+		loop {_count} times:
+			set {_el} to moveRandomLocation({_baseloc}, 1)
+			set {_power} to a random number between 1 and 2
+			spawnParticle_Spell(instant_effect, rgb(0, 0, 0), {_power}, {_el})
 		wait a tick
 
 on leftclick:
@@ -28,12 +33,9 @@ on leftclick:
 	setCT(player, "Ghost Ult", 1)
 	set {_p} to location 1 meter above player
 	set {_shootFalling} to spawnFallingBlock({_p}, coal block)
-	set {_velocity} to setVector({_p}, (location 10 meters in front of {_p}), 1)
+	set {_velocity} to setVector({_p}, (location 10 meters in front of {_p}), 1.5)
 	set velocity of {_shootFalling} to {_velocity}
 
-	set {_now} to now
-	set metadata value "kit-ghostult" of {_shootFalling} to "%player%"
-	set metadata value "kit-ghostulttime" of {_shootFalling} to "%{_now}%"
 	kitParticle_HellishOccultism_Attack({_shootFalling})
 	playSound("entity.wither.shoot", 1, 0.5, player)
 
@@ -43,17 +45,17 @@ on leftclick:
 		continue if {_shootFalling}.isDead() is true
 
 		set {_fallLoc} to location of {_shootFalling}
-		loop all players in radius 2 around {_fallLoc}:
-			{_true} is not set
-			kitCheckTeam(player, loop-player, false) is true
+		loop all entities in radius 2 around {_fallLoc}:
+			{_true} is false
+			kitCheckTeam(player, loop-entity, false, true) is true
 			set {_true} to true
-			make a fake explosion at {_fallLoc}
+			particleExplosion({_fallLoc})
 
 		loop all blocks in radius 2 around {_fallLoc}:
-			{_true} is not set
+			{_true} is false
 			loop-block is not passable
 			set {_true} to true
-			make a fake explosion at {_fallLoc}
+			particleExplosion({_fallLoc})
 		wait a tick
 
 	{_shootFalling}.remove()
@@ -64,19 +66,29 @@ on leftclick:
 		kitCheckTeam(player, loop-entity, false, true) is true
 		kitDamage(player, loop-entity, 2, "黒弾")
 		apply wither 3 to loop-entity for 3 seconds
-		playSound("entity.wither.spawn", 0.75, 0.5, loop-entity)
+		playSound("entity.wither.spawn", 1, 0.5, loop-entity)
 
-	set {_s} to 0
-	set {_t} to 0
-	set {_pl} to {_l}
+	set {_pl} to {_fallLoc}
 
-	loop 30 times:
+	loop 150 times:
 		set {_vec} to randomVector(5)
 		set {_el} to {_pl} ~ {_vec}
-		spawnParticle_Dust(rgb(0, 0, 0), 2, {_vector})
+		spawnParticle_Dust(rgb(0, 0, 0), 2, {_el})
 
 
-function kitParticle_HellishOccultism_Attack(entity: entity):
-	loop 60 times:
-		spawnParticle_Color(entity_effect, rgb(0, 0, 0), {_entity})
+local function kitParticle_HellishOccultism_Attack(entity: entity):
+	loop 100 times:
+		stop if {_entity}.isDead() is true
+		set {_baseloc} to location 0.5 meters above {_entity}
+		set {_count} to a random integer between 1 and 5
+		loop {_count} times:
+			set {_el} to moveRandomLocation({_baseloc}, 0.6)
+			set {_power} to a random number between 1.5 and 3
+			spawnParticle_Spell(effect, rgb(0, 0, 0), {_power}, {_el})
 		wait a tick
+
+local function particleExplosion(loc: location):
+	playSound("entity.wither.hurt", 3, 1.3, {_loc})
+
+	loop 50 times:
+		spawnParticle_Vector(smoke, randomVector(), 0.75, {_loc})
