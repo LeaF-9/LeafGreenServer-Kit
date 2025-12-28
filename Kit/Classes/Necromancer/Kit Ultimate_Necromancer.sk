@@ -4,12 +4,17 @@ import:
 	org.bukkit.attribute.Attribute
 
 function kitUltNecromancer(player: player):
+	set {_playerUUID} to "%uuid of {_player}%"
 	loop all entities:
-		metadata value "necromancer-entity" of loop-entity is {_player}
-		metadata value "necromancer-entity-undead" of loop-entity is set
+		set {_uuid} to getPersistentData(loop-entity, "necromancer-entity")
+		continue if {_uuid} is not {_playerUUID}
+		set {_undead} to getPersistentData(loop-entity, "necromancer-entity-undead")
+		continue if {_undead} is not set
+
 		spawnParticle(witch, location of loop-entity)
-		delete loop-entity
+		loop-entity.remove()
 		kitAddNecromance({_player}, 1)
+
 	loop all blocks in radius 10 around {_player}:
 		loop-block is passable
 		block below loop-block is not passable
@@ -17,17 +22,19 @@ function kitUltNecromancer(player: player):
 	loop 10 times:
 		set {_loc} to a random location out of {_locs::*}
 		remove {_loc} from {_locs::*}
-		kitSpawn_Necromancer_Reaper({_player}, {_loc})
-	wait 10 seconds
-	loop all skeletons:
-		metadata value "necromancer-entity" of loop-skeleton is {_player}
-		metadata value "necromancer-entity-reaper" of loop-skeleton is true
-		delete loop-skeleton
+		set {_reaper} to kitSpawn_Necromancer_Reaper({_player}, {_loc})
+		add {_reaper} to {_reapers::*}
 
-function kitSpawn_Necromancer_Reaper(player: player, loc: location):
+	wait 10 seconds
+	loop {_reapers::*}:
+		set {_skeleton} to loop-value
+		{_skeleton}.remove()
+
+local function kitSpawn_Necromancer_Reaper(player: player, loc: location) :: entity:
 	set {_mob} to kitSpawnMob({_player}, skeleton, {_loc})
-	set metadata value "necromancer-entity" of {_mob} to {_player}
-	set metadata value "necromancer-entity-reaper" of {_mob} to true
+	set {_uuidString} to "%uuid of {_player}%"
+	setPersistentData({_mob}, "necromancer-entity", {_uuidString})
+	setPersistentData({_mob}, "necromancer-entity-reaper", true)
 
 	{_mob}.setPersistent(true)
 	{_mob}.setSilent(true)
@@ -61,13 +68,27 @@ function kitSpawn_Necromancer_Reaper(player: player, loc: location):
 	applyEffect({_mob}, invisibility, 1, 200, true, "none")
 	applyEffect({_mob}, slow falling, 1, 200, true, "none")
 
-	loop 200 times:
-		{_mob} is alive
-		spawnParticle(witch, location of {_mob})
-		wait a tick
+	particleAlive({_mob})
+	return {_mob}
 
 on damage of player:
 	set {_attacker} to getAttacker(victim)
-	metadata value "necromancer-entity-reaper" of {_attacker} is true
-	set {_player} to metadata value "necromancer-entity" of {_attacker}
+	stop if {_attacker} is not set
+	set {_isReaper} to getPersistentData({_attacker}, "necromancer-entity-reaper")
+	stop if {_isReaper} is not set
+
+	set {_playerUUID} to getPersistentData({_attacker}, "necromancer-entity")
+	set {_player} to getPlayer({_playerUUID})
 	kitAddNecromance({_player}, 1)
+
+
+
+local function particleAlive(entity: entity):
+	set {_count} to 200
+	loop {_count} times:
+		stop if {_entity}.isDead() is true
+
+		set {_baseloc} to location 1 meter above {_entity}
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle(witch, {_el})
+		wait a tick

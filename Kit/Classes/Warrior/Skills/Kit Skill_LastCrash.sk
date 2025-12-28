@@ -32,6 +32,11 @@ function kitEffect_LastCrash(player: player):
 			spawnParticle(end_rod, {_eloc})
 		wait a tick
 	playSound("entity.wither.spawn", 1, 0.5, {_player})
+
+	if getKitStats({_player}, "Last Crash") is not true:
+		kitMsg({_player}, "§8§o発動が中断されました...")
+		stop
+
 	kill {_player}
 	subtract 1 from y-coordinate of {_baseloc}
 	loop all entities in radius 10 around {_baseloc}:

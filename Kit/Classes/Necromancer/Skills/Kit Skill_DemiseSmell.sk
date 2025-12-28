@@ -152,6 +152,7 @@ local function kitWraithTimer(player: player, wraith: entity):
 		# --------------
 		wait a second
 	{_wraith}.remove()
+	set {_uuid} to "%uuid of {_player}%"
 	loop all entities:
 		set {_uuidString} to getPersistentData(loop-entity, "necromancer-entity")
 		continue if {_uuidString} is not {_uuid}
@@ -718,6 +719,12 @@ local function kitWraith_Beam_Particle_2(baseloc: location):
 		spawnParticle(witch, {_el})
 
 on damage of skeleton:
+	if any:
+		damage cause is void
+		damage cause is kill
+	then:
+		stop
+
 	set {_attacker} to getAttacker(victim)
 	set {_isWraith} to getPersistentData(victim, "necromancer-entity-wraith")
 	stop if {_isWraith} is not true

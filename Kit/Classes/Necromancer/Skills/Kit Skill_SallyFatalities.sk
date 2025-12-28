@@ -39,18 +39,15 @@ function kitEffect_SallyFatalities(player: player):
 		# 馬のPDC設定
 		set {_entityUUID} to (uuid of loop-entity).toString()  # UndeadのUUIDを保存
 		setPersistentData({_undeadHorse}, "sally-fatalities", {_entityUUID})  # UndeadのUUIDを格納
-		setPersistentData({_undeadHorse}, "sally-fatalities-id", {_randomUUID})  # 召喚時間を特定するUUIDを格納
+		add {_undeadHorse} to {_horses::*}
+
 		make loop-entity ride {_undeadHorse}
 		set loop-entity's tool to a stone sword
 	wait 10 seconds
-	loop all entities:
-		set {_summoner} to getSummonPlayer(loop-entity)
-		continue if {_summoner} is not {_player}
-		set {_checkData} to getPersistentData(loop-entity, "sally-fatalities")
-		continue if {_checkData} is not {_randomUUID}
-
-		kitParticle_SallyFatalities_Death(loop-entity)
-		delete loop-entity
+	loop {_horses::*}:
+		set {_loopHorse} to loop-value
+		kitParticle_SallyFatalities_Death({_loopHorse})
+		{_loopHorse}.remove()
 
 on death:
 	# NecromancerのUndeadであることを確認

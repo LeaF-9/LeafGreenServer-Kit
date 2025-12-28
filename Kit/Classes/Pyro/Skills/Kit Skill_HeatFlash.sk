@@ -64,19 +64,13 @@ local function kitParticle_HeatFlash_Bullet(loc: location, num: number):
 	spawnParticle_DustTransition(rgb(255, 247 ,153), rgb(255, 255, 255), 0.5, {_loc})
 
 	set {_radius} to 0.5
+	set {_baseVector} to getVectorFromRollAxis({_loc})
+	set {_rotateVector} to getVectorFromYawAxis({_loc}, {_radius})
+
 	set {_rad} to 30 * {_num}
-	set {_el} to {_loc}
-	set {_m1} to {_el}
-	set pitch of {_m1} to pitch of {_m1} - 90
-	set {_test1} to {_radius} * cos({_rad})
-	set {_t1} to location {_test1} meters in front of {_m1}
-	set {_m2} to {_el}
-	set pitch of {_m2} to 0
-	set {_test2} to {_radius} * sin({_rad})
-	set {_t2} to location {_test2} meters to the right of {_m2}
-	set x-pos of {_el} to x-pos of {_t1} + x-pos of {_t2} - x-pos of {_el}
-	set y-pos of {_el} to y-pos of {_t1} + y-pos of {_t2} - y-pos of {_el}
-	set z-pos of {_el} to z-pos of {_t1} + z-pos of {_t2} - z-pos of {_el}
+	rotate {_rotateVector} around {_baseVector} by {_rad}
+	set {_el} to {_loc} ~ {_rotateVector}
+
 	spawnParticle(electric_spark, {_el})
 
 local function kitParticle_HeatFlash_Blast(loc: location):
@@ -107,7 +101,8 @@ local function kitParticle_HeatFlash_Ignite(entity: entity):
 
 local function kitParticle_HeatFlash_Flash(loc: location):
 	# 発光
-	spawnParticle(flash, {_loc})
+	set {_color} to rgb(240, 226, 151)
+	spawnParticle_Color(flash, {_color}, {_loc})
 
 	set {_now} to now
 	set {_el} to {_loc}
@@ -122,11 +117,10 @@ local function kitParticle_HeatFlash_Flash(loc: location):
 	{_flashEntity}.setAI(false)
 	{_flashEntity}.setSilent(true)
 	{_flashEntity}.setGlowing(true)
-	{_flashEntity}.setDropItem(false)
+	{_flashEntity}.setLootTable(null)
 	{_flashEntity}.setInvisible(true)
 
 	set metadata value "Heat Flash - Glowing" of {_flashEntity} to {_now}
-
 
 	# フラッシュ
 	loop 100 times:

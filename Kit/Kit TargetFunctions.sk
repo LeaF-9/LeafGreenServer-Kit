@@ -89,14 +89,14 @@ local function kitTargetAround(player: player, distance: number, isTeam: boolean
 	set {_baseloc} to location 1 meter above {_player}
 	set {_rad} to 0
 	set {_rotatevec} to vector({_distance}, 0, 0)
-	set {_loopnum} to 100
+	set {_loopnum} to 300
 	set {_addrad} to 360 / {_loopnum}
 
 	loop {_loopnum} times:
 		set {_vec} to {_rotatevec}
 		rotate {_vec} around y-axis by {_rad}
 		set {_el} to {_baseloc} ~ {_vec}
-		spawnParticle_Dust({_dustColor}, 0.7, {_el}, {_player})
+		spawnParticle_Trail({_dustColor}, {_el}, 1 tick, {_el}, {_player})
 		add {_addrad} to {_rad}
 
 local function kitTargetReset(player: player):
@@ -149,6 +149,12 @@ function kitTargetTimer(player: player):
 
 	while {Class::%{_player}%} is {_class}:
 		set {_tool} to {_player}'s tool
+		set {_name} to name of {_tool}
+		if checkCT({_player}, {_name}, true) is false:
+			kitTargetReset({_player})
+			wait a tick
+			continue
+
 		set {_itemkey} to getNamespacedKey({_tool}, "item-key", "string")
 		if {_loadouts::%{_itemkey}%} is not set:
 			kitTargetReset({_player})
