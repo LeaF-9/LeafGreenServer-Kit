@@ -1,5 +1,9 @@
 # Dowsing Machine
 
+options:
+	dowsing-cooltime: 60
+	dowsing-display: "dowsingmachine-display"
+
 function kitEffect_DowsingMachine(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
 	if {_loc} is not set:
@@ -16,10 +20,10 @@ function kitEffect_DowsingMachine(player: player):
 
 	set {_rotation} to getQuaternionf(0, 0, 0, 1)
 	set {_translation} to getVector3f(-0.5, 0, -0.5)
-	set {_scale} to getVector3f(1, 1, 1)
+	set {_scale} to getVector3f(0.7, 0.7, 0.7)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(sea lantern)
-	set {_coredisply} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Dowsing Machine")
+	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Dowsing Machine")
 	
 	set {_block} to getBlockData(cobblestone wall)
 	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Dowsing Machine")
@@ -28,30 +32,28 @@ function kitEffect_DowsingMachine(player: player):
 
 	# coreを回転させる関数
 	kitEffect_DowsingMachine_Core({_player}, {_coredisplay})
+	set {_cooltime} to 0
 	while getKitStats({_player}, "DowsingMachine-Time") is {_now}:
-		wait a second
+		wait a tick
+		if {_cooltime} is not 0:
+			subtract 1 from {_cooltime}
+			continue
+
 		loop all players in radius 20 around {_loc.core}:
+			continue if {_cooltime} > 0
 			kitCheckTeam({_player}, loop-player, false) is true
 			loop-player does not have potion glowing
-			if {_nofuel} is not set:
-				if checkFuel({_player}, 5) is false:
-					continue
+			continue if checkFuel({_player}, 5) is false
+
+			set {_cooltime} to {@dowsing-cooltime}
+			setPersistentData({_coredisplay}, {@dowsing-display}, true)
 			kitDamage({_player}, loop-player, 2, "索敵装置")
 			apply glowing 1 to loop-player for 10 seconds
 			kitEffectDescription(loop-player, "§4❤2 §8& §e§l発光")
 			sendTimeBossbar_RED(loop-player, "§e発光", 200)
-			playSound("block.conduit.attack.target", 1, 1, loop-player)
-			set {_elbase} to {_loc.core}
-			add 0.5 to y-coordinate of {_elbase}
-			set {_vector} to setVector({_elbase}, location of head of loop-player)
-			set yaw of {_elbase} to yaw of {_vector}
-			set pitch of {_elbase} to pitch of {_vector}
-			set {_dis} to distance between {_elbase} and loop-player * 0.1
-			set {_ln} to 0
-			loop 10 times:
-				add 1 to {_ln}
-				set {_el} to location {_dis} * {_ln} meters in front of {_elbase}
-				kitParticle_DowsingMachine_Beam({_el})
+			soundGlowing(loop-player)
+			particleGlowing(loop-player, {_loc.core})
+
 		set {_exist} to kitFakeCheck({_player}, "Machine-Dowsing Machine")
 		if {_exist} is false:
 			deleteKitStats({_player}, "DowsingMachine-Time")
@@ -62,14 +64,23 @@ local function kitEffect_DowsingMachine_Core(player: player, display: entity):
 	set {_rotate.yaw} to 40
 	set {_add.yaw} to {_rotate.yaw} / 20
 
+	set {_scale.max} to 1.1
+	set {_scale.min} to 0.7
+	set {_scale.now} to {_scale.min}
+	set {_scale.changeTime} to 40
+	set {_scale.step} to ({_scale.max} - {_scale.min}) / {_scale.changeTime}
+	set {_scaling} to false
+
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(-0.5, 0, -0.5)
+
 	set {_ln} to 0
 	while getKitStats({_player}, "DowsingMachine-Time") is {_now}:
 		delete {_exist}
 		loop all block displays:
 			loop-block display is {_display}
 			set {_exist} to true
-		if {_exist} is not set:
-			stop
+		stop if {_display}.isDead() is true
 
 		set {_baseloc} to location of {_display}
 		set {_tploc} to {_baseloc}
@@ -77,11 +88,44 @@ local function kitEffect_DowsingMachine_Core(player: player, display: entity):
 		set yaw of {_tploc} to {_yaw}
 		teleport {_display} to {_tploc}
 
+		# change size
+		if getPersistentData({_display}, {@dowsing-display}) is true:
+			deletePersistentData({_display}, {@dowsing-display})
+			set {_scale.now} to {_scale.max}
+			set {_scaling} to true
+		
+		if {_scaling}:
+			set {_scale} to getVector3f({_scale.now}, {_scale.now}, {_scale.now})
+			setTransformation({_display}, {_rotation}, {_rotation}, {_translation}, {_scale})
+			if {_scale.now} = {_scale.min}:
+				set {_scaling} to false
+			else:
+				subtract {_scale.step} from {_scale.now}
+
 		wait a tick
 
 
 
-local function kitParticle_DowsingMachine_Beam(loc: location):
+local function particleGlowing(player: player, core: location):
+	set {_elbase} to {_core}
+	add 0.5 to y-coordinate of {_elbase}
+	set {_toloc} to location 1 meter above {_player}
+	set {_vector} to setVector({_elbase}, {_toloc}, 0)
+
+	set {_dis} to distance between {_elbase} and {_toloc}
+	set {_mulBase} to {_dis} * 0.1
+	set {_ln} to 0
+	loop 10 times:
+		add 1 to {_ln}
+		set {_mul} to {_mulBase} * {_ln}
+		set {_vec} to {_vector} * vector({_mul}, {_mul}, {_mul})
+		set {_el} to {_elbase} ~ {_vec}
+		particleBeam({_el})
+
+local function particleBeam(loc: location):
 	loop 20 times:
 		spawnParticle(enchanted_hit, {_loc})
 		wait a tick
+
+local function soundGlowing(player: player):
+	playSound("block.conduit.attack.target", 1, 1, {_player})
