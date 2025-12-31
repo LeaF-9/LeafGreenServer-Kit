@@ -1,30 +1,24 @@
 # Weapon-Name: Venom Rosalie
+options:
+	ivy-tick: 10
+	ivy-damage: 2
+	ivy-stats: "VenomRosalie-Ivy"
 
-# スニーク時のパーティクル表記
-function kitEffect_VenomRosalie_Sneak(player: player, event: object):
-	wait a tick
-	set {_true} to true
-	set {_count} to 0
-	while {_true} is true:
-		set {_tool} to {_player}'s tool
-		if {_player} is not sneaking:
-			set {_true} to false
-			continue
-		if kitItemAllChecker({_tool}, "Thief", "Weapon", 3) is false:
-			set {_true} to false
-			continue
-		add 1 to {_count}
-		kitParticle_VenomRosalie_Ivy({_player}, {_count})
-		wait a tick
+	rose-damage: 2
 
-function kitEffect_VenomRosalie_DamageNormal(player: player, event: object):
-	set {_victim} to {_player}
+on damage of player with priority LOW:
+	set {_victim} to victim
+	stop if getKitStats({_victim}, {@ivy-stats}) is not set
 	set {_attacker} to getAttacker({_victim})
-	{_attacker} is set
-	{_victim} is sneaking
-	set {_c} to kitPercentDuel({_victim}, {_attacker}, 30)
-	chance of {_c}%:
-		kitBlood({_attacker})
+	stop if {_attacker} is not set
+
+	kitDamage({_victim}, {_attacker}, {@ivy-damage}, "防蔦の棘")
+	kitBlood({_attacker})
+
+function kitEffect_VenomRosalie(player: player):
+	{_player} is sneaking
+	nameItemCT({_player}, "Venom Rosalie")
+	effectIvy({_player})
 
 function kitEffect_VenomRosalie_LeftClick(player: player, event: object):
 	{_player} is sneaking
@@ -42,37 +36,22 @@ local function kitEffect_VenomRosalie_Launch(player: player):
 	set {_baseeff} to location 1 meter in front of {_baserose}
 	loop all entities in radius 3 around {_baseeff}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
-		kitDamage({_player}, loop-entity, 3, "薔薇")
+		kitDamage({_player}, loop-entity, {@rose-damage}, "薔薇")
 		if "%type of loop-entity%" is "player":
 			getDebuffs(loop-entity, "Blood") is true
 			applyEffect(loop-entity, poison, 3, 100)
 
-# 何tickかで下から上に螺旋状のトゲ付き蔦が伸びてくる演出
-local function kitParticle_VenomRosalie_Ivy(player: player, count: number):
-	playSound("block.wet_grass.step", 0.75, 2, {_player})
-	if mod({_count}, 20) is not 0:
-		stop
-	set {_baseloc} to location of {_player}
-	loop 10 times:
-		add 0.2 to {_y}
-		loop 4 times:
-			# 蔦
-			set {_baserad} to 90 * loop-number-2
-			set {_rad} to {_baserad} + 10 * loop-number-1
-			set {_el} to {_baseloc}
-			add 0.5 * sin({_rad}) to x-pos of {_el}
-			add 0.5 * cos({_rad}) to z-pos of {_el}
-			add {_y} to y-pos of {_el}
-			spawnParticle(composter, {_el})
-			# 刺
-			if mod(loop-number-1, 2) is 0:
-				set {_basey} to location {_y} meters above {_baseloc}
-				set {_v} to setVector({_basey}, {_el})
-				set {_baseivy} to setDirToVec({_el}, {_v})
-				loop 3 times:
-					set {_il} to location 0.1 * loop-number-3 meters in front of {_baseivy}
-					spawnParticle_Dust(rgb(0, 123, 67), 0.35, {_il})
+local function effectIvy(player: player):
+	soundIvy({_player})
+	particleIvy({_player})
+	set {_launchUUID} to a random uuid
+	setKitStats({_player}, {@ivy-stats}, {_launchUUID})
+	loop {@ivy-tick} times:
 		wait a tick
+	stop if getKitStats({_player}, {@ivy-stats}) is not {_launchUUID}
+	deleteKitStats({_player}, {@ivy-stats})
+
+
 
 local function kitParticle_VenomRosalie_Stem(baseloc: location):
 	playSound("block.grass.step", 1, 1.25, {_baseloc})
@@ -115,3 +94,55 @@ local function kitParticle_VenomRosalie_Rose(baseloc: location):
 		add (a random number between -3 and 3) to y-pos of {_el}
 		add (a random number between -3 and 3) to z-pos of {_el}
 		spawnParticle(cherry_leaves, {_el})
+
+local function particleIvy(player: player):
+	add rgb(32, 92, 41) to {_colors::*}
+	add rgb(42, 127, 79) to {_colors::*}
+	add rgb(78, 128, 74) to {_colors::*}
+
+	# 葉
+	set {_baseloc} to location 1 meter above {_player}
+	set {_countLeaves} to 20
+	loop {_countLeaves} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1.5)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(tinted_leaves, {_color}, {_el})
+
+	set {_height} to 10
+	set {_addy} to 2 / {_height}
+	set {_circle} to 4
+	set {_addrad} to 360 / {_circle}
+	set {_plusrad} to 10
+
+	loop {@ivy-tick} times:
+		set {_baseloc} to location of {_player}
+		set {_y} to 0
+		set {_rad} to 0
+		loop {_height} times:
+			add {_addy} to {_y}
+			set {_rotateVector} to vector(0.5, {_y}, 0)
+			loop {_circle} times:
+				# 蔦
+				set {_vec} to {_rotateVector}
+				rotate {_vec} around y-axis by {_rad}
+				set {_el} tp {_baseloc} ~ {_vec}
+				set {_color} to a random element out of {_colors::*}
+				spawnParticle_Dust({_color}, 0.65, {_el})
+
+				# 刺
+				if mod(loop-number-2, 2) is 0:
+					set {_ivyMeter} to 0.5
+					loop 3 times:
+						add 0.1 to {_ivyMeter}
+						set {_ivyVector} to vector({_ivyMeter}, {_y}, 0)
+						rotate {_ivyVector} around y-axis by {_rad}
+						set {_il} to {_baseloc} ~ {_ivyVector}
+						set {_color} to a random element out of {_colors::*}
+						spawnParticle_Dust({_color}, 0.5, {_il})
+				
+				add {_addrad} to {_rad}
+			add {_plusrad} to {_rad}
+		wait a tick
+
+local function soundIvy(player: player):
+	playSound("block.sweet_berry_bush.break", 1, 0.85, {_player})
