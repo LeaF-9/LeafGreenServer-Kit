@@ -14,6 +14,20 @@ on damage with priority LOW:
 
 
 
+function kitEffect_CycloneBow(player: player):
+	set {_drawing} to true
+	while {_drawing} is true:
+		wait a tick
+
+		set {_drawTime} to getBowDrawTime({_player})
+		stop if {_drawTime} is not set
+		continue if {_drawTime} < 24
+
+		particleComplete({_player})
+		soundComplete({_player})
+		set {_drawing} to false
+		stop
+
 function kitEffect_CycloneBow_Shoot(player: player, event: object):
 	metadata value "gametype" of {_player} is "Kit"
 	{Class::%{_player}%} is "Knocker"
@@ -117,3 +131,14 @@ local function kitParticle_CycloneBow_Cyclone(player: player, proj: projectile):
 local function kitParticle_CycloneBow_BlastHit(player: player):
 	playSound("entity.dragon_fireball.explode", 1, 2, {_player})
 	spawnParticle(explosion_emitter, {_player})
+
+local function particleComplete(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_count} to 20
+	loop 20 times:
+		set {_power} to a random number between 0.5 and 1.5
+		set {_v} to randomVector({_power})
+		spawnParticle_Vector(cloud, {_v}, 0.75, {_baseloc}, {_player})
+
+local function soundComplete(player: player):
+	playSound("ui.button.click", 1, 0.65, {_player}, true)
