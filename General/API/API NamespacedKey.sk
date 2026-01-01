@@ -62,8 +62,13 @@ function removePersistentData(holder: object, key: text):
 
 # leafgreen:{_key} を取得する関数  (ex: minecraft:oak_log)
 local function getKey(key: text) :: object:
-	replace " " with "_" in {_key}
-	set {_key} to {_key}.toLowerCase()
+	set {_basekey} to {_key}
+	if {_basekey}.contains(" "):
+		debugMsg("§9NamespacedKey§cに§6§l空白§cが含まれています§7: §e%{_basekey}%")
+		replace " " with "_" in {_key}
+	if {_basekey} is not {_basekey}.toLowerCase():
+		debugMsg("§9NamespacedKey§cに§6§l大文字§cが含まれています§7: §e%{_basekey}%")
+		set {_key} to {_key}.toLowerCase()
 
 	set {_NK} to new NamespacedKey("leafgreen", {_key})
 	return {_NK}
