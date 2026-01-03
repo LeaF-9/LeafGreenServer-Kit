@@ -61,8 +61,10 @@ on death:
 				kitAddNecromance(victim, 1)
 				kitSpawn_Necromancer_Ghost(victim, location of victim, true)
 		loop all players:
-			getKitStats(loop-player, "DeathDetector") is true
-			kitEffect_DeathDetector_Summon(loop-player)
+			delete {_ddloc}
+			set {_ddloc} to getKitStats(loop-player, "DeathDetector")
+			continue if {_ddloc} is not set
+			kitEffect_DeathDetector_Summon(loop-player, {_ddloc})
 
 on rightclick:
 	{Class::%player%} is "Necromancer"

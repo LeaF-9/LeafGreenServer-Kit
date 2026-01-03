@@ -10,10 +10,10 @@ function kitEffect_DeathDetector(player: player):
 
 	nameCT({_player}, "Death Detector")
 	set {_now} to now
-	setKitStats({_player}, "DeathDetector", true)
+	setKitStats({_player}, "DeathDetector", {_SkillLocation})
 	setKitStats({_player}, "DeathDetector-Time", {_now})
 
-	kitFakeDeleteData({_player}, "Death Detector")
+	kitFakeDeleteData({_player}, {@machine-key})
 	set {_baseloc} to {_SkillLocation}
 
 	set {_rotation} to getQuaternionf(0, 0, 0, 1)
@@ -55,47 +55,44 @@ function kitEffect_DeathDetector(player: player):
 	if getKitStats({_player}, "DeathDetector-Time") is not set:
 		deleteKitStats({_player}, "DeathDetector")
 
-function kitEffect_DeathDetector_Summon(player: player):  # 死んだ際に発動する関数
-	loop all entities:
-		metadata value "kit-block" of loop-entity is {@machine-key}
-		metadata value {@machine-key} of loop-entity is "%{_player}%"
-		set {_loc} to location of loop-entity
-	if {_loc} is set:
-		playSound("entity.wither_skeleton.death", 1, 1, {_loc})
-		loop 5 times:
-			set {_effloc} to {_loc}
-			set {_add.x} to a random number between -1.5 and 1.5
-			set {_add.z} to a random number between -1.5 and 1.5
-			set {_add.y} to a random number between 0.5 and 2.5
-			add {_add.x} to x-pos of {_effloc}
-			add {_add.z} to z-pos of {_effloc}
-			add {_add.y} to y-pos of {_effloc}
-			spawnParticle(witch, {_effloc})
-		loop all blocks in radius 3 around {_loc}:
-			loop-block is air
-			block below loop-block is not passable
-			add location of loop-block to {_locs::*}
-		set {_num} to a random integer between 0 and 2
-		if {_num} is 0:
-			stop
-		kitEffectDescription({_player}, "§f呼骨")
-		loop {_num} times:
-			delete {_vengeful}
-			set {_c} to kitPercent({_player}, 10)
-			chance of {_c}%:
-				set {_vengeful} to true
-			set {_sumloc} to a random location out of {_locs::*}
-			if {_vengeful} is true:
-				kitSpawn_Necromancer_Vengeful({_player}, {_sumloc})
-			else:
-				set {_skeleton} to kitSpawn_Necromancer_Skeleton({_player}, {_sumloc})
-				set max health of {_skeleton} to 1
-		kitEffect_DeathDetector_Glowing({_player})
+function kitEffect_DeathDetector_Summon(player: player, loc: location):  # 死んだ際に発動する関数
+	stop if kitFakeCheck({_player}, {@machine-key}) is false
+
+	playSound("entity.wither_skeleton.death", 1, 1, {_loc})
+	loop 5 times:
+		set {_effloc} to {_loc}
+		set {_add.x} to a random number between -1.5 and 1.5
+		set {_add.z} to a random number between -1.5 and 1.5
+		set {_add.y} to a random number between 0.5 and 2.5
+		add {_add.x} to x-pos of {_effloc}
+		add {_add.z} to z-pos of {_effloc}
+		add {_add.y} to y-pos of {_effloc}
+		spawnParticle(witch, {_effloc})
+	loop all blocks in radius 3 around {_loc}:
+		loop-block is air
+		block below loop-block is not passable
+		add location of loop-block to {_locs::*}
+	set {_num} to a random integer between 0 and 2
+	if {_num} is 0:
+		stop
+	kitEffectDescription({_player}, "§f呼骨")
+	loop {_num} times:
+		delete {_vengeful}
+		set {_c} to kitPercent({_player}, 10)
+		chance of {_c}%:
+			set {_vengeful} to true
+		set {_sumloc} to a random location out of {_locs::*}
+		if {_vengeful} is true:
+			kitSpawn_Necromancer_Vengeful({_player}, {_sumloc})
+		else:
+			set {_skeleton} to kitSpawn_Necromancer_Skeleton({_player}, {_sumloc})
+			set max health of {_skeleton} to 1
+	kitEffect_DeathDetector_Glowing({_player})
 
 local function kitEffect_DeathDetector_Glowing(player: player):
 	loop all entities:
-		metadata value "kit-item" of loop-entity is {@machine-key}
-		metadata value {@machine-key} of loop-entity is "%{_player}%"
+		getPersistentData(loop-entity, "kit-item") is {@machine-key}
+		getPersistentData(loop-entity, {@machine-key}) is "%{_player}%"
 		set {_glowEntity} to loop-entity
 	
 	{_glowEntity} is set
