@@ -7,7 +7,8 @@ options:
 	poison-tier: 1
 	poison-tick: 60
 	search-radius: 30
-	metadata-arrow: "GuardianTurret-Arrow"
+	metadata-arrow: "guardianturret-arrow"
+	machine-key: "guardian-turret"
 
 on damage:
 	damage was caused by projectile
@@ -32,7 +33,7 @@ function kitEffect_GuardianTurret(player: player):
 	setKitStats({_player}, "GuardianTurret-Time", {_now})
 	set {_loc.target} to {_SkillLocation}
 
-	kitFakeDeleteData({_player}, "Guardian Turret")
+	kitFakeDeleteData({_player}, {@machine-key})
 
 	set {_loc.mark} to {_loc.target}
 	add 1.65 to y-coordinate of {_loc.mark}
@@ -42,18 +43,18 @@ function kitEffect_GuardianTurret(player: player):
 	set {_scale} to getVector3f(1, 1, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(skeleton skull)
-	set {_marker} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation}, "Guardian Turret")
+	set {_marker} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation}, {@machine-key})
 
 	set {_loc.base} to {_loc.target}
 	set {_translation} to getVector3f(-0.45, 0, -0.45)
 	set {_scale} to getVector3f(0.9, 0.9, 0.9)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(spruce fence)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Guardian Turret")
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, {@machine-key})
 
 	add 1 to y-pos of {_loc.base}
 	set {_block} to getBlockData(jungle leaves)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Guardian Turret")
+	set {_leavesMarker} to kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, {@machine-key})
 
 	kitMsg({_player}, "<##146074>タレットを設置しました...")
 	playSound("block.anvil.use", 5, 0.5, {_loc.target})
@@ -78,10 +79,11 @@ function kitEffect_GuardianTurret(player: player):
 		# stop shooting
 		else if {_shotCount} >= {@arrow-amount}:
 			# head moving
-			set {_headloc} to {_loc.mark}
-			set yaw of {_headloc} to yaw of {_vector}
-			set pitch of {_headloc} to 45
-			teleport {_marker} to {_headloc}
+			set {_offHead} to getBlockData(wither skeleton skull)
+			setDisplayBlock({_marker}, {_offHead})
+
+			set {_leavesBlock} to getBlockData(pale oak leaves)
+			setDisplayBlock({_leavesMarker}, {_leavesBlock})
 
 			deleteKitStats({_player}, "GuardianTurret-Time")
 			continue
@@ -120,7 +122,7 @@ function kitEffect_GuardianTurret(player: player):
 			set yaw of {_marker} to yaw of {_vector}
 			set pitch of {_marker} to pitch of {_vector}
 
-		set {_exist} to kitFakeCheck({_player}, "Guardian Turret")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "GuardianTurret-Time")
 
