@@ -8,13 +8,20 @@ function kitEffect_BoltKnife_AttackLow(player: player, event: object):
 	kitParticle_BoltKnife({_attacker}, {_victim})
 
 local function kitEffect_BoltKnife(player: player) :: boolean:
-	set {_bool} to false
 	loop all entities in radius 5 around {_player}:
-		type of loop-entity is armor stand
-		set {_meta} to metadata value "kit-armor" of loop-entity
-		{_meta} contains "Machine-"
-		set {_bool} to true
-	return {_bool}
+		if checkEntityType(loop-entity, block display) is true:
+			set {_metaName} to "kit-block"
+		else if checkEntityType(loop-entity, item display) is true:
+			set {_metaName} to "kit-item"
+		else:
+			continue
+
+		set {_meta} to getPersistentData(loop-entity, {_metaName})
+		{_meta} contains "machine-"
+		set {_stringPlayer} to getPersistentData(loop-entity, {_meta})
+		{_stringPlayer} is "%{_player}%"
+		return true
+	return false
 
 local function kitParticle_BoltKnife(attacker: player, victim: player):
 	playSound("entity.villager.work_toolsmith", 1, 1, {_victim})
