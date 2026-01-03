@@ -2,7 +2,8 @@
 
 options:
 	stats-time: "IvyZipline-Time"
-	metadata-vehicle: "Ivy Zipline - Vehicle"
+	metadata-vehicle: "ivyzipline-vehicle"
+	machine-key: "ivy-zipline"
 	max-meter: 50
 	ride-radius: 2
 	ride-damage: 0.5
@@ -18,7 +19,7 @@ import:
 
 on VehicleExitEvent:
 	set {_vehicle} to event.getVehicle()
-	stop if metadata value {@metadata-vehicle} of {_vehicle} is not set
+	stop if getPersistentData({_vehicle}, {@metadata-vehicle}) is not set
 
 	cancel event
 
@@ -200,12 +201,13 @@ local function kitEffect_IvyZipline_Zipline(player: player, from: location, to: 
 				kitParticle_IvyZipline_Damage(loop-player)
 			add 1 to {_damage::%loop-player%}
 
-		set {_exist} to kitFakeCheck({_player}, "Ivy Zipline")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, {@stats-time})
+	set {_uuidString} to "%uuid of {_player}%"
 	loop all block displays:
-		metadata value {@metadata-vehicle} of loop-block display is {_player}
-		delete loop-block display
+		getPersistentData(loop-block display, {@metadata-vehicle}) is {_uuidString}
+		loop-block display.remove()
 
 local function kitEffect_IvyZipline_Display(player: player, loc: location):
 	set pitch of {_loc} to 0
@@ -217,32 +219,33 @@ local function kitEffect_IvyZipline_Display(player: player, loc: location):
 	set {_scale} to getVector3f(1, 0.75, 1)
 	set {_transformation} to getTransformation({_rotation.left}, {_rotation.right}, {_translation}, {_scale})
 	set {_block} to getBlockData(small dripleaf)
-	set {_displays::1} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, "Ivy Zipline")
+	set {_displays::1} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, {@machine-key})
 
 	set {_placeloc} to location 0.75 meters above {_loc}
 	set {_transformation} to getTransformation({_rotation.left}, {_rotation.right}, {_translation}, {_scale})
-	set {_displays::2} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, "Ivy Zipline")
+	set {_displays::2} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, {@machine-key})
 
 	set {_placeloc} to location 1.5 meters above {_loc}
 	set {_translation} to getVector3f(-0.25, 0, -0.25)
 	set {_scale} to getVector3f(0.5, 0.5, 0.5)
 	set {_transformation} to getTransformation({_rotation.left}, {_rotation.right}, {_translation}, {_scale})
 	set {_block} to getBlockData(flowering azalea leaves)
-	set {_displays::3} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, "Ivy Zipline")
+	set {_displays::3} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, {@machine-key})
 
 	set {_translation} to getVector3f(-0.625, 0, -0.3)
 	set {_scale} to getVector3f(1.25, 0.85, 0.6)
 	set {_transformation} to getTransformation({_rotation.left}, {_rotation.right}, {_translation}, {_scale})
 	set {_block} to getBlockData(lilac)
 	set {_blockdata} to {_block}.setHalf(Half.TOP)
-	set {_displays::4} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, "Ivy Zipline")
+	set {_displays::4} to kitFakeBlock({_player}, {_placeloc}, {_block}, {_transformation}, {@machine-key})
 
 local function kitEffect_IvyZipline_Vehicle(player: player, loc: location) :: entity:
 	spawn a block display at {_loc}
 	set {_vehicle} to spawned block display
 
 	set metadata value "gametype" of {_vehicle} to "Kit"
-	set metadata value {@metadata-vehicle} of {_vehicle} to {_player}
+	set {_uuidString} to "%uuid of {_player}%"
+	setPersistentData({_vehicle}, {@metadata-vehicle}, {_uuidString})
 
 	setBrightness({_vehicle})
 	{_vehicle}.setTeleportDuration(1)
