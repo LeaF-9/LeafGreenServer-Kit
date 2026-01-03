@@ -3,14 +3,14 @@
 options:
 	effect-tick: 200
 	effect-radius: 8
-	metadata-particle: "Mobile Fortress - Cancel Particle"
-	metadata-launcher: "Mobile Fortress - Launch Time"
-	metadata-protected: "Mobile Fortress - Protected"
+	metadata-particle: "mobilefortress-cancelparticle"
+	stats-launcher: "mobilefortress-launchtime"
+	metadata-protected: "mobilefortress-protected"
 
 
 
 on damage with priority HIGH:
-	metadata value {@metadata-protected} of victim is set
+	getMetadata(victim, {@metadata-protected}) is set
 	set {_attacker} to getAttacker(victim)
 	{_attacker} is set
 	set {_distance} to distance between {_attacker} and victim
@@ -21,27 +21,26 @@ on damage with priority HIGH:
 	kitEffectDescription(victim, "§9§l防御")
 
 	set {_now} to now
-	set {_time} to metadata value {@metadata-particle} of victim
+	set {_time} to getMetadata(victim, {@metadata-particle})
 	set {_dif} to difference between {_now} and {_time}
 	stop if {_dif} < 20 ticks
 
-	set metadata value {@metadata-particle} of victim to {_now}
+	setMetadata(victim, {@metadata-particle}, {_now})
 	kitParticle_MobileFortress_Damage(victim)
 	wait 20 ticks
-	delete metadata value {@metadata-particle} of victim
+	deleteMetadata(victim, {@metadata-particle})
 
 
 
 function kitEffect_MobileFortress(player: player):
 	nameCT({_player}, "Mobile Fortress")
 	set {_now} to now
-	set metadata value {@metadata-launcher} of {_player} to {_now}
+	setKitStats({_player}, {@stats-launcher}, {_now})
 	kitMsg({_player}, "<##1e90ff>10秒間,<##00bfff>領域外からの攻撃を無効化します!")
 	sendTimeBossbar_GREEN({_player}, "Mobile Fortress", {@effect-tick})
 	kitParticle_MobileFortress_Shield({_player})
 	loop 200 times:
-		if metadata value {@metadata-launcher} of {_player} is not {_now}:
-			continue
+		continue if getKitStats({_player}, {@stats-launcher}) is not {_now}
 
 		delete {_enter.now::*}
 		loop all entities in radius {@effect-radius} around {_player}:
@@ -50,7 +49,7 @@ function kitEffect_MobileFortress(player: player):
 			kitParticle_MobileFortress_Protected(loop-entity)
 			if {_enter.past::*} does not contain loop-entity:
 				add loop-entity to {_enter.past::*}
-				set metadata value {@metadata-protected} of loop-entity to {_now}
+				setMetadata(loop-entity, {@metadata-protected}, {_now})
 				kitSound_MobileFortress_Protected(loop-entity)
 		
 		loop {_enter.past::*}:
@@ -59,17 +58,16 @@ function kitEffect_MobileFortress(player: player):
 				continue
 			
 			remove {_loop-entity} from {_enter.past::*}
-			delete metadata value {@metadata-protected} of {_loop-entity}
+			deleteMetadata({_loop-entity}, {@metadata-protected})
 			kitParticle_MobileFortress_Broken({_loop-entity})
 
 		wait a tick
 	kitMsg({_player}, "§bMobile Fortress<##6495ed>の効果が終了しました")
 	loop {_enter.past::*}:
 		set {_loop-entity} to loop-value
-		if metadata value {@metadata-protected} of {_loop-entity} is not {_now}:
-			continue
+		continue if getMetadata({_loop-entity}, {@metadata-protected}) is not {_now}
 		
-		delete metadata value {@metadata-protected} of {_loop-entity}
+		deleteMetadata({_loop-entity}, {@metadata-protected})
 		kitParticle_MobileFortress_Broken({_loop-entity})
 
 
@@ -93,7 +91,7 @@ local function kitParticle_MobileFortress_Shield(player: player):
 	playSound("block.beacon.power_select", 1, 0.8, {_player})
 	kitParticle_MobileFortress_Border({_player})
 
-	set {_now} to metadata value {@metadata-launcher} of {_player}
+	set {_now} to getKitStats({_player}, {@stats-launcher})
 	set {_rad} to 0
 	set {_count} to 16
 	set {_addrad} to 360 / {_count}
@@ -106,7 +104,7 @@ local function kitParticle_MobileFortress_Shield(player: player):
 		set {_loc.shield} to {_baseloc}
 		set yaw of {_loc.shield} to {_rad}
 
-		spawn an item display at {_loc.shield} with nbt {_nbt}
+		spawn an item display at {_loc.shield}
 		set {_itemdisplay} to spawned item display
 
 		set {_item} to waxed oxidized cut copper
@@ -132,8 +130,7 @@ local function kitParticle_MobileFortress_Shield(player: player):
 	set {_addrad} to 360 / 200
 	set {_mulrad} to 360 / {_count}
 	loop {@effect-tick} times:
-		if metadata value {@metadata-launcher} of {_player} is not {_now}:
-			continue
+		continue if getKitStats({_player}, {@stats-launcher}) is not {_now}
 
 		set {_baseloc} to location of {_player}
 		set pitch of {_baseloc} to 0
@@ -160,13 +157,12 @@ local function kitParticle_MobileFortress_Border(player: player):
 	add rgb(119, 210, 233) to {_colors::*}
 	add rgb(77, 228, 215) to {_colors::*}
 
-	set {_now} to metadata value {@metadata-launcher} of {_player}
+	set {_now} to getKitStats({_player}, {@stats-launcher})
 	set {_count} to 100
 	set {_addrad} to 360 / {_count}
 
 	loop {@effect-tick} times:
-		if metadata value {@metadata-launcher} of {_player} is not {_now}:
-			stop
+		stop if getKitStats({_player}, {@stats-launcher}) is not {_now}
 
 		set {_baseloc} to location of {_player}
 		set yaw of {_baseloc} to 0

@@ -4,11 +4,14 @@ options:
 	width: 7
 	height: 3
 
+	shield-key: "king-shield"
+
 
 
 on damage of slime with priority HIGHEST:
-	metadata value "King Shield" of victim is set
-	set {_name} to metadata value "King Shield" of victim parsed as player
+	set {_playerName} to getPersistentData(victim, {@shield-key})
+	{_playerName} is set
+	set {_name} to {_playerName} parsed as player
 	set {_attacker} to getAttacker(victim)
 	if kitCheckTeam({_name}, {_attacker}, false) is true:
 		if checkDamagable(victim) is true:
@@ -17,7 +20,7 @@ on damage of slime with priority HIGHEST:
 			setDamageModification_FIX(victim, 0)
 			set {_King-Shield} to getKitStats(victim, "King Shield")
 			subtract {_dmg} from {_King-Shield}
-			setKitStats(victim, "King Shield", {_King-Shield})
+			setKitStats({_name}, "King Shield", {_King-Shield})
 		else:
 			cancel event
 	else:
@@ -69,7 +72,7 @@ function kitEffect_KingShield(player: player):
 	{_itemdisplay}.setTransformation({_transformation})
 
 	set metadata value "gametype" of {_itemdisplay} to "Kit"
-	set metadata value "King Shield" of {_itemdisplay} to "%{_player}%"
+	setPersistentData({_itemdisplay}, {@shield-key}, "%{_player}%")
 
 	# 当たり判定 (左上ベース)
 	set {_height.mul} to cos({_pitch})
@@ -102,7 +105,7 @@ function kitEffect_KingShield(player: player):
 			set {_slime} to spawnShieldEntity({_player}, {_loc.slime})
 
 			set {_slime::%{_h.count}%::%{_w.count}%} to {_slime}
-			set metadata value "King Shield" of {_slime} to "%{_player}%"
+			setPersistentData({_slime}, {@shield-key}, "%{_player}%")
 			add 0.5 to {_w}
 			add 1 to {_w.count}
 		subtract {_subfront} from {_front}
@@ -117,15 +120,15 @@ function kitEffect_KingShield(player: player):
 		set {_groundloc} to location 1.5 meters in front of {_groundloc}
 
 		# 見た目
-		set {_item.check} to "minecraft:blue_stained_glass_pane"
+		set {_item.check} to blue stained glass pane
 
 		delete {_King-Shield}
 		set {_King-Shield} to getKitStats({_player}, "King Shield")
 		if {_King-Shield} <= 0:
 			#壊れる処理
 			loop all entities:
-				metadata value "King Shield" of loop-entity is "%{_player}%"
-				delete loop-entity
+				getPersistentData(loop-entity, {@shield-key}) is "%{_player}%"
+				loop-entity.remove()
 			loop all items in {_player}'s inventory:
 				name of loop-item is "§1King Shield"
 				delete loop-item
@@ -183,5 +186,5 @@ function kitEffect_KingShield(player: player):
 		wait a tick
 	playSound("item.armor.equip_generic", 1, 1, {_player})
 	loop all entities:
-		metadata value "King Shield" of loop-entity is "%{_player}%"
-		delete loop-entity
+		getPersistentData(loop-entity, {@shield-key}) is "%{_player}%"
+		loop-entity.remove()

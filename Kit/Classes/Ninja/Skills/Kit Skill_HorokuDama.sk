@@ -3,8 +3,9 @@
 function kitEffect_HorokuDama(player: player):
 	subtract 1 from item amount of tool of {_player}
 	shoot a small fireball from {_player} at speed 2
-	set metadata value "horoku" of shot projectile to "true"
-	kitParticle_HorokuDama_Trail(shot projectile)
+	set {_proj} to shot projectile
+	setPersistentData({_proj}, "horoku", true)
+	kitParticle_HorokuDama_Trail({_proj})
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
 
 local function kitParticle_HorokuDama_Trail(proj: entity):
@@ -15,12 +16,22 @@ local function kitParticle_HorokuDama_Trail(proj: entity):
 on damage with priority LOW:
 	damage was caused by projectile
 	projectile is a small fireball
-	metadata value "horoku" of projectile is "true"
+	getPersistentData(projectile, "horoku") is true
 	setDamageModification_SET(victim, 1)
 	kitEffectDescription(victim, "§4❤1")
 	ignite victim for 5 seconds
 
 on projectile hit:
-	if projectile is a small fireball:
-		metadata value "horoku" of projectile is "true"
-		make a fake explosion at projectile
+	projectile is a small fireball
+	getPersistentData(projectile, "horoku") is true
+	set {_l} to location of projectile
+	particleHit({_l})
+	soundHit({_l})
+
+
+
+local function particleHit(loc: location):
+	spawnParticle(explosion, {_loc})
+
+local function soundHit(loc: location):
+	playSound("entity.generic.explode", 2, 1.35, {_loc})
