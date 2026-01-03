@@ -2,6 +2,7 @@ using for loops
 
 import:
 	org.bukkit.Particle
+	org.bukkit.inventory.ItemStack
 
 function spawnParticle(particle: particle, loc: location, players: players = all players):
 	for {_player} in {_players::*}:
@@ -40,6 +41,8 @@ function spawnParticle_DustTransition(fColor: color, tColor: color, size: number
 		{_player}.spawnParticle(Particle.DUST_COLOR_TRANSITION, {_loc}, 1, 0, 0, 0, 0, {_dustTransition}, true)
 
 function spawnParticle_Item(item: item type, loc: location, players: players = all players):
+	set {_material} to {_item}.getMaterial()
+	set {_item} to new ItemStack({_material})
 	for {_player} in {_players::*}:
 		{_player}.spawnParticle(Particle.ITEM, {_loc}, 1, 0, 0, 0, 0, {_item}, true)
 
