@@ -3,6 +3,7 @@
 options:
 	dowsing-cooltime: 60
 	dowsing-display: "dowsingmachine-display"
+	machine-key: "machine-dowsingmachine"
 
 function kitEffect_DowsingMachine(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
@@ -13,7 +14,7 @@ function kitEffect_DowsingMachine(player: player):
 	nameCT({_player}, "Dowsing Machine")
 	set {_now} to now
 	setKitStats({_player}, "DowsingMachine-Time", {_now})
-	kitFakeDeleteData({_player}, "Machine-Dowsing Machine")
+	kitFakeDeleteData({_player}, {@machine-key})
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
@@ -23,10 +24,10 @@ function kitEffect_DowsingMachine(player: player):
 	set {_scale} to getVector3f(0.7, 0.7, 0.7)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(sea lantern)
-	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Dowsing Machine")
+	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, {@machine-key})
 	
 	set {_block} to getBlockData(cobblestone wall)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Dowsing Machine")
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, {@machine-key})
 	kitMsg({_player}, "<##00FFFF>Dowsing Machine§9を設置しました!")
 	playSound("block.conduit.activate", 1, 2, {_loc.base})
 
@@ -54,7 +55,7 @@ function kitEffect_DowsingMachine(player: player):
 			soundGlowing(loop-player)
 			particleGlowing(loop-player, {_loc.core})
 
-		set {_exist} to kitFakeCheck({_player}, "Machine-Dowsing Machine")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "DowsingMachine-Time")
 

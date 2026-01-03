@@ -1,4 +1,6 @@
 # Launch Pad
+options:
+	machine-key: "machine-launchpad"
 
 function kitEffect_LaunchPad(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
@@ -9,7 +11,7 @@ function kitEffect_LaunchPad(player: player):
 	nameCT({_player}, "Launch Pad")
 	set {_now} to now
 	setKitStats({_player}, "LaunchPad-Time", {_now})
-	kitFakeDeleteData({_player}, "Machine-Launch Pad")
+	kitFakeDeleteData({_player}, {@machine-key})
 	if {team::%{_player}%} is "red":
 		set {_block} to getBlockData(red stained glass)
 	else if {team::%{_player}%} is "blue":
@@ -31,8 +33,8 @@ function kitEffect_LaunchPad(player: player):
 	set {_scale} to getVector3f(1, 1, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 
-	kitFakeBlock({_player}, {_loc.plate}, {_plate}, {_transformation}, "Machine-Launch Pad")
-	kitFakeBlock({_player}, {_loc.glass}, {_block}, {_transformation}, "Machine-Launch Pad")
+	kitFakeBlock({_player}, {_loc.plate}, {_plate}, {_transformation}, {@machine-key})
+	kitFakeBlock({_player}, {_loc.glass}, {_block}, {_transformation}, {@machine-key})
 	kitMsg({_player}, "<##D70035>Launch Pad§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
 	while getKitStats({_player}, "LaunchPad-Time") is {_now}:
@@ -58,7 +60,7 @@ function kitEffect_LaunchPad(player: player):
 			loop 10 times:
 				set {_el} to aroundEffect(loop-player)
 				spawnParticle(campfire_cosy_smoke, {_el})
-		set {_exist} to kitFakeCheck({_player}, "Machine-Launch Pad")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "LaunchPad-Time")
 			continue

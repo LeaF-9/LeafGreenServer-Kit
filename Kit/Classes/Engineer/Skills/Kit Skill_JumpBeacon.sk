@@ -1,5 +1,8 @@
 # Skill-Name: Jump Beacon
 
+options:
+	machine-key: "machine-jumpbeacon"
+
 function kitEffect_JumpBeacon(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
 	if {_loc} is not set:
@@ -11,9 +14,9 @@ function kitEffect_JumpBeacon(player: player):
 	# 装置数の確認
 	loop all entities:
 		type of loop-entity is block display
-		set {_metadata} to metadata value "kit-block" of loop-entity
-		{_metadata} contains "Machine-Jump Beacon"
-		metadata value {_metadata} of loop-entity is "%{_player}%"
+		set {_metadata} to getPersistentData(loop-entity, "kit-block")
+		{_metadata} contains {@machine-key}
+		getPersistentData(loop-entity, {_metadata}) is "%{_player}%"
 		add 0.5 to {_allnum}
 	if {_allnum} >= 3:
 		set {_toptime} to 0
@@ -26,7 +29,7 @@ function kitEffect_JumpBeacon(player: player):
 				set {_toptime} to {_diftime}
 				set {_index} to loop-index
 		replace "JumpBeacon-Time-" with "" in {_index}
-		kitFakeDeleteData({_player}, "Machine-Jump Beacon-%{_index}%")
+		kitFakeDeleteData({_player}, "%{@machine-key}%-%{_index}%")
 		deleteKitStats({_player}, "JumpBeacon-Time-%{_index}%")
 	set {_JumpBeacon-Number} to getKitStats({_player}, "JumpBeacon-Number")
 	add 1 to {_JumpBeacon-Number}
@@ -39,14 +42,14 @@ function kitEffect_JumpBeacon(player: player):
 	set {_scale} to getVector3f(0.5, 0.5, 0.5)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(spruce fence)
-	set {_spawned} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Machine-Jump Beacon-%{_num}%")
+	set {_spawned} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "%{@machine-key}%-%{_num}%")
 	add {_spawned} to {_jumpbeacons::*}
 
 	set {_translation} to getVector3f(-0.15, 0.5, -0.15)
 	set {_scale} to getVector3f(0.3, 0.3, 0.3)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(redstone block)
-	set {_spawned} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Machine-Jump Beacon-%{_num}%")
+	set {_spawned} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "%{@machine-key}%-%{_num}%")
 	add {_spawned} to {_jumpbeacons::*}
 	
 	setKitStats({_player}, "JumpBeacon-Time-%{_num}%", {_now})
@@ -61,7 +64,7 @@ function kitEffect_JumpBeacon(player: player):
 			kitCheckTeam({_player}, loop-player, true) is true
 			loop-player does not have a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします"
 			give a redstone item named "§cJump to Beacon" with lore "味方のビーコンを選択してTPします" to loop-player
-		set {_exist} to kitFakeCheck({_player}, "Machine-Jump Beacon-%{_num}%")
+		set {_exist} to kitFakeCheck({_player}, "%{@machine-key}%-%{_num}%")
 		if {_exist} is true:
 			loop all players:
 				kitCheckTeam(loop-player, {_player}, true) is true
@@ -97,10 +100,10 @@ function kitEffect_JumpBeacon_Select(player: player):
 		loop all entities in radius 3 around {_loc}:
 			{_target} is not set
 			type of loop-entity is block display
-			set {_metadata} to metadata value "kit-block" of loop-entity
-			{_metadata} contains "Machine-Jump Beacon"
-			set {_holder} to metadata value {_metadata} of loop-entity parsed as offline player
-			kitCheckTeam({_player}, {_holder}, true) is true
+			set {_metadata} to getPersistentData(loop-entity, "kit-block")
+			{_metadata} contains {@machine-key}
+			set {_holder} to getPersistentData(loop-entity, {_metadata})
+			set {_holder} to {_holder} parsed as offline player
 			set {_target} to loop-entity
 	if {_target} is not set:
 		send action bar "§c§l目先にBeaconがありません" to {_player}
@@ -128,8 +131,9 @@ function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
 		subtract 0.05 from {_time}
 		wait a tick
 	deleteKitStats({_jumper}, "JumpBeacon-Using")
-	set {_metadata} to metadata value "kit-block" of {_target}
-	set {_goaler} to metadata value {_metadata} of {_target} parsed as offline player
+	set {_metadata} to getPersistentData({_target}, "kit-block")
+	set {_goaler} to getPersistentData({_target}, {_metadata})
+	set {_goaler} to {_goaler} parsed as offline player
 	if checkFuel({_goaler}, 3) is false:
 		message formatted "§4燃料不足によりジャンプが中断されました" to {_jumper}
 		stop
@@ -138,7 +142,7 @@ function kitEffect_JumpBeacon_Jump(jumper: player, target: entity):
 	message formatted "§aジャンプに成功しました!" to {_jumper}
 	kitFakeDeleteData({_goaler}, {_metadata})
 	set {_num} to {_metadata}
-	replace "Machine-Jump Beacon-" with "" in {_metadata}
+	replace "%{@machine-key}%-" with "" in {_metadata}
 	deleteKitStats({_player}, "JumpBeacon-Time-%{_num}%")
 
 function kitParticle_JumpBeacon_Jumped(baseloc: location):

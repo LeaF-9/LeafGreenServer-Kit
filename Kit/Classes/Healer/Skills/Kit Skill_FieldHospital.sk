@@ -5,6 +5,8 @@ options:
 	effect-radius: 5
 	heal-per-second: 0.5
 
+	machine-key: "field-hospital"
+
 
 
 function kitEffect_FieldHospital(player: player):
@@ -22,7 +24,7 @@ function kitEffect_FieldHospital(player: player):
 	setKitStats({_player}, "FieldHospital-Time", {_now})
 	set {_loc.target} to {_SkillLocation}
 
-	kitFakeDeleteData({_player}, "Field Hospital")
+	kitFakeDeleteData({_player}, {@machine-key})
 
 	set {_loc.mark} to {_loc.target}
 	add 1.2 to y-coordinate of {_loc.mark}
@@ -32,19 +34,19 @@ function kitEffect_FieldHospital(player: player):
 	set {_scale} to getVector3f(0.3, 1.2, 0.3)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(pink concrete powder)
-	set {_markers::1} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation}, "Field Hospital")
+	set {_markers::1} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation}, {@machine-key})
 
 	set {_translation} to getVector3f(-0.6, 0.45, -0.15)
 	set {_scale} to getVector3f(1.2, 0.3, 0.3)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
-	set {_markers::2} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation}, "Field Hospital")
+	set {_markers::2} to kitFakeBlock({_player}, {_loc.mark}, {_block}, {_transformation}, {@machine-key})
 
 	set {_loc.base} to {_loc.target}
 	set {_translation} to getVector3f(-0.5, 0, -0.5)
 	set {_scale} to getVector3f(1, 1, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(crimson fence)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Field Hospital")
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, {@machine-key})
 
 	kitMsg({_player}, "§d周辺の味方を回復する装置を設置しました...")
 	send action bar "§d現在のオド: §c%{Kit-Odo::%{_player}%}%" to {_player}
@@ -89,7 +91,7 @@ function kitEffect_FieldHospital(player: player):
 				healEffect(loop-entity, 1)
 				kitSound_FieldHospital_Player(loop-entity)
 
-		set {_exist} to kitFakeCheck({_player}, "Field Hospital")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "FieldHospital-Time")
 

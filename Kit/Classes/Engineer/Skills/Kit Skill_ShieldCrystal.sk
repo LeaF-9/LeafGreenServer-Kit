@@ -1,5 +1,8 @@
 # Shield Crystal
 
+options:
+	machine-key: "machine-shieldcrystal"
+
 function kitEffect_ShieldCrystal(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
 	if {_loc} is not set:
@@ -9,7 +12,7 @@ function kitEffect_ShieldCrystal(player: player):
 	nameCT({_player}, "Shield Crystal")
 	set {_now} to now
 	setKitStats({_player}, "ShieldCrystal-Time", {_now})
-	kitFakeDeleteData({_player}, "Machine-Shield Crystal")
+	kitFakeDeleteData({_player}, {@machine-key})
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
@@ -20,9 +23,9 @@ function kitEffect_ShieldCrystal(player: player):
 	set {_scale} to getVector3f(1, 1, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(diamond block)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Shield Crystal")
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, {@machine-key})
 	set {_block} to getBlockData(barrier)
-	kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Shield Crystal")
+	kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, {@machine-key})
 	spawn end crystal at {_loc.core}
 	set {_crystal} to spawned end crystal
 
@@ -64,7 +67,7 @@ function kitEffect_ShieldCrystal(player: player):
 #				delete {Kit-ShieldTime::%loop-value%}
 #				delete {Kit-Shield::%loop-value%}
 #				delete {_shield::%loop-value%}
-		set {_exist} to kitFakeCheck({_player}, "Machine-Shield Crystal")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "ShieldCrystal-Time")
 			continue

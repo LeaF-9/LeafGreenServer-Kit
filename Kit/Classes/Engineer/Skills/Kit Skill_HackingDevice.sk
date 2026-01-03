@@ -8,6 +8,8 @@ options:
 	pulse-damage: 3
 	pulse-tick: 200
 
+	machine-key: "machine-hackingdevice"
+
 import:
 	org.bukkit.block.data.type.StructureBlock$Mode
 
@@ -20,7 +22,7 @@ function kitEffect_HackingDevice(player: player):
 	nameCT({_player}, "Hacking Device")
 	set {_now} to now
 	setKitStats({_player}, "HackingDevice-Time", {_now})
-	kitFakeDeleteData({_player}, "Machine-Hacking Device")
+	kitFakeDeleteData({_player}, {@machine-key})
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
 	add 1 to y-coordinate of {_loc.core}
@@ -32,24 +34,24 @@ function kitEffect_HackingDevice(player: player):
 	set {_scale} to getVector3f(1, 1, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(polished blackstone wall)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Hacking Device")
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, {@machine-key})
 
 	set {_block} to getBlockData(tinted glass)
-	kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Hacking Device")
+	kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, {@machine-key})
 
 	set {_block} to getBlockData(structure block)
 	set {_blockdata} to {_block}.setMode(Mode.LOAD)
 	set {_translation} to getVector3f(-0.35, 0.15, -0.35)
 	set {_scale} to getVector3f(0.7, 0.7, 0.7)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
-	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Hacking Device")
+	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, {@machine-key})
 	kitMsg({_player}, "<##E9BC00>Hacking Device§eを設置しました!")
 	playSound("item.trident.return", 1, 1.5, {_loc.base})
 	# coreを回転させる関数
 	kitEffect_HackingDevice_Core({_player}, {_coredisplay})
 	while getKitStats({_player}, "HackingDevice-Time") is {_now}:
 		wait a tick
-		set {_exist} to kitFakeCheck({_player}, "Machine-Hacking Device")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "HackingDevice")
 			deleteKitStats({_player}, "HackingDevice-Time")

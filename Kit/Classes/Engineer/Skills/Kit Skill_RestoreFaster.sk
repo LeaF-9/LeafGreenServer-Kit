@@ -1,4 +1,6 @@
 # Restore Faster
+options:
+	machine-key: "machine-restorefaster"
 
 function kitEffect_RestoreFaster(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
@@ -9,7 +11,7 @@ function kitEffect_RestoreFaster(player: player):
 	nameCT({_player}, "Restore Faster")
 	set {_now} to now
 	setKitStats({_player}, "RestoreFaster-Time", {_now})
-	kitFakeDeleteData({_player}, "Machine-Restore Faster")
+	kitFakeDeleteData({_player}, {@machine-key})
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
 	add 1.55 to y-coordinate of {_loc.core}
@@ -19,13 +21,13 @@ function kitEffect_RestoreFaster(player: player):
 	set {_scale} to getVector3f(0.9, 0.9, 0.9)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(glowstone)
-	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Restore Faster")
+	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, {@machine-key})
 
 	set {_translation} to getVector3f(-0.5, 0, -0.5)
 	set {_scale} to getVector3f(1, 1, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(birch fence)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Restore Faster")
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, {@machine-key})
 	kitMsg({_player}, "<##FFF352>Restore Faster§6を設置しました!")
 	playSound("entity.blaze.hurt", 1, 2, {_loc})
 
@@ -120,7 +122,7 @@ function kitEffect_RestoreFaster(player: player):
 					kitParticle_RestoreFaster(loop-value, false)
 					remove bossbar {_id}
 		# 機械存在のチェック
-		set {_exist} to kitFakeCheck({_player}, "Machine-Restore Faster")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "RestoreFaster-Time")
 			loop {_enter.hist::*}:

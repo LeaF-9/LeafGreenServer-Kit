@@ -1,4 +1,6 @@
 # Tracking System
+options:
+	machine-key: "machine-trackingsystem"
 
 function kitEffect_TrackingSystem(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
@@ -10,9 +12,9 @@ function kitEffect_TrackingSystem(player: player):
 	set {_now} to now
 # 装置数の確認
 	loop all block displays:
-		metadata value "kit-block" of loop-block display contains "Machine-Tracking System"
-		set {_metadata} to metadata value "kit-block" of loop-block display
-		metadata value {_metadata} of loop-block display is "%{_player}%"
+		set {_metadata} to getPersistentData(loop-block display, "kit-block")
+		{_metadata} contains {@machine-key}
+		getPersistentData(loop-block display, {_metadata}) is "%{_player}%"
 		add 0.2 to {_allnum}
 	if {_allnum} >= 5:
 		set {_toptime} to 0	
@@ -25,7 +27,7 @@ function kitEffect_TrackingSystem(player: player):
 				set {_toptime} to {_diftime}
 				set {_index} to loop-index
 		replace "TrackingSystem-Time-" with "" in {_index}
-		kitFakeDeleteData({_player}, "Machine-Tracking System-%{_index}%")
+		kitFakeDeleteData({_player}, "%{@machine-key}%-%{_index}%")
 		deleteKitStats({_player}, "TrackingSystem-Time-%{_index}%")
 	set {_TrackingSystem-Number} to getKitStats({_player}, "TrackingSystem-Number")
 	add 1 to {_TrackingSystem-Number}
@@ -72,7 +74,7 @@ function kitEffect_TrackingSystem(player: player):
 					set {_met} to {_dis} * loop-number
 					set {_efl} to location {_met} meters in front of {_el}
 					spawnParticle_Dust(rgb(0, 191, 255), 1, {_efl})
-		set {_exist} to kitFakeCheck({_player}, "Machine-Tracking System-%{_num}%")
+		set {_exist} to kitFakeCheck({_player}, "%{@machine-key}%-%{_num}%")
 		if {_exist} is true:
 			if {_true} is true:
 				set glowing of {_blockdisplay} to true
@@ -93,25 +95,25 @@ local function kitEffect_TrackingSystem_Machine(player: player, num: number, loc
 	# foot
 	set {_translation} to getVector3f(0.2, 0, 0.2)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
-	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Machine-Tracking System-%{_num}%")
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "%{@machine-key}%-%{_num}%")
 	
 	set {_translation} to getVector3f(-0.3, 0, 0.2)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
-	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Machine-Tracking System-%{_num}%")
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "%{@machine-key}%-%{_num}%")
 
 	set {_translation} to getVector3f(0.2, 0, -0.3)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
-	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Machine-Tracking System-%{_num}%")
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "%{@machine-key}%-%{_num}%")
 
 	set {_translation} to getVector3f(-0.3, 0, -0.3)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
-	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Machine-Tracking System-%{_num}%")
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "%{@machine-key}%-%{_num}%")
 
 	# head
 	set {_translation} to getVector3f(-0.25, 0.25, -0.25)
 	set {_scale} to getVector3f(0.5, 0.5, 0.5)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(beacon)
-	set {_return} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Machine-Tracking System-%{_num}%")
+	set {_return} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "%{@machine-key}%-%{_num}%")
 
 	return {_return}

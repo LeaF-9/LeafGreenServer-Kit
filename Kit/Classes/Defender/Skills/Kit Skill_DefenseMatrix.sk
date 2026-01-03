@@ -1,5 +1,8 @@
 # Defense Matrix
 
+options:
+	machine-key: "defense-matrix"
+
 function kitEffect_DefenseMatrix(player: player):
 	set {_SkillLocation} to getKitStats({_player}, "SkillLocation")
 	if {_SkillLocation} is not set:
@@ -9,7 +12,7 @@ function kitEffect_DefenseMatrix(player: player):
 	nameCT({_player}, "Defense Matrix")
 	set {_now} to now
 	setKitStats({_player}, "DefenseMatrix-Time", {_now})
-	kitFakeDeleteData({_player}, "Defense Matrix")
+	kitFakeDeleteData({_player}, {@machine-key})
 	set {_loc} to {_SkillLocation}
 
 	set {_rotation} to getQuaternionf(0, 0, 0, 1)
@@ -17,26 +20,26 @@ function kitEffect_DefenseMatrix(player: player):
 	set {_scale} to getVector3f(1, 1, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(cyan stained glass)
-	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Defense Matrix")
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, {@machine-key})
 
 	set {_translation} to getVector3f(-0.45, 0, -0.45)
 	set {_scale} to getVector3f(0.9, 0.1, 0.9)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(obsidian)
-	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Defense Matrix")
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, {@machine-key})
 
 	set {_translation} to getVector3f(0, 0.5, 0)
 	set {_scale} to getVector3f(0.65, 0.65, 0.65)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_item} to diamond block
-	set {_rotateDisplay} to kitFakeItem({_player}, {_loc}, {_item}, {_transformation}, "Defense Matrix")
+	set {_rotateDisplay} to kitFakeItem({_player}, {_loc}, {_item}, {_transformation}, {@machine-key})
 
 	kitMsg({_player}, "§9Defense Matrix§bを設置しました!")
 	playSound("block.anvil.land", 1, 0.5, {_loc})
 	set {_yaw} to 0
 	while getKitStats({_player}, "DefenseMatrix-Time") is {_now}:
 		wait a tick
-		set {_exist} to kitFakeCheck({_player}, "Defense Matrix")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "DefenseMatrix-Time")
 			continue
@@ -51,8 +54,9 @@ on damage with priority NORMAL:
 	metadata value "gametype" of victim is "Kit"
 	loop all block displays in radius 5 around victim:
 		{_a} is not set
-		metadata value "kit-block" of loop-block display is "Defense Matrix"
-		set {_player} to metadata value "Defense Matrix" of loop-block display parsed as player
+		getPersistentData(loop-block display, "kit-block") is {@machine-key}
+		set {_stringPlayer} to getPersistentData(loop-block display, {@machine-key})
+		set {_player} to {_stringPlayer} parsed as player
 		kitCheckTeam({_player}, victim, true) is true
 		if {_player} is not victim:
 			if checkEntityType(victim, player) is true:

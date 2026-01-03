@@ -4,6 +4,8 @@ options:
 	enemy-time: 10
 	ally-time: 1
 
+	machine-key: "machine-respawncontroller"
+
 function kitEffect_RespawnController(player: player):
 	set {_loc} to getKitStats({_player}, "SkillLocation")
 	if {_loc} is not set:
@@ -16,7 +18,7 @@ function kitEffect_RespawnController(player: player):
 	setKitStats({_player}, "RespawnController-Time", {_now})
 
 	# 機械削除
-	kitFakeDeleteData({_player}, "Machine-Respawn Controller")
+	kitFakeDeleteData({_player}, {@machine-key})
 	# 位置設定
 	set {_loc.base} to {_loc}
 	set {_loc.core} to {_loc}
@@ -31,14 +33,14 @@ function kitEffect_RespawnController(player: player):
 	set {_scale} to getVector3f(0.8, 0.8, 0.8)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(nether quartz ore)
-	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, "Machine-Respawn Controller")
+	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, {@machine-key})
 
 	set {_translation} to getVector3f(-0.5, 0, -0.5)
 	set {_scale} to getVector3f(1, 1, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(nether brick fence)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Machine-Respawn Controller")
-	kitFakeBlock({_player}, {_loc.top}, {_block}, {_transformation}, "Machine-Respawn Controller")
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, {@machine-key})
+	kitFakeBlock({_player}, {_loc.top}, {_block}, {_transformation}, {@machine-key})
 
 	set {_loc.particle} to {_loc.base}
 	add 1.5 to y-pos of {_loc.particle}
@@ -73,7 +75,7 @@ function kitEffect_RespawnController(player: player):
 			deleteKitStats(loop-value, "RespawnController")
 			delete {_pl::%loop-index%}
 
-		set {_exist} to kitFakeCheck({_player}, "Machine-Respawn Controller")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "RespawnController-Time")
 			deleteKitStats({_player}, "RespawnController-Location")
@@ -176,8 +178,8 @@ local function kitParticle_RespawnController_Beam(baseloc: location, targetloc: 
 local function kitParticle_RespawnController_Expose(player: player, target: player):
 	# 発光させる機械の保存
 	loop all block displays:
-		metadata value "kit-block" of loop-block display is "Machine-Respawn Controller"
-		metadata value "Machine-Respawn Controller" of loop-block displays is {_player}
+		getPersistentData(loop-block display, "kit-block") is {@machine-key}
+		getPersistentData(loop-block display, {@machine-key}) is "%{_player}%"
 		add loop-block display to {_machines::*}
 	
 	loop 300 times:

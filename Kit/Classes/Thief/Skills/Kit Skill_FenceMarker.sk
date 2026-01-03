@@ -1,5 +1,8 @@
 # Fence Marker
 
+options:
+	machine-key: "fence-marker"
+
 function kitEffect_FenceMarker(player: player):
 	set {_SkillLocation} to getKitStats({_player}, "SkillLocation")
 	if {_SkillLocation} is not set:
@@ -9,7 +12,7 @@ function kitEffect_FenceMarker(player: player):
 	nameCT({_player}, "Fence Marker")
 	set {_now} to now
 	setKitStats({_player}, "FenceMarker-Time", {_now})
-	kitFakeDeleteData({_player}, "Fence Marker")
+	kitFakeDeleteData({_player}, {@machine-key})
 	set {_loc.base} to {_SkillLocation}
 
 	set {_rotation} to getQuaternionf(0, 0, 0, 1)
@@ -17,17 +20,17 @@ function kitEffect_FenceMarker(player: player):
 	set {_scale} to getVector3f(1, 1, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(end rod)
-	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, "Fence Marker")
+	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, {@machine-key})
 	set {_loc.top} to location 1 meter above {_loc.base}
 
 	set {_block} to getBlockData(dead fire coral fan)
-	kitFakeBlock({_player}, {_loc.top}, {_block}, {_transformation}, "Fence Marker")
+	kitFakeBlock({_player}, {_loc.top}, {_block}, {_transformation}, {@machine-key})
 	setKitStats({_player}, "FenceMarker", {_loc.top})
 	kitMsg({_player}, "§7盗品売買所§5を設置しました...")
 	playSound("entity.witch.celebrate", 1, 0.9, {_loc.base})
 	while getKitStats({_player}, "FenceMarker-Time") is {_now}:
 		wait a second
-		set {_exist} to kitFakeCheck({_player}, "Fence Marker")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "FenceMarker")
 			deleteKitStats({_player}, "FenceMarker-Time")

@@ -1,5 +1,9 @@
 # skill-name: Beat Clapper
 
+options:
+	machine-key: "beat-clapper"
+	lever-key: "beat-clapper-lever"
+
 on damage with priority LOW:
 	set {_attacker} to getAttacker(victim)
 	{_attacker} is set
@@ -18,34 +22,34 @@ function kitEffect_BeatClapper(player: player):
 	set {_now} to now
 	setKitStats({_player}, "BeatClapper-Time", {_now})
 	kitParticle_BeatClapper_Place({_loc})
-	kitFakeDeleteData({_player}, "Beat Clapper")
+	kitFakeDeleteData({_player}, {@machine-key})
 
 	set {_rotation} to getQuaternionf(0, 0, 0, 1)
 	set {_translation} to getVector3f(-0.25, 0, -0.25)
 	set {_scale} to getVector3f(0.5, 1, 0.5)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(spruce fence)
-	set {_hasMetadataDisplay} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Beat Clapper")
-	set metadata value "Beat Clapper-Lever" of {_hasMetadataDisplay} to "%{_player}%"
+	set {_hasMetadataDisplay} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, {@machine-key})
+	setPersistentData({_hasMetadataDisplay}, {@lever-key}, "%{_player}%")
 
 	set {_translation} to getVector3f(-0.5, 1, -0.5)
 	set {_scale} to getVector3f(1, 1, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(spruce pressure plate)
-	set {_hasMetadataDisplay} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Beat Clapper")
-	set metadata value "Beat Clapper-Lever" of {_hasMetadataDisplay} to "%{_player}%"
+	set {_hasMetadataDisplay} to kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, {@machine-key})
+	setPersistentData({_hasMetadataDisplay}, {@lever-key}, "%{_player}%")
 
 	set {_translation} to getVector3f(-0.5, 0, -0.5)
 	set {_scale} to getVector3f(1, 0.5, 1)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(note block)
-	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, "Beat Clapper")
+	kitFakeBlock({_player}, {_loc}, {_block}, {_transformation}, {@machine-key})
 	kitMsg({_player}, "§6§l音波を発する装置§eを設置しました!")
 	set {_timer} to 0
 	set {_y} to 0
 	while getKitStats({_player}, "BeatClapper-Time") is {_now}:
 		wait a tick
-		set {_exist} to kitFakeCheck({_player}, "Beat Clapper")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "BeatClapper-Time")
 			continue
@@ -106,9 +110,9 @@ local function kitEffect_BeatClapper_Lever(player: player, loc: location, y: num
 	set {_tploc} to {_loc}
 	add {_y} to y-pos of {_tploc}
 	loop all block displays:
-		metadata value "kit-block" of loop-block display is "Beat Clapper"
-		metadata value "Beat Clapper" of loop-block display is "%{_player}%"
-		metadata value "Beat Clapper-Lever" of loop-block display is "%{_player}%"
+		getPersistentData(loop-block display, "kit-block") is {@machine-key}
+		getPersistentData(loop-block display, {@machine-key}) is "%{_player}%"
+		getPersistentData(loop-block display, {@lever-key}) is "%{_player}%"
 		teleport loop-block display to {_tploc}
 
 
