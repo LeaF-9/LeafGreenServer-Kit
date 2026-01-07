@@ -92,18 +92,19 @@ on rightclick holding a redstone item:
 	kitEffect_JumpBeacon_Select(player)
 
 function kitEffect_JumpBeacon_Select(player: player):
-	set {_baseloc} to location of head of {_player}
+	set {_baseloc} to head of {_player}
 	loop 100 times:
 		{_ng} is not set
 		{_target} is not set
-		set {_loc} to location loop-number meters in front of {_baseloc}
+		set {_loc} to location (loop-number) meters in front of {_baseloc}
 		loop all entities in radius 3 around {_loc}:
 			{_target} is not set
-			type of loop-entity is block display
+			checkEntityType(loop-entity, block display) is true
 			set {_metadata} to getPersistentData(loop-entity, "kit-block")
 			{_metadata} contains {@machine-key}
 			set {_holder} to getPersistentData(loop-entity, {_metadata})
 			set {_holder} to {_holder} parsed as offline player
+			kitCheckTeam({_player}, {_holder}, true) is true
 			set {_target} to loop-entity
 	if {_target} is not set:
 		send action bar "§c§l目先にBeaconがありません" to {_player}
