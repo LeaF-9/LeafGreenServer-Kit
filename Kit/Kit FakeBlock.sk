@@ -94,12 +94,12 @@ command /kit-deletedisplaytest:
 function kitFakeCheck(player: player, metadata: text) :: boolean:
 	set {_bool} to false
 	loop all block displays:
-		metadata value "kit-block" of loop-block display is {_metadata}
-		metadata value {_metadata} of loop-block display is "%{_player}%"
+		getPersistentData(loop-block display, "kit-block") is {_metadata}
+		getPersistentData(loop-block display, {_metadata}) is "%{_player}%"
 		set {_bool} to true
 	loop all item displays:
-		metadata value "kit-item" of loop-item display is {_metadata}
-		metadata value {_metadata} of loop-item display is "%{_player}%"
+		getPersistentData(loop-item display, "kit-item") is {_metadata}
+		getPersistentData(loop-item display, {_metadata}) is "%{_player}%"
 		set {_bool} to true
 	return {_bool}
 
@@ -108,7 +108,7 @@ function kitFakeDelete(player: offline player):
 		metadata value "kit-block" of loop-block display is set
 		set {_metadata} to metadata value "kit-block" of loop-block display
 		# EngineerのUltは破壊しない
-		if {_metadata} is "Machine-Transport Lift":
+		if {_metadata} is "machine-transportlift":
 			continue
 
 		metadata value {_metadata} of loop-block display is "%{_player}%"
@@ -157,6 +157,11 @@ function kitFakeDeleteAll():
 		delete metadata value "kit-item" of loop-item display
 		delete metadata value {_metadata} of loop-item display
 		delete loop-item display
+
+command /kit-fakeblock-delete:
+	permission: sk.admin
+	trigger:
+		kitFakeDeleteAll()
 
 import:
 	io.papermc.paper.event.player.PlayerArmSwingEvent
