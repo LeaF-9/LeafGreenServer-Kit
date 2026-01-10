@@ -5,6 +5,9 @@ import:
 	org.bukkit.entity.EntityType
 	org.bukkit.entity.Display$Billboard
 
+options:
+	machine-key: "machine-transportlift"
+
 function kitUltEngineer(player: player):
 	set {_tploc} to location of {_player}
 	if {Kit-tochu} is true:
@@ -28,7 +31,7 @@ function kitUltEngineer(player: player):
 	set {_scale} to getVector3f(1, 0.5, 1)
 	set {_transformation} to getTransformation({_leftrotation}, {_rightrotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(sculk shrieker)
-	set {_transporter} to kitFakeBlock({_player}, {_mecloc}, {_block}, {_transformation}, "Machine-Transport Lift")
+	set {_transporter} to kitFakeBlock({_player}, {_mecloc}, {_block}, {_transformation}, {@machine-key})
 
 	loop {_fromloc::*}:
 		set {_armloc} to loop-value
@@ -153,7 +156,7 @@ function kitUltEngineer(player: player):
 					set {_eff} to {_fromeff} ~ {_vec}
 					spawnParticle_Dust(rgb(34, 58, 112), 1, {_eff})
 #	存在確認	
-		set {_exist} to kitFakeCheck({_player}, "Machine-Transport Lift")
+		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			delete {Ult.%{_player}%::Engineer}
 	{_textDisplay}.remove()
