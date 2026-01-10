@@ -20,12 +20,15 @@ function kitEffect_DowsingMachine(player: player):
 	add 1 to y-coordinate of {_loc.core}
 
 	set {_rotation} to getQuaternionf(0, 0, 0, 1)
-	set {_translation} to getVector3f(-0.5, 0, -0.5)
+	set {_translation} to getVector3f(-0.35, 0, -0.35)
 	set {_scale} to getVector3f(0.7, 0.7, 0.7)
 	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(sea lantern)
 	set {_coredisplay} to kitFakeBlock({_player}, {_loc.core}, {_block}, {_transformation}, {@machine-key})
 	
+	set {_translation} to getVector3f(-0.4, 0, -0.4)
+	set {_scale} to getVector3f(0.8, 0.8, 0.8)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
 	set {_block} to getBlockData(cobblestone wall)
 	kitFakeBlock({_player}, {_loc.base}, {_block}, {_transformation}, {@machine-key})
 	kitMsg({_player}, "<##00FFFF>Dowsing Machine§9を設置しました!")
@@ -73,7 +76,6 @@ local function kitEffect_DowsingMachine_Core(player: player, display: entity):
 	set {_scaling} to false
 
 	set {_rotation} to getQuaternionf(0, 0, 0, 1)
-	set {_translation} to getVector3f(-0.5, 0, -0.5)
 
 	set {_ln} to 0
 	while getKitStats({_player}, "DowsingMachine-Time") is {_now}:
@@ -97,6 +99,8 @@ local function kitEffect_DowsingMachine_Core(player: player, display: entity):
 		
 		if {_scaling} is true:
 			set {_scale} to getVector3f({_scale.now}, {_scale.now}, {_scale.now})
+			set {_translate.now} to ({_scale.now} / 2) * (-1)
+			set {_translation} to getVector3f({_translate.now}, 0, {_translate.now})
 			setTransformation({_display}, {_rotation}, {_rotation}, {_translation}, {_scale})
 			if {_scale.now} = {_scale.min}:
 				set {_scaling} to false
@@ -113,12 +117,9 @@ local function particleGlowing(player: player, core: location):
 	set {_toloc} to location 1 meter above {_player}
 	set {_vector} to setVector({_elbase}, {_toloc}, 0)
 
-	set {_dis} to distance between {_elbase} and {_toloc}
-	set {_mulBase} to {_dis} * 0.1
-	set {_ln} to 0
+	set {_mul} to 0
 	loop 10 times:
-		add 1 to {_ln}
-		set {_mul} to {_mulBase} * {_ln}
+		add 0.1 to {_mul}
 		set {_vec} to {_vector} * vector({_mul}, {_mul}, {_mul})
 		set {_el} to {_elbase} ~ {_vec}
 		particleBeam({_el})
