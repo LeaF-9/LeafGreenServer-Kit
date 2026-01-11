@@ -1052,3 +1052,72 @@ command /test-now:
 		set {_class} to {_now}.getClass()  # ch.njol.skript.util.Date
 		set {_timestamp} to {_now}.getTime()  # enable
 		broadcast "%{_timestamp}%"
+
+# PDC List型の操作方法を保存 (metadata管理)
+# 追加
+local function addMetadataKey(holder: object, key: text):
+	set {_PDC} to {_holder}.getPersistentDataContainer()
+	set {_NK} to getKey("metadata_keys")
+
+	# String List用のTypeを記述
+	set {_listType} to PersistentDataType.LIST.strings()
+
+	# 既存のListを取得 存在しなければ新規作成
+	set {_keyList} to {_PDC}.get({_NK}, {_listType})
+	if {_keyList} is not set:
+		set {_keyList} to new ArrayList()
+	else:
+		set {_keyList} to new ArrayList({_keyList})
+		
+	# keyが存在しない場合はListに追加
+	if {_keyList}.contains({_key}) is false:
+		{_keyList}.add({_key})
+	
+	# PDCに保存
+	{_PDC}.set({_NK}, {_listType}, {_keyList})
+
+# 削除
+local function removeMetadataKey(holder: object, key: text):
+	set {_PDC} to {_holder}.getPersistentDataContainer()
+	set {_NK} to getKey("metadata_keys")
+
+	# String List用のTypeを記述
+	set {_listType} to PersistentDataType.LIST.strings()
+
+	# 既存のListを取得 存在しなければ終了
+	set {_keyList} to {_PDC}.get({_NK}, {_listType})
+	stop if {_keyList} is not set
+	
+	# keyが存在しなければ終了
+	stop if {_keyList}.contains({_key}) is false
+
+	# Listから削除
+	{_keyList}.remove({_key})
+
+	# Listが空ならPDCのデータ自体削除
+	if {_keyList}.isEmpty() is true:
+		{_PDC}.remove({_NK})
+		stop
+
+# 取得
+local function getMetadataKeys(holder: object) :: object:
+	set {_PDC} to {_holder}.getPersistentDataContainer()
+	set {_NK} to getKey("metadata_keys")
+
+	# String List用のTypeを記述
+	set {_listType} to PersistentDataType.LIST.strings()
+
+	# 既存のListを取得 存在しなければ空のListを返す
+	set {_keyList} to {_PDC}.get({_NK}, {_listType})
+	if {_keyList} is not set:
+		set {_keyList} to new ArrayList()
+	
+	return {_keyList}
+
+# 全て削除
+local function clearMetadataKeys(holder: object):
+	set {_PDC} to {_holder}.getPersistentDataContainer()
+	set {_NK} to getKey("metadata_keys")
+
+	# PDCのデータ削除
+	{_PDC}.remove({_NK})
