@@ -1054,10 +1054,17 @@ command /test-now:
 		broadcast "%{_timestamp}%"
 
 # PDC List型の操作方法を保存 (metadata管理)
+import:
+	java.util.ArrayList
+
+	org.bukkit.NamespacedKey
+	org.bukkit.persistence.PersistentDataType
+	org.bukkit.persistence.ListPersistentDataTypeProvider
+
 # 追加
 local function addMetadataKey(holder: object, key: text):
 	set {_PDC} to {_holder}.getPersistentDataContainer()
-	set {_NK} to getKey("metadata_keys")
+	# set {_NK} to getKey("metadata_keys")
 
 	# String List用のTypeを記述
 	set {_listType} to PersistentDataType.LIST.strings()
@@ -1079,7 +1086,7 @@ local function addMetadataKey(holder: object, key: text):
 # 削除
 local function removeMetadataKey(holder: object, key: text):
 	set {_PDC} to {_holder}.getPersistentDataContainer()
-	set {_NK} to getKey("metadata_keys")
+	# set {_NK} to getKey("metadata_keys")
 
 	# String List用のTypeを記述
 	set {_listType} to PersistentDataType.LIST.strings()
@@ -1102,7 +1109,7 @@ local function removeMetadataKey(holder: object, key: text):
 # 取得
 local function getMetadataKeys(holder: object) :: object:
 	set {_PDC} to {_holder}.getPersistentDataContainer()
-	set {_NK} to getKey("metadata_keys")
+	# set {_NK} to getKey("metadata_keys")
 
 	# String List用のTypeを記述
 	set {_listType} to PersistentDataType.LIST.strings()
@@ -1117,7 +1124,7 @@ local function getMetadataKeys(holder: object) :: object:
 # 全て削除
 local function clearMetadataKeys(holder: object):
 	set {_PDC} to {_holder}.getPersistentDataContainer()
-	set {_NK} to getKey("metadata_keys")
+	# set {_NK} to getKey("metadata_keys")
 
 	# PDCのデータ削除
 	{_PDC}.remove({_NK})
