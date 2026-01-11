@@ -1,0 +1,76 @@
+import:
+	java.util.ArrayList
+
+	com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
+
+# metadataの操作関数
+function getMetadata(holder: object, key: text) :: object:
+	set {_value} to metadata value {_key} of {_holder}
+	return {_value}
+
+function setMetadata(holder: object, key: text, value: object):
+	set metadata value {_key} of {_holder} to {_value}
+	addMetadataKey({_holder}, {_key})
+
+function deleteMetadata(holder: object, key: text):
+	delete metadata value {_key} of {_holder}
+	removeMetadataKey({_holder}, {_key})
+
+function clearMetadata(holder: object):
+	set {_keyList} to getMetadataKeys({_holder})
+	loop ...{_keyList}:
+		set {_key} to loop-value
+		delete metadata value {_key} of {_holder}
+	clearMetadataKeys({_holder})
+
+# metadataのkeyを保存するPDCの操作関数
+# 追加
+local function addMetadataKey(holder: object, key: text):
+	set {_uuid} to uuid of {_holder}
+	if {-MetadataKeys::%{_uuid}%} is not set:
+		set {-MetadataKeys::%{_uuid}%} to new ArrayList()
+
+	if {-MetadataKeys::%{_uuid}%}.contains({_key}) is false:
+		{-MetadataKeys::%{_uuid}%}.add({_key})
+
+# 削除
+local function removeMetadataKey(holder: object, key: text):
+	set {_uuid} to uuid of {_holder}
+
+	stop if {-MetadataKeys::%{_uuid}%} is not set
+	stop if {-MetadataKeys::%{_uuid}%}.contains({_key}) is false
+
+	# Listから削除
+	{-MetadataKeys::%{_uuid}%}.remove({_key})
+
+	# Listが空ならPDCのデータ自体削除
+	if {-MetadataKeys::%{_uuid}%}.isEmpty() is true:
+		delete {-MetadataKeys::%{_uuid}%}
+
+# 取得
+local function getMetadataKeys(holder: object) :: object:
+	set {_uuid} to uuid of {_holder}
+	set {_keyList} to {-MetadataKeys::%{_uuid}%}
+	if {_keyList} is not set:
+		set {_keyList} to new ArrayList()
+	
+	return {_keyList}
+
+# 全て削除
+local function clearMetadataKeys(holder: object):
+	set {_uuid} to uuid of {_holder}
+	delete {-MetadataKeys::%{_uuid}%}
+
+# 残留metadataの削除処理
+on death with priority MONITOR:
+	delete metadata value "gametype" of victim
+	clearMetadata(victim)
+
+on quit:
+	delete metadata value "gametype" of player
+	clearMetadata(player)
+
+on EntityRemoveFromWorldEvent with priority MONITOR:
+	set {_entity} to event.getEntity()
+	delete metadata value "gametype" of {_entity}
+	clearMetadata({_entity})
