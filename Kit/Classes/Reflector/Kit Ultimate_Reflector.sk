@@ -200,7 +200,7 @@ function kitUltReflector(player: player):
 local function kitEffect_UniversalDivision_Wall(loc: location, transform: object) :: entity:
 	set {_item} to sea lantern
 	spawn a item display at {_loc}
-	set {_display} to spawned item display
+	set {_itemdisplay} to spawned item display
 
 	setBrightness({_itemdisplay})
 	{_itemdisplay}.setTeleportDuration(1)
@@ -209,14 +209,14 @@ local function kitEffect_UniversalDivision_Wall(loc: location, transform: object
 	setDisplayItem({_itemdisplay}, {_item})
 	{_itemdisplay}.setTransformation({_transform})
 
-	set metadata value "gametype" of {_display} to "Kit"
-	set metadata value "Universal Division" of {_display} to "%{_player}%"
-	return {_display}
+	setGameType({_itemdisplay})
+	set metadata value "Universal Division" of {_itemdisplay} to "%{_player}%"
+	return {_itemdisplay}
 
 local function kitEffect_UniversalDivision_InvisibleWall(loc: location, transform: object) :: entity:
 	set {_item} to white stained glass pane
 	spawn a item display at {_loc}
-	set {_display} to spawned item display
+	set {_itemdisplay} to spawned item display
 
 	setBrightness({_itemdisplay})
 	{_itemdisplay}.setTeleportDuration(1)
@@ -225,10 +225,10 @@ local function kitEffect_UniversalDivision_InvisibleWall(loc: location, transfor
 	setDisplayItem({_itemdisplay}, {_item})
 	{_itemdisplay}.setTransformation({_transform})
 
-	set metadata value "gametype" of {_display} to "Kit"
-	set metadata value "Universal Division" of {_display} to "%{_player}%"
-	set metadata value "Universal Division - Invisible" of {_display} to true
-	return {_display}
+	setGameType({_itemdisplay})
+	set metadata value "Universal Division" of {_itemdisplay} to "%{_player}%"
+	set metadata value "Universal Division - Invisible" of {_itemdisplay} to true
+	return {_itemdisplay}
 
 import:
 	java.util.ArrayList
@@ -277,7 +277,7 @@ local function kitEffect_UniversalDivision_Timer():
 		
 		# add players to player-list
 		loop all players:
-			metadata value "gametype" of loop-player is "Kit"
+			getGameType(loop-player) is "Kit"
 			add loop-player to {_players::*}
 
 		# teams loop
