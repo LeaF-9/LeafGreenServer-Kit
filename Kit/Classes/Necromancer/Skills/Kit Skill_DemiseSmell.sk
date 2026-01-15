@@ -98,7 +98,7 @@ local function kitWraithTimer(player: player, wraith: entity):
 					set {_disableTimer.%loop-player%} to 11 if {_disableTimer.%loop-player%} is not set
 
 			if {_nearRespawn.%loop-player%} is set:  # リスポーン地点にいる場合の処理
-				continue if metadata value "gametype" of loop-player is not "Kit"  # Kit未選択であればスキップ
+				continue if getGameType(loop-player) is not "Kit"  # Kit未選択であればスキップ
 
 				subtract 1 from {_disableTimer.%loop-player%}
 				if {_disableTimer.%loop-player%} <= 0:
@@ -739,7 +739,7 @@ on damage of skeleton:
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(4, 52, 66), 3, {_el})
 
 on damage of player with priority LOW:
-	metadata value "gametype" of victim is "Kit"
+	getGameType(victim) is "Kit"
 	set {_attacker} to getAttacker(victim)
 	set {_isWraith} to getPersistentData({_attacker}, "necromancer-entity-wraith")
 	stop if {_isWraith} is not true

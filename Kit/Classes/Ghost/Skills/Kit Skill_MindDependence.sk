@@ -26,7 +26,7 @@ function kitEffect_MindDependence(player: player):
 	playSound("entity.iron_golem.death", 1, 0.5, {_tg}, true)
 
 on damage of player with priority HIGHEST:
-	metadata value "gametype" of victim is "Kit"
+	getGameType(victim) is "Kit"
 	checkDamagable(victim) is true
 	if getKitStats(victim, "MindDependence") is set:
 		set {_dmg} to getDamageModification_ALL(victim, damage)
@@ -41,7 +41,7 @@ on damage of player with priority HIGHEST:
 				spawnParticle_BlockData(falling_dust, red concrete powder, {_el})
 
 on death:
-	metadata value "gametype" of victim is "Kit"
+	getGameType(victim) is "Kit"
 	getKitStats(victim, "MindDependence") is set
 	loop all players:
 		getKitStats(loop-player, "MindDependence") is victim

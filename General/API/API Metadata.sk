@@ -63,14 +63,14 @@ local function clearMetadataKeys(holder: object):
 
 # 残留metadataの削除処理
 on death with priority MONITOR:
-	delete metadata value "gametype" of victim
+	deleteGametype(victim)
 	clearMetadata(victim)
 
 on quit:
-	delete metadata value "gametype" of player
+	deleteGameType(player)
 	clearMetadata(player)
 
 on EntityRemoveFromWorldEvent with priority MONITOR:
 	set {_entity} to event.getEntity()
-	delete metadata value "gametype" of {_entity}
+	deleteGameType({_entity})
 	clearMetadata({_entity})

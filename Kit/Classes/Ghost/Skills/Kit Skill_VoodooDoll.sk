@@ -26,7 +26,7 @@ function kitEffect_VoodooDoll(player: player):
 		deleteKitStats({_player}, "VoodooDoll")
 		loop all entities:
 			type of loop-entity is an armor stand
-			metadata value "gametype" of loop-entity is "Kit"
+			getGameType(loop-entity) is "Kit"
 			metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
 			delete loop-entity
 	set {_tg} to {_SkillTarget}
@@ -39,7 +39,7 @@ function kitEffect_VoodooDoll(player: player):
 	set {_armorloc} to location of {_player}
 	set {_now} to now
 	spawn an armor stand at location of {_player}
-	set metadata value "gametype" of spawned armor stand to "Kit"
+	setGameType(spawned armor stand)
 	set metadata value "Kit-VoodooDoll" of spawned armor stand to "%{_player}%"
 	set metadata value "Kit-VoodooTime" of spawned armor stand to "%{_now}%"
 	set helmet of spawned armor stand to skull of {_tg}
@@ -58,7 +58,7 @@ function kitEffect_VoodooDoll(player: player):
 			apply wither 1 to {_tg} for 10 seconds
 		loop all entities:
 			type of loop-entity is an armor stand
-			metadata value "gametype" of loop-entity is "Kit"
+			getGameType(loop-entity) is "Kit"
 			metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
 			metadata value "Kit-VoodooTime" of loop-entity is "%{_now}%"
 			set {_exist} to true
@@ -78,7 +78,7 @@ function kitEffect_VoodooDoll(player: player):
 	remove wither from {_tg}
 	loop all entities:
 		type of loop-entity is an armor stand
-		metadata value "gametype" of loop-entity is "Kit"
+		getGameType(loop-entity) is "Kit"
 		metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
 		metadata value "Kit-VoodooTime" of loop-entity is "%{_now}%"
 		delete loop-entity

@@ -17,7 +17,7 @@ function kitEffect_FightSupporter(player: player):
 	kitMsg({_player}, "<##ff8c00>周辺に<##d2691e>短時間の戦闘強化<##ff8c00>を付与した!")
 	kitParticle_FightSupporter({_player})
 	loop all entities in radius {@effect-radius} around {_player}:
-		metadata value "gametype" of loop-entity is "Kit"
+		getGameType(loop-entity) is "Kit"
 		loop-entity is not {_player}
 		if kitCheckTeam(loop-entity, {_player}, true) is true:
 			applyEffect(loop-entity, regeneration, 3, {@effect-tick})

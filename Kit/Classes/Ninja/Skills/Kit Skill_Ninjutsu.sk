@@ -198,7 +198,7 @@ on explosion:
 		wait a tick
 		loop 2 times:
 			drop a tnt named "%{_act}%" at event-location
-			set metadata value "gametype" of last dropped item to "Kit"
+			setGameType(last dropped item)
 			set metadata value "ninjutsu-baku-2" of last dropped item to "%{_act}%"
 			set metadata value "undelete" of last dropped item to true
 			spawnParticle(flame, last dropped item)
@@ -216,7 +216,7 @@ on explosion:
 		loop {_dloc::*}:
 			loop 3 times:
 				drop a gunpowder named "%{_act}%" at loop-value-1
-				set metadata value "gametype" of last dropped item to "Kit"
+				setGameType(last dropped item)
 				set metadata value "ninjutsu-baku-3" of last dropped item to "%{_act}%"
 				set metadata value "undelete" of last dropped item to true
 				spawnParticle(smoke, last dropped item)
@@ -472,7 +472,7 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 					playSound("block.glass.break", 1, 2, loop-player)
 			set {_jb::%loop-player%} to true
 		loop all players:
-			metadata value "gametype" of loop-player is "Kit"
+			getGameType(loop-player) is "Kit"
 			{_eg::%loop-player%} is set
 			if {_jb::%loop-player%} is true:
 				applyEffect(loop-player, slowness, 1, 40, true)

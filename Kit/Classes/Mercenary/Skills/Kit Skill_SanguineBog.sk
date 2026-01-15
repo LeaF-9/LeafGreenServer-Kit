@@ -61,13 +61,13 @@ local function kitParticle_SanguineBog_Prepare(loc: location):
 		add {_add.z} to z-pos of {_dl}
 		drop a redstone block at {_dl}
 		set {_dropItem} to last dropped item
-		set metadata value "gametype" of {_dropItem} to "Kit"
+		setGameType({_dropItem})
 		set metadata value "sanguine-bog" of {_dropItem} to {_now}
 		kitParticle_SanguineBog_Generate({_dropItem})
 	set {_to} to location 15 meters above {_loc}
 	loop 20 times:
 		loop all entities:
-			metadata value "gametype" of loop-entity is "Kit"
+			getGameType(loop-entity) is "Kit"
 			metadata value "sanguine-bog" of loop-entity is {_now}
 			set {_from} to location of loop-entity
 			set {_vector} to setVector({_from}, {_to}, 0.7)
@@ -79,7 +79,7 @@ local function kitParticle_SanguineBog_Prepare(loc: location):
 	playSound("block.respawn_anchor.charge", 1, 0.5, {_loc})
 	kitParticle_SanguineBog_Bog({_loc})
 	loop all entities:
-		metadata value "gametype" of loop-entity is "Kit"
+		getGameType(loop-entity) is "Kit"
 		metadata value "sanguine-bog" of loop-entity is {_now}
 		set {_power.n} to a random number between -1 and 1
 		set {_power.e} to a random number between -1 and 1
@@ -89,7 +89,7 @@ local function kitParticle_SanguineBog_Prepare(loc: location):
 		push loop-entity downwards at speed {_power.d}
 	wait a second
 	loop all entities:
-		metadata value "gametype" of loop-entity is "Kit"
+		getGameType(loop-entity) is "Kit"
 		metadata value "sanguine-bog" of loop-entity is {_now}
 		delete loop-entity
 

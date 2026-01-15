@@ -33,7 +33,7 @@ command /kit-standspawn:
 	trigger:
 		loop all creepers:
 			display name of loop-creeper is "Test-Stand"
-			set metadata value "gametype" of loop-creeper to "Kit"
+			setGameType(loop-creeper)
 			teleport loop-creeper to location(-60.5, 103, 0.5, world "Kit-SkillCheck", 270, 0)
 			set {_exist} to true
 		{_exist} is not set
@@ -41,13 +41,13 @@ command /kit-standspawn:
 		set {_world} to world "Kit-SkillCheck"
 		set {_loc} to location(-60.5, 103, 0.5, {_world}, 270, 0)
 		set {_mob} to {_world}.spawnEntity({_loc}, EntityType.CREEPER)
-		set metadata value "gametype" of {_mob} to "Kit"
+		setGameType({_mob})
 		{_mob}.setAI(false)
 		{_mob}.setSilent(true)
 		set display name of {_mob} to "Test-Stand"
 
 on damage of creeper with priority MONITOR:
-	metadata value "gametype" of victim is "Kit"
+	getGameType(victim) is "Kit"
 	display name of victim is "Test-Stand"
 	cancel event
 

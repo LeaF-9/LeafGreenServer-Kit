@@ -67,7 +67,7 @@ function kitBlood(player: player):
 	remove bossbar {_bossbar.id}
 
 on heal:
-	metadata value "gametype" of player is "Kit"
+	getGameType(player) is "Kit"
 	getDebuffs(player, "Blood") is true
 	cancel event
 
@@ -418,7 +418,7 @@ function kitStun(player: player, tick: number):
 		removeDebuffs({_player}, "Stun")
 
 on shoot:
-	metadata value "gametype" of shooter is "Kit"
+	getGameType(shooter) is "Kit"
 	if getDebuffs(shooter, "Stun") is true:
 		wait a tick
 		set {_push.lr} to random number from -1 to 1
@@ -476,7 +476,7 @@ function kitFear(player: player, tick: number):
 			stop all sounds for {_player}
 		# --- 効果 ---
 		loop all players:
-			metadata value "gametype" of loop-player is "Kit"
+			getGameType(loop-player) is "Kit"
 			if distance between loop-player and {_player} > 10:
 				hide loop-player from {_player}
 			else:
@@ -489,7 +489,7 @@ function kitFear(player: player, tick: number):
 	remove bossbar {_bossbar.id}
 	if getDebuffDates({_player}, "Fear") is {_now}:
 		loop all players:
-			metadata value "gametype" of loop-player is "Kit"
+			getGameType(loop-player) is "Kit"
 			getInvisibleStatus(loop-player) is false
 			reveal loop-player from {_player}
 		removeDebuffs({_player}, "Fear")

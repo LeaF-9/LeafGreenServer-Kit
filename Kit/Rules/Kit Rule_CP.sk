@@ -32,19 +32,19 @@ function kitSetHologram_CP(stage: text):
 		# 発光マーカー生成
 		set {_nbt} to nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}],Team:""kit-white""}"
 		spawn a magma cube at {_loc} with nbt {_nbt}
-		set metadata value "gametype" of spawned magma cube to "Kit"
+		setGameType(spawned magma cube)
 		set metadata value "kit-areaname" of spawned magma cube to "%loop-index%"
 		# エリア名ディスプレイ生成
 		set {_nbt} to nbt compound from "{Invulnerable:1b,PersistenceRequired:1b,NoBasePlate:1b,NoGravity:1b,Invisible:1b,Marker:1b}"
 		spawn an armor stand at {_nameloc} with nbt {_nbt}
 		set spawned armor stand's display name to "§f§l%loop-index%"
-		set metadata value "gametype" of spawned armor stand to "Kit"
+		setGameType(spawned armor stand)
 		set metadata value "paname" of spawned armor stand to "%loop-index%"
 		# エリアタイプ生成
 		set {_transformation} to kitTransformation("[0f,0f,0f,1f]", "[0f,0f,0f,1f]", "[0f,0f,0f]", "[0.8f,0.8f,0.8f]")
 		set {_nbt} to nbt compound from "{transformation:%{_transformation}%,item:{id:""%{_blocktype}%"",Count:1b},brightness:{block:15,sky:15}}"
 		spawn an item display at {_typeloc} with nbt {_nbt}
-		set metadata value "gametype" of spawned item display to "Kit"
+		setGameType(spawned item display)
 		set metadata value "patype" of spawned item display to {_type}
 
 function kitChangeHologram_CP(team: text, area: text):
@@ -60,7 +60,7 @@ function kitChangeHologram_CP(team: text, area: text):
 	add -0.25 to y-coordinate of {_loc}
 	set {_nbt} to nbt compound from "{NoGravity:1b,Size:0.5,Invulnerable:1,PersistenceRequired:1,NoAI:1,Silent:1,Glowing:1,DropItem:0,active_effects:[{id:invisibility,duration:12000,amplifier:0,show_particles:0b}],Team:""kit-%{_team}%""}"
 	spawn a magma cube at {_loc} with nbt {_nbt}
-	set metadata value "gametype" of spawned magma cube to "Kit"
+	setGameType(spawned magma cube)
 	set metadata value "kit-areaname" of spawned magma cube to "%{_area}%"
 
 # TeamBuff適用
@@ -339,7 +339,7 @@ local function kitSetTypeColor_CP(type: text) :: text:
 local function kitCheckInPlayer_CP(player: player, areaname: text) :: boolean:
 	if {Join::%{_player}%} is not "Kit":
 		return false
-	if metadata value "gametype" of {_player} is not "Kit":
+	if getGameType({_player}) is not "Kit":
 		return false
 	if kitCheckAlive({_player}) is false:
 		return false

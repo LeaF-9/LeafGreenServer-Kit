@@ -130,7 +130,7 @@ local function kitEffect_IvyZipline_Zipline(player: player, from: location, to: 
 			set {_rideloc} to location {_m} meters in front of {_from}
 
 			loop all players in radius {@ride-radius} around {_rideloc}:
-				metadata value "gametype" of loop-player is "Kit"
+				getGameType(loop-player) is "Kit"
 				{_riding::%loop-player%} is not set
 				if loop-player is sneaking:
 					if {_sneaking::%loop-player%} is false:
@@ -243,7 +243,7 @@ local function kitEffect_IvyZipline_Vehicle(player: player, loc: location) :: en
 	spawn a block display at {_loc}
 	set {_vehicle} to spawned block display
 
-	set metadata value "gametype" of {_vehicle} to "Kit"
+	setGameType({_vehicle})
 	set {_uuidString} to "%uuid of {_player}%"
 	setPersistentData({_vehicle}, {@metadata-vehicle}, {_uuidString})
 

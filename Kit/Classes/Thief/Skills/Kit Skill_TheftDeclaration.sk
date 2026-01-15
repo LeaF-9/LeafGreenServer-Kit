@@ -3,7 +3,7 @@
 function kitEffect_TheftDeclaration(player: player):
 	set {_tool} to tool of {_player}
 	loop all entities:
-		metadata value "gametype" of loop-entity is "Kit"
+		getGameType(loop-entity) is "Kit"
 		metadata value "theft-declaration" of loop-entity is "%{_player}%"
 		set {_baseloc} to location of loop-entity
 		delete loop-entity
@@ -25,14 +25,14 @@ function kitEffect_TheftDeclaration(player: player):
 	set {_to} to location 30 meters in front of {_from}
 	set {_vector} to setVector({_from}, {_to}, 1.5)
 	drop a paper named "%{_player}%" at location of head of {_player}
-	set metadata value "gametype" of last dropped item to "Kit"
+	setGameType(last dropped item)
 	set metadata value "undelete" of last dropped item to true
 	set metadata value "theft-declaration" of last dropped item to "%{_player}%"
 	kitParticle_TheftDeclaration_Paper(last dropped item)
 	set velocity of last dropped item to {_vector}
 	wait 3 seconds
 	loop all entities:
-		metadata value "gametype" of loop-entity is "Kit"
+		getGameType(loop-entity) is "Kit"
 		metadata value "theft-declaration" of loop-entity is "%{_player}%"
 		set {_baseloc} to location of loop-entity
 		delete loop-entity

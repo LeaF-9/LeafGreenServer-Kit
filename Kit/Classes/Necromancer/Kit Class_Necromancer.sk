@@ -42,7 +42,7 @@ function kitParticle_SummonDead(baseloc: location):
 # Abilities
 on death:
 	if checkEntityType(victim, player) is false:  # 自分のMobが死亡した際の処理
-		metadata value "gametype" of victim is "Kit"
+		getGameType(victim) is "Kit"
 		set {_necroEntity} to getPersistentData(victim, "necromancer-entity")
 		if {_necroEntity} is not set:
 			stop
@@ -50,7 +50,7 @@ on death:
 		set {_summoner} to getPlayer({_necroEntity})
 		kitAddNecromance({_summoner}, 1)
 	else:  # プレイヤーが死んだ際の処理
-		metadata value "gametype" of victim is "Kit"
+		getGameType(victim) is "Kit"
 		if {Class::%victim%} is "Necromancer":
 			if damage was caused by void:
 				if {-LastKiller::%victim%} is not set:

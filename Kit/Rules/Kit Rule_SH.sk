@@ -138,7 +138,7 @@ function kitSpawnSheep_SH(loc: location):
 		set {_age} to "baby"
 	# -------------
 	spawn a sheep at {_loc} with {_nbt}
-	set metadata value "gametype" of spawned entity to "Kit"
+	setGameType(spawned entity)
 	set metadata value "sh-sheep" of spawned entity to true
 	set metadata value "sh-age" of spawned entity to {_age}
 	set metadata value "sh-color" of spawned entity to white
@@ -359,7 +359,7 @@ function kitTimer_SH():
 		# ----------------------
 		# --- Player Walk Speed ---
 		loop all players:
-			metadata value "gametype" of loop-player is "Kit"
+			getGameType(loop-player) is "Kit"
 			set {_shcount} to kitCheckHolding_SH(loop-player)
 			set {_setspeed} to 0.2 - (0.03 * {_shcount})
 			set {_nowspeed} to walk speed of loop-player
