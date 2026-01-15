@@ -1,6 +1,5 @@
-on load:
-	stop if {-FakeBlocks} is not set
-	set {-FakeBlocks} to createNewArrayList()
+options:
+	owner-key: "fake-owner-uuid"
 
 function kitFakeBlock(player: player, location: location, block: object, transformation: object, metadata: text) :: entity:
 	set {_team} to getTeam({_player}, true)
@@ -12,8 +11,17 @@ function kitFakeBlock(player: player, location: location, block: object, transfo
 	setGameType({_blockdisplay})
 	setMetadata({_blockdisplay}, "kit-block", {_metadata})
 	setMetadata({_blockdisplay}, {_metadata}, "%{_player}%")
+
+	set {_uuid} to uuid of {_player}
 	setPersistentData({_blockdisplay}, "kit-block", {_metadata})
-	setPersistentData({_blockdisplay}, {_metadata}, "%{_player}%")
+	setPersistentData({_blockdisplay}, {@owner-key}, "%{_player}%")
+
+	set {-FakeBlocks::%{_player}%} to createNewHashMap() if {-FakeBlocks::%{_player}%} is not set
+	set {_entityList} to {-FakeBlocks::%{_player}%}.get({_metadata})
+	set {_entityList} to createNewArrayList() if {_entityList} is not set
+
+	{_entityList}.add({_blockdisplay})
+	{-FakeBlocks::%{_player}%}.put({_metadata}, {_entityList})
 
 	setBrightness({_blockdisplay})
 	{_blockdisplay}.setGlowColorOverride({_color})
@@ -35,8 +43,17 @@ function kitFakeItem(player: player, location: location, item: item type, transf
 	setGameType({_itemdisplay})
 	setMetadata({_itemdisplay}, "kit-item", {_metadata})
 	setMetadata({_itemdisplay}, {_metadata}, "%{_player}%")
-	setPersistentData({_itemdisplay}, "kit-item", {_metadata})
-	setPersistentData({_itemdisplay}, {_metadata}, "%{_player}%")
+
+	set {_uuid} to uuid of {_player}
+	setPersistentData({_blockdisplay}, "kit-block", {_metadata})
+	setPersistentData({_blockdisplay}, {@owner-key}, "%{_player}%")
+	
+	set {-FakeBlocks::%{_player}%} to createNewHashMap() if {-FakeBlocks::%{_player}%} is not set
+	set {_entityList} to {-FakeBlocks::%{_player}%}.get({_metadata})
+	set {_entityList} to createNewArrayList() if {_entityList} is not set
+
+	{_entityList}.add({_itemdisplay})
+	{-FakeBlocks::%{_player}%}.put({_metadata}, {_entityList})
 
 	setBrightness({_itemdisplay})
 	{_itemdisplay}.setGlowColorOverride({_color})
@@ -96,64 +113,66 @@ command /kit-deletedisplaytest:
 		message formatted "§9Item§b: §e§l%{_display.item}%" to player
 
 function kitFakeCheck(player: player, metadata: text) :: boolean:
-	set {_bool} to false
-	loop all block displays:
-		getPersistentData(loop-block display, "kit-block") is {_metadata}
-		getPersistentData(loop-block display, {_metadata}) is "%{_player}%"
-		set {_bool} to true
-	loop all item displays:
-		getPersistentData(loop-item display, "kit-item") is {_metadata}
-		getPersistentData(loop-item display, {_metadata}) is "%{_player}%"
-		set {_bool} to true
-	return {_bool}
+	return true if {-FakeBlocks::%{_player}%}.containsKey({_metadata}) is true
+	return false
+
+function kitFakeDisplays(player: player, metadata: text) :: entities:
+	set {_entityList} to {-FakeBlocks::%{_player}%}.get({_metadata})
+	
+	loop ...{_entityList}:
+		set {_entity} to loop-value
+		add {_entity} to {_displayEntities::*}
+	
+	return {_displayEntities::*}
 
 function kitFakeDelete(player: offline player):
-	loop all block displays:
-		set {_metadata} to getPersistentData(loop-block display, "kit-block")
-		continue if {_metadata} is not set
-		# EngineerのUltは破壊しない
-		continue if {_metadata} is "machine-transportlift"
+	set {_keyList} to {-FakeBlocks::%{_player}%}.keySet()
 
-		getPersistentData(loop-block display, {_metadata}) is "%{_player}%"
+	loop ...{_keyList}:
+		set {_key} to loop-value
+		continue if {_key} is "Machine-Transport Lift"
 
-		(loop-block display).remove()
+		set {_value.entityList} to {-FakeBlocks::%{_player}%}.get({_key})
+		loop ...{_value.entityList}:
+			set {_loopentity} to loop-value-2
+			{_loopentity}.remove()
 
-	loop all item displays:
-		set {_metadata} to getPersistentData(loop-item display, "kit-item")
-		continue if {_metadata} is not set
-
-		getPersistentData(loop-item display, {_metadata}) is "%{_player}%"
-
-		(loop-item display).remove()
+		{-FakeBlocks::%{_player}%}.remove({_key})
+	
+	delete {-FakeBlocks::%{_player}%} if {-FakeBlocks::%{_player}%}.isEmpty() is true
 
 function kitFakeDeleteData(player: offline player, metadata: text):
-	loop all block displays:
-		getPersistentData(loop-block display, "kit-block") is {_metadata}
-		getPersistentData(loop-block display, {_metadata}) is "%{_player}%"
+	set {_entityList} to {-FakeBlocks::%{_player}%}.get({_metadata})
+	{-FakeBlocks::%{_player}%}.remove({_metadata})
+	delete {-FakeBlocks::%{_player}%} if {-FakeBlocks::%{_player}%}.isEmpty() is true
 
-		(loop-block display).remove()
-	loop all item displays:
-		getPersistentData(loop-item display, "kit-item") is {_metadata}
-		getPersistentData(loop-item display, {_metadata}) is "%{_player}%"
-
-		(loop-item display).remove()
+	loop ...{_entiyList}:
+		set {_loopentity} to loop-value
+		{_loopentity}.remove()
 
 function kitFakeDeleteAll():
-	loop all block displays:
-		set {_metadata} to getPersistentData(loop-block display, "kit-block")
-		continue if {_metadata} is not set
+	loop {-FakeBlocks::*}:
+		set {_index.player} to loop-index
+		set {_hashMap.fakes} to loop-value
 
-		(loop-block display).remove()
-	loop all item displays:
-		set {_metadata} to getPersistentData(loop-item display, "kit-item")
-		continue if {_metadata} is not set
+		set {_keyList} to {_hashMap.fakes}.keySet()
 
-		(loop-item display).remove()
+		loop ...{_keyList}:
+			set {_key.metadata} to loop-value-2
+			set {_value.entityList} to {_hashMap.fakes}.get({_key.metadata})
+
+			loop ...{_value.entityList}:
+				set {_loop-entity} to loop-value-3
+				{_loop-entity}.remove()
+
+	delete {-FakeBlocks::*}
 
 command /kit-fakeblock-delete:
 	permission: sk.admin
 	trigger:
 		kitFakeDeleteAll()
+
+
 
 import:
 	io.papermc.paper.event.player.PlayerArmSwingEvent
@@ -166,20 +185,8 @@ on PlayerArmSwingEvent:
 	set {_tg} to checkPunchMachine({_player})
 	if {_tg} is not set:
 		stop
-	set {_metadata} to metadata value "kit-block" of {_tg}
-	if {_metadata} is not set:
-		set {_metadata} to metadata value "kit-item" of {_tg}
-	set {_target} to metadata value {_metadata} of {_tg}
-	set {_target} to {_target} parsed as offline player
 
-	stop if {_target} is {_player}
-	if kitCheckTeam({_player}, {_target}, false) is true:
-		make a fake explosion at location of {_tg}
-		kitMsg({_target}, "§9§l%{_metadata}% §cが破壊された!")
-		message formatted "§e%{_target}%§aの§9§l%{_metadata}%§aを破壊しました!" to {_player}
-		kitFakeDeleteData({_target}, {_metadata})
-	else:
-		kitEffectDescription({_player}, "§c§l味方の設置物は破壊できません!")
+	breakMachine({_player}, {_tg})
 
 local function checkPunchMachine(player: player) :: entity:
 	set {_baseloc} to location of head of {_player}
@@ -195,10 +202,10 @@ local function checkPunchMachine(player: player) :: entity:
 			stop
 		loop all entities in radius 1 around {_loc}:
 			if checkEntityType(loop-entity, block display) is true:
-				metadata value "kit-block" of loop-entity is set
+				getPersistentData(loop-entity, "kit-block") is set
 				set {_returnentity} to loop-entity
 			else if checkEntityType(loop-entity, item display) is true:
-				metadata value "kit-item" of loop-entity is set
+				getPersistentData(loop-entity, "kit-item") is set
 				set {_returnentity} to loop-entity
 	return {_returnentity}
 
@@ -207,26 +214,30 @@ on projectile hit:
 		delete {_target}
 		delete {_metadata}
 		if checkEntityType(loop-entity, block display) is true:
-			if metadata value "kit-block" of loop-entity is not set:
-				stop
-			set {_metadata} to metadata value "kit-block" of loop-entity
-			set {_target} to metadata value {_metadata} of loop-entity
+			set {_metadata} to getPersistentData(loop-entity, "kit-block")
+			continue if {_metadata} is not set
+			set {_target} to loop-entity
 		else if checkEntityType(loop-entity, item display) is true:
-			if metadata value "kit-item" of loop-entity is not set:
-				stop
-			set {_metadata} to metadata value "kit-item" of loop-entity
-			set {_target} to metadata value {_metadata} of loop-entity
-		else:
-			stop
-		set {_target} to {_target} parsed as offline player
+			set {_metadata} to getPersistentData(loop-entity, "kit-item")
+			continue if {_metadata} is not set
+			set {_target} to loop-entity
+		continue if {_target} is not set
 
-		stop if {_target} is shooter
-		if kitCheckTeam(shooter, {_target}, false) is true:
-			make a fake explosion at location of loop-entity
-			if {_breaks::*} does not contain {_metadata}:
-				kitFakeDeleteData({_target}, {_metadata})
-				add {_metadata} to {_breaks::*}
-				kitMsg({_target}, "§9§l%{_metadata}% §cが破壊された!")
-				message "§e%{_target}%§aの§9§l%{_metadata}%§aを破壊しました!" to shooter
-		else:
-			kitEffectDescription(shooter, "§c§l味方の設置物は破壊できません!")
+		continue if {_metadatas::*} contains {_metadata}
+		add {_metadata} to {_metadatas::*}
+		breakMachine(shooter, {_target})
+
+local function breakMachine(player: player, machine: entity):
+	set {_metadata} to getPersistentData({_machine}, "kit-block")
+	set {_metadata} to getPersistentData({_machine}, "kit-item") if {_metadata} is not set
+	set {_uuid} to getPersistentData({_machine}, {@owner-key})
+	set {_target} to getPlayer({_uuid})
+
+	stop if {_target} is {_player}
+	if kitCheckTeam({_player}, {_target}, false) is true:
+		make a fake explosion at location of {_machine}
+		kitMsg({_target}, "§9§l%{_metadata}% §cが破壊された!")
+		message formatted "§e%{_target}%§aの§9§l%{_metadata}%§aを破壊しました!" to {_player}
+		kitFakeDeleteData({_target}, {_metadata})
+		stop
+	kitEffectDescription({_player}, "§c§l味方の設置物は破壊できません!")
