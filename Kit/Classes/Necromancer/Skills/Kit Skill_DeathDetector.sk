@@ -90,10 +90,11 @@ function kitEffect_DeathDetector_Summon(player: player, loc: location):  # æ­»ã‚
 	kitEffect_DeathDetector_Glowing({_player})
 
 local function kitEffect_DeathDetector_Glowing(player: player):
-	loop all entities:
-		getPersistentData(loop-entity, "kit-item") is {@machine-key}
-		getPersistentData(loop-entity, {@machine-key}) is "%{_player}%"
-		set {_glowEntity} to loop-entity
+	set {_machines::*} to kitFakeDisplays({_player}, {@machine-key})
+
+	loop {_machines::*}:
+		checkEntityType(loop-value, item display) is true
+		set {_glowEntity} to loop-value
 	
 	{_glowEntity} is set
 	set glowing of {_glowEntity} to true

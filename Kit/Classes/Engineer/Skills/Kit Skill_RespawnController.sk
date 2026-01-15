@@ -177,10 +177,7 @@ local function kitParticle_RespawnController_Beam(baseloc: location, targetloc: 
 
 local function kitParticle_RespawnController_Expose(player: player, target: player):
 	# 発光させる機械の保存
-	loop all block displays:
-		getPersistentData(loop-block display, "kit-block") is {@machine-key}
-		getPersistentData(loop-block display, {@machine-key}) is "%{_player}%"
-		add loop-block display to {_machines::*}
+	set {_machines::*} to kitFakeDisplays({_player}, {@machine-key})
 	
 	loop 300 times:
 		loop {_machines::*}:
