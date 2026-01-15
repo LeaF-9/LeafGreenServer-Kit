@@ -1,0 +1,18 @@
+options:
+	default: "Kit"
+
+	gametype-key: "gametype"
+
+function getGameType(entity: entity) :: text:
+	set {_gametype} to getPersistentData({_entity}, {@gametype-key})
+	return {_gametype}
+
+function setGameType(entity: entity, type: text = "default"):
+	set {_type} to {@default} if {_type} is "default"
+
+	setMetadata({_entity}, {@gametype-key}, {_type})
+	setPersistentData({_entity}, {@gametype-key}, {_type})
+
+function deleteGametype(entity: entity):
+	deleteMetadata({_entity}, {@gametype-key})
+	removePersistentData({_entity}, {@gametype-key})
