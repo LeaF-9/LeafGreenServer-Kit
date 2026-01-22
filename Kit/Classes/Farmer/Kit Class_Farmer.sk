@@ -64,7 +64,20 @@ function plantCrop_Farmer(player: player, locs: locations, crop: text = "non-sel
 
 # 作物Entityを設置及び成長観察を行う関数
 local function placeCropDisplay(player: player, loc: location, crop: text):
+	set {_display} to spawnEntity({_loc}, block display)
+	set {_interaction} to spawnEntity({_loc}, interaction)
 
+	set {_uuid} to uuid of {_player}
+	setPersistentData({_display}, "farmer-planted-by", {_uuid})
+	setPersistentData({_display}, "crop-type", {_crop})
+	setPersistentData({_display}, "growth-tick", 0)
+
+	setBrightness({_display})
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+	
+	setDisplayBlock({_display}, {_block})
 
 
 
