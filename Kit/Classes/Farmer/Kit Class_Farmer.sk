@@ -14,7 +14,7 @@ on drop:
 	stop if {_type} is not "Weapon"
 
 	set {_type} to kitItemKitChecker({_item})
-	stop if {_type} is not "Farmer "
+	stop if {_type} is not "Farmer"
 
 	cancel event
 	set {_crop} to checkFarmerCrop(player)
@@ -62,11 +62,13 @@ function plantCrop_Farmer(player: player, locs: locations, crop: text = "non-sel
 
 	setKitStats({_player}, {_statsName}, {_currentCrops})
 
-# 作物Entityを設置及び成長観察を行う関数
+# 作物Entityを設置及び成長観察開始を行う関数
 local function placeCropDisplay(player: player, loc: location, crop: text):
 	set {_display} to spawnEntity({_loc}, block display)
 	set {_interaction} to spawnEntity({_loc}, interaction)
 
+	# Block Display Settings
+	setGameType({_display})
 	set {_uuid} to uuid of {_player}
 	setPersistentData({_display}, "farmer-planted-by", {_uuid})
 	setPersistentData({_display}, "crop-type", {_crop})
@@ -77,7 +79,24 @@ local function placeCropDisplay(player: player, loc: location, crop: text):
 	{_display}.setInterpolationDuration(1)
 	{_display}.setViewRange(1000)
 	
+	set {_block} to Material.WHEAT if {_crop} is "wheat"
+	set {_block} to Material.POTATOES if {_crop} is "potato"
+	set {_block} to Material.CARROTS if {_crop} is "carrot"
+	set {_block} to {_block}.createBlockData()
 	setDisplayBlock({_display}, {_block})
+
+	{_display}.addPassenger({_interaction})
+
+	# Interaction Settings
+	setGameType({_interaction})
+	setPersistentData({_interaction}, "crop-interaction", true)
+
+	{_interaction}.setInteractionHeight(1.0)
+	{_interaction}.setInteractionWidth(1.0)
+	{_interaction}.setResponsive(false)
+
+	# Start Growing Process
+	startGrowingCrop({_player}, {_display})
 
 
 
