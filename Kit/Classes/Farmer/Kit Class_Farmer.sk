@@ -1,4 +1,8 @@
 # Farmerのスキル Ver1.0.0
+import:
+	org.bukkit.Material
+	org.bukkit.inventory.ItemStack
+
 
 # Abilities
 on drop:
@@ -11,24 +15,40 @@ on drop:
 	stop if {_type} is not "Farmer "
 
 	cancel event
+	set {_crop} to checkFarmerCrop(player)
+	stop if {_crop} is "none"
+	set {_newtool} to getCropItem("potato") if {_crop} is "wheat"
+	set {_newtool} to getCropItem("carrot") if {_crop} is "potato"
+	set {_newtool} to getCropItem("wheat") if {_crop} is "carrot"
+	set offhand tool of player to {_newtool}
+	soundChangeCrop(player)
+
+local function soundChangeCrop(player: player):
+	playSound("entity.item.pickup", 1, 0.9, {_player}, true)
 
 
 
-	set {_tag} to getNamespacedKey({_item}, "stolen", "string")
+local function getCropItem(crop: text) :: item:
+	set {_material} to {_crop} in upper case
+	set {_item} to new ItemStack({_material})
 
-	loop {StealItem-%{_tag}%.%player%::*}:
-		loop-value is {_item}
-		set {_index} to loop-index parsed as number + 1
-	if {StealItem-%{_tag}%.%player%::%{_index}%} is not set:
-		set {_index} to 1
-	playSound("entity.experience_orb.pickup", 1, 1.65, player, true)
-	send action bar "§b§lスキルを変更しました!" to player
-	wait a tick
-	player's tool is event-item
-	remove event-item from player
-	give {StealItem-%{_tag}%.%player%::%{_index}%} to player
+	set {_displayname} to "§e§l§o小麦" if {_crop} is "wheat"
+	set {_displayname} to "§e§l§oジャガイモ" if {_crop} is "potato"
+	set {_displayname} to "§e§l§oニンジン" if {_crop} is "carrot"
+	set display name of {_item} to {_displayname}
+
+	set {_meta} to {_item}.getItemMeta()
+	{_meta}.setFood()
+	{_item}.setItemMeta({_meta})
+
+	return {_item}
 
 
 
-function getCurrentCrop_Farmer(player: player) :: text:
-	return "wheat" if {Class::%{_player}%} is not "Farmer"
+function checkFarmerCrop(player: player) :: text:
+	set {_offhand} to offhand tool of player
+	set {_result} to "none"
+	set {_result} to "wheat" if {_offhand} is wheat
+	set {_result} to "potato" if {_offhand} is potato
+	set {_result} to "carrot" if {_offhand} is carrot
+	return {_result}
