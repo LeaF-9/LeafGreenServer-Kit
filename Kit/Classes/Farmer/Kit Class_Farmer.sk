@@ -1,0 +1,34 @@
+# Farmerのスキル Ver1.0.0
+
+# Abilities
+on drop:
+	{Class::%player%} is "Farmer"
+	set {_item} to event-item
+	set {_type} to kitItemTypeChecker({_item})
+	stop if {_type} is not "Weapon"
+
+	set {_type} to kitItemKitChecker({_item})
+	stop if {_type} is not "Farmer "
+
+	cancel event
+
+
+
+	set {_tag} to getNamespacedKey({_item}, "stolen", "string")
+
+	loop {StealItem-%{_tag}%.%player%::*}:
+		loop-value is {_item}
+		set {_index} to loop-index parsed as number + 1
+	if {StealItem-%{_tag}%.%player%::%{_index}%} is not set:
+		set {_index} to 1
+	playSound("entity.experience_orb.pickup", 1, 1.65, player, true)
+	send action bar "§b§lスキルを変更しました!" to player
+	wait a tick
+	player's tool is event-item
+	remove event-item from player
+	give {StealItem-%{_tag}%.%player%::%{_index}%} to player
+
+
+
+function getCurrentCrop_Farmer(player: player) :: text:
+	return "wheat" if {Class::%{_player}%} is not "Farmer"
