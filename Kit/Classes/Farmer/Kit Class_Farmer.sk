@@ -5,6 +5,8 @@ import:
 
 
 # Abilities
+
+# 武器ドロップ時に作物を変更する効果
 on drop:
 	{Class::%player%} is "Farmer"
 	set {_item} to event-item
@@ -26,8 +28,6 @@ on drop:
 local function soundChangeCrop(player: player):
 	playSound("entity.item.pickup", 1, 0.9, {_player}, true)
 
-
-
 local function getCropItem(crop: text) :: item:
 	set {_material} to {_crop} in upper case
 	set {_item} to new ItemStack({_material})
@@ -45,6 +45,30 @@ local function getCropItem(crop: text) :: item:
 
 
 
+# 指定した地点に作物を植える関数
+function plantCrop_Farmer(player: player, locs: locations, crop: text = "non-selected"):
+	set {_statsName} to "Farmer-PlantedLocations"
+	set {_crop} to checkFarmerCrop({_player}) if {_crop} is "non-selected"
+
+	set {_currentCrops} to getKitStats({_player}, {_statsName})
+	set {_currentCrops} to createNewArrayList() if {_currentCrops} is not set
+	for {_l} in {_locs::*}:
+		set {_plantloc} to location of block at {_l}
+		subtract 0.5 from y-pos of {_plantloc}
+		stop if {_currentCrops}.contains({_plantloc}) is true
+
+		{_currentCrops}.add({_plantloc})
+		placeCropDisplay({_player}, {_plantloc}, {_crop})
+
+	setKitStats({_player}, {_statsName}, {_currentCrops})
+
+# 作物Entityを設置及び成長観察を行う関数
+local function placeCropDisplay(player: player, loc: location, crop: text):
+
+
+
+
+# 現在選択中の作物を取得する関数
 function checkFarmerCrop(player: player) :: text:
 	set {_offhand} to offhand tool of player
 	set {_material} to {_offhand}.getType()
