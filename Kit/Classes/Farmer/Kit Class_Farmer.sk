@@ -1,4 +1,9 @@
 # Farmerのスキル Ver1.0.0
+using for loops
+
+options:
+	growth-complete-tick: 300
+
 import:
 	org.bukkit.Material
 	org.bukkit.inventory.ItemStack
@@ -72,7 +77,8 @@ local function placeCropDisplay(player: player, loc: location, crop: text):
 	set {_uuid} to uuid of {_player}
 	setPersistentData({_display}, "farmer-planted-by", {_uuid})
 	setPersistentData({_display}, "crop-type", {_crop})
-	setPersistentData({_display}, "growth-tick", 0)
+	setPersistentData({_display}, "growth-progress", 0)
+	setPersistentData({_display}, "growing-tick", 1)
 
 	setBrightness({_display})
 	{_display}.setTeleportDuration(1)
@@ -97,6 +103,16 @@ local function placeCropDisplay(player: player, loc: location, crop: text):
 
 	# Start Growing Process
 	startGrowingCrop({_player}, {_display})
+
+# 作物の成長観察を行う関数
+local function startGrowingCrop(player: player, display: entity):
+	set {_growth} to 0
+	set {_goal} to {@growth-complete-tick}
+
+	set {_growing} to true
+	loop {_goal} times:
+		wait a tick
+		
 
 
 
