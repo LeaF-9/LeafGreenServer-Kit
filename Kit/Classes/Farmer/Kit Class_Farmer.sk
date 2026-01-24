@@ -181,3 +181,60 @@ function checkFarmerCrop(player: player) :: text:
 	set {_result} to "potato" if {_material} is Material.POTATO
 	set {_result} to "carrot" if {_material} is Material.CARROT
 	return {_result}
+
+
+
+# 指定の作物にアウトラインを表示する関数
+local function outlineCrop(entity: entity):
+	set {_color} to rgb(255, 0, 0)
+	set {_baseloc} to location of {_entity}
+	subtract 0.5 from x-pos of {_baseloc}
+	subtract 0.5 from z-pos of {_baseloc}
+	set {_vector} to vector(1, 0, 0)
+	set {_upvector} to vector(0, 1, 0)
+
+	loop 4 times:
+		set {_ln} to 0
+		loop 5 times:
+			set {_mn} to {_ln} * 0.2
+			set {_sumVector} to {_vector} * vector({_mn}, {_mn}, {_mn})
+			set {_el} to {_baseloc} ~ {_sumVector}
+
+			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el})
+			add 2 to y-pos of {_el}
+			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el})
+			add 1 to {_ln}
+
+		loop 5 times:
+			set {_ln} to (loop-number-2)
+			set {_nm} to {_ln} * 0.2
+			set {_sumVector} to {_upvector} * vector({_nm}, {_nm}, {_nm})
+			set {_el} to {_baseloc} ~ {_sumVector}
+			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el})
+
+		rotate {_vector} around y-axis by 90
+
+
+
+# Timer
+function kitTimerFarmer(player: player):
+	set {_meter} to 5
+	set {_addmeter} to 0.5
+	set {_count} to {_meter} / {_addmeter}
+	while {Class::%{_player}%} is "Farmer":
+		set {_baseloc} to head of {_player}
+
+		delete {_hit}
+		set {_m} to 0
+		loop {_count} times:
+			{_hit} is not set
+			add {_addmeter} to {_m}
+			set {_targetloc} to location {_m} meters in front of {_baseloc}
+			loop all entities in radius 0.75 around {_targetloc}:
+				{_hit} is not set
+				checkEntityType(loop-entity, interaction) is true
+				getPersistentData(loop-entity, "crop-interaction") is true
+				set {_hit} to loop-entity
+
+		outlineCrop({_hit}) if {_hit} is set
+		wait a tick
