@@ -79,6 +79,7 @@ local function placeCropDisplay(player: player, loc: location, crop: text):
 	setPersistentData({_display}, "crop-type", {_crop})
 	setPersistentData({_display}, "growth-progress", 0)
 	setPersistentData({_display}, "growing-tick", 1)
+	setPersistentData({_display}, "crop-age", 0)
 
 	setBrightness({_display})
 	{_display}.setTeleportDuration(1)
@@ -107,12 +108,67 @@ local function placeCropDisplay(player: player, loc: location, crop: text):
 # 作物の成長観察を行う関数
 local function startGrowingCrop(player: player, display: entity):
 	set {_growth} to 0
-	set {_goal} to {@growth-complete-tick}
+	set {_blockGrowStep.3} to {@growth-complete-tick}
+	set {_blockGrowStep.1} to (({_blockGrowStep.3}) / 3)
+	set {_blockGrowStep.2} to (({_blockGrowStep.1}) * 2)
+
+	set {_crop} to getPersistentData({_display}, "crop-type")
+	set {_blockData} to Material.WHEAT if {_crop} is "wheat"
+	set {_blockData} to Material.POTATOES if {_crop} is "potato"
+	set {_blockData} to Material.CARROTS if {_crop} is "carrot"
+	set {_blockData} to Material.BEETROOTS if {_crop} is "beetroot"
+	set {_blockData} to {_blockData}.createBlockData()
 
 	set {_growing} to true
-	loop {_goal} times:
+	loop {_blockGrowStep.3} times:
 		wait a tick
+		if {_display}.isDead():
+			set {_growing} to false
+			stop
 		
+		# 成長進歩の更新
+		set {_nowGrowing} to getPersistentData({_display}, "growth-progress")
+		set {_growth} to {_nowGrowing} if {_growth} is not {_nowGrowing}
+		set {_growTick} to getPersistentData({_display}, "growing-tick")
+		add {_growTick} to {_growth}
+
+		setPersistentData({_display}, "growth-progress", {_growth})
+
+		# 見た目の更新 (作物変化)
+		set {_nowCrop} to getPersistentData({_display}, "crop-type")
+		if {_nowCrop} is not {_crop}:
+			set {_crop} to {_nowCrop}
+			set {_newBlockData} to Material.WHEAT if {_crop} is "wheat"
+			set {_newBlockData} to Material.POTATOES if {_crop} is "potato"
+			set {_newBlockData} to Material.CARROTS if {_crop} is "carrot"
+			set {_newBlockData} to Material.BEETROOTS if {_crop} is "beetroot"
+			set {_newBlockData} to {_newBlockData}.createBlockData()
+
+		# 見た目の更新 (成長過程)
+		set {_age.0} to 0
+		set {_age.1} to 2
+		set {_age.1} to 1 if {_crop} is "beetroot"
+		set {_age.2} to 4
+		set {_age.2} to 2 if {_crop} is "beetroot"
+		set {_age.3} to 7
+		set {_age.3} to 3 if {_crop} is "beetroot"
+
+		set {_cropAge} to getPersistentData({_display}, "crop-age")
+		set {_checkAge} to {_cropAge} + 1
+
+		if {_growth} >= {_blockGrowStep.%{_checkAge}%}:
+			setPersistentData({_display}, "crop-age", {_checkAge})
+			set {_newBlockData} to {_blockData} if {_newBlockData} is not set
+			{_newBlockData}.setAge({_age.%{_checkAge}%})
+
+		# Display変更
+		setDisplayBlock({_display}, {_newBlockData}) if {_newBlockData} is set
+		delete {_newBlockData}
+
+		# 成長完了時
+		if {_growth} >= {_blockGrowStep.3}:
+			set {_growing} to false
+			stop
 
 
 
