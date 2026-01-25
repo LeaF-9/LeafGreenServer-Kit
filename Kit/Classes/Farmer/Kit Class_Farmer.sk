@@ -9,6 +9,7 @@ import:
 	org.bukkit.Registry
 	org.bukkit.Material
 	org.bukkit.NamespacedKey
+	org.bukkit.entity.EntityType
 	org.bukkit.inventory.ItemStack
 	org.bukkit.event.entity.EntityDamageByEntityEvent
 
@@ -73,8 +74,8 @@ function plantCrop_Farmer(player: player, locs: locations, crop: text = "non-sel
 
 # 作物Entityを設置及び成長観察開始を行う関数
 local function placeCropDisplay(player: player, loc: location, crop: text):
-	set {_display} to spawnEntity({_loc}, block display)
-	set {_interaction} to spawnEntity({_loc}, interaction)
+	set {_display} to spawnEntity(block display, {_loc})
+	set {_interaction} to spawnEntity(interaction, {_loc})
 
 	# Block Display Settings
 	setGameType({_display})
@@ -178,7 +179,7 @@ local function startGrowingCrop(player: player, display: entity):
 
 # 現在選択中の作物を取得する関数
 function checkFarmerCrop(player: player) :: text:
-	set {_offhand} to offhand tool of player
+	set {_offhand} to offhand tool of {_player}
 	set {_material} to {_offhand}.getType()
 	set {_result} to "none"
 	set {_result} to "wheat" if {_material} is Material.WHEAT
@@ -319,7 +320,8 @@ local function harvestCrop(player: player, loc: location, crop: text, age: numbe
 
 	set {_itemstack} to new ItemStack({_material})
 
-	set {_itemEntity} to spawnEntity(item, {_loc})
+	set {_EntityType} to EntityType.ITEM
+	set {_itemEntity} to spawnEntity({_EntityType}, {_loc})
 	{_itemEntity}.setItemStack({_itemstack})
 	setGameType({_itemEntity})
 	setMetadata({_itemEntity}, "undelete", true)
@@ -395,7 +397,7 @@ on pick up:
 
 				applyEffect({_player}, {_potionEffectType}, {_effectTier}, {_tickEffect.ally})
 			if {_hasHeal} is true:
-				healPlayer({_player}, {_amountHeal})
+				kitHeal({_player}, {_amountHeal})
 	
 	if {_pickable.enemy} is true:
 		if kitCheckTeam({_planter}, {_player}, true) is true:
