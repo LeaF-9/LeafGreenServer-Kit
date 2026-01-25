@@ -1,5 +1,17 @@
 # Weapon-Name: Geary Cog
 
+function kitEffect_GearyCog_Timer(player: player):
+	setKitStats({_player}, "GearyCog", true) if getKitStats({_player}, "GearyCog") is not set
+
+	set {_weapontool} to kitWeaponItem("Engineer", 2)
+	while {Class::%{_player}%} is "Engineer":
+		# ツール情報の設定
+		set {_tool} to {_player}'s tool
+
+		# アクションバー表示
+		kitEffect_GearyCog_ActionBar({_player}) if {_tool} is {_weapontool}
+		wait a tick
+
 function kitEffect_GearyCog_Sneak(player: player, event: object):
 	# Fuel Check
 	if checkFuel({_player}, 2, "Weapon") is false:

@@ -73,10 +73,6 @@ function kitTimerEngineer(player: player):
 	set {_fuels} to 0
 	create bossbar titled "&8&lFuel&7: &4&l%{Kit-Fuel::%{_player}%}%" and id "%{_player}%-Fuel" for {_player} with progress {Kit-Fuel::%{_player}%} with colors red with style segmented 10
 	while {Class::%{_player}%} is "Engineer":
-		# ツール情報の設定
-		set {_tool} to {_player}'s tool
-		set {_item.type} to kitItemTypeChecker({_tool})
-		set {_item.num} to kitItemNumberChecker({_tool})
 		# ループ回数の記録
 		add 1 to {_fuels}
 		# 燃料回復処理
@@ -88,12 +84,6 @@ function kitTimerEngineer(player: player):
 		# ボスバー表示
 		set bossbar "%{_player}%-Fuel" title to "&8&lFuel&7: &4&l%{Kit-Fuel::%{_player}%}%"
 		set bossbar "%{_player}%-Fuel" value to {Kit-Fuel::%{_player}%}
-		# アクションバー表示
-		if {_item.type} is "Weapon":
-			if {_item.num} is 2:
-				if getKitStats({_player}, "GearyCog") is not set:
-					setKitStats({_player}, "GearyCog", true)
-				kitEffect_GearyCog_ActionBar({_player})
 		# Hover効果
 		delete {_true}
 		if {_player} is sneaking:

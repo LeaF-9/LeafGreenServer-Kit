@@ -19,6 +19,13 @@ options:
 
 	gold-pick-radius: 5
 
+function kitEffect_JackpotStriker_Timer(player: player):
+	set {_tool} to kitWeaponItem("Rich", 3)
+	while {Class::%{_player}%} is "Rich":
+		set {_nowtool} to tool of {_player}
+		kitEffect_JackpotStriker_Remain({_player}) if {_nowtool} is {_tool}
+		wait a second
+
 function kitEffect_JackpotStriker(player: player):
 	nameItemCT({_player}, "Jackpot Striker")
 	if {_player} is sneaking:

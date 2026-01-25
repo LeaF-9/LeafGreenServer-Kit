@@ -6,6 +6,13 @@ options:
 	effect-tick: 60
 	reload-tick: 200
 
+function kitEffect_SpatialDistorter_Timer(player: player):
+	set {_skilltool} to kitSkillItem("Knocker", 4)
+	while {Class::%{_player}%} is "Knocker":
+		set {_tool} to {_player}'s tool
+		kitSkill_SpatialDistorter_ActionBar({_player}) if {_tool} is {_skilltool}
+		wait a tick
+
 function kitEffect_SpatialDistorter(player: player):
 	if getKitStats({_player}, "SpatialDistorter") is not set:
 		setKitStats({_player}, "SpatialDistorter", {@effect-tick})
