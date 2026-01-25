@@ -232,6 +232,7 @@ on EntityDamageByEntityEvent:
 
 function interactCropEntity(player: player, interaction: entity):
 	set {_display} to {_interaction}.getVehicle()
+	set {_statsName} to "Farmer-PlantedLocations"
 	stop if {_display} is not set
 	set {_cropUUID} to getPersistentData({_display}, "farmer-planted-by")
 	set {_planter} to getPlayer({_cropUUID})
@@ -242,10 +243,15 @@ function interactCropEntity(player: player, interaction: entity):
 	set {_cropAge} to getPersistentData({_display}, "crop-age")
 
 	set {_location} to location of {_display}
+	set {_currentCrops} to getKitStats({_player}, {_statsName})
+	{_currentCrops}.remove({_location})
+	setKitStats({_player}, {_statsName}, {_currentCrops})
+
 	{_interaction}.remove()
 	{_display}.remove()
 	harvestCrop({_planter}, {_location}, {_cropType}, {_cropAge})
 
+# 作物をドロップする関数
 local function harvestCrop(player: player, loc: location, crop: text, age: number):
 	set {_material} to Material.WHEAT if {_crop} is "wheat"
 	set {_material} to Material.POTATOES if {_crop} is "potato"
