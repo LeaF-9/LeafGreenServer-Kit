@@ -189,7 +189,7 @@ function checkFarmerCrop(player: player) :: text:
 
 
 # 指定の作物にアウトラインを表示する関数
-local function outlineCrop(entity: entity):
+local function outlineCrop(player: player, entity: entity):
 	set {_color} to rgb(255, 0, 0)
 	set {_baseloc} to location of {_entity}
 	subtract 0.5 from x-pos of {_baseloc}
@@ -204,9 +204,9 @@ local function outlineCrop(entity: entity):
 			set {_sumVector} to {_vector} * vector({_mn}, {_mn}, {_mn})
 			set {_el} to {_baseloc} ~ {_sumVector}
 
-			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el})
+			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
 			add 2 to y-pos of {_el}
-			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el})
+			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
 			add 1 to {_ln}
 
 		loop 5 times:
@@ -214,7 +214,7 @@ local function outlineCrop(entity: entity):
 			set {_nm} to {_ln} * 0.2
 			set {_sumVector} to {_upvector} * vector({_nm}, {_nm}, {_nm})
 			set {_el} to {_baseloc} ~ {_sumVector}
-			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el})
+			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
 
 		rotate {_vector} around y-axis by 90
 
@@ -431,5 +431,5 @@ function kitTimerFarmer(player: player):
 				getPersistentData(loop-entity, "crop-interaction") is true
 				set {_hit} to loop-entity
 
-		outlineCrop({_hit}) if {_hit} is set
+		outlineCrop({_player}, {_hit}) if {_hit} is set
 		wait a tick
