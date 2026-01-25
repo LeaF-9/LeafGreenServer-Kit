@@ -6,7 +6,9 @@ options:
 	crop-exist-tick: 200
 
 import:
+	org.bukkit.Registry
 	org.bukkit.Material
+	org.bukkit.NamespacedKey
 	org.bukkit.inventory.ItemStack
 	org.bukkit.event.entity.EntityDamageByEntityEvent
 
@@ -255,11 +257,11 @@ local function harvestCrop(player: player, loc: location, crop: text, age: numbe
 		set {_material} to Material.WHEAT
 		set {_pickable.ally} to true
 		set {_hasEffect.ally} to true
-		set {_applyEffect.ally} to "SPEED"
+		set {_applyEffect.ally} to "speed"
 		set {_tickEffect.ally} to 100
 		set {_pickable.enemy} to true
 		set {_hasEffect.enemy} to true
-		set {_applyEffect.enemy} to "SLOWNESS"
+		set {_applyEffect.enemy} to "slowness"
 		set {_tickEffect.enemy} to 100
 
 	else if {_crop} is "potato":
@@ -273,7 +275,7 @@ local function harvestCrop(player: player, loc: location, crop: text, age: numbe
 			set {_hasDamage} to true
 			set {_amountDamage} to 0.5
 			set {_hasEffect.enemy} to true
-			set {_applyEffect.enemy} to "POISON"
+			set {_applyEffect.enemy} to "poison"
 			set {_tickEffect.enemy} to 100
 		else:
 			set {_material} to Material.POTATO
@@ -290,20 +292,20 @@ local function harvestCrop(player: player, loc: location, crop: text, age: numbe
 			set {_material} to Material.GOLDEN_CARROT
 			set {_pickable.ally} to true
 			set {_hasEffect.ally} to true
-			set {_applyEffect.ally} to "REGENERATION"
+			set {_applyEffect.ally} to "regeneration"
 			set {_tickEffect.ally} to 200
 		else:
 			set {_material} to Material.CARROT
 			set {_pickable.ally} to true
 			set {_hasEffect.ally} to true
-			set {_applyEffect.ally} to "REGENERATION"
+			set {_applyEffect.ally} to "regeneration"
 			set {_tickEffect.ally} to 100
 	
 	else if {_crop} is "beetroot":
 		set {_material} to Material.BEETROOT
 		set {_pickable.ally} to true
 		set {_hasEffect.ally} to true
-		set {_applyEffect.ally} to "STRENGTH"
+		set {_applyEffect.ally} to "strength"
 		set {_tickEffect.ally} to 200
 
 	set {_itemstack} to new ItemStack({_material})
@@ -311,6 +313,7 @@ local function harvestCrop(player: player, loc: location, crop: text, age: numbe
 	set {_itemEntity} to spawnEntity(item, {_loc})
 	{_itemEntity}.setItemStack({_itemstack})
 	setGameType({_itemEntity})
+	setMetadata({_itemEntity}, "undelete", true)
 	set {_uuid} to "%uuid of {_player}%"
 	setPersistentData({_itemEntity}, "summon-player", {_uuid})
 	setPersistentData({_itemEntity}, "farmer-crop", true)
@@ -348,6 +351,60 @@ local function cropSurvive(entity: entity):
 		wait a tick
 	{_entity}.remove()
 
+
+
+# 作物を拾った際の処理を行う関数
+on pick up:
+	set {_item} to event-dropped item
+	stop if getPersistentData({_item}, "farmer-crop") is not true
+	set {_player} to player
+	set {_planterUUID} to getPersistentData({_item}, "summon-player")
+	set {_planter} to getPlayer({_planterUUID})
+	set {_effectTier} to getPersistentData({_item}, "effect-tier")
+
+	set {_pickable.ally} to getPersistentData({_item}, "pickable-ally")
+	set {_hasEffect.ally} to getPersistentData({_item}, "haseffect-ally")
+	set {_applyEffect.ally} to getPersistentData({_item}, "applyeffect-ally")
+	set {_tickEffect.ally} to getPersistentData({_item}, "tickeffect-ally")
+	set {_hasHeal} to getPersistentData({_item}, "hasheal")
+	set {_amountHeal} to getPersistentData({_item}, "amountheal")
+
+	set {_pickable.enemy} to getPersistentData({_item}, "pickable-enemy")
+	set {_hasEffect.enemy} to getPersistentData({_item}, "haseffect-enemy")
+	set {_applyEffect.enemy} to getPersistentData({_item}, "applyeffect-enemy")
+	set {_tickEffect.enemy} to getPersistentData({_item}, "tickeffect-enemy")
+	set {_hasDamage} to getPersistentData({_item}, "hasdamage")
+	set {_amountDamage} to getPersistentData({_item}, "amountdamage")
+
+	set {_removing} to false
+	if {_pickable.ally} is true:
+		if kitCheckTeam({_planter}, {_player}, true) is true:
+			set {_removing} to true
+			if {_hasEffect.ally} is true:
+				set {_key} to NamespacedKey.minecraft({_hasEffect.ally})
+				set {_potionEffectType} to Registry.MOB_EFFECT.get({_key})
+
+				applyEffect({_player}, {_potionEffectType}, {_effectTier}, {_tickEffect.ally})
+			if {_hasHeal} is true:
+				healPlayer({_player}, {_amountHeal})
+	
+	if {_pickable.enemy} is true:
+		if kitCheckTeam({_planter}, {_player}, true) is true:
+			set {_removing} to true
+			if {_hasEffect.enemy} is true:
+				set {_key} to NamespacedKey.minecraft({_hasEffect.enemy})
+				set {_potionEffectType} to Registry.MOB_EFFECT.get({_key})
+
+				applyEffect({_player}, {_potionEffectType}, {_effectTier}, {_tickEffect.enemy})
+			if {_hasDamage} is true:
+				kitDamage({_planter}, {_player}, {_amountDamage}, "農作物")
+		
+	if {_removing} is true:
+		soundPick({_player})
+		{_item}.remove()
+
+local function soundPick(player: player):
+	playSound("entity.item.pickup", 1, 1.25, {_player}, true)
 
 
 
