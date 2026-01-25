@@ -1,0 +1,30 @@
+# weapon-name: Sowing Hoe
+options:
+
+
+function kitEffect_SowingHoe(player: player):
+	{_player} is sneaking
+
+	set {_baseloc} to head of {_player}
+	set {_targetblock} to targeted block of {_player}
+	stop if {_targetblock} is not set
+	set {_targetloc} to location of {_targetblock}
+
+	set {_distance} to distance between {_baseloc} and {_targetblock}
+	if {_distance} > 4:
+		kitMsg({_player}, "§c§l目先に耕すブロックがありません")
+		stop
+
+	nameItemCT({_player}, "Sowing Hoe")
+	effectPlant({_player}, {_targetloc})
+
+function kitEffect_SowingHoe_LeftClick(player: player, event: object):
+	{_player} is sneaking
+	nameItemCT({_player}, "Sowing Hoe")
+	effectSweep({_player})
+
+
+
+local function effectPlant(player: player, loc: location):
+	
+
