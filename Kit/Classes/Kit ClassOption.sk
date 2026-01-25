@@ -1,3 +1,6 @@
+using script reflection
+using for loops
+
 options:
 	prefix: §2[%{CLS::%player%}%]
 	attackprefix: §2[%{CLS::%attacker%}%]
@@ -216,6 +219,7 @@ command /class <text> <player=%player%> <boolean=true>:
 			setGameType(arg 2)
 			kitCheckUltimate(arg 2)
 			kitTargetTimer(arg 2)
+			kitTimerStart(arg 2, arg 1)
 			ocmAttackSpeed(arg 2)
 			if arg 1 is not set:
 				message "§cクラス名を入力して下さい"
@@ -255,6 +259,10 @@ local function kitUnitSetting(player: player, kit: text):
 			set slot 35 of inventory of {_player} to {_moveitem}
 		set slot 8 of inventory of {_player} to {_ultitem}
 
+		add {_weapons::*} to {_loadouts::*}
+		add {_skills::*} to {_loadouts::*}
+		kitLoadoutTimer({_player}, {_loadouts::*})
+
 		set {_text.main} to "<##15a1cc>§lKitアイテム一式§6を付与しました"
 		set {_text.sub} to "<##a6dd10>インベントリを開いてご確認ください"
 		sendTitle({_player}, {_text.main}, {_text.sub}, 3 seconds, 0.5 seconds, 0.5 seconds)
@@ -280,6 +288,11 @@ local function kitUnitSetting(player: player, kit: text):
 		give {_skill} to {_player}
 		add {_skill} to {_skills::*}
 	
+	# Loadout Timer
+	add {_weapon.main} to {_loadouts::*}
+	add {_skills::*} to {_loadouts::*}
+	kitLoadoutTimer({_player}, {_loadouts::*})
+	
 	# Counting
 	if {Kit-tochu} is true:
 		{Join::%{_player}%} is "Kit"
@@ -288,6 +301,30 @@ local function kitUnitSetting(player: player, kit: text):
 	# Ultimate Skill Slot
 	give a structure void named "§7§oUltimate Skill" to {_player}
 
+local function kitLoadoutTimer(player: player, loadouts: objects):
+	set {_functionkey} to "function-timer"
+
+	for {_item} in {_loadouts::*}:
+		set {_nsk} to getNamespacedKey({_item}, {_functionkey}, "boolean")
+		continue if {_nsk} is not true
+
+		set {_itemkey} to getNamespacedKey({_item}, "item-key", "string")
+		replace "'" with "" in {_itemkey}
+
+		set {_function} to function "kitEffect_%{_itemkey}%_Timer"
+		run {_function} with arguments {_player}
+
+local function kitTimerStart(player: player, kit: text):
+	set {_readuuid} to a random UUID
+	set {_readuuid} to "%{_readuuid}%"
+
+	load yml "plugins/skript-yaml/Kit Classes/%{_kit}%.yml" as {_readuuid}
+	set {_timer} to yml value "timer" from {_readuuid}
+	unload yml {_readuuid}
+	stop if {_timer} is not true
+
+	set {_function} to function "kitTimer%{_kit}%"
+	run {_function} with arguments {_player}
 
 
 command /classreset <player=%player%>:
