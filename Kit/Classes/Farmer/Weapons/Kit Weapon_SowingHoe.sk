@@ -12,7 +12,6 @@ import:
 function kitEffect_SowingHoe_Timer(player: player):
 	set {_fluid} to (FluidCollisionMode.NEVER)
 	set {_weapontool} to kitWeaponItem("Farmer", 1)
-	set {_weaponname} to name of {_weapontool}
 	while {Class::%{_player}%} is "Farmer":
 		set {_tool} to tool of {_player}
 		if {_tool} is not {_weapontool}:
@@ -20,7 +19,7 @@ function kitEffect_SowingHoe_Timer(player: player):
 			wait a tick
 			continue
 
-		if checkCT({_player}, {_weaponname}) is false:
+		if checkItemCT({_player}, {_tool}) is false:
 			deleteKitStats({_player}, {@stats-plant-location})
 			wait a tick
 			continue
