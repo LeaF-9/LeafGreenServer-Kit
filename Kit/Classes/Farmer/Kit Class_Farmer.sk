@@ -14,6 +14,7 @@ import:
 	org.bukkit.event.entity.EntityDamageByEntityEvent
 
 
+
 # Abilities
 
 # 武器ドロップ時に作物を変更する効果
@@ -49,7 +50,7 @@ local function getCropItem(crop: text) :: item:
 	set display name of {_item} to {_displayname}
 
 	set {_meta} to {_item}.getItemMeta()
-	{_meta}.setFood()
+	{_meta}.setFood(null)
 	{_item}.setItemMeta({_meta})
 
 	return {_item}
@@ -97,6 +98,12 @@ local function placeCropDisplay(player: player, loc: location, crop: text):
 	set {_block} to Material.CARROTS if {_crop} is "carrot"
 	set {_block} to {_block}.createBlockData()
 	setDisplayBlock({_display}, {_block})
+
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_translate} to getVector3f(-0.5, 0, -0.5)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translate}, {_scale})
+	{_display}.setTransformation({_transformation})
 
 	{_display}.addPassenger({_interaction})
 
@@ -225,13 +232,14 @@ local function outlineCrop(player: player, entity: entity):
 
 
 # 作物を破壊しようと試みた際に発火するEvent
-on EntityDamageByEntityEvent:
-	set {_interaction} to event.getDamager()
-	set {_player} to event.getEntity()
+on damage of interaction:
+	set {_interaction} to victim
+	set {_player} to player
 
 	stop if checkEntityType({_interaction}, interaction) is false
 	stop if getPersistentData({_interaction}, "crop-interaction") is not true
 	
+	cancel event
 	interactCropEntity({_player}, {_interaction})
 
 function interactCropEntity(player: player, interaction: entity):
@@ -247,9 +255,9 @@ function interactCropEntity(player: player, interaction: entity):
 	set {_cropAge} to getPersistentData({_display}, "crop-age")
 
 	set {_location} to location of {_display}
-	set {_currentCrops} to getKitStats({_player}, {_statsName})
+	set {_currentCrops} to getKitStats({_planter}, {_statsName})
 	{_currentCrops}.remove({_location})
-	setKitStats({_player}, {_statsName}, {_currentCrops})
+	setKitStats({_planter}, {_statsName}, {_currentCrops})
 
 	{_interaction}.remove()
 	{_display}.remove()
@@ -262,6 +270,7 @@ local function harvestCrop(player: player, loc: location, crop: text, age: numbe
 	set {_material} to Material.CARROTS if {_crop} is "carrot"
 	set {_material} to Material.BEETROOTS if {_crop} is "beetroot"
 	set {_material} to {_material}.createBlockData()
+	soundHarvest({_loc})
 	particleHarvest({_loc}, {_material})
 
 	stop if {_age} < 3
@@ -324,7 +333,7 @@ local function harvestCrop(player: player, loc: location, crop: text, age: numbe
 	set {_itemstack} to new ItemStack({_material})
 
 	set {_EntityType} to EntityType.ITEM
-	set {_itemEntity} to spawnEntity({_EntityType}, {_loc})
+	set {_itemEntity} to spawnEntityType({_EntityType}, {_loc})
 	{_itemEntity}.setItemStack({_itemstack})
 	setGameType({_itemEntity})
 	setMetadata({_itemEntity}, "undelete", true)
@@ -352,9 +361,12 @@ local function harvestCrop(player: player, loc: location, crop: text, age: numbe
 
 local function particleHarvest(loc: location, material: block data):
 	add 0.5 to y-pos of {_loc}
-	loop 10 times:
+	loop 50 times:
 		set {_el} to moveRandomLocation({_loc}, 0.5)
 		spawnParticle_Block({_material}, {_el})
+
+local function soundHarvest(loc: location):
+	playSound("block.crop.break", 1, 1, {_loc})
 
 
 
@@ -395,7 +407,7 @@ on pick up:
 		if kitCheckTeam({_planter}, {_player}, true) is true:
 			set {_removing} to true
 			if {_hasEffect.ally} is true:
-				set {_key} to NamespacedKey.minecraft({_hasEffect.ally})
+				set {_key} to NamespacedKey.minecraft({_applyEffect.ally})
 				set {_potionEffectType} to Registry.MOB_EFFECT.get({_key})
 
 				applyEffect({_player}, {_potionEffectType}, {_effectTier}, {_tickEffect.ally})
@@ -403,10 +415,10 @@ on pick up:
 				kitHeal({_player}, {_amountHeal})
 	
 	if {_pickable.enemy} is true:
-		if kitCheckTeam({_planter}, {_player}, true) is true:
+		if kitCheckTeam({_planter}, {_player}, false) is true:
 			set {_removing} to true
 			if {_hasEffect.enemy} is true:
-				set {_key} to NamespacedKey.minecraft({_hasEffect.enemy})
+				set {_key} to NamespacedKey.minecraft({_applyEffect.enemy})
 				set {_potionEffectType} to Registry.MOB_EFFECT.get({_key})
 
 				applyEffect({_player}, {_potionEffectType}, {_effectTier}, {_tickEffect.enemy})
@@ -424,23 +436,28 @@ local function soundPick(player: player):
 
 # Timer
 function kitTimerFarmer(player: player):
-	set {_meter} to 5
-	set {_addmeter} to 0.5
-	set {_count} to {_meter} / {_addmeter}
+	set {_statsName} to "Farmer-PlantedLocations"
+	set {_meter} to 3.5
 	while {Class::%{_player}%} is "Farmer":
-		set {_baseloc} to head of {_player}
-
 		delete {_hit}
-		set {_m} to 0
-		loop {_count} times:
-			{_hit} is not set
-			add {_addmeter} to {_m}
-			set {_targetloc} to location {_m} meters in front of {_baseloc}
-			loop all entities in radius 0.75 around {_targetloc}:
-				{_hit} is not set
-				checkEntityType(loop-entity, interaction) is true
-				getPersistentData(loop-entity, "crop-interaction") is true
-				set {_hit} to loop-entity
-
-		outlineCrop({_player}, {_hit}) if {_hit} is set
+		set {_hit} to target entity of {_player}
+		if {_hit} is set:
+			set {_hitloc} to location of {_hit}
+			add 0.5 to y-pos of {_hitloc}
+			set {_headloc} to head of {_player}
+			set {_distance} to distance between {_hitloc} and {_headloc}
+			outlineCrop({_player}, {_hit}) if {_distance} <= {_meter}
 		wait a tick
+
+	set {_uuid} to "%uuid of {_player}%"
+	loop all entities:
+		set {_checkEntity} to loop-entity
+		continue if checkEntityType({_checkEntity}, interaction) is false
+		continue if getPersistentData({_checkEntity}, "crop-interaction") is not true
+
+		set {_vehicleDisplay} to {_checkEntity}.getVehicle()
+		set {_vehicleUUID} to getPersistentData({_vehicleDisplay}, "farmer-planted-by")
+		continue if {_vehicleUUID} is not {_uuid}
+
+		{_checkEntity}.remove()
+		{_vehicleDisplay}.remove()
