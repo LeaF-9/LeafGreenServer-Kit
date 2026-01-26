@@ -101,7 +101,7 @@ local function particlePlantLocation(player: player, baseloc: location):
 	set {_color} to rgb(0, 255, 0)
 
 	subtract 0.5 from y-pos of {_baseloc}
-	subtract 1.5 from z-pos of {_baseloc}
+	add 1.5 to z-pos of {_baseloc}
 	subtract 1.5 from x-pos of {_baseloc}
 	set {_vector} to vector(1, 0, 0)
 	set {_upvector} to vector(0, 1, 0)
@@ -114,7 +114,7 @@ local function particlePlantLocation(player: player, baseloc: location):
 			set {_el} to {_baseloc} ~ {_sumVector}
 
 			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
-			add 2 to y-pos of {_el}
+			add 1 to y-pos of {_el}
 			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
 			add 1 to {_ln}
 
@@ -125,6 +125,8 @@ local function particlePlantLocation(player: player, baseloc: location):
 			set {_el} to {_baseloc} ~ {_sumVector}
 			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
 
+		set {_changeVector} to {_vector} * vector(3, 3, 3)
+		set {_baseloc} to {_baseloc} ~ {_changeVector}
 		rotate {_vector} around y-axis by 90
 
 local function particlePlant(loc: location):
