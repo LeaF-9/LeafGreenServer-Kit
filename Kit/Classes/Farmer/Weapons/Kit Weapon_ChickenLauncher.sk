@@ -3,6 +3,7 @@
 options:
 	stats-bullet: "ChickenLauncher-EggBullet"
 	data-egg: "chickenlauncher-egg"
+	data-egg-type: "chickenlauncher-eggtype"
 	damage-egg: 1
 	chance-egg-plant: 10
 	bullet-egg: 40
@@ -41,9 +42,11 @@ on damage with priority LOW:
 on projectile hit:
 	projectile is a snowball
 	getPersistentData(projectile, {@data-egg}) is true
+	set {_type} to getPersistentData(projectile, {@data-egg-type})
+	set {_type} to {_type} parsed as item type
 	set {_loc} to location of projectile
 	effectPlant(shooter, {_loc})
-	particleCrack({_loc})
+	particleCrack({_loc}, {_type})
 
 
 
@@ -52,7 +55,7 @@ local function effectBullet(player: player):
 		stop
 
 	if getKitStats({_player}, {@stats-bullet}) is not set:
-		setKitStats({_player}, {@stats-bullet}, {@egg-bullet})
+		setKitStats({_player}, {@stats-bullet}, {@bullet-egg})
 
 	set {_true} to true
 	while {_true} is true:
@@ -73,7 +76,7 @@ local function effectBullet(player: player):
 		
 		set {_ammo} to getKitStats({_player}, {@stats-bullet})
 		subtract 1 from {_ammo}
-		setKitStats({_player}, {@stats-bullet}, {_InfernoStaff})
+		setKitStats({_player}, {@stats-bullet}, {_ammo})
 		effectShootEgg({_player})
 		wait a tick
 
@@ -95,11 +98,13 @@ local function effectShootEgg(player: player):
 	setShooter({_egg}, {_player})
 
 	set {_dice} to dice(3)
-	set item of {_egg} to egg if {_dice} is 1
-	set item of {_egg} to blue egg if {_dice} is 2
-	set item of {_egg} to brown egg if {_dice} is 3
+	set {_eggtype} to egg (item type) if {_dice} is 1
+	set {_eggtype} to blue egg if {_dice} is 2
+	set {_eggtype} to brown egg if {_dice} is 3
+	set item of {_egg} to {_eggtype}
 
 	setPersistentData({_egg}, {@data-egg}, true)
+	setPersistentData({_egg}, {@data-egg-type}, "%{_eggtype}%")
 	soundEgg({_player})
 	particleEgg({_egg})
 
@@ -114,6 +119,7 @@ local function effectReload(player: player):
 		set {_ctnow} to false if {Class::%{_player}%} is not "Farmer"
 		wait a tick
 	soundComplete({_player})
+	deleteKitStats({_player}, {@stats-bullet})
 
 local function effectBar(player: player):
 	set {_bar} to getKitStats({_player}, {@stats-bullet})
@@ -190,7 +196,7 @@ local function effectHitChicken(player: player, target: entity):
 local function effectExplosion(player: player, loc: location):
 	kitExplosion({_player}, {@explosion-chicken}, {_loc})
 	loop all interactions in radius {@effect-chicken} around {_loc}:
-		set {_chekcEntity} to loop-interaction
+		set {_checkEntity} to loop-interaction
 		continue if getPersistentData({_checkEntity}, "crop-interaction") is not true
 		interactCropEntity({_player}, {_checkEntity})
 	soundExplosion({_loc})
@@ -199,9 +205,9 @@ local function effectExplosion(player: player, loc: location):
 
 
 local function particleEgg(proj: projectile):
-	add rgb(200, 221, 219) to {_colors::*}
-	add rgb(237, 236, 204) to {_colors::*}
-	add rgb(221, 214, 198) to {_colors::*}
+	add rgb(232, 255, 253) to {_colors::*}
+	add rgb(255, 254, 224) to {_colors::*}
+	add rgb(255, 248, 231) to {_colors::*}
 
 	while {_delete} is not set:
 		set {_loc} to location of {_proj}
@@ -218,22 +224,16 @@ local function particleEgg(proj: projectile):
 		set {_proloc} to {_loc}
 		wait a tick
 
-local function particleCrack(loc: location):
+local function particleCrack(loc: location, item: item type):
 	set {_amount} to a random integer between 5 and 10
 	loop {_amount} times:
 		set {_el} to moveRandomLocation({_loc}, 0.5)
-
-		set {_dice} to dice(3)
-		set {_item} to egg if {_dice} is 1
-		set {_item} to blue egg if {_dice} is 2
-		set {_item} to brown egg if {_dice} is 3
-
 		spawnParticle_Item({_item}, {_el})
 
 local function particlePlant(loc: location):
-	add rgb(213, 228, 227) to {_colors::*}
+	add rgb(240, 255, 254) to {_colors::*}
 	add rgb(198, 245, 250) to {_colors::*}
-	add rgb(195, 211, 211) to {_colors::*}
+	add rgb(217, 255, 255) to {_colors::*}
 
 	set {_amount} to a random integer between 6 and 11
 	loop {_amount} times:
@@ -242,9 +242,9 @@ local function particlePlant(loc: location):
 		spawnParticle_Color(tinted_leaves, {_color}, {_el})
 
 local function particleChicken(loc: location):
-	add rgb(213, 228, 227) to {_colors::*}
+	add rgb(239, 255, 254) to {_colors::*}
 	add rgb(198, 245, 250) to {_colors::*}
-	add rgb(195, 211, 211) to {_colors::*}
+	add rgb(208, 255, 255) to {_colors::*}
 
 	add 0.45 to y-pos of {_loc}
 	spawnParticle(gust, {_loc})
@@ -263,11 +263,11 @@ local function particleDamage(entity: entity):
 		spawnParticle_Vector(cloud, {_vec}, 0.6, {_loc})
 
 local function particleExplosion(loc: location):
-	add rgb(213, 228, 227) to {_colors::*}
+	add rgb(240, 255, 254) to {_colors::*}
 	add rgb(198, 245, 250) to {_colors::*}
-	add rgb(195, 211, 211) to {_colors::*}
-	add rgb(203, 197, 231) to {_colors::*}
-	add rgb(234, 224, 192) to {_colors::*}
+	add rgb(205, 255, 255) to {_colors::*}
+	add rgb(228, 221, 255) to {_colors::*}
+	add rgb(255, 247, 219) to {_colors::*}
 
 	set {_amount} to a random integer between 40 and 60
 	loop {_amount} times:
