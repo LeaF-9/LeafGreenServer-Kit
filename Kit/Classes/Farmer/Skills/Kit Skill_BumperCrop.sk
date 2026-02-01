@@ -52,16 +52,12 @@ local function effectPlant(player: player):
 
 
 local function particlePlanting(from: location, to: location):
-	set {_world} to world of {_from}
 	set {_distance} to distance between {_from} and {_to}
-	set {_revdis} to {@effect-radius} - {_distance}
-	set {_vpow} to {_revdis} * 0.01
-
 	set {_height} to {_distance} / 2
 
 	set {_fromVector} to {_from}.toVector()
 	set {_toVector} to {_to}.toVector()
-	set {_difVector} to {_toVector}.subtract({_fromVector})
+	set {_difVector} to {_toVector} - {_fromVector}
 	
 	set {_count} to 10 * ({_distance} / 2)
 	set {_count} to round({_count})
@@ -74,18 +70,21 @@ local function particlePlanting(from: location, to: location):
 		set {_t} to {_i} / {_count}  # 割合
 
 		# A. 直線上の座標を計算 (線形補間)
-		set {_currentPos} to {_fromVec}.add({_difVector}.multiply({_t}))
+		set {_tv} to vector({_t}, {_t}, {_t})
+		set {_multiply} to {_difVector} * {_tv}
+		set {_currentPos} to {_fromVec} + {_multiply}
 
 		# B. 放物線の高さを計算
 		set {_yOffset} to 4 * {_height} * {_t} * (1 - {_t})
 
 		# C. Y座標に高さを加算
-		{_currentPos}.setY(currentPos.getY() + {_yOffset})
-
+		set {_cy} to y of {_currentPos}
+		set {_sy} to {_cy} + {_yOffset}
+		set y of {_currentPos} to {_sy}
 
 		# パーティクルを表示 (Locationに戻す)
-		set {_el} to {_currentPos}.toLocation({_world})
-        spawnParticle(composter, {_el})
+		set {_el} to {_from} ~ {_currentPos}
+		spawnParticle(happy_villager, {_el})
 
 		add 1 to {_i}
 		wait a tick if mod({_i}, {_tick}) is 0
@@ -104,8 +103,15 @@ local function particlePlant(loc: location):
 		set {_color} to a random element out of {_colors::*}
 		spawnParticle_Spell(effect, {_color}, 1, {_el})
 
-local function soundLaunch(loc: locaiton):
+local function soundLaunch(loc: location):
 	playSound("entity.allay.item_taken", 1, 0.9, {_loc})
 
 local function soundPlant(loc: location):
 	playSound("item.crop.plant", 0.8, 0.65, {_loc})
+
+	chance of 5%:
+		playSound("block.note_block.chime", 0.7, 2, {_loc})
+	chance of 5%:
+		playSound("block.note_block.chime", 0.7, 1.414, {_loc})
+	chance of 5%:
+		playSound("block.note_block.chime", 0.7, 1.059, {_loc})
