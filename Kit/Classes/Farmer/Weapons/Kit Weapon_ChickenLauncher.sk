@@ -1,0 +1,195 @@
+# weapon-name: Chicken Launcher
+
+options:
+	stats-bullet: "ChickenLauncher-EggBullet"
+	data-egg: "chickenlauncher-egg"
+	damage-egg: 1
+	chance-egg-plant: 10
+	bullet-egg: 40
+
+function kitEffect_ChickenLauncher(player: player):
+	effectBullet({_player})
+
+function kitEffect_ChickenLauncher_LeftClick(player: player, event: object):
+	stop if {_player} is not sneaking
+
+	nameItemCT({_player}, "Chicken Launcher")
+	effectGrenade({_player})
+
+function kitEffect_ChickenLauncher_Timer(player: player):
+	set {_weapon} to kitWeaponItem("Farmer", 3)
+	while {Class::%{_player}%} is "Farmer":
+		set {_tool} to tool of {_player}
+		effectBar({_player}) if {_tool} is {_weapon}
+		wait a tick
+
+
+
+on damage with priority LOW:
+	damage was caused by projectile
+	projectile is a snowball
+	getPersistentData(projectile, {@data-egg}) is true
+	setDamageModification_SET(victim, {@damage-egg})
+	soundHit(victim)
+
+on projectile hit:
+	projectile is a snowball
+	getPersistentData(projectile, {@data-egg}) is true
+	set {_loc} to location of projectile
+	effectPlant(shooter, {_loc})
+	particleCrack({_loc})
+
+
+
+local function effectBullet(player: player):
+	if getKitStats({_player}, {@stats-bullet}) <= 0:
+		stop
+
+	if getKitStats({_player}, {@stats-bullet}) is not set:
+		setKitStats({_player}, {@stats-bullet}, {@egg-bullet})
+
+	set {_true} to true
+	while {_true} is true:
+		if checkEating({_player}) is false:
+			set {_delete} to true
+
+		if getKitStats({_player}, {@stats-bullet}) <= 0:
+			set {_reload} to true
+		if getKitStats({_player}, {@stats-bullet}) is not set:
+			set {_reload} to true
+
+		if {_reload} is true:
+			effectReload({_player})
+			set {_delete} to true
+		if {_delete} is true:
+			delete {_true}
+			continue
+		
+		set {_ammo} to getKitStats({_player}, {@stats-bullet})
+		subtract 1 from {_ammo}
+		setKitStats({_player}, {@stats-bullet}, {_InfernoStaff})
+		effectShootEgg({_player})
+		wait a tick
+
+local function effectShootEgg(player: player):
+	set {_m.hor} to a random number between -3 and 3
+	set {_m.ver} to a random number between -3 and 3
+
+	set {_from} to head of {_player}
+	set {_to} to {_from}
+	set pitch of {_to} to 0
+	set {_to} to location {_m.hor} meters to the left of {_to}
+	set pitch of {_to} to pitch of {_from}
+	add {_m.ver} to y-pos of {_to}
+	set {_to} to location 10 meters in front of {_to}
+	set {_from} to setDirToVec({_from}, setVector({_from}, {_to}))
+
+	shoot a snowball from {_from} at speed 0.75
+	set {_egg} to shot snowball
+	setShooter({_egg}, {_player})
+
+	set {_dice} to dice(3)
+	set item of {_egg} to egg if {_dice} is 1
+	set item of {_egg} to blue egg if {_dice} is 2
+	set item of {_egg} to brown egg if {_dice} is 3
+
+	setPersistentData({_egg}, {@data-egg}, true)
+	soundEgg({_player})
+	particleEgg({_egg})
+
+local function effectReload(player: player):
+	soundReload({_player})
+	nameItemCT({_player}, "Chicken Launcher")
+
+	set {_tool} to kitWeaponItem("Farmer", 3)
+	set {_ctnow} to true
+	while {_ctnow} is true:
+		set {_ctnow} to false if checkItemCT({_player}, {_tool}) is true
+		set {_ctnow} to false if {Class::%{_player}%} is not "Farmer"
+		wait a tick
+	soundComplete({_player})
+
+local function effectBar(player: player):
+	set {_bar} to getKitStats({_player}, {@stats-bullet})
+	set {_bar} to {@bullet-egg} if {_bar} is not set
+	
+	if {_bar} is 0:
+		send action bar "§a§lリロード中..." to {_player}
+		stop
+	
+	chargeActionBar({_player}, {_bar}, {@bullet-egg})
+
+local function effectPlant(player: player, loc: location):
+	set {_chance} to (100 - {@chance-egg-plant})
+	chance of {_chance}%:
+		stop
+
+	stop if block at {_loc} is not passable
+	stop if block below {_loc} is passable
+
+	plantCrop_Farmer({_player}, {_loc})
+	soundPlant({_loc})
+	particlePlant({_loc})
+
+
+
+local function particleEgg(proj: projectile):
+	add rgb(200, 221, 219) to {_colors::*}
+	add rgb(237, 236, 204) to {_colors::*}
+	add rgb(221, 214, 198) to {_colors::*}
+
+	while {_delete} is not set:
+		set {_loc} to location of {_proj}
+		if {_proloc} is set:
+			if {_loc} is {_proloc}:
+				set {_delete} to true
+				continue
+		
+		spawnParticle(composter, {_loc})
+		chance of 30%:
+			set {_el} to moveRandomLocation({_loc}, 0.5)
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Color(tinted_leaves, {_color}, {_el})
+		set {_proloc} to {_loc}
+		wait a tick
+
+local function particleCrack(loc: location):
+	set {_amount} to a random integer between 5 and 10
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+
+		set {_dice} to dice(3)
+		set {_item} to egg if {_dice} is 1
+		set {_item} to blue egg if {_dice} is 2
+		set {_item} to brown egg if {_dice} is 3
+
+		spawnParticle_Item({_item}, {_el})
+
+local function particlePlant(loc: location):
+	add rgb(213, 228, 227) to {_colors::*}
+	add rgb(198, 245, 250) to {_colors::*}
+	add rgb(195, 211, 211) to {_colors::*}
+
+	set {_amount} to a random integer between 6 and 11
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_loc}, 0.6)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(tinted_leaves, {_color}, {_el})
+
+
+
+local function soundEgg(player: player):
+	set {_pitch} to a random number between 0.7 and 1
+	playSound("entity.chicken.egg", 1, {_pitch}, {_player})
+
+local function soundReload(player: player):
+	playSound("entity.turtle.egg_crack", 1, 0.85, {_player})
+
+local function soundComplete(player: player):
+	playSound("entity.turtle.egg_hatch", 1, 0.95, {_player})
+
+local function soundHit(player: player):
+	playSound("entity.turtle.egg_break", 1, 1.6, {_player})
+
+local function soundPlant(loc: location):
+	playSound("entity.turtle.lay_egg", 1, 0.8, {_loc})
