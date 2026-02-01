@@ -7,6 +7,12 @@ options:
 	chance-egg-plant: 10
 	bullet-egg: 40
 
+	distance-chicken: 20
+	mps-chicken: 20
+	damage-chicken: 2
+	explosion-chicken: 3
+	effect-chicken: 3
+
 function kitEffect_ChickenLauncher(player: player):
 	effectBullet({_player})
 
@@ -131,6 +137,65 @@ local function effectPlant(player: player, loc: location):
 	soundPlant({_loc})
 	particlePlant({_loc})
 
+local function effectGrenade(player: player):
+	set {_baseloc} to head of {_player}
+	set {_baseVector} to {_baseloc}.getDirection().normalize()
+
+	set {_chicken} to kitSpawnMob({_player}, chicken, {_baseloc}, false)
+
+	{_chicken}.setGravity(false)
+	{_chicken}.setInvulnerable(true)
+	{_chicken}.setPersistent(true)
+	{_chicken}.setSilent(true)
+	{_chicken}.setEggLayTime(1000000000)
+	{_chicken}.setIsChickenJockey(false)
+
+	set {_world} to world of {_baseloc}
+	set {_count} to {@distance-chicken}
+	set {_tps} to {_count} / {@mps-chicken}
+	set {_m} to 0
+	loop {_count} times:
+		continue if {_hit} is set
+		# chicken moving
+		add {_tps} to {_m}
+		set {_multiVector} to vector({_m}, {_m}, {_m})
+		set {_vector} to {_baseVector} * {_multiVector}
+		set {_tploc} to {_baseloc} ~ {_vector}
+		teleport {_chicken} to {_tploc}
+		particleChicken({_tploc})
+		soundChicken({_tploc})
+
+		# hit checking
+		set {_bound.chicken} to {_chicken}.getBoundingBox()
+		set {_center} to {_bound.chicken}.getCenter().toLocation({_world})
+		
+		loop all entities in radius 2 around {_center}:
+			{_hit} is not set
+			kitCheckTeam(loop-entity, {_player}, false, true) is true
+			set {_checkHit} to loop-entity.wouldCollideUsing({_bound.chicken})
+			continue if {_checkHit} is false
+
+			set {_hit} to loop-entity
+			effectHitChicken({_player}, loop-entity)
+		continue if {_hit} is set
+		wait a tick
+	{_chicken}.remove()
+	effectExplosion({_player}, {_tploc})
+
+local function effectHitChicken(player: player, target: entity):
+	kitDamage({_player}, {_target}, {@damage-chicken}, "鶏爆弾")
+	particleDamage({_target})
+	soundDamage({_target})
+
+local function effectExplosion(player: player, loc: location):
+	kitExplosion({_player}, {@explosion-chicken}, {_loc})
+	loop all interactions in radius {@effect-chicken} around {_loc}:
+		set {_chekcEntity} to loop-interaction
+		continue if getPersistentData({_checkEntity}, "crop-interaction") is not true
+		interactCropEntity({_player}, {_checkEntity})
+	soundExplosion({_loc})
+	particleExplosion({_loc})
+
 
 
 local function particleEgg(proj: projectile):
@@ -176,7 +241,41 @@ local function particlePlant(loc: location):
 		set {_color} to a random element out of {_colors::*}
 		spawnParticle_Color(tinted_leaves, {_color}, {_el})
 
+local function particleChicken(loc: location):
+	add rgb(213, 228, 227) to {_colors::*}
+	add rgb(198, 245, 250) to {_colors::*}
+	add rgb(195, 211, 211) to {_colors::*}
 
+	add 0.45 to y-pos of {_loc}
+	spawnParticle(gust, {_loc})
+
+	set {_amount} to a random integer between 0 and 2
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_loc}, 0.3)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(tinted_leaves, {_color}, {_el})
+
+local function particleDamage(entity: entity):
+	set {_loc} to location 1 meter above {_entity}
+	set {_amount} to a random integer between 15 and 25
+	loop {_amount} times:
+		set {_vec} to randomVector()
+		spawnParticle_Vector(cloud, {_vec}, 0.6, {_loc})
+
+local function particleExplosion(loc: location):
+	add rgb(213, 228, 227) to {_colors::*}
+	add rgb(198, 245, 250) to {_colors::*}
+	add rgb(195, 211, 211) to {_colors::*}
+	add rgb(203, 197, 231) to {_colors::*}
+	add rgb(234, 224, 192) to {_colors::*}
+
+	set {_amount} to a random integer between 40 and 60
+	loop {_amount} times:
+		set {_pow} to a random number between 0 and 6
+		set {_vec} to randomVector({_pow})
+		set {_el} to {_loc} ~ {_vec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(tinted_leaves, {_color}, {_el})
 
 local function soundEgg(player: player):
 	set {_pitch} to a random number between 0.7 and 1
@@ -193,3 +292,13 @@ local function soundHit(player: player):
 
 local function soundPlant(loc: location):
 	playSound("entity.turtle.lay_egg", 1, 0.8, {_loc})
+
+local function soundChicken(loc: location):
+	set {_pitch} to a random number between 1.5 and 2
+	playSound("entity.chicken.hurt", 1, {_pitch}, {_loc})
+
+local function soundDamage(entity: entity):
+	playSound("entity.chicken.ambient", 1, 0.7, {_entity})
+
+local function soundExplosion(loc: location):
+	playSound("entity.chicken.death", 3, 0.7, {_loc})
