@@ -1,0 +1,115 @@
+# skill-name: Gracious Manure
+
+options:
+	effect-radius: 5
+	effect-delay: 20
+
+	particle-height: 5
+	particle-hpt: 1
+	particle-max-down-height: 1
+
+
+
+function kitEffect_GraciousManure(player: player):
+	nameCT({_player}, "Gracious Manure")
+	effectGrow({_player})
+
+
+
+local function effectGrow(player: player):
+	set {_loc} to location of {_player}
+	soundLaunch({_loc})
+	particleLaunch({_loc})
+
+	set {_delay} to ({@particle-height} * {@particle-hpt}) + {@effect-delay}
+	loop {_delay} times:
+		wait a tick
+		stop if getGameType({_player}) is not "Kit"
+
+	set {_completeTick} to getGrowthCompleteTick_Farmer()
+	loop all entities in radius {@effect-radius} around {_loc}:
+		checkEntityType(loop-entity, block display) is true
+		set {_uuidString} to getPersistentData(loop-entity, "farmer-planted-by")
+		set {_planter} to getPlayer({_uuidString})
+		stop if {_planter} is not {_player}
+		set {_progress} to getPersistentData(loop-entity, "growth-progress")
+		stop if {_progress} >= {_completeTick}
+
+		setPersistentData(loop-entity, "growth-progress", {_completeTick})
+		particleGrow(loop-entity)
+		soundGrow(loop-entity)
+
+
+
+local function particleLaunch(loc: location):
+	add rgb(231, 240, 232) to {_colors::*}
+	add rgb(199, 210, 203) to {_colors::*}
+	add rgb(204, 241, 221) to {_colors::*}
+
+	add white concrete (block data) to {_blocks::*}
+	add light gray concrete (block data) to {_blocks::*}
+	add bone block (block data) to {_blocks::*}
+
+	set {_m} to 0
+	set {_addm} to {@particle-height} / {@particle-hpt}
+	set {_count} to {@particle-height}
+	loop {_count} times:
+		set {_el} to location {_m} meters above {_loc}
+		set {_color} to a random element out of {_colors::*}
+		set {_size} to a random number between 1.5 and 2.5
+		spawnParticle_Dust({_color}, {_size}, {_el})
+
+		set {_subcount} to a random integer between 3 and 10
+		loop {_subcount} times:
+			set {_el.2} to moveRandomLocation({_el}, 1)
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Spell(effect, {_color}, 1, {_el.2})
+
+		add {_addm} to {_m}
+		wait a tick
+
+	set {_count.dust} to a random integer between 40 and 60
+	loop {_count.dust} times:
+		set {_meter} to a random number between 0 and {@effect-radius}
+		set {_height} to 5 - ({@particle-max-down-height} * ({_meter} / {@effect-radius}))
+		set {_vector} to vector({@effect-radius}, 0, 0)
+		set {_rad} to a random number between 0 and 360
+		rotate {_vector} around y-axis by {_rad}
+		set y of {_vector} to {_height}
+		set {_el} to {_loc} ~ {_vector}
+
+		set {_block} to a random element out of {_blocks::*}
+		spawnParticle_BlockData(falling_dust, {_block}, {_el})
+
+local function particleGrow(entity: entity):
+	add white concrete (block data) to {_blocks::*}
+	add light gray concrete (block data) to {_blocks::*}
+	add bone block (block data) to {_blocks::*}
+
+	set {_count.glow} to a random integer between 10 and 15
+	set {_count.dust} to a random integer between 5 and 10
+
+	set {_baseloc} to location 0.5 meters above {_entity}
+	loop {_count.grow} times:
+		set {_el} to moveRandomLocation({_baseloc}, 0.5)
+		spawnParticle(egg_crack, {_el})
+	
+	loop {_count.dust} times:
+		set {_el} to moveRandomLocation({_baseloc}, 0.5)
+		set {_block} to a random element out of {_blocks::*}
+		spawnParticle_BlockData(falling_dust, {_block}, {_el})
+
+local function soundLaunch(loc: location):
+	set {_m} to 0
+	loop {@particle-delay} times:
+		set {_soundLoc} to location {_m} meters above {_loc}
+		set {_pitch} to a random number between 0.75 and 0.85
+		playSound("block.grass.step", 1, {_pitch}, {_soundLoc})
+
+		add 1 to {_m}
+		wait a tick
+	playSound("block.spore_blossom.break", 1, 0.8, {_soundLoc})
+
+local function soundGrow(entity: entity):
+	set {_pitch} to a random number between 1 and 1.5
+	playSound("block.amethyst_block.step", 1, {_pitch}, {_entity})
