@@ -246,7 +246,7 @@ local function outlineCrop(player: player, entity: entity):
 # 作物を破壊しようと試みた際に発火するEvent
 on damage of interaction:
 	set {_interaction} to victim
-	set {_player} to player
+	set {_player} to attacker
 
 	stop if checkEntityType({_interaction}, interaction) is false
 	stop if getPersistentData({_interaction}, "crop-interaction") is not true
@@ -286,6 +286,7 @@ local function harvestCrop(player: player, loc: location, crop: text, age: numbe
 	set {_material} to Material.POTATOES if {_crop} is "potato"
 	set {_material} to Material.CARROTS if {_crop} is "carrot"
 	set {_material} to Material.BEETROOTS if {_crop} is "beetroot"
+	set {_material} to Material.FLOWERING_AZALEA if {_crop} is "sapling"
 	set {_material} to {_material}.createBlockData()
 	soundHarvest({_loc})
 	particleHarvest({_loc}, {_material})
