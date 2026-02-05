@@ -326,21 +326,117 @@ local function effectSurvive(entity: entity):
 
 
 local function particlePlant(from: location, to: location):
+	set {_distance} to distance between {_from} and {_to}
+	set {_distance} to ceil({_distance})
+
+	set {_count} to {_distance} * 2
+	set {_mpt} to {@plant-delay-tick} / {_count}
+	set {_m} to 0
+	set {_checkm} to 0
+	set {_addm} to 0.5
+	set {_rad} to 0
+
+	set {_baseVector} to setVector({_from}, {_to})
+	if {_baseVector} is vector(0, 1, 0):
+		set {_v} to vector(1, 0, 0)
+	else:
+		set {_v} to vector(0, 1, 0)
+	set {_rotateVector} to {_baseVector}.getCrossProduct({_v}).normalize()
+
+	loop {_count} times:
+		set {_addrad} to a random number between 2 and 12
+		add {_addrad} to {_rad}
+
+		add {_addm} to {_m}
+		add {_checkm} to {_m}
+
+		set {_disVector} to {_baseVector} * vector({_m}, {_m}, {_m})
+		set {_baseel} to {_from} ~ {_disVector}
+
+		set {_rv} to {_rotateVector}
+		rotate {_rv} around {_baseVector} by {_rad}
+		set {_el} to {_baseel} ~ {_rv}
+		spawnParticle(egg_crack, {_el})
+		chance of 10%:
+			set {_el.2} to moveRandomLocation({_el}, 0.5)
+			spawnParticle_BlockData(falling_dust, brown concrete, {_el.2})
+
+		if {_checkm} >= {_mpt}:
+			set {_checkm} to 0
+			wait a tick
 
 local function particlePlaceSapling(loc: location):
+	add rgb(35, 189, 81) to {_colors::*}
+	add rgb(5, 109, 66) to {_colors::*}
+	add rgb(129, 199, 91) to {_colors::*}
+
+	add 0.5 to y-pos of {_loc}
+	set {_count} to a random integer between 10 and 15
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.6)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(tinted_leaves, {_color}, {_el})
 
 local function particleTree(loc: location):
+	set {_height} to a random integer between 4 and 7
+	set {_i} to 0.5
+	loop {_height} times:
+		set {_base} to location {_i} meters above {_loc}
+		set {_count} to a random integer between 5 and 10
+		loop {_count} times:
+			set {_el} to moveRandomLocation({_base}, 0.5)
+			spawnParticle(composter, {_el})
+		wait a tick
 
 local function particleDrop(loc: location):
+	add rgb(231, 38, 38) to {_colors::*}
+	add rgb(219, 72, 72) to {_colors::*}
+	add rgb(240, 133, 34) to {_colors::*}
+
+	set {_count.wax} to a random integer between 10 and 20
+	set {_count.effect} to a random integer between 10 and 20
+	loop {_count.wax} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		spawnParticle(wax_on, {_el})
+	
+	loop {_count.effect} times:
+		set {_el} to moveRandomLocation({_loc}, 0.6)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 1, {_el})
 
 local function particleWither(loc: location):
+	set {_height} to a random integer between 4 and 7
+	set {_i} to 0.5
+	loop {_height} times:
+		set {_base} to location {_i} meters above {_loc}
+		set {_count} to a random integer between 5 and 10
+		loop {_count} times:
+			set {_el} to moveRandomLocation({_base}, 0.5)
+			spawnParticle_Block(oak log, {_el})
+		chance of 50%:
+			wait a tick
 
 local function soundLaunch(loc: location):
+	set {_pitch} to 1
+	loop 5 times:
+		playSound("entity.iron_golem.step", 1, {_pitch}, {_loc})
+		subtract 0.1 from {_pitch}
+		wait a tick
 
 local function soundPlaceSapling(loc: location):
+	playSound("block.azalea.break", 1, 0.65, {_loc})
 
 local function soundTree(loc: location):
+	set {_pitch} to 1
+	loop 3 times:
+		playSound("block.wood.place", 1, {_pitch}, {_loc})
+		add 0.25 to {_pitch}
+		wait a tick
 
 local function soundDrop(loc: location):
+	playSound("block.amethyst_block.chime", 0.9, 1.15, {_loc})
 
 local function soundWither(loc: location):
+	loop 3 times:
+		playSound("block.azalea_leaves.break", 1, 0.5, {_loc})
+		wait a tick
