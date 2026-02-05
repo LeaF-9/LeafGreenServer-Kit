@@ -177,7 +177,10 @@ local function effectAfforest(player: player, display: entity):
 local function effectRemoveDisplay(player: player, display: entity):
 	set {_location} to location of {_display}
 
-	set {_interaction} to {_display}.getPassengers().get(0)
+	set {_interactions} to {_display}.getPassengers()
+	loop ...{_interactions}:
+		set {_interaction} to loop-value
+		{_interaction}.remove()
 	
 	set {_statsName} to "Farmer-PlantedLocations"
 	set {_cropUUID} to getPersistentData({_display}, "farmer-planted-by")
@@ -186,7 +189,6 @@ local function effectRemoveDisplay(player: player, display: entity):
 	{_currentCrops}.remove({_location})
 	setKitStats({_player}, {_statsName}, {_currentCrops})
 
-	{_interaction}.remove()
 	{_display}.remove()
 
 local function effectPlaceTree(player: player, loc: location):
@@ -436,7 +438,7 @@ local function particleWither(loc: location):
 	set {_height} to a random integer between 4 and 7
 	set {_i} to 0.5
 	loop {_height} times:
-		set {_base} to location {_i} meters above {_loc}
+		set {_base} to location {_i} meters below {_loc}
 		set {_count} to a random integer between 5 and 10
 		loop {_count} times:
 			set {_el} to moveRandomLocation({_base}, 0.5)
