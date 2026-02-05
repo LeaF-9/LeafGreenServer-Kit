@@ -115,6 +115,8 @@ local function placeCropDisplay(player: player, loc: location, crop: text):
 	# Interaction Settings
 	setGameType({_interaction})
 	setPersistentData({_interaction}, "crop-interaction", true)
+	setPersistentData({_interaction}, "breakable-ally", true)
+	setPersistentData({_interaction}, "breakable-enemy", true)
 
 	{_interaction}.setInteractionHeight(1.0)
 	{_interaction}.setInteractionWidth(1.0)
@@ -248,11 +250,18 @@ on damage of interaction:
 	interactCropEntity({_player}, {_interaction})
 
 function interactCropEntity(player: player, interaction: entity):
+	set {_breakable.ally} to getPersistentData({_interaction}, "breakable-ally")
+	set {_breakable.enemy} to getPersistentData({_interaction}, "breakable-enemy")
+
 	set {_display} to {_interaction}.getVehicle()
 	set {_statsName} to "Farmer-PlantedLocations"
 	stop if {_display} is not set
 	set {_cropUUID} to getPersistentData({_display}, "farmer-planted-by")
 	set {_planter} to getPlayer({_cropUUID})
+	if {_breakable.ally} is false:
+		stop if kitCheckTeam({_player}, {_planter}, true) is true
+	if {_breakable.enemy} is false:
+		stop if kitCheckTeam({_player}, {_planter}, false) is true
 	
 	set {_cropType} to getPersistentData({_display}, "crop-type")
 	set {_cropAge} to getPersistentData({_display}, "crop-age")
