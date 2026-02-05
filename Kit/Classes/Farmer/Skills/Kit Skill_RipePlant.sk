@@ -62,7 +62,7 @@ local function effectDecideLoc(player: player, baseloc: location) :: location:
 	set {_currentCrops} to createNewArrayList() if {_currentCrops} is not set
 
 	set {_minDistance} to 6
-	loop all blocks in radius 5 around {_loc}:
+	loop all blocks in radius 5 around {_baseloc}:
 		loop-block is passable
 		block below loop-block is not passable
 
@@ -175,7 +175,7 @@ local function effectAfforest(player: player, display: entity):
 local function effectRemoveDisplay(player: player, display: entity):
 	set {_location} to location of {_display}
 
-	set {_interaction} to {_display}.getPassangers().get(0)
+	set {_interaction} to {_display}.getPassengers().get(0)
 	
 	set {_statsName} to "Farmer-PlantedLocations"
 	set {_cropUUID} to getPersistentData({_display}, "farmer-planted-by")
