@@ -16,7 +16,7 @@ options:
 	absorption-level: 1
 	absorption-tick: 200
 
-	apple-exist-tick: 600
+	apple-exist-tick: 200
 
 	plant-delay-tick: 20
 
@@ -38,6 +38,7 @@ function kitEffect_RipePlant(player: player):
 local function effectLaunch(player: player):
 	kitMsg({_player}, "<##e8eb32>§l生命の果実<##25eb56>を実らせる苗木を植えました...")
 	set {_loc} to location of {_player}
+	set {_particleFrom} to location 1 meter above {_loc}
 	soundLaunch({_loc})
 
 	set {_addrad} to 360 / {@plant-amount}
@@ -50,7 +51,8 @@ local function effectLaunch(player: player):
 		set {_plantLoc} to effectDecideLoc({_player}, {_decideLoc})
 		if {_plantLoc} is set:
 			add {_plantLoc} to {_plants::*} 
-			particlePlant({_loc}, {_plantLoc})
+			set {_particleTo} to location 0.5 meters above {_plantLoc}
+			particlePlant({_particleFrom}, {_particleTo})
 
 		add {_addrad} to {_rad}
 	
@@ -218,9 +220,13 @@ local function effectPlaceTree(player: player, loc: location):
 	add {_display} to {_trees::*}
 
 	# 葉
+	set {_leaveLoc} to location {_height} meters above {_loc}
 	set {_amount} to a random integer between 20 and 40
 	loop {_amount} times:
-		set {_display} to spawnEntity(item display, {_loc})
+		set {_vp} to a random number between 0 and 3
+		set {_rv} to randomVector({_vp})
+		set {_randomLoc} to {_leaveLoc} ~ {_rv}
+		set {_display} to spawnEntity(item display, {_randomLoc})
 
 		setGameType({_display})
 		set {_uuid} to "%uuid of {_player}%"
@@ -252,7 +258,7 @@ local function effectMonitor(player: player, loc: location, displays: entities):
 	set {_dropCount} to a random integer between {@drop-min-tick} and {@drop-max-tick}
 	loop {@exist-tick} times:
 		continue if {_nonExisting} is true
-		if getGameType({_player}) is "Kit":
+		if getGameType({_player}) is not "Kit":
 			set {_nonExisting} to true
 			continue
 
@@ -261,6 +267,9 @@ local function effectMonitor(player: player, loc: location, displays: entities):
 			set {_count} to 0
 			set {_dropCount} to a random integer between {@drop-min-tick} and {@drop-max-tick}
 			effectDropApple({_player}, {_loc})
+		
+		chance of 3%:
+			particleTreeLeaves({_loc})
 
 		wait a tick
 
@@ -275,6 +284,7 @@ local function effectDropApple(player: player, baseloc: location):
 	set {_loc} to {_baseloc} ~ {_rv}
 
 	soundDrop({_loc})
+	particleDrop({_loc})
 	
 	set {_golden} to false
 	chance of 10%:
@@ -327,6 +337,9 @@ local function effectSurvive(entity: entity):
 
 
 local function particlePlant(from: location, to: location):
+	add green concrete (block data) to {_blocks::*}
+	add lime concrete (block data) to {_blocks::*}
+
 	set {_distance} to distance between {_from} and {_to}
 	set {_distance} to ceil({_distance})
 
@@ -343,13 +356,14 @@ local function particlePlant(from: location, to: location):
 	else:
 		set {_v} to vector(0, 1, 0)
 	set {_rotateVector} to {_baseVector}.getCrossProduct({_v}).normalize()
+	set {_rotateVector} to {_rotateVector} * vector(0.5, 0.5, 0.5)
 
 	loop {_count} times:
-		set {_addrad} to a random number between 2 and 12
+		set {_addrad} to a random number between 10 and 30
 		add {_addrad} to {_rad}
 
 		add {_addm} to {_m}
-		add {_checkm} to {_m}
+		add {_addm} to {_checkm}
 
 		set {_disVector} to {_baseVector} * vector({_m}, {_m}, {_m})
 		set {_baseel} to {_from} ~ {_disVector}
@@ -358,9 +372,10 @@ local function particlePlant(from: location, to: location):
 		rotate {_rv} around {_baseVector} by {_rad}
 		set {_el} to {_baseel} ~ {_rv}
 		spawnParticle(egg_crack, {_el})
-		chance of 10%:
+		chance of 30%:
 			set {_el.2} to moveRandomLocation({_el}, 0.5)
-			spawnParticle_BlockData(falling_dust, brown concrete, {_el.2})
+			set {_block} to a random element out of {_blocks::*}
+			spawnParticle_BlockData(falling_dust, {_block}, {_el.2})
 
 		if {_checkm} >= {_mpt}:
 			set {_checkm} to 0
@@ -387,7 +402,19 @@ local function particleTree(loc: location):
 		loop {_count} times:
 			set {_el} to moveRandomLocation({_base}, 0.5)
 			spawnParticle(composter, {_el})
+		add 1 to {_i}
 		wait a tick
+
+local function particleTreeLeaves(loc: location):
+	add rgb(72, 175, 103) to {_colors::*}
+	add rgb(128, 199, 146) to {_colors::*}
+	add rgb(157, 204, 132) to {_colors::*}
+
+	set {_rp} to a random number between 0.5 and 3
+	set {_rv} to randomVector({_rp})
+	set {_el} to {_loc} ~ {_rv}
+	set {_color} to a random element out of {_colors::*}
+	spawnParticle_Color(tinted_leaves, {_color}, {_el})
 
 local function particleDrop(loc: location):
 	add rgb(231, 38, 38) to {_colors::*}
@@ -414,6 +441,7 @@ local function particleWither(loc: location):
 		loop {_count} times:
 			set {_el} to moveRandomLocation({_base}, 0.5)
 			spawnParticle_Block(oak log, {_el})
+		add 1 to {_i}
 		chance of 50%:
 			wait a tick
 
