@@ -32,9 +32,9 @@ local function effectGrow(player: player):
 		checkEntityType(loop-entity, block display) is true
 		set {_uuidString} to getPersistentData(loop-entity, "farmer-planted-by")
 		set {_planter} to getPlayer({_uuidString})
-		stop if {_planter} is not {_player}
+		continue if {_planter} is not {_player}
 		set {_progress} to getPersistentData(loop-entity, "growth-progress")
-		stop if {_progress} >= {_completeTick}
+		continue if {_progress} >= {_completeTick}
 
 		setPersistentData(loop-entity, "growth-progress", {_completeTick})
 		particleGrow(loop-entity)
@@ -112,5 +112,5 @@ local function soundLaunch(loc: location):
 	playSound("block.spore_blossom.break", 1, 0.8, {_soundLoc})
 
 local function soundGrow(entity: entity):
-	set {_pitch} to a random number between 1 and 1.5
+	set {_pitch} to 1.35
 	playSound("block.amethyst_block.step", 1, {_pitch}, {_entity})
