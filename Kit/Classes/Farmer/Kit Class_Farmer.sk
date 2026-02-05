@@ -173,13 +173,18 @@ local function startGrowingCrop(player: player, display: entity):
 		set {_age.3} to 7
 		set {_age.3} to 3 if {_crop} is "beetroot"
 
-		set {_cropAge} to getPersistentData({_display}, "crop-age")
-		set {_checkAge} to {_cropAge} + 1
+		set {_looping} to true
+		while {_looping} is true:
+			set {_cropAge} to getPersistentData({_display}, "crop-age")
+			set {_checkAge} to {_cropAge} + 1
 
-		if {_growth} >= {_blockGrowStep.%{_checkAge}%}:
-			setPersistentData({_display}, "crop-age", {_checkAge})
-			set {_newBlockData} to {_blockData} if {_newBlockData} is not set
-			{_newBlockData}.setAge({_age.%{_checkAge}%})
+			if {_growth} >= {_blockGrowStep.%{_checkAge}%}:
+				setPersistentData({_display}, "crop-age", {_checkAge})
+				set {_newBlockData} to {_blockData} if {_newBlockData} is not set
+				{_newBlockData}.setAge({_age.%{_checkAge}%})
+				set {_looping} to false if {_checkAge} >= 3
+			else:
+				set {_looping} to false
 
 		# Display変更
 		setDisplayBlock({_display}, {_newBlockData}) if {_newBlockData} is set
