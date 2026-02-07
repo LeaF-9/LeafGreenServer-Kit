@@ -1,0 +1,55 @@
+# skill-name: Abundant Harvest
+
+options:
+	effect-radius: 7
+	chance-replace: 30
+
+
+
+function kitEffect_AbundantHarvest(player: player):
+	nameCT({_player}, "Abundant Harvest")
+	effectHarvest({_player})
+
+local function effectHarvest(player: player):
+	kitMsg({_player}, "<##72db52>作物の収穫<##d5eeb9>を行います!")
+
+	set {_loc} to location of {_player}
+	soundHarvest({_loc})
+	particleHarvest({_loc})
+
+	set {_completeTick} to getGrowthCompleteTick_Farmer()
+	loop all entities in radius {@effect-radius} around {_loc}:
+		set {_checkEntity} to loop-entity
+		checkEntityType({_checkEntity}, interaction) is true
+		getPersistentData({_checkEntity}, "crop-interaction") is true
+
+		set {_display} to {_checkEntity}.getVehicle()
+
+		set {_uuidString} to getPersistentData({_display}, "farmer-planted-by")
+		set {_planter} to getPlayer({_uuidString})
+		continue if {_planter} is not {_player}
+		set {_progress} to getPersistentData({_display}, "growth-progress")
+		continue if {_progress} < {_completeTick}
+
+		set {_plantloc} to location of {_display}
+		interactCropEntity({_player}, {_checkEntity})
+		set {_chance} to kitPercent({_player}, {@chance-replace})
+		chance of {_chance}%:
+			set {_crop} to getPersistentData({_display}, "crop-type")
+			plantCrop_Farmer({_player}, {_plantloc}, {_crop})
+
+			particleReplace({_plantloc})
+			soundReplace({_plantloc})
+			continue
+		particleBreak({_plantloc})
+		soundBreak({_plantloc})
+
+
+
+local function particleHarvest(loc: location):
+
+local function particleBreak(loc: location):
+
+local function soundHarvest(loc: location):
+
+local function soundBreak(loc: location):
