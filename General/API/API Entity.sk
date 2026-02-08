@@ -1,4 +1,17 @@
+import:
+	org.bukkit.entity.EntityType
+
 function spawnEntity(mobtype: entity type, loc: location) :: entity:
+	set {_world} to world of {_loc}
+
+	set {_typeString} to {_mobtype}.toString().toUpperCase()
+	replace " " with "_" in {_typeString}
+	set {_type} to EntityType.valueOf({_typeString})
+
+	set {_mob} to {_world}.spawnEntity({_loc}, {_type})
+	return {_mob}
+
+function spawnEntityType(mobtype: object, loc: location) :: entity:
 	set {_world} to world of {_loc}
 	set {_mob} to {_world}.spawnEntity({_loc}, {_mobtype})
 	return {_mob}

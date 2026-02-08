@@ -1,0 +1,118 @@
+# skill-name: Bumper Crop
+using for loops
+
+options:
+	effect-radius: 10
+	effect-amount: 10
+	delay-tick: 20
+
+
+
+function kitEffect_BumperCrop(player: player):
+	nameCT({_player}, "Bumper Crop")
+	effectPlant({_player})
+
+
+
+local function effectPlant(player: player):
+	kitMsg({_player}, "<##b9f35c>§l大豊作<##87e29e>の祈願が実った!")
+	set {_baseloc} to location of {_player}
+	soundLaunch({_baseloc})
+	set {_cropType} to checkFarmerCrop({_player})
+
+	# decide plant locations
+	loop all blocks in radius {@effect-radius} around {_baseloc}:
+		continue if loop-block is not passable
+		continue if block below loop-block is passable
+		set {_blockLoc} to location of loop-block
+		add {_blockLoc} to {_canPlants::*}
+	
+	loop {@effect-amount} times:
+		set {_decideloc} to a random element out of {_canPlants::*}
+		continue if {_decideloc} is not set
+		remove {_decideloc} from {_canPlants::*}
+		particlePlanting({_baseloc}, {_decideloc})
+		add {_decideloc} to {_plantLocs::*}
+	
+	# delay planting
+	loop {@delay-tick} times:
+		wait a tick
+	
+	# plant
+	for {_looploc} in {_plantLocs::*}:
+		delete {_planting::*}
+		loop all blocks in radius 1 around {_looploc}:
+			continue if loop-block is not passable
+			continue if block below loop-block is passable
+			set {_ll} to location of loop-block
+			add {_ll} to {_planting::*}
+			soundPlant({_ll})
+			particlePlant({_ll})
+		plantCrop_Farmer({_player}, {_planting::*}, {_cropType})
+
+
+
+local function particlePlanting(from: location, to: location):
+	set {_distance} to distance between {_from} and {_to}
+	set {_height} to {_distance} / 2
+
+	set {_fromVector} to {_from}.toVector()
+	set {_toVector} to {_to}.toVector()
+	set {_difVector} to {_toVector} - {_fromVector}
+	
+	set {_count} to 10 * ({_distance} / 2)
+	set {_count} to round({_count})
+
+	set {_tick} to {_count} / {@delay-tick}
+	set {_tick} to round({_tick})
+
+	set {_i} to 0
+	loop {_count} times:
+		set {_t} to {_i} / {_count}  # 割合
+
+		# A. 直線上の座標を計算 (線形補間)
+		set {_tv} to vector({_t}, {_t}, {_t})
+		set {_multiply} to {_difVector} * {_tv}
+		set {_currentPos} to {_fromVec} + {_multiply}
+
+		# B. 放物線の高さを計算
+		set {_yOffset} to 4 * {_height} * {_t} * (1 - {_t})
+
+		# C. Y座標に高さを加算
+		set {_cy} to y of {_currentPos}
+		set {_sy} to {_cy} + {_yOffset}
+		set y of {_currentPos} to {_sy}
+
+		# パーティクルを表示 (Locationに戻す)
+		set {_el} to {_from} ~ {_currentPos}
+		spawnParticle(happy_villager, {_el})
+
+		add 1 to {_i}
+		wait a tick if mod({_i}, {_tick}) is 0
+
+local function particlePlant(loc: location):
+	add rgb(121, 233, 69) to {_colors::*}
+	add rgb(173, 239, 112) to {_colors::*}
+	add rgb(96, 208, 139) to {_colors::*}
+
+	set {_amount} to a random integer between 10 and 15
+	loop {_amount} times:
+		set {_pow} to a random number between 0 and 1.5
+		set {_v} to randomVector({_pow})
+		set y of {_v} to ((y of {_v}) * 0.5)
+		set {_el} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(effect, {_color}, 1, {_el})
+
+local function soundLaunch(loc: location):
+	playSound("entity.allay.item_taken", 1, 0.9, {_loc})
+
+local function soundPlant(loc: location):
+	playSound("item.crop.plant", 0.8, 0.65, {_loc})
+
+	chance of 5%:
+		playSound("block.note_block.chime", 0.7, 2, {_loc})
+	chance of 5%:
+		playSound("block.note_block.chime", 0.7, 1.414, {_loc})
+	chance of 5%:
+		playSound("block.note_block.chime", 0.7, 1.059, {_loc})

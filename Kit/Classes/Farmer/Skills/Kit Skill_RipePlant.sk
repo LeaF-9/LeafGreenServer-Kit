@@ -1,0 +1,473 @@
+# skill-name: Ripe Plant
+using for loops
+
+options:
+	plant-amount: 5
+	effect-radius: 10
+
+	growth-tick: 200
+	exist-tick: 600
+	
+	drop-min-tick: 60
+	drop-max-tick: 100
+
+	apple-heal-amount: 1
+	golden-heal-amount: 2
+	absorption-level: 1
+	absorption-tick: 200
+
+	apple-exist-tick: 200
+
+	plant-delay-tick: 20
+
+	data-tree-display: "ripeplant-tree"
+
+import:
+	org.bukkit.Material
+	org.bukkit.entity.EntityType
+	org.bukkit.inventory.ItemStack
+
+
+
+function kitEffect_RipePlant(player: player):
+	nameCT({_player}, "Ripe Plant")
+	effectLaunch({_player})
+
+
+
+local function effectLaunch(player: player):
+	kitMsg({_player}, "<##e8eb32>§l生命の果実<##25eb56>を実らせる苗木を植えました...")
+	set {_loc} to location of {_player}
+	set {_particleFrom} to location 1 meter above {_loc}
+	soundLaunch({_loc})
+
+	set {_addrad} to 360 / {@plant-amount}
+	set {_rad} to a random number between 0 and 360
+	loop {@plant-amount} times:
+		set {_dis} to a random number between 0 and {@effect-radius}
+		set {_vector} to vector({_dis}, 0, 0)
+		rotate {_vector} around y-axis by {_rad}
+		set {_decideLoc} to {_loc} ~ {_vector}
+		set {_plantLoc} to effectDecideLoc({_player}, {_decideLoc})
+		if {_plantLoc} is set:
+			add {_plantLoc} to {_plants::*} 
+			set {_particleTo} to location 0.5 meters above {_plantLoc}
+			particlePlant({_particleFrom}, {_particleTo})
+
+		add {_addrad} to {_rad}
+	
+	effectPlant({_player}, {_plants::*})
+
+local function effectDecideLoc(player: player, baseloc: location) :: location:
+	set {_statsName} to "Farmer-PlantedLocations"
+	set {_currentCrops} to getKitStats({_player}, {_statsName})
+	set {_currentCrops} to createNewArrayList() if {_currentCrops} is not set
+
+	set {_minDistance} to 6
+	loop all blocks in radius 5 around {_baseloc}:
+		loop-block is passable
+		block below loop-block is not passable
+
+		set {_loopLoc} to location of loop-block
+		subtract 0.5 from y-pos of {_loopLoc}
+		set {_distance} to distance between {_baseloc} and {_loopLoc}
+		continue if {_distance} > {_minDistance}
+
+		continue if {_currentCrops}.contains({_loopLoc}) is true
+
+		set {_decideLoc} to {_loopLoc}
+		set {_minDistance} to {_distance}
+	return {_decideLoc}
+
+local function effectPlant(player: player, locs: locations):
+	loop {@plant-delay-tick} times:
+		wait a tick
+		stop if getGameType({_player}) is not "Kit"
+
+	set {_statsName} to "Farmer-PlantedLocations"
+
+	set {_currentCrops} to getKitStats({_player}, {_statsName})
+	set {_currentCrops} to createNewArrayList() if {_currentCrops} is not set
+	for {_l} in {_locs::*}:
+		set {_plantloc} to location of block at {_l}
+		subtract 0.5 from y-pos of {_plantloc}
+		stop if {_currentCrops}.contains({_plantloc}) is true
+
+		{_currentCrops}.add({_plantloc})
+		effectPlaceSapling({_player}, {_plantloc})
+		particlePlaceSapling({_plantloc})
+		soundPlaceSapling({_plantloc})
+
+	setKitStats({_player}, {_statsName}, {_currentCrops})
+
+local function effectPlaceSapling(player: player, loc: location):
+	set {_display} to spawnEntity(block display, {_loc})
+	set {_interaction} to spawnEntity(interaction, {_loc})
+
+	# Block Display Settings
+	setGameType({_display})
+	set {_uuid} to "%uuid of {_player}%"
+	setPersistentData({_display}, "farmer-planted-by", {_uuid})
+	setPersistentData({_display}, "crop-type", "sapling")
+	setPersistentData({_display}, "growth-progress", 0)
+	setPersistentData({_display}, "growing-tick", 1)
+	setPersistentData({_display}, "crop-age", 0)
+
+	setBrightness({_display})
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+	
+	set {_block} to Material.FLOWERING_AZALEA  # OAK_SAPLING
+	set {_block} to {_block}.createBlockData()
+	setDisplayBlock({_display}, {_block})
+
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_translate} to getVector3f(-0.5, 0, -0.5)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translate}, {_scale})
+	{_display}.setTransformation({_transformation})
+
+	{_display}.addPassenger({_interaction})
+
+	# Interaction Settings
+	setGameType({_interaction})
+	setPersistentData({_interaction}, "crop-interaction", true)
+	setPersistentData({_interaction}, "breakable-ally", false)
+	setPersistentData({_interaction}, "breakable-enemy", true)
+
+	{_interaction}.setInteractionHeight(1.0)
+	{_interaction}.setInteractionWidth(1.0)
+	{_interaction}.setResponsive(false)
+
+	# Start Growing Process
+	effectGrowing({_player}, {_display})
+
+local function effectGrowing(player: player, display :entity):
+	set {_growth} to 0
+
+	set {_growing} to true
+	loop {@growth-tick} times:
+		wait a tick
+		if {_display}.isDead():
+			set {_growing} to false
+			stop
+		
+		# 成長進歩の更新
+		set {_nowGrowing} to getPersistentData({_display}, "growth-progress")
+		set {_growth} to {_nowGrowing} if {_growth} is not {_nowGrowing}
+		set {_growTick} to getPersistentData({_display}, "growing-tick")
+		add {_growTick} to {_growth}
+
+		setPersistentData({_display}, "growth-progress", {_growth})
+
+		# 成長完了時
+		if {_growth} >= {@growth-tick}:
+			set {_growing} to false
+			effectAfforest({_player}, {_display})
+			stop
+
+local function effectAfforest(player: player, display: entity):
+	set {_loc} to location of {_display}
+	effectRemoveDisplay({_player}, {_display})
+	effectPlaceTree({_player}, {_loc})
+	particleTree({_loc})
+	soundTree({_loc})
+
+local function effectRemoveDisplay(player: player, display: entity):
+	set {_location} to location of {_display}
+
+	set {_interactions} to {_display}.getPassengers()
+	loop ...{_interactions}:
+		set {_interaction} to loop-value
+		{_interaction}.remove()
+	
+	set {_statsName} to "Farmer-PlantedLocations"
+	set {_cropUUID} to getPersistentData({_display}, "farmer-planted-by")
+
+	set {_currentCrops} to getKitStats({_player}, {_statsName})
+	{_currentCrops}.remove({_location})
+	setKitStats({_player}, {_statsName}, {_currentCrops})
+
+	{_display}.remove()
+
+local function effectPlaceTree(player: player, loc: location):
+	set {_height} to a random number between 4.5 and 7
+	set {_thickness} to a random number between 0.8 and 1
+	set {_monitorLoc} to location ({_height} - 0.5) meters above {_loc}
+
+	# 幹
+	set {_display} to spawnEntity(block display, {_loc})
+
+	setGameType({_display})
+	set {_uuid} to "%uuid of {_player}%"
+	setPersistentData({_display}, {@data-tree-display}, {_uuid})
+
+	setBrightness({_display})
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+	
+	set {_block} to Material.OAK_LOG
+	set {_block} to {_block}.createBlockData()
+	setDisplayBlock({_display}, {_block})
+
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_scale} to getVector3f({_thickness}, {_height}, {_thickness})
+	set {_tr.el} to ({_thickness} * 0.5) * (-1)
+	set {_translate} to getVector3f({_tr.el}, 0, {_tr.el})
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translate}, {_scale})
+	{_display}.setTransformation({_transformation})
+
+	add {_display} to {_trees::*}
+
+	# 葉
+	set {_leaveLoc} to location {_height} meters above {_loc}
+	set {_amount} to a random integer between 20 and 40
+	loop {_amount} times:
+		set {_vp} to a random number between 0 and 3
+		set {_rv} to randomVector({_vp})
+		set {_randomLoc} to {_leaveLoc} ~ {_rv}
+		set {_display} to spawnEntity(item display, {_randomLoc})
+
+		setGameType({_display})
+		set {_uuid} to "%uuid of {_player}%"
+		setPersistentData({_display}, {@data-tree-display}, {_uuid})
+
+		setBrightness({_display})
+		{_display}.setTeleportDuration(1)
+		{_display}.setInterpolationDuration(1)
+		{_display}.setViewRange(1000)
+
+		set {_size} to a random number between 0.8 and 1.6
+		set {_item} to azalea leaves
+		chance of 50%:
+			set {_item} to flowering azalea leaves
+		setDisplayItem({_display}, {_item})
+
+		set {_rotation} to getQuaternionf(0, 0, 0, 1)
+		set {_scale} to getVector3f({_size}, {_size}, {_size})
+		set {_translate} to getVector3f(0, 0, 0)
+		set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translate}, {_scale})
+		{_display}.setTransformation({_transformation})
+
+		add {_display} to {_trees::*}
+
+	effectMonitor({_player}, {_monitorLoc}, {_trees::*})
+
+local function effectMonitor(player: player, loc: location, displays: entities):
+	set {_count} to 0
+	set {_dropCount} to a random integer between {@drop-min-tick} and {@drop-max-tick}
+	loop {@exist-tick} times:
+		continue if {_nonExisting} is true
+		if getGameType({_player}) is not "Kit":
+			set {_nonExisting} to true
+			continue
+
+		add 1 to {_count}
+		if {_count} >= {_dropCount}:
+			set {_count} to 0
+			set {_dropCount} to a random integer between {@drop-min-tick} and {@drop-max-tick}
+			effectDropApple({_player}, {_loc})
+		
+		chance of 3%:
+			particleTreeLeaves({_loc})
+
+		wait a tick
+
+	particleWither({_loc})
+	soundWither({_loc})
+	for {_e} in {_displays::*}:
+		{_e}.remove()
+
+local function effectDropApple(player: player, baseloc: location):
+	set {_rp} to a random number between 0.5 and 3
+	set {_rv} to randomVector({_rp})
+	set {_loc} to {_baseloc} ~ {_rv}
+
+	soundDrop({_loc})
+	particleDrop({_loc})
+	
+	set {_golden} to false
+	chance of 10%:
+		set {_golden} to true
+
+	if {_golden} is true:
+		set {_material} to Material.GOLDEN_APPLE
+		set {_pickable.ally} to true
+		set {_hasEffect.ally} to true
+		set {_applyEffect.ally} to "absorption"
+		set {_tickEffect.ally} to {@absorption-tick}
+		set {_hasHeal} to true
+		set {_amountHeal} to {@golden-heal-amount}
+	else:
+		set {_material} to Material.APPLE
+		set {_pickable.ally} to true
+		set {_hasHeal} to true
+		set {_amountHeal} to {@apple-heal-amount}
+
+	set {_itemstack} to new ItemStack({_material})
+
+	set {_EntityType} to EntityType.ITEM
+	set {_itemEntity} to spawnEntityType({_EntityType}, {_loc})
+	{_itemEntity}.setItemStack({_itemstack})
+	setGameType({_itemEntity})
+	setMetadata({_itemEntity}, "undelete", true)
+	set {_uuid} to "%uuid of {_player}%"
+	setPersistentData({_itemEntity}, "summon-player", {_uuid})
+	setPersistentData({_itemEntity}, "farmer-crop", true)
+
+	setPersistentData({_itemEntity}, "pickable-ally", true) if {_pickable.ally} is true
+	
+	if {_hasEffect.ally} is true:
+		setPersistentData({_itemEntity}, "haseffect-ally", true)
+		setPersistentData({_itemEntity}, "applyeffect-ally", {_applyEffect.ally})
+		setPersistentData({_itemEntity}, "tickeffect-ally", {_tickEffect.ally})
+		setPersistentData({_itemEntity}, "effect-tier", 1)
+	
+	setPersistentData({_itemEntity}, "hasheal", true)
+	setPersistentData({_itemEntity}, "amountheal", {_amountHeal})
+
+	effectSurvive({_itemEntity})
+
+local function effectSurvive(entity: entity):
+	loop {@apple-exist-tick} times:
+		stop if {_entity}.isDead() is true
+		wait a tick
+	{_entity}.remove()
+
+
+
+local function particlePlant(from: location, to: location):
+	add green concrete (block data) to {_blocks::*}
+	add lime concrete (block data) to {_blocks::*}
+
+	set {_distance} to distance between {_from} and {_to}
+	set {_distance} to ceil({_distance})
+
+	set {_count} to {_distance} * 2
+	set {_mpt} to {@plant-delay-tick} / {_count}
+	set {_m} to 0
+	set {_checkm} to 0
+	set {_addm} to 0.5
+	set {_rad} to 0
+
+	set {_baseVector} to setVector({_from}, {_to})
+	if {_baseVector} is vector(0, 1, 0):
+		set {_v} to vector(1, 0, 0)
+	else:
+		set {_v} to vector(0, 1, 0)
+	set {_rotateVector} to {_baseVector}.getCrossProduct({_v}).normalize()
+	set {_rotateVector} to {_rotateVector} * vector(0.5, 0.5, 0.5)
+
+	loop {_count} times:
+		set {_addrad} to a random number between 10 and 30
+		add {_addrad} to {_rad}
+
+		add {_addm} to {_m}
+		add {_addm} to {_checkm}
+
+		set {_disVector} to {_baseVector} * vector({_m}, {_m}, {_m})
+		set {_baseel} to {_from} ~ {_disVector}
+
+		set {_rv} to {_rotateVector}
+		rotate {_rv} around {_baseVector} by {_rad}
+		set {_el} to {_baseel} ~ {_rv}
+		spawnParticle(egg_crack, {_el})
+		chance of 30%:
+			set {_el.2} to moveRandomLocation({_el}, 0.5)
+			set {_block} to a random element out of {_blocks::*}
+			spawnParticle_BlockData(falling_dust, {_block}, {_el.2})
+
+		if {_checkm} >= {_mpt}:
+			set {_checkm} to 0
+			wait a tick
+
+local function particlePlaceSapling(loc: location):
+	add rgb(35, 189, 81) to {_colors::*}
+	add rgb(5, 109, 66) to {_colors::*}
+	add rgb(129, 199, 91) to {_colors::*}
+
+	add 0.5 to y-pos of {_loc}
+	set {_count} to a random integer between 10 and 15
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.6)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(tinted_leaves, {_color}, {_el})
+
+local function particleTree(loc: location):
+	set {_height} to a random integer between 4 and 7
+	set {_i} to 0.5
+	loop {_height} times:
+		set {_base} to location {_i} meters above {_loc}
+		set {_count} to a random integer between 5 and 10
+		loop {_count} times:
+			set {_el} to moveRandomLocation({_base}, 0.5)
+			spawnParticle(composter, {_el})
+		add 1 to {_i}
+		wait a tick
+
+local function particleTreeLeaves(loc: location):
+	add rgb(72, 175, 103) to {_colors::*}
+	add rgb(128, 199, 146) to {_colors::*}
+	add rgb(157, 204, 132) to {_colors::*}
+
+	set {_rp} to a random number between 0.5 and 3
+	set {_rv} to randomVector({_rp})
+	set {_el} to {_loc} ~ {_rv}
+	set {_color} to a random element out of {_colors::*}
+	spawnParticle_Color(tinted_leaves, {_color}, {_el})
+
+local function particleDrop(loc: location):
+	add rgb(231, 38, 38) to {_colors::*}
+	add rgb(219, 72, 72) to {_colors::*}
+	add rgb(240, 133, 34) to {_colors::*}
+
+	set {_count.wax} to a random integer between 10 and 20
+	set {_count.effect} to a random integer between 10 and 20
+	loop {_count.wax} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		spawnParticle(wax_on, {_el})
+	
+	loop {_count.effect} times:
+		set {_el} to moveRandomLocation({_loc}, 0.6)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 1, {_el})
+
+local function particleWither(loc: location):
+	set {_height} to a random integer between 4 and 7
+	set {_i} to 0.5
+	loop {_height} times:
+		set {_base} to location {_i} meters below {_loc}
+		set {_count} to a random integer between 5 and 10
+		loop {_count} times:
+			set {_el} to moveRandomLocation({_base}, 0.5)
+			spawnParticle_Block(oak log, {_el})
+		add 1 to {_i}
+		chance of 50%:
+			wait a tick
+
+local function soundLaunch(loc: location):
+	set {_pitch} to 1
+	loop 5 times:
+		playSound("entity.iron_golem.step", 1, {_pitch}, {_loc})
+		subtract 0.1 from {_pitch}
+		wait a tick
+
+local function soundPlaceSapling(loc: location):
+	playSound("block.azalea.break", 1, 0.65, {_loc})
+
+local function soundTree(loc: location):
+	set {_pitch} to 1
+	loop 3 times:
+		playSound("block.wood.place", 1, {_pitch}, {_loc})
+		add 0.25 to {_pitch}
+		wait a tick
+
+local function soundDrop(loc: location):
+	playSound("block.amethyst_block.chime", 0.9, 1.15, {_loc})
+
+local function soundWither(loc: location):
+	loop 3 times:
+		playSound("block.azalea_leaves.break", 1, 0.5, {_loc})
+		wait a tick

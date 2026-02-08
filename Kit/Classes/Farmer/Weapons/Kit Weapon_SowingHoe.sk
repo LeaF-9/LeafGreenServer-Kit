@@ -1,0 +1,191 @@
+# weapon-name: Sowing Hoe
+options:
+	max-target-distance: 4
+	sweep-radius: 3
+	sweep-damage: 2
+
+	stats-plant-location: "SowingHoe-PlantLocation"
+
+import:
+	org.bukkit.FluidCollisionMode
+
+function kitEffect_SowingHoe_Timer(player: player):
+	set {_fluid} to (FluidCollisionMode.NEVER)
+	set {_weapontool} to kitWeaponItem("Farmer", 1)
+	while {Class::%{_player}%} is "Farmer":
+		set {_tool} to tool of {_player}
+		if {_tool} is not {_weapontool}:
+			deleteKitStats({_player}, {@stats-plant-location})
+			wait a tick
+			continue
+
+		if checkItemCT({_player}, {_tool}) is false:
+			deleteKitStats({_player}, {@stats-plant-location})
+			wait a tick
+			continue
+
+		set {_playerloc} to head of {_player}
+		set {_world} to world of {_playerloc}
+		set {_vec} to {_playerloc}.getDirection()
+
+		set {_rayTrace} to {_world}.rayTraceBlocks({_playerloc}, {_vec}, {@max-target-distance}, {_fluid}, true)
+		set {_hitBlock} to {_rayTrace}.getHitBlock()
+		if {_hitBlock} is not set:
+			deleteKitStats({_player}, {@stats-plant-location})
+			wait a tick
+			continue
+
+		set {_baseloc} to location of {_hitBlock}
+		add 1 to y-pos of {_baseloc}
+		setKitStats({_player}, {@stats-plant-location}, {_baseloc})
+
+		particlePlantLocation({_player}, {_baseloc})
+		wait a tick
+
+function kitEffect_SowingHoe(player: player):
+	{_player} is sneaking
+
+	set {_target} to getKitStats({_player}, {@stats-plant-location})
+	if {_target} is not set:
+		kitMsg({_player}, "§c§l目先に耕すブロックがありません")
+		stop
+
+	nameItemCT({_player}, "Sowing Hoe")
+	effectPlant({_player}, {_target})
+
+function kitEffect_SowingHoe_LeftClick(player: player, event: object):
+	{_player} is sneaking
+	nameItemCT({_player}, "Sowing Hoe")
+	effectSweep({_player})
+
+
+
+local function effectPlant(player: player, loc: location):
+	soundPlant({_loc})
+
+	loop all blocks in radius 1.5 around {_loc}:
+		set {_checkBlock} to loop-block
+		continue if {_checkBlock} is not passable
+		set {_checkLocation} to location of {_checkBlock}
+		continue if block below {_checkBlock} is passable
+
+		particlePlant({_checkLocation})
+		add {_checkLocation} to {_locs::*}
+	plantCrop_Farmer({_player}, {_locs::*})
+
+local function effectSweep(player: player):
+	soundSweep({_player})
+	particleSweep({_player})
+
+	set {_baseloc} to location of {_player}
+	loop all entities in radius {@sweep-radius} around {_baseloc}:
+		set {_checkEntity} to loop-entity
+		if checkEntityType({_checkEntity}, interaction) is true:
+			continue if getPersistentData({_checkEntity}, "crop-interaction") is not true
+			interactCropEntity({_player}, {_checkEntity})
+			continue
+
+		kitCheckTeam({_player}, {_checkEntity}, false, true) is true
+		effectDamage({_player}, {_checkEntity})
+
+local function effectDamage(player: player, damager: entity):
+	soundHit({_damager})
+	particleHit({_damager})
+
+	kitDamage({_player}, {_damager}, {@sweep-damage}, "斬撃")
+
+
+
+local function particlePlantLocation(player: player, baseloc: location):
+	set {_color} to rgb(0, 255, 0)
+
+	subtract 0.5 from y-pos of {_baseloc}
+	add 1.5 to z-pos of {_baseloc}
+	subtract 1.5 from x-pos of {_baseloc}
+	set {_vector} to vector(1, 0, 0)
+	set {_upvector} to vector(0, 1, 0)
+
+	loop 4 times:
+		set {_ln} to 0
+		loop 15 times:
+			set {_mn} to {_ln} * 0.2
+			set {_sumVector} to {_vector} * vector({_mn}, {_mn}, {_mn})
+			set {_el} to {_baseloc} ~ {_sumVector}
+
+			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
+			add 1 to y-pos of {_el}
+			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
+			add 1 to {_ln}
+
+		loop 5 times:
+			set {_ln} to (loop-number-2)
+			set {_nm} to {_ln} * 0.2
+			set {_sumVector} to {_upvector} * vector({_nm}, {_nm}, {_nm})
+			set {_el} to {_baseloc} ~ {_sumVector}
+			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
+
+		set {_changeVector} to {_vector} * vector(3, 3, 3)
+		set {_baseloc} to {_baseloc} ~ {_changeVector}
+		rotate {_vector} around y-axis by 90
+
+local function particlePlant(loc: location):
+	set {_amount} to a random integer between 8 and 12
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		chance of 30%:
+			spawnParticle_BlockData(falling_dust, lime concrete, {_el})
+			continue
+		spawnParticle_BlockData(falling_dust, green concrete, {_el})
+
+local function particleSweep(player: player):
+	set {_rad} to 0
+	set {_rotateCount} to 10
+	set {_addrad} to 360 / {_rotateCount}
+	set {_meterCount} to 5
+	set {_addm} to {@sweep-radius} / {_meterCount}
+	set {_tickCount} to 2
+
+	set {_baseloc} to location 1 meter above {_player}
+	set pitch of {_baseloc} to 0
+	set {_rotateVector} to {_baseloc}.getDirection().normalize()
+
+	set {_loopnum.1} to 0
+	loop {_rotateCount} times:
+		add 1 to {_loopnum.1}
+		set {_m} to 0
+		loop {_meterCount} times:
+			add {_addm} to {_m}
+			set {_multiplyVector} to vector({_m}, {_m}, {_m})
+			set {_vec} to {_rotateVector} * {_multiplyVector}
+			rotate {_vec} around y-axis by {_rad}
+			set {_el} to {_baseloc} ~ {_vec}
+			if {_m} is not {@sweep-radius}:
+				chance of 30%:
+					spawnParticle(sweep_attack, {_el})
+				continue
+			spawnParticle(sweep_attack, {_el})
+
+		add {_addrad} to {_rad}
+		wait a tick if mod({_loopnum.1}, {_tickCount}) is 0
+
+local function particleHit(damager: entity):
+	set {_baseloc} to location 1 meter above {_damager}
+	set {_blockCount} to 10
+	loop {_blockCount} times:
+		set {_el} to moveRandomLocation({_baseloc}, 0.75)
+		spawnParticle_Block(redstone block, {_el})
+	
+	set {_dustCount} to a random integer between 5 and 10
+	loop {_dustCount} times:
+		set {_el} to moveRandomLocation({_baseloc}, 0.5)
+		spawnParticle_BlockData(falling_dust, red concrete, {_el})
+
+local function soundPlant(loc: location):
+	playSound("item.crop.plant", 1, 0.85, {_loc})
+
+local function soundSweep(player: player):
+	playSound("entity.player.attack.sweep", 1, 0.9, {_player})
+	playSound("item.trident.throw", 1, 1.15, {_player})
+
+local function soundHit(damager: entity):
+	playSound("item.trident.hit", 1, 1.35, {_damager})

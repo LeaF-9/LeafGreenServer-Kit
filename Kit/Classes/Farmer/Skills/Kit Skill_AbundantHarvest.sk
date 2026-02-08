@@ -1,0 +1,111 @@
+# skill-name: Abundant Harvest
+
+options:
+	effect-radius: 7
+	chance-replace: 30
+
+
+
+function kitEffect_AbundantHarvest(player: player):
+	nameCT({_player}, "Abundant Harvest")
+	effectHarvest({_player})
+
+local function effectHarvest(player: player):
+	kitMsg({_player}, "<##72db52>作物の収穫<##d5eeb9>を行います!")
+
+	set {_loc} to location of {_player}
+	soundHarvest({_loc})
+	particleHarvest({_loc})
+
+	set {_completeTick} to getGrowthCompleteTick_Farmer()
+	set {_m} to 0
+	loop {@effect-radius} times:
+		add 1 to {_m}
+
+		loop all entities in radius {_m} around {_loc}:
+			set {_checkEntity} to loop-entity
+			checkEntityType({_checkEntity}, interaction) is true
+			getPersistentData({_checkEntity}, "crop-interaction") is true
+
+			set {_display} to {_checkEntity}.getVehicle()
+
+			set {_uuidString} to getPersistentData({_display}, "farmer-planted-by")
+			set {_planter} to getPlayer({_uuidString})
+			continue if {_planter} is not {_player}
+			set {_progress} to getPersistentData({_display}, "growth-progress")
+			continue if {_progress} < {_completeTick}
+
+			set {_plantloc} to location of {_display}
+			interactCropEntity({_player}, {_checkEntity})
+			set {_chance} to kitPercent({_player}, {@chance-replace})
+			chance of {_chance}%:
+				set {_crop} to getPersistentData({_display}, "crop-type")
+				plantCrop_Farmer({_player}, {_plantloc}, {_crop})
+
+				particleReplace({_plantloc})
+				soundReplace({_plantloc})
+				continue
+			particleBreak({_plantloc})
+			soundBreak({_plantloc})
+		wait a tick
+
+
+
+local function particleHarvest(loc: location):
+	add 1 to y-pos of {_loc}
+
+	set {_m} to 0
+	set {_count} to {@effect-radius}
+	loop {_count} times:
+		add 1 to {_m}
+		set {_effCount} to {_m} * 10
+		particleBow({_loc}, {_m}, {_effCount})
+		wait a tick
+
+local function particleBow(baseloc: location, meter: number, count: number):
+	add rgb(195, 236, 127) to {_colors::*}
+	add rgb(207, 224, 50) to {_colors::*}
+	add rgb(136, 235, 44) to {_colors::*}
+
+	set {_rotateVector} to vector({_meter}, 0, 0)
+
+	set {_rad} to 0
+	set {_addrad} to 360 / {_count}
+	set {_mod} to {_count} / 2
+	set {_ln} to 0
+	loop {_count} times:
+		add 1 to {_ln}
+		add {_addrad} to {_rad}
+		set {_vec} to {_rotateVector}
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_vec}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 0.5, {_el})
+
+		wait a tick if mod({_ln}, {_mod}) is 0
+
+
+local function particleBreak(loc: location):
+	add 0.5 to y-pos of {_loc}
+	set {_count} to a random integer between 5 and 10
+	
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		spawnParticle(wax_off, {_el})
+
+local function particleReplace(loc: location):
+	add 0.5 to y-pos of {_loc}
+	set {_count} to a random integer between 5 and 10
+
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		spawnParticle(egg_crack, {_el})
+
+local function soundHarvest(loc: location):
+	playSound("block.composter.ready", 1, 0.85, {_loc})
+
+local function soundBreak(loc: location):
+	playSound("block.composter.fill_success", 0.85, 1.45, {_loc})
+
+local function soundReplace(loc: location):
+	playSound("block.composter.empty", 0.85, 1.35, {_loc})

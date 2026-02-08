@@ -1,0 +1,148 @@
+# weapon-name: Furrow Spade
+
+options:
+	effect-meter: 10
+	effect-damage: 2
+	stun-tick: 30
+
+
+
+import:
+	java.lang.Math
+
+function kitEffect_FurrowSpade_LeftClick(player: player, event: object):
+	stop if {_player} is not sneaking
+
+	nameItemCT({_player}, "Furrow Spade")
+	effectCultivate({_player})
+
+local function effectCultivate(player: player):
+	set {_baseloc} to head of {_player}
+	set {_baseVector} to setEffectVector({_player})
+	set {_baseVector} to {_baseVector}.normalize()
+
+	set {_checkBelowMeter} to 10
+	
+	set {_count} to {@effect-meter}
+	set {_tickrate} to 2
+	set {_m} to 0
+	set {_addm} to {@effect-meter} / {_count}
+	loop {_count} times:
+		add {_addm} to {_m}
+		set {_multiplyVector} to vector({_m}, {_m}, {_m})
+		set {_vector} to {_baseVector} * {_multiplyVector}
+		set {_base} to {_baseloc} ~ {_vector}
+
+		set {_downm} to 0
+		delete {_effectLoc}
+		loop {_checkBelowMeter} times:
+			continue if {_effectLoc} is set
+			set {_checkLoc} to location {_downm} meters below {_base}
+			add 1 to {_downm}
+			continue if block at {_checkLoc} is not passable
+			continue if block below {_checkLoc} is passable
+			set {_effectLoc} to {_checkLoc}
+		
+		set {_nowhits::*} to effectDig({_player}, {_effectLoc}, {_hits::*}) if {_effectLoc} is set
+		add {_nowhits::*} to {_hits::*} if (size of {_nowhits::*}) > 0
+		wait a tick if mod(loop-number, {_tickrate}) is 0
+
+local function effectDig(player: player, loc: location, hits: entities) :: entities:
+	soundDig({_loc})
+	particleDig({_loc})
+	loop all entities in radius 1.5 around {_loc}:
+		kitCheckTeam({_player}, loop-entity, false, true) is true
+		loop-entity.isOnGround() is true
+		{_hits::*} does not contain loop-entity
+		add loop-entity to {_nowhits::*}
+		effectHit({_player}, loop-entity)
+		effectPlant({_player}, loop-entity) if checkEntityType(loop-entity, player) is true
+	return {_nowhits::*}
+
+local function effectHit(player: player, entity: entity):
+	soundHit({_entity})
+	particleHit({_entity})
+	kitDamage({_player}, {_entity}, {@effect-damage}, "深耕")
+	kitStun({_entity}, {@stun-tick})
+
+local function effectPlant(player: player, entity: entity):
+	set {_loc} to location of block at {_entity}
+	soundPlant({_loc})
+
+	loop all blocks in radius 1.5 around {_loc}:
+		set {_checkBlock} to loop-block
+		continue if {_checkBlock} is not passable
+		set {_checkLocation} to location of {_checkBlock}
+		continue if block below {_checkBlock} is passable
+
+		particlePlant({_checkLocation})
+		add {_checkLocation} to {_locs::*}
+	plantCrop_Farmer({_player}, {_locs::*})
+
+local function setEffectVector(player: player) :: vector:
+	set {_playerLoc} to head of {_player}
+	set {_playerVec} to {_playerLoc}.getDirection().normalize()
+
+	set {_groundLoc} to {_playerLoc}
+	set pitch of {_groundLoc} to 0
+	set {_groundVec} to {_groundLoc}.getDirection().normalize()
+	
+	set {_maxAngle} to 45
+	set {_limitAngle} to Math.toRadians({_maxAngle})
+
+	set {_currentAngle} to {_playerVec}.angle({_groundVec})
+	if {_currentAngle} > {_limitAngle}:
+		set {_rotationAxis} to {_groundVec}.getCrossProduct({_playerVec})
+
+		set {_calcVec} to {_groundVec}
+		rotate {_calcVec} around {_rotationAxis} by {_maxAngle}
+
+		set {_playerVec} to {_calcVec}
+	return {_playerVec}
+
+
+
+local function particleDig(loc: location):
+	set {_count} to a random integer between 5 and 10
+
+	loop all blocks in radius 1.5 around {_loc}:
+		loop-block is passable
+		block below loop-block is not passable
+
+		set {_baseblock} to block below loop-block
+		set {_material} to block data of {_baseblock}
+		set {_bl} to location of loop-block
+		subtract 0.4 from y-pos of {_bl}
+		loop {_count} times:
+			set {_add.x} to a random number between -0.5 and 0.5
+			set {_add.z} to a random number between -0.5 and 0.5
+			add {_add.x} to x-pos of {_bl}
+			add {_add.z} to z-pos of {_bl}
+
+			spawnParticle_Block({_material}, {_bl})
+
+local function particleHit(entity: entity):
+	set {_loc} to location 1 meter above {_entity}
+	set {_count} to a random integer between 10 and 20
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 1)
+		set {_v} to setVector({_loc}, {_el})
+		spawnParticle_Vector(crit, {_v}, 0.9, {_el})
+
+local function particlePlant(loc: location):
+	set {_amount} to a random integer between 8 and 12
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		chance of 30%:
+			spawnParticle_Block(dirt, {_el})
+			continue
+		spawnParticle_BlockData(falling_dust, brown concrete, {_el})
+
+local function soundDig(loc: location):
+	playSound("block.gravel.break", 1, 0.6, {_loc})
+
+local function soundHit(entity: entity):
+	set {_loc} to location of {_entity}
+	playSound("entity.ravager.step", 1, 1.5, {_loc})
+
+local function soundPlant(loc: location):
