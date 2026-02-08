@@ -1,0 +1,30 @@
+options:
+	var-name: "TempBlocks"
+
+function getTempBlocks(player: player) :: locations:
+	set {_varName} to {@var-name}
+	set {_blockList} to {%{_varName}%::%{_player}%}
+	
+	loop ...{_blockList}:
+		set {_ll} to loop-value
+		add {_ll} to {_returnLocs::*}
+	
+	return {_returnLocs::*}
+
+function setTempBlock(player: player, loc: location, type: block data):
+	stop if {_type} is air
+	set {_block} to block at {_loc}
+	set {_blockLoc} to location of {_block}
+
+	set {_varName} to {@var-name}
+	set {_blockList} to {%{_varName}%::%{_player}%}
+	set {_blockList} to createNewArrayList() if {_blockList} is not set
+	if {_blockList}.contains({_blockLoc}) is false:
+		{_blockList}.add({_blockLoc})
+		set {%{_varName}%::%{_player}%} to {_blockList}
+	
+	set (block at {_blockLoc}) to {_type}
+
+function deleteTempBlock(player: player, loc: location):
+
+function deleteTempBlocks(player: player):
