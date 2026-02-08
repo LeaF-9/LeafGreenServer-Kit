@@ -1,0 +1,163 @@
+# skill-name: Berry Screen
+
+options:
+	skill-name: "Berry Screen"
+
+	max-distance: 15
+	meter-per-tick: 0.5  # mps: 10
+
+	max-vector-length: 0.05
+
+	drop-max-meter: 5
+	drop-per-tick: 1
+	wall-height: 3
+
+	data-display: "berryscreen-bush"
+	data-age: "berryscreen-age"
+	data-interaction: "berryscreen-boundingbox"
+
+	chance-berry: 3
+	berry-min-drop: 1
+	berry-max-drop: 3
+
+	berry-damage: 1
+	berry-bleed-chance: 30
+
+
+
+function kitEffect_BerryScreen(player: player):
+	effectLaunch({_player})
+
+
+
+local function effectLaunch(player: player):
+	kitMsg({_player}, "<##a53a10>ベリーの低木壁<##0e7053>を展開します...")
+	set {_tool} to tool of {_player}
+
+	set {_baseloc} to head of {_player}
+
+	soundLaunch({_player})
+	particleLaunch({_player})
+
+	set {_true} to true
+	while {_true} is true:
+		if checkEating({_player}) is false:
+			set {_delete} to true
+		set {_nowtool} to tool of {_player}
+		if {_nowtool} is not {_tool}:
+			set {_delete} to true
+		if {_m} >= {@max-distance}:
+			set {_delete} to true
+
+		if {_delete} is true:
+			delete {_true}
+			continue
+
+		set {_nowloc} to head of {_player}
+		set {_basevec} to {_baseloc}.getDirection()
+		set {_nowvec} to {_nowloc}.getDirection()
+		set {_plusvec} to {_nowvec} - {_basevec}
+		if vector length of {_plusvec} > {@max-vector-length}:
+			set vector length of {_plusvec} to {@max-vector-length}
+		
+		set {_vector} to {_basevec} + {_plusvec}
+		set {_baseloc} to setDirToVec({_baseloc}, {_vector})
+		set {_frontloc} to location {@meter-per-tick} meters in front of {_baseloc}
+		effectDrop({_player}, {_frontloc})
+
+		set {_baseloc} to {_frontloc}
+		wait a tick
+	detectCT({_player}, {_tool})
+
+local function effectDrop(player: player, loc: location) :: locations:
+	soundProjectile({_loc})
+
+	set {_m} to 0
+	set {_mod} to {@drop-per-tick}
+	loop {@drop-max-meter} times:
+		continue if {_baseloc} is set
+
+		set {_checkloc} to location {_m} meters below {_loc}
+		particleDrop({_loc})
+		if:
+			block at {_checkloc} is passable
+			block below {_checkloc} is not passable
+		then:
+			set {_baseloc} to location of block at {_checkloc}
+
+		add 1 to {_m}
+		wait a tick if mod({_m}, {_mod}) is 0
+	stop if {_baseloc} is not set
+	
+	set {_blocking} to false
+	set {_m} to 0
+	loop {@wall-height} times:
+		continue if {_blocking} is true
+
+		set {_checkloc} to location {_m} meters above {_baseloc}
+		if block at {_checkloc} is not passable:
+			set {_blocking} to true
+			continue
+
+		effectPlant({_player}, {_checkloc})
+		add 1 to {_m}
+		wait a tick
+
+local function effectPlant(player: player, loc: location):
+	particlePlant({_loc})
+	soundPlant({_loc})
+
+	subtract 0.5 from y-pos of {_loc}
+	set {_display} to spawnEntity(block display, {_loc})
+	set {_interaction} to spawnEntity(interaction, {_loc})
+
+	# Block Display Settings
+	setGameType({_display})
+	set {_uuid} to "%uuid of {_player}%"
+	setPersistentData({_display}, {@data-display}, {_uuid})
+	setPersistentData({_display}, {@data-age}, 1)
+
+	setBrightness({_display})
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+	
+	set {_block} to Material.SWEET_BERRY_BUSH
+	set {_block} to {_block}.createBlockData().setAge(1)
+	setDisplayBlock({_display}, {_block})
+
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_scale} to getVector3f(1, 1, 1)
+	set {_translate} to getVector3f(-0.5, 0, -0.5)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translate}, {_scale})
+	{_display}.setTransformation({_transformation})
+
+	{_display}.addPassenger({_interaction})
+
+	# Interaction Settings
+	setGameType({_interaction})
+	setPersistentData({_interaction}, {@data-interaction}, {_uuid})
+
+	{_interaction}.setInteractionHeight(1.0)
+	{_interaction}.setInteractionWidth(1.0)
+	{_interaction}.setResponsive(false)
+
+	# Start Growing Process
+	effectTimer({_player}, {_display}, {_interaction})
+
+# player接触確認 (interactionのboundingboxを用いて確認)
+local function effectTimer(player: playe, display: entity, interaction: entity):
+
+
+
+local function particleLaunch(player: player):
+
+local function particleDrop(loc: location):
+
+local function particlePlant(loc: location):
+
+local function soundLaunch(player: player):
+
+local function soundProjectile(loc: location):
+
+local function soundPlant(loc: location):
