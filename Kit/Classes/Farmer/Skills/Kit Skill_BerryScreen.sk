@@ -1,4 +1,5 @@
 # skill-name: Berry Screen
+using for loops
 
 options:
 	skill-name: "Berry Screen"
@@ -16,9 +17,13 @@ options:
 	data-age: "berryscreen-age"
 	data-interaction: "berryscreen-boundingbox"
 
+	wall-tick: 200
 	chance-berry: 3
 	berry-min-drop: 1
-	berry-max-drop: 3
+	berry-max-drop: 2
+	data-berry: "berryscreen-berry"
+
+	metadata-hit "Berry Screen - HURT"
 
 	berry-damage: 1
 	berry-bleed-chance: 30
@@ -69,6 +74,8 @@ local function effectLaunch(player: player):
 		wait a tick
 	detectCT({_player}, {_tool})
 
+	# Entityへの影響はこちらで制御
+
 local function effectDrop(player: player, loc: location) :: locations:
 	soundProjectile({_loc})
 
@@ -108,6 +115,15 @@ local function effectPlant(player: player, loc: location):
 	soundPlant({_loc})
 
 	subtract 0.5 from y-pos of {_loc}
+	loop all interactions in radius 0.5 around {_loc}:
+		set {_checkInteract} to loop-interaction
+		set {_checkloc} to location of {_checkInteract}
+		if:
+			{_checkloc} is {_loc}
+			getPersistentData({_checkInteract}, {@data-interaction}) is set
+		then:
+			stop
+
 	set {_display} to spawnEntity(block display, {_loc})
 	set {_interaction} to spawnEntity(interaction, {_loc})
 
@@ -146,7 +162,99 @@ local function effectPlant(player: player, loc: location):
 	effectTimer({_player}, {_display}, {_interaction})
 
 # player接触確認 (interactionのboundingboxを用いて確認)
-local function effectTimer(player: playe, display: entity, interaction: entity):
+local function effectTimer(player: player, display: entity, interaction: entity):
+	set {_age} to 1
+	set {_ageMax} to 3
+	set {_material} to Material.SWEET_BERRY_BUSH
+	set {_hitbox} to {_interaction}.getBoundingBox()
+	set {_uuid} to {_interaction}.getUniqueId()
+	
+	loop {@wall-tick} times:
+		if {_interaction}.isDead():
+			stop
+		
+		# berryの成熟
+		if {_age} < {_ageMax}:
+			chance of {@chance-berry}%:
+				add 1 to {_age}
+				setPersistentData({_display}, {@data-age}, {_age})
+				set {_block} to {_material}.createBlockData().setAge({_age})
+				setDisplayBlock({_display}, {_block})
+
+		# hit確認
+		delete {_nowHit::*}
+		loop all entities in radius 1.5 around {_interaction}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+
+			set {_hitCheck} to loop-entity.wouldCollideUsing({_hitbox})
+			continue if {_hitCheck} is false
+
+			set {_metadataUUID} to getMetadata(loop-entity, {@metadata-hit})
+			if {_metadataUUID} is set:
+				if {_metadataUUID} is not {_uuid}:
+					continue
+
+			setMetadata(loop-entity, {@metadata-hit}, {_uuid})
+			if {_age} > 1:
+				effectDropBerry({_player}, {_interaction}, {_age})
+				set {_age} to 1
+				setPersistentData({_display}, {@data-age}, {_age})
+				set {_block} to {_material}.createBlockData().setAge({_age})
+				setDisplayBlock({_display}, {_block})
+
+			add loop-entity to {_nowHit::*}
+			add loop-entity to {_hitting::*} if {_hitting::*} does not contain loop-entity
+
+		for {_hitEntity} in {_hitting::*}:
+			continue if {_nowHit::*} contains {_hitEntity}
+			remove {_hitEntity} from {_hitting::*}
+
+			set {_metadataUUID} to getMetadata(loop-entity, {@metadata-hit})
+			deleteMetadata(loop-entity) if {_metadataUUID} is {_uuid}
+
+		wait a tick
+
+local function effectDropBerry(player: player, interaction: entity, age: number):
+	set {_age} to {_age} - 2
+	set {_minDrop} to {@berry-min-drop} + {_age}
+	set {_maxDrop} to {@berry-max-drop} + {_age}
+	set {_dropCount} to a random integer between {_minDrop} and {_maxDrop}
+
+	set {_dropLoc} to location of {_interaction}
+	add 0.5 to y-pos of {_dropLoc}
+	soundDropBerry({_dropLoc})
+	particleDropBerry({_dropLoc})
+
+	loop {_dropCount} times:
+		set {_el} to moveRandomLocation({_dropLoc}, 0.5)
+		set {_pow} to a random number between 0.75 and 1.5
+		set {_vec} to setVector({_dropLoc}, {_el}, {_pow})
+
+		set {_item} to effectItemEntity({_player}, {_el})
+		set velocity of {_item} to {_vec}
+
+local function effectItemEntity(player: player, loc: location) :: entity:
+	set {_material} to Material.SWEET_BERRIES
+	set {_amountDamage} to {@berry-damage}
+
+	set {_itemstack} to new ItemStack({_material})
+
+	set {_EntityType} to EntityType.ITEM
+	set {_itemEntity} to spawnEntityType({_EntityType}, {_loc})
+	{_itemEntity}.setItemStack({_itemstack})
+	setGameType({_itemEntity})
+	setMetadata({_itemEntity}, "undelete", true)
+	set {_uuid} to "%uuid of {_player}%"
+	setPersistentData({_itemEntity}, "summon-player", {_uuid})
+	setPersistentData({_itemEntity}, "farmer-crop", true)
+	setPersistentData({_itemEntity}, {@data-berry}, true)
+
+	setPersistentData({_itemEntity}, "pickable-enemy", true)
+	
+	setPersistentData({_itemEntity}, "hasdamage", true)
+	setPersistentData({_itemEntity}, "amountdamage", {_amountDamage})
+
+	return {_itemEntity}
 
 
 
@@ -156,8 +264,12 @@ local function particleDrop(loc: location):
 
 local function particlePlant(loc: location):
 
+local function particleDropBerry(loc: location):
+
 local function soundLaunch(player: player):
 
 local function soundProjectile(loc: location):
 
 local function soundPlant(loc: location):
+
+local function soundDropBerry(loc: location):
