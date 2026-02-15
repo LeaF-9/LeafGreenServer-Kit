@@ -47,11 +47,6 @@ local function effectLaunch(player: player):
 
 	set {_true} to true
 	while {_true} is true:
-		if checkEating({_player}) is false:
-			set {_delete} to true
-		set {_nowtool} to tool of {_player}
-		if {_nowtool} is not {_tool}:
-			set {_delete} to true
 		if {_m} >= {@max-distance}:
 			set {_delete} to true
 
@@ -59,7 +54,16 @@ local function effectLaunch(player: player):
 			delete {_true}
 			continue
 
+		if checkEating({_player}) is false:
+			set {_notChange} to true
+		set {_nowtool} to tool of {_player}
+		if {_nowtool} is not {_tool}:
+			set {_notChange} to true
+		
 		set {_nowloc} to head of {_player}
+		if {_notChange} is set:
+			set {_nowloc} to {_baseloc}
+
 		set {_basevec} to {_baseloc}.getDirection()
 		set {_nowvec} to {_nowloc}.getDirection()
 		set {_plusvec} to {_nowvec} - {_basevec}
@@ -70,6 +74,7 @@ local function effectLaunch(player: player):
 		set {_baseloc} to setDirToVec({_baseloc}, {_vector})
 		set {_frontloc} to location {@meter-per-tick} meters in front of {_baseloc}
 		effectDrop({_player}, {_frontloc})
+		particleProjectile({_frontloc})
 
 		set {_baseloc} to {_frontloc}
 		wait a tick
@@ -323,25 +328,112 @@ on pick up with priority LOW:
 
 
 local function particleLaunch(player: player):
+	set {_baseloc} to head of {_player}
+	set {_count} to a random integer between 30 and 50
+	loop {_count} times:
+		set {_vec} to randomVector()
+		spawnParticle_Vector(sneeze, {_vec}, 0.8, {_baseloc})
+
+local function particleProjectile(loc: location):
+	add rgb(58, 145, 42) to {_colors::*}
+	add rgb(14, 127, 50) to {_colors::*}
+	add rgb(40, 81, 32) to {_colors::*}
+
+	set {_color} to a random element out of {_colors::*}
+	set {_size} to a random integer between 1.8 and 2.6
+	spawnParticle_Dust({_color}, {_size}, {_loc})
+
+	set {_count} to a random integer between 0 and 2
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.45)
+		spawnParticle(falling_spore_blossom, {_el})
 
 local function particleDrop(loc: location):
+	spawnParticle(composter, {_loc})
+
+	add lime concrete (block data) to {_blocks::*}
+	add green concrete (block data) to {_blocks::*}
+
+	add rgb(53, 108, 62) to {_colors::*}
+	add rgb(35, 156, 43) to {_colors::*}
+	add rgb(82, 173, 43) to {_colors::*}
+
+	set {_count.b} to a random integer between 1 and 3
+	loop {_count.b} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		set {_block} to a random element out of {_blocks::*}
+		spawnParticle_BlockData(falling_dust, {_block}, {_el})
+	
+	set {_count.l} to a random integer between 0 and 1
+	loop {_count.l} times:
+		set {_el} to moveRandomLocation({_loc}, 1)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Color(tinted_leaves, {_color}, {_el})
 
 local function particlePlant(loc: location):
+	add rgb(20, 99, 21) to {_colors::*}
+	add rgb(48, 96, 44) to {_colors::*}
+	add rgb(56, 112, 81) to {_colors::*}
+
+	set {_count} to a random integer between 5 and 10
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		spawnParticle(happy_villager, {_el})
+		chance of 20%:
+			set {_el} to moveRandomLocation({_loc}, 0.5)
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Spell(instant_effect, {_color}, 1, {_el})
 
 local function particleDropBerry(loc: location):
+	set {_count} to a random integer between 15 and 30
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.5)
+		spawnParticle_Item(sweet berries, {_el})
 
 local function particleThornDamage(entity: entity):
+	add spruce leaves (block data) to {_blocks::*}
+	add birch leaves (block data) to {_blocks::*}
+	add jungle leaves (block data) to {_blocks::*}
+	add mangrove leaves (block data) to {_blocks::*}
+
+	set {_count} to a random integer between 10 and 15
+	loop {_count} times:
+		set {_el} to aroundEffect({_entity})
+		set {_block} to a random element out of {_blocks::*}
+		spawnParticle_Block({_block}, {_el})
 
 local function particlePick(player: player):
+	add rgb(146, 44, 44) to {_colors::*}
+	add rgb(132, 41, 19) to {_colors::*}
+	add rgb(166, 19, 39) to {_colors::*}
+
+	set {_count.d} to a random integer between 5 and 10
+	loop {_count.d} times:
+		set {_el} to aroundEffect({_player})
+		set {_color} to a random element out of {_colors::*}
+		set {_size} to a random number between 1 and 2
+		spawnParticle_Dust({_color}, {_size}, {_el})
+	
+	set {_count.s} to a random integer between 3 and 5
+	loop {_count.s} times:
+		set {_el} to aroundEffect({_player})
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 0.8, {_el})
 
 local function soundLaunch(player: player):
+	playSound("entity.breeze.jump", 1, 0.65, {_player})
 
 local function soundProjectile(loc: location):
+	playSound("block.wet_grass.break", 1, 1.85, {_loc})
 
 local function soundPlant(loc: location):
+	playSound("block.sweet_berry_bush.place", 1, 1.3, {_loc})
 
 local function soundDropBerry(loc: location):
+	playSound("block.sweet_berry_bush.pick_berries", 1, 0.8, {_loc})
 
 local function soundThornDamage(entity: entity):
+	playSound("entity.player.hurt_sweet_berry_bush", 1, 0.9, {_entity})
 
 local function soundPick(player: player):
+	playSound("entity.bee.sting", 1, 1.3, {_player})
