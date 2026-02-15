@@ -204,13 +204,15 @@ local function effectTimer(player: player, display: entity, interaction: entity)
 
 			add loop-entity to {_nowHit::*}
 			add loop-entity to {_hitting::*} if {_hitting::*} does not contain loop-entity
+			effectFakeBlock(loop-entity, {_display})
 
 		for {_hitEntity} in {_hitting::*}:
 			continue if {_nowHit::*} contains {_hitEntity}
 			remove {_hitEntity} from {_hitting::*}
 
-			set {_metadataUUID} to getMetadata(loop-entity, {@metadata-hit})
-			deleteMetadata(loop-entity) if {_metadataUUID} is {_uuid}
+			set {_metadataUUID} to getMetadata({_hitEntity}, {@metadata-hit})
+			deleteMetadata({_hitEntity}) if {_metadataUUID} is {_uuid}
+			effectRealBlock({_hitEntity}, {_display})
 
 		wait a tick
 
@@ -255,6 +257,25 @@ local function effectItemEntity(player: player, loc: location) :: entity:
 	setPersistentData({_itemEntity}, "amountdamage", {_amountDamage})
 
 	return {_itemEntity}
+
+local function effectFakeBlock(target: player, display: entity):
+	hide {_display} from {_target}
+	effectDestroyEntity({_target}, {_display})
+
+	set {_blockloc} to location of {_display}
+	add 0.5 to y-pos of {_blockloc}
+
+	set {_blockdata} to {_display}.getBlockData()
+
+	make {_target} see block at {_blockloc} as {_blockdata}
+
+local function effectRealBlock(target: player, display: entity):
+	reveal {_display} from {_target}
+
+	set {_blockloc} to location of {_display}
+	add 0.5 to y-pos of {_blockloc}
+
+	make {_target} see block at {_blockloc} as original
 
 
 
