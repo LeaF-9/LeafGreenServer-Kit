@@ -23,11 +23,14 @@ options:
 	berry-max-drop: 2
 	data-berry: "berryscreen-berry"
 
-	metadata-hit "Berry Screen - HURT"
+	metadata-hit: "Berry Screen - HURT"
 	metadata-attacker: "Berry Screen- ATTACKER"
 
 	berry-damage: 1
 	berry-bleed-chance: 30
+
+import:
+	org.bukkit.Material
 
 
 
@@ -77,6 +80,7 @@ local function effectLaunch(player: player):
 		particleProjectile({_frontloc})
 
 		set {_baseloc} to {_frontloc}
+		add {@meter-per-tick} to {_m}
 		wait a tick
 	detectCT({_player}, {_tool})
 
@@ -109,7 +113,7 @@ local function effectDrop(player: player, loc: location) :: locations:
 		continue if {_baseloc} is set
 
 		set {_checkloc} to location {_m} meters below {_loc}
-		particleDrop({_loc})
+		particleDrop({_checkloc})
 		if:
 			block at {_checkloc} is passable
 			block below {_checkloc} is not passable
@@ -162,8 +166,9 @@ local function effectPlant(player: player, loc: location):
 	{_display}.setInterpolationDuration(1)
 	{_display}.setViewRange(1000)
 	
-	set {_block} to Material.SWEET_BERRY_BUSH
-	set {_block} to {_block}.createBlockData().setAge(1)
+	set {_material} to Material.SWEET_BERRY_BUSH
+	set {_block} to {_material}.createBlockData()
+	{_block}.setAge(1)
 	setDisplayBlock({_display}, {_block})
 
 	set {_rotation} to getQuaternionf(0, 0, 0, 1)
@@ -202,7 +207,8 @@ local function effectTimer(player: player, display: entity, interaction: entity)
 			chance of {@chance-berry}%:
 				add 1 to {_age}
 				setPersistentData({_display}, {@data-age}, {_age})
-				set {_block} to {_material}.createBlockData().setAge({_age})
+				set {_block} to {_material}.createBlockData()
+				{_block}.setAge({_age})
 				setDisplayBlock({_display}, {_block})
 
 		# hit確認
@@ -224,7 +230,8 @@ local function effectTimer(player: player, display: entity, interaction: entity)
 				effectDropBerry({_player}, {_interaction}, {_age})
 				set {_age} to 1
 				setPersistentData({_display}, {@data-age}, {_age})
-				set {_block} to {_material}.createBlockData().setAge({_age})
+				set {_block} to {_material}.createBlockData()
+				{_block}.setAge({_age})
 				setDisplayBlock({_display}, {_block})
 
 			add loop-entity to {_nowHit::*}
@@ -247,6 +254,8 @@ local function effectTimer(player: player, display: entity, interaction: entity)
 		deleteMetadata({_hitEntity}, {@metadata-hit})
 		deleteMetadata({_hitEntity}, {@metadata-attacker})
 		effectRealBlock({_hitEntity}, {_display})
+	{_display}.remove()
+	{_interaction}.remove()
 
 local function effectDropBerry(player: player, interaction: entity, age: number):
 	set {_age} to {_age} - 2
@@ -292,7 +301,6 @@ local function effectItemEntity(player: player, loc: location) :: entity:
 
 local function effectFakeBlock(target: player, display: entity):
 	hide {_display} from {_target}
-	effectDestroyEntity({_target}, {_display})
 
 	set {_blockloc} to location of {_display}
 	add 0.5 to y-pos of {_blockloc}
