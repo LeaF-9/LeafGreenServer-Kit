@@ -24,6 +24,7 @@ options:
 	data-berry: "berryscreen-berry"
 
 	metadata-hit "Berry Screen - HURT"
+	metadata-attacker: "Berry Screen- ATTACKER"
 
 	berry-damage: 1
 	berry-bleed-chance: 30
@@ -75,6 +76,24 @@ local function effectLaunch(player: player):
 	detectCT({_player}, {_tool})
 
 	# Entityへの影響はこちらで制御
+	loop {@wall-tick} times:
+		loop all entities:
+			set {_bushHitter} to getMetadata(loop-entity, {@metadata-attacker})
+			if {_bushHitter} is not {_player}:
+				delete {_preloc::%loop-entity%}
+				continue
+
+			set {_nowloc} to (location of loop-entity).toVector()
+			if any:
+				{_preloc::%loop-entity%} is not set
+				{_preloc::%loop-entity%} is {_nowloc}
+			then:
+				soundThornDamage(loop-entity)
+				particleThornDamage(loop-entity)
+				kitDamage({_player}, loop-entity, 0.5, "棘")
+			set {_preloc::%loop-entity%} to {_nowloc}
+
+		wait a tick
 
 local function effectDrop(player: player, loc: location) :: locations:
 	soundProjectile({_loc})
@@ -195,6 +214,7 @@ local function effectTimer(player: player, display: entity, interaction: entity)
 					continue
 
 			setMetadata(loop-entity, {@metadata-hit}, {_uuid})
+			setMetadata(loop-entity, {@metadata-attacker}, {_player})
 			if {_age} > 1:
 				effectDropBerry({_player}, {_interaction}, {_age})
 				set {_age} to 1
@@ -211,10 +231,17 @@ local function effectTimer(player: player, display: entity, interaction: entity)
 			remove {_hitEntity} from {_hitting::*}
 
 			set {_metadataUUID} to getMetadata({_hitEntity}, {@metadata-hit})
-			deleteMetadata({_hitEntity}) if {_metadataUUID} is {_uuid}
+			if {_metadataUUID} is {_uuid}:
+				deleteMetadata({_hitEntity}, {@metadata-hit})
+				deleteMetadata({_hitEntity}, {@metadata-attacker})
 			effectRealBlock({_hitEntity}, {_display})
 
 		wait a tick
+	
+	for {_hitEntity} in {_hitting::*}:
+		deleteMetadata({_hitEntity}, {@metadata-hit})
+		deleteMetadata({_hitEntity}, {@metadata-attacker})
+		effectRealBlock({_hitEntity}, {_display})
 
 local function effectDropBerry(player: player, interaction: entity, age: number):
 	set {_age} to {_age} - 2
@@ -287,6 +314,8 @@ local function particlePlant(loc: location):
 
 local function particleDropBerry(loc: location):
 
+local function particleThornDamage(entity: entity):
+
 local function soundLaunch(player: player):
 
 local function soundProjectile(loc: location):
@@ -294,3 +323,5 @@ local function soundProjectile(loc: location):
 local function soundPlant(loc: location):
 
 local function soundDropBerry(loc: location):
+
+local function soundThornDamage(entity: entity)
