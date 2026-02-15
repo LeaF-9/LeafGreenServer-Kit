@@ -304,6 +304,22 @@ local function effectRealBlock(target: player, display: entity):
 
 	make {_target} see block at {_blockloc} as original
 
+# berry拾得時の処理 (出血のみ)
+on pick up with priority LOW:
+	set {_item} to event-dropped item
+	stop if getPersistentData({_item}, {@data-berry}) is not true
+	set {_player} to player
+	set {_planterUUID} to getPersistentData({_item}, "summon-player")
+	set {_planter} to getPlayer({_planterUUID})
+	stop if {_planter} is {_player}
+	stop if kitCheckTeam({_player}, {_planter}, false) is true
+
+	particlePick({_player})
+	soundPick({_player})
+	set {_chance} to kitPercentDuel({_planter}, {_player}, {@berry-bleed-chance})
+	chance of {_chance}%:
+		kitBlood({_player})
+
 
 
 local function particleLaunch(player: player):
@@ -316,6 +332,8 @@ local function particleDropBerry(loc: location):
 
 local function particleThornDamage(entity: entity):
 
+local function particlePick(player: player):
+
 local function soundLaunch(player: player):
 
 local function soundProjectile(loc: location):
@@ -324,4 +342,6 @@ local function soundPlant(loc: location):
 
 local function soundDropBerry(loc: location):
 
-local function soundThornDamage(entity: entity)
+local function soundThornDamage(entity: entity):
+
+local function soundPick(player: player):
