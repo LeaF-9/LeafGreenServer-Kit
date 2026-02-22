@@ -1,0 +1,94 @@
+# skill-name: Selective Breeding
+
+options:
+	skill-name: "Selective Breeding"
+	effect-radius: 8
+
+function kitEffect_SelectiveBreeding(player: player):
+	nameCT({_player}, {@skill-name})
+	effectBreed({_player})
+
+local function effectBreed(player: player):
+	kitMsg({_player}, "<##b8e580>品種改良により<##c94444>ビートルート<##b8e580>が交配した!")
+
+	set {_baseloc} to location of {_player}
+	soundBreed({_baseloc})
+	particleBreed({_baseloc})
+
+	set {_m} to 0
+	set {_addm} to 2
+	set {_count} to {@effect-radius} / {_addm}
+	loop {_count} times:
+		add {_addm} to {_m}
+		loop all entities in radius {_m} around {_baseloc}:
+			checkEntityType(loop-entity, block display) is true
+			set {_uuidString} to getPersistentData(loop-entity, "farmer-planted-by")
+			set {_planter} to getPlayer({_uuidString})
+			continue if {_planter} is not {_player}
+
+			set {_cropType} to getPersistentData(loop-entity, "crop-type")
+			continue if {_cropType} is not "beetroot"
+
+			setPersistentData(loop-entity, "crop-type", "beetroot")
+			particleChange(loop-entity)
+			soundChange(loop-entity)
+
+		wait a tick
+
+
+
+local function particleBreed(loc: location):
+	add rgb(53, 199, 92) to {_colors::*}
+	add rgb(81, 217, 172) to {_colors::*}
+	add rgb(118, 231, 137) to {_colors::*}
+
+	add 1 to y-pos of {_loc}
+
+	set {_effCount} to 30
+	set {_m} to 0
+	set {_addm} to 0.5
+	set {_modnum} to 2
+	set {_meterCount} to {@effect-radius} / {_addm}
+
+	set {_rad} to 0
+	set {_addrad} to 360 / {_effCount}
+	set {_plusrad} to 10
+
+	loop {_meterCount} times:
+		add {_addm} to {_m}
+
+		set {_rotatevec} to vector({_m}, 0, 0)
+		loop {_effCount} times:
+			set {_vec} to {_rotatevec}
+			rotate {_vec} around y-axis by {_rad} degrees
+			set {_el} to {_loc} ~ {_vec}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_SpellDot(instant_effect, {_color}, {_el})
+
+			chance of 10%:
+				set {_el} to moveRandomLocation({_el}, 0.5)
+				spawnParticle(happy_villager, {_el})
+
+			add {_addrad} to {_rad}
+
+		add {_plusrad} to {_rad}
+		wait a tick if mod({_m}, {_modnum}) is 0
+
+local function particleChange(entity: entity):
+	set {_loc} to location 0.5 meters above {_entity}
+	set {_count} to a random integer between 3 and 7
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_loc}, 0.4)
+		spawnParticle(scrape, {_el})
+
+local function soundBreed(loc: location):
+	playSound("entity.allay.ambient_without_item", 1, 1.55, {_loc})
+
+local function soundChange(entity: entity):
+	set {_loc} to location 0.5 meters above {_entity}
+	set {_pitch} to a random number between 1.1 and 1.9
+	set {_dice} to dice(2)
+	if {_dice} is 1:
+		playSound("entity.allay.item_taken", 0.8, {_pitch}, {_loc})
+		stop
+	playSound("entity.allay.item_given", 0.8, {_pitch}, {_loc})
