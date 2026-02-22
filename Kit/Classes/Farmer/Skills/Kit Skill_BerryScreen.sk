@@ -4,6 +4,7 @@ using for loops
 options:
 	skill-name: "Berry Screen"
 
+	metadata-launch: "Berry Screen - LAUNCH"
 	max-distance: 15
 	meter-per-tick: 0.5  # mps: 10
 
@@ -18,7 +19,7 @@ options:
 	data-interaction: "berryscreen-boundingbox"
 
 	wall-tick: 200
-	chance-berry: 3
+	chance-berry: 1
 	berry-min-drop: 1
 	berry-max-drop: 2
 	data-berry: "berryscreen-berry"
@@ -26,15 +27,19 @@ options:
 	metadata-hit: "Berry Screen - HURT"
 	metadata-attacker: "Berry Screen- ATTACKER"
 
+	berry-lifetime: 200
 	berry-damage: 1
 	berry-bleed-chance: 30
 
 import:
 	org.bukkit.Material
+	org.bukkit.entity.EntityType
+	org.bukkit.inventory.ItemStack
 
 
 
 function kitEffect_BerryScreen(player: player):
+	stop if getMetadata({_player}, {@metadata-launch}) is true
 	effectLaunch({_player})
 
 
@@ -48,6 +53,7 @@ local function effectLaunch(player: player):
 	soundLaunch({_player})
 	particleLaunch({_player})
 
+	setMetadata({_player}, {@metadata-launch}, true)
 	set {_true} to true
 	while {_true} is true:
 		if {_m} >= {@max-distance}:
@@ -82,6 +88,7 @@ local function effectLaunch(player: player):
 		set {_baseloc} to {_frontloc}
 		add {@meter-per-tick} to {_m}
 		wait a tick
+	deleteMetadata({_player}, {@metadata-launch})
 	detectCT({_player}, {_tool})
 
 	# Entityへの影響はこちらで制御
@@ -92,14 +99,19 @@ local function effectLaunch(player: player):
 				delete {_preloc::%loop-entity%}
 				continue
 
+			subtract 1 from {_show::%loop-entity%}
+			delete {_show::%loop-entity%} if {_show::%loop-entity%} <= 0
+
 			set {_nowloc} to (location of loop-entity).toVector()
 			if any:
 				{_preloc::%loop-entity%} is not set
-				{_preloc::%loop-entity%} is {_nowloc}
+				{_preloc::%loop-entity%} is not {_nowloc}
 			then:
-				soundThornDamage(loop-entity)
-				particleThornDamage(loop-entity)
 				kitDamage({_player}, loop-entity, 0.5, "棘")
+				if {_show::%loop-entity%} is not set:
+					soundThornDamage(loop-entity)
+					particleThornDamage(loop-entity)
+					set {_show::%loop-entity%} to 10
 			set {_preloc::%loop-entity%} to {_nowloc}
 
 		wait a tick
@@ -217,7 +229,8 @@ local function effectTimer(player: player, display: entity, interaction: entity)
 		loop all players in radius 1.5 around {_interaction}:
 			kitCheckTeam(loop-player, {_player}, false) is true
 
-			set {_hitCheck} to loop-player.wouldCollideUsing({_hitbox})
+			set {_playerBox} to loop-player.getBoundingBox()
+			set {_hitCheck} to {_playerBox}.overlaps({_hitbox})
 			continue if {_hitCheck} is false
 
 			set {_metadataUUID} to getMetadata(loop-player, {@metadata-hit})
@@ -276,6 +289,7 @@ local function effectDropBerry(player: player, interaction: entity, age: number)
 
 		set {_item} to effectItemEntity({_player}, {_el})
 		set velocity of {_item} to {_vec}
+		effectSurvive({_item})
 
 local function effectItemEntity(player: player, loc: location) :: entity:
 	set {_material} to Material.SWEET_BERRIES
@@ -300,13 +314,19 @@ local function effectItemEntity(player: player, loc: location) :: entity:
 
 	return {_itemEntity}
 
+local function effectSurvive(entity: entity):
+	loop {@berry-lifetime} times:
+		stop if {_entity}.isDead() is true
+		wait a tick
+	{_entity}.remove()
+
 local function effectFakeBlock(target: player, display: entity):
 	hide {_display} from {_target}
 
 	set {_blockloc} to location of {_display}
 	add 0.5 to y-pos of {_blockloc}
 
-	set {_blockdata} to {_display}.getBlockData()
+	set {_blockdata} to {_display}.getBlock()
 
 	make {_target} see block at {_blockloc} as {_blockdata}
 
