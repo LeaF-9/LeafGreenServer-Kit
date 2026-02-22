@@ -1,3 +1,6 @@
+import:
+	org.bukkit.entity.EntityType
+
 function checkEntityType(entity: entity, type: entity type) :: boolean:
 	set {_return} to false
 	set {_type.string} to "minecraft:%{_type}%"
@@ -5,6 +8,14 @@ function checkEntityType(entity: entity, type: entity type) :: boolean:
 	if "%{_entity}.getType()%" is {_type.string}:
 		set {_return} to true
 	return {_return}
+
+function checkEntityType(entity: entity, type: text) :: boolean:
+	set {_type} to {_type} in upper case
+	set {_checkType} to EntityType.valueOf({_type})
+	set {_entityType} to {_entity}.getType()
+	if {_entityType} is {_checkType}:
+		return true
+	return false
 
 function checkEntityAlive(entity: entity) :: boolean:
 	set {_return} to {_entity}.getType().isAlive()
