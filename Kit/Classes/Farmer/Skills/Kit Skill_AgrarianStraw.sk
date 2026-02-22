@@ -1,0 +1,207 @@
+# skill-name: Agrarian Straw
+using for loops
+
+options:
+	skill-name: "Agrarian Straw"
+	effect-radius: 10
+
+	data-straw: "agrarianstraw-armorstand"
+
+
+
+function kitEffect_AgrarianStraw(player: player):
+	nameCT({_player}, {@skill-name})
+	effectPlace({_player})
+
+
+
+local function effectPlace(player: player):
+	effectBreak({_player})
+	kitMsg({_player}, "<##babd19>§l案山子<##dc8f42>を設置します...")
+	soundPlace({_player})
+
+	set {_loc} to location of {_player}
+	set {_straw} to effectSpawnStraw({_player}, {_loc})
+	particlePlace({_straw})
+
+	set {_loopCount} to 0
+	set {_exist} to true
+	while {_exist} is true:
+		if {_straw}.isDead() is true:
+			set {_exist} to false
+			continue
+		
+		set {_strawloc} to location of {_straw}
+		add 1 to {_loopCount}
+		particleAura({_strawloc}, {_loopCount})
+
+		delete {_nowEntering::*}
+		loop all entities in radius {@effect-radius} around {_strawloc}:
+			set {_checkEntity} to loop-entity
+			# Interaction
+			if checkEntityType({_checkEntity}, interaction) is true:
+				continue if getPersistentData({_checkEntity}, "crop-interaction") is not true
+				set {_display} to {_checkEntity}.getVehicle()
+				set {_planterUUID} to getPersistentData({_display}, "farmer-planted-by")
+				set {_planter} to getPlayer({_planterUUID})
+				continue if {_planter} is not {_player}
+
+				add {_checkEntity} to {_nowEntering::*}
+				if {_entered::*} does not contain {_checkEntity}:
+					add {_checkEntity} to {_entered::*}
+					soundCropEntering({_checkEntity})
+				setPersistentData({_checkEntity}, "breakable-enemy", false)
+				particleCropShield({_checkEntity})
+
+			# dropped item
+			else if checkEntityType({_checkEntity}, "ITEM") is true:
+				continue if getPersistentData({_checkEntity}, "farmer-crop") is not true
+				set {_planterUUID} to getPersistentData({_checkEntity}, "summon-player")
+				set {_planter} to getPlayer({_planterUUID})
+				continue if {_planter} is not {_player}
+
+				add {_checkEntity} to {_nowEntering::*}
+				if {_entered::*} does not contain {_checkEntity}:
+					add {_checkEntity} to {_entered::*}
+					soundCropEntering({_checkEntity})
+				setPersistentData({_checkEntity}, "effect-tier", 2)
+				particleCropBuff({_checkEntity})
+			
+		# leaving
+		for {_loop} in {_entered::*}:
+			continue if {_nowEntering::*} contains {_loop}
+			remove {_loop} from {_entered::*}
+			if checkEntityType({_loop}, interaction) is true:
+				setPersistentData({_loop}, "breakable-enemy", true)
+			else if checkEntityType({_loop}, "ITEM") is true:
+				setPersistentData({_loop}, "effect-tier", 1)
+
+		wait a tick
+
+	for {_loop} in {_entered::*}:
+		if checkEntityType({_loop}, interaction) is true:
+			setPersistentData({_loop}, "breakable-enemy", true)
+		else if checkEntityType({_loop}, "ITEM") is true:
+			setPersistentData({_loop}, "effect-tier", 1)
+
+local function effectSpawnStraw(player: player, loc: location) :: entity:
+	set {_armorstand} to kitSpawnMob({_player}, armor stand, {_loc}, false)
+
+	# PDC
+	set {_playerUUID} to {_player}.getUniqueId().toString()
+	setPersistentData({_armorstand}, {@data-straw}, {_playerUUID})
+
+	# Options
+	{_armorstand}.setArms(true)
+	{_armorstand}.setBasePlate(false)
+	{_armorstand}.setCanMove(false)
+	{_armorstand}.setVisible(true)
+	{_armorstand}.setPersistent(true)
+	{_armorstand}.setSilent(true)
+
+	# Equipment
+	setEntityArmor({_armorstand}, "helmet", player head)
+	setEntityArmor({_armorstand}, "chestplate", leather chestplate)
+
+	# Pose
+	setArmorStandPose({_armorstand}, "left arm", 0, 0, 270)
+	setArmorStandPose({_armorstand}, "right arm", 0, 0, 90)
+	setArmorStandPose({_armorstand}, "left leg", 0, 0, 10)
+	setArmorStandPose({_armorstand}, "right leg", 0, 0, 350)
+
+	return {_armorstand}
+
+local function effectBreak(entity: entity):
+	if checkEntityType({_entity}, player) is true:
+		set {_player} to {_entity}
+		loop all armor stands:
+			continue if getPersistentData(loop-armor stand, {@data-straw}) is not set
+			set {_summoner} to getSummonPlayer(loop-armor stand)
+			continue if {_summoner} is not {_player}
+			set {_target} to loop-armor stand
+		
+		stop if {_target} is not set
+		set {_entity} to {_target}
+
+	particleBreak({_entity})
+	soundBreak({_entity})
+	{_entity}.remove()
+
+on damage of armor stand:
+	stop if attacker is not set
+	stop if getPersistentData(victim, {@data-straw}) is not set
+	set {_summoner} to getSummonPlayer(victim)
+	if kitCheckTeam({_summoner}, attacker, true) is true:
+		cancel event
+		stop
+
+	effectBreak(victim)
+
+
+
+local function particlePlace(entity: entity):
+	set {_count} to a random integer between 15 and 25
+	loop {_count} times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle_BlockData(dust_pillar, hay block, {_el})
+
+local function particleAura(loc: location, tick: number):
+	add rgb(169, 235, 169) to {_colors::*}
+	add rgb(119, 235, 109) to {_colors::*}
+	add rgb(137, 230, 179) to {_colors::*}
+
+	set {_baseloc} to location 1 meter above {_loc}
+	set {_basevec} to vector({@effect-radius}, 0, 0)
+
+	set {_count} to 4
+	set {_addrad} to 360 / {_count}
+	set {_rad} to {_tick} * (90 / 20)
+
+	loop {_count} times:
+		set {_vector} to {_basevec}
+		rotate {_vector} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_vector}
+		spawnParticle(composter, {_el})
+		chance of 5%:
+			set {_count.2} to a random integer between 3 and 10
+			loop {_count.2} times:
+				set {_color} to a random element out of {_colors::*}
+				spawnParticle_Spell(instant_effect, {_color}, 0.7, {_el})
+
+		add {_addrad} to {_rad}
+
+local function particleCropShield(entity: entity):
+	chance of 90%:
+		stop
+	
+	set {_baseloc} to location 0.5 meters above {_entity}
+	set {_el} to moveRandomLocation({_baseloc}, 0.5)
+	spawnParticle(glow, {_el})
+
+local function particleCropBuff(entity: entity):
+	chance of 90%:
+		stop
+
+	set {_baseloc} to location 0.25 meters above {_entity}
+	set {_el} to moveRandomLocation({_baseloc}, 0.25)
+	spawnParticle(scrape, {_el})
+
+local function particleBreak(entity: entity):
+	set {_count} to a random integer between 20 and 30
+	loop {_count} times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle_BlockData(block_crumble, hay block, {_el})
+		chance of 10%:
+			set {_el} to aroundEffect({_entity})
+			spawnParticle_Block(oak leaves, {_el})
+
+local function soundPlace(player: player):
+	playSound("block.grass.place", 1, 0.65, {_player})
+
+local function soundCropEntering(entity: entity):
+	set {_pitch} to a random number between 1.8 and 2
+	playSound("entity.allay.item_taken", 1, {_pitch}, {_entity})
+
+local function soundBreak(entity: entity):
+	playSound("block.grass.break", 1,, 0.6, {_entity})
+	
