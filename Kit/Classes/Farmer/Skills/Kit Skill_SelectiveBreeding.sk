@@ -4,6 +4,10 @@ options:
 	skill-name: "Selective Breeding"
 	effect-radius: 8
 
+import:
+	org.bukkit.Material
+
+
 function kitEffect_SelectiveBreeding(player: player):
 	nameCT({_player}, {@skill-name})
 	effectBreed({_player})
@@ -27,11 +31,17 @@ local function effectBreed(player: player):
 			continue if {_planter} is not {_player}
 
 			set {_cropType} to getPersistentData(loop-entity, "crop-type")
-			continue if {_cropType} is not "beetroot"
+			continue if {_cropType} is "beetroot"
 
 			setPersistentData(loop-entity, "crop-type", "beetroot")
 			particleChange(loop-entity)
 			soundChange(loop-entity)
+
+			continue if getPersistentData(loop-entity, "crop-age") is not 3
+			set {_blockData} to Material.BEETROOTS
+			set {_blockData} to {_blockData}.createBlockData()
+			{_blockData}.setAge(3)
+			setDisplayBlock(loop-entity, {_blockData})
 
 		wait a tick
 
