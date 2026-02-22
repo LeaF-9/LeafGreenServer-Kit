@@ -191,6 +191,7 @@ local function effectPlant(player: player, loc: location):
 	effectTimer({_player}, {_display}, {_interaction})
 
 # player接触確認 (interactionのboundingboxを用いて確認)
+# 以下の処理を上記に移行
 local function effectTimer(player: player, display: entity, interaction: entity):
 	set {_age} to 1
 	set {_ageMax} to 3
@@ -213,19 +214,19 @@ local function effectTimer(player: player, display: entity, interaction: entity)
 
 		# hit確認
 		delete {_nowHit::*}
-		loop all entities in radius 1.5 around {_interaction}:
-			kitCheckTeam(loop-entity, {_player}, false) is true
+		loop all players in radius 1.5 around {_interaction}:
+			kitCheckTeam(loop-player, {_player}, false) is true
 
-			set {_hitCheck} to loop-entity.wouldCollideUsing({_hitbox})
+			set {_hitCheck} to loop-player.wouldCollideUsing({_hitbox})
 			continue if {_hitCheck} is false
 
-			set {_metadataUUID} to getMetadata(loop-entity, {@metadata-hit})
+			set {_metadataUUID} to getMetadata(loop-player, {@metadata-hit})
 			if {_metadataUUID} is set:
 				if {_metadataUUID} is not {_uuid}:
 					continue
 
-			setMetadata(loop-entity, {@metadata-hit}, {_uuid})
-			setMetadata(loop-entity, {@metadata-attacker}, {_player})
+			setMetadata(loop-player, {@metadata-hit}, {_uuid})
+			setMetadata(loop-player, {@metadata-attacker}, {_player})
 			if {_age} > 1:
 				effectDropBerry({_player}, {_interaction}, {_age})
 				set {_age} to 1
@@ -234,9 +235,9 @@ local function effectTimer(player: player, display: entity, interaction: entity)
 				{_block}.setAge({_age})
 				setDisplayBlock({_display}, {_block})
 
-			add loop-entity to {_nowHit::*}
-			add loop-entity to {_hitting::*} if {_hitting::*} does not contain loop-entity
-			effectFakeBlock(loop-entity, {_display})
+			add loop-player to {_nowHit::*}
+			add loop-player to {_hitting::*} if {_hitting::*} does not contain loop-player
+			effectFakeBlock(loop-player, {_display})
 
 		for {_hitEntity} in {_hitting::*}:
 			continue if {_nowHit::*} contains {_hitEntity}
