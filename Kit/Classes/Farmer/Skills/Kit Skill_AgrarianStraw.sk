@@ -5,6 +5,7 @@ options:
 	skill-name: "Agrarian Straw"
 	effect-radius: 10
 
+	metadata-player: "Agrarian Straw - Living"
 	data-straw: "agrarianstraw-armorstand"
 
 
@@ -20,6 +21,7 @@ local function effectPlace(player: player):
 	kitMsg({_player}, "<##babd19>§l案山子<##dc8f42>を設置します...")
 	soundPlace({_player})
 
+	setMetadata({_player}, {@metadata-player}, true)
 	set {_loc} to location of {_player}
 	set {_straw} to effectSpawnStraw({_player}, {_loc})
 	particlePlace({_straw})
@@ -29,6 +31,10 @@ local function effectPlace(player: player):
 	while {_exist} is true:
 		if {_straw}.isDead() is true:
 			set {_exist} to false
+			continue
+		
+		if getMetadata({_player}, {@metadata-player}) is not true:
+			effectBreak({_straw})
 			continue
 		
 		set {_strawloc} to location of {_straw}
@@ -203,5 +209,5 @@ local function soundCropEntering(entity: entity):
 	playSound("entity.allay.item_taken", 1, {_pitch}, {_entity})
 
 local function soundBreak(entity: entity):
-	playSound("block.grass.break", 1,, 0.6, {_entity})
+	playSound("block.grass.break", 1, 0.6, {_entity})
 	
