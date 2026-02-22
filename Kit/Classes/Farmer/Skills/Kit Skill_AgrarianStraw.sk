@@ -11,6 +11,9 @@ options:
 
 
 function kitEffect_AgrarianStraw(player: player):
+	if {_player}.isOnGround() is false:
+		send action bar "§c§l接地した状態で発動してください" to {_player}
+		stop
 	nameCT({_player}, {@skill-name})
 	effectPlace({_player})
 
@@ -106,7 +109,8 @@ local function effectSpawnStraw(player: player, loc: location) :: entity:
 	{_armorstand}.setSilent(true)
 
 	# Equipment
-	setEntityArmor({_armorstand}, "helmet", player head)
+	set {_head} to getKitItems("Farmer", "Strawman Head")
+	setEntityArmor({_armorstand}, "helmet", {_head})
 	setEntityArmor({_armorstand}, "chestplate", leather chestplate)
 
 	# Pose
