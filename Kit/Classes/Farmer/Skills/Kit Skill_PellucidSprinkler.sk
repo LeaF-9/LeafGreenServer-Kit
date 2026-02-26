@@ -1,0 +1,202 @@
+# skill-name: Pellucid Sprinkler
+using for loops
+
+options:
+	skill-name: "Pellucid Sprinkler"
+	effect-radius: 10
+	effect-tick: 200
+
+
+
+function kitEffect_PellucidSprinkler(player: player):
+	nameCT({_player}, {@skill-name})
+	effect({_player})
+
+local function effect(player: player):
+	kitMsg({_player}, "<##77e9e9>§l澄明な水<##169c9c>を散布します...")
+
+	set {_playerUUIDString} to {_player}.getUniqueId().toString() 
+	set {_launchUUID} to a random UUID
+	setKitStats({_player}, {@skill-name}, {_launchUUID})
+
+	soundLaunch({_player})
+	particleSpread({_player}, {_launchUUID})
+
+	loop {@effect-tick} times:
+		continue if getKitStats({_player}, {@skill-name}) is not {_launchUUID}
+
+		set {_loc} to location of {_player}
+		if mod(loop-number, 15) is 0:
+			soundWater({_loc})
+
+		delete {_nowEntering.crop::*}
+		deelte {_nowEntering.entity::*}
+		loop all entities in radius {@effect-radius} around {_loc}:
+			set {_checkEntity} to loop-entity
+			# Crops
+			if checkEntityType({_checkEntity}, block display) is true:
+				continue if getPersistentData({_checkEntity}, "farmer-planted-by") is not {_playerUUIDString}
+				add {_checkEntity} to {_nowEntering.crop::*}
+				if {_entered.crop::*} does not contain {_checkEntity}:
+					add {_checkEntity} to {_entered.crop::*}
+					soundEnter({_checkEntity})
+				continue if getPersistentData({_checkEntity}, "growing-tick") > 1
+				setPersistentData({_checkEntity}, "growing-tick", 2)
+				particleSprinle({_checkEntity})
+			
+			# Entities
+			else:
+				continue if kitCheckTeam({_player}, {_checkEntity}, true) is false
+				add {_checkEntity} to {_nowEntering.entity::*}
+				if {_entered.entity::*} does not contain {_checkEntity}:
+					add {_checkEntity} to {_entered.entity::*}
+					soundEnter({_checkEntity})
+				applyEffect({_checkEntity}, regeneration, 1, 200) if {_checkEntity} does not have regeneration
+				applyEffect({_checkEntity}, speed, 1, 200) if {_checkEntity} does not have speed
+				particleClear({_checkEntity})
+
+		# not entering entities
+		for {_c} in {_entered.crop::*}:
+			continue if {_nowEntering.crop::*} contains {_c}
+			remove {_c} from {_entered.crop::*}
+			setPersistentData({_c}, "growing-tick", 1)
+
+		for {_e} in {_entered.entity::*}:
+			continue if {_nowEntering.entity::*} contains {_e}
+			remove {_e} from {_entered.entity::*}
+			resetEffect({_e})
+
+		wait a tick
+	for {_c} in {_entered.crop::*}:
+		setPersistentData({_c}, "growing-tick", 1)
+
+	for {_e} in {_entered.entity::*}:
+		resetEffect({_e})
+
+
+
+local function particleSpread(player: player, uuid: uuid):
+	add rgb(43, 96, 210) to {_colors::*}
+	add rgb(98, 165, 219) to {_colors::*}
+	add rgb(74, 202, 205) to {_colors::*}
+
+	add rgb(112, 150, 234) to {_colors.trans::*}
+	add rgb(152, 198, 236) to {_colors.trans::*}
+	add rgb(156, 234, 235) to {_colors.trans::*}
+
+	set {_count} to 4
+	set {_rad} to 0
+	set {_addrad} to 360 / {_count}
+	set {_plusrad} to 5
+	set {_rotateVector} to vector({@effect-radius}, 0, 0)
+
+	set {_arcCount} to 20
+	set {_height} to 1
+
+	set {_circleCount} to 30
+	set {_circleaddrad} to 360 / {_circleCount}
+	set {_circleChance} to 1
+
+	loop {@effect-tick} times:
+		continue if getKitStats({_player}, {@skill-name}) is not {_uuid}
+
+		set {_baseloc} to location 2 meters above {_player}
+		set {_basevec} to {_baseloc}.toVector()
+
+		loop {_count} times:
+			set {_vector} to {_rotateVector}
+			rotate {_vector} around y-axis by {_rad}
+
+			set {_c} to 0
+			loop {_arcCount} times:
+				set {_per} to {_c} / {_arcCount}  # 割合
+
+				# A. 直線上の座標を計算 (線形補間)
+				set {_tv} to vector({_per}, {_per}, {_per})
+				set {_multiply} to {_vector} * {_tv}
+				set {_currentPos} to {_basevec} + {_multiply}
+
+				# B. 放物線の高さを計算
+				set {_yOffset} to 4 * {_height} * {_per} * (1 - {_per})
+
+				# C. Y座標に高さを加算
+				set {_cy} to y of {_currentPos}
+				set {_sy} to {_cy} + {_yOffset}
+				set y of {_currentPos} to {_sy}
+
+				# パーティクルを表示 (Locationに戻す)
+				set {_el} to {_baseloc} ~ {_currentPos}
+				set {_color} to a random element out of {_colors::*}
+				spawnParticle_Dust({_color}, 0.45, {_el})
+				spawnParticle(falling_water, {_el})
+
+				add 1 to {_c}
+
+			add {_addrad} to {_rad}
+
+		add {_plusrad} to {_rad}
+
+		# Circle
+		set {_circlerad} to 0
+		set {_circleBase} to location 1 meter above {_player}
+		loop {_circleCount} times:
+			add {_circleaddrad} to {_circlerad}
+			set {_continueChance} to 100 - {_circleChance}
+			chance of {_continueChance}%:
+				continue
+			
+			set {_vector} to {_rotateVector}
+			rotate {_vector} around y-axis by {_circlerad}
+			set {_el} to {_circleBase} ~ {_vector}
+			set {_color} to a random element out of {_colors::*}
+			set {_colorTrans} to a random element out of {_colors.trans::*}
+			spawnParticle_DustTransition({_color}, {_colorTrans}, 3, {_el})
+		wait a tick
+
+local function particleSprinle(entity: entity):
+	set {_baseloc} to location 0.5 meters above {_entity}
+	set {_count.splash} to a random integer between 1 and 5
+	set {_count.glow} to a random integer between 0 and 1
+
+	loop {_count.splash} times:
+		set {_el} to moveRandomLocation({_baseloc}, 0.5)
+		spawnParticle(splash, {_el})
+	
+	loop {_count.glow} times:
+		set {_el} to moveRandomLocation({_baseloc}, 0.5)
+		set {_v} to setVector({_baseloc}, {_el})
+		spawnParticle_Vector(electric_spark, {_v}, 0.85, {_el})
+
+local function particleClear(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+	add rgb(175, 229, 237) to {_colors::*}
+	add rgb(144, 247, 243) to {_colors::*}
+	add rgb(121, 184, 232) to {_colors::*}
+
+	set {_count} to a random integer between 2 and 4
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 0.8, {_el})
+
+local function soundLaunch(player: player):
+	set {_count.enter} to a random integer between 1 and 3
+	set {_count.exit} to a random integer between 1 and 3
+
+	loop {_count.enter} times:
+		set {_pitch} to a random number between 1.8 and 2
+		playSound("ambient.underwater.enter", 1, {_pitch}, {_entity})
+		wait a tick
+
+	loop {_count.exit} times:
+		set {_pitch} to a random number between 1.8 and 2
+		playSound("ambient.underwater.exit", 1, {_pitch}, {_entity})
+		wait a tick
+
+local function soundWater(loc: location):
+	set {_pitch} to a random number between 1.7 and 2
+	playSound("weather.rain", 1, {_pitch}, {_loc})
+
+local function soundEnter(entity: entity):
+	set {_loc} to location of {_entity}
+	playSound("entity.axolotl.idle_water", 1, 1.35, {_loc})
