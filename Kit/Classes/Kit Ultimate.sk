@@ -469,37 +469,8 @@ on rightclick holding a nether star:
 		kitUltEngineer(player)
 	else if {Class::%player%} is "Bard":
 		kitUltBard(player)
-#	else if {Class::%player%} is "Farmer":
-#		loop all players:
-#			set {_ok} to true
-#			if {_silent} is true:
-#				if loop-player is not player:
-#					delete {_ok}
-#			{_ok} is true
-#			send loop-player title "<%{TrueTeam::%player%}%>§l§oBounty Rain" with subtitle "§bー 作物を実らせる恵みの雨 ー" for 3 seconds
-#		message "§c自分周辺に雨を降らせ,作物を植えます!"
-#		message "§c雨に触れた敵に毒 IIIと吸収効果を10秒付与します!"
-#		message "§c作物の育つスピードが一瞬になります!"
-#		set {Ult.%player%::Farmer} to true
-#		set slot 8 of player to 10 melon seeds named "§8Seeds"
-#		set weather to rainy
-#		loop 200 times:
-#			set {_sky} to location of block 10 above player
-#			loop all blocks in radius 5 around {_sky}:
-#				y-coordinate of loop-block is y-coordinate of {_sky}
-#				loop-block is air
-#				add location of loop-block to {_rain::*}
-#			loop {_rain::*}:
-#				chance of 1%:
-#					drawDot count 1, particle "cloud", center loop-value-2, visibleRange 32
-#					shoot a snowball from block at loop-value-2 at speed 3 downward
-#					set shooter of shot snowball to player
-#					set metadata value "farmerult" of shot snowball to "true"
-#					drawDot count 1, particle "redstone", XYZ 0, 0, 255, center shot entity, visibleRange 20, keepFor 0.5 seconds
-#			delete {_rain::*}
-#			wait 1 ticks
-#		delete {Ult.%player%::Farmer}
-#		set weather to clear
+	else if {Class::%player%} is "Farmer":
+		kitUltFarmer(player)
 #	else if {Class::%player%} is "Bishop":
 #		loop all players:
 #			set {_ok} to true
@@ -597,43 +568,11 @@ on rightclick holding a nether star:
 #		if {_a} > {_v}:
 #			cancel event
 #
-# # Hunter's Ult
-#on damage of player:
-#	damage was caused by projectile
-#	projectile is an arrow
-#	metadata value "ult-turret" of projectile is "true"
-#	set damage to 2
-#
-#on death:
-#	loop all players:
-#		{Ult.%loop-player%::Necromancer} is true
-#		{CLS::%loop-player%} is "NCR"
-#		add 3 to {Necromance::%loop-player%}
-#
 # # Werewolf's Ult
 #on damage of wolf:
 #	set {_d} to victim's display name
 #	{Ult.%{_d}%::Werewolf} is true
 #	cancel event
-#
-# # Ambush's Ult
-#on damage of player:
-#	if {-Stats.%attacker%::AmbushUlt} is true:
-#		if {Invisible::%attacker%} is true:
-#			if victim does not have blindness:
-#				drawWarpRings style 0, particle "redstone", RGB 0, 0, 0, center victim, id "%victim%", scan true, height 10, radius 0.5, ringCount 20, ringDensity 10, visibleRange 32
-#				apply blindness 1 to victim for 10 seconds
-#				play raw sound "mob.endermen.death" at victim with pitch 0.5 volume 1
-#				message "§8§l盲目を付与しました!" to attacker
-#				message "§0§l光が失われてしまった!" to victim
-#				if {Ult.%attacker%::Ambush} is not set:
-#					delete {-Stats.%attacker%::AmbushUlt}
-#					if {Invisible::%attacker%} is true:
-#						reveal attacker from all players
-#						delete {Invisible::%attacker%}
-#						set action bar of attacker to "§b§l透明化が解除されました!"
-#				wait 5 ticks
-#				stopEffect "%victim%"
 #
 # # Werewolf's Ult
 #on rightclick holding a blaze powder:
@@ -681,31 +620,6 @@ on rightclick holding a nether star:
 #			{TrueTeam::%loop-player%} is not {TrueTeam::%shooter%}
 #			{Class::%loop-player%} is set
 #			make shooter damage loop-player by 6
-# # Farmer's Ult
-#	if {Ult.%shooter%::Farmer} is true:
-#		projectile is a snowball
-#		metadata value "farmerult" of projectile is "true"
-#		set {_p} to a random number between 0 and 2
-#		play raw sound "random.splash" at projectile with pitch {_p} volume 0.1
-#		loop all blocks in radius 1 around projectile:
-#			loop-block is air
-#			block below loop-block is not air, crops, carrot plant or potato plant
-#			add location of loop-block to {Block.%shooter%::*}
-#			set {_ct} to a random integer between 1 and 3
-#			if {_ct} is 1:
-#				set loop-block to crops:7
-#			else if {_ct} is 2:
-#				set loop-block to potato plant:7
-#			else if {_ct} is 3:
-#				set loop-block to carrot plant:7
-#			drawDot count 1, particle "happyvillager", center location of loop-block, visibleRange 30
-#
-#on damage of player:
-#	projectile is a snowball
-#	metadata value "farmerult" of projectile is "true"
-#	set damage to 1
-#	apply poison 3 to victim for 5 seconds
-#	execute console command "/drain %victim% %attacker% 5 seconds"
 #
 # # Gunner's Ult
 #on rightclick holding a diamond hoe:
@@ -796,16 +710,6 @@ on rightclick holding a nether star:
 #on heal:
 #	{Ult.%player%::HealCancel} is true
 #	cancel event
-#
-#on pick up gold block:
-#	set {_n} to name of item
-#	if {TrueTeam::%{_n}%} is {TrueTeam::%player%}:
-#		heal player by 2 hearts
-#		apply absorption 1 to player for 5 seconds
-#		wait a tick
-#		remove all gold block named "%name of item%" from the player
-#	else:
-#		cancel event
 
 command /giveult <player=%player%>:
 	trigger:
