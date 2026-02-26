@@ -30,9 +30,10 @@ local function effect(player: player):
 			soundWater({_loc})
 
 		delete {_nowEntering.crop::*}
-		deelte {_nowEntering.entity::*}
+		delete {_nowEntering.entity::*}
 		loop all entities in radius {@effect-radius} around {_loc}:
 			set {_checkEntity} to loop-entity
+			continue if {_checkEntity} is {_player}
 			# Crops
 			if checkEntityType({_checkEntity}, block display) is true:
 				continue if getPersistentData({_checkEntity}, "farmer-planted-by") is not {_playerUUIDString}
@@ -40,9 +41,9 @@ local function effect(player: player):
 				if {_entered.crop::*} does not contain {_checkEntity}:
 					add {_checkEntity} to {_entered.crop::*}
 					soundEnter({_checkEntity})
+				particleSprinkle({_checkEntity})
 				continue if getPersistentData({_checkEntity}, "growing-tick") > 1
 				setPersistentData({_checkEntity}, "growing-tick", 2)
-				particleSprinle({_checkEntity})
 			
 			# Entities
 			else:
@@ -51,8 +52,8 @@ local function effect(player: player):
 				if {_entered.entity::*} does not contain {_checkEntity}:
 					add {_checkEntity} to {_entered.entity::*}
 					soundEnter({_checkEntity})
-				applyEffect({_checkEntity}, regeneration, 1, 200) if {_checkEntity} does not have regeneration
-				applyEffect({_checkEntity}, speed, 1, 200) if {_checkEntity} does not have speed
+				applyEffect({_checkEntity}, regeneration, 1, 200) if {_checkEntity} does not have potion regeneration
+				applyEffect({_checkEntity}, speed, 1, 200) if {_checkEntity} does not have potion speed
 				particleClear({_checkEntity})
 
 		# not entering entities
@@ -87,20 +88,21 @@ local function particleSpread(player: player, uuid: uuid):
 	set {_count} to 4
 	set {_rad} to 0
 	set {_addrad} to 360 / {_count}
-	set {_plusrad} to 5
+	set {_plusrad} to 2
 	set {_rotateVector} to vector({@effect-radius}, 0, 0)
 
-	set {_arcCount} to 20
+	set {_arcCount} to 15
 	set {_height} to 1
 
 	set {_circleCount} to 30
 	set {_circleaddrad} to 360 / {_circleCount}
-	set {_circleChance} to 1
+	set {_circleChance} to 10
 
 	loop {@effect-tick} times:
 		continue if getKitStats({_player}, {@skill-name}) is not {_uuid}
 
 		set {_baseloc} to location 2 meters above {_player}
+		set {_baseworld} to world of {_baseloc}
 		set {_basevec} to {_baseloc}.toVector()
 
 		loop {_count} times:
@@ -109,6 +111,7 @@ local function particleSpread(player: player, uuid: uuid):
 
 			set {_c} to 0
 			loop {_arcCount} times:
+				add 1 to {_c}
 				set {_per} to {_c} / {_arcCount}  # 割合
 
 				# A. 直線上の座標を計算 (線形補間)
@@ -125,12 +128,10 @@ local function particleSpread(player: player, uuid: uuid):
 				set y of {_currentPos} to {_sy}
 
 				# パーティクルを表示 (Locationに戻す)
-				set {_el} to {_baseloc} ~ {_currentPos}
+				set {_el} to {_currentPos}.toLocation({_baseworld})
 				set {_color} to a random element out of {_colors::*}
 				spawnParticle_Dust({_color}, 0.45, {_el})
 				spawnParticle(falling_water, {_el})
-
-				add 1 to {_c}
 
 			add {_addrad} to {_rad}
 
@@ -153,14 +154,14 @@ local function particleSpread(player: player, uuid: uuid):
 			spawnParticle_DustTransition({_color}, {_colorTrans}, 3, {_el})
 		wait a tick
 
-local function particleSprinle(entity: entity):
+local function particleSprinkle(entity: entity):
 	set {_baseloc} to location 0.5 meters above {_entity}
-	set {_count.splash} to a random integer between 1 and 5
+	set {_count.splash} to a random integer between 1 and 2
 	set {_count.glow} to a random integer between 0 and 1
 
 	loop {_count.splash} times:
 		set {_el} to moveRandomLocation({_baseloc}, 0.5)
-		spawnParticle(splash, {_el})
+		spawnParticle(bubble_pop, {_el})
 	
 	loop {_count.glow} times:
 		set {_el} to moveRandomLocation({_baseloc}, 0.5)
