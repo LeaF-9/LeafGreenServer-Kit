@@ -1,0 +1,163 @@
+# Bounty Rain
+using for loops
+
+options:
+	effect-radius: 10
+	effect-tick: 200
+
+	data-rain: "bountyrain-projectile"
+
+	hit-damage: 1
+	hit-poison-tier: 3
+	hit-poison-tick: 60
+
+	heal-radius: 1
+	heal-amount: 0.1
+
+import:
+	org.bukkit.Material
+	org.bukkit.WeatherType
+	org.bukkit.inventory.ItemStack
+
+
+
+function kitUltFarmer(player: player):
+	soundLaunch({_player})
+
+	loop all players:
+		getGameType(loop-player) is "Kit"
+		add loop-player to {_fakeRain::*}
+		loop-player.setPlayerWeather(WeatherType.DOWNFALL)
+	
+	loop {@effect-tick} times:
+		set {_skyloc} to location 10 meters above {_player}
+		particleCloud({_skyloc})
+
+		set {_raincount} to a random integer between 2 and 10
+		loop {_raincount} times:
+			set {_pow} to a random number between 0 and {@effect-radius}
+			set {_vec} to vector({_pow}, 0, 0)
+			set {_rad} to a random number between 0 and 360
+			rotate {_vec} around y-axis by {_rad}
+			set {_rainloc} to {_skyloc} ~ {_vec}
+			effectRain({_player}, {_rainloc})
+		
+		wait a tick
+	for {_p} in {_fakeRain::*}:
+		{_p}.resetPlayerWeather()
+
+local function effectRain(player: player, loc: location):
+	add new ItemStack(Material.BLUE_STAINED_GLASS) to {_blocks::*}
+	add new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS) to {_blocks::*}
+	add new ItemStack(Material.CYAN_STAINED_GLASS) to {_blocks::*}
+
+	shoot a snowball from {_loc} at speed 1 downward
+	set {_proj} to shot snowball
+	set {_block} to a random element out of {_blocks::*}
+	set item of {_proj} to {_block}
+	setShooter({_proj}, {_player})
+	setPersistentData({_proj}, {@data-rain}, true)
+	particleRainTrail({_proj})
+
+on damage with priority LOW:
+	damage was caused by projectile
+	projectile is a snowball
+	getPersistentData(projectile, {@data-rain}) is set
+
+	set {_attacker} to shooter of projectile
+	set {_victim} to victim
+	setDamageModification_SET({_victim}, {@hit-damage})
+	applyEffect({_victim}, poison, {@hit-poison-tier}, {@hit-poison-tick})
+
+	particleDamage({_victim})
+	soundDamage({_victim})
+
+on projectile hit:
+	projectile is a snowball
+	getPersistentData(projectile, {@data-rain}) is set
+	setPersistentData(projectile, {@data-rain}, false)
+
+	set {_player} to shooter of projectile
+
+	add "wheat" to {_crops::*}
+	add "potato" to {_crops::*}
+	add "carrot" to {_crops::*}
+	add "beetroot" to {_crops::*}
+
+	set {_loc} to location of projectile
+	particleLand({_loc})
+	soundLand({_loc})
+
+	# around ally healing
+	loop all entities in radius {@heal-radius} around {_loc}:
+		continue if kitCheckTeam({_player}, loop-entity, true, true) is false
+		kitHeal(loop-entity, {@heal-amount}, 1)
+
+	# plant crop
+	set {_crop} to a random element out of {_crops::*}
+	plantCrop_Farmer({_player}, {_loc}, {_crop})
+
+
+
+local function particleCloud(loc: location):
+	set {_count} to a random integer between 10 and 15
+	loop {_count} times:
+		set {_pow} to a random number between 0 and {@effect-radius}
+		set {_vec} to vector({_pow}, 0, 0)
+		set {_rad} to a random number between 0 and 360
+		rotate {_vec} around y-axis by {_rad}
+		set {_el} to {_loc} ~ {_vec}
+		spawnParticle(cloud, {_el})
+
+local function particleRainTrail(projectile: projectile):
+	add rgb(63, 13, 180) to {_colors::*}
+	add rgb(63, 56, 157) to {_colors::*}
+	add rgb(53, 70, 147) to {_colors::*}
+
+	set {_true} to true
+	while {_true} is true:
+		stop if getPersistentData({_projectile}, {@data-rain}) is not true
+		stop if {_projectile}.isDead()
+
+		set {_el} to location of {_projectile}
+		set {_color} to a random element out of {_colors::*}
+		set {_size} to a random number between 0.7 and 0.9
+		spawnParticle_Dust({_color}, {_size}, {_el})
+		wait a tick
+
+local function particleDamage(entity: entity):
+	add rgb(34, 20, 116) to {_colors::*}
+	add rgb(55, 37, 99) to {_colors::*}
+	add rgb(20, 49, 142) to {_colors::*}
+
+	set {_loc} to location 1 meter above {_entity}
+	set {_count.bubble} to a random integer between 5 and 10
+	set {_count.effect} to a random integer between 10 and 15
+	loop {_count.bubble} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(bubble_pop, {_v}, 0.35, {_loc})
+	
+	loop {_count.effect} times:
+		set {_el} to moveRandomLocation({_loc}, 1)
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 1, {_el})
+
+local function particleLand(loc: location):
+	set {_count} to a random integer between 3 and 10
+	loop {_count} times:
+		set {_pow} to a random number between 0.3 and 1
+		set {_v} to randomVector({_pow})
+		set {_ypow} to a random number between 0 and 1
+		set y of {_v} to {_ypow}
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle(splash, {_el})
+
+local function soundLaunch(player: player):
+	playSound("entity.lightning_bolt.thunder", 1, 0.7, {_player})
+
+local function soundDamage(entity: entity):
+	playSound("block.bubble_column.bubble_pop", 1, 0.7, {_entity})
+
+local function soundLand(loc: location):
+	set {_pitch} to a random number between 1.3 and 1.6
+	playSound("ambient.underwater.enter", 1, {_pitch}, {_loc})
