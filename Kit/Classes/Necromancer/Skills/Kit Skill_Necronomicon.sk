@@ -3,12 +3,20 @@
 options:
 	effect-radius: 15
 	effect-tick: 100
-	target-tick: 20
 
 	slowness-level: 1
 
 	wither-level: 3
-	wither-tick: 300
+	wither-tps: 10
+
+	tomb-appear-tick: 20
+	tomb-height: 20
+	tomb-cross: 15
+
+import:
+	org.bukkit.Material
+
+
 
 function kitEffect_Necronomicon(player: player):
 	set {_tool} to kitNecromanceItem({_player}, "Necronomicon")
@@ -25,6 +33,12 @@ function kitEffect_Necronomicon(player: player):
 	kitMsg({_player}, "<##612ba8>§l収集した魂が死を運ぶ...")
 
 	set {_point} to {_SkillLocation}
+	set {_crossloc} to location {@tomb-cross} meters above {_point}
+	spawnTomb({_point})
+
+	loop {@tomb-appear-tick} times:
+		wait a tick
+
 	set {_ln} to {@effect-tick}
 	loop {@effect-tick} times:
 		kitParticle_Necronomicon({_point})
@@ -33,71 +47,162 @@ function kitEffect_Necronomicon(player: player):
 		# 音の演出
 		if mod({_ln}, 20) = 0:
 			set {_countdown} to true  # カウントダウン有効化
-			playSound("item.lodestone_compass.lock", 1, 0.5, {_point})
+			playSound("item.lodestone_compass.lock", 5, 0.5, {_point})
 
-		delete {_nowEntering::*}
 		delete {_ln.second}
 		set {_ln.second} to ({_ln} / 20) if mod({_ln}, 20) is 0
 
-		loop all entities:
+		loop all entities in radius {@effect-radius} around {_point}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
-			set {_uuid} to uuid of loop-entity
 
-			set {_entityLoc} to location of loop-entity
-			set {_distance} to distance between {_point} and {_entityLoc}
-			if {_distance} > {@effect-radius}:
-				delete {_counted::%{_uuid}%}
-				continue
-
-			add loop-entity to {_nowEntering::*}
+			add loop-entity to {_targeteds::*} if {_targeteds::*} does not contain loop-entity
 			# 侵入時間の換算
-			if {_targeteds::*} does not contain loop-entity:
-				set {_uuid} to uuid of loop-entity
-				add 1 to {_counted::%{_uuid}%}
-				if {_counted::%{_uuid}%} >= {@target-tick}:
-					set {_targeteds::%{_uuid}%} to loop-entity
-					hitEffect(loop-entity)
+			set {_uuid} to uuid of loop-entity
+			add {@wither-tps} to {_counted::%{_uuid}%}
 
 			applyEffect(loop-entity, slowness, {@slowness-level}, 1)
-			kitEffectDescription(loop-entity, "§5§l%{_ln.second}%") if {_ln.second} is set
 		
 		loop {_targeteds::*}:
 			set {_loopEntity} to loop-value-2
-			particleHitting({_loopEntity}, {_point})
-			continue if {_nowEntering::*} contains {_loopEntity}
+			particleHitting({_loopEntity}, {_crossloc})
 			kitEffectDescription({_loopEntity}, "§5§l%{_ln.second}%") if {_ln.second} is set
 
 		subtract 1 from {_ln}
 		wait a tick
 
 	kitMsg({_player}, "<##493759>§l術が発動した...")
-	playSound("entity.wither.death", 1, 0.9, {_point})
+	playSound("entity.wither.death", 5, 0.9, {_point})
 
 	loop {_targeteds::*}:
 		set {_loopEntity} to loop-value
+		set {_uuid} to uuid of {_loopEntity}
+		set {_tick} to floor({_counted::%{_uuid}%})
 		if checkEntityType({_loopEntity}, player) is true:
 			LastKiller({_loopEntity}, {_player})
 			message formatted "<##2e2930>§l魂の滅殺を受けてしまった..." to {_loopEntity}
 			kitEffectDescription({_loopEntity}, "§c衰弱")
-			sendTimeBossbar_RED({_loopEntity}, "衰弱 III", {@wither-tick})
-		applyEffect({_loopEntity}, wither, {@wither-level}, {@wither-tick})
+			sendTimeBossbar_RED({_loopEntity}, "衰弱 III", {_tick})
+		applyEffect({_loopEntity}, wither, {@wither-level}, {_tick})
 		particleWither({_loopEntity})
 
-local function hitEffect(entity: entity):
-	soundHit({_entity})
-	if checkEntityType({_entity}, player) is true:
-		message formatted "<##180b64>§l魂が補足された..." to {_entity}
+local function spawnTomb(loc: location):
+	set {_uuid} to a random uuid
+	set {_uuid} to {_uuid}.toString()
+	set {_dataKey} to "tomb-uuid"
+
+	set pitch of {_loc} to 0
+	set {_groundloc} to location {@tomb-height} meters below {_loc}
+
+	set {_rotationTick} to 20
+	set {_addyaw} to 360 / {_rotationTick}
+	set {_uptick} to {@tomb-height} / {_rotationTick}
+	set {_groundtick} to {@effect-tick} - {_uptick}
+	set {_downtick} to 60
+	set {_downingtick} to {@tomb-height} / {_downtick}
+
+	set {_display.base} to spawnEntity(block display, {_groundloc})
+
+	setGameType({_display.base})
+	setPersistentData({_display.base}, {_dataKey}, {_uuid})
+
+	setBrightness({_display.base})
+	{_display.base}.setTeleportDuration(1)
+	{_display.base}.setInterpolationDuration(1)
+	{_display.base}.setViewRange(1000)
+	
+	set {_block} to Material.BLACKSTONE
+	set {_block} to {_block}.createBlockData()
+	setDisplayBlock({_display.base}, {_block})
+
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_scale} to getVector3f(1.5, {@tomb-height}, 1.5)
+	set {_translate} to getVector3f(-0.75, 0, -0.75)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translate}, {_scale})
+	{_display.base}.setTransformation({_transformation})
+
+	add {_display.base} to {_tombDisplays::*}
+
+	set {_display.sub} to spawnEntity(block display, {_groundloc})
+
+	setGameType({_display.sub})
+	setPersistentData({_display.sub}, {_dataKey}, {_uuid})
+
+	setBrightness({_display.sub})
+	{_display.sub}.setTeleportDuration(1)
+	{_display.sub}.setInterpolationDuration(1)
+	{_display.sub}.setViewRange(1000)
+	
+	set {_block} to Material.BLACKSTONE
+	set {_block} to {_block}.createBlockData()
+	setDisplayBlock({_display.sub}, {_block})
+
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_scale} to getVector3f(10, 1.5, 1.5)
+	set {_translate} to getVector3f(-5, {@tomb-cross}, -0.75)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translate}, {_scale})
+	{_display.sub}.setTransformation({_transformation})
+
+	add {_display.sub} to {_tombDisplays::*}
+
+	# up
+	set {_m.up} to 0
+	set {_yaw} to yaw of {_groundloc}
+	loop {_rotationTick} times:
+		add {_uptick} to {_m.up}
+		add {_addyaw} to {_yaw}
+		set {_tploc} to location {_m.up} meters above {_groundloc}
+		set yaw of {_tploc} to {_yaw}
+
+		loop {_tombDisplays::*}:
+			set {_tpEntity} to loop-value-2
+			teleport {_tpEntity} to {_tploc}
+		particleGround({_loc})
+		soundGround({_loc})
+		wait a tick
+	
+	soundAppear({_loc})
+	loop {_groundtick} times:
+		wait a tick
+	
+	# down
+	set {_m.down} to 0
+	set {_yaw} to yaw of {_groundloc}
+	loop {_downtick} times:
+
+		add {_downingtick} to {_m.down}
+		add {_addyaw} to {_yaw}
+		set {_tploc} to location {_m.down} meters below {_loc}
+		set yaw of {_tploc} to {_yaw}
+
+		loop {_tombDisplays::*}:
+			set {_tpEntity} to loop-value-2
+			teleport {_tpEntity} to {_tploc}
+		particleGround({_loc})
+		soundSink({_loc})
+		wait a tick
+	
+	loop {_tombDisplays::*}:
+		loop-value.remove()
 
 
 
 local function kitParticle_Necronomicon(point: location):
+	add rgb(50, 0, 70) to {_colors::*}
+	add rgb(50, 19, 78) to {_colors::*}
+	add rgb(36, 25, 53) to {_colors::*}
+
+	add rgb(94, 30, 119) to {_colors.spell::*}
+	add rgb(71, 27, 97) to {_colors.spell::*}
+	add rgb(56, 23, 105) to {_colors.spell::*}
+
 	# 弧を描く
 	set {_n.k} to 0
 	loop 60 times:
 		set {_vec} to vector(15, 0, 0)
 		rotate {_vec} around y-axis by {_n.k}
 		set {_effbaseloc} to {_point} ~ {_vec}
-		spawnParticle_Dust(rgb(50, 0, 70), 1.2, {_effbaseloc})
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 1.2, {_effbaseloc})
 		add 6 to {_n.k}
 
 	# 弦を描く
@@ -125,9 +230,33 @@ local function kitParticle_Necronomicon(point: location):
 			add {_addMeter} to {_lineMeter}
 			set {_vec.line} to setVector({_loc.from}, {_loc.to}, {_lineMeter})
 			set {_el} to {_loc.from} ~ {_vec.line}
-			spawnParticle_Dust(rgb(50, 0, 70), 1.2, {_el})
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 1.2, {_el})
 
 		add {_addrad} to {_rad}
+	
+	# option particles
+	set {_count.soul} to a random integer between 3 and 5
+	set {_count.spell} to a random integer between 5 and 10
+
+	loop {_count.soul} times:
+		set {_pow} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_pow})
+		set {_y} to a random number between 0 and {@tomb-height}
+		set y of {_v} to {_y}
+		set {_el} to {_point} ~ {_v}
+		set {_pushv} to randomVector()
+		spawnParticle_Vector(sculk_soul, {_pushv}, 0.7, {_el})
+	
+	loop {_count.spell} times:
+		set {_pow} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_pow})
+		set {_y} to a random number between 0 and {@tomb-height}
+		set y of {_v} to {_y}
+		set {_el} to {_point} ~ {_v}
+		set {_ex} to a random number between 0.3 and 1
+		set {_color} to a random element out of {_colors.spell::*}
+		spawnParticle_Spell(effect, {_color}, {_ex}, {_el})
 
 local function particleHitting(entity: entity, coreLoc: location):
 	add rgb(50, 0, 70) to {_colors::*}
@@ -190,5 +319,22 @@ local function particleWither(entity: entity):
 			spawnParticle_Color(entity_effect, {_color}, {_el})
 		wait a tick
 
-local function soundHit(entity: entity):
-	playSound("particle.soul_escape", 1, 1.15, {_entity})
+local function particleGround(loc: location):
+	set {_count} to a random integer between 5 and 10
+	loop {_count} times:
+		set {_v} to randomVector(1)
+		set y of {_v} to 0
+		set {_el} to {_loc} ~ {_v}
+		set {_materialBlock} to block below {_el}
+		set {_material} to block data of {_materialBlock}
+		set {_material} to dirt (block data) if {_material} is air
+		spawnParticle_Block({_material}, {_el})
+
+local function soundGround(loc: location):
+	playSound("entity.iron_golem.step", 3, 1.1, {_loc})
+
+local function soundAppear(loc: location):
+	playSound("entity.iron_golem.repair", 3, 0.9, {_loc})
+
+local function soundSink(loc: location):
+	playSound("block.stone.break", 3, 0.6, {_loc})
