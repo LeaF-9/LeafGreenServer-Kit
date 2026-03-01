@@ -23,6 +23,27 @@ function kitEffect_FireStorm(player: player):
 
 local function kitParticle_FireStorm_Storm(loc: location):
 	playSound("entity.blaze.shoot", 1, 1.25, {_loc})
+	set {_count.flame} to a random integer between 50 and 80
+	set {_count.crimson} to a random integer between 200 and 300
+	
+	loop {_count.flame} times:
+		set {_meter} to a random number between 0 and {@radius}
+		set {_vector.meter} to randomVector({_meter})
+		set {_yset} to a random number between 0 and {@radius}
+		set y of {_vector.meter} to {_yset}
+		set {_el} to {_loc} ~ {_vector.meter}
+		set {_power} to a random number between 0.7 and 0.95
+		set {_vector.power} to randomVector({_power})
+		spawnParticle_Vector(small_flame, {_vector.power}, 0.95, {_el})
+	
+	loop {_count.crimson} times:
+		set {_meter} to a random number between 0 and {@radius}
+		set {_vector.meter} to randomVector({_meter})
+		set {_yset} to a random number between 0 and {@radius}
+		set y of {_vector.meter} to {_yset}
+		set {_el} to {_loc} ~ {_vector.meter}
+		spawnParticle(crimson_spore, {_el})
+
 	set {_options.count} to 60
 
 	set {_y} to 0
