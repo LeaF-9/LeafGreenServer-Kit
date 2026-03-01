@@ -163,6 +163,7 @@ local function kitParticle_ReligiousShelter_Aura(player: player):
 
 local function kitParticle_ReligiousShelter_Shield(player: player):
 	playSound("item.trident.return", 1, 0.65, {_player})
+	particleCross({_player})
 
 	set {_baseloc} to location 1 meter above {_player}
 
@@ -182,6 +183,66 @@ local function kitParticle_ReligiousShelter_Shield(player: player):
 
 		add 1 to {_ln.1}
 
+local function particleCross(player: player):
+	set {_baseloc} to location of {_player}
+
+	add rgb(87, 235, 240) to {_colors::*}
+	add rgb(86, 231, 195) to {_colors::*}
+	add rgb(45, 146, 240) to {_colors::*}
+
+	set {_height} to 15
+	set {_size.max} to 4
+	set {_size.min} to 1
+	set {_size.diff} to {_size.max} - {_size.min}
+	set {_height.plus} to 5
+	set {_width} to 5
+	set {_addm} to 0.5
+	set {_count.height} to {_height} / {_addm}
+	set {_count.plus} to {_height.plus} / {_addm}
+	set {_count.width} to {_width} / {_addm}
+
+	set {_widthloc} to location {_height} meters above {_baseloc}
+	set pitch of {_widthloc} to 0
+	set {_vecloc} to {_widthloc}
+	add 90 to yaw of {_vecloc}
+	set {_basevec} to {_vecloc}.getDirection()
+
+	set {_m} to 0
+	loop {_count.height} times:
+		add {_addm} to {_m}
+		set {_el} to location {_m} meters above {_baseloc}
+		set {_per} to {_m} / {_height}
+		set {_addsize} to {_size.diff} * {_per}
+		set {_size} to {_size.min} + {_addsize}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, {_size}, {_el})
+	
+	set {_m} to 0
+	loop {_count.plus} times:
+		add {_addm} to {_m}
+		set {_el} to location {_m} meters above {_widthloc}
+		set {_per} to 1 - ({_m} / {_height.plus})
+		set {_addsize} to {_size.diff} * {_per}
+		set {_size} to {_size.min} + {_addsize}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, {_size}, {_el})
+	
+	set {_m} to 0
+	loop {_count.width} times:
+		add {_addm} to {_m}
+		set {_multivec} to vector({_m}, {_m}, {_m})
+		set {_vec} to {_basevec} * {_multivec}
+
+		loop 2 times:
+			set {_el} to {_widthloc} ~ {_vec}
+
+			set {_per} to 1 - ({_m} / {_width})
+			set {_addsize} to {_size.diff} * {_per}
+			set {_size} to {_size.min} + {_addsize}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, {_size}, {_el})
+
+			rotate {_vec} around y-axis by 180
 
 
 
