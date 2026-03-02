@@ -19,6 +19,7 @@ function kitEffect_SpatialDistorter(player: player):
 
 	stop if getKitStats({_player}, "SpatialDistorter") <= 0
 
+	soundLaunch({_player})
 	set {_true} to true
 	while {_true} is true:
 		set {_delete} to true if checkEating({_player}) is false
@@ -117,3 +118,6 @@ local function kitParticle_SpatialDistorter_Sphere(loc: location):
 		set {_el} to {_loc} ~ {_vec}
 		set {_color} to a random element out of {_colors::*}
 		spawnParticle_Dust({_color}, 1.1, {_el})
+
+local function soundLaunch(player: player):
+	playSound("block.respawn_anchor.charge", 1, 1.65, {_player})
