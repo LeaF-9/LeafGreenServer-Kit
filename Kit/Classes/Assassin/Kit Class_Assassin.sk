@@ -14,6 +14,10 @@ on damage with priority LOW:
 	{_UltAssassin} is not set
 	set {_dis} to distance between {_attacker} and victim
 	if {_dis} <= 1:
+		set {_tool} to tool of {_attacker}
+		set {_key} to getNamespacedKey({_tool}, "item-key", "string")
+		exit if {_key} is "ScatKnife"
+
 		kitMsg({_attacker}, "§4近距離効果でダメージが2増えます!")
 		playSound("entity.arrow.hit_player", 1, 1.5, {_attacker}, true)
 		send action bar "§c接近されてしまった!" to victim
