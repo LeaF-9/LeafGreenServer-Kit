@@ -1,0 +1,159 @@
+# weapon-name: Scat Knife
+
+options:
+	weapon-name: "Scat Knife"
+
+	charge-tick: 10
+	effect-meter: 10
+	effect-tick: 10
+	effect-damage: 1
+
+	stats-throw: "Scat Knife - Throwing"
+	metadata-uuid: "Scat Knife - UUID"
+
+import:
+	org.bukkit.Material
+	org.bukkit.inventory.ItemStack
+
+function kitEffect_ScatKnife(player: player):
+	set {_weapontool} to tool of {_player}
+	
+	set {_count} to 0
+	set {_true} to true
+	while {_true} is true:
+		set {_tool} to tool of {_player}
+		stop if {_tool} is not {_weapontool}
+
+		if checkEating({_player}) is false:
+			delete {_true}
+			continue
+		
+		if {_complete} is true:
+			wait a tick
+			continue
+
+		add 1 to {_count}
+
+		if {_count} >= {@charge-tick}:
+			if {_complete} is not set:
+				soundComplete({_player})
+			set {_complete} to true
+
+		wait a tick
+	stop if {_complete} is not set
+
+	effectThrow({_player})
+
+local function effectThrow(player: player):
+	set {_tool} to tool of {_player}
+	setKitStats({_player}, {@stats-throw}, true)
+	setItemCT({_player}, {_tool})
+	set tool of {_player} to air
+
+	set {_loc} to location 1 meter above {_player}
+
+	set {_itemdisplay} to spawnEntity(item display, {_loc})
+	setGameType({_itemdisplay})
+
+	setBrightness({_itemdisplay})
+	{_itemdisplay}.setTeleportDuration(1)
+	{_itemdisplay}.setInterpolationDuration(1)
+	{_itemdisplay}.setViewRange(1000)
+
+	set {_ItemMeta} to {_tool}.getItemMeta()
+	set {_item} to {_ItemMeta}.getItemModel()
+	set {_itemname} to "%{_item}%"
+	replace "minecraft:" with "" in {_itemname}
+	set {_itemname} to {_itemname} in upper case
+	set {_modelitem} to new ItemStack(Material.valueOf({_itemname}))
+	setDisplayItem({_itemdisplay}, {_modelitem})
+
+	set {_matrix} to getAdjustedMatrix4f(-0, -0, 0.5, 0, 0.3536, 0.3536, 0, 0, -0.3536, 0.3536, -0, 0, 0, 0, 0, 1)
+	{_itemdisplay}.setTransformationMatrix({_matrix})
+
+	soundThrow({_player})
+
+	set {_f} to 0
+	set {_mpt} to {@effect-meter} / {@effect-tick}
+	loop {@effect-tick} times:
+		continue if {_hit} is set
+
+		add {_mpt} to {_f}
+		set {_l} to location {_f} meters in front of {_loc}
+		teleport {_itemdisplay} to {_l}
+
+		loop all entities in radius 3 around {_l}:
+			{_hit} is not set
+			kitCheckTeam(loop-entity, {_player}, false, true) is true
+			checkHitting_Sphere(loop-entity, {_l}, 1) is true
+			set {_hit} to true
+			kitDamage({_player}, loop-entity, {@effect-damage}, "投剣")
+			particleHit(loop-entity)
+			soundHit(loop-entity)
+		wait a tick
+
+	{_itemdisplay}.remove()
+	if getKitStats({_player}, {@stats-throw}) is true:
+		set {_slot} to slot 0 of inventory of {_player}
+		set slot 0 of inventory of {_player} to {_tool}
+		if {_slot} is not air:
+			give {_slot} to {_player}
+	deleteKitStats({_player}, {@stats-throw})
+
+function kitEffect_ScatKnife_AttackLow(player: player, event: object):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
+
+	set {_uuid} to a random uuid
+	setMetadata({_victim}, {@metadata-uuid}, {_uuid})
+	set knockback resistance attribute of {_victim} to 1
+	particleHurt({_victim})
+
+	wait a tick
+	set {_nowuuid} to getMetadata({_victim}, {@metadata-uuid})
+	stop if {_nowuuid} is not {_uuid}
+	set knockback resistance attribute of {_victim} to 0
+	set no damage time of {_victim} to 0 tick
+
+	# wait a tick
+	# set {_nowuuid} to getMetadata({_victim}, {@metadata-uuid})
+	# stop if {_nowuuid} is not {_uuid}
+	# set no damage time of {_victim} to 20 ticks
+
+
+
+local function particleHit(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+
+	set {_count} to a random integer between 10 and 20
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(dust_pillar, redstone block, {_el})
+
+local function particleHurt(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+
+	add rgb(139, 5, 5) to {_colors::*}
+	add rgb(131, 32, 7) to {_colors::*}
+	add rgb(104, 9, 41) to {_colors::*}
+
+	add rgb(31, 14, 14) to {_colors.trans::*}
+	add rgb(53, 22, 12) to {_colors.trans::*}
+	add rgb(51, 22, 25) to {_colors.trans::*}
+
+	set {_count} to a random integer between 10 and 15
+	loop {_count} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		set {_size} to a random number between 2.7 and 3.5
+		set {_c.f} to a random element out of {_colors::*}
+		set {_c.t} to a random element out of {_colors.trans::*}
+		spawnParticle_DustTransition({_c.f}, {_c.t}, {_size}, {_el})
+
+local function soundComplete(player: player):
+	playSound("block.vault.eject_item", 1, 1.1, {_player}, true)
+
+local function soundThrow(player: player):
+	playSound("item.trident.throw", 1, 1.7, {_player})
+
+local function soundHit(entity: entity):
+	playSound("item.trident.hit", 1, 1.2, {_entity})
