@@ -58,6 +58,7 @@ function kitEffect_SpatialDistorter(player: player):
 			set {_to} to location of loop-entity
 			set {_vector} to setVector({_obloc}, {_to}, 0.5)
 			set velocity of loop-entity to {_vector}
+			soundHit(loop-entity)
 			if checkEntityType(loop-entity, player) is true:
 				setFallRemove(loop-entity)
 		
@@ -121,3 +122,6 @@ local function kitParticle_SpatialDistorter_Sphere(loc: location):
 
 local function soundLaunch(player: player):
 	playSound("block.respawn_anchor.charge", 1, 1.65, {_player})
+
+local function soundHit(entity: entity):
+	playSound("block.conduit.deactivate", 1, 2, {_entity})
