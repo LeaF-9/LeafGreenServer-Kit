@@ -9,6 +9,10 @@ options:
 	
 	metadata-display: "Aero Blade - Display"
 
+import:
+	org.bukkit.Material
+	org.bukkit.inventory.ItemStack
+
 function kitEffect_AeroBlade(player: player):
 	set {_weapontool} to tool of {_player}
 	set {_true} to true
@@ -99,8 +103,13 @@ local function kitEffect_AeroBlade_Summon(player: player, loc: location, tool: i
 	{_itemdisplay}.setInterpolationDuration(1)
 	{_itemdisplay}.setViewRange(1000)
 
-	set {_item} to type of {_tool}
-	setDisplayItem({_itemdisplay}, {_item})
+	set {_ItemMeta} to {_tool}.getItemMeta()
+	set {_item} to {_ItemMeta}.getItemModel()
+	set {_itemname} to "%{_item}%"
+	replace "minecraft:" with "" in {_itemname}
+	set {_itemname} to {_itemname} in upper case
+	set {_modelitem} to new ItemStack(Material.valueOf({_itemname}))
+	setDisplayItem({_itemdisplay}, {_modelitem})
 
 	set {_matrix} to getMatrix4f(0.707, 0, -0.707, 0, 0.707, 0, 0.707, 0, 0, -1, 0, 0, 0, 0, 0, 1)
 	{_itemdisplay}.setTransformationMatrix({_matrix})
