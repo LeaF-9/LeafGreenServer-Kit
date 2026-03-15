@@ -36,7 +36,7 @@ on respawn:
 		set respawn location to {Kit-Respawn::%player%}
 		if {Kit-NoCorpse::%player%} is not set:
 			if {Kit-Resurrect::%player%} is not set:
-				set {_corpse} to spawnCorpse(player, {Kit-Respawn::%player%})
+				set {_corpse} to spawnCorpse(player, {Kit-Respawn::%player%}, {Class::%player%})
 			else:
 				delete {Kit-Respawn::%player%}
 				delete {Kit-Resurrect::%player%}
@@ -140,12 +140,13 @@ import:
 	org.bukkit.inventory.ItemStack
 	org.bukkit.Material
 
-function spawnCorpse(player: player, loc: location)  :: entity:
+function spawnCorpse(player: player, loc: location, class: text)  :: entity:
 	spawn armor stand at {_loc}
 	set {_corpse} to spawned armor stand
 
 	setGameType({_corpse})
 	setPersistentData({_corpse}, "deadplayer", "%{_player}%")
+	setPersistentData({_corpse}, "corpse-class", {_class})
 
 	{_corpse}.setInvulnerable(true)
 	{_corpse}.setPersistent(true)
