@@ -1,45 +1,67 @@
 # Skin Scanner
 
-function kitEffect_SkinScanner(player: player):
-	kitOpenSkinScanner({_player})
+options:
+	skill-name: "Skin Scanner"
 
-function kitOpenSkinScanner(player: player):
-	wait a tick
-	open chest inventory named "§6§lSkin Scanner" with 3 row to {_player}
-	wait a tick
-	set {_close} to false
-	while {_close} is false:
-		if {_player}.getOpenInventory().getTitle() is not "§6§lSkin Scanner":
-			set {_close} to true
-		stop if {_close} is true
+	effect-reach: 50
+	effect-tick: 600
 
-		set {_slot} to 0
-		loop all players in radius 30 around {_player}:
-			getGameType(loop-player) is "Kit"
-			loop-player is not {_player}
+	metadata-targeted: "Skin Scanner - Targeted Corpse"
 
-			set {_title} to "§f§l%name of loop-player%"
-
-			delete {_lores::*}
-			add "§eKit§7: §6§l%{Class::%loop-player%}%" to {_lores::*}
-
-			set {_head} to player head
-			set skull owner of {_head} to loop-player
-			set name of {_head} to {_title}
-			set lore of {_head} to {_lores::*}
-			set slot {_slot} of {_player}'s current inventory to {_head}
-			add 1 to {_slot}
-		
-		loop (3 * 9 - {_slot}) times:
-			set slot {_slot} of {_player}'s current inventory to air
-			add 1 to {_slot}
-
+function kitEffect_SkinScanner_Timer(player: player):
+	while {Class::%{_player}%} is "Thief":
+		# --- 死体発光処理 ---
+		delete {_tg}
+		set {_baseloc} to head of {_player}
+		set {_m} to 0
+		loop {@effect-reach} times:
+			if {_tg} is set:
+				continue
+			add 1 to {_m}
+			set {_meterloc} to location {_m} meters in front of {_baseloc}
+			loop all entities in radius 1.5 around {_meterloc}:
+				checkEntityType(loop-entity, armor stand) is true
+				getPersistentData(loop-entity, "deadplayer") is set
+				set {_tg} to loop-entity
+		# --- 例外処理 ---
+		if {_tg} is not set:
+			if {_targeted} is set:
+				# --- 発光消滅処理 ---
+				deleteMetadata({_player}, {@metadata-targeted})
+				packetUnglowing({_player}, {_targeted})
+				# ------------------
+			delete {_targeted}
+			wait a tick
+			continue
+		# ----------------
+		packetGlowing({_player}, {_tg})
+		if {_tg} is not {_targeted}:
+			# --- 発光消滅処理 ---
+			deleteMetadata({_player}, {@metadata-targeted})
+			packetUnglowing({_player}, {_targeted})
+			# ------------------
+		setMetadata({_player}, {@metadata-targeted}, {_tg})
+		set {_targeted} to {_tg}
+		# ---------------------
 		wait a tick
 
-function kitSetSkinScanner(player: player, target: player):
-	nameCT({_player}, "Skin Scanner")
-	set {_Class} to {Class::%{_target}%}
-	set {_CLS} to {CLS::%{_target}%}
+function kitEffect_SkinScanner(player: player):
+	set {_targeted} to getMetadata({_player}, {@metadata-targeted})
+	if {_targeted} is not set:
+		soundCancel({_player})
+		send action bar "§4§l変装先の死体 §cを指定してください" to {_player}
+		stop
+
+	nameCT({_player}, {@skill-name})
+	effectScan({_player}, {_targeted})
+
+local function effectScan(player: player, targeted: entity):
+	set {_corpse.player} to getMetadata({_targeted}, "deadplayer")
+	set {_corpse.class} to getMetadata({_targeted}, "corpse-class")
+	set {_target} to getPlayer({_corpse.player})
+
+	set {_Class} to {_corpse.class}
+	set {_CLS} to getClassShortName({_Class})
 	setKitStats({_player}, "FakePlayer", {_target})
 	setKitStats({_player}, "FakeClass", {_Class})
 	setKitStats({_player}, "FakeCLS", {_CLS})
@@ -56,7 +78,10 @@ function kitSetSkinScanner(player: player, target: player):
 	set {_el} to location 1 meter above {_player}
 	loop 30 times:
 		spawnParticle_Vector(scrape, randomVector(), 0.3, {_el})
-	wait 30 seconds
+	
+	loop {@effect-tick} times:
+		wait a tick
+
 	if getKitStats({_player}, "FakePlayer") is set:
 		execute console command "/undisplayer %{_player}%"
 		deleteKitStats({_player}, "FakePlayer")
@@ -76,3 +101,8 @@ on damage of player:
 	getKitStats(victim, "FakePlayer") is set
 	kitCheckTeam(victim, {_attacker}, false) is true
 	apply glowing 1 to victim for 1 second replacing existing effect
+
+
+
+local function soundCancel(player: player):
+	playSound("block.note_block.bass", 1, 1, {_player}, true)
