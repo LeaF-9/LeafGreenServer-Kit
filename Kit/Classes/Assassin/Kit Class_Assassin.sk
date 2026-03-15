@@ -37,8 +37,7 @@ on damage with priority LOW:
 		setAssassination({_attacker}, "BEHIND")
 
 local function setAssassination(player: player, type: text):
-	set {_tag} to {@assassination-approach} if {_type} is "APPROACH"
-	set {_tag} to {@assassination-behind} if {_type} is "BEHIND"
+	set {_tag} to getAssassinationTag({_type})
 	stop if {_tag} is not set
 
 	set {_uuid} to a random uuid
@@ -48,8 +47,17 @@ local function setAssassination(player: player, type: text):
 	stop if getMetadata({_player}, {_tag}) is not {_uuid}
 	deleteMetadata({_player}, {_tag})
 
-function getAssassinationTag(type: text) :: text:
+local function getAssassinationTag(type: text) :: text:
 	set {_tag} to {@assassination-approach} if {_type} is "APPROACH"
 	set {_tag} to {@assassination-behind} if {_type} is "BEHIND"
 	stop if {_tag} is not set
 	return {_tag}
+
+function getAssassinationStatus(player: player, type: text) :: boolean:
+	set {_tag} to getAssassinationTag({_type})
+	stop if {_tag} is not set
+
+	set {_status} to getMetadata({_player}, {_type})
+
+	return true if {_status} is set
+	return false
