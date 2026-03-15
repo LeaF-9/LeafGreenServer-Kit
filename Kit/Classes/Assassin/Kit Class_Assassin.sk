@@ -1,5 +1,9 @@
 # Assassinのスキル Ver1.0.0
 
+options:
+	assassination-approach: "Assassination - Approach"
+	assassination-behind: "Assassination - Behind"
+
 # Abilities
 on damage of player:
 	damage was caused by fall
@@ -23,11 +27,29 @@ on damage with priority LOW:
 		send action bar "§c接近されてしまった!" to victim
 		spawnParticle_Block(redstone block, victim)
 		setDamageModification_ADD(victim, 2)
-		add 1 to {_asn}
+		setAssassination({_attacker}, "APPROACH")
 	if victim's facing is {_attacker}'s facing:
 		kitMsg({_attacker}, "§4不意打ち効果でダメージが2倍になった!")
 		playSound("entity.arrow.hit_player", 1, 0.75, {_attacker}, true)
 		send action bar "§c不意を突かれた!" to victim
 		spawnParticle_Block(redstone block, victim)
 		setDamageModification_MUL(victim, 2)
-		add 1 to {_asn}
+		setAssassination({_attacker}, "BEHIND")
+
+local function setAssassination(player: player, type: text):
+	set {_tag} to {@assassination-approach} if {_type} is "APPROACH"
+	set {_tag} to {@assassination-behind} if {_type} is "BEHIND"
+	stop if {_tag} is not set
+
+	set {_uuid} to a random uuid
+	setMetadata({_player}, {_tag}, {_uuid})
+
+	wait a tick
+	stop if getMetadata({_player}, {_tag}) is not {_uuid}
+	deleteMetadata({_player}, {_tag})
+
+function getAssassinationTag(type: text) :: text:
+	set {_tag} to {@assassination-approach} if {_type} is "APPROACH"
+	set {_tag} to {@assassination-behind} if {_type} is "BEHIND"
+	stop if {_tag} is not set
+	return {_tag}
