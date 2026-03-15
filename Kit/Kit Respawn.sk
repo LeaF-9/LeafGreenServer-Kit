@@ -1,23 +1,35 @@
 on death of player:
+	clear drops
+	clearKitJoinInfo(victim)
+
 	{Kit-tochu} is true
 	{Join::%victim%} is "Kit"
+
 	set {_loc} to location of victim
 	if y-pos of {_loc} <= -70:
 		set {Kit-Respawn::%victim%} to {Kit-GameStage::spec}
 	else:
 		set {Kit-Respawn::%victim%} to {_loc}
+
 	set {_spawnTime} to getKitStats(victim, "SpawnTime")
 	if {_spawnTime} is set:
 		set {Kit-SpawnTime::%victim%} to {_spawnTime}
+
 	set {_resurrection} to getKitStats(victim, "Resurrection")
 	if {_resurrection} is true:
 		set {_class} to {Class::%victim%}
 		set {Kit-Resurrect::%victim%} to true
+
 	wait a tick
 	force victim to respawn
 	wait a tick
 	if {_class} is set:
 		execute console command "/class %{_class}% %victim% false"
+		stop
+	delete {CLS::%victim%}
+	delete {Class::%victim%}
+	set {team::%victim%} to {TrueTeam::%victim%}
+
 
 on respawn:
 	if {Kit-Respawn::%player%} is set:

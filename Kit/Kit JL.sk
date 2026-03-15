@@ -254,26 +254,38 @@ function addKitOS(stats: text):
 command /kjc <player>:
 	permission: sk.admin
 	trigger:
-		reveal arg 1 from all players
-		disallow fly for arg 1
-		deleteKitStats_ALL(arg 1)
-		delete {CTStop.%arg 1%::*}
-		delete {Kit-AllowClass.%arg 1%::*}
-		loop {Block.%arg 1%::*}:
-			set block at loop-value to air
-		delete {Block.%arg 1%::*}
-		loop {Kit-OptionStats::*}:
-			delete {Kit-%loop-value%::%arg 1%}
-		delete {EffectCount::%arg 1%}
-		kitFakeDelete(arg 1)
-		removeDebuffs(arg 1, "Blood")
-		removeDebuffs(arg 1, "Freeze")
-		removeDebuffs(arg 1, "Palsy")
-		removeDebuffs(arg 1, "Sleep")
-		removeDebuffs(arg 1, "Stun")
-		removeDebuffs(arg 1, "Fear")
-		removeDebuffs(arg 1, "Trail")
-		execute console command "/undisplayer %arg 1%"
+		clearKitJoinInfo(arg 1)
+
+function clearKitJoinInfo(player: player):
+	reveal {_player} from all players
+	disallow fly for {_player}
+	set walk speed of {_player} to 0.2
+	set no damage time of {_player} to 20 ticks
+	delete {ClassChose::%{_player}%}
+
+	loop all dropped items:
+		metadata value "delete" of loop-dropped item is "%v{_player}m%"
+		delete metadata value "delete" of loop-dropped item
+		delete loop-dropped item
+
+	deleteKitStats_ALL({_player})
+	delete {CTStop.%{_player}%::*}
+	delete {Kit-AllowClass.%{_player}%::*}
+	loop {Block.%{_player}%::*}:
+		set block at loop-value to air
+	delete {Block.%{_player}%::*}
+	loop {Kit-OptionStats::*}:
+		delete {Kit-%loop-value%::%{_player}%}
+	delete {EffectCount::%{_player}%}
+	kitFakeDelete({_player})
+	removeDebuffs({_player}, "Blood")
+	removeDebuffs({_player}, "Freeze")
+	removeDebuffs({_player}, "Palsy")
+	removeDebuffs({_player}, "Sleep")
+	removeDebuffs({_player}, "Stun")
+	removeDebuffs({_player}, "Fear")
+	removeDebuffs({_player}, "Trail")
+	execute console command "/undisplayer %{_player}%"
 
 command /tochu <text>:
 	permission: sk.admin
