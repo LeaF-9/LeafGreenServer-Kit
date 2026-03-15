@@ -1,40 +1,193 @@
 # Phantom Fang
 
-function kitEffect_PhantomFang_Sneak(player: player, event: object):
-	playSound("entity.phantom.flap", 1, 1.25, {_player})
-	wait a tick
-	set {_true} to true
-	while {_true} is true:
-		set {_tool} to {_player}'s tool
-		if kitItemAllChecker({_tool}, "Assassin", "Weapon", 3) is false:
-			delete {_true}
-		if {_player} is not sneaking:
-			delete {_true}
-		delete {_exist}
-		delete {_cansee}
-		loop all players in radius 10 around {_player}:
-			kitCheckTeam(loop-player, {_player}, false) is true
-			set {_exist} to true
-			if playerCanSee(loop-player, {_player}) is true:
-				set {_cansee} to true
-		if {_exist} is not set:
-			delete {_true}
-		if {_cansee} is true:
-			delete {_true}
-		if {_true} is true:
-			kitInvisible({_player}, 2)
-			wait a tick
-	playSound("entity.phantom.hurt", 1, 2, {_player})
-	loop 10 times:
-		set {_rv} to randomVector()
-		spawnParticle_Vector(glow, {_rv}, 1, location of {_player})
+options:
+	weapon-name: "Phantom Fang"
+
+	before-tick: 5
+	effect-reach: 5
+	base-damage: 1
+
+	plus-damage: 2
+	fear-tick: 20
+
+	invisible-tick: 20
+
+
+
+function kitEffect_PhantomFang(player: player):
+	nameItemCT({_player}, {@weapon-name})
+	effectBite({_player})
+
+local function effectBite(player: player):
+	set {_baseloc} to head of {_player}
+	soundPrepare({_baseloc})
+	particleBite({_baseloc})
+
+	loop {@before-tick} times:
+		wait a tick
+	
+	soundBite({_baseloc})
+	set {_m} to 0
+	loop {@effect-reach} times:
+		add 1 to {_m}
+		set {_el} to location {_m} meters in front of {_baseloc}
+
+		loop all entities in radius 2 around {_el}:
+			kitCheckTeam({_player}, loop-entity, false, true) is true
+			{_hit.%loop-entity%} is not set
+			checkHitting_Sphere(loop-entity, {_el}, 1.5) is true
+			set {_hit.%loop-entity%} to true
+			effectHit({_player}, loop-entity)
+
+local function effectHit(player: player, target: entity):
+	soundHit({_target})
+	particleHit({_target})
+
+	set {_damage} to {@effect-damage}
+	set {_isInvisible} to getInvisibleStatus({_player})
+	if {_isInvisible}:
+		add {@plus-damage} to {_damage}
+		set {_hasFear} to true
+		particleFear({_target})
+		soundFear({_target})
+
+	kitDamage({_player}, {_target}, {_damage}, "噛み付き")
+	if:
+		{_hasFear} is true
+		checkEntityType({_target}, player) is true
+	then:
+		kitFear({_target}, {@fear-tick})
 
 function kitEffect_PhantomFang_AttackNormal(player: player, event: object):
 	set {_victim} to {_event}.getEntity()
 	set {_attacker} to {_player}
-	getInvisibleStatus({_attacker}) is true
-	applyEffect({_victim}, wither, 3, 30, true)
-	playSound("entity.phantom.ambient", 1, 2, {_victim})
-	loop 10 times:
-		set {_el} to aroundEffect({_victim})
-		spawnParticle(falling_obsidian_tear, {_el})
+
+	set {_tag.1} to "APPROACH"
+	set {_tag.2} to "BEHIND"
+	loop 2 times:
+		set {_num} to loop-number
+		set {_tag} to {_tag.%{_num}%}
+		set {_status} to getAssassinationStatus({_attacker}, {_tag})
+		set {_launched} to true if {_status} is true
+	stop if {_launched} is not set
+
+	kitInvisible({_attacker}, {@invisible-tick})
+	particleInvisible({_attacker})
+	soundInvisible({_attacker})
+
+
+
+local function particleBite(loc: location):
+	set {_basevec} to {_loc}.getDirection()
+	set {_axis} to getVectorFromPitchAxis({_loc}, 0.5)
+
+	set {_baseloc.1} to {_loc} ~ {_axis}
+	set {_movevec} to {_axis} * vector(-1, -1, -1)
+	set {_baseloc.2} to {_loc} ~ {_movevec}
+
+	set {_rotatevec.1} to {_basevec}
+	set {_rotatevec.2} to {_basevec}
+
+	set {_rad} to 0
+	set {_maxrad} to 30
+	set {_addrad} to {_maxrad} / {@before-tick}
+	set {_addm} to 1
+	set {_maxm} to {@effect-reach}
+
+	loop {@before-tick} times:
+		set {_id} to 0
+		loop 2 times:
+			add 1 to {_id}
+			set {_elbase} to {_baseloc.%{_id}%}
+			set {_vec} to {_rotatevec.%{_id}%}
+			rotate {_vec} around {_axis} by {_rad}
+			set {_m} to 0
+
+			loop {_maxm} times:
+				add {_addm} to {_m}
+				set {_v} to {_vec} * vector({_m}, {_m}, {_m})
+				set {_el} to {_elbase} ~ {_v}
+				spawnParticle(electric_spark, {_el})
+			
+			set {_elbase} to {_baseloc.%{_id}%}
+			set {_vec} to {_rotatevec.%{_id}%}
+			rotate {_vec} around {_axis} by ({_rad} * (-1))
+			set {_m} to 0
+
+			loop {_maxm} times:
+				add {_addm} to {_m}
+				set {_v} to {_vec} * vector({_m}, {_m}, {_m})
+				set {_el} to {_elbase} ~ {_v}
+				spawnParticle(electric_spark, {_el})
+
+		add {_addrad} to {_rad}
+		wait a tick
+	
+	set {_id} to 0
+	loop 2 times:
+		add 1 to {_id}
+		set {_elbase} to {_baseloc.%{_id}%}
+		set {_vec.1} to {_rotatevec.%{_id}%}
+		rotate {_vec.1} around {_axis} by {_rad}
+		set {_vec.2} to {_rotatevec.%{_id}%}
+		rotate {_vec.2} around {_axis} by ({_rad} * (-1))
+		set {_vecset.1} to {_elbase} ~ {_vec.1}
+		set {_vecset.2} to {_elbase} ~ {_vec.2}
+		set {_bitevector.1} to setVector({_vecset.1}, {_vecset.2})
+		set {_bitevector.2} to setVector({_vecset.2}, {_vecset.1})
+
+		set {_m} to 0
+		loop {_maxm} times:
+			add {_addm} to {_m}
+			set {_id.2} to 0
+			loop 2 times:
+				add 1 to {_id.2}
+				set {_v} to {_vec.%{_id.2}%} * vector({_m}, {_m}, {_m})
+				set {_el} to {_elbase} ~ {_v}
+				set {_bitev} to {_bitevector.%{_id.2}%}
+				spawnParticle_Vector(wax_off, {_bitev}, 2, {_el})
+
+local function particleHit(entity: entity):
+	set {_world} to world of {_entity}
+	set {_baseloc} to {_entity}.getBoundingBox().getCenter().toLocation({_world})
+	set {_amount} to a random integer between 15 and 25
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		spawnParticle_BlockData(block_crumble, redstone block, {_el})
+
+local function particleFear(entity: entity):
+	add rgb(32, 23, 35) to {_colors::*}
+	add rgb(49, 20, 63) to {_colors::*}
+	add rgb(52, 9, 33) to {_colors::*}
+
+	set {_world} to world of {_entity}
+	set {_baseloc} to {_entity}.getBoundingBox().getCenter().toLocation({_world})
+	set {_amount} to a random integer between 10 and 20
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		set {_color} to a random element out of {_colors::*}
+		set {_size} to a random number between 2.5 and 3.5
+		spawnParticle_Dust({_color}, {_size}, {_el})
+
+local function particleInvisible(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_amount} to a random integer between 10 and 15
+	loop {_amount} times:
+		set {_el} to moveRandomLocation({_baseloc}, 1)
+		set {_v} to setVector({_baseloc}, {_el}, 0.7)
+		spawnParticle_Vector(cloud, {_v}, 0.8, {_el})
+
+local function soundPrepare(loc: location):
+	playSound("entity.iron_golem.attack", 1, 1.2, {_loc})
+
+local function soundBite(loc: location):
+	playSound("entity.phantom.bite", 1, 1.4, {_loc})
+
+local function soundHit(entity: entity):
+	playSound("entity.phantom.hurt", 1, 1.6, {_entity})
+
+local function soundFear(entity: entity):
+	playSound("entity.phantom.ambient", 1, 0.9, {_entity})
+
+local function soundInvisible(player: player):
+	playSound("entity.phantom.flap", 1, 1.7, {_player})
