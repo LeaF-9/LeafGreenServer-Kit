@@ -87,33 +87,37 @@ function kitSub_Engineer_3(player: player):
 
 on damage of skeleton:
 	metadata value "Bot Owner" of victim is set
-	if damage type is not fall or suffocation:
-		set {_player} to metadata value "Bot Owner" of victim parsed as player
-		if kitCheckTeam(attacker, {_player}, true) is true:
-			cancel event
-		else:
-			set {_num} to metadata value "Bot Number" of victim
-			set {_uuid} to metadata value "Bot UUID" of victim
-			set {_BotNumber} to getKitStats({_player}, "BotNumber")
-			subtract 1 from {_BotNumber}
-			setKitStats({_player}, "BotNumber", {_BotNumber})
-			deleteKitStats({_player}, "BotList_%{_num}%")
-			deleteKitStats({_player}, "Bot_UUID_%{_uuid}%")
-			delete victim
-			playSound("entity.iron_golem.damage", 1, 2, victim)
-			set {_baseloc} to location of victim
-			loop 5 times:
-				set {_el} to {_baseloc}
-				set {_add.x} to a random number between -0.5 and 0.5
-				set {_add.z} to a random number between -0.5 and 0.5
-				set {_add.y} to a random number between 0 and 2
-
-				add {_add.x} to x-pos of {_el}
-				add {_add.z} to z-pos of {_el}
-				add {_add.y} to y-pos of {_el}
-				spawnParticle(enchanted_hit, {_el})
-	else:
+	if any:
+		damage was caused by fall
+		damage was caused by suffocation
+	then:
 		cancel event
+		stop
+
+	set {_player} to metadata value "Bot Owner" of victim parsed as player
+	if kitCheckTeam(attacker, {_player}, true) is true:
+		cancel event
+	else:
+		set {_num} to metadata value "Bot Number" of victim
+		set {_uuid} to metadata value "Bot UUID" of victim
+		set {_BotNumber} to getKitStats({_player}, "BotNumber")
+		subtract 1 from {_BotNumber}
+		setKitStats({_player}, "BotNumber", {_BotNumber})
+		deleteKitStats({_player}, "BotList_%{_num}%")
+		deleteKitStats({_player}, "Bot_UUID_%{_uuid}%")
+		delete victim
+		playSound("entity.iron_golem.damage", 1, 2, victim)
+		set {_baseloc} to location of victim
+		loop 5 times:
+			set {_el} to {_baseloc}
+			set {_add.x} to a random number between -0.5 and 0.5
+			set {_add.z} to a random number between -0.5 and 0.5
+			set {_add.y} to a random number between 0 and 2
+
+			add {_add.x} to x-pos of {_el}
+			add {_add.z} to z-pos of {_el}
+			add {_add.y} to y-pos of {_el}
+			spawnParticle(enchanted_hit, {_el})
 
 function engineerBotAI(player: player):
 	# loading heads

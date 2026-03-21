@@ -43,8 +43,6 @@ on damage with priority LOW:
 function kitEffect_Gemsting_AttackLow(player: player, event: object):
 	set {_victim} to {_event}.getEntity()
 	set {_attacker} to {_player}
-	# sneak + 攻撃時
-	stop if "%type of {_victim}%" is not "player"
 
 	kitEffect_Gemsting_Drop({_attacker}, {_victim})
 
@@ -102,7 +100,7 @@ local function kitEffect_Gemsting_Drop(attacker: player, victim: player):
 		set {_droploc} to aroundEffect({_victim})
 		drop an emerald block named "%{_attacker}%" at {_droploc}
 		setGameType(last dropped item)
-		set metadata value "delete" of last dropped item to "%{_player}%"
+		set metadata value "delete" of last dropped item to "%{_attacker}%"
 		set metadata value "undelete" of last dropped item to true
 		set metadata value "gemsting" of last dropped item to true
 		kitParticle_Gemsting_Drop({_droploc})

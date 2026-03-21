@@ -72,8 +72,8 @@ function kitEffect_SkinScanner(player: player):
 	effectScan({_player}, {_targeted})
 
 local function effectScan(player: player, targeted: entity):
-	set {_corpse.player} to getMetadata({_targeted}, "deadplayer")
-	set {_corpse.class} to getMetadata({_targeted}, "corpse-class")
+	set {_corpse.player} to getPersistentData({_targeted}, "deadplayer")
+	set {_corpse.class} to getPersistentData({_targeted}, "corpse-class")
 	set {_target} to getPlayer({_corpse.player})
 
 	set {_Class} to {_corpse.class}
@@ -141,6 +141,9 @@ local function effectPlayerDisplay(player: player):
 	
 	loop {@effect-tick} times:
 		continue if getKitStats({_player}, "FakePlayer") is not set
+		set {_playerloc} to location 2 meters above {_player}
+		teleport {_display} to {_playerloc}
+
 		loop all players:
 			if kitCheckTeam(loop-player, {_player}, false) is true:
 				hide {_display} from loop-player

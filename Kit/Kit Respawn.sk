@@ -1,9 +1,12 @@
 on death of player:
 	clear drops
-	clearKitJoinInfo(victim)
 
-	{Kit-tochu} is true
-	{Join::%victim%} is "Kit"
+	if all:
+		{Kit-tochu} is not true
+		{Join::%victim%} is not "Kit"
+	then:
+		clearKitJoinInfo(victim)
+		stop
 
 	set {_loc} to location of victim
 	if y-pos of {_loc} <= -70:
@@ -23,6 +26,7 @@ on death of player:
 	wait a tick
 	force victim to respawn
 	wait a tick
+	clearKitJoinInfo(victim)
 	if {_class} is set:
 		execute console command "/class %{_class}% %victim% false"
 		stop
