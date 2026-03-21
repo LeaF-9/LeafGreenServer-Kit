@@ -1,0 +1,122 @@
+# weapon-name: Windger
+
+options:
+	weapon-name: "Windger"
+
+	charge-tick: 20
+
+	effect-tick: 20
+	effect-power: 2
+	effect-damage: 1.5
+	effect-knockback: 1.5
+
+import:
+	org.bukkit.entity.Pose
+
+function kitEffect_Windger_Sneak(player: player, event: object):
+	set {_tool} to kitWeaponItem("Thief", 2)
+	stop if checkItemCT({_player}, {_tool}) is false
+
+	set {_charging} to 0
+	set {_sneaking} to true
+	while {_sneaking} is true:
+		wait a tick
+		set {_playertool} to tool of {_player}
+		if {_playertool} is not {_tool}:
+			set {_sneaking} to false
+			continue
+		if {_player} is not sneaking:
+			set {_sneaking} to false
+			continue
+		if {_charged} is true:
+			stop if getKitStats({_player}, {@weapon-name}) is not true
+
+		add 1 to {_charging}
+		soundCharging({_player}, {_charge})
+		particleCharging({_player})
+		if {_charging} >= {@charge-tick}:
+			soundCharged({_player}) if {_charged} is not set
+			particleCharged({_player}) if {_charged} is not set
+			set {_charged} to true
+			setKitStats({_player}, {@weapon-name}, true)
+	deleteKitStats({_player}, {@weapon-name})
+	
+
+function kitEffect_Windger_LeftClick(player: player, event: object):
+	stop if getKitStats({_player}, {@weapon-name}) is not true
+
+	deleteKitStats({_player}, {@weapon-name})
+	nameItemCT({_player}, {@weapon-name})
+	effectStab({_player})
+
+local function effectStab(player: player):
+	set {_loc} to location of {_player}
+	set {_direct} to {_loc}.getDirection()
+
+	set {_direct} to {_direct} * vector({@effect-power}, {@effect-power}, {@effect-power})
+	set velocity of {_player} to {_direct}
+	{_player}.setPose(Pose.SPIN_ATTACK, true)
+	soundSpin({_player})
+
+	loop {@effect-tick} times:
+		loop all entities in radius 1.5 around {_player}:
+			{_hit.%uuid of loop-entity%} is not set
+			kitCheckTeam(loop-entity, {_player}, false, true) is true
+			set {_hit.%uuid of loop-entity%} to true
+			effectHit({_player}, loop-entity)
+		wait a tick
+
+	{_player}.setPose(Pose.STANDING)
+
+local function effectHit(player: player, target: entity):
+	particleHit({_target})
+	soundHit({_target})
+
+	kitDamage({_player}, {_target}, {@effect-damage}, "スピン")
+	
+	set {_from} to location 1 meter above {_player}
+	set {_to} to location 1 meter above {_target}
+	set {_vector} to setVector({_from}, {_to}, {@effect-knockback})
+	set velocity of {_target} to {_vector}
+
+
+
+local function particleCharging(player: player):
+	set {_amount} to a random integer between 0 and 2
+	loop {_amount} times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle(small_gust, {_el})
+
+local function particleCharged(player: player):
+	add rgb(140, 236, 240) to {_colors::*}
+	add rgb(55, 164, 214) to {_colors::*}
+	add rgb(33, 207, 230) to {_colors::*}
+
+	set {_amount} to a random integer between 20 and 30
+	loop {_amount} times:
+		set {_el} to aroundEffect({_player})
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 1, {_el})
+
+local function particleHit(entity: entity):
+	set {_baseloc} to location 1 meter above {_entity}
+
+	spawnParticle(gust, {_baseloc})
+	set {_amount} to a random integer between 10 and 20
+	loop {_amount} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(cloud, {_v}, 0.5, {_baseloc})
+
+local function soundCharging(player: player, count: number):
+	set {_count} to 20 if {_count} > 20
+	set {_pitch} to 1 + ({_count} * 0.05)
+	playSound("entity.breeze.slide", 0.7, {_pitch}, {_player})
+
+local function soundCharged(player: player):
+	playSound("entity.breeze.jump", 1, 1.6, {_player})
+
+local function soundSpin(player: player):
+	playSound("item.trident.riptide_1", 1, 1.2, {_player})
+
+local function soundHit(entity: entity):
+	playSound("item.trident.hit", 1, 1.25, {_entity})
