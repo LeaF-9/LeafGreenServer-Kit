@@ -1,20 +1,40 @@
 # Weapon-Name: Gemsting
 
+options:
+	charge-tick: 10
+
 function kitEffect_Gemsting_Timer(player: player):
 	setKitStats({_player}, "Gemsting", 0)
-	create bossbar titled "&a&lGem Bullets&e: &2&l0" and id "%{_player}%-Gemsting" for {_player} with progress 0 with colors green with style segmented 10
+	set {_tool} to kitWeaponItem("Thief", 1)
 	while {Class::%{_player}%} is "Thief":
-		set {_Gemsting} to getKitStats({_player}, "Gemsting")
-		set bossbar "%{_player}%-Gemsting" title to "&a&lGem Bullets&e: &2&l%{_Gemsting}%"
-		set bossbar "%{_player}%-Gemsting" value to {_Gemsting}
+		set {_playertool} to tool of {_player}
+		if {_playertool} is not {_tool}:
+			wait a tick
+			continue
+
+		set {_gems} to getKitStats({_player}, "Gemsting")
+		effectBar({_player}, {_gems})
 		wait a second
-	remove bossbar "%{_player}%-Gemsting"
+
+local function effectBar(player: player, gem: number):
+	set {_bar} to "§b§l[ "
+	set {_ln} to 0
+	loop 10 times:
+		if {_gem} > 10:
+			set {_bar} to "%{_bar}%<##48b2f0>█"
+			continue
+		add 1 to {_ln}
+		set {_bar} to "%{_bar}%§8█" if {_gem} < {_ln}
+		set {_bar} to "%{_bar}%§3█" if {_gem} >= {_ln}
+	set {_bar} to "%{_bar}% §b§l]"
+
+	send action bar {_bar} to {_player}
 
 on damage with priority LOW:
 	# 宝石弾丸ヒット時
 	if damage was caused by projectile:
 		metadata value "gemsting-bullet" of projectile is set
-		setDamageModification_SET(victim, 2)
+		setDamageModification_SET(victim, 1.5)
 		if "%type of victim%" is "player":
 			kitStun(victim, 10)
 			kitEffectDescription(victim, "§6§l眩暈")
@@ -24,7 +44,6 @@ function kitEffect_Gemsting_AttackLow(player: player, event: object):
 	set {_victim} to {_event}.getEntity()
 	set {_attacker} to {_player}
 	# sneak + 攻撃時
-	stop if {_attacker} is not sneaking
 	stop if "%type of {_victim}%" is not "player"
 
 	kitEffect_Gemsting_Drop({_attacker}, {_victim})
@@ -42,23 +61,44 @@ on projectile hit:
 	set metadata value "gemsting-bullet" of projectile to false
 
 function kitEffect_Gemsting(player: player):
-	if {_player} is not sneaking:
-		stop
-	if getKitStats({_player}, "Gemsting") <= 0:
-		stop
+	set {_weapontool} to tool of {_player}
+	
+	set {_count} to 0
+	set {_true} to true
+	while {_true} is true:
+		stop if getKitStats({_player}, "Gemsting") <= 0
+
+		set {_tool} to tool of {_player}
+		stop if {_tool} is not {_weapontool}
+
+		if checkEating({_player}) is false:
+			delete {_true}
+			continue
+		
+		if {_complete} is true:
+			wait a tick
+			continue
+
+		add 1 to {_count}
+
+		if {_count} >= {@charge-tick}:
+			if {_complete} is not set:
+				soundComplete({_player})
+			set {_complete} to true
+
+		wait a tick
+	stop if {_complete} is not set
+
 	set {_Gemsting} to getKitStats({_player}, "Gemsting")
 	subtract 1 from {_Gemsting}
 	setKitStats({_player}, "Gemsting", {_Gemsting})
 	kitEffect_Gemsting_Launch({_player})
 
 local function kitEffect_Gemsting_Drop(attacker: player, victim: player):
-	kitParticle_Gemsting_Crack({_victim})
-	subtract 10 from durability of helmet of {_victim}
-	subtract 10 from durability of chestplate of {_victim}
-	subtract 10 from durability of leggings of {_victim}
-	subtract 10 from durability of boots of {_victim}
-	set {_ln} to a random integer between 1 and 3
+	set {_ln} to a random integer between 0 and 1
 	loop {_ln} times:
+		kitParticle_Gemsting_Crack({_victim})
+
 		set {_droploc} to aroundEffect({_victim})
 		drop an emerald block named "%{_attacker}%" at {_droploc}
 		setGameType(last dropped item)
@@ -99,7 +139,7 @@ local function kitParticle_Gemsting_Pickup(player: player):
 		spawnParticle_Vector(scrape, randomVector(), 0.3, {_baseloc})
 
 local function kitParticle_Gemsting_Launch(player: player):
-	playSound("entity.allay.hurt", 1, 2, {_player})
+	playSound("block.trial_spawner.spawn_item", 1, 1.4, {_player})
 
 local function kitParticle_Gemsting_Bullet(proj: projectile):
 	loop 60 times:
@@ -109,6 +149,9 @@ local function kitParticle_Gemsting_Bullet(proj: projectile):
 		wait a tick
 
 local function kitParticle_Gemsting_Hit(player: player):
-	playSound("entity.allay.death", 1, 2, {_player})
+	playSound("block.trial_spawner.open_shutter", 1, 1.55, {_player})
 	loop 10 times:
 		spawnParticle_Vector(totem_of_undying, randomVector(), 0.5, {_player})
+
+local function soundComplete(player: player):
+	playSound("block.trial_spawner.eject_item", 1, 1.45, {_player}, true)
