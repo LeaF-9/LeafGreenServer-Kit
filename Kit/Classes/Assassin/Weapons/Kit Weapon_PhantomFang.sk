@@ -4,7 +4,7 @@ options:
 	weapon-name: "Phantom Fang"
 
 	before-tick: 5
-	effect-reach: 5
+	effect-reach: 3
 	base-damage: 1
 
 	plus-damage: 2
@@ -43,9 +43,9 @@ local function effectHit(player: player, target: entity):
 	soundHit({_target})
 	particleHit({_target})
 
-	set {_damage} to {@effect-damage}
+	set {_damage} to {@base-damage}
 	set {_isInvisible} to getInvisibleStatus({_player})
-	if {_isInvisible}:
+	if {_isInvisible} is true:
 		add {@plus-damage} to {_damage}
 		set {_hasFear} to true
 		particleFear({_target})
@@ -88,9 +88,9 @@ local function particleBite(loc: location):
 	set {_rotatevec.1} to {_basevec}
 	set {_rotatevec.2} to {_basevec}
 
-	set {_rad} to 0
 	set {_maxrad} to 30
-	set {_addrad} to {_maxrad} / {@before-tick}
+	set {_rad} to {_maxrad}
+	set {_addrad} to ({_maxrad} / {@before-tick}) * (-1)
 	set {_addm} to 1
 	set {_maxm} to {@effect-reach}
 
