@@ -7,9 +7,25 @@ options:
 	effect-tick: 600
 
 	metadata-targeted: "Skin Scanner - Targeted Corpse"
+	data-display: "skinscanner-display"
+
+import:
+	org.bukkit.Color
+	org.bukkit.entity.Display$Billboard
 
 function kitEffect_SkinScanner_Timer(player: player):
+	set {_tool} to kitSkillItem("Thief", 6)
 	while {Class::%{_player}%} is "Thief":
+		set {_playertool} to tool of {_player}
+		if {_playertool} is not {_tool}:
+			if {_targeted} is set:
+				# --- 発光消滅処理 ---
+				deleteMetadata({_player}, {@metadata-targeted})
+				packetUnglowing({_player}, {_targeted})
+				# ------------------
+			wait a tick
+			continue
+
 		# --- 死体発光処理 ---
 		delete {_tg}
 		set {_baseloc} to head of {_player}
@@ -78,6 +94,9 @@ local function effectScan(player: player, targeted: entity):
 	set {_el} to location 1 meter above {_player}
 	loop 30 times:
 		spawnParticle_Vector(scrape, randomVector(), 0.3, {_el})
+
+	# Text Displayの召喚
+	effectPlayerDisplay({_player})
 	
 	loop {@effect-tick} times:
 		wait a tick
@@ -94,6 +113,42 @@ local function effectScan(player: player, targeted: entity):
 		loop 3 times:
 			set {_skill} to kitPlayerSkillItem({_player}, "Thief", loop-number)
 			give {_skill} to {_player}
+
+local function effectPlayerDisplay(player: player):
+	set {_loc} to location of {_player}
+
+	set {_display} to spawnEntity(text display, {_loc})
+
+	setGameType({_display})
+	set {_uuid} to "%uuid of {_player}%"
+	setPersistentData({_display}, {@data-display}, {_uuid})
+
+	setBrightness({_display})
+	{_display}.setBillboard(Billboard.CENTER)
+	{_display}.setTeleportDuration(1)
+	{_display}.setViewRange(100)
+	{_display}.setSeeThrough(false)
+	{_display}.setDefaultBackground(false)
+	set {_background} to new Color(0, 0, 0, 0)
+	{_display}.setBackgroundColor({_background})
+	set {_axisAngle4f} to getQuaternionf(0, 0, 0, 1)
+	set {_scale} to getVector3f(3, 3, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	setTransformation({_display}, {_axisAngle4f}, {_axisAngle4f}, {_translation}, {_scale})
+
+	set {_playerText} to getTextPlayerHead({_player})
+	{_display}.text({_playerText})
+	
+	loop {@effect-tick} times:
+		continue if getKitStats({_player}, "FakePlayer") is not set
+		loop all players:
+			if kitCheckTeam(loop-player, {_player}, false) is true:
+				hide {_display} from loop-player
+				continue
+			reveal {_display} from loop-player
+		wait a tick
+
+	{_display}.remove()	
 
 on damage of player:
 	set {_attacker} to getAttacker(victim)
