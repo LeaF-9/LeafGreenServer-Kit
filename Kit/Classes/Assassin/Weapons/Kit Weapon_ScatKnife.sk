@@ -104,6 +104,11 @@ function kitEffect_ScatKnife_AttackLow(player: player, event: object):
 	set {_victim} to {_event}.getEntity()
 	set {_attacker} to {_player}
 
+	set {_hp} to health of {_victim}
+	if {_hp} <= 0.5:
+		setDamageModification_FIX({_victim}, 100)
+		stop
+
 	{_event}.setCancelled(true)
 	set {_uuid} to a random uuid
 	setMetadata({_victim}, {@metadata-uuid}, {_uuid})
@@ -112,8 +117,9 @@ function kitEffect_ScatKnife_AttackLow(player: player, event: object):
 	set {_basedmg} to {_basedmg} * 0.5
 	set {_dmg} to getDamageModification_ALL({_victim}, {_basedmg})
 	
-	set {_behind} to effectCheckBehind({_attacker}, {_victim})
-	set {_dmg} to ({_dmg} * 2) if {_behind} is true
+	if {_hp} <= 1:
+		set {_behind} to effectCheckBehind({_attacker}, {_victim})
+		set {_dmg} to ({_dmg} * 2) if {_behind} is true
 
 	kitDamageInstant({_attacker}, {_victim}, {_dmg}, "速断", true)
 	particleHurt({_victim})
