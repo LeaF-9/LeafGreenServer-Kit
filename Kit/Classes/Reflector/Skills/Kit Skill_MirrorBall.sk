@@ -110,7 +110,7 @@ local function kitParticle_MirrorBall_Launch(player: player, location: location)
 	set metadata value "Mirror Ball" of {_blockdisplay} to "%{_player}%"
 	set metadata value "Mirror Ball - Location" of {_blockdisplay} to {_location}
 	loop 10 times:
-		add 0.5 to y-pos of {_location}
+		add 0.5 to y of {_location}
 		add 72 to yaw of {_location}
 		teleport {_blockdisplay} to {_location}
 		set metadata value "Mirror Ball - Location" of {_blockdisplay} to {_location}
@@ -125,23 +125,23 @@ local function kitParticle_MirrorBall_Move(player: player):
 		metadata value "Mirror Ball" of loop-block display is "%{_player}%"
 		set {_blockdisplay} to loop-block display
 	set {_location} to location of {_blockdisplay}
-	set {_basey} to y-pos of {_location}
+	set {_basey} to y of {_location}
 	loop 100 times:
 		if {_up} is true:
-			add 0.05 to y-pos of {_location}
+			add 0.05 to y of {_location}
 		else:
-			subtract 0.05 from y-pos of {_location}
+			subtract 0.05 from y of {_location}
 		add 10 to yaw of {_location}
 		teleport {_blockdisplay} to {_location}
 		set metadata value "Mirror Ball - Location" of {_blockdisplay} to {_location}
-		if y-pos of {_location} - {_basey} >= 0.5:
+		if y of {_location} - {_basey} >= 0.5:
 			set {_up} to false
-		if {_basey} - y-pos of {_location} >= 0.5:
+		if {_basey} - y of {_location} >= 0.5:
 			set {_up} to true
 		set {_el} to {_location}
-		add a random number between -1 and 1 to x-pos of {_el}
-		add a random number between -1 and 1 to y-pos of {_el}
-		add a random number between -1 and 1 to z-pos of {_el}
+		add a random number between -1 and 1 to x of {_el}
+		add a random number between -1 and 1 to y of {_el}
+		add a random number between -1 and 1 to z of {_el}
 		spawnParticle_Vector(wax_off, randomVector(), 0.1, {_el})
 		wait a tick
 
@@ -189,7 +189,7 @@ local function kitParticle_MirrorBall_Break(player: player):
 	# 壊れる演出
 	loop 5 times:
 		set {_el} to {_location}
-		add a random number between -0.5 and 0.5 to x-pos of {_el}
-		add a random number between -0.5 and 0.5 to y-pos of {_el}
-		add a random number between -0.5 and 0.5 to z-pos of {_el}
+		add a random number between -0.5 and 0.5 to x of {_el}
+		add a random number between -0.5 and 0.5 to y of {_el}
+		add a random number between -0.5 and 0.5 to z of {_el}
 		spawnParticle_Block(glass, {_el})

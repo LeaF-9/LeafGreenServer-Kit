@@ -25,7 +25,7 @@ function kitEffect_BombKart(player: player):
 	set {_baseloc} to location of {_player}
 	set pitch of {_baseloc} to 0
 	set {_moveloc} to {_baseloc}
-	add 0.5 to y-pos of {_baseloc}
+	add 0.5 to y of {_baseloc}
 
 	spawn a block display at {_baseloc}
 	set {_blockdisplay} to spawned block display
@@ -113,7 +113,7 @@ function kitEffect_BombKart(player: player):
 			# 既に敵を見つけている場合の処理
 			if {_target} is set:
 				set {_targetloc} to location of {_target}
-				set y-pos of {_targetloc} to y-pos of {_moveloc}
+				set y of {_targetloc} to y of {_moveloc}
 				set {_movevec} to setVector({_moveloc}, {_targetloc}, {@discover-per-tick})
 				set {_moveloc} to setDirToVec({_moveloc}, {_movevec})
 				set {_frontloc} to {_moveloc} ~ {_movevec}
@@ -156,12 +156,12 @@ function kitEffect_BombKart(player: player):
 			
 			# 1段のブロックである場合 乗り越える
 			else:
-				add 1 to y-pos of {_frontloc}
+				add 1 to y of {_frontloc}
 		
 		# 浮いている場合の処理
 		set {_belowblock} to block 0.1 meters below {_frontloc}
 		if {_belowblock} is passable:
-			subtract 0.1 from y-pos of {_frontloc}
+			subtract 0.1 from y of {_frontloc}
 
 		# 敵にヒットした際の処理
 		loop all entities in radius {@hit-radius} around {_frontloc}:

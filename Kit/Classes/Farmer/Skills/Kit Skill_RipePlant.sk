@@ -69,7 +69,7 @@ local function effectDecideLoc(player: player, baseloc: location) :: location:
 		block below loop-block is not passable
 
 		set {_loopLoc} to location of loop-block
-		subtract 0.5 from y-pos of {_loopLoc}
+		subtract 0.5 from y of {_loopLoc}
 		set {_distance} to distance between {_baseloc} and {_loopLoc}
 		continue if {_distance} > {_minDistance}
 
@@ -90,7 +90,7 @@ local function effectPlant(player: player, locs: locations):
 	set {_currentCrops} to createNewArrayList() if {_currentCrops} is not set
 	for {_l} in {_locs::*}:
 		set {_plantloc} to location of block at {_l}
-		subtract 0.5 from y-pos of {_plantloc}
+		subtract 0.5 from y of {_plantloc}
 		stop if {_currentCrops}.contains({_plantloc}) is true
 
 		{_currentCrops}.add({_plantloc})
@@ -388,7 +388,7 @@ local function particlePlaceSapling(loc: location):
 	add rgb(5, 109, 66) to {_colors::*}
 	add rgb(129, 199, 91) to {_colors::*}
 
-	add 0.5 to y-pos of {_loc}
+	add 0.5 to y of {_loc}
 	set {_count} to a random integer between 10 and 15
 	loop {_count} times:
 		set {_el} to moveRandomLocation({_loc}, 0.6)

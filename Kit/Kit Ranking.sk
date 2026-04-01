@@ -20,18 +20,18 @@ options:
 # 	kitChangeRankingPeriod({_type})
 
 # 指定したタイプランキングのベース位置を設定するコマンド
-command /setranking-position <text>:
-	aliases: /setrank-pos
+command /setrankingition <text>:
+	aliases: /setrank
 	permission: sk.admin
-	usage: /setrank-pos <type>
+	usage: /setrank <type>
 	trigger:
 		set {_loc} to location of player
 		set yaw of {_loc} to 0
 		set pitch of {_loc} to 0
 		load yml "plugins/skript-yaml/General Options/Rankings.yml" as "ranking.position"
-		set yml value "%arg 1%.position.x" from "ranking.position" to x-pos of {_loc}
-		set yml value "%arg 1%.position.y" from "ranking.position" to y-pos of {_loc}
-		set yml value "%arg 1%.position.z" from "ranking.position" to z-pos of {_loc}
+		set yml value "%arg 1%.position.x" from "ranking.position" to x of {_loc}
+		set yml value "%arg 1%.position.y" from "ranking.position" to y of {_loc}
+		set yml value "%arg 1%.position.z" from "ranking.position" to z of {_loc}
 		set yml value "%arg 1%.position.yaw" from "ranking.position" to 0
 		set yml value "%arg 1%.position.pitch" from "ranking.position" to 0
 		set yml value "%arg 1%.position.world" from "ranking.position" to "%world of {_loc}%"
@@ -187,7 +187,7 @@ function kitChangeRankingDisplay(stats: text, displays: texts):
 			set {_baseentity} to kitGetRankingBase({_stats})
 			set {_addy} to 0.5 + (0.2 * (12 - {_num}))
 			set {_displayspawnloc} to location of {_baseentity}
-			add {_addy} to y-pos of {_displayspawnloc}
+			add {_addy} to y of {_displayspawnloc}
 			spawn a text display at {_displayspawnloc}
 			set {_textDisplay} to spawned text display
 			set {_nbt} to nbt compound of {_textDisplay}

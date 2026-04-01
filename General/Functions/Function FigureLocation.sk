@@ -42,17 +42,17 @@ function particleLocation_Spiral(baseloc: location, count: number, density: numb
 		set {_addrad} to {_addrad} * -1
 	set {_el} to {_baseloc}
 	set {_addy} to {_density} / {_count}
-	set {_basey} to y-pos of {_baseloc}
-	while y-pos of {_baseloc} - {_basey} <= {_height}:
+	set {_basey} to y of {_baseloc}
+	while y of {_baseloc} - {_basey} <= {_height}:
 		# 円
 		loop {_count} times:
-			if y-pos of {_baseloc} - {_basey} > {_height}:
+			if y of {_baseloc} - {_basey} > {_height}:
 				continue
 			set {_v} to {_basevec}
 			rotate {_v} around y-axis by {_rad}
 			set {_el} to {_baseloc} ~ {_v}
 			add {_el} to {_returnlocs::*}
-			add {_addy} to y-pos of {_baseloc}
+			add {_addy} to y of {_baseloc}
 			add {_addrad} to {_rad}
 	return {_returnlocs::*}
 
@@ -76,13 +76,13 @@ function particleLocation_Tornado(baseloc: location, count: number, density: num
 		set {_addrad} to {_addrad} * -1
 	set {_el} to {_baseloc}
 	set {_addy} to {_density} / {_count}
-	set {_basey} to y-pos of {_baseloc}
+	set {_basey} to y of {_baseloc}
 	set {_addm} to {_radius} / {_count}
 	set {_meter} to 0
-	while y-pos of {_baseloc} - {_basey} <= {_height}:
+	while y of {_baseloc} - {_basey} <= {_height}:
 		# 円
 		loop {_count} times:
-			if y-pos of {_baseloc} - {_basey} > {_height}:
+			if y of {_baseloc} - {_basey} > {_height}:
 				continue
 			add {_addm} to {_meter}
 			set {_basevec} to vector({_meter}, 0, 0)
@@ -90,7 +90,7 @@ function particleLocation_Tornado(baseloc: location, count: number, density: num
 			rotate {_v} around y-axis by {_rad}
 			set {_el} to {_baseloc} ~ {_v}
 			add {_el} to {_returnlocs::*}
-			add {_addy} to y-pos of {_baseloc}
+			add {_addy} to y of {_baseloc}
 			add {_addrad} to {_rad}
 	return {_returnlocs::*}
 
@@ -198,7 +198,7 @@ function particleLocation_TornadoV(baseloc: location, count: number, density: nu
 # ランダムに座標をずらす関数
 function moveRandomLocation(loc: location, max: number) :: location:
 	set {_return} to {_loc}
-	add a random number between {_max} * -1 and {_max} to x-pos of {_return}
-	add a random number between {_max} * -1 and {_max} to y-pos of {_return}
-	add a random number between {_max} * -1 and {_max} to z-pos of {_return}
+	add a random number between {_max} * -1 and {_max} to x of {_return}
+	add a random number between {_max} * -1 and {_max} to y of {_return}
+	add a random number between {_max} * -1 and {_max} to z of {_return}
 	return {_return}

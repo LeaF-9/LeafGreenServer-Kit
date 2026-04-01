@@ -301,17 +301,17 @@ function kitParticle_Ninjutsu_MOKU(loc: location):
 	loop 36 times:
 		add 10 to {_rad}
 		set {_el} to {_loc}
-		add 5 * sin({_rad}) to x-pos of {_el}
-		add 5 * cos({_rad}) to z-pos of {_el}
+		add 5 * sin({_rad}) to x of {_el}
+		add 5 * cos({_rad}) to z of {_el}
 		spawnParticle_Dust(rgb(46, 139, 87), 1, {_el})
 
 # Ninjutsu -水-
 function kitNinjutsu_MIZU(player: player, l: location):
 	# --- 座標の追加 ---
-	set {_y} to (y-pos of (block at ({_player})))
+	set {_y} to (y of (block at ({_player})))
 	loop all blocks in radius 5 around {_l}:
 		(distance between (location of (block at ({_l}))) and (location of (loop-block))) >= 4
-		y-pos of loop-block is {_y}
+		y of loop-block is {_y}
 		add (location of loop-block) to {_base::*}
 	# ----------------
 	# --- 水のベール展開 ---
@@ -323,7 +323,7 @@ function kitNinjutsu_MIZU(player: player, l: location):
 	loop 10 times:
 		loop {_base::*}:
 			set {_bl} to loop-value-2
-			set {_s} to (abs((x-pos of ({_bl}) - (x-pos of (location of (block at ({_l})))))) / 5)
+			set {_s} to (abs((x of ({_bl}) - (x of (location of (block at ({_l})))))) / 5)
 			if {_nm} is between 0 and (4 + {_s} * 3):
 				set {_ch} to 1
 			else:
@@ -486,7 +486,7 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 		resetEffect(loop-player)
 
 function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出 1秒間
-	add 1 to y-pos of {_loc}
+	add 1 to y of {_loc}
 	set {_rad.in} to 0
 	set {_rad.ex} to 45
 	set {_meter.in} to 3
@@ -496,13 +496,13 @@ function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出
 		loop 4 times:
 			add 90 to {_rad.in}
 			set {_el.in} to {_loc}
-			add {_meter.in} * sin({_rad.in}) to x-pos of {_el.in}
-			add {_meter.in} * cos({_rad.in}) to z-pos of {_el.in}
+			add {_meter.in} * sin({_rad.in}) to x of {_el.in}
+			add {_meter.in} * cos({_rad.in}) to z of {_el.in}
 			spawnParticle_DustTransition(rgb(175, 238, 238), rgb(217, 238, 238), 0.8, {_el.in})
 			add 90 to {_rad.ex}
 			set {_el.ex} to {_loc}
-			add {_meter.ex} * sin({_rad.ex}) to x-pos of {_el.ex}
-			add {_meter.ex} * cos({_rad.ex}) to z-pos of {_el.ex}
+			add {_meter.ex} * sin({_rad.ex}) to x of {_el.ex}
+			add {_meter.ex} * cos({_rad.ex}) to z of {_el.ex}
 			spawnParticle_DustTransition(rgb(37, 183, 192), rgb(130, 205, 221), 1.5, {_el.ex})
 		add 3 to {_rad.in}
 		add 3 to {_rad.ex}
@@ -522,14 +522,14 @@ function kitParticle_Ninjutsu_HYOU_2(loc: location):  # 発動後の爆発とフ
 		chance of 5%:
 			spawnParticle_Block(snow block, location of loop-block)
 	# フィールド演出
-	add 1 to y-pos of {_loc}
+	add 1 to y of {_loc}
 	set {_rad} to 0
 	loop 100 times:
 		loop 8 times:
 			add 45 to {_rad}
 			set {_el} to {_loc}
-			add 5 * sin({_rad}) to x-pos of {_el}
-			add 5 * cos({_rad}) to z-pos of {_el}
+			add 5 * sin({_rad}) to x of {_el}
+			add 5 * cos({_rad}) to z of {_el}
 			spawnParticle_DustTransition(rgb(0, 163, 175), rgb(131, 204, 210), 2, {_el})
 		add 10 to {_rad}
 		loop all blocks in radius 5 around {_loc}:
@@ -623,7 +623,7 @@ function kitParticle_Ninjutsu_RAI_1(loc: location):
 
 function kitParticle_Ninjutsu_RAI_2(player: player):
 	set {_baseloc} to location of {_player}
-	add 1 to y-pos of {_baseloc}
+	add 1 to y of {_baseloc}
 	loop 4 times:
 		add 90 to {_rad}
 		set {_vec} to vector(0.5, 0, 0)

@@ -60,7 +60,7 @@ local function kitParticle_GearyCog_Positive(fromloc: location, toloc: location)
 	set {_vector} to setVector({_fromloc}, {_toloc})
 	set yaw of {_fromloc} to yaw of {_vector}
 	set pitch of {_fromloc} to pitch of {_vector}
-	add 1 to y-pos of {_fromloc}
+	add 1 to y of {_fromloc}
 	set {_rad} to 0
 	loop 5 times:
 		set {_m} to {_distance} / 5 * loop-number
@@ -88,7 +88,7 @@ local function kitParticle_GearyCog_Negative(fromloc: location, toloc: location)
 	set {_vector} to setVector({_fromloc}, {_toloc})
 	set yaw of {_fromloc} to yaw of {_vector}
 	set pitch of {_fromloc} to pitch of {_vector}
-	add 1 to y-pos of {_fromloc}
+	add 1 to y of {_fromloc}
 	set {_rad} to 0
 	loop 5 times:
 		set {_m} to (({_distance}) / 5 * (loop-number))
@@ -106,7 +106,7 @@ local function kitParticle_GearyCog_Negative(fromloc: location, toloc: location)
 # ギアが回るような演出
 local function kitParticle_GearyCog_Change(baseloc: location):
 	playSound("item.lodestone_compass.lock", 1, 1, {_baseloc})
-	add 1 to y-pos of {_baseloc}
+	add 1 to y of {_baseloc}
 	set pitch of {_baseloc} to 0
 	# 円の座標保存
 	set {_rad} to 0
@@ -117,9 +117,9 @@ local function kitParticle_GearyCog_Change(baseloc: location):
 		set {_m.right} to 0.5 * sin({_rad})
 		set {_loc.right} to location {_m.right} meters to the right of {_baseloc}
 		set {_el} to {_baseloc}
-		set (x-pos of {_el}) to ((x-pos of {_loc.upper}) + (x-pos of {_loc.right}) - (x-pos of {_el}))
-		set (y-pos of {_el}) to ((y-pos of {_loc.upper}) + (y-pos of {_loc.right}) - (y-pos of {_el}))
-		set (z-pos of {_el}) to ((z-pos of {_loc.upper}) + (z-pos of {_loc.right}) - (z-pos of {_el}))
+		set (x of {_el}) to ((x of {_loc.upper}) + (x of {_loc.right}) - (x of {_el}))
+		set (y of {_el}) to ((y of {_loc.upper}) + (y of {_loc.right}) - (y of {_el}))
+		set (z of {_el}) to ((z of {_loc.upper}) + (z of {_loc.right}) - (z of {_el}))
 		set {_circles::%{_rad}%} to {_el}
 	# 回転中のギア
 	set {_baserad} to 0

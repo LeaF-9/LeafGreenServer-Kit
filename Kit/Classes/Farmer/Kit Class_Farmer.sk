@@ -71,7 +71,7 @@ function plantCrop_Farmer(player: player, locs: locations, crop: text = "non-sel
 	set {_currentCrops} to createNewArrayList() if {_currentCrops} is not set
 	for {_l} in {_locs::*}:
 		set {_plantloc} to location of block at {_l}
-		subtract 0.5 from y-pos of {_plantloc}
+		subtract 0.5 from y of {_plantloc}
 		stop if {_currentCrops}.contains({_plantloc}) is true
 
 		{_currentCrops}.add({_plantloc})
@@ -215,8 +215,8 @@ function checkFarmerCrop(player: player) :: text:
 local function outlineCrop(player: player, entity: entity):
 	set {_color} to rgb(255, 0, 0)
 	set {_baseloc} to location of {_entity}
-	subtract 0.5 from x-pos of {_baseloc}
-	add 0.5 to z-pos of {_baseloc}
+	subtract 0.5 from x of {_baseloc}
+	add 0.5 to z of {_baseloc}
 	set {_vector} to vector(1, 0, 0)
 	set {_upvector} to vector(0, 1, 0)
 
@@ -228,7 +228,7 @@ local function outlineCrop(player: player, entity: entity):
 			set {_el} to {_baseloc} ~ {_sumVector}
 
 			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
-			add 1 to y-pos of {_el}
+			add 1 to y of {_el}
 			spawnParticle_Trail({_color}, {_el}, 1 tick, {_el}, {_player})
 			add 1 to {_ln}
 
@@ -380,7 +380,7 @@ local function harvestCrop(player: player, loc: location, crop: text, age: numbe
 	cropSurvive({_itemEntity})
 
 local function particleHarvest(loc: location, material: block data):
-	add 0.5 to y-pos of {_loc}
+	add 0.5 to y of {_loc}
 	loop 50 times:
 		set {_el} to moveRandomLocation({_loc}, 0.5)
 		spawnParticle_Block({_material}, {_el})
@@ -466,7 +466,7 @@ function kitTimerFarmer(player: player):
 			checkEntityType({_hit}, interaction) is true
 			getPersistentData({_hit}, "crop-interaction") is true
 			set {_hitloc} to location of {_hit}
-			add 0.5 to y-pos of {_hitloc}
+			add 0.5 to y of {_hitloc}
 			set {_headloc} to head of {_player}
 			set {_distance} to distance between {_hitloc} and {_headloc}
 			outlineCrop({_player}, {_hit}) if {_distance} <= {_meter}

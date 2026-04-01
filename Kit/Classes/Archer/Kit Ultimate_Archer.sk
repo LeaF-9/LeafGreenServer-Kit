@@ -57,12 +57,12 @@ local function kitEffect_HelicalLuminary_Shoot(player: player):
 
 	# 座標確認 (emerald作)
 	set {_loc} to location of {_player}
-	add 1.6 to y-pos of {_loc}
+	add 1.6 to y of {_loc}
 	set {_vector0} to {_loc}
 	set {_vector1} to {_loc}
-	set {_x} to x-pos of {_loc}
-	set {_y} to y-pos of {_loc}
-	set {_z} to z-pos of {_loc}
+	set {_x} to x of {_loc}
+	set {_y} to y of {_loc}
+	set {_z} to z of {_loc}
 	set {_alpha} to 0
 
 	loop 37 time:
@@ -84,9 +84,9 @@ local function kitEffect_HelicalLuminary_Shoot(player: player):
 		set {_vz} to location 1 meters in front of {_loc}
 
 		set {_vector0} to location (3 * {_alpha}) meters in front of {_loc}
-		set {_v0x} to x-pos of {_vector0}
-		set {_v0y} to y-pos of {_vector0}
-		set {_v0z} to z-pos of {_vector0}
+		set {_v0x} to x of {_vector0}
+		set {_v0y} to y of {_vector0}
+		set {_v0z} to z of {_vector0}
 		if ({_v0x} - {_x}) ^ 2 + ({_v0y} - {_y}) ^ 2 + ({_v0z} - {_z}) ^ 2 < 10201:
 			kitParticle_HelicalLuminary_Dust({_vector0})
 			playSound("item.trident.return", 1.5, 1.25, {_vector0})
@@ -96,9 +96,9 @@ local function kitEffect_HelicalLuminary_Shoot(player: player):
 		loop 8 time:
 			add 1 to {_t}
 			loop 5 time:
-				set x-pos of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-pos of {_vx} - {_x}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x-pos of {_vy} - {_x}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (x-pos of {_vz} - {_x}) + {_x}
-				set y-pos of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-pos of {_vx} - {_y}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y-pos of {_vy} - {_y}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (y-pos of {_vz} - {_y}) + {_y}
-				set z-pos of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-pos of {_vx} - {_z}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z-pos of {_vy} - {_z}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (z-pos of {_vz} - {_z}) + {_z}
+				set x of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x of {_vx} - {_x}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x of {_vy} - {_x}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (x of {_vz} - {_x}) + {_x}
+				set y of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y of {_vx} - {_y}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y of {_vy} - {_y}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (y of {_vz} - {_y}) + {_y}
+				set z of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z of {_vx} - {_z}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z of {_vy} - {_z}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (z of {_vz} - {_z}) + {_z}
 
 				spawnParticle_Dust(rgb(255, 255, 32 * {_t}), 1, {_vector1})
 				loop all entities in radius 1 around {_vector1}:

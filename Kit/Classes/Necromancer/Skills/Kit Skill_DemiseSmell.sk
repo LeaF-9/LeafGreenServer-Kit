@@ -189,9 +189,9 @@ local function kitWraith_Charge(player: player, wraith: entity):
 local function kitWraith_Charge_Particle_1(wraith: entity):
 	set {_baseloc} to location 1 meters above {_wraith}
 	set {_fromloc} to {_baseloc}
-	add (a random number between -3 and 3) to (x-pos of {_fromloc})
-	add (a random number between -3 and 3) to (y-pos of {_fromloc})
-	add (a random number between -3 and 3) to (z-pos of {_fromloc})
+	add (a random number between -3 and 3) to (x of {_fromloc})
+	add (a random number between -3 and 3) to (y of {_fromloc})
+	add (a random number between -3 and 3) to (z of {_fromloc})
 	set {_dis} to (distance between {_baseloc} and {_fromloc}) / 5
 	set {_v} to setVector({_fromloc}, {_baseloc})
 	set (yaw of {_fromloc}) to (yaw of {_v})
@@ -296,8 +296,8 @@ local function kitWraith_Potion_Particle(entity: entity):
 # 			add 1 to {_num.rad}
 # 			set {_rad} to {_baserad} + (90 * {_num.rad})
 # 			set {_el} to {_baseloc}
-# 			add ({_m} * sin({_rad})) to (x-pos of {_el})
-# 			add ({_m} * cos({_rad})) to (z-pos of {_el})
+# 			add ({_m} * sin({_rad})) to (x of {_el})
+# 			add ({_m} * cos({_rad})) to (z of {_el})
 # 			spawnParticle_Dust(rgb(89, 66, 85), 1, {_el})
 # 		add 15 to {_baserad}
 # 		wait a tick
@@ -338,15 +338,15 @@ local function kitWraith_Potion_Particle(entity: entity):
 # 	loop 10 times:
 # 		set {_el} to {_baseloc}
 # 		add 36 to {_rad}
-# 		add (5 * sin({_rad})) to (x-pos of {_el})
-# 		add (5 * cos({_rad})) to (z-pos of {_el})
+# 		add (5 * sin({_rad})) to (x of {_el})
+# 		add (5 * cos({_rad})) to (z of {_el})
 # 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
 # 	loop 15 times:
 # 		set {_el} to {_baseloc}
 # 		set {_random.x} to a random number between -5 and 5
 # 		set {_random.z} to a random number between -5 and 5
-# 		add {_random.x} to (x-pos of {_el})
-# 		add {_random.x} to (z-pos of {_el})
+# 		add {_random.x} to (x of {_el})
+# 		add {_random.x} to (z of {_el})
 # 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(89, 0, 74), 5, {_el})
 	# -----------------------
 
@@ -368,8 +368,8 @@ local function kitWraith_Potion_Particle(entity: entity):
 # 		# 円
 # 		loop {_count} times:
 # 			set {_el} to {_baseloc}
-# 			add ({_meter} * sin({_rad})) to (x-pos of {_el})
-# 			add ({_meter} * cos({_rad})) to (z-pos of {_el})
+# 			add ({_meter} * sin({_rad})) to (x of {_el})
+# 			add ({_meter} * cos({_rad})) to (z of {_el})
 # 			spawnParticle_Dust(colorRandomizer(0, 0, 0, 50, 0, 50), 1.5, {_el})
 # 			add {_addrad} to {_rad}
 
@@ -382,9 +382,9 @@ local function kitWraith_Potion_Particle(entity: entity):
 # 		set {_random.x} to a random number between -1 and 1
 # 		set {_random.y} to a random number between -1 and 1
 # 		set {_random.z} to a random number between -1 and 1
-# 		add {_random.x} to (x-pos of {_baseel})
-# 		add {_random.y} to (y-pos of {_baseel})
-# 		add {_random.z} to (z-pos of {_baseel})
+# 		add {_random.x} to (x of {_baseel})
+# 		add {_random.y} to (y of {_baseel})
+# 		add {_random.z} to (z of {_baseel})
 
 
 
@@ -426,8 +426,8 @@ local function kitWraith_Thunder(player: player, wraith: entity):
 	set {_count} to a random integer between 3 and 5
 	loop {_count} times:
 		set {_loc} to location of {_target}
-		add (a random number between -5 and 5) to x-pos of {_loc}
-		add (a random number between -5 and 5) to z-pos of {_loc}
+		add (a random number between -5 and 5) to x of {_loc}
+		add (a random number between -5 and 5) to z of {_loc}
 		kitWraith_Thunder_Particle_Warning({_loc})
 		add {_loc} to {_locs::*}
 
@@ -485,9 +485,9 @@ local function kitWraith_Thunder_Particle_Prepare(wraith: entity):
 		# 周囲に浮くふわふわパーティクル
 		loop 5 times:
 			set {_el} to {_baseloc}
-			add (a random number between -3 and 3) to x-pos of {_el}
-			add (a random number between -3 and 3) to y-pos of {_el}
-			add (a random number between -3 and 3) to z-pos of {_el}
+			add (a random number between -3 and 3) to x of {_el}
+			add (a random number between -3 and 3) to y of {_el}
+			add (a random number between -3 and 3) to z of {_el}
 			spawnParticle_Dust(colorRandomizer(255, 200, 255, 55, 0, 55), 2, {_el})
 		# クルクルパーティクル
 		set {_locs::*} to particleLocation_Circle({_baseloc}, 2, 0.5, {_a})
@@ -518,8 +518,8 @@ local function kitWraith_Summon(player: player, wraith: entity):
 	playSound("entity.guardian.attack", 1, 1.5, {_baseloc})
 	loop a random integer between 3 and 5 times:
 		set {_loc} to {_baseloc}
-		add (a random number between -5 and 5) to x-pos of {_loc}
-		add (a random number between -5 and 5) to z-pos of {_loc}
+		add (a random number between -5 and 5) to x of {_loc}
+		add (a random number between -5 and 5) to z of {_loc}
 		delete {_true}
 		set {_am} to 0
 		while {_true} is not set:
@@ -581,7 +581,7 @@ local function kitWraith_Summon_Particle_Prepare(loc: location):
 	set {_y} to 0
 	loop 20 times:
 		set {_el} to {_loc}
-		add {_y} to y-pos of {_el}
+		add {_y} to y of {_el}
 		set {_locs::*} to particleLocation_Circle({_el}, 4, 0.5, {_a})
 		loop {_locs::*}:
 			spawnParticle(wax_off, loop-value-2)
@@ -590,7 +590,7 @@ local function kitWraith_Summon_Particle_Prepare(loc: location):
 		wait a tick
 
 local function kitWraith_Summon_Particle_Appear(loc: location):
-	add 1 to y-pos of {_loc}
+	add 1 to y of {_loc}
 	loop 30 times:
 		spawnParticle_Vector(end_rod, randomVector(), 0.3, {_loc})
 
@@ -621,9 +621,9 @@ local function kitWraith_Teleport_Particle_Path(from: location, to: location):
 
 local function kitWraith_Teleport_Particle_Line(loc: location):
 	set {_baseloc} to {_loc}
-	add (a random number between -1 and 1) to x-pos of {_baseloc}
-	add (a random number between -1 and 1) to y-pos of {_baseloc}
-	add (a random number between -1 and 1) to z-pos of {_baseloc}
+	add (a random number between -1 and 1) to x of {_baseloc}
+	add (a random number between -1 and 1) to y of {_baseloc}
+	add (a random number between -1 and 1) to z of {_baseloc}
 	set {_d} to dice(3)
 	if {_d} is 1:
 		set {_color} to rgb(77, 67, 152)
@@ -751,9 +751,9 @@ on damage of player with priority LOW:
 	{_attacker}.remove()
 	loop 5 times:
 		set {_el} to {_baseloc}
-		add (a random number between -1 and 1) to x-pos of {_el}
-		add (a random number between -1 and 1) to z-pos of {_el}
-		add (a random number between 0 and 2) to y-pos of {_el}
+		add (a random number between -1 and 1) to x of {_el}
+		add (a random number between -1 and 1) to z of {_el}
+		add (a random number between 0 and 2) to y of {_el}
 		spawnParticle_DustTransition(rgb(0, 0, 0), rgb(70, 14, 68), 3, {_el})
 
 on damage of wither skeleton:

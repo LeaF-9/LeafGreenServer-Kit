@@ -20,8 +20,8 @@ on projectile hit:
 	playSound("entity.generic.burn", 1, 0.5, location of projectile)
 	set {_face} to getKitStats(shooter, "ArrowRain")
 	set {_baseloc} to (location of (block at (projectile)))
-	set {_y} to y-pos of {_baseloc}
-	set (y-pos of {_face}) to {_y}
+	set {_y} to y of {_baseloc}
+	set (y of {_face}) to {_y}
 	set {_dis} to distance between (location of {_face}) and (location of {_baseloc})
 	loop 10 times:
 		set {_n} to loop-number
@@ -33,18 +33,18 @@ on projectile hit:
 		set {_n} to loop-number
 		set {_plus} to {_dis} + {_n}
 		set {_sky} to (location of (block {_plus} meters in front of ({_face})))
-		set y-pos of {_sky} to {_y}
-		add 10 to y-pos of {_sky}
+		set y of {_sky} to {_y}
+		add 10 to y of {_sky}
 		loop all blocks in radius 5 around {_sky}:
-			(y-pos of loop-block) is (y-pos of {_sky})
+			(y of loop-block) is (y of {_sky})
 			loop-block is air
 			add (location of (loop-block)) to {_rain::*}
 		loop 5 times:
 			set {_cloud} to {_sky}
 			set {_x} to a random number between -1 and 1
 			set {_z} to a random number between -1 and 1
-			add {_x} to x-pos of {_cloud}
-			add {_z} to z-pos of {_cloud}
+			add {_x} to x of {_cloud}
+			add {_z} to z of {_cloud}
 			spawnParticle(cloud, {_cloud})
 			loop {_rain::*}:
 				chance of 5%:

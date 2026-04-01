@@ -194,7 +194,7 @@ function kitEffect_Palsy(player: player):
 	set {_baseloc} to location of {_player}
 	set {_yaw} to a random number between 0 and 360
 	set {_add.y} to a random number between 0.6 and 2
-	add {_add.y} to y-pos of {_baseloc}
+	add {_add.y} to y of {_baseloc}
 	set yaw of {_baseloc} to {_yaw}
 	set pitch of {_baseloc} to 0
 	set {_effloc} to location 0.5 meters in front of {_baseloc}
@@ -206,7 +206,7 @@ function kitEffect_Palsy(player: player):
 		loop 2 times:
 			# --- ギザギザ上 ---
 			set {_bl} to {_effloc}
-			subtract {_dy} from y-pos of {_bl}
+			subtract {_dy} from y of {_bl}
 			set pitch of {_bl} to 45
 			set {_mc} to 0
 			loop {_metercount} times:
@@ -216,7 +216,7 @@ function kitEffect_Palsy(player: player):
 			# -----------------
 			# --- ギザギザ下 ---
 			set {_bl} to location 0.05 meters in front of {_effloc}
-			subtract ({_dy} + 0.05) from y-pos of {_bl}
+			subtract ({_dy} + 0.05) from y of {_bl}
 			set pitch of {_bl} to -45
 			set {_mc} to 0
 			loop {_metercount} times:
@@ -326,9 +326,9 @@ function kitSleep(player: player, tick: number):
 		set {_add.y} to a random number between -0.5 and 0.5
 		set {_add.z} to a random number between -0.5 and 0.5
 
-		add {_add.x} to x-pos of {_el}
-		add {_add.y} to y-pos of {_el}
-		add {_add.z} to z-pos of {_el}
+		add {_add.x} to x of {_el}
+		add {_add.y} to y of {_el}
+		add {_add.z} to z of {_el}
 
 		set {_vector} to vector(0, 0.1, 0)
 		spawnParticle_Vector(sculk_charge_pop, {_vector}, 0.1, {_el})
@@ -400,7 +400,7 @@ function kitStun(player: player, tick: number):
 
 		# パーティクル処理
 		set {_el} to location of {_player}
-		add 2 to y-pos of {_el}
+		add 2 to y of {_el}
 		set {_vec} to vector(0.5, 0, 0)
 
 		add 36 to {_rad}
@@ -517,9 +517,9 @@ function kitTrail(player: player, tick: number, from: location = location(0.0, 0
 	set {_prog} to 100 / {_tick}
 	set {_ticknumber} to {_tick}
 	# from-location設定
-	set {_x.from} to x-pos of {_from}
-	set {_y.from} to y-pos of {_from}
-	set {_z.from} to z-pos of {_from}
+	set {_x.from} to x of {_from}
+	set {_y.from} to y of {_from}
+	set {_z.from} to z of {_from}
 	set {_sum.xyz} to {_x} + {_y} + {_z}
 	if {_sum.xyz} = 0:
 		set {_from} to location of {_player}
@@ -569,7 +569,7 @@ function kitTrail(player: player, tick: number, from: location = location(0.0, 0
 			set {_index.former} to {_index.now} - 1
 			set {_loc.from} to {_traillocs::%{_index.former}%}
 			if {_loc.from} is {_loc.to}:
-				add 0.01 to y-pos of {_loc.to}
+				add 0.01 to y of {_loc.to}
 			set {_vector} to setVector({_loc.from}, {_loc.to})
 			set (yaw of {_loc.from}) to (yaw of {_vector})
 			set (pitch of {_loc.from}) to (pitch of {_vector})

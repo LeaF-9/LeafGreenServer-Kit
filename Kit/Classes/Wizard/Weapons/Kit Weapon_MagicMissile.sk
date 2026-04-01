@@ -60,7 +60,7 @@ local function kitEffect_MagicMissile_Timer(player: player):
 		if getKitStats({_player}, "MagicMissile-Timer") is not set:
 			stop
 		set {_playerloc} to location of {_player}
-		add 1 to y-pos of {_playerloc}
+		add 1 to y of {_playerloc}
 		set pitch of {_playerloc} to 0
 		set {_playerloc} to location 1 meter behind {_playerloc}
 		set {_locs::*} to particleLocation_CircleV({_playerloc}, 60, 1)
@@ -149,9 +149,9 @@ local function kitParticle_MagicMissile_Prepare(player: player):
 	set {_baseloc} to location of {_player}
 	loop 5 times:
 		set {_el} to {_baseloc}
-		add a random number between -0.5 and 0.5 to x-pos of {_el}
-		add a random number between -0.5 and 0.5 to z-pos of {_el}
-		add a random number between 0.5 and 1.5 to y-pos of {_el}
+		add a random number between -0.5 and 0.5 to x of {_el}
+		add a random number between -0.5 and 0.5 to z of {_el}
+		add a random number between 0.5 and 1.5 to y of {_el}
 		spawnParticle_DustTransition(rgb(0, 161, 233), rgb(160, 216, 239), 0.4, {_el})
 
 # 魔法弾召喚時 ぽわわわーん
@@ -161,7 +161,7 @@ local function kitParticle_MagicMissile_Summon(player: player):
 	set {_y} to 0
 	loop 5 times:
 		set {_el} to {_baseloc}
-		add {_y} to y-pos of {_el}
+		add {_y} to y of {_el}
 		spawnParticle_Color(entity_effect, rgb(0, 172, 240), {_el})
 		add 0.5 to {_y}
 
@@ -179,7 +179,7 @@ local function kitParticle_MagicMissile_Launch(player: player):
 
 # 魔法弾の周囲にVertical円
 local function kitParticle_MagicMissile_Trail(loc: location):
-	add 1 to y-pos of {_loc}
+	add 1 to y of {_loc}
 	set {_circles::*} to particleLocation_CircleV({_loc}, 10, 0.5)
 	loop {_circles::*}:
 		spawnParticle_Dust(rgb(37, 183, 192), 0.5, loop-value)

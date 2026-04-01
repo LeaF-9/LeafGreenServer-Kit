@@ -43,7 +43,7 @@ function kitEffect_RespawnController(player: player):
 	kitFakeBlock({_player}, {_loc.top}, {_block}, {_transformation}, {@machine-key})
 
 	set {_loc.particle} to {_loc.base}
-	add 1.5 to y-pos of {_loc.particle}
+	add 1.5 to y of {_loc.particle}
 	setKitStats({_player}, "RespawnController-Location", {_loc.particle})  # 演出の基準となる地点を保存
 	kitMsg({_player}, "<##7F1184>Respawn Controller§cを設置しました!")
 	playSound("entity.evoker.prepare_attack", 1, 1.5, {_loc.base})
@@ -109,7 +109,7 @@ local function kitEffect_RespawnController_Core(player: player, display: entity)
 	set {_add.yaw} to {_rotate.yaw} / 20
 
 	set {_uping} to true
-	set {_y} to y-pos of {_display}
+	set {_y} to y of {_display}
 	set {_y.base} to 0
 	set {_y.move} to 0.1
 	set {_y.edit} to {_y.move} / 20
@@ -137,7 +137,7 @@ local function kitEffect_RespawnController_Core(player: player, display: entity)
 		add {_y.add} to {_y.base}
 		set {_uping} to false if {_y.base} >= {_y.max}
 		set {_uping} to true if {_y.base} <= {_y.min}
-		set y-pos of {_tploc} to {_y} + {_y.base}
+		set y of {_tploc} to {_y} + {_y.base}
 
 		teleport {_display} to {_tploc}
 		wait a tick
