@@ -5,21 +5,8 @@ function applyEffect(player: entity, effect: potion effect type, tier: number, t
 	if {_effect} is strength or weakness:
 		applyPacketEffect({_player}, {_effect}, {_tier}, {_time}, {_replace})
 		stop
-	if {_type} is "normal":
-		if {_replace} is true:
-			apply {_effect} {_tier} to {_player} for {_time} replacing existing effect
-		else:
-			apply {_effect} {_tier} to {_player} for {_time}
-	else if {_type} is "ambient":
-		if {_replace} is true:
-			apply ambient {_effect} {_tier} to {_player} for {_time} replacing existing effect
-		else:
-			apply ambient {_effect} {_tier} to {_player} for {_time}
-	else if {_type} is "none":
-		if {_replace} is true:
-			apply {_effect} {_tier} without particles to {_player} for {_time} replacing existing effect
-		else:
-			apply {_effect} {_tier} without particles to {_player} for {_time}
+
+	applyPotionEffect({_player}, {_effect}, {_tier}, {_tick}, {_replace}, {_type})
 
 function resetEffect(player: player):
 	clear (potion effects of {_player})
@@ -29,7 +16,7 @@ function resetEffect(player: player):
 			set {_effect} to potionChanger("%loop-key%")
 			set {_level} to yml value "%loop-node%" from "EffectCheck.%{_player}%"
 			# set {_level} to {_level} parsed as number
-			apply infinite {_effect} {_level} without particles to {_player}
+			applyEffect({_player}, {_effect}, {_level}, -1, true, "non-particle")
 
 function checkEffects(player: player) :: potion effect types:
 	set {_eff.player::*} to all potion effects of {_player}
