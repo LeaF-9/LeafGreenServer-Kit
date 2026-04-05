@@ -189,12 +189,12 @@ function kitTakingSheep_SH(player: player, sheep: entity, hadnum: number = 0):
 	# 獲得までの時間計算
 	set {_team} to {TrueTeam::%{_player}%}
 	if metadata value "sh-age" of {_sheep} is "adult":
-		if {_player} has potion mining fatigue:
+		if hasPotionEffect({_player}, mining fatigue) is true:
 			set {_count} to round(300 / {Kit-TeamBuff::%{_team}%})
 		else:
 			set {_count} to round(200 / {Kit-TeamBuff::%{_team}%})
 	else:
-		if {_player} has potion mining fatigue:
+		if hasPotionEffect({_player}, mining fatigue) is true:
 			set {_count} to round(100 / {Kit-TeamBuff::%{_team}%}) * {_hadnum}
 		else:
 			set {_count} to round(60 / {Kit-TeamBuff::%{_team}%}) * {_hadnum}
@@ -296,7 +296,7 @@ function kitTimer_SH():
 			# --- Sheep Moving (holder) ---
 			set {_holder} to metadata value "sh-holder" of loop-sheep
 			if {_holder} is set:
-				apply glowing 1 to loop-sheep for 1 second
+				applyEffect(loop-sheep, glowing, 1, 20, true, "none")
 				# --- Holder Change ---
 				set {_leasher} to leash holder of loop-sheep
 				if {_leasher} is not {_holder}:

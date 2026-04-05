@@ -5,7 +5,8 @@ function kitEffect_FairyProtection(player: player):
 	setKitStats({_player}, "FairyProtection", true)
 	setKitStats({_player}, "Resurrection", true)
 	kitMsg({_player}, "§d妖精の加護を受けました!")
-	apply regeneration 2 to {_player} for 5 seconds
+	
+	applyEffect({_player}, regeneration, 2, 100)
 	sendTimeBossbar_GREEN({_player}, "Fairy Protection", 100)
 	playSound("entity.firework_rocket.twinkle", 1, 1.5, {_player})
 	loop 100 times:
@@ -27,7 +28,7 @@ on damage of player with priority LOW:
 	getKitStats(victim, "FairyProtection") is true
 	set {_attacker} to getAttacker(victim)
 	{_attacker} is set
-	apply poison 2 to {_attacker} for 2 seconds replacing existing effect
+	applyEffect({_attacker}, poison, 2, 40, true)
 	kitEffectDescription({_attacker}, "§2§l毒")
 	sendTimeBossbar_RED({_attacker}, "§2毒", 40)
 

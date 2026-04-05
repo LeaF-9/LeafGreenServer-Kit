@@ -75,7 +75,7 @@ on respawn:
 				else:
 					set {_timetext} to "%{_time}%"
 				send title "§c§l死んでしまった!" with subtitle "§3§l%{_timetext}% §b秒後に復活します..." to player for 3 ticks with fadein 0 second and fadeout 0 second
-				apply blindness 1 to player for 1.5 seconds replacing existing effect
+				applyEffect(player, blindness, 1, 30, true, "none")
 				player.setAllowFlight(true) if player.getAllowFlight() is false
 				subtract 1 from {Kit-Spawning::%player%}
 				wait a tick
@@ -96,10 +96,9 @@ on respawn:
 			{Kit-tochu} is true
 			openKitInv(player)
 			execute console command "/skclass %player% GameInv"
-			apply blindness 1 to player for 10000000000 seconds
-			apply slowness 10 to player for 10000000000 seconds
-			apply jump boost -10 to player for 10000000000 seconds
-			apply resistance 10 to player for 10000000000 seconds
+			applyEffect({_player}, blindness, 1, -1, true, "none")
+			applyEffect({_player}, slowness, 10, -1, true, "none")
+			applyEffect({_player}, resistance, 10, -1, true, "none")
 			set {Kit-RespawnKill::%player%} to true
 			set {Kit-RespawnPoint::%player%} to {_tp}
 			loop 10 times:

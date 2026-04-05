@@ -2,7 +2,7 @@
 
 function kitUltGhost(player: player):
 	kitParticle_HellishOccultism_Form({_player})
-	remove invisibility from {_player}
+	removePotionEffect({_player}, invisibility)
 	allow fly for {_player}
 	setKitStats({_player}, "UltGhost", true)
 	execute console command "/displayer %{_player}% Wither"
@@ -12,7 +12,7 @@ function kitUltGhost(player: player):
 	deleteKitStats({_player}, "UltGhost")
 	if gamemode of {_player} is survival:
 		disallow fly for {_player}
-		apply infinite invisibility 1 to {_player}
+		applyEffect({_player}, invisibility, 1, -1, true, "non-particle")
 	execute console command "/undisplayer %{_player}%"
 	applyEffect({_player}, slow falling, 1, 100)
 
@@ -65,7 +65,7 @@ on leftclick:
 	loop all entities in radius 5 around {_fallLoc}:
 		kitCheckTeam(player, loop-entity, false, true) is true
 		kitDamage(player, loop-entity, 2, "黒弾")
-		apply wither 3 to loop-entity for 3 seconds
+		applyEffect(loop-entity, wither, 3, 60)
 		playSound("entity.wither.spawn", 1, 0.5, loop-entity)
 
 	set {_pl} to {_fallLoc}

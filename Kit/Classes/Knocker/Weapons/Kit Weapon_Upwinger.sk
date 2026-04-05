@@ -28,7 +28,7 @@ function kitEffect_Upwinger(player: player):
 function kitEffect_Upwinger_Fall(player: player):
 	if {_player} is sneaking:
 		if block at location 0.1 meters below {_player} is passable:
-			apply slow falling 1 to {_player} for 10 ticks replacing existing effect
+			applyEffect({_player}, slow falling, 1, 10, true)
 			chance of 50%:
 				playSound("block.wool.break", 0.6, 2, {_player})
 			set {_rad} to 0
@@ -41,4 +41,4 @@ function kitEffect_Upwinger_Fall(player: player):
 				chance of 10%:
 					spawnParticle_Color(entity_effect, rgb(135, 206, 235), {_el})
 	else:
-		remove slow falling from {_player}
+		removePotionEffect({_player}, slow falling)

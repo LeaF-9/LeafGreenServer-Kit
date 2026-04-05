@@ -9,7 +9,7 @@ on rightclick holding a coal:
 			setFuelCT(player)
 			subtract 10 from {Kit-Fuel::%player%}
 			setCT(player, name of {_item}, 20)
-			apply speed 1 to player for 10 seconds
+			applyEffect(player, speed, 1, 200)
 			kitMsg(player, "§e加速装置を使った!")
 			make a fake explosion at player
 			push player forward at speed 2
@@ -93,15 +93,15 @@ function kitTimerEngineer(player: player):
 					set {_hovering} to true
 					setFuelCT({_player})
 					subtract 1 from {Kit-Fuel::%{_player}%}
-					apply levitation 1 to {_player} for 2 ticks
+					applyEffect({_player}, levitation, 1, 2)
 					playSound("block.fire.ambient", 0.8, 2, {_player})
 					loop 3 times:
 						set {_el} to aroundEffect({_player})
 						spawnParticle(smoke, {_el})
-		if {_player} has potion levitation:
+		if hasPotionEffect({_player}, levitation) is true:
 			{_hovering} is true
 			{_true} is not set
 			delete {_hovering}
-			remove levitation from {_player}
+			removePotionEffect({_player}, levitation)
 		wait a tick
 	remove bossbar "%{_player}%-Fuel"

@@ -38,7 +38,7 @@ function kitEffect_LimiterRemoval(player: player):
 	setKitStats({_player}, "LimiterRemovalTime", {_now})
 	kitMsg({_player}, "§5リミッターを外しました...")
 	sendTimeBossbar_GREEN({_player}, "Limiter Removal - Buff", 100)
-	apply speed 1 to {_player} for 5 seconds
+	applyEffect({_player}, speed, 1, 100)
 	kitParticle_LimiterRemoval_Launch({_player})
 
 	loop 100 times:
@@ -52,8 +52,8 @@ function kitEffect_LimiterRemoval(player: player):
 	
 	setKitStats({_player}, "LimiterRemoval", false)
 	kitMsg({_player}, "§1リミッターが戻り,疲れてしまった...")
-	remove slowness from {_player}
-	apply slowness 2 to {_player} for 5 seconds
+	removePotionEffect({_player}, slowness)
+	applyEffect({_player}, slowness, 2, 100, true, "non-particle")
 	sendTimeBossbar_RED({_player}, "Limiter Removal - Debuff", 100)
 	kitParticle_LimiterRemoval_Fatigue({_player})
 
@@ -66,8 +66,8 @@ function kitEffect_LimiterRemoval(player: player):
 	deleteKitStats({_player}, "LimiterRemoval")
 	deleteKitStats({_player}, "LimiterRemovalTime")
 	kitMsg({_player}, "§2疲れがとれた!")
-	remove slowness from {_player}
-	apply infinite slowness 1 without particles to {_player}
+	removePotionEffect({_player}, slowness)
+	applyEffect({_player}, slowness, 1, -1, true, "non-particle")
 
 local function kitEffect_LimiterRemoval_CalcDamage(base: number, plus: boolean) :: number:
 	if {_plus} is true:

@@ -10,7 +10,7 @@ function kitBlood(player: player):
 	set {_bossbar.id} to a random UUID
 	create bossbar titled "&4&l出血" and id {_bossbar.id} for {_player} with progress 100 with colors red with style solid
 	message formatted "§4出血してしまった!" to {_player}
-	apply blindness 1 to {_player} for 3 seconds
+	applyEffect({_player}, blindness, 1, 60, true, "non-particle")
 
 	# 出血パーティクル
 	loop 10 times:
@@ -34,7 +34,7 @@ function kitBlood(player: player):
 		set {_hp} to health of {_player}
 		subtract 0.5 from {_hp}
 		set health of {_player} to {_hp}
-		apply blindness 1 to {_player} for 3 seconds
+		applyEffect({_player}, blindness, 1, 60, true, "non-particle")
 		playSound("entity.player.hurt", 1, 1, {_player})
 
 		# 治癒処理
@@ -287,7 +287,7 @@ function kitSleep(player: player, tick: number):
 
 	set {_tickEffect} to {_tick} + 20
 	set {_time} to "%{_tickEffect}% ticks" parsed as time span
-	apply blindness 1 to {_player} for {_time} replacing existing effect
+	applyEffect({_player}, blindness, 1, {_tickEffect}, true, "non-particle")
 
 	set {_bossbar.id} to a random UUID
 	set {_titledisplay} to "§5§l睡眠"
@@ -348,7 +348,7 @@ on damage of player with priority HIGHEST:
 		cancel event
 		stop
 	removeDebuffs(victim, "Sleep")
-	remove blindness from victim
+	removePotionEffect(victim, blindness)
 
 #不死
 function kitImmortal(player: player, time: time span):
@@ -633,14 +633,15 @@ function kitLuck(player: player, pluslvl: number, absolute: boolean = false):
 	else if {Kit-Luck::%{_player}%} < -5:
 		set {Kit-Luck::%{_player}%} to -5
 	# メッセージとエフェクト
-	remove luck from {_player}
-	remove bad luck from {_player}
+
+	removePotionEffect({_player}, luck)
+	removePotionEffect({_player}, bad luck)
 	set {_efflvl} to abs({Kit-Luck::%{_player}%})
 	if {Kit-Luck::%{_player}%} > 0:
-		apply infinite luck {_efflvl} without particles to {_player}
+		applyEffect({_player}, luck, {_efflvl}, -1, true, "non-particle")
 		message formatted "<##3cb371>§l幸運<##3cb371>だ! 確率が良くなりそうだ! <##ffd700>幸運レベル§7: §e§l%{Kit-Luck::%{_player}%}%" to {_player}
 	else:
-		apply infinite bad luck {_efflvl} without particles to {_player}
+		applyEffect({_player}, bad luck, {_efflvl}, -1, true, "non-particle")
 		message formatted "<##2e8b57>§l不運<##2e8b57>だ! 確率が悪くなりそうだ... <##ffd700>幸運レベル§7: §e§l%{Kit-Luck::%{_player}%}%" to {_player}
 	# パーティクル
 	loop 10 times:
