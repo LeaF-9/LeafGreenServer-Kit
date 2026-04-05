@@ -68,14 +68,18 @@ on damage of slime:
 	set {_attacker} to getAttacker(victim)
 	if kitCheckTeam({_name}, {_attacker}, false) is false:
 		stop
-	if damage type is not void or suffocation:
-		set {_rawdamage} to getDamageModification_ALL(victim, damage)
-		set {_dmg} to {_rawdamage} / 2
-		kitDamage({_name}, {_attacker}, {_dmg}, "鏡面反射")
-		kitEffectDescription({_attacker}, "§f§l反射")
-		kitParticle_SpeculumShield_Damage(location of victim)
-	else:
+	if any:
+		damage was caused by void
+		damage was caused by suffocation
+	then:
 		cancel event
+		stop
+
+	set {_rawdamage} to getDamageModification_ALL(victim, damage)
+	set {_dmg} to {_rawdamage} / 2
+	kitDamage({_name}, {_attacker}, {_dmg}, "鏡面反射")
+	kitEffectDescription({_attacker}, "§f§l反射")
+	kitParticle_SpeculumShield_Damage(location of victim)
 
 
 
