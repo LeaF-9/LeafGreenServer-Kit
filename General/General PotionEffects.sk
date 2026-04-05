@@ -1,6 +1,38 @@
-# Apply /Remove Potion Effect Functions
+import:
+	org.bukkit.potion.PotionEffect
 
-function applyPotionEffect(entity: entity, effect: potion effect type, tier: number, tick: number, replace: boolean = false, type: text = "normal"):
+# Apply /Remove Potion Effect Functions
+function applyPotionEffect(entity: entity, effect: potion effect type, tier: number, tick: number, force: boolean = false, type: text = "normal"):
+	# type check
+	if all:
+		{_type} is not "normal"
+		{_type} is not "ambient"
+		{_type} is not "non_particle"
+		{_type} is not "none"
+	then:
+		debugMsg("§cInvalid apply type: §6§l%{_type}%")
+		debugMsg("§6Supposed Types: §e§onormal §7/ §e§oambient §7/ §e§onon_particle §7/ §e§onone")
+		stop
+
+	# infinite duration (-1)
+	if {_tick} < 0:
+		set {_tick} to PotionEffect.INFINITE_DURATION
+
+	if {_type} is "normal":
+		set {_PotionEffect} to new PotionEffect({_type}, {_tick}, {_tier})
+	
+	else if {_type} is "ambient":
+		set {_PotionEffect} to new PotionEffect({_type}, {_tick}, {_tier}, true)
+	
+	else if {_type} is "non_particle":
+		set {_PotionEffect} to new PotionEffect({_type}, {_tick}, {_tier}, false, false)
+	
+	else if {_type} is "none":
+		set {_PotionEffect} to new PotionEffect({_type}, {_tick}, {_tier}, false, false, false)
+
+	if {_force} is "replace":
+		{_entity}.removePotionEffect({_entity}, {_effect})
+	{_entity}.addPotionEffect({_PotionEffect})
 
 # potion effect memo
 # Ver2.8.5
