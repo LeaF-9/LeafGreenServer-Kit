@@ -54,19 +54,24 @@ command /skclass <text> <text="none">:
 			if offhand tool of player is not air:
 				set {_invitem} to offhand tool of player
 				set yml value "armors.offhand" from "skclass.%arg 2%" to {_invitem}
-			set {_eff::*} to all potion effects of player
-			loop {_eff::*}:
-				delete {_effalls::*}
-				set {_effall} to "%loop-value%"
-				replace " " with ":" in {_effall}
-				set {_effalls::*} to {_effall} split at ":"
-				set {_efftype} to {_effalls::1}
-				delete {_efflevel}
-				set {_efflevel} to {_effalls::2}
-				if {_efflevel} is not set:
-					set {_efflevel} to 0
-				add 1 to {_efflevel}
-				set yml value "effects.%{_efftype}%" from "skclass.%arg 2%" to {_efflevel}
+
+			# 現在所持しているPotion効果を取得して記述する箇所
+			# Exportをあまり使ってないため保留
+			#
+			# set {_eff::*} to all potion effects of player
+			# loop {_eff::*}:
+			# 	delete {_effalls::*}
+			# 	set {_effall} to "%loop-value%"
+			# 	replace " " with ":" in {_effall}
+			# 	set {_effalls::*} to {_effall} split at ":"
+			# 	set {_efftype} to {_effalls::1}
+			# 	delete {_efflevel}
+			# 	set {_efflevel} to {_effalls::2}
+			# 	if {_efflevel} is not set:
+			# 		set {_efflevel} to 0
+			# 	add 1 to {_efflevel}
+			# 	set yml value "effects.%{_efftype}%" from "skclass.%arg 2%" to {_efflevel}
+
 			save yml "skclass.%arg 2%"
 			message formatted "{@prefix} §eClass: §6§l%arg 2% §7を保存しました" to player
 #		else if arg 1 is "check":
@@ -83,7 +88,7 @@ command /skclass <text> <text="none">:
 function skClassGive(player: player, key: text):
 	load yml "plugins/skript-yaml/General Classes/%{_key}%.yml" as "skclass.%{_key}%"
 	clear {_player}'s inventory
-	clear all potion effects of {_player}
+	clearPotionEffects({_player})
 
 	set {_invnum} to 0
 	loop 36 times:
