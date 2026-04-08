@@ -1,50 +1,23 @@
 function kitCheckTeam(player1: entity, player2: entity, ally: boolean, all: boolean = false) :: boolean:
-	if getGameType({_player1}) is not "Kit":
-		return false
-	if getGameType({_player2}) is not "Kit":
-		return false
+	return false if isKitEntity({_player1}) is false
+	return false if isKitEntity({_player2}) is false
 
-	if checkTestStand({_player1}, {_player2}, {_ally}) is true:
+	return true if checkTestStand({_player1}, {_player2}, {_ally}) is true
+
+	set {_team1} to getKitTeam({_player1}, {_all})
+	set {_team2} to getKitTeam({_player2}, {_all})
+
+	if {_ally} is true:
+		if any:
+			{_team1} is not {_team2}
+			getKitStats({_player1}, "NoSupport") is true
+			getKitStats({_player2}, "NoSupport") is true
+		then:
+			return false
 		return true
 
-	set {_name1} to display name of {_player1}
-	if {_name1} is not set:
-		return false
-	set {_name2} to display name of {_player2}
-	if {_name2} is not set:
-		return false
-	if {_all} is true:
-		set {_change} to "TrueTeam"
-	else:
-		set {_change} to "team"
-	loop all players:
-		if name of loop-player is {_name1}:
-			set {_p1} to loop-player
-		if name of loop-player is {_name2}:
-			set {_p2} to loop-player
-	if {_p1} is not set:
-		return false
-	if {_p2} is not set:
-		return false
-	if gamemode of {_p1} is spectator:
-		return false
-	if gamemode of {_p2} is spectator:
-		return false
-	if {_ally} is true:
-		if {%{_change}%::%{_p1}%} is {%{_change}%::%{_p2}%}:
-			if getKitStats({_player1}, "NoSupport") is true:
-				return false
-			else if getKitStats({_player2}, "NoSupport") is true:
-				return false
-			else:
-				return true
-		else:
-			return false
-	else:
-		if {%{_change}%::%{_p1}%} is not {%{_change}%::%{_p2}%}:
-			return true
-		else:
-			return false
+	return false if {_team1} is {_team2}
+	return true
 
 local function checkTestStand(entity1: entity, entity2: entity, ally: boolean) :: boolean:
 	set {_bool} to false
