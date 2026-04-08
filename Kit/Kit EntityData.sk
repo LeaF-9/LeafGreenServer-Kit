@@ -21,11 +21,16 @@ function createKitData(entity: entity, uuid: text = "original"):
 	setPersistentData({_entity}, "kit-trueteam", {_trueteam})
 	setPersistentData({_entity}, "kit-entitytype", {_type})
 
+	set {-kitEntities} to createNewArrayList() if {-kitEntities} is not set
+	{-kitEntities}.add({_entity}) if {-kitEntities}.contains({_entity}) is false 
+
 function clearKitData(entity: entity):
 	removePersistentData({_entity}, "kit-uuid")
 	removePersistentData({_entity}, "kit-team")
 	removePersistentData({_entity}, "kit-trueteam")
 	removePersistentData({_entity}, "kit-entitytype")
+
+	{-kitEntities}.remove({_entity})
 
 function isKitEntity(entity: entity) :: boolean:
 	return true if getPersistentData({_entity}, "kit-uuid") is set
@@ -39,6 +44,16 @@ function getKitEntityType(entity: entity) :: text:
 
 function setKitUUID(entity: entity, uuid: text):
 	setPersistentData({_entity}, "kit-uuid", {_uuid})
+
+function getKitEntities() :: entities:
+	loop ...{-kitEntities}:
+		add loop-value to {_entities::*}
+	return {_entities::*}
+
+function deleteAllKitData():
+	loop ...{-kitEntities}:
+		clearKitData(loop-value)
+	delete {-kitEntities}
 
 
 
