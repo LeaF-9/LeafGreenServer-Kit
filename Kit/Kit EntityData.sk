@@ -1,0 +1,32 @@
+import:
+	org.bukkit.entity.EntityType
+
+function createKitData(entity: entity, uuid: text = "original"):
+	set {_uuid} to {_entity}.getUniqueId().toString() if {_uuid} is "original"
+
+	set {_entityType} to {_entity}.getType()
+	if {_entityType} is not EntityType.PLAYER:
+		set {_sumonnerString} to getPersistentData({_entity}, "summon-player")
+		set {_summoner} to getPlayer({_summonerString})
+		set {_teamOwner} to {_summoner}
+	else:
+		set {_teamOwner} to {_entity}
+
+	set {_team} to {team::%{_teamOwner}%}
+	set {_trueteam} to {TrueTeam::%{_teamOwner}%}
+	set {_type} to {_entityType}.name()
+
+	setPersistentData({_entity}, "kit-uuid", {_uuid})
+	setPersistentData({_entity}, "kit-team", {_team})
+	setPersistentData({_entity}, "kit-trueteam", {_trueteam})
+	setPersistentData({_entity}, "kit-entitytype", {_type})
+
+function isKitEntity(entity: entity) :: boolean:
+	return true if getPersistentData({_entity}, "kit-uuid") is set
+	return false
+
+function getKitUUID(entity: entity) :: text:
+	return getPersistentData({_entity}, "kit-uuid")
+
+function getKitEntityType(entity: entity) :: text:
+	return getPersistentData({_entity}, "kit-entitytype")
