@@ -39,52 +39,49 @@ command /class <text> <player=%player%> <boolean=true>:
 					delete {ClassChose::%arg 2%}
 		else:
 			delete {ClassChose::%arg 2%}
-		if {ClassChose::%arg 2%} is not set:
-			set {ClassChose::%arg 2%} to true
-			set {Class::%arg 2%} to arg 1
-			set {CLS::%arg 2%} to getClassShortName(arg 1)
+		stop if {ClassChose::%arg 2%} is set
 
-			# if arg 1 is "Teleporter":
-			# 	set {FeedBackLocation::%arg 2%} to location of arg 2
-			# 	set {FeedBackHealth::%arg 2%} to arg 2's health
+		set {ClassChose::%arg 2%} to true
+		set {Class::%arg 2%} to arg 1
+		set {CLS::%arg 2%} to getClassShortName(arg 1)
 
-			if arg 1 is "Thief":
-				set {Kit-Mana::%arg 2%} to 30
+		# if arg 1 is "Teleporter":
+		# 	set {FeedBackLocation::%arg 2%} to location of arg 2
+		# 	set {FeedBackHealth::%arg 2%} to arg 2's health
 
-			if arg 1 is "Ghost":
-				set {Kit-Spirits::%arg 2%} to 0
-				set {Kit-NoCorpse::%arg 2%} to true
+		if arg 1 is "Ghost":
+			set {Kit-Spirits::%arg 2%} to 0
+			set {Kit-NoCorpse::%arg 2%} to true
 
-			if arg 1 is "Thief":
-				set {Kit-Mana::%arg 2%} to 100
-				set {Kit-Odo::%arg 2%}  to 100
-				set {Kit-Spirits::%arg 2%} to 100
-				set {Kit-Fuel::%arg 2%} to 100
+		if arg 1 is "Thief":
+			set {Kit-Mana::%arg 2%} to 100
+			set {Kit-Odo::%arg 2%}  to 100
+			set {Kit-Spirits::%arg 2%} to 100
+			set {Kit-Fuel::%arg 2%} to 100
 
-			if arg 1 is "Berserker":
-				setKitStats(arg 2, "NoSupport", true)
-				setKitStats(arg 2, "Berserk", true)
+		if arg 1 is "Berserker":
+			setKitStats(arg 2, "NoSupport", true)
+			setKitStats(arg 2, "Berserk", true)
 
-			if arg 1 is "Bard":
-				setKitStats(arg 2, "MelodyEffect", regeneration)
+		if arg 1 is "Bard":
+			setKitStats(arg 2, "MelodyEffect", regeneration)
 
-			if arg 1 is "Engineer":
-				set {Kit-Fuel::%arg 2%} to 100
+		if arg 1 is "Engineer":
+			set {Kit-Fuel::%arg 2%} to 100
 
-			skClassGive(arg 2, "Kit-%arg 1%")
+		skClassGive(arg 2, "Kit-%arg 1%")
 
-			set {LastClass::%arg 2%} to {Class::%arg 2%}
-			set {LastCLS::%arg 2%} to {CLS::%arg 2%}
+		set {LastClass::%arg 2%} to {Class::%arg 2%}
+		set {LastCLS::%arg 2%} to {CLS::%arg 2%}
 
-			kitUnitSetting(arg 2, arg 1)
+		kitUnitSetting(arg 2, arg 1)
 
-			setGameType(arg 2)
-			kitCheckUltimate(arg 2)
-			kitTargetTimer(arg 2)
-			kitTimerStart(arg 2, arg 1)
-			ocmAttackSpeed(arg 2)
-			if arg 1 is not set:
-				message "§cクラス名を入力して下さい"
+		setGameType(arg 2)
+		createKitData(arg 2)
+		kitCheckUltimate(arg 2)
+		kitTargetTimer(arg 2)
+		kitTimerStart(arg 2, arg 1)
+		ocmAttackSpeed(arg 2)
 
 function getClassShortName(class: text) :: text:
 	set {_readuuid} to a random uuid
