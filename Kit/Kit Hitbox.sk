@@ -1,3 +1,42 @@
+import:
+	java.util.function.Predicate
+
+function getAroundEntities(loc: location, radius: number) :: object:
+	set {_world} to world of {_loc}
+	set {_checkedUUID} to createNewArrayList()
+
+	create new section with {_proxy}, {_entity} and store it in {_section::test}:
+		return false if isKitEntity({_entity}) is false
+
+		set {_uuid} to getKitUUID({_entity})
+		return false if {_checkedUUID}.contains({_uuid}) is true
+		{_checkedUUID}.add({_uuid})
+		return true
+        
+	set {_predicate} to new proxy instance of Predicate using {_section::*}
+	set {_entityList} to {_world}.getNearbyEntities({_loc}, {_radius}, {_predicate})
+	return {_entityList}
+
+function getAroundTeamEntities(loc: location, radius: number, team: text, all: boolean = false) :: object:
+	set {_world} to world of {_loc}
+	set {_checkedUUID} to createNewArrayList()
+
+	create new section with {_proxy}, {_entity} and store it in {_section::test}:
+		return false if isKitEntity({_entity}) is false
+
+		set {_teamData} to getKitTeam({_entity}, {_all})
+		return false if {_teamData} is not {_team}
+
+		set {_uuid} to getKitUUID({_entity})
+		return false if {_checkedUUID}.contains({_uuid}) is true
+
+		{_checkedUUID}.add({_uuid})
+		return true
+        
+	set {_predicate} to new proxy instance of Predicate using {_section::*}
+	set {_entityList} to {_world}.getNearbyEntities({_loc}, {_radius}, {_predicate})
+	return {_entityList}
+
 function checkHitEntities(loc: location) :: entities:
 	loop all entities in radius 3 around {_loc}:
 		delete {_continue}
