@@ -36,19 +36,21 @@ function kitEffect_Meiso(player: player):
 		add 1 to {_ln}
 		set {_nin} to line 4 of lore of loop-value
 		{_nin} contains "忍術"
-		if display name of {_skill::%loop-index%} does not contain "Ninjutsu":
+		if getItemName({_skill::%loop-index%}) does not contain "Ninjutsu":
 			delete {_have}
 			loop all items in {_player}'s inventory:
 				loop-item is {_skill::%loop-index%}
 				set {_have} to true
 			{_have} is not set
 			give {_skill::%{_ln}%} to {_player}
-			send action bar "%display name of {_skill::%{_ln}%}% §7を再習得した..." to {_player}
+			set {_display} to getItemName({_skill::%{_ln}%})
+			send action bar "%{_display}% §7を再習得した..." to {_player}
 		else:
 			delete {_have}
 			loop all items in {_player}'s inventory:
-				display name of loop-item contains "Ninjutsu"
+				getItemName(loop-item) contains "Ninjutsu"
 				set {_have} to true
 			{_have} is not set
 			give {_skill::%{_ln}%} to {_player}
-			send action bar "%display name of {_skill::%{_ln}%}% §7を再習得した..." to {_player}
+			set {_display} to getItemName({_skill::%{_ln}%})
+			send action bar "%{_display}% §7を再習得した..." to {_player}

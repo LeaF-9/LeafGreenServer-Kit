@@ -2,10 +2,10 @@
 
 # Skills
 on rightclick holding a zombie spawn egg:
-	name of player's tool is "§5Summon Dead"
+	getItemName(player's tool) is "§5Summon Dead"
 	cancel event
-	if checkCT(player, name of tool of player) is true:
-		setCT(player, name of player's tool, 60)
+	if checkCT(player, getItemName(tool of player)) is true:
+		setCT(player, getItemName(player's tool), 60)
 		kitMsg(player, "§5死者5体を召喚した...")
 		playSound("entity.zombie.ambient", 1, 0.5, player)
 		loop all blocks in radius 5 around player:
@@ -410,13 +410,13 @@ function kitCheckNecromance(player: player, skill: item) :: boolean:
 
 function kitNecromanceItem(player: player, name: text) :: item:
 	set {_tool} to {_player}'s tool
-	set {_toolname} to display name of {_tool}
+	set {_toolname} to getItemName({_tool})
 	set {_toolname} to unformatted {_toolname}
 	set {_necitem} to {_tool} if {_toolname} is {_name}
 
 	if {_necitem} is not set:
 		loop all items in {_player}'s inventory:
-			set {_toolname} to display name of loop-item
+			set {_toolname} to getItemName(loop-item)
 			set {_toolname} to unformatted {_toolname}
 			if {_toolname} is {_name}:
 				set {_necitem} to loop-item

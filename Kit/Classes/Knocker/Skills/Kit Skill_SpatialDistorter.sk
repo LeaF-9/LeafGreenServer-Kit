@@ -83,7 +83,7 @@ function kitSkill_SpatialDistorter_ActionBar(player: player):
 local function kitEffect_SpatialDistorter_Reload(player: player):
 	playSound("entity.ender_dragon.hurt", 1, 1.7, {_player})
 	loop all items in {_player}'s inventory:
-		name of loop-item contains "Spatial Distorter"
+		getItemName(loop-item) contains "Spatial Distorter"
 		set {_itemct} to loop-item
 	set {_ct} to "{@reload-tick} ticks" parsed as time span
 	set item cooldown of {_itemct} for {_player} to {_ct}
@@ -91,7 +91,7 @@ local function kitEffect_SpatialDistorter_Reload(player: player):
 	loop {@reload-tick} times:
 		delete {_hold}
 		loop all items in {_player}'s inventory:
-			name of loop-item contains "Spatial Distorter"
+			getItemName(loop-item) contains "Spatial Distorter"
 			set {_hold} to true
 		if {_hold} is not set:
 			deleteKitStats({_player}, "SpatialDistorter")
@@ -100,7 +100,7 @@ local function kitEffect_SpatialDistorter_Reload(player: player):
 
 	delete {_hold}
 	loop all items in {_player}'s inventory:
-		name of loop-item contains "Spatial Distorter"
+		getItemName(loop-item) contains "Spatial Distorter"
 		set {_hold} to true
 	stop if {_hold} is not set
 

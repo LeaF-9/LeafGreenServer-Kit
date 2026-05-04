@@ -46,11 +46,11 @@ function executeAdminTool(player: player, event: object):
 	set {_slot} to {_event}.getSlot()
 
 	close {_player}'s inventory
-	if name of {_item} contains "/joinset":
+	if getItemName({_item}) contains "/joinset":
 		make {_player} execute command "/joinset 4"
-	else if name of {_item} contains "/gamestart":
+	else if getItemName({_item}) contains "/gamestart":
 		make {_player} execute command "/gamestart"
-	else if name of {_item} contains "§3§lTEST MODE":
+	else if getItemName({_item}) contains "§3§lTEST MODE":
 		set {_test.before} to {-TestMode::Kit}
 		set {_test.before} to false if {_test.before} is not set
 
@@ -61,7 +61,7 @@ function executeAdminTool(player: player, event: object):
 		
 		set {-TestMode::Kit} to {_test.after}
 		message formatted "§a[§e§lKit§a]§r §3§lTEST MODE<##d0e8ec>を <##ebc958>%{_test.after}% <##d0e8ec>に設定しました" to {_player}
-	else if name of {_item} contains "Map Select Settings":
+	else if getItemName({_item}) contains "Map Select Settings":
 		openAdminTool_KitDetail({_player})
 
 
@@ -90,7 +90,7 @@ function executeAdminTool_KitDetail(player: player, event: object):
 	set {_slot} to {_event}.getSlot()
 
 	close {_player}'s inventory
-	set {_itemname} to name of {_item}
+	set {_itemname} to getItemName({_item})
 	if {_itemname} contains "§erule:":
 		if {_itemname} contains "§c§lRESET":
 			kitStageRandomize("rule")

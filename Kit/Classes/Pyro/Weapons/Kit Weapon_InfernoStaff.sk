@@ -82,14 +82,14 @@ local function kitEffect_InfernoStaff_Fire(player: player):
 local function kitEffect_InfernoStaff_Reload(player: player):
 	playSound("block.fire.extinguish", 1, 1.75, {_player})
 	loop all items in {_player}'s inventory:
-		name of loop-item contains "Inferno Staff"
+		getItemName(loop-item) contains "Inferno Staff"
 		set {_itemct} to loop-item
 	set item cooldown of {_itemct} for {_player} to 5 seconds
 
 	loop 100 times:
 		delete {_hold}
 		loop all items in {_player}'s inventory:
-			name of loop-item contains "Inferno Staff"
+			getItemName(loop-item) contains "Inferno Staff"
 			set {_hold} to true
 		if {_hold} is not set:
 			deleteKitStats({_player}, "InfernoStaff")
@@ -98,7 +98,7 @@ local function kitEffect_InfernoStaff_Reload(player: player):
 
 	delete {_hold}
 	loop all items in {_player}'s inventory:
-		name of loop-item contains "Inferno Staff"
+		getItemName(loop-item) contains "Inferno Staff"
 		set {_hold} to true
 	if {_hold} is true:
 		setKitStats({_player}, "InfernoStaff", 30)

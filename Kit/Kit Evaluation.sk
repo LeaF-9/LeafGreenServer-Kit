@@ -29,7 +29,7 @@ function kitMapRating(player: player):
 	set slot 4 of {_player}'s current inventory to a lime concrete named "§6[ §e★★★ §6]" with lore "§a§o普通"
 	set slot 5 of {_player}'s current inventory to a yellow concrete named "§6[ §e★★★★ §6]" with lore "§e§o楽しかった"
 	set slot 6 of {_player}'s current inventory to a red concrete named "§6[ §e★★★★★ §6]" with lore "§c§oとても楽しかった"
-	if name of {_player}'s tool is "§5Map Evaluation":
+	if getItemName({_player}'s tool) is "§5Map Evaluation":
 		set slot 8 of {_player}'s current inventory to a nether star named "§d全てのMap評価を閲覧する"
 
 on inventory click:
@@ -62,7 +62,7 @@ on inventory click:
 	else if {_clickinv.name} contains "§6Map評価一覧":
 		cancel event
 		close player's inventory
-		set {_stagename} to name of {_clickinv.item}
+		set {_stagename} to getItemName({_clickinv.item})
 		replace "§6" with "" in {_stagename}
 		kitMapRate(player, {_stagename})
 

@@ -2,7 +2,7 @@
 
 # Skills
 on rightclick holding a jukebox:
-	name of player's tool is "§eMelody Effect"
+	getItemName(player's tool) is "§eMelody Effect"
 	cancel event
 	open chest inventory named "§b§lSelect a Melody" with 1 row to player
 	wait 1 tick
@@ -19,20 +19,21 @@ on inventory click:
 	name of event-inventory is "§b§lSelect a Melody"
 	cancel event
 	set {_item} to event-item
-	if name of {_item} contains "HEALING":
+	set {_display} to getItemName({_item})
+	if {_display} contains "HEALING":
 		set {_potiontype} to regeneration
-	else if name of {_item} contains "RESISTANCE":
+	else if {_display} contains "RESISTANCE":
 		set {_potiontype} to resistance
-	else if name of {_item} contains "SPEED":
+	else if {_display} contains "SPEED":
 		set {_potiontype} to speed
-	else if name of {_item} contains "WEAKNESS":
+	else if {_display} contains "WEAKNESS":
 		set {_potiontype} to weakness
-	else if name of {_item} contains "FATIGUE":
+	else if {_display} contains "FATIGUE":
 		set {_potiontype} to mining fatigue
-	else if name of {_item} contains "SLOWNESS":
+	else if {_display} contains "SLOWNESS":
 		set {_potiontype} to slowness
 	setKitStats(player, "MelodyEffect", {_potiontype})
-	kitMsg(player, "§aMelody Effect§eを %name of {_item}% §eに変更しました")
+	kitMsg(player, "§aMelody Effect§eを %{_display}% §eに変更しました")
 
 # Timer
 function kitTimerBard(player: player):

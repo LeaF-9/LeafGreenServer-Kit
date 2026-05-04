@@ -13,7 +13,7 @@ function playerCoolTimer(player: player):
 					set {_loopType} to kitItemTypeChecker(loop-item)
 					continue if {_loopType} is not "skill"
 
-					set {_loopKey} to name of loop-item
+					set {_loopKey} to getItemName(loop-item)
 					set {_palsied::%{_loopKey}%} to loop-item
 
 			loop {_palsied::*}:
@@ -38,7 +38,7 @@ function playerCoolTimer(player: player):
 		loop {CT.%{_player}%::*}:
 			if {_ctitem.%loop-index%} is not set:
 				loop all items in {_player}'s inventory:
-					name of loop-item contains loop-index
+					getItemName(loop-item) contains loop-index
 					set {_ctitem.%loop-index%} to loop-item
 
 			if loop-value <= 0:
@@ -76,7 +76,7 @@ function playerCoolTimer(player: player):
 					else:
 						set {_itemtime} to 0 seconds
 					set item cooldown of {_ctitem.%loop-index%} for {_player} to {_itemtime}
-					if name of tool of {_player} contains loop-index:
+					if getItemName(tool of {_player}) contains loop-index:
 						set {_bar} to true
 						barCT({_player}, {CT.%{_player}%::%loop-index%}, {_maxct::%loop-index%})
 
@@ -142,10 +142,11 @@ function detectCT(player: player, skill: item):
 	# set {_ct} to {_ct} parsed as number
 	set {_ct} to getNamespacedKey({_skill}, "cooltime", "float")
 	if {_ct} is not set:
-		log "%display name of {_skill}%のクールタイムを取得できませんでした"
+		set {_displayname} to getItemName({_skill})
+		log "%{_displayname}%のクールタイムを取得できませんでした"
 		stop
 
-	set {_name} to display name of {_skill}
+	set {_name} to getItemName({_skill})
 	setCT({_player}, {_name}, {_ct})
 
 function setCT(player: player, skill: text, second: number):
@@ -171,13 +172,13 @@ function toolCT(player: player, kit: text, num: number, type: text = "Skill"):
 
 function nameCT(player: player, name: text):
 	set {_tool} to {_player}'s tool
-	set {_toolname} to display name of {_tool}
+	set {_toolname} to getItemName({_tool})
 	set {_toolname} to unformatted {_toolname}
 	set {_cttool} to {_tool} if {_toolname} is {_name}
 
 	if {_cttool} is not set:
 		loop all items in {_player}'s inventory:
-			set {_toolname} to display name of loop-item
+			set {_toolname} to getItemName(loop-item)
 			set {_toolname} to unformatted {_toolname}
 			if {_toolname} is {_name}:
 				set {_cttool} to loop-item
@@ -220,7 +221,8 @@ function setItemCT(player: player, item: item):
 
 	set {_ct} to getNamespacedKey({_item}, "cooldown", "float")
 	if {_ct} is not set:
-		log "%display name of {_item}%のクールダウンを取得できませんでした"
+		set {_displayname} to getItemName({_item})
+		log "%{_displayname}%のクールダウンを取得できませんでした"
 		stop
 
 	set {_ct} to "%{_ct}% seconds" parsed as time span
@@ -238,13 +240,13 @@ function toolItemCT(player: player, kit: text, num: number, type: text = "Weapon
 
 function nameItemCT(player: player, name: text):
 	set {_tool} to {_player}'s tool
-	set {_toolname} to display name of {_tool}
+	set {_toolname} to getItemName({_tool})
 	set {_toolname} to unformatted {_toolname}
 	set {_cttool} to {_tool} if {_toolname} is {_name}
 
 	if {_cttool} is not set:
 		loop all items in {_player}'s inventory:
-			set {_toolname} to display name of loop-item
+			set {_toolname} to getItemName(loop-item)
 			set {_toolname} to unformatted {_toolname}
 			if {_toolname} is {_name}:
 				set {_cttool} to loop-item

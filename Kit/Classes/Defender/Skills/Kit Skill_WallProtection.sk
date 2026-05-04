@@ -1,13 +1,13 @@
 # Wall Protection
 
 on leftclick holding a heart of the sea:
-	name of player's tool contains "§3Wall Protection"
+	getItemName(player's tool) contains "§3Wall Protection"
 	cancel event
 	{Class::%player%} is "Defender"
-	if name of player's tool contains "§9[5*9]":
-		set name of player's tool to "§3Wall Protection §9[9*5]"
+	if getItemName(player's tool) contains "§9[5*9]":
+		setItemName(player's tool, "§3Wall Protection §9[9*5]")
 	else:
-		set name of player's tool to "§3Wall Protection §9[5*9]"
+		setItemName(player's tool, "§3Wall Protection §9[5*9]")
 
 function kitEffect_WallProtection(player: player):
 	if checkCT({_player}, "§3Wall Protection") is false:
@@ -17,7 +17,7 @@ function kitEffect_WallProtection(player: player):
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
 	setKitStats({_player}, "WPyaw", (yaw of {_player}))
 	shoot a snowball from {_player} at speed 1.5
-	if name of {_player}'s tool contains "§9[5*9]":
+	if getItemName({_player}'s tool) contains "§9[5*9]":
 		set {_size} to "5*9"
 	else:
 		set {_size} to "9*5"

@@ -13,7 +13,7 @@ on inventory click:
 		cancel event
 		if {_clickitem} is not set:
 			stop
-		set {_itemname} to name of {_clickitem}
+		set {_itemname} to getItemName({_clickitem})
 		if {_itemname} is " ":
 			stop
 		
@@ -40,7 +40,7 @@ on inventory click:
 	else if {_invname} is "§bKit: §6Genre-Stats":
 		cancel event
 		if type of event-item is tagged as tag "skript:genre-concretes":
-			set {_genre} to name of event-item
+			set {_genre} to getItemName(event-item)
 			replace "§6§l" with "" in {_genre}
 			close player's inventory
 			openKitStats(player, {_genre}, "Kill")
@@ -49,7 +49,7 @@ on inventory click:
 		cancel event
 		if {_clickitem} is not set:
 			stop
-		set {_itemname} to name of {_clickitem}
+		set {_itemname} to getItemName({_clickitem})
 		if {_itemname} is " ":
 			stop
 
@@ -231,7 +231,7 @@ local function openKitStats(player: player, genre: text, type: text = "Kill"):
 		set {_typeview} to "Usage" if {_type} is "Count"
 		set {_lore::8} to "§6§nクリックで§c§l%{_typeview}%§6§n上位10プレイヤーを確認できます"
 
-		set name of {_item.%loop-value%} to "§6§l%loop-value%"
+		setItemName({_item.%loop-value%}, "§6§l%loop-value%")
 		set lore of {_item.%loop-value%} to {_lore::*}
 		set slot {_slot} of {_player}'s current inventory to {_item.%loop-value%}
 		add 1 to {_slot}

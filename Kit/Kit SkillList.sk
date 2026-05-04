@@ -70,7 +70,8 @@ command /kitskilllist <text> <text>:
 			load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class.%arg 2%"
 			loop yaml node keys "skill" from "class.%arg 2%":
 				set {_skill} to yml value "%loop-node%" from "class.%arg 2%"
-				message "{@prefix} §7- §d%display name of {_skill}%" to player
+				set {_display} to getItemName({_skill})
+				message "{@prefix} §7- §d%{_display}%" to player
 				message "{@prefix}   §7- §5%lore of {_skill}%" to player
 				message "§7----------" to player
 			unload yml "class.%arg 2%"
@@ -105,7 +106,8 @@ command /kitweaponlist <text> <text>:
 			load yml "plugins/skript-yaml/Kit Classes/%arg 2%.yml" as "class.%arg 2%"
 			loop yaml node keys "weapon" from "class.%arg 2%":
 				set {_main} to yml value "%loop-node%" from "class.%arg 2%"
-				message "{@prefix} §7- §d%display name of {_main}%" to player
+				set {_display} to getItemName({_main})
+				message "{@prefix} §7- §d%{_display}%" to player
 				message "§7----------" to player
 			unload yml "class.%arg 2%"
 
@@ -717,21 +719,21 @@ on inventory click:
 	if name of event-inventory is "§bKit: §6Genre-Weapon":
 		cancel event
 		if type of event-item is tagged as tag "skript:genre-concretes":
-			set {_genre} to name of event-item
+			set {_genre} to getItemName(event-item)
 			replace "§6§l" with "" in {_genre}
 			close player's inventory
 			openKitCustom(player, "Weapon", {_genre})
 	else if name of event-inventory is "§bKit: §6Genre-Skill":
 		cancel event
 		if type of event-item is tagged as tag "skript:genre-concretes":
-			set {_genre} to name of event-item
+			set {_genre} to getItemName(event-item)
 			replace "§6§l" with "" in {_genre}
 			close player's inventory
 			openKitCustom(player, "Skill", {_genre})
 	else if name of event-inventory is "§bKit: §9Weapon Customize":
 		cancel event
 		if clicked slot is 0, 1, 2, 3, 4, 5, 6, 7 or 8:
-			set {_genre} to name of event-item
+			set {_genre} to getItemName(event-item)
 			if {_genre} is set:
 				replace "§6§l" with "" in {_genre}
 				close player's inventory
@@ -739,7 +741,7 @@ on inventory click:
 	else if name of event-inventory is "§bKit: §9Skill Customize":
 		cancel event
 		if clicked slot is 0, 1, 2, 3, 4, 5, 6, 7 or 8:
-			set {_genre} to name of event-item
+			set {_genre} to getItemName(event-item)
 			if {_genre} is set:
 				replace "§6§l" with "" in {_genre}
 				close player's inventory
@@ -747,7 +749,7 @@ on inventory click:
 #	else if inventory name of event-inventory is "§bKit: §9Weapon Customize":
 #		cancel event
 #		if clicked slot is 0, 2, 4, 6, 8, 10, 12, 14 or 16:
-#			set {_genre} to name of clicked item
+#			set {_genre} to getItemName(clicked item)
 #			if {_genre} is set:
 #				replace "§6§l" with "" in {_genre}
 #				close player's inventory
@@ -799,13 +801,13 @@ on inventory click:
 					stop
 
 				# Unitインベントリ
-				if name of {_skill} contains "Registered Unit":
+				if getItemName({_skill}) contains "Registered Unit":
 					execute console command "/kit-unitlist %{_kit}% %player%"
 				# 一部Kitのタイプ変更
-				else if name of {_skill} contains "Type Change":
+				else if getItemName({_skill}) contains "Type Change":
 					changeCustomKitType(player, {_kit})
 				# Skill保存
-				else if name of {_skill} contains "Save Skills":
+				else if getItemName({_skill}) contains "Save Skills":
 					saveCustomKitSkill(player, {_kit})
 				close player's inventory
 
@@ -873,7 +875,11 @@ function openKitCustom(player: player, type: text, genre: text, special: boolean
 		set {_use::skill-1} to kitPlayerSkillItem({_player}, loop-value, 1)
 		set {_use::skill-2} to kitPlayerSkillItem({_player}, loop-value, 2)
 		set {_use::skill-3} to kitPlayerSkillItem({_player}, loop-value, 3)
-		set slot {_slot} of {_player}'s current inventory to {_item.%loop-value%} named "§6§l%loop-value%" with lore " ", "§4Weapon: §r%display name of {_use::weapon}%", "§6Skill 1: §r%display name of {_use::skill-1}%", "§6Skill 2: §r%display name of {_use::skill-2}%" and "§6Skill 3: §r%display name of {_use::skill-3}%"
+		set {_display::weapon} to getItemName({_use::weapon})
+		set {_display::skill-1} to getItemName({_use::skill-1})
+		set {_display::skill-2} to getItemName({_use::skill-2})
+		set {_display::skill-3} to getItemName({_use::skill-3})
+		set slot {_slot} of {_player}'s current inventory to {_item.%loop-value%} named "§6§l%loop-value%" with lore " ", "§4Weapon: §r%{_display::weapon}%", "§6Skill 1: §r%{_display::skill-1}%", "§6Skill 2: §r%{_display::skill-2}%" and "§6Skill 3: §r%{_display::skill-3}%"
 		add 1 to {_slot}
 
 function openKitSkillCustom(player: player, kit: text):
@@ -1012,12 +1018,12 @@ command /kitskillusage <text>:
 			loop 3 times:
 				set {_slotnum} to yml value "custom.%arg 1%.skill.%loop-number%" from "skill.use.player"
 				set {_skill} to yml value "skill.%{_slotnum}%" from "skill.use.item"
-				set {_name} to display name of {_skill}
+				set {_name} to  getItemName({_skill})
 				add 1 to {_U-%{_name}%}
 		unload yml "skill.use.player"
 		unload yml "skill.use.item"
 		loop {_skills::*}:
-			set {_name} to display name of {_skills::%loop-index%}
+			set {_name} to getItemName({_skills::%loop-index%})
 			if {_U-%{_name}%} is not set:
 				set {_U-%{_name}%} to 0
 			set {_per} to ({_U-%{_name}%} / {_sum}) * 100
@@ -1038,12 +1044,12 @@ command /kitweaponusage <text>:
 			add 1 to {_sum}
 			set {_slotnum} to yml value "custom.%arg 1%.weapon" from "weapon.use.player"
 			set {_weapon} to yml value "weapon.%{_slotnum}%" from "weapon.use.item"
-			set {_name} to display name of {_weapon}
+			set {_name} to getItemName({_weapon})
 			add 1 to {_U-%{_name}%}
 		unload yml "weapon.use.player"
 		unload yml "weapon.use.item"
 		loop {_weapons::*}:
-			set {_name} to display name of {_weapons::%loop-index%}
+			set {_name} to getItemName({_weapons::%loop-index%})
 			if {_U-%{_name}%} is not set:
 				set {_U-%{_name}%} to 0
 			set {_per} to ({_U-%{_name}%} / {_sum}) * 100

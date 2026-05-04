@@ -56,7 +56,7 @@ on inventory click:
 	set {_bool} to true
 	if {_item} is enchanted:
 		set {_bool} to false
-	set {_name} to name of {_item}
+	set {_name} to getItemName({_item})
 	if {_item} is not set:
 		stop
 	replace "§6§l" with "" in {_name}
@@ -71,7 +71,7 @@ on inventory click:
 		message formatted "{@prefix} §6§l%{_name}% §eに投票しました" to player
 		set {_lores::4} to "§a§l§n投票済"
 		set {_item} to new ItemStack(Material.LIME_CONCRETE)
-		set name of {_item} to "§6§l%{_name}%"
+		setItemName({_item}, "§6§l%{_name}%")
 		set lore of {_item} to {_lores::*}
 
 		set {_ItemMeta} to {_item}.getItemMeta()
@@ -114,7 +114,7 @@ function kitOpenVoting(player: player):
 		if {_bool} is true:
 			set {_lores::4} to "§a§l§n投票済"
 			set {_slotitem} to new ItemStack(Material.LIME_CONCRETE)
-			set name of {_slotitem} to "§6§l%{_name}%"
+			setItemName({_slotitem}, "§6§l%{_name}%")
 			set lore of {_slotitem} to {_lores::*}
 
 			set {_ItemMeta} to {_slotitem}.getItemMeta()
