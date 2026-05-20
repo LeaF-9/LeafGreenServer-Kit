@@ -16,10 +16,10 @@ function createKitData(entity: entity, uuid: text = "original"):
 	set {_trueteam} to {TrueTeam::%{_teamOwner}%}
 	set {_type} to {_entityType}.name()
 
-	setPersistentData({_entity}, "kit-uuid", {_uuid})
-	setPersistentData({_entity}, "kit-team", {_team})
-	setPersistentData({_entity}, "kit-trueteam", {_trueteam})
-	setPersistentData({_entity}, "kit-entitytype", {_type})
+	setPersistentData({_entity}, "kit-uuid", {_uuid}, "string")
+	setPersistentData({_entity}, "kit-team", {_team}, "string")
+	setPersistentData({_entity}, "kit-trueteam", {_trueteam}, "string")
+	setPersistentData({_entity}, "kit-entitytype", {_type}, "string")
 
 	set {-kitEntities} to createNewArrayList() if {-kitEntities} is not set
 	{-kitEntities}.add({_entity}) if {-kitEntities}.contains({_entity}) is false 
@@ -33,21 +33,21 @@ function clearKitData(entity: entity):
 	{-kitEntities}.remove({_entity})
 
 function isKitEntity(entity: entity) :: boolean:
-	return true if getPersistentData({_entity}, "kit-uuid") is set
+	return true if getPersistentData({_entity}, "kit-uuid", "string") is set
 	return false
 
 function getKitUUID(entity: entity) :: text:
-	return getPersistentData({_entity}, "kit-uuid")
+	return getPersistentData({_entity}, "kit-uuid", "string")
 
 function getKitTeam(entity: entity, all: boolean = false) :: text:
-	return getPersistentData({_entity}, "kit-team") if {_all} is false
-	return getPersistentData({_entity}, "kit-trueteam")
+	return getPersistentData({_entity}, "kit-team", "string") if {_all} is false
+	return getPersistentData({_entity}, "kit-trueteam", "string")
 
 function getKitEntityType(entity: entity) :: text:
-	return getPersistentData({_entity}, "kit-entitytype")
+	return getPersistentData({_entity}, "kit-entitytype", "string")
 
 function setKitUUID(entity: entity, uuid: text):
-	setPersistentData({_entity}, "kit-uuid", {_uuid})
+	setPersistentData({_entity}, "kit-uuid", {_uuid}, "string")
 
 function getKitEntities() :: entities:
 	loop ...{-kitEntities}:
