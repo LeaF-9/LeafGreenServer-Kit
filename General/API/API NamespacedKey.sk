@@ -10,6 +10,18 @@ import:
 
 	com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 
+on load:
+	set {-typeList.NK} to new ArrayList()
+	{-typeList.NK}.add("string")
+	{-typeList.NK}.add("boolean")
+	{-typeList.NK}.add("integer")
+	{-typeList.NK}.add("long")
+	{-typeList.NK}.add("double")
+	{-typeList.NK}.add("float")
+	{-typeList.NK}.add("long")
+	{-typeList.NK}.add("short")
+	{-typeList.NK}.add("byte")
+
 # ItemのPDCを操作する関数郡
 function getNamespacedKey(item: item, key: text, type: text) :: object:
 	replace " " with "_" in {_key}
@@ -116,18 +128,7 @@ local function getTypeString(value: object) :: text:
 local function searchType(holder: object, key: object) :: object:
 	set {_PDC} to {_holder}.getPersistentDataContainer()
 
-	set {_typeList} to new ArrayList()
-	{_typeList}.add("string")
-	{_typeList}.add("boolean")
-	{_typeList}.add("integer")
-	{_typeList}.add("long")
-	{_typeList}.add("double")
-	{_typeList}.add("float")
-	{_typeList}.add("long")
-	{_typeList}.add("short")
-	{_typeList}.add("byte")
-
-	loop ...{_typeList}:
+	loop ...{-typeList.NK}:
 		set {_currentType} to loop-value
 		set {_PDT} to getType({_currentType})
 		set {_bool} to {_PDC}.has({_key}, {_PDT})
