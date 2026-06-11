@@ -1,0 +1,55 @@
+import:
+	org.bukkit.Difficulty
+	org.bukkit.GameRules
+
+# 現在設定中のStageのゲームルールを変更する関数
+# ゲーム開始前に実行 (実行部分はKit JLの/kit-stagesetting内)
+function kitSettingGamerules():
+	# Stageが設定されていない場合は実行しない
+	if {Kit-GameStage::name} is not set:
+		staffMsg("§4§l!!! §6§lStage§cが設定されていない為,実行がキャンセルされました §4§l!!!")
+		staffMsg("§4§l!!! §c実行キャンセルFunc§d: §b§lkitSettingGamerules() §4§l!!!")
+		stop
+	
+	# ワールドの取得
+	set {_loc} to {Kit-GameStage::spec}
+	set {_loc} to {Kit-GameStageRespawns.red::1} if {_loc} is not set
+	if {_loc} is not set:  # Locationが存在しない場合
+		staffMsg("§4§l!!! §6§lLocation§cが存在しない為,実行がキャンセルされました §4§l!!!")
+		staffMsg("§4§l!!! §eStageの§lymlファイル§cを確認してください §4§l!!!")
+		staffMsg("§4§l!!! §c実行キャンセルFunc§d: §b§lkitSettingGamerules() §4§l!!!")
+		stop
+	set {_world} to world of {_loc}
+
+	# 基本ゲームルールの設定 (難易度設定含む)
+	{_world}.setDifficulty(Difficulty.NORMAL)
+
+	{_world}.setGameRule(GameRules.ALLOW_ENTERING_NETHER_USING_PORTALS, false)
+	{_world}.setGameRule(GameRules.BLOCK_DROPS, false)
+	{_world}.setGameRule(GameRules.COMMAND_BLOCKS_WORK, true)
+	{_world}.setGameRule(GameRules.ELYTRA_MOVEMENT_CHECK, false)
+	{_world}.setGameRule(GameRules.ENDER_PEARLS_VANISH_ON_DEATH, true)
+	{_world}.setGameRule(GameRules.ENTITY_DROPS, false)
+	{_world}.setGameRule(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, 0)
+	{_world}.setGameRule(GameRules.GLOBAL_SOUND_EVENTS, false)
+	{_world}.setGameRule(GameRules.IMMEDIATE_RESPAWN, true)
+	{_world}.setGameRule(GameRules.LOCATOR_BAR, false)
+	{_world}.setGameRule(GameRules.MOB_GRIEFING, false)
+	{_world}.setGameRule(GameRules.NATURAL_HEALTH_REGENERATION, false)
+	{_world}.setGameRule(GameRules.PLAYER_MOVEMENT_CHECK, false)
+	{_world}.setGameRule(GameRules.PLAYERS_SLEEPING_PERCENTAGE, 200)
+	{_world}.setGameRule(GameRules.PROJECTILES_CAN_BREAK_BLOCKS, false)
+	{_world}.setGameRule(GameRules.PVP, true)
+	{_world}.setGameRule(GameRules.RAIDS, false)
+	{_world}.setGameRule(GameRules.RANDOM_TICK_SPEED, 0)
+	{_world}.setGameRule(GameRules.SHOW_ADVANCEMENT_MESSAGES, false)
+	{_world}.setGameRule(GameRules.SPAWN_MOBS, false)
+	{_world}.setGameRule(GameRules.SPREAD_VINES, false)
+
+	for index {_rule}, value {_value} in {Kit-GameStageGamerules::*}:
+		set {_rule} to {_rule} in upper case
+		set {_Namespacedkey} to NamespacedKey.minecraft({_rule})
+		set {_gameruleIndex} to Registry.GAME_RULE.get({_Namespacedkey})
+		continue if {_gameruleIndex} is not set
+
+		{_world}.setGameRule({_gameruleIndex}, {_value})

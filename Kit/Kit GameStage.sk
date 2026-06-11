@@ -16,6 +16,9 @@ function kitReadYML(map: text):
 		loop yaml node keys "respawns.green" from "KitRead.%{_map}%":
 			set {Kit-GameStageRespawns.green::%loop-key%} to invertLocation("%loop-node%", "KitRead.%{_map}%")
 
+	loop yaml node keys "custom-gamerules" from "KitRead.%{_map}%":
+		set {Kit-GameStageGamerules::%loop-key%} to yml value "%loop-node%" from "KitRead.%{_map}%"
+
 	if yml value "rule" from "KitRead.%{_map}%" is "TDM":
 		set {Kit-GameStage::goal} to yml value "tdm-rule.goal" from "KitRead.%{_map}%"
 
