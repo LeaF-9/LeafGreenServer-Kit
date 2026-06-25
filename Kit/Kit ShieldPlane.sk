@@ -1,0 +1,97 @@
+import:
+	java.lang.Math
+	java.lang.Double
+	java.util.UUID
+
+	org.bukkit.Location
+	org.bukkit.entity.Entity
+	org.bukkit.util.Vector
+
+preimport:
+	com.leafgreen.kit.ShieldPlane
+
+public class ShieldPlane:
+
+	private UUID uuid
+	private UUID owner
+	private Location center
+	private Vector normal
+	private Vector up
+	private double width
+	private double height
+
+	public ShieldPlane(Player player, Location center, double width, double height):
+		super[]()
+
+		this.uuid = UUID.randomUUID()
+		this.owner = {_player}.getUniqueId()
+		this.center = {_center}
+		this.width = {_width}
+		this.height = {_height}
+
+		set {_yaw} to {_center}.getYaw()
+		set {_pitch} to {_center}.getPitch()
+
+		set {_yawRad} to Math.toRadians({_yaw})
+		set {_pitchRad} to Math.toRadians({_pitch})
+
+		set {_n.x} to (Math.sin({_yawRad})) * (-1) * (Math.cos({_pitchRad}))
+		set {_n.y} to Math.sin({_pitchRad})
+		set {_n.z} to (Math.cos({_yawRad})) * (Math.cos({_pitchRad}))
+		set {_normal} to vector({_n.x}, {_n.y}, {_n.z})
+		set {_normal} to normalized {_normal}
+		this.normal = {_normal}
+
+		set {_u.x} to (Math.sin({_yawRad})) * (-1) * (Math.sin({_pitchRad}))
+		set {_u.y} to Math.cos({_pitchRad})
+		set {_u.z} to (Math.cos({_yawRad})) * (Math.sin({_pitchRad}))
+		set {_up} to vector({_u.x}, {_u.y}, {_u.z})
+		set {_up} to normalized {_up}
+		this.up = {_up}
+	
+	public UUID getUUID():
+		return this.uuid
+	
+	public Location getCenter():
+		return this.center
+
+	public UUID getOwner():
+		return this.owner
+
+function createShieldPlane(player: player, center: location, width: number, height: number) :: object:
+	set {_shieldPlane} to new ShieldPlane({_player}, {_center}, {_width}, {_height})
+
+	set {-shieldPlaneList} to createNewArrayList() if {-shieldPlaneList} is not set
+	{-shieldPlaneList}.add({_shieldPlane})
+	return {_shieldPlane}
+
+
+# Intersectからまだ
+
+# shieldダメージイベント
+
+
+function spawnShieldEntity(player: player, loc: location) :: entity:
+	set {_world} to world of {_loc}
+	set {_mobtype} to EntityType.valueOf("SLIME")
+
+	set {_mob} to {_world}.spawnEntity({_loc}, {_mobtype})
+
+	set display name of {_mob} to "%{_player}%"
+	setGameType({_mob})
+	set {_summonerUUID} to {_player}.getUniqueId().toString()
+	setPersistentData({_mob}, "summon-player", {_summonerUUID})
+	setPersistentData({_mob}, "shield-entity", true)
+
+	{_mob}.setCustomNameVisible(false)
+	{_mob}.setGravity(false)
+	{_mob}.setSize(1)
+	{_mob}.setPersistent(true)
+	{_mob}.setAI(false)
+	{_mob}.setSilent(true)
+	{_mob}.setInvisible(true)
+
+	set {_scoreboard} to Bukkit.getScoreboardManager().getMainScoreboard()
+	set {_team} to {_scoreboard}.getTeam("noCollision")
+	{_team}.addEntity({_mob})
+	return {_mob}
