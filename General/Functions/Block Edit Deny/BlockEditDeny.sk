@@ -1,15 +1,23 @@
+function isBlockEditable(p: player) :: boolean:
+	set {_bool} to {-BlockEnable::%{_p}%}
+	return false if {_bool} is not set
+	return {_bool}
+
+function setBlockEditable(p: player, b: boolean = false):
+	set {-BlockEnable::%{_p}%} to {_b}
+
 on join:
-	set {-BlockEnable::%player%} to false
+	setBlockEditable(player, false)
 
 on break:
-	if {-BlockEnable::%player%} is true:
+	if isBlockEditable(player) is true:
 		stop
 	if event-block is fire:
 		stop
 	cancel event
 
 on place:
-	if {-BlockEnable::%player%} is true:
+	if isBlockEditable(player) is true:
 		stop
 	if player's tool is flint and steel:
 		stop
@@ -21,7 +29,7 @@ import:
 	org.bukkit.event.Event$Result
 
 on rightclick:
-	if {-BlockEnable::%player%} is true:
+	if isBlockEditable(player) is true:
 		stop
 
 	if "%world of player%" is "Kit-SkillCheck":
@@ -90,41 +98,41 @@ on rightclick:
 	cancel event
 
 on bed enter:
-	if {-BlockEnable::%player%} is true:
+	if isBlockEditable(player) is true:
 		stop
 	cancel event
 
 on drop:
-	if {-BlockEnable::%player%} is true:
+	if isBlockEditable(player) is true:
 		stop
 	cancel event
 
 on craft:
-	if {-BlockEnable::%player%} is true:
+	if isBlockEditable(player) is true:
 		stop
 	cancel event
 
 on damage of armor stand:
-	if {-BlockEnable::%attacker%} is true:
+	if isBlockEditable(attacker) is true:
 		stop
 	cancel event
 
 on rightclick on armor stand:
-	if {-BlockEnable::%player%} is true:
+	if isBlockEditable(player) is true:
 		stop
 	cancel event
 
 on damage of item frame:
-	if {-BlockEnable::%attacker%} is true:
+	if isBlockEditable(attacker) is true:
 		stop
 	cancel event
 
 on rightclick on item frame:
-	if {-BlockEnable::%player%} is true:
+	if isBlockEditable(player) is true:
 		stop
 	cancel event
 
 on damage of painting:
-	if {-BlockEnable::%attacker%} is true:
+	if isBlockEditable(attacker) is true:
 		stop
 	cancel event
