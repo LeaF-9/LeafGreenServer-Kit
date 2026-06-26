@@ -284,6 +284,11 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 	set {_Namespacedkey} to new NamespacedKey("leafgreen", {_key})
 	{_ItemMeta}.getPersistentDataContainer().set({_Namespacedkey}, PersistentDataType.STRING, {_value})
 
+	# cooldown group
+	set {_cdCom} to {_ItemMeta}.getUseCooldown()
+	{_cdCom}.setCooldownGroup({_value})
+	{_ItemMeta}.setUseCooldown({_cdCom})
+
 	# functions
 	set {_functions.yml::*} to yml list "functions" from "build.%{_name}%"
 	loop {_functions.yml::*}:
@@ -478,23 +483,25 @@ local function getSkillItemType(kit: text, num: number, skilltype: text) :: obje
 	if {_skilltype} is not "normal":
 		return Material.valueOf({_skilltype})
 
-	if {_kit} is "Thief":
-		return Material.ANGLER_POTTERY_SHERD if {_num} is 1
-		return Material.ARCHER_POTTERY_SHERD if {_num} is 2
-		return Material.BLADE_POTTERY_SHERD if {_num} is 3
-		return Material.BREWER_POTTERY_SHERD if {_num} is 4
-		return Material.BURN_POTTERY_SHERD if {_num} is 5
-		return Material.DANGER_POTTERY_SHERD if {_num} is 6
-		return Material.EXPLORER_POTTERY_SHERD if {_num} is 7
-		return Material.FLOW_POTTERY_SHERD if {_num} is 8
-	return Material.FLOWER_BANNER_PATTERN if {_num} is 1
-	return Material.CREEPER_BANNER_PATTERN if {_num} is 2
-	return Material.SKULL_BANNER_PATTERN if {_num} is 3
-	return Material.MOJANG_BANNER_PATTERN if {_num} is 4
-	return Material.GLOBE_BANNER_PATTERN if {_num} is 5
-	return Material.PIGLIN_BANNER_PATTERN if {_num} is 6
-	return Material.FLOW_BANNER_PATTERN if {_num} is 7
-	return Material.GUSTER_BANNER_PATTERN if {_num} is 8
+	return Material.FLOWER_BANNER_PATTERN
+
+	# if {_kit} is "Thief":
+	# 	return Material.ANGLER_POTTERY_SHERD if {_num} is 1
+	# 	return Material.ARCHER_POTTERY_SHERD if {_num} is 2
+	# 	return Material.BLADE_POTTERY_SHERD if {_num} is 3
+	# 	return Material.BREWER_POTTERY_SHERD if {_num} is 4
+	# 	return Material.BURN_POTTERY_SHERD if {_num} is 5
+	# 	return Material.DANGER_POTTERY_SHERD if {_num} is 6
+	# 	return Material.EXPLORER_POTTERY_SHERD if {_num} is 7
+	# 	return Material.FLOW_POTTERY_SHERD if {_num} is 8
+	# return Material.FLOWER_BANNER_PATTERN if {_num} is 1
+	# return Material.CREEPER_BANNER_PATTERN if {_num} is 2
+	# return Material.SKULL_BANNER_PATTERN if {_num} is 3
+	# return Material.MOJANG_BANNER_PATTERN if {_num} is 4
+	# return Material.GLOBE_BANNER_PATTERN if {_num} is 5
+	# return Material.PIGLIN_BANNER_PATTERN if {_num} is 6
+	# return Material.FLOW_BANNER_PATTERN if {_num} is 7
+	# return Material.GUSTER_BANNER_PATTERN if {_num} is 8
 
 local function getWeaponItemType(type: text, weapontype: text) :: object:
 	return Material.STICK if {_weapontype} is "melee"
