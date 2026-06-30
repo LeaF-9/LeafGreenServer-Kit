@@ -99,45 +99,9 @@ on respawn:
 			applyEffect({_player}, blindness, 1, -1, true, "none")
 			applyEffect({_player}, slowness, 10, -1, true, "none")
 			applyEffect({_player}, resistance, 10, -1, true, "none")
-			set {Kit-RespawnKill::%player%} to true
-			set {Kit-RespawnPoint::%player%} to {_tp}
-			loop 10 times:
-				wait a second
-				if {Kit-RespawnKill::%player%} is true:
-					set {_dis} to distance between player and {_tp}
-					if {_dis} >= 10:
-						delete {Kit-RespawnKill::%player%}
-					else:
-						heal player by 10 hearts
-			delete {Kit-RespawnKill::%player%}
-			delete {Kit-RespawnPoint::%player%}
-			send action bar "§dリスポーンキル防止の無敵化が解除されました!" to player
+			enableRespawnBarrier(player, {_tp})
 		else:  # 途中で復活させた際の処理
 			log "まだ処理を作ってないよ"
-
-on damage of player:
-	{Kit-tochu} is true
-	{Join::%victim%} is "Kit"
-	{Join::%attacker%} is "Kit"
-	if {Class::%victim%} is not set:
-		cancel event
-		send action bar "§4§lリスポーン直後の敵は攻撃できません!" to attacker
-		stop
-	if {Class::%attacker%} is not set:
-		cancel event
-		send action bar "§4§lクラスを選択してください!" to attacker
-		stop
-	if {Kit-RespawnKill::%victim%} is true:
-		cancel event
-		send action bar "§4§lリスポーン直後の敵は攻撃できません!" to attacker
-	if {Kit-RespawnKill::%attacker%} is true:
-		if distance between attacker and {Kit-RespawnPoint::%attacker%} <= 5:
-			set damage to damage * 2
-		else:
-			set damage to damage * 1.5
-		delete {Kit-RespawnKill::%attacker%}
-		delete {Kit-RespawnPoint::%attacker%}
-		send action bar "§dリスポーンキル防止の無敵化が解除されました!" to attacker
 
 import:
 	org.bukkit.inventory.ItemStack

@@ -1,0 +1,81 @@
+function enableRespawnBarrier(player: player, respawnloc: location):
+	set {-respawnBarrier::%{_player}%} to true
+	# Display召喚処理
+	set {_loc} to location of {_player}
+	set {_barrierDisplay} to spawnEntity(item display, {_loc})
+
+	setBrightness({_barrierDisplay})
+	{_barrierDisplay}.setTeleportDuration(1)
+	{_barrierDisplay}.setInterpolationDuration(1)
+	{_barrierDisplay}.setViewRange(1000)
+
+	set {_item} to barrier
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 1, 0)
+	set {_scale} to getVector3f(1.25, 1.25, 1)
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+
+	setDisplayItem({_barrierDisplay}, {_item})
+	{_barrierDisplay}.setTransformation({_transformation})
+
+	set {_tick} to 200
+	while {_tick} > 0:
+		if {-respawnBarrier::%{_player}%} is not set:
+			set {_tick} to 0
+			continue
+
+		set {_dis} to distance between {_player} and {_respawnloc}
+		if {_dis} >= 10:
+			delete {-respawnBarrier::%{_player}%}
+			set {_tick} to 0
+			continue
+
+		set {_playerLocation} to location of {_player}
+		teleport {_barrierDisplay} to {_playerLocation}
+		heal {_player} by 10 hearts
+		if {Class::%{_player}%} is set:
+			subtract 1 from {_tick}
+		wait a tick
+
+	{_barrierDisplay}.remove()
+	delete {-respawnBarrier::%{_player}%}
+	set {_sentence} to "<##23cfd8>リスポーンバリア解除"
+	sendSubtitle({_player}, {_sentence}, 1 second, 0 tick, 1 second)
+
+function disableRespawnBarrier(player: player):
+	delete {-respawnBarrier::%{_player}%}
+
+function hasRespawnBarrier(player: player) :: boolean:
+	return true if {-respawnBarrier::%{_player}%} is set
+	return false
+
+on damage of player:
+	{Kit-tochu} is true
+	{Join::%victim%} is "Kit"
+	{Join::%attacker%} is "Kit"
+	if {Class::%victim%} is not set:
+		cancel event
+		playSound("block.note_block.banjo", 1, 0.5, attacker, true)
+		set {_sentence} to "§c§lKit未選択の敵§4§lは攻撃できません"
+		sendSubtitle(attacker, {_sentence}, 1 second, 0 tick, 1 second)
+		stop
+	if {Class::%attacker%} is not set:
+		cancel event
+		playSound("block.note_block.banjo", 1, 0.5, attacker, true)
+		set {_sentence} to "§c§lKitを選択してください"
+		sendSubtitle(attacker, {_sentence}, 1 second, 0 tick, 1 second)
+		stop
+	if hasRespawnBarrier(victim) is true:
+		cancel event
+		playSound("block.note_block.banjo", 1, 0.5, attacker, true)
+		set {_sentence} to "§c§lリスポーン直後の敵§4§lは攻撃できません"
+		sendSubtitle(attacker, {_sentence}, 1 second, 0 tick, 1 second)
+
+	if hasRespawnBarrier(attacker) is true:
+		# ダメージ倍率変えてるっぽいけど要らなそうなので無効化
+		#
+		# if distance between attacker and {Kit-RespawnPoint::%attacker%} <= 5:
+		# 	set damage to damage * 2
+		# else:
+		# 	set damage to damage * 1.5
+		disableRespawnBarrier(attacker)
