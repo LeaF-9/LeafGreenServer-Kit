@@ -7,7 +7,7 @@ options:
 	soul-radius: 30
 	soul-tick: 200
 	soul-damage: 2
-	soul-ignite: 3 seconds
+	soul-ignite: 60
 	soul-time: 100
 	soul-speed: 0.2
 
@@ -32,9 +32,8 @@ function kitEffect_WitcheryIgnis(player: player):
 	loop all entities in radius {@ignite-radius} around {_baseloc}:
 		kitCheckTeam(loop-entity, {_player}, false) is true
 		kitDamage({_player}, loop-entity, {@ignite-damage}, "炎呪")
-		ignite loop-entity for convertTickTime({@ignite-tick})
+		setFireTick(loop-entity, {@ignite-tick})
 		kitParticle_WitcheryIgnis_Ignite(loop-entity)
-		set {_igniteSeconds} to {@ignite-tick} / 20
 		kitEffectDescription(loop-entity, "§4§l炎上")
 	
 	# soul fire
@@ -105,7 +104,7 @@ local function kitEffect_WitcheryIgnis_Hit(player: player, target: entity):
 		message formatted "§3§l炎呪§cにより§4§l火炎ダメージ§cが§6§l倍増§cする..." to {_target}
 
 	kitDamage({_player}, {_target}, {@soul-damage}, "炎呪の人魂")
-	ignite {_target} for {@soul-ignite}
+	setFireTick({_target}, {@soul-ignite})
 	
 	set {_now} to now
 	set metadata value "witchery ignis" of {_target} to {_now}

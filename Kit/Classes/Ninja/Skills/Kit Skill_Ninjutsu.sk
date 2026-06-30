@@ -349,7 +349,7 @@ function kitNinjutsu_MIZU(player: player, l: location):
 			add loop-entity to {_joins::*}
 			if {_joined::*} does not contain loop-entity:
 				add loop-entity to {_joined::*}
-			extinguish loop-entity
+			extinguishFireTick(loop-entity)
 			if hasPotionEffect(loop-entity, regeneration) is false:
 				applyEffect(loop-entity, regeneration, 2, 100)
 				kitEffectDescription(loop-entity, "§d§l再生能力")
@@ -401,9 +401,9 @@ function kitNinjutsu_HONO(player: player, loc: location):
 	loop 100 times:
 		loop all entities in radius 5 around {_loc}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
-			if loop-entity is not ignited:
+			if getFireTick(loop-entity) is 0:
 				playSound("block.campfire.crackle", 1, 1, loop-entity)
-				ignite loop-entity for 5 seconds
+				setFireTick(loop-entity, 100)
 				kitEffectDescription(loop-entity, "§4§l着火")
 				sendTimeBossbar_RED(loop-entity, "Ninjutsu - 火 -", 100)
 			kitParticle_Ninjutsu_HONO_2(location of loop-entity)
@@ -414,7 +414,7 @@ function kitNinjutsu_HONO(player: player, loc: location):
 		if block at loop-value is not air:
 			set block at loop-value to air
 		remove loop-value from {Block.%{_player}%::*}
-	extinguish {_player}
+	extinguishFireTick({_player})
 
 function kitParticle_Ninjutsu_HONO_1(baseloc: location):
 	set pitch of {_baseloc} to 0
