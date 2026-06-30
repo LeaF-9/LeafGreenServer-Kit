@@ -99,7 +99,7 @@ import:
 local function kitEffect_WebCatcher_Destroy(player: player, displays: entities):
 	loop all players:
 		kitCheckTeam({_player}, loop-player, false, true) is true
-		continue if {Kit-RespawnKill::%loop-player%} is true
+		continue if hasRespawnBarrier(loop-player) is true
 		add loop-player to {_targets::*}
 		
 	loop {_targets::*}:
@@ -120,7 +120,7 @@ local function kitEffect_WebCatcher_Fake(player: player, locs: locations):
 		delete {_enemies::*}
 		loop all players:
 			kitCheckTeam({_player}, loop-player, false, true) is true
-			continue if {Kit-RespawnKill::%loop-player%} is true
+			continue if hasRespawnBarrier(loop-player) is true
 			add loop-player to {_enemies::*}
 
 		loop {_locs::*}:
