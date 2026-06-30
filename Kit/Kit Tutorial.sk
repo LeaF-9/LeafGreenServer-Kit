@@ -23,6 +23,7 @@ function kitTutorial():
 		message formatted "§bMap Tutorialを開始します..." to loop-player
 		add loop-player to {_players::*}
 	wait 2 seconds
+
 # Team Death Match
 	if {Kit-GameStage::rule} is "TDM":
 #	(1) ルール説明
@@ -60,12 +61,7 @@ function kitTutorial():
 		wait {@time}
 		loop {_deleteEntities::*}:
 			loop-value.remove()
-#	(3) ゲームスタート
-		set {_players::*} to kitTutorialPlayers()
-		message formatted "§2------------------------------" to {_players::*}
-		message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
-		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
-		message formatted "§2------------------------------" to {_players::*}
+
 # Destroy The Core
 	else if {Kit-GameStage::rule} is "DTC":
 #	(1) ルール説明
@@ -132,12 +128,6 @@ function kitTutorial():
 		wait {@time}
 		loop {_deleteEntities::*}:
 			loop-value.remove()
-#	(4) ゲームスタート
-		set {_players::*} to kitTutorialPlayers()
-		message formatted "§2------------------------------" to {_players::*}
-		message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
-		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
-		message formatted "§2------------------------------" to {_players::*}
 # Earn many Jewels
 	else if {Kit-GameStage::rule} is "CTF":
 #	(1) ルール説明
@@ -208,12 +198,6 @@ function kitTutorial():
 		wait {@time}
 		loop {_deleteEntities::*}:
 			loop-value.remove()
-#	(4) ゲームスタート
-		set {_players::*} to kitTutorialPlayers()
-		message formatted "§2------------------------------" to {_players::*}
-		message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
-		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
-		message formatted "§2------------------------------" to {_players::*}
 # Sheep Hunt
 	else if {Kit-GameStage::rule} is "SH":
 #	(1) ルール説明
@@ -313,12 +297,6 @@ function kitTutorial():
 		wait {@time}
 		loop {_deleteEntities::*}:
 			loop-value.remove()
-#	(5) ゲームスタート
-		set {_players::*} to kitTutorialPlayers()
-		message formatted "§2------------------------------" to {_players::*}
-		message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
-		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
-		message formatted "§2------------------------------" to {_players::*}
 # Control Point
 	else if {Kit-GameStage::rule} is "CP":
 #	(1) ルール説明
@@ -387,12 +365,41 @@ function kitTutorial():
 		wait {@time}
 		loop {_deleteEntities::*}:
 			loop-value.remove()
-#	(4) ゲームスタート
-		set {_players::*} to kitTutorialPlayers()
-		message formatted "§2------------------------------" to {_players::*}
-		message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
-		message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
-		message formatted "§2------------------------------" to {_players::*}
+
+	# ステージ固有Tutorial
+	if {Kit-GameStage::tutorial} is set:
+		set {_tn} to 0
+		loop {Kit-GameStage::tutorial} times:
+			add 1 to {_tn}
+
+			set {_players::*} to kitTutorialPlayers()
+			set {_title} to {Kit-GameStageTutorials.title::%{_tn}%}
+			set {_subtitle} to {Kit-GameStageTutorials.subtitle::%{_tn}%}
+
+			delete {_lores::*}
+			set {_ln} to 0
+			loop {Kit-GameStageTutorials.loresize::%{_tn}%} times:
+				add 1 to {_ln}
+				set {_lore} to {Kit-GameStageTutorials.lore-%{_ln}%::%{_tn}%}
+				set {_lore} to "§a%{_lore}%"
+				add {_lore} to {_lores::*}
+
+			send title {_title} with subtitle {_subtitle} to {_players::*}
+			for {_lorevalue} in {_lores::*}:
+				message formatted {_lorevalue} to {_players::*}
+			
+			if {Kit-GameStageTutorials.teleport::%{_tn}%} is set:
+				set {_tploc} to {Kit-GameStageTutorials.teleport::%{_tn}%}
+				teleport {_players::*} to {_tploc}
+			
+			wait {@time}
+
+	# ゲームスタート通知
+	set {_players::*} to kitTutorialPlayers()
+	message formatted "§2------------------------------" to {_players::*}
+	message formatted "§6これにてチュートリアルは終了です!" to {_players::*}
+	message formatted "§c試合が始まります! §d§l§oGLHF!" to {_players::*}
+	message formatted "§2------------------------------" to {_players::*}
 	kitTimer_Start()
 
 function kitTutorialPlayers() :: players:
