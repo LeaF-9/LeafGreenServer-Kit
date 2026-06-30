@@ -57,6 +57,18 @@ public class ShieldPlane:
 
 	public UUID getOwner():
 		return this.owner
+	
+	public Vector getNormal():
+		return this.normal
+	
+	public Vector getUp():
+		return this.up
+
+	public double getWidth():
+		return this.width
+	
+	public double getHeight():
+		return this.height
 
 function createShieldPlane(player: player, center: location, width: number, height: number) :: object:
 	set {_shieldPlane} to new ShieldPlane({_player}, {_center}, {_width}, {_height})
@@ -65,6 +77,52 @@ function createShieldPlane(player: player, center: location, width: number, heig
 	{-shieldPlaneList}.add({_shieldPlane})
 	return {_shieldPlane}
 
+# from → to の線分が盾平面を貫通するか判定する
+local function intersects(plane: object, from: location, to: location) :: boolean:
+	return false if {_plane} is instance of ShieldPlane
+
+	set {_fromV} to {_from}.toVector()
+	set {_toV} to {_to}.toVector()
+
+	# 線分の方向ベクトル
+	set {_vector} to setVector({_from}, {_to}, 0)
+
+	# 法線と方向の内積 (平行チェック)
+	set {_normal} to {_plane}.getNormal()
+	set {_denom} to {_normal}.dot({_vector})
+
+	# 内積がほぼ0 = 線分が平面に平行 → 交差しない
+	return false if abs({_denom}) < 0.000001
+
+	# 平面上の好転パラメータ t を求める
+	# 平面の方程式: normal * (P - center) = 0
+	set {_center} to {_plane}.getCenter().toVector()
+	set {_t} to {_normal}.dot({_center} - {_fromV}) / {_denom}
+
+	# t が0-1の範囲外 = 線分が平面に届かない or 逆方向
+	if all:
+		{_t} < 0
+		{_t} > 1
+	then:
+		return false
+	
+	# 交点座標
+	set {_addV} to {_vector} * vector({_t}, {_t}, {_t})
+	set {_hit} to {_fromV} + {_addV}
+
+	# 交点が盾の矩形内か判定 ↓
+	set {_local} to {_hit} - {_center}
+
+	# 右方向ベクトル = 法線 * 上方向 の外積
+	set {_up} to {_plane}.getUp()
+	set {_right} to {_normal}.getCrossProduct({_up}).normalize()
+
+	# ローカル座標系への射影
+	set {_u} to {_local}.dot({_right})
+	set {_v} to {_local}.dot({_up})
+
+	set {_width} to {_plane}.getWidth()
+	if all:
 
 # Intersectからまだ
 
