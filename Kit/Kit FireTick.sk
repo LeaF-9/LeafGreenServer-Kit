@@ -1,0 +1,45 @@
+import:
+	java.lang.Integer
+
+	org.bukkit.entity.EntityType
+
+function setFireTick(entity: entity, tick: number):
+	if isPlayer({_entity}) is false:
+		{_entity}.setFireTicks({_tick})
+		stop
+
+	set {_nowFireTick} to getFireTick({_entity})
+	stop if {_nowFireTick} >= {_tick}
+	
+	set {-FireTick::%{_entity}%} to {_tick}
+	{_entity}.setFireTicks(Integer.MAX_VALUE)
+
+	set {_nowtick} to {_tick}
+	loop {_tick} times:
+		continue if getFireTick({_entity}) is not {_nowtick}
+
+		subtract 1 from {_nowtick}
+		set {-FireTick::%{_entity}%} to {_nowtick}
+		wait a tick
+	
+	{_entity}.setFireTicks(0)
+
+
+function getFireTick(entity: entity) :: number:
+	if isPlayer({_entity}) is false:
+		set {_fireticks} to {_entity}.getFireTicks()
+		return {_fireticks}
+
+	return 0 if {-FireTick::%{_entity}%} is not set
+	return {-FireTick::%{_entity}%}
+
+function extinguishFireTick(entity: entity):
+	{_entity}.setFireTicks(0)
+	stop if isPlayer({_entity}) is false
+
+	delete {-FireTick::%{_player}%}
+
+local function isPlayer(entity: entity) :: boolean:
+	set {_entityType} to {_entity}.getType()
+	return true if {_entityType} is EntityType.PLAYER
+	return false
