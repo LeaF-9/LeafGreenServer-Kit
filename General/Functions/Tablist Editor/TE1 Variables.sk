@@ -1,0 +1,30 @@
+import:
+	org.bukkit.Bukkit
+	com.comphenix.protocol.ProtocolLibrary
+	java.util.UUID
+	java.lang.String
+
+on load:
+	set {-tablist::manager} to ProtocolLibrary.getProtocolManager()
+	set {-tablist::slotcount} to 80
+
+	set {-tablist::maxindex} to {-tablist::slotcount} - 1
+	set {-tablist::maxindexstr} to String.valueOf({-tablist::maxindex})
+	set {-tablist::namewidth} to {-tablist::maxindexstr}.length()
+
+	delete {-tablist::fakeuuid::*}
+
+	set {_i} to 0
+	while {_i} < {-tablist::slotcount}:
+		set {_toByteStr} to "custom-tablist-slot-%{_i}%"
+		set {_bytes} to {_toByteStr}.getBytes()
+		set {_uuid} to UUID.nameUUIDFromBytes({_bytes})
+
+		set {-tablist::uuid::%{_i}%} to {_uuid}
+		set {-tablist::text::%{_i}%} to ""
+		delete {-tablist::texturevalue::%{_i}%}
+		delete {-tablist::texturesignature::%{_i}%}
+
+		add {_uuid} to {-tablist::fakeuuid::*}
+
+		add 1 to {_i}

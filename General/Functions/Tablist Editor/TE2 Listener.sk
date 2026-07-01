@@ -1,0 +1,51 @@
+import:
+	com.comphenix.protocol.PacketType
+	com.comphenix.protocol.events.PacketListener
+	com.comphenix.protocol.events.ListeningWhitelist
+	com.comphenix.protocol.events.ListenerPriority
+	ch.njol.skript.Skript
+
+function tablist_get_plugin() :: object:
+	return Skript.getInstance()
+
+function tablist_get_sending_whitelist() :: object:
+	return {-tablist::sendingwhitelist}
+
+function tablist_get_receiving_whitelist() :: object:
+	return {-tablist::receivingwhitelist}
+
+function tablist_noop(e: object):
+	# 受信パケットは扱わない
+
+function tablist_on_packet_sending(e: object):
+	set {_packet} to {_e}.getPacket()
+	set {_datalist} to {_packet}.getPlayerInfoDataLists().read(0)
+	if {_datalist} is not set:
+		stop
+
+	set {_allfake} to true
+	set {_size} to {_datalist}.size()
+	set {_i} to 0
+	while {_i} < {_size}:
+		set {_data} to {_datalist}.get({_i})
+		set {_uuid} to {_data}.getProfile().getUUID()
+		if {-tablist::fakeuuid::*} does not contain {_uuid}:
+			set {_allfake} to false
+		add 1 to {_i}
+
+	if {_allfake} is false:
+		{_e}.setCancelled(true)
+
+on load:
+	# ビルダーAPI・EMPTY_WHITELISTの有無はProtocolLibのバージョンにより異なる可能性あり
+	set {-tablist::sendingwhitelist} to ListeningWhitelist.newBuilder().types(PacketType.Play.Server.PLAYER_INFO).priority(ListenerPriority.HIGHEST).build()
+	set {-tablist::receivingwhitelist} to ListeningWhitelist.EMPTY_WHITELIST
+
+	set {_functions::getPlugin} to function reference "tablist_get_plugin"
+	set {_functions::getSendingWhitelist} to function reference "tablist_get_sending_whitelist"
+	set {_functions::getReceivingWhitelist} to function reference "tablist_get_receiving_whitelist"
+	set {_functions::onPacketReceiving} to function reference "tablist_noop"
+	set {_functions::onPacketSending} to function reference "tablist_on_packet_sending"
+
+	set {-tablist::listener} to new proxy instance of PacketListener using {_functions::*}
+	{-tablist::manager}.addPacketListener({-tablist::listener})

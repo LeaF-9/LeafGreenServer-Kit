@@ -1,0 +1,69 @@
+import:
+	com.comphenix.protocol.PacketType
+	com.comphenix.protocol.events.PacketContainer
+	com.comphenix.protocol.wrappers.WrappedGameProfile
+	com.comphenix.protocol.wrappers.WrappedSignedProperty
+	com.comphenix.protocol.wrappers.WrappedChatComponent
+	com.comphenix.protocol.wrappers.PlayerInfoData
+	com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction
+	com.comphenix.protocol.wrappers.EnumWrappers.NativeGameMode
+	java.util.ArrayList
+	java.lang.String
+
+function tablist_build_player_info_data(slot: number) :: object:
+	set {_uuid} to {-tablist::uuid::%{_slot}%}
+	set {_formatting} to "%%0%{-tablist::namewidth}%d"
+	set {_sortname} to String.format({_formatting}, {_slot})
+
+	set {_profile} to new WrappedGameProfile({_uuid}, {_sortname})
+
+	if {-tablist::texturevalue::%{_slot}%} is set:
+		set {_property} to new WrappedSignedProperty("textures", {-tablist::texturevalue::%{_slot}%}, {-tablist::texturesignature::%{_slot}%})
+		{_profile}.getProperties().put("textures", {_property})
+
+	set {_text} to {-tablist::text::%{_slot}%}
+	if {_text} is not set:
+		set {_text} to ""
+
+	return new PlayerInfoData({_profile}, 0, NativeGameMode.SURVIVAL, WrappedChatComponent.fromText({_text}))
+
+function tablist_send_slot_packet(slot: number):
+	set {_list} to new ArrayList()
+	{_list}.add(tablist_build_player_info_data({_slot}))
+
+	set {_packet} to new PacketContainer(PacketType.Play.Server.PLAYER_INFO)
+	{_packet}.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER)
+	{_packet}.getPlayerInfoDataLists().write(0, {_list})
+
+	{-tablist::manager}.broadcastServerPacket({_packet})
+
+function tablist_send_all_slots(target: player):
+	set {_list} to new ArrayList()
+	set {_i} to 0
+	while {_i} < {-tablist::slotcount}:
+		{_list}.add(tablist_build_player_info_data({_i}))
+		add 1 to {_i}
+
+	set {_packet} to new PacketContainer(PacketType.Play.Server.PLAYER_INFO)
+	{_packet}.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER)
+	{_packet}.getPlayerInfoDataLists().write(0, {_list})
+
+	{-tablist::manager}.sendServerPacket({_target}, {_packet})
+
+# ---- 公開関数(仕様書のsetTablistSlotに相当) ----
+# texturevalue / texturesignature を使わない場合は "" を渡す
+function setTablistSlot(slot: number, text: string, texturevalue: string, texturesignature: string):
+	if {_slot} < 0 or {_slot} >= {-tablist::slotcount}:
+		log "[TE] 無効なslotNumber: %{_slot}%"
+		stop
+
+	set {-tablist::text::%{_slot}%} to {_text}
+
+	if {_texturevalue} is "":
+		delete {-tablist::texturevalue::%{_slot}%}
+		delete {-tablist::texturesignature::%{_slot}%}
+	else:
+		set {-tablist::texturevalue::%{_slot}%} to {_texturevalue}
+		set {-tablist::texturesignature::%{_slot}%} to {_texturesignature}
+
+	tablist_send_slot_packet({_slot})
