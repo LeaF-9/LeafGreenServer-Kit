@@ -1,0 +1,153 @@
+import:
+	import com.comphenix.protocol.PacketType
+	import com.comphenix.protocol.ProtocolLibrary
+	import com.comphenix.protocol.ProtocolManager
+	import com.comphenix.protocol.events.ListenerPriority
+	import com.comphenix.protocol.events.PacketAdapter
+	import com.comphenix.protocol.events.PacketContainer
+	import com.comphenix.protocol.events.PacketEvent
+	import com.comphenix.protocol.wrappers.EnumWrappers.NativeGameMode
+	import com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction
+	import com.comphenix.protocol.wrappers.PlayerInfoData
+	import com.comphenix.protocol.wrappers.WrappedChatComponent
+	import com.comphenix.protocol.wrappers.WrappedGameProfile
+	import org.bukkit.Bukkit
+	import org.bukkit.entity.Player
+	import org.bukkit.event.EventHandler
+	import org.bukkit.event.EventPriority
+	import org.bukkit.event.Listener
+	import org.bukkit.event.player.PlayerJoinEvent
+	import org.bukkit.plugin.java.JavaPlugin
+
+	import java.util.*
+
+
+
+
+
+
+
+public class TablistManager implements Listener {
+
+    private final JavaPlugin plugin;
+    private final ProtocolManager protocolManager;
+
+    private final int slotCount;
+    private final int nameWidth;
+
+    private final UUID[] slotUuids;
+    private final Set<UUID> fakeUuids;
+
+    private final PlayerHead[] currentHeads;
+    private final String[] currentTexts;
+
+    public TablistManager(JavaPlugin plugin) {
+        this.plugin = plugin;
+        this.protocolManager = ProtocolLibrary.getProtocolManager();
+
+        this.slotCount = Bukkit.getMaxPlayers();
+        this.nameWidth = String.valueOf(Math.max(slotCount - 1, 1)).length();
+
+        this.slotUuids = new UUID[slotCount];
+        this.fakeUuids = new HashSet<>();
+        this.currentHeads = new PlayerHead[slotCount];
+        this.currentTexts = new String[slotCount];
+
+        for (int i = 0; i < slotCount; i++) {
+            // 再起動しても同じ値になる固定UUID
+            UUID uuid = UUID.nameUUIDFromBytes(("custom-tablist-slot-" + i).getBytes());
+            slotUuids[i] = uuid;
+            fakeUuids.add(uuid);
+            currentHeads[i] = PlayerHead.BLANK;
+            currentTexts[i] = "";
+        }
+
+        registerPacketListener();
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+    }
+
+    /** 本物のプレイヤーがバニラの仕組みでタブに紛れ込むのを防ぐ */
+    private void registerPacketListener() {
+        protocolManager.addPacketListener(new PacketAdapter(plugin, ListenerPriority.HIGHEST,
+                PacketType.Play.Server.PLAYER_INFO) {
+            @Override
+            public void onPacketSending(PacketEvent event) {
+                List<PlayerInfoData> dataList = event.getPacket().getPlayerInfoDataLists().read(0);
+                if (dataList == null || dataList.isEmpty()) return;
+
+                boolean allFake = dataList.stream()
+                        .allMatch(data -> fakeUuids.contains(data.getProfile().getUUID()));
+
+                if (!allFake) {
+                    event.setCancelled(true); // 本物プレイヤーの分は破棄
+                }
+            }
+        });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoin(PlayerJoinEvent event) {
+        sendAllSlots(event.getPlayer()); // 参加者に現在の全スロット状態を送る
+    }
+
+    /**
+     * 指定スロットに指定のプレイヤーヘッド・テキストを表示する
+     *
+     * @param playerHead 表示するスキン（null不可の場合は PlayerHead.BLANK を使用）
+     * @param text       表示テキスト（§カラーコード使用可）
+     * @param slotNumber 0 〜 (max-players - 1) の範囲
+     */
+    public void setTablistSlot(PlayerHead playerHead, String text, int slotNumber) {
+        if (slotNumber < 0 || slotNumber >= slotCount) {
+            throw new IllegalArgumentException(
+                    "slotNumber は 0〜" + (slotCount - 1) + " の範囲で指定してください");
+        }
+        currentHeads[slotNumber] = playerHead == null ? PlayerHead.BLANK : playerHead;
+        currentTexts[slotNumber] = text == null ? "" : text;
+
+        PacketContainer packet = buildAddPlayerPacket(List.of(slotNumber));
+        protocolManager.broadcastServerPacket(packet);
+    }
+
+    private void sendAllSlots(Player target) {
+        List<Integer> allSlots = new ArrayList<>(slotCount);
+        for (int i = 0; i < slotCount; i++) allSlots.add(i);
+
+        try {
+            protocolManager.sendServerPacket(target, buildAddPlayerPacket(allSlots));
+        } catch (Exception e) {
+            plugin.getLogger().warning("タブリスト初期化パケット送信失敗: " + e.getMessage());
+        }
+    }
+
+    private PacketContainer buildAddPlayerPacket(List<Integer> slotNumbers) {
+        PacketContainer packet = new PacketContainer(PacketType.Play.Server.PLAYER_INFO);
+        packet.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER);
+
+        List<PlayerInfoData> dataList = new ArrayList<>(slotNumbers.size());
+        for (int slot : slotNumbers) {
+            dataList.add(createPlayerInfoData(slot));
+        }
+        packet.getPlayerInfoDataLists().write(0, dataList);
+        return packet;
+    }
+
+    private PlayerInfoData createPlayerInfoData(int slot) {
+        UUID uuid = slotUuids[slot];
+        // ソート順確定用の名前(ゼロ埋め数字)。画面には表示されない。
+        String sortName = String.format("%0" + nameWidth + "d", slot);
+
+        WrappedGameProfile profile = new WrappedGameProfile(uuid, sortName);
+        var texture = currentHeads[slot].toProperty();
+        if (texture != null) {
+            profile.getProperties().put("textures", texture);
+        }
+
+        return new PlayerInfoData(
+                profile,
+                0,
+                NativeGameMode.SURVIVAL,
+                WrappedChatComponent.fromText(currentTexts[slot])
+        );
+    }
+}
