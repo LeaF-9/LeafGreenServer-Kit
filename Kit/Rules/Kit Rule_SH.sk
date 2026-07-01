@@ -12,11 +12,24 @@
 function kitDeathEvent_SH(attacker: player, victim: player, supporters: players):
 	# Death情報の更新
 	add 1 to {Kit-Death.personal::%{_victim}%}
-	kitScorePersonal({_victim}, 1, "§4%{Kit-Kill.personal::%{_victim}%}% §7/ §1%{Kit-Death.personal::%{_victim}%}%")
+	# Victim Scoreboard更新
+	set {_kill.victim} to {Kit-Kill.personal::%{_victim}%}
+	set {_kill.victim} to 0 if {_kill.victim} is not set
+	set {_death.victim} to {Kit-Death.personal::%{_victim}%}
+	set {_death.victim} to 0 if {_death.victim} is not set
+	kitScorePersonal({_victim}, 1, "§4%{_kill.victim}% §7/ §1%{_death.victim}%")
+	# victim K/Dの更新
 	set {Kit-KD.personal::%{_victim}%} to {Kit-Kill.personal::%{_victim}%} / {Kit-Death.personal::%{_victim}%}
+
 	# Kill情報の更新
 	add 1 to {Kit-Kill.personal::%{_attacker}%}
-	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
+	# Attacker Scoreboard更新
+	set {_kill.attacker} to {Kit-Kill.personal::%{_attacker}%}
+	set {_kill.attacker} to 0 if {_kill.attacker} is not set
+	set {_death.attacker} to {Kit-Death.personal::%{_attacker}%}
+	set {_death.attacker} to 0 if {_death.attacker} is not set
+	kitScorePersonal({_attacker}, 1, "§4%{_kill.attacker}% §7/ §1%{_death.attacker}%")
+	# attacker K/Dの更新
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
 
 on death of player:
@@ -373,17 +386,17 @@ function kitTimer_SH():
 		# --- Scoreboard Reload ---
 		if {Kit-SheepPoint::red} != {_teampoint::red}:
 			set {Kit-SheepPoint::red} to {_teampoint::red}
-			kitScoreGlobal(7, "§c赤§7: §6%floor({_teampoint::red})%")
+			kitScoreGlobal(9, "§c赤§7: §6%floor({_teampoint::red})%")
 		if {Kit-SheepPoint::blue} != {_teampoint::blue}:
 			set {Kit-SheepPoint::blue} to {_teampoint::blue}
-			kitScoreGlobal(6, "§9青§7: §6%floor({_teampoint::blue})%")
+			kitScoreGlobal(8, "§9青§7: §6%floor({_teampoint::blue})%")
 		if {Kit-GameStage::team} is "4" or 4:
 			if {Kit-SheepPoint::yellow} != {_teampoint::yellow}:
 				set {Kit-SheepPoint::yellow} to {_teampoint::yellow}
-				kitScoreGlobal(5, "§e黄§7: §6%floor({_teampoint::yellow})%")
+				kitScoreGlobal(7, "§e黄§7: §6%floor({_teampoint::yellow})%")
 			if {Kit-SheepPoint::green} != {_teampoint::green}:
 				set {Kit-SheepPoint::green} to {_teampoint::green}
-				kitScoreGlobal(4, "§a緑§7: §6%floor({_teampoint::green})%")
+				kitScoreGlobal(6, "§a緑§7: §6%floor({_teampoint::green})%")
 		# -------------------------
 		# --- Point Calc ---
 		loop {_teampoint::*}:

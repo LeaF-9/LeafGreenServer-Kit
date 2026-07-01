@@ -7,11 +7,24 @@
 function kitDeathEvent_CTF(attacker: player, victim: player, supporters: players):
 	# Death情報の更新
 	add 1 to {Kit-Death.personal::%{_victim}%}
-	kitScorePersonal({_victim}, 1, "§4%{Kit-Kill.personal::%{_victim}%}% §7/ §1%{Kit-Death.personal::%{_victim}%}%")
+	# Victim Scoreboard更新
+	set {_kill.victim} to {Kit-Kill.personal::%{_victim}%}
+	set {_kill.victim} to 0 if {_kill.victim} is not set
+	set {_death.victim} to {Kit-Death.personal::%{_victim}%}
+	set {_death.victim} to 0 if {_death.victim} is not set
+	kitScorePersonal({_victim}, 1, "§4%{_kill.victim}% §7/ §1%{_death.victim}%")
+	# victim K/Dの更新
 	set {Kit-KD.personal::%{_victim}%} to {Kit-Kill.personal::%{_victim}%} / {Kit-Death.personal::%{_victim}%}
+
 	# Kill情報の更新
 	add 1 to {Kit-Kill.personal::%{_attacker}%}
-	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
+	# Attacker Scoreboard更新
+	set {_kill.attacker} to {Kit-Kill.personal::%{_attacker}%}
+	set {_kill.attacker} to 0 if {_kill.attacker} is not set
+	set {_death.attacker} to {Kit-Death.personal::%{_attacker}%}
+	set {_death.attacker} to 0 if {_death.attacker} is not set
+	kitScorePersonal({_attacker}, 1, "§4%{_kill.attacker}% §7/ §1%{_death.attacker}%")
+	# attacker K/Dの更新
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
 
 # Flag所持者のダメージを変更する処理
@@ -264,13 +277,13 @@ function kitTimer_CTF():
 			# ---スコアボード設定---
 			set {_point.rounded} to floor({Kit-FlagPoint::%{_holder.teamcolor}%})
 			if {_holder.teamcolor} is "red":
-				kitScoreGlobal(7, "§c赤§7: §6%{_point.rounded}%")
+				kitScoreGlobal(9, "§c赤§7: §6%{_point.rounded}%")
 			else if {_holder.teamcolor} is "blue":
-				kitScoreGlobal(6, "§9青§7: §6%{_point.rounded}%")
+				kitScoreGlobal(8, "§9青§7: §6%{_point.rounded}%")
 			else if {_holder.teamcolor} is "yellow":
-				kitScoreGlobal(5, "§e黄§7: §6%{_point.rounded}%")
+				kitScoreGlobal(7, "§e黄§7: §6%{_point.rounded}%")
 			else if {_holder.teamcolor} is "green":
-				kitScoreGlobal(4, "§a緑§7: §6%{_point.rounded}%")
+				kitScoreGlobal(6, "§a緑§7: §6%{_point.rounded}%")
 			# -------------------
 			# ---サウンド設定---
 			# 処理保留

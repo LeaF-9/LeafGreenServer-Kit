@@ -3,12 +3,26 @@
 	{TrueTeam::%{_attacker}%} is not "purple"
 	# Death情報の更新
 	add 1 to {Kit-Death.personal::%{_victim}%}
-	kitScorePersonal({_victim}, 1, "§4%{Kit-Kill.personal::%{_victim}%}% §7/ §1%{Kit-Death.personal::%{_victim}%}%")
+	# Victim Scoreboard更新
+	set {_kill.victim} to {Kit-Kill.personal::%{_victim}%}
+	set {_kill.victim} to 0 if {_kill.victim} is not set
+	set {_death.victim} to {Kit-Death.personal::%{_victim}%}
+	set {_death.victim} to 0 if {_death.victim} is not set
+	kitScorePersonal({_victim}, 1, "§4%{_kill.victim}% §7/ §1%{_death.victim}%")
+	# victim K/Dの更新
 	set {Kit-KD.personal::%{_victim}%} to {Kit-Kill.personal::%{_victim}%} / {Kit-Death.personal::%{_victim}%}
+
 	# Kill情報の更新
 	add 1 to {Kit-Kill.personal::%{_attacker}%}
-	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
+	# Attacker Scoreboard更新
+	set {_kill.attacker} to {Kit-Kill.personal::%{_attacker}%}
+	set {_kill.attacker} to 0 if {_kill.attacker} is not set
+	set {_death.attacker} to {Kit-Death.personal::%{_attacker}%}
+	set {_death.attacker} to 0 if {_death.attacker} is not set
+	kitScorePersonal({_attacker}, 1, "§4%{_kill.attacker}% §7/ §1%{_death.attacker}%")
+	# attacker K/Dの更新
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
+
 	# 防衛時の処理 Leaf獲得のデータ処理の際に利用
 	#
 	# loop all blocks in radius 5 around location of victim:

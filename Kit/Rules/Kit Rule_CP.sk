@@ -85,11 +85,24 @@ on damage of player:
 function kitDeathEvent_CP(attacker: player, victim: player, supporters: players):
 	# Death情報の更新
 	add 1 to {Kit-Death.personal::%{_victim}%}
-	kitScorePersonal({_victim}, 1, "§4%{Kit-Kill.personal::%{_victim}%}% §7/ §1%{Kit-Death.personal::%{_victim}%}%")
+	# Victim Scoreboard更新
+	set {_kill.victim} to {Kit-Kill.personal::%{_victim}%}
+	set {_kill.victim} to 0 if {_kill.victim} is not set
+	set {_death.victim} to {Kit-Death.personal::%{_victim}%}
+	set {_death.victim} to 0 if {_death.victim} is not set
+	kitScorePersonal({_victim}, 1, "§4%{_kill.victim}% §7/ §1%{_death.victim}%")
+	# victim K/Dの更新
 	set {Kit-KD.personal::%{_victim}%} to {Kit-Kill.personal::%{_victim}%} / {Kit-Death.personal::%{_victim}%}
+
 	# Kill情報の更新
 	add 1 to {Kit-Kill.personal::%{_attacker}%}
-	kitScorePersonal({_attacker}, 1, "§4%{Kit-Kill.personal::%{_attacker}%}% §7/ §1%{Kit-Death.personal::%{_attacker}%}%")
+	# Attacker Scoreboard更新
+	set {_kill.attacker} to {Kit-Kill.personal::%{_attacker}%}
+	set {_kill.attacker} to 0 if {_kill.attacker} is not set
+	set {_death.attacker} to {Kit-Death.personal::%{_attacker}%}
+	set {_death.attacker} to 0 if {_death.attacker} is not set
+	kitScorePersonal({_attacker}, 1, "§4%{_kill.attacker}% §7/ §1%{_death.attacker}%")
+	# attacker K/Dの更新
 	set {Kit-KD.personal::%{_attacker}%} to {Kit-Kill.personal::%{_attacker}%} / {Kit-Death.personal::%{_attacker}%}
 
 # --- 以下 改良中 ---
@@ -463,18 +476,27 @@ function kitChangeScoreboard_CP(type: text):
 	if {_type} is "point":
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
+				delete {_kill}
+				set {_kill} to {Kit-Kill.personal::%loop-player%}
+				set {_kill} to 0 if {_kill} is not set
+				delete {_death}
+				set {_death} to {Kit-Death.personal::%loop-player%}
+				set {_death} to 0 if {_death} is not set
+
 				scoreboard_UpdateTitle(loop-player, "§a§lKit PvP")
 				if {Kit-GameStage::team} is "4" or 4:
-					scoreboard_UpdateLine(loop-player, "§c赤§7: §6%floor({Kit-TeamPoint::red})%", 7)
-					scoreboard_UpdateLine(loop-player, "§9青§7: §6%floor({Kit-TeamPoint::blue})%", 6)
-					scoreboard_UpdateLine(loop-player, "§e黄§7: §6%floor({Kit-TeamPoint::yellow})%", 5)
-					scoreboard_UpdateLine(loop-player, "§a緑§7: §6%floor({Kit-TeamPoint::green})%", 4)
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §6%floor({Kit-TeamPoint::red})%", 9)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §6%floor({Kit-TeamPoint::blue})%", 8)
+					scoreboard_UpdateLine(loop-player, "§e黄§7: §6%floor({Kit-TeamPoint::yellow})%", 7)
+					scoreboard_UpdateLine(loop-player, "§a緑§7: §6%floor({Kit-TeamPoint::green})%", 6)
 				else:
-					scoreboard_UpdateLine(loop-player, "§c赤§7: §6%floor({Kit-TeamPoint::red})%", 7)
-					scoreboard_UpdateLine(loop-player, "§9青§7: §6%floor({Kit-TeamPoint::blue})%", 6)
+					scoreboard_UpdateLine(loop-player, "§c赤§7: §6%floor({Kit-TeamPoint::red})%", 9)
+					scoreboard_UpdateLine(loop-player, "§9青§7: §6%floor({Kit-TeamPoint::blue})%", 8)
+				scoreboard_UpdateLine(loop-player, " ", 5)
+				scoreboard_UpdateLine(loop-player, "§3ゴールポイント§7: §b§l%{Kit-GameStage::goal}%", 4)
 				scoreboard_UpdateLine(loop-player, " ", 3)
 				scoreboard_UpdateLine(loop-player, "§6あなたの戦績", 2)
-				scoreboard_UpdateLine(loop-player, "§4%{Kit-Kill.personal::%loop-player%}% §7/ §1%{Kit-Death.personal::%loop-player%}%", 1)
+				scoreboard_UpdateLine(loop-player, "§4%{_kill}% §7/ §1%{_death}%", 1)
 	else if {_type} is "area":
 		loop all players:
 			if {Join::%loop-player%} is "Kit":
