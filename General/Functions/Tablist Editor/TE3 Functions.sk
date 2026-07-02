@@ -5,8 +5,8 @@ import:
 	com.comphenix.protocol.wrappers.WrappedSignedProperty
 	com.comphenix.protocol.wrappers.WrappedChatComponent
 	com.comphenix.protocol.wrappers.PlayerInfoData
-	com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction
-	com.comphenix.protocol.wrappers.EnumWrappers.NativeGameMode
+	com.comphenix.protocol.wrappers.EnumWrappers$PlayerInfoAction
+	com.comphenix.protocol.wrappers.EnumWrappers$NativeGameMode
 	java.util.ArrayList
 	java.lang.String
 
@@ -53,7 +53,10 @@ function tablist_send_all_slots(target: player):
 # ---- 公開関数(仕様書のsetTablistSlotに相当) ----
 # texturevalue / texturesignature を使わない場合は "" を渡す
 function setTablistSlot(slot: number, text: string, texturevalue: string, texturesignature: string):
-	if {_slot} < 0 or {_slot} >= {-tablist::slotcount}:
+	if any:
+		{_slot} < 0
+		{_slot} >= {-tablist::slotcount}
+	then:
 		log "[TE] 無効なslotNumber: %{_slot}%"
 		stop
 

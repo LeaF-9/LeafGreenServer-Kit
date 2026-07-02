@@ -28,7 +28,10 @@ function setTablistSlotFromPlayer(slot: number, text: string, target: player):
 	set {_profile} to WrappedGameProfile.fromPlayer({_target})
 	set {_textures} to {_profile}.getProperties().get("textures")
 
-	if {_textures} is not set or {_textures}.isEmpty():
+	if any:
+		{_textures} is not set
+		{_textures}.isEmpty()
+	then:
 		setTablistSlot({_slot}, {_text}, "", "")
 		stop
 
