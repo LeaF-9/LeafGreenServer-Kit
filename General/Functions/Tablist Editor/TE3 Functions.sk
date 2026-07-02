@@ -8,7 +8,11 @@ import:
 	com.comphenix.protocol.wrappers.EnumWrappers$PlayerInfoAction
 	com.comphenix.protocol.wrappers.EnumWrappers$NativeGameMode
 	java.util.ArrayList
+	java.util.EnumSet
 	java.lang.String
+
+function tablist_build_actions() :: object:
+	return EnumSet.of(PlayerInfoAction.ADD_PLAYER, PlayerInfoAction.UPDATE_LISTED, PlayerInfoAction.UPDATE_DISPLAY_NAME)
 
 function tablist_build_player_info_data(slot: number) :: object:
 	set {_uuid} to {-tablist::uuid::%{_slot}%}
@@ -25,15 +29,16 @@ function tablist_build_player_info_data(slot: number) :: object:
 	if {_text} is not set:
 		set {_text} to ""
 
-	return new PlayerInfoData({_profile}, 0, NativeGameMode.SURVIVAL, WrappedChatComponent.fromText({_text}))
+	# 1.19.3以降用: (profileId, latency, listed, gameMode, profile, displayName) の6引数コンストラクタ
+	return new PlayerInfoData({_uuid}, 0, true, NativeGameMode.SURVIVAL, {_profile}, WrappedChatComponent.fromText({_text}))
 
 function tablist_send_slot_packet(slot: number):
 	set {_list} to new ArrayList()
 	{_list}.add(tablist_build_player_info_data({_slot}))
 
 	set {_packet} to new PacketContainer(PacketType.Play.Server.PLAYER_INFO)
-	{_packet}.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER)
-	{_packet}.getPlayerInfoDataLists().write(0, {_list})
+	{_packet}.getPlayerInfoActions().write(0, tablist_build_actions())
+	{_packet}.getPlayerInfoDataLists().write(1, {_list})
 
 	{-tablist::manager}.broadcastServerPacket({_packet})
 
@@ -45,8 +50,8 @@ function tablist_send_all_slots(target: player):
 		add 1 to {_i}
 
 	set {_packet} to new PacketContainer(PacketType.Play.Server.PLAYER_INFO)
-	{_packet}.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER)
-	{_packet}.getPlayerInfoDataLists().write(0, {_list})
+	{_packet}.getPlayerInfoActions().write(0, tablist_build_actions())
+	{_packet}.getPlayerInfoDataLists().write(1, {_list})
 
 	{-tablist::manager}.sendServerPacket({_target}, {_packet})
 
