@@ -1,51 +1,59 @@
 import:
-	com.comphenix.protocol.PacketType
-	com.comphenix.protocol.events.PacketListener
-	com.comphenix.protocol.events.ListeningWhitelist
-	com.comphenix.protocol.events.ListenerPriority
-	ch.njol.skript.Skript
+	com.github.retrooper.packetevents.PacketEvents
+	com.github.retrooper.packetevents.event.PacketListener
+	com.github.retrooper.packetevents.event.PacketListenerPriority
+	com.github.retrooper.packetevents.protocol.packettype.PacketType
+	com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate
+	com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate$Action
 
-function tablist_get_plugin() :: object:
-	return Skript.getInstance()
+	java.util.ArrayList
 
-function tablist_get_sending_whitelist() :: object:
-	return {-tablist::sendingwhitelist}
-
-function tablist_get_receiving_whitelist() :: object:
-	return {-tablist::receivingwhitelist}
-
-function tablist_noop(e: object):
-	# 受信パケットは扱わない
-
-function tablist_on_packet_sending(e: object):
-	set {_packet} to {_e}.getPacket()
-	set {_datalist} to {_packet}.getPlayerInfoDataLists().read(1)
-	if {_datalist} is not set:
+function tablist_on_packet_send(proxyself: object, event: object):
+	if {_event}.getPacketType() is not PacketType.Play.Server.PLAYER_INFO_UPDATE:
 		stop
 
-	set {_allfake} to true
-	set {_size} to {_datalist}.size()
+	set {_packet} to new WrapperPlayServerPlayerInfoUpdate({_event})
+	set {_entries} to {_packet}.getEntries()
+	if {_entries} is not set:
+		stop
+
+	set {_size} to {_entries}.size()
+	set {_hasrealplayer} to false
 	set {_i} to 0
 	while {_i} < {_size}:
-		set {_data} to {_datalist}.get({_i})
-		set {_uuid} to {_data}.getProfile().getUUID()
-		if {-tablist::fakeuuid::*} does not contain {_uuid}:
-			set {_allfake} to false
+		set {_entry} to {_entries}.get({_i})
+		set {_profile} to {_entry}.getGameProfile()
+		if {_profile} is set:
+			if {-tablist::fakeuuid::*} does not contain {_profile}.getUUID():
+				set {_hasrealplayer} to true
 		add 1 to {_i}
 
-	if {_allfake} is false:
-		{_e}.setCancelled(true)
+	if {_hasrealplayer} is false:
+		stop
+
+	set {_newentries} to new ArrayList()
+	set {_i} to 0
+	while {_i} < {_size}:
+		set {_entry} to {_entries}.get({_i})
+		set {_profile} to {_entry}.getGameProfile()
+
+		if {_profile} is not set:
+			# プロフィールを含まない更新(ping等)はそのまま通す
+			{_newentries}.add({_entry})
+		else if {-tablist::fakeuuid::*} contains {_profile}.getUUID():
+			{_newentries}.add({_entry})
+		else:
+			set {_newentry} to new WrapperPlayServerPlayerInfoUpdate.PlayerInfo({_profile}, false, {_entry}.getLatency(), {_entry}.getGameMode(), {_entry}.getDisplayName(), {_entry}.getChatSession())
+			{_newentries}.add({_newentry})
+		add 1 to {_i}
+
+	set {_actions} to {_packet}.getActions()
+	{_actions}.add(Action.UPDATE_LISTED)
+	{_packet}.setActions({_actions})
+	{_packet}.setEntries({_newentries})
+	{_event}.markForReEncode(true)
 
 on load:
-	# ビルダーAPI・EMPTY_WHITELISTの有無はProtocolLibのバージョンにより異なる可能性あり
-	set {-tablist::sendingwhitelist} to ListeningWhitelist.newBuilder().types(PacketType.Play.Server.PLAYER_INFO).priority(ListenerPriority.HIGHEST).build()
-	set {-tablist::receivingwhitelist} to ListeningWhitelist.EMPTY_WHITELIST
-
-	set {_functions::getPlugin} to function reference "tablist_get_plugin"
-	set {_functions::getSendingWhitelist} to function reference "tablist_get_sending_whitelist"
-	set {_functions::getReceivingWhitelist} to function reference "tablist_get_receiving_whitelist"
-	set {_functions::onPacketReceiving} to function reference "tablist_noop"
-	set {_functions::onPacketSending} to function reference "tablist_on_packet_sending"
-
+	set {_functions::onPacketSend} to function reference "tablist_on_packet_send"
 	set {-tablist::listener} to new proxy instance of PacketListener using {_functions::*}
-	{-tablist::manager}.addPacketListener({-tablist::listener})
+	PacketEvents.getAPI().getEventManager().registerListener({-tablist::listener}, PacketListenerPriority.NORMAL)

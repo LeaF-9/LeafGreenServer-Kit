@@ -22,7 +22,7 @@ function tablist_fetch_head_by_uuid(uuid: text) :: object:
 
 	set {_uuidnodash} to {_uuid}.replace("-", "")
 	set {_urlBase} to "https://sessionserver.mojang.com/session/minecraft/profile/"
-	set {_url} to "%{_urlBase}%%{_uuidnodash}%"
+	set {_url} to "%{_urlBase}%%{_uuidnodash}%?unsigned=false"
 	set {_body} to tablist_http_get({_url})
 	set {_json} to JsonParser.parseString({_body}).getAsJsonObject()
 	if {_json} is not set:

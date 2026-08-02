@@ -1,0 +1,40 @@
+import:
+	java.util.Base64
+
+on load:
+	# それぞれのvalue/signatureの保存
+	# [Gray] URL: https://mineskin.org/skins/a0451ad757564510b401134ca31b4227
+	set {-tablist::value::gray} to "ewogICJ0aW1lc3RhbXAiIDogMTc4NTY1Njk2NDc2NywKICAicHJvZmlsZUlkIiA6ICJiYzRlZGZiNWYzNmM0OGE3YWM5ZjFhMzlkYzIzZjRmOCIsCiAgInByb2ZpbGVOYW1lIiA6ICI4YWNhNjgwYjIyNDYxMzQwIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzY1N2JmZTk2OWEyY2I3MDg5NTM1ODJkMjBkMzQ1OWViY2E4YWY2OTYyNmQ4Y2IyNjViNjE3ZWY0YzNjODhiZjYiCiAgICB9CiAgfQp9"
+	set {-tablist::signature::gray} to "IVqazWyVhRPbq3Hgw2kzHct1lIsD6xNMgJ/z6pVbjeqj1ya2VX5gsDLh8i5XjmEm3RgwvIvw7kYqf1R6Qr8kWh2a7pOrPzxd+Y3ENjlSd5bF5b0s8NpoZvEGkzPEPsI3mChr6KVWXhMBpGOO1qsj2VmEPO2AcincRUpgOSsoti8rd0VydEwHj+8YtVjJp5YyH2VCJ0FInQRYLp9l8RbcNIrrTPNz7T4vqi7QAb8ZB7wDmXD15vc2Q+34CdW0CXon8J72P1sAccVfnuUT45N0cbmTD2FKHhmu+7xb4fEw7M9wuc3FZBWp1V8P3k4OUA93+jPxVIYrXJB6VXMUETdqwjPXetbwdRN6SXRtEqaBQwoVS2QUNZ8qSBuMMC4N27Y4IakQkUsvzHL60N9K3Bpmxc6nj0Wa/qAktv167kL0EvQ72RCCuAjxT1TE5XlGJYxBstoDayrmNra7zvfN5vMZqdp+XKsvxVvgTqy2YeuSAONYTEPUi9fkO22Pio8aogCnrvGia8JoMQWAcYntRH9dZBDTbgO2DfsmHW6LiGSGwHOeBb37grrB/9S3g9fXDP5AEns9/m4258FJIUtkBxVRfGtCyMyY0qFHogZ9Nyz0/iJVLn/uIZyxJmSt0/+to3Jyv0OPXro423Vhmq8BYyCO+5rZAI3SGh6Iryl2rjpsj4M="
+
+function updateKitTablist():
+	set {_game} to {Kit-tochu}
+	if {_game} is false:
+		setKitTablist_Lobby()
+		stop
+	setKitTablist_Match()
+
+local function setKitTablist_Lobby():
+	set {_slot} to 0
+	set {_players::*} to all players
+	for {_lp} in {_players::*}:
+		set {_text} to "%name of {_lp}%"
+		setTablistSlotFromPlayer({_slot}, {_text}, {_lp})
+
+		add 1 to {_slot}
+	
+	set {_remain} to 80 - {_slot}
+	set {_text} to "                    "
+	# memo
+	# [Gray] URL: https://mineskin.org/skins/a0451ad757564510b401134ca31b4227
+	loop {_remain} times:
+		setTablistSlot({_slot}, {_text}, {-tablist::value::gray}, {-tablist::signature::gray})
+		add 1 to {_slot}
+
+local function setKitTablist_Match():
+
+on join:
+	updateKitTablist()
+
+on quit:
+	updateKitTablist()
