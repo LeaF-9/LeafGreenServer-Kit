@@ -27,12 +27,34 @@ function updateKitTablist():
 	setKitTablist_Match()
 
 local function setKitTablist_Lobby():
-	set {_slot} to 0
 	set {_players::*} to all players
-	for {_lp} in {_players::*}:
-		set {_text} to "%name of {_lp}%"
-		setTablistSlotFromPlayer({_slot}, {_text}, {_lp})
+	set {_joinedIndex} to 0  # Joinプレイヤー数
+	set {_playerList} to createNewArrayList()  # Sorted PlayerList
 
+	# All Players Looping
+	for {_lp} in {_players::*}:
+		set {_size} to {_playerList}.size()
+
+		if {Join::%{_lp}%} is "Kit":
+			if {_size} is not {_joinedIndex}:  # Joinプレイヤーがいる場合、Joinプレイヤーの後ろに追加
+				{_playerList}.add({_joinedIndex}, {_lp})
+			else:
+				{_playerList}.add({_lp})
+			add 1 to {_joinedIndex}
+
+		else:
+			{_playerList}.add({_lp})
+
+	set {_slot} to 0
+	loop ...{_playerList}:
+		set {_lp} to loop-value
+		set {_colorcode} to "§f"
+		if {_slot} < {_joinedIndex}:
+			set {_colorcode} to "§6"
+		set {_name} to name of {_lp}
+		set {_text} to "%{_colorcode}%%{_name}%"
+
+		setTablistSlotFromPlayer({_slot}, {_text}, {_lp})
 		add 1 to {_slot}
 	
 	set {_remain} to 80 - {_slot}
