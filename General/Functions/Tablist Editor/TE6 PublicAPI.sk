@@ -27,8 +27,6 @@ function tablist_resolve_uuid_async(slot: number, text: string, uuidnodash: stri
 
 # ---- ① オンラインプレイヤーから直接指定 ----
 function setTablistSlotFromPlayer(slot: number, text: string, target: player):
-	set {_slot} to toRowMajorSlot({_slot})
-
 	set {_profile} to {_target}.getPlayerProfile()
 	set {_properties} to {_profile}.getProperties()
 	set {_iterator} to {_properties}.iterator()
@@ -46,8 +44,6 @@ function setTablistSlotFromPlayer(slot: number, text: string, target: player):
 # ---- ② アカウント名から指定(オンラインなら同期即時/オフラインならMojang APIへ非同期問い合わせ) ----
 # 非推奨
 function setTablistSlotFromUsername(slot: number, text: string, username: string):
-	set {_slot} to toRowMajorSlot({_slot})
-
 	set {_online} to Bukkit.getPlayerExact({_username})
 	if {_online} is set:
 		setTablistSlotFromPlayer({_slot}, {_text}, {_online})
@@ -60,8 +56,6 @@ function setTablistSlotFromUsername(slot: number, text: string, username: string
 # ---- ③ UUID文字列から指定(同上) ----
 # 非推奨
 function setTablistSlotFromUuid(slot: number, text: string, uuidstring: string):
-	set {_slot} to toRowMajorSlot({_slot})
-
 	set {_uuid} to UUID.fromString({_uuidstring})
 	set {_online} to Bukkit.getPlayer({_uuid})
 	if {_online} is set:
