@@ -65,6 +65,117 @@ local function setKitTablist_Lobby():
 		add 1 to {_slot}
 
 local function setKitTablist_Match():
+	# ゲーム未参加のプレイヤー表示 (観戦者は後方へ) (16 slots)
+	set {_players::*} to all players
+	set {_playerList} to createNewArrayList()  # Sorted PlayerList (未参加)
+	set {_unspecIndex} to 0  # 観戦者でないプレイヤーのIndex
+
+	# All Players Looping
+	for {_lp} in {_players::*}:
+		set {_size} to {_playerList}.size()
+
+		# 参加済みプレイヤーの場合は別リスト変数に保存してスキップ
+		if {Join::%{_lp}%} is "Kit":
+			add {_lp} to {_JoinedPlayers::*}
+			continue
+
+		if (gamemode of {_lp}) is not spectator:
+			if {_size} is not {_unspecIndex}:  # unspecプレイヤーの後ろに追加
+				{_playerList}.add({_unspecIndex}, {_lp})
+			else:
+				{_playerList}.add({_lp})
+			add 1 to {_unspecIndex}
+
+		else:
+			{_playerList}.add({_lp})
+
+	set {_slot} to 0
+	loop ...{_playerList}:
+		continue if {_slot} >= 16  # 16スロット以上は表示しない
+		set {_lp} to loop-value
+		set {_colorcode} to "§7§o"
+		if {_slot} < {_unspecIndex}:
+			set {_colorcode} to "§f"
+		set {_name} to name of {_lp}
+		set {_text} to "%{_colorcode}%%{_name}%"
+
+		setTablistSlotFromPlayer({_slot}, {_text}, {_lp})
+		set {_usedSlot::%{_slot}%} to true  # 使用済みスロットの保存
+		add 1 to {_slot}
+
+	# 各チーム色のタイトル (2/4Teamの取得)
+	add "red" to {_teamnames::*}
+	add "blue" to {_teamnames::*}
+	if {Kit-GameStage::team} is 4:
+		add "yellow" to {_teamnames::*}
+		add "green" to {_teamnames::*}
+
+	set {_slot.teamtitle::red} to 16
+	set {_teamcolor::red} to "§c"
+	set {_teamjapanize::red} to "赤"
+	set {_slot.teamtitle::blue} to 18
+	set {_teamcolor::blue} to "§9"
+	set {_teamjapanize::blue} to "青"
+	if {Kit-GameStage::team} is 4:
+		set {_slot.teamtitle::blue} to 17
+		set {_slot.teamtitle::yellow} to 18
+		set {_teamcolor::yellow} to "§e"
+		set {_teamjapanize::yellow} to "黄"
+		set {_slot.teamtitle::green} to 19
+		set {_teamcolor::green} to "§a"
+		set {_teamjapanize::green} to "緑"
+	
+	for {_teamname} in {_teamnames::*}:
+	
+		set {_teamnum} to size of {Kit-team%{_teamname}%::*}
+
+		set {_slot} to {_slot.teamtitle::%{_teamname}%}
+		set {_colorcode} to {_teamcolor::%{_teamname}%}
+		set {_teamJapanize} to {_teamjapanize::%{_teamname}%}
+		set {_text} to "%{_colorcode}%§l§n%{_teamJapanize}%チーム §b(§3§l%{_teamnum}% 人)"
+		set {_value} to {-tablist::value::%{_teamname}%}
+		set {_signature} to {-tablist::signature::%{_teamname}%}
+		setTablistSlot({_slot}, {_text}, {_value}, {_signature})
+		set {_usedSlot::%{_slot}%} to true  # 使用済みスロットの保存
+
+		# 予めチームプレイヤーのStartスロットを保存しておく
+		set {_slot.%{_teamname}%} to (({_slot.teamtitle::%{_teamname}%}) + 4)
+
+	# 参加中のプレイヤーを一覧表示
+	for {_lp} in {_JoinedPlayers::*}:
+		set {_team} to {TrueTeam::%{_lp}%}  # teamの取得
+
+		# team情報から必要情報を取得
+		set {_slot} to {_slot.%{_team}%}
+		continue if {_slot} >= 80  # 80スロット以上は表示しない
+		set {_colorcode} to {_teamcolor::%{_team}%}
+		set {_name} to name of {_lp}
+		set {_text} to "%{_colorcode}%%{_name}%"
+
+		setTablistSlotFromPlayer({_slot}, {_text}, {_lp})
+		set {_usedSlot::%{_slot}%} to true  # 使用済みスロットの保存
+		add 4 to {_slot.%{_team}%}  # 次のスロットを更新
+
+		# 2teamの場合は別列への移動処理(2列以下)
+		if {Kit-GameStage::team} is 2:
+			if {_team} is "red":
+				if {_slot.%{_team}%} = 80:
+					set {_slot.%{_team}%} to 21
+			else:
+				if {_slot.%{_team}%} = 82:
+					set {_slot.%{_team}%} to 23
+
+	# 未使用スロットの非表示処理
+	set {_ls} to 0
+	set {_text.gray} to "                    "
+	set {_value.gray} to {-tablist::value::gray}
+	set {_signature.gray} to {-tablist::signature::gray}
+
+	loop 80 times:
+		if {_usedSlot::%{_ls}%} is not set:
+			setTablistSlot({_ls}, {_text.gray}, {_value.gray}, {_signature.gray})
+		add 1 to {_ls}
+
 
 on join:
 	updateKitTablist()
