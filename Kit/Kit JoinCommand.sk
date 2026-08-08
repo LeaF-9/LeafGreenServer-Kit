@@ -104,6 +104,8 @@ command /join:
 					if {Kit-VoteStage::1} is not set:  # 投票ステージが未決定
 						kitVoteSetting()
 					kitOpenVoting(player)
+		# team情報を更新してからtablistの更新
+		updateKitTablist()
 
 command /joinset <number>:
 	permission: sk.admin
@@ -130,6 +132,7 @@ command /leave:
 			subtract 1 from {Kit-Join}
 			broadcast "§2[§aKit PvP§2] §6%player% §dが退出しました §7(§b%{Kit-Join}%§9人参加中です§7)"
 			execute console command "/team leave %player%"
+			updateKitTablist()  # tablistの更新
 			teleport the player to {LobbyLocation}
 			wait a tick
 			set gamemode of player to survival
@@ -159,6 +162,7 @@ command /spec:
 			message formatted "§eMap名: §6§l%{Kit-GameStage::name}%" to player
 			stop
 		set gamemode of player to spectator
+		updateKitTablist()  # tablistの更新
 		teleport player to {Kit-GameStage::spec}
 		message "§7あなたは §b§l観戦者 §7になりました"
 		message "§6§l/lobby §7で観戦をやめることが出来ます"
