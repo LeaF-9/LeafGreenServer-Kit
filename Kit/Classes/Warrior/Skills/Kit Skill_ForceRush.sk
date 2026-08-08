@@ -1,37 +1,117 @@
 # Force Rush
 
+options:
+	charge-tick: 20
+
+	effect-radius: 5
+	effect-damage: 3
+	stun-tick: 60
+
+	slowness-level: 3
+	slowness-tick: 100
+	hurt-stats: "Force Rush - Hurt"
+
 function kitEffect_ForceRush(player: player):
 	nameCT({_player}, "Force Rush")
 	kitMsg({_player}, "§4渾身の突進!")
-	push {_player} forward at speed 1.5
-	playSound("entity.blaze.hurt", 1, 0.75, {_player})
+	soundLaunch({_player})
+	set {_baseloc} to head of {_player}
+	set {_baseVector} to {_baseloc}.getDirection()
+	set {_baseVector} to {_baseVector} * vector(0.2, 0.2, 0.2)
+	particleLaunch({_player})
 
-	loop 20 times:
-		loop all entities in radius 2 around {_player}:
-			{_hitplayer} is not set
-			kitCheckTeam(loop-entity, {_player}, false) is true
-			set {_hitplayer} to loop-entity
-			set {_stoploc} to location of {_player}
-		if {_hitplayer} is not set:
-			kitParticle_ForceRush_Trail({_player})
+	set {_vector} to {_baseVector}
+	set {_plusUpVector} to vector(0, 0.01, 0)
+	set {_reverseVector} to {_baseVector} * vector(-0.005, -0.005, -0.005)
+	loop {@charge-tick} times:
+		set velocity of {_player} to {_vector}
+		particleTrail({_player})
+		set {_vector} to {_vector} + {_reverseVector} + {_plusUpVector}
+		wait a tick
+
+	soundPress({_player})
+	set {_stop} to false
+	set {_downVector} to vector(0, -1, 0)
+	set {_bloc} to location of {_player}
+	set {_first} to true
+	while {_stop} is false:
+		set velocity of {_player} to {_downVector}
+		particleFall({_player})
+		if {_first} is true:
 			wait a tick
+			delete {_first}
+			continue
 
-	if {_hitplayer} is set:
-		teleport {_player} to {_stoploc}
-		kitDamage({_player}, {_hitplayer}, 2, "激突")
-		kitMsg({_player}, "§5%{_hitplayer}%に激突!")
-		message "§4突進攻撃を受けた!" to {_hitplayer}
-		kitEffectDescription({_hitplayer}, "§4❤2")
-		kitParticle_ForceRush_Hit({_hitplayer})
-	else:
-		kitMsg({_player}, "§1激突失敗...")
-		kitFreeze({_player}, 60, false)
-		damage {_player} by 2 hearts
-		kitParticle_ForceRush_Fail({_player})
+		set {_nowloc} to location of {_player}
+		# 地面についている (プレス)
+		if {_player}.isOnGround():
+			set {_stop} to true
+			set {_pressAttack} to true
+			continue
+
+		# y位置が同じ (落下してない, プレス)
+		if (y of {_nowloc}) is (y of {_bloc}):
+			set {_stop} to true
+			set {_pressAttack} to true
+			continue
+
+		# y位置が-64以下 (奈落, ミス)
+		if (y of {_nowloc}) < -64:
+			set {_stop} to true
+			kitMsg({_player}, "§5§oダイブ失敗...")
+			stop
+		
+		set {_bloc} to {_nowloc}
+		wait a tick
+
+	stop if {_pressAttack} is not set
+	set {_effectLoc} to location of {_player}
+	soundLand({_effectLoc})
+	particleLand({_effectLoc})
+
+	set {_hitting} to false
+	loop all entities in radius {@effect-radius} around {_effectLoc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		set {_hitting} to true
+		kitDamage({_player}, loop-entity, {@effect-damage}, "ダイブ攻撃")
+		kitStun(loop-entity, {@stun-tick})
+		kitEffectDescription(loop-entity, "§4❤%{@effect-damage}% §8& §6§l眩暈")
+		particleHit(loop-entity)
+		soundHit(loop-entity)
+	
+	stop if {_hitting} is true
+	kitMsg({_player}, "§1§o足を挫いた...")
+	particleHurt({_player})
+	applyEffect({_player}, slowness, {@slowness-level}, {@slowness-tick})
+	set {_hurt.uuid} to a random uuid
+	setKitStats({_player}, {@hurt-stats}, {_hurt.uuid})
+
+	loop {@slowness-tick} times:
+		wait a tick
+	
+	if getKitStats({_player}, {@hurt-stats}) is {_hurt.uuid}:
+		deleteKitStats({_player}, {@hurt-stats})
+		applyPotionEffect({_player}, slowness, 1, -1, true, "non-particle")
 
 
 
-local function kitParticle_ForceRush_Trail(player: player):
+local function particleLaunch(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	add rgb(86, 36, 36) to {_colors::*}
+	add rgb(105, 60, 23) to {_colors::*}
+	add rgb(72, 64, 36) to {_colors::*}
+
+	spawnParticle(explosion_emitter, {_baseloc})
+	set {_count} to a random integer between 40 and 60
+	loop {_count} times:
+		set {_color} to a random element out of {_colors::*}
+		set {_size} to a random number between 2.5 and 3.1
+		set {_length} to a random number between 1 and 4
+		set {_v} to randomVector({_length})
+		set {_el} to {_baseloc} ~ {_v}
+		spawnParticle_Dust({_color}, {_size}, {_el})
+
+local function particleTrail(player: player):
 	set {_baseloc} to location of {_player}
 	set {_vector} to setVector({_baseloc}, location 10 meters in front of {_baseloc}) * vector(-1, -1, -1)
 
@@ -46,9 +126,94 @@ local function kitParticle_ForceRush_Trail(player: player):
 
 		add {_addm} to {_m}
 
-local function kitParticle_ForceRush_Hit(entity: entity):
-	playSound("entity.generic.explode", 1, 1.8, location of {_entity})
+local function particleFall(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_length} to a random number between 1 and 3
+	set {_distance} to a random number between 0.5 and 1.3
+	set {_v} to randomVector({_distance})
+	set {_baseloc} to {_baseloc} ~ {_v}
 
+	set {_powv} to ({_length} / 5) * (-1)
+	set {_downv} to vector(0, {_powv}, 0)
+
+	set {_ln} to 0
+	loop 6 times:
+		add 1 to {_ln}
+		set {_mulv} to {_downv} * vector(0, {_ln}, 0)
+		set {_el} to {_baseloc} ~ {_mulv}
+		spawnParticle(electric_spark, {_el})
+		chance of 5%:
+			set {_radp} to a random number between 0.2 and 0.55
+			set {_radv} to randomVector({_radp})
+			set {_el} to {_el} ~ {_radv}
+			spawnParticle_BlockData(falling_dust, white concrete, {_el})
+
+local function particleLand(loc: location):
+	particleSubPulse({_loc})
+	particleSubGround({_loc})
+
+local function particleSubPulse(loc: location):
+	add rgb(83, 59, 16) to {_colors::*}
+	add rgb(88, 33, 4) to {_colors::*}
+	add rgb(77, 7, 7) to {_colors::*}
+
+	set {_circle} to 100
+	set {_add.rad} to 360 / {_circle}
+	set {_now.rad} to 0
+	set {_count} to 6
+	set {_height} to 3
+	set {_add.height} to {_height} / {_count}
+	set {_now.height} to 0
+	set {_minsize} to 1.5
+	set {_maxsize} to 2.5
+	set {_add.size} to ({_maxsize} - {_minsize}) / {_count}
+	set {_now.size} to {_minsize}
+	set {_now.radius} to {@effect-radius}
+	set {_diffusion} to 1
+	set {_add.radius} to {_diffusion} / {_count}
+
+	loop {_count} times:
+		set {_baseloc} to location {_now.height} meters above {_loc}
+		set {_movev} to vector({_now.radius}, 0, 0)
+		set {_now.rad} to 0
+		loop {_circle} times:
+			rotate {_movev} around y-axis by {_now.rad}
+			add {_add.rad} to {_now.rad}
+			set {_el} to {_baseloc} ~ {_movev}
+
+			set {_size} to {_now.size}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, {_size}, {_el})
+
+		add {_add.height} to {_now.height}
+		add {_add.size} to {_now.size}
+		add {_add.radius} to {_now.radius}
+		wait a tick
+
+local function particleSubGround(loc: location):
+	set {_count} to 6
+	set {_radius} to {@effect-radius}
+	set {_add.radius} to {_radius} / 6
+	set {_now.radius} to 0
+
+	set {_circle} to 60
+	set {_add.rad} to 360 / {_circle}
+	set {_now.rad} to 0
+
+	loop {_count} times:
+		add {_add.radius} to {_now.radius}
+		set {_rotatev} to vector({_now.radius}, 0, 0)
+		set {_now.rad} to 0
+		loop {_circle} times:
+			add {_add.rad} to {_now.rad}
+			rotate {_rotatev} around y-axis by {_now.rad}
+			set {_el} to {_loc} ~ {_rotatev}
+			set {_block} to block below {_el}
+			set {_blockdata} to block data of {_block}
+			spawnParticle_BlockData(block_crumble, {_blockdata}, {_el})
+		wait a tick
+
+local function particleHit(entity: entity):
 	set {_baseloc} to location 1 meters above {_entity}
 	loop 30 times:
 		spawnParticle_Vector(smoke, randomVector(), 2, {_baseloc})
@@ -58,9 +223,36 @@ local function kitParticle_ForceRush_Hit(entity: entity):
 	loop {_locs::*}:
 		spawnParticle_Block(magma block, loop-value)
 
-local function kitParticle_ForceRush_Fail(player: player):
-	playSound("entity.blaze.death", 1, 0.75, {_player})
+local function particleHurt(player: player):
+	set {_baseloc} to location 2 meters above {_player}
+	set {_count} to a random integer between 40 and 60
+	loop {_count} times:
+		set {_pow} to a random number between 0.3 and 0.55
+		set {_v} to randomVector({_pow})
+		set {_y} to a random number between -0.3 and 0.3
+		set {_v} to {_v} + vector(0, {_y}, 0)
+		set {_el} to {_baseloc} ~ {_v}
+		spawnParticle(falling_water, {_el})
 
-	set {_baseloc} to location 1 meter above {_player}
-	loop 50 times:
-		spawnParticle(dripping_water, moveRandomLocation({_baseloc}, 1))
+		chance of 3%:
+			wait a tick
+
+local function soundLaunch(player: player):
+	playSound("entity.breeze.inhale", 1.5, 0.75, {_player})
+	playSound("entity.breeze.hurt", 1, 1.2, {_player})
+	playSound("entity.breeze.idle_air", 1, 1.7, {_player})
+	set {_chance} to 5
+	loop {@charge-tick} times:
+		chance of {_chance}%:
+			playSound("entity.breeze.idle_air", 0.9, 1.7, {_player})
+		wait a tick
+
+local function soundPress(player: player):
+	playSound("entity.breeze.wind_burst", 1, 0.9, {_player})
+	playSound("entity.breeze.shoot", 1, 0.7, {_player})
+
+local function soundLand(loc: location):
+	playSound("entity.breeze.death", 1.7, 0.85, {_loc})
+
+local function soundHit(entity: entity):
+	playSound("entity.blaze.death", 1, 1.5, {_entity})
