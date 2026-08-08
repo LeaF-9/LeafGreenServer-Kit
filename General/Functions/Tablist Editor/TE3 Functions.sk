@@ -1,62 +1,88 @@
 import:
-	com.comphenix.protocol.PacketType
-	com.comphenix.protocol.events.PacketContainer
-	com.comphenix.protocol.wrappers.WrappedGameProfile
-	com.comphenix.protocol.wrappers.WrappedSignedProperty
-	com.comphenix.protocol.wrappers.WrappedChatComponent
-	com.comphenix.protocol.wrappers.PlayerInfoData
-	com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction
-	com.comphenix.protocol.wrappers.EnumWrappers.NativeGameMode
+	com.github.retrooper.packetevents.PacketEvents
+	com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate
+	com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate$Action
+	com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoRemove
+	com.github.retrooper.packetevents.protocol.player.UserProfile
+	com.github.retrooper.packetevents.protocol.player.TextureProperty
+	com.github.retrooper.packetevents.protocol.player.GameMode
+
+	net.kyori.adventure.text.Component
+
 	java.util.ArrayList
+	java.util.EnumSet
+	java.lang.Math
 	java.lang.String
 
-function tablist_build_player_info_data(slot: number) :: object:
-	set {_uuid} to {-tablist::uuid::%{_slot}%}
-	set {_formatting} to "%%0%{-tablist::namewidth}%d"
-	set {_sortname} to String.format({_formatting}, {_slot})
+	org.bukkit.Bukkit
 
-	set {_profile} to new WrappedGameProfile({_uuid}, {_sortname})
+function tablist_build_actions() :: object:
+	return EnumSet.of(Action.ADD_PLAYER, Action.UPDATE_LISTED, Action.UPDATE_DISPLAY_NAME)
+
+function tablist_build_player_info(slot: number) :: object:
+	set {_uuid} to {-tablist::uuid::%{_slot}%}
+	set {_sorttext} to "%%0%{-tablist::namewidth}%d"
+	set {_sortname} to String.format({_sorttext}, {_slot})
+
+	set {_profile} to new UserProfile({_uuid}, {_sortname})
 
 	if {-tablist::texturevalue::%{_slot}%} is set:
-		set {_property} to new WrappedSignedProperty("textures", {-tablist::texturevalue::%{_slot}%}, {-tablist::texturesignature::%{_slot}%})
-		{_profile}.getProperties().put("textures", {_property})
+		set {_sig} to {-tablist::texturesignature::%{_slot}%}
+		if any:
+			{_sig} is set
+			{_sig} is not ""
+		then:
+			set {_property} to new TextureProperty("textures", {-tablist::texturevalue::%{_slot}%}, {_sig})
+		else:
+			set {_property} to new TextureProperty("textures", {-tablist::texturevalue::%{_slot}%}, null)
+		{_profile}.getTextureProperties().add({_property})
 
 	set {_text} to {-tablist::text::%{_slot}%}
 	if {_text} is not set:
 		set {_text} to ""
 
-	return new PlayerInfoData({_profile}, 0, NativeGameMode.SURVIVAL, WrappedChatComponent.fromText({_text}))
+	return new WrapperPlayServerPlayerInfoUpdate.PlayerInfo({_profile}, true, 0, GameMode.SURVIVAL, Component.text({_text}), null)
 
 function tablist_send_slot_packet(slot: number):
+	set {_uuid} to {-tablist::uuid::%{_slot}%}
+	set {_removelist} to new ArrayList()
+	{_removelist}.add({_uuid})
+	set {_removepacket} to new WrapperPlayServerPlayerInfoRemove({_removelist})
+
 	set {_list} to new ArrayList()
-	{_list}.add(tablist_build_player_info_data({_slot}))
+	{_list}.add(tablist_build_player_info({_slot}))
+	set {_packet} to new WrapperPlayServerPlayerInfoUpdate(tablist_build_actions(), {_list})
 
-	set {_packet} to new PacketContainer(PacketType.Play.Server.PLAYER_INFO)
-	{_packet}.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER)
-	{_packet}.getPlayerInfoDataLists().write(0, {_list})
-
-	{-tablist::manager}.broadcastServerPacket({_packet})
+	loop all players:
+		PacketEvents.getAPI().getPlayerManager().sendPacket(loop-player, {_removepacket})
+		PacketEvents.getAPI().getPlayerManager().sendPacket(loop-player, {_packet})
 
 function tablist_send_all_slots(target: player):
+	set {_removelist} to new ArrayList()
 	set {_list} to new ArrayList()
 	set {_i} to 0
 	while {_i} < {-tablist::slotcount}:
-		{_list}.add(tablist_build_player_info_data({_i}))
+		{_removelist}.add({-tablist::uuid::%{_i}%})
+		{_list}.add(tablist_build_player_info({_i}))
 		add 1 to {_i}
 
-	set {_packet} to new PacketContainer(PacketType.Play.Server.PLAYER_INFO)
-	{_packet}.getPlayerInfoAction().write(0, PlayerInfoAction.ADD_PLAYER)
-	{_packet}.getPlayerInfoDataLists().write(0, {_list})
+	set {_removepacket} to new WrapperPlayServerPlayerInfoRemove({_removelist})
+	set {_packet} to new WrapperPlayServerPlayerInfoUpdate(tablist_build_actions(), {_list})
 
-	{-tablist::manager}.sendServerPacket({_target}, {_packet})
+	PacketEvents.getAPI().getPlayerManager().sendPacket({_target}, {_removepacket})
+	PacketEvents.getAPI().getPlayerManager().sendPacket({_target}, {_packet})
 
 # ---- 公開関数(仕様書のsetTablistSlotに相当) ----
 # texturevalue / texturesignature を使わない場合は "" を渡す
 function setTablistSlot(slot: number, text: string, texturevalue: string, texturesignature: string):
-	if {_slot} < 0 or {_slot} >= {-tablist::slotcount}:
+	if any:
+		{_slot} < 0
+		{_slot} >= {-tablist::slotcount}
+	then:
 		log "[TE] 無効なslotNumber: %{_slot}%"
 		stop
 
+	set {_slot} to toRowMajorSlot({_slot})
 	set {-tablist::text::%{_slot}%} to {_text}
 
 	if {_texturevalue} is "":
@@ -67,3 +93,12 @@ function setTablistSlot(slot: number, text: string, texturevalue: string, textur
 		set {-tablist::texturesignature::%{_slot}%} to {_texturesignature}
 
 	tablist_send_slot_packet({_slot})
+
+# 公開関数: 行優先のインデックスを列優先のslot番号に変換する
+function toRowMajorSlot(index: number) :: number:
+	set {_columns} to 4
+	set {_rows} to 20
+	set {_row} to Math.floorDiv({_index}, {_columns})
+	set {_col} to Math.floorMod({_index}, {_columns})
+	set {_return} to ({_row} * {_columns}) + {_col}
+	return {_return}

@@ -3,7 +3,6 @@ import:
 	ch.njol.skript.Skript
 	java.lang.Runnable
 	java.util.UUID
-	com.comphenix.protocol.wrappers.WrappedGameProfile
 
 # メインスレッドに戻ってからsetTablistSlotを実際に適用する
 function tablist_apply_resolved(slot: number, text: string, texturevalue: string, texturesignature: string, proxyself: object):
@@ -19,24 +18,36 @@ function tablist_resolve_username_async(slot: number, text: string, username: st
 function tablist_resolve_uuid_async(slot: number, text: string, uuidnodash: string, proxyself: object):
 	set {_head} to tablist_fetch_head_by_uuid({_uuidnodash})
 
+	set {_texturevalue} to {_head}.get(0)
+	set {_texturesignature} to {_head}.get(1)
+
 	set {_functions::run} to function reference "tablist_apply_resolved" called with arguments {_slot}, {_text}, {_head}.get(0), {_head}.get(1)
 	set {_runnable} to new proxy instance of Runnable using {_functions::*}
 	Bukkit.getScheduler().runTask(Skript.getInstance(), {_runnable})
 
 # ---- ① オンラインプレイヤーから直接指定 ----
 function setTablistSlotFromPlayer(slot: number, text: string, target: player):
-	set {_profile} to WrappedGameProfile.fromPlayer({_target})
-	set {_textures} to {_profile}.getProperties().get("textures")
+	set {_slot} to toRowMajorSlot({_slot})
 
-	if {_textures} is not set or {_textures}.isEmpty():
+	set {_profile} to {_target}.getPlayerProfile()
+	set {_properties} to {_profile}.getProperties()
+	set {_iterator} to {_properties}.iterator()
+
+	set {_found} to false
+	while {_iterator}.hasNext() is true:
+		set {_prop} to {_iterator}.next()
+		if {_prop}.getName() is "textures":
+			setTablistSlot({_slot}, {_text}, {_prop}.getValue(), {_prop}.getSignature())
+			set {_found} to true
+
+	if {_found} is false:
 		setTablistSlot({_slot}, {_text}, "", "")
-		stop
-
-	set {_first} to {_textures}.iterator().next()
-	setTablistSlot({_slot}, {_text}, {_first}.getValue(), {_first}.getSignature())
 
 # ---- ② アカウント名から指定(オンラインなら同期即時/オフラインならMojang APIへ非同期問い合わせ) ----
+# 非推奨
 function setTablistSlotFromUsername(slot: number, text: string, username: string):
+	set {_slot} to toRowMajorSlot({_slot})
+
 	set {_online} to Bukkit.getPlayerExact({_username})
 	if {_online} is set:
 		setTablistSlotFromPlayer({_slot}, {_text}, {_online})
@@ -47,7 +58,10 @@ function setTablistSlotFromUsername(slot: number, text: string, username: string
 	Bukkit.getScheduler().runTaskAsynchronously(Skript.getInstance(), {_runnable})
 
 # ---- ③ UUID文字列から指定(同上) ----
+# 非推奨
 function setTablistSlotFromUuid(slot: number, text: string, uuidstring: string):
+	set {_slot} to toRowMajorSlot({_slot})
+
 	set {_uuid} to UUID.fromString({_uuidstring})
 	set {_online} to Bukkit.getPlayer({_uuid})
 	if {_online} is set:
