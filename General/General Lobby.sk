@@ -7,13 +7,17 @@ command /setlobby:
 command /lobby:
 	trigger:
 		if {Join::%player%} is set:
+			# Join中だがLobbyワールドにいる場合 (試合開始前等)
 			if world of player is world of {LobbyLocation}:
 				teleport player to {LobbyLocation}
 				execute console command "/skclass %player% LobbyInv"
 				set player's gamemode to survival
+			# それ以外は全て禁止
 			else:
 				message "§c試合中にLobbyに戻ることは出来ません" to player
-		else:
+				stop
+		else:  # Join中でなければ発動可
+			updateKitTablist() if gamemode of player is spectator  # tablistの更新 (観戦中であった場合)
 			teleport player to {LobbyLocation}
 			execute console command "/skclass %player% LobbyInv"
 			set player's gamemode to survival
