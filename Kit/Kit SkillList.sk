@@ -286,7 +286,10 @@ local function buildLoadout(kit: text, type: text, name: text, num: number = 0) 
 
 	# cooldown group
 	set {_cdCom} to {_ItemMeta}.getUseCooldown()
-	{_cdCom}.setCooldownGroup({_value})
+	set {_cdString} to {_value} in lower case
+	replace " " with "-" in {_cdString}
+	set {_cdKey} to new NamespacedKey("leafgreen", {_cdString})
+	{_cdCom}.setCooldownGroup({_cdKey})
 	{_ItemMeta}.setUseCooldown({_cdCom})
 
 	# functions
