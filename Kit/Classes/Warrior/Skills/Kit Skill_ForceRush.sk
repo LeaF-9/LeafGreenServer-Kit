@@ -17,12 +17,16 @@ function kitEffect_ForceRush(player: player):
 	soundLaunch({_player})
 	set {_baseloc} to head of {_player}
 	set {_baseVector} to {_baseloc}.getDirection()
-	set {_baseVector} to {_baseVector} * vector(0.2, 0.2, 0.2)
+	set {_basePow} to 0.7
+	set {_baseVector} to {_baseVector} * vector({_basePow}, {_basePow}, {_basePow})
 	particleLaunch({_player})
 
 	set {_vector} to {_baseVector}
-	set {_plusUpVector} to vector(0, 0.01, 0)
-	set {_reverseVector} to {_baseVector} * vector(-0.005, -0.005, -0.005)
+	set {_flowPow} to 0.04
+	set {_plusUpVector} to vector(0, {_flowPow}, 0)
+	set {_reverseMul} to 0.01
+	set {_reversePow} to {_basePow} * {_reverseMul} * (-1)
+	set {_reverseVector} to {_baseVector} * vector({_reversePow}, {_reversePow}, {_reversePow})
 	loop {@charge-tick} times:
 		set velocity of {_player} to {_vector}
 		particleTrail({_player})
@@ -31,7 +35,8 @@ function kitEffect_ForceRush(player: player):
 
 	soundPress({_player})
 	set {_stop} to false
-	set {_downVector} to vector(0, -1, 0)
+	set {_downPow} to -2
+	set {_downVector} to vector(0, {_downPow}, 0)
 	set {_bloc} to location of {_player}
 	set {_first} to true
 	while {_stop} is false:
@@ -91,7 +96,7 @@ function kitEffect_ForceRush(player: player):
 	
 	if getKitStats({_player}, {@hurt-stats}) is {_hurt.uuid}:
 		deleteKitStats({_player}, {@hurt-stats})
-		applyPotionEffect({_player}, slowness, 1, -1, true, "non-particle")
+		applyPotionEffect({_player}, slowness, 1, -1, true, "non_particle")
 
 
 
