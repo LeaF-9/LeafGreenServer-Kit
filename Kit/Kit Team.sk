@@ -1,3 +1,6 @@
+import:
+	org.bukkit.entity.EntityType
+
 function kitCheckTeam(player1: entity, player2: entity, ally: boolean, all: boolean = false) :: boolean:
 	return false if isKitEntity({_player1}) is false
 	return false if isKitEntity({_player2}) is false
@@ -7,8 +10,8 @@ function kitCheckTeam(player1: entity, player2: entity, ally: boolean, all: bool
 	return false if isShieldEntity({_player1}) is true
 	return false if isShieldEntity({_player2}) is true
 
-	set {_team1} to getKitTeam({_player1}, {_all})
-	set {_team2} to getKitTeam({_player2}, {_all})
+	set {_team1} to getTeam({_player1}, {_all})
+	set {_team2} to getTeam({_player2}, {_all})
 
 	if {_ally} is true:
 		if any:
@@ -32,10 +35,10 @@ local function checkTestStand(entity1: entity, entity2: entity, ally: boolean) :
 	add "Test-Stand" to {_tests::*}
 	add "Tester-2" to {_tests::*}
 
-	if {_tests::*} contains display name of {_entity1}:
+	if {_tests::*} contains name of {_entity1}:
 		if {team::%{_entity2}%} is {_checkteam}:
 			set {_bool} to true
-	else if {_tests::*} contains display name of {_entity2}:
+	else if {_tests::*} contains name of {_entity2}:
 		if {team::%{_entity1}%} is {_checkteam}:
 			set {_bool} to true
 	
@@ -43,8 +46,11 @@ local function checkTestStand(entity1: entity, entity2: entity, ally: boolean) :
 
 
 
+function getTeam(entity: entity, all: boolean = false) :: text:
+	set {_player} to {_entity}
+	if {_entity}.getType() is not EntityType.PLAYER:
+		set {_player} to getSummonPlayer({_entity})
 
-function getTeam(player: player, all: boolean = false) :: text:
 	set {_change} to "team"
 	if {_all} is true:
 		set {_change} to "TrueTeam"

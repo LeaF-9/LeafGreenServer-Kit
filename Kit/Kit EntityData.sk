@@ -1,24 +1,10 @@
-import:
-	org.bukkit.entity.EntityType
-
 function createKitData(entity: entity, uuid: text = "original"):
 	set {_uuid} to {_entity}.getUniqueId().toString() if {_uuid} is "original"
 
 	set {_entityType} to {_entity}.getType()
-	if {_entityType} is not EntityType.PLAYER:
-		set {_sumonnerString} to getPersistentData({_entity}, "summon-player")
-		set {_summoner} to getPlayer({_summonerString})
-		set {_teamOwner} to {_summoner}
-	else:
-		set {_teamOwner} to {_entity}
-
-	set {_team} to {team::%{_teamOwner}%}
-	set {_trueteam} to {TrueTeam::%{_teamOwner}%}
 	set {_type} to {_entityType}.name()
 
 	setPersistentData({_entity}, "kit-uuid", {_uuid}, "string")
-	setPersistentData({_entity}, "kit-team", {_team}, "string")
-	setPersistentData({_entity}, "kit-trueteam", {_trueteam}, "string")
 	setPersistentData({_entity}, "kit-entitytype", {_type}, "string")
 
 	set {-kitEntities} to createNewArrayList() if {-kitEntities} is not set
@@ -26,8 +12,6 @@ function createKitData(entity: entity, uuid: text = "original"):
 
 function clearKitData(entity: entity):
 	removePersistentData({_entity}, "kit-uuid")
-	removePersistentData({_entity}, "kit-team")
-	removePersistentData({_entity}, "kit-trueteam")
 	removePersistentData({_entity}, "kit-entitytype")
 
 	{-kitEntities}.remove({_entity})
@@ -38,10 +22,6 @@ function isKitEntity(entity: entity) :: boolean:
 
 function getKitUUID(entity: entity) :: text:
 	return getPersistentData({_entity}, "kit-uuid", "string")
-
-function getKitTeam(entity: entity, all: boolean = false) :: text:
-	return getPersistentData({_entity}, "kit-team", "string") if {_all} is false
-	return getPersistentData({_entity}, "kit-trueteam", "string")
 
 function getKitEntityType(entity: entity) :: text:
 	return getPersistentData({_entity}, "kit-entitytype", "string")
