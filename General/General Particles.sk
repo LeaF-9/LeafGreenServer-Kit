@@ -3,16 +3,13 @@ import:
 	org.bukkit.inventory.ItemStack
 
 function spawnParticle(particle: object, loc: location, players: players = all players):
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 0, null, true)
+	particle({_particle}, {_loc}, 1, 0, 0, 0, 0, null, true, {_players::*})
 
 function spawnParticle_Block(block: block data, loc: location, players: players = all players):
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle(Particle.BLOCK, {_loc}, 1, 0, 0, 0, 0, {_block}, true)
+	particle(Particle.BLOCK, {_loc}, 1, 0, 0, 0, 0, {_block}, true, {_players::*})
 
 function spawnParticle_BlockData(particle: object, block: block data, loc: location, players: players = all players):
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_block}, true)
+	particle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_block}, true, {_players::*})
 
 function spawnParticle_Color(particle: object, color: color, loc: location, players: players = all players):
 	set {_R} to getColor_RED({_color})
@@ -20,35 +17,29 @@ function spawnParticle_Color(particle: object, color: color, loc: location, play
 	set {_B} to getColor_BLUE({_color})
 	set {_bukkitColor} to bukkitColor(255, {_R}, {_G}, {_B})
 
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_bukkitColor}, true)
+	particle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_bukkitColor}, true, {_players::*})
 
 function spawnParticle_ColorAlpha(particle: object, R: number, G: number, B: number, A: number, loc: location, players: players = all players):
 	set {_bukkitColor} to bukkitColor({_A}, {_R}, {_G}, {_B})
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_bukkitColor}, true)
+	particle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_bukkitColor}, true, {_players::*})
 
 function spawnParticle_Dust(color: color, size: number, loc: location, players: players = all players):
 	set {_dustOption} to dustOption({_color}, {_size})
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle(Particle.DUST, {_loc}, 1, 0, 0, 0, 0, {_dustOption}, true)
+	particle(Particle.DUST, {_loc}, 1, 0, 0, 0, 0, {_dustOption}, true, {_players::*})
 
 function spawnParticle_DustTransition(fColor: color, tColor: color, size: number, loc: location, players: players = all players):
 	set {_dustTransition} to dustTransition({_fColor}, {_tColor}, {_size})
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle(Particle.DUST_COLOR_TRANSITION, {_loc}, 1, 0, 0, 0, 0, {_dustTransition}, true)
+	particle(Particle.DUST_COLOR_TRANSITION, {_loc}, 1, 0, 0, 0, 0, {_dustTransition}, true, {_players::*})
 
 function spawnParticle_Item(item: item type, loc: location, players: players = all players):
 	set {_material} to {_item}.getMaterial()
 	set {_item} to new ItemStack({_material})
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle(Particle.ITEM, {_loc}, 1, 0, 0, 0, 0, {_item}, true)
+	particle(Particle.ITEM, {_loc}, 1, 0, 0, 0, 0, {_item}, true, {_players::*})
 
 function spawnParticle_Note(color: text, loc: location, players: players = all players):
 	set {_c} to noteColorOffset({_color})
 	set {_colorDouble} to {_c}.doubleValue()
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle(Particle.NOTE, {_loc}, 0, {_colorDouble}, 0, 0, 1, null, true)
+	particle(Particle.NOTE, {_loc}, 0, {_colorDouble}, 0, 0, 1, null, true, {_players::*})
 
 function noteColorOffset(color: text) :: number:
 	if {_color} is "brown":
@@ -81,43 +72,35 @@ function noteColorOffset(color: text) :: number:
 
 function spawnParticle_NoteOption(color: number, loc: location, players: players = all players):
 	set {_colorDouble} to {_color}.doubleValue()
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle(Particle.NOTE, {_loc}, 0, {_colorDouble}, 0, 0, 1, null, true)
+	particle(Particle.NOTE, {_loc}, 0, {_colorDouble}, 0, 0, 1, null, true, {_players::*})
 
 function spawnParticle_Number(particle: object, num: number, loc: location, players: players = all players):
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle({_particle}, {_loc}, 0, 0, 0, 0, 1, {_num}, true)
+	particle({_particle}, {_loc}, 0, 0, 0, 0, 1, {_num}, true, {_players::*})
 
 function spawnParticle_Speed(particle: object, speed: number, loc: location, players: players = all players):
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, {_speed}, null, true)
+	particle({_particle}, {_loc}, 1, 0, 0, 0, {_speed}, null, true, {_players::*})
 
 function spawnParticle_Spell(particle: object, color: color, power: number, loc: location, players: players = all players):
 	set {_spellOption} to particleSpell({_color}, {_power})
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 1, {_spellOption}, true) 
+	particle({_particle}, {_loc}, 1, 0, 0, 0, 1, {_spellOption}, true, {_players::*})
 
 function spawnParticle_SpellDot(particle: object, color: color, loc: location, players: players = all players):
 	set {_spellOption} to particleSpell({_color}, 1.35)  # 1.3-1.4
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_spellOption}, true) 
+	particle({_particle}, {_loc}, 1, 0, 0, 0, 0, {_spellOption}, true, {_players::*})
 
 function spawnParticle_Trail(color: color, target: location, duration: time span, loc: location, players: players = all players):
 	set {_trailOption} to trail({_target}, {_color}, {_duration})
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle(Particle.TRAIL, {_loc}, 1, 0, 0, 0, 0, {_trailOption}, true)
+	particle(Particle.TRAIL, {_loc}, 1, 0, 0, 0, 0, {_trailOption}, true, {_players::*})
 
 function spawnParticle_Vector(particle: object, vector: vector, power: number, loc: location, players: players = all players):
 	set {_x} to x of {_vector}
 	set {_y} to y of {_vector}
 	set {_z} to z of {_vector}
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle({_particle}, {_loc}, 0, {_x}, {_y}, {_z}, {_power}, null, true)
+	particle({_particle}, {_loc}, 0, {_x}, {_y}, {_z}, {_power}, null, true, {_players::*})
 
 function spawnParticle_Vibration(fromloc: location, toloc: location, speed: time span, players: players = all players):
 	set {_vibration} to vibration({_toloc}, {_speed})
-	for {_player} in {_players::*}:
-		{_player}.spawnParticle(Particle.VIBRATION, {_fromloc}, 1, 0, 0, 0, 0, {_vibration}, true)
+	particle(Particle.VIBRATION, {_fromloc}, 1, 0, 0, 0, 0, {_vibration}, true, {_players::*})
 
 
 
@@ -143,3 +126,17 @@ function colorRandomizer(r: number, g: number, b: number, rr: number, rg: number
 
 	set {_return} to rgb({_dr}, {_dg}, {_db})
 	return {_return}
+
+local function particle(particle: object, loc: location, count: number, offsetX: number, offsetY: number, offsetZ: number, extra: number, data: object, force: boolean, players: players = all players):
+	if {_particle} is not instance of Particle:
+		set {_str} to "%{_particle}%"
+		replace " " with "_" in {_str}
+		set {_str} to {_str} in upper case
+		set {_particle} to Particle.valueOf({_str})
+
+	for {_player} in {_players::*}:
+		{_player}.spawnParticle({_particle}, {_loc}, {_count}.intValue(), {_offsetX}.doubleValue(), {_offsetY}.doubleValue(), {_offsetZ}.doubleValue(), {_extra}.doubleValue(), {_data}, {_force})
+
+# local function exception(text: text) :: text:
+# 	return "CRIT" if {_text} is "ARROW_FIRE"
+# 	return {_text}
