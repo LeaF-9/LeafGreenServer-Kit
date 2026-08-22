@@ -1,0 +1,255 @@
+# Sanguine Spike
+options:
+	data-generator: "sanguine-spike-generator"
+	prepare-tick: 20
+
+	effect-radius: 8
+	effect-damage: 2
+	effect-add-damage: 2
+	effect-slow-level: 3
+	effect-slow-tick: 100
+
+on projectile hit:
+	projectile is a snowball
+	getPersistentData(projectile, {@data-generator}) is true
+	setPersistentData(projectile, {@data-generator}, false)
+	effectGenerate(shooter, location of projectile)
+
+
+
+function kitEffect_SanguineSpike(player: player):
+	nameCT({_player}, "Sanguine Spike")
+	kitMsg({_player}, "§4§l棘弾§cを発射します...")
+	shoot a snowball from {_player} at speed 1.2
+	set {_shot} to shot snowball
+	set item of {_shot} to redstone block
+	setPersistentData({_shot}, {@data-generator}, true)
+	particleShot({_player}, {_shot})
+
+local function effectGenerate(player: player, loc: location):
+	particlePrepare({_loc})
+	loop {@prepare-tick} times:
+		wait a tick
+
+	particleExplosion({_loc})
+	loop all entities in radius {@effect-radius} around {_loc}:
+		kitCheckTeam(loop-entity, {_player}, false) is true
+		set {_dmg} to {@effect-damage}
+
+		if checkEntityType(loop-entity, player) is true:
+			if getDebuffs(loop-entity, "Blood") is true:
+				add {@effect-add-damage} to {_dmg}
+				applyEffect(loop-entity, slowness, {@effect-slow-level}, {@effect-slow-tick})
+				kitEffectDescription(loop-entity, "§4❤%{_dmg}% §8& 鈍足")
+				sendTimeBossbar_RED(loop-entity, "§8§l鈍足", {@effect-slow-tick})
+
+			else:
+				kitBlood(loop-entity)
+				kitEffectDescription(loop-entity, "§4❤%{_dmg}% §8& §4出血")
+		
+		kitDamage({_player}, loop-entity, {_dmg}, "棘玉")
+		particleHit(loop-entity)
+
+
+
+local function particleShot(player: player, proj: entity):
+	playSound("block.netherite_block.step", 1, 1.2, {_player})
+	loop 100 times:
+		stop if getPersistentData({_proj}, {@data-generator}) is false
+
+		loop 5 times:
+			set {_projl} to location of {_proj}
+			set {_el} to moveRandomLocation({_projl}, 1)
+			spawnParticle_BlockData(falling_dust, red wool, {_el})
+		wait a tick
+
+local function particlePrepare(loc: location):
+	playSound("block.end_portal_frame.fill", 1, 1.1, {_loc})
+	playSound("block.portal.trigger", 1, 2, {_loc})
+
+	set {_size} to 1.5
+	set {_change.size} to 1.5 / {@prepare-tick}
+
+	set {_speedRotate} to 30
+	set {_display} to particleSpawnDisplay({_loc}, {_size})
+
+	set {_teleportLoc} to {_loc}
+	set pitch of {_teleportLoc} to 0
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	loop {@prepare-tick} times:
+		add {_speedRotate} to yaw of {_teleportLoc}
+		teleport {_display} to {_teleportLoc}
+
+		subtract {_change.size} from {_size}
+		set {_scale} to getVector3f({_size}, {_size}, {_size})
+		setTransformation({_display}, {_rotation}, {_rotation}, {_translation}, {_scale})
+
+		particleForce({_loc})
+		wait a tick
+	
+	{_display}.remove()
+
+local function particleSpawnDisplay(loc: location, size: number) :: entity:
+	set {_display} to spawnEntity(item display, {_loc})
+
+	setGameType({_display})
+	set {_item} to a redstone block
+
+	setBrightness({_display})
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+	setDisplayItem({_display}, {_item})
+
+	set {_rotation} to getQuaternionf(0, 0, 0, 1)
+	set {_translation} to getVector3f(0, 0, 0)
+	set {_scale} to getVector3f({_size}, {_size}, {_size})
+
+	set {_transformation} to getTransformation({_rotation}, {_rotation}, {_translation}, {_scale})
+	{_display}.setTransformation({_transformation})
+
+	return {_display}
+
+local function particleForce(loc: location):
+	add rgb(87, 13, 13) to {_colors::*}
+	add rgb(153, 44, 10) to {_colors::*}
+	add rgb(150, 8, 20) to {_colors::*}
+
+	set {_count.dust} to a random integer between 2 and 4
+	loop {_count.dust} times:
+		set {_dis} to a random number between 0 and 3
+		set {_v} to randomVector({_dis})
+		set {_el} to {_loc} ~ {_v}
+		set {_size} to a random number between 2 and 3
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, {_size}, {_el})
+	
+	set {_count.crimson} to a random integer between 20 and 50
+	loop {_count.crimson} times:
+		set {_dis} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_dis})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle(crimson_spore, {_el})
+	
+	set {_speed} to 10 ticks
+	set {_count.trail} to a random integer between 80 and 100
+	loop {_count.trail} times:
+		set {_dis} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_dis})
+		set {_el} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Trail({_color}, {_loc}, {_speed}, {_el})
+
+local function particleExplosion(loc: location):
+	playSound("block.vault.open_shutter", 1, 0.8, {_loc})
+
+	add rgb(168, 6, 6) to {_colors::*}
+	add rgb(206, 54, 8) to {_colors::*}
+	add rgb(202, 6, 22) to {_colors::*}
+	set {_block} to a redstone block
+
+	loop 30 times:
+		set {_display} to particleSpikeDisplay({_loc}, {_block})
+		add {_display} to {_displays::*}
+	
+	set {_count.ins} to a random integer between 200 and 300
+	loop {_count.ins} times:
+		set {_dis} to a random number between 3 and {@effect-radius}
+		set {_v} to randomVector({_dis})
+		set {_el} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors::*}
+		set {_power} to a random number between 0 and 0.5
+		spawnParticle_Spell(instant_effect, {_color}, {_power}, {_el})
+
+	set {_count.dust} to a random integer between 200 and 300
+	loop {_count.dust} times:
+		set {_dis} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_dis})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle_BlockData(dust_pillar, redstone block, {_el})
+
+	set {_tick.exist} to 30
+	set {_tick.vanish} to 4
+	set {_tick.stand} to {_tick.exist} - {_tick.vanish}
+	loop {_tick.stand} times:
+		wait a tick
+
+	set {_left} to getQuaternionf(0.683, 0.683, 0.1829, 0.182)
+	set {_right} to getQuaternionf(0.8805, 0.3647, -0.2798, -0.1159)
+	set {_translation} to getVector3f(0, 0, 0)
+	set {_scale.x} to 11
+	set {_scale.y} to 1
+	set {_scale.z} to 1
+	set {_count.dec} to {_tick.vanish}
+	set {_dec.x} to {_scale.x} / {_count.dec}
+	set {_dec.y} to {_scale.y} / {_count.dec}
+	set {_dec.z} to {_scale.z} / {_count.dec}
+
+	loop {_count.dec} times:
+		subtract {_dec.x} from {_scale.x}
+		subtract {_dec.y} from {_scale.y}
+		subtract {_dec.z} from {_scale.z}
+		set {_scale} to getVector3f({_scale.x}, {_scale.y}, {_scale.z})
+		set {_transformation} to getTransformation({_left}, {_right}, {_translation}, {_scale})
+		for {_d} in {_displays::*}:
+			{_d}.setTransformation({_transformation})
+
+		wait a tick
+
+	for {_d} in {_displays::*}:
+		{_d}.remove()
+	particleVanish({_loc})
+
+local function particleSpikeDisplay(loc: location, item: item type) :: display:
+	set yaw of {_loc} to a random number between 0 and 360
+	set pitch of {_loc} to a random number between -90 and 90
+	set {_display} to spawnEntity(item display, {_loc})
+
+	setGameType({_display})
+	setBrightness({_display})
+	{_display}.setTeleportDuration(1)
+	{_display}.setInterpolationDuration(1)
+	{_display}.setViewRange(1000)
+	setDisplayItem({_display}, {_item})
+
+	# set {_left} to getQuaternionf(-0.5, 0.4991, 0.5005, -0.5003)
+	# set {_right} to getQuaternionf(0.06, 0.5406, 0.7046, 0.4558)
+	# set {_translation} to getVector3f(0, 0, 0)
+	# set {_scale} to getVector3f(7, 1, 1)
+	set {_left} to getQuaternionf(0.683, 0.683, 0.1829, 0.182)
+	set {_right} to getQuaternionf(0.8805, 0.3647, -0.2798, -0.1159)
+	set {_translation} to getVector3f(0, 0, 0)
+	set {_scale} to getVector3f(11, 1, 1)
+
+	set {_transformation} to getTransformation({_left}, {_right}, {_translation}, {_scale})
+	{_display}.setTransformation({_transformation})
+
+	return {_display}
+
+local function particleVanish(loc: location):
+	set {_count} to a random integer between 80 and 100
+	loop {_count} times:
+		set {_dis} to a random number between 0 and {@effect-radius}
+		set {_v} to randomVector({_dis})
+		set {_el} to {_loc} ~ {_v}
+		set {_vec} to normalized {_v}
+		spawnParticle_Vector(smoke, {_v}, 0.3, {_el})
+
+local function particleHit(entity: entity):
+	playSound("block.vault.close_shutter", 1, 1.1, {_entity})
+
+	add rgb(87, 13, 13) to {_colors::*}
+	add rgb(153, 44, 10) to {_colors::*}
+	add rgb(150, 8, 20) to {_colors::*}
+
+	set {_count} to a random integer between 10 and 15
+	loop {_count} times:
+		set {_el} to aroundEffect({_entity})
+		set {_size} to a random number between 1.5 and 2.5
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, {_size}, {_el})
+
+		chance of 30%:
+			set {_el} to aroundEffect({_entity})
+			spawnParticle_BlockData(falling_dust, redstone block, {_el})
