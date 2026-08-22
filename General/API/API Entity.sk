@@ -4,9 +4,7 @@ import:
 function spawnEntity(mobtype: entity type, loc: location) :: entity:
 	set {_world} to world of {_loc}
 
-	set {_typeString} to {_mobtype}.toString().toUpperCase()
-	replace " " with "_" in {_typeString}
-	set {_type} to EntityType.valueOf({_typeString})
+	set {_type} to typeParser({_mobtype})
 
 	set {_mob} to {_world}.spawnEntity({_loc}, {_type})
 	return {_mob}
@@ -15,3 +13,11 @@ function spawnEntityType(mobtype: object, loc: location) :: entity:
 	set {_world} to world of {_loc}
 	set {_mob} to {_world}.spawnEntity({_loc}, {_mobtype})
 	return {_mob}
+
+local function typeParser(mobtype: entity type) :: object:
+	set {_typeString} to {_mobtype}.toString().toUpperCase()
+	replace " " with "_" in {_typeString}
+	replace "UNDEAD" with "ZOMBIE" in {_typeString}  # zombie horseの妥協案
+	replace "NORMAL_" with "" in {_typeString}  # guardianの妥協案
+	set {_type} to EntityType.valueOf({_typeString})
+	return {_type}
