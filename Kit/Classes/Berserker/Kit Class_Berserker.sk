@@ -1,4 +1,8 @@
 # Passive
+options:
+	berserk-range: 6
+	berserk-damage: 1
+
 on damage of player:
 	damage was caused by attack
 	set {_attacker} to getAttacker(victim)
@@ -7,8 +11,8 @@ on damage of player:
 
 	if getKitStats({_attacker}, "Berserk") is true:
 		set {_enable} to true
-		set {_range} to 5
-		set {_damage} to 1
+		set {_range} to {@berserk-range}
+		set {_damage} to {@berserk-damage}
 	if getKitStats({_attacker}, "BerserkTime") is set:
 		set {_enable} to true
 		set {_range} to kitEffect_BerserkTime_GetRadius()
@@ -47,14 +51,18 @@ function kitTimerBerserker(player: player):
 	setKitStats({_player}, "NoSupport", true)
 	setKitStats({_player}, "Berserk", true)
 	while {Class::%{_player}%} is "Berserker":
-		# Insane Limiter
-		set {_pop} to 0
-		loop all players in radius 10 around {_player}:
+		# Berserk - weakness
+		set {_range} to {@berserk-range}
+		if getKitStats({_player}, "BerserkTime") is set:
+			set {_range} to kitEffect_BerserkTime_GetRadius()
+
+		set {_exist} to false
+		loop all players in radius {_range} around {_player}:
 			loop-player is not {_player}
-			add 1 to {_pop}
-		if {_pop} <= 4:
-			set {_lvl} to 4 - (1 * {_pop})
-			applyEffect({_player}, weakness, {_lvl}, 20, true)
+			set {_exist} to true
+
+		if {_exist} is false:
+			applyEffect({_player}, weakness, 3, 20, true)
 			kitParticle_InsaneLimiter({_player})
 
 		wait a second
