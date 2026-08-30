@@ -47,7 +47,7 @@ function hasPotionEffect(entity: entity, effect: potion effect type) :: boolean:
 	return {_entity}.hasPotionEffect({_effect})
 
 function getPotionEffects(entity: entity) :: objects:
-	set {_potionList} to {_entity}.getPotionEffects()
+	set {_potionList} to {_entity}.getActivePotionEffects()
 	
 	loop ...{_potionList}:
 		set {_effect} to loop-value
@@ -87,19 +87,14 @@ local function effectFormat(effect: potion effect) :: text:
 	return {_effectformat}
 
 function effectType(effect: potion effect) :: potion effect type:
-	set {_format} to effectFormat({_effect})
-	set {_formats::*} to {_format} split at "|"
-	set {_effecttype} to {_formats::1} parsed as potion effect type
+	set {_effecttype} to {_effect}.getType()
 	return {_effecttype}
 
 function effectTier(effect: potion effect) :: number:
-	set {_format} to effectFormat({_effect})
-	set {_formats::*} to {_format} split at "|"
-	set {_effecttier} to {_formats::2} parsed as number
+	set {_effecttier} to {_effect}.getAmplifier()
 	return {_effecttier}
 
 function effectTime(effect: potion effect) :: time span:
-	set {_format} to effectFormat({_effect})
-	set {_formats::*} to {_format} split at "|"
-	set {_effecttime} to {_formats::3} parsed as time span
+	set {_time} to {_effect}.getDuration()
+	set {_effecttime} to convertTickTime({_time})
 	return {_effecttime}
