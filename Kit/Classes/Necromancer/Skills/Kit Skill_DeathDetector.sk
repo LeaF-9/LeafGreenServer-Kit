@@ -1,6 +1,18 @@
 # Death Detector
 options:
 	machine-key: "Death Detector"
+	machine-apply-radius: 10
+	metadata-apply: "Death Detector - Kall"
+
+	vengeful-amount: 3
+
+on death with priority LOW:
+	getMetadata(victim, {@metadata-apply}) is set
+	set {_player} to getMetadata(victim, {@metadata-apply})
+
+	set {_loc} to getKitStats({_player}, "DeathDetector")
+	stop if {_loc} is not set
+	kitEffect_DeathDetector_Summon({_player}, {_loc})
 
 function kitEffect_DeathDetector(player: player):
 	set {_SkillLocation} to getKitStats({_player}, "SkillLocation")
@@ -48,14 +60,29 @@ function kitEffect_DeathDetector(player: player):
 	kitMsg({_player}, "<##8b0000>死を感知して骨を召喚する装置を設置しました...")
 	playSound("block.end_portal_frame.fill", 1, 0.5, {_baseloc})
 	while getKitStats({_player}, "DeathDetector-Time") is {_now}:
-		wait a second
 		set {_exist} to kitFakeCheck({_player}, {@machine-key})
 		if {_exist} is false:
 			deleteKitStats({_player}, "DeathDetector-Time")
+			continue
+		
+		loop all entities in radius around {@machine-apply-radius} around {_SkillLocation}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			getMetadata(loop-entity, {@metadata-apply}) is not set
+			setMetadata(loop-entity, {@metadata-apply}, {_player})
+			
+			message formatted "§8骨を呼ぶ§5§o呪い§4が取り憑いた..." to loop-entity
+			kitEffectDescription(loop-entity, "§8呪骨")
+
+			particleApply(loop-entity)
+			soundApply(loop-entity)
+			particleLaunch({_loc3})
+			soundLaunch({_SkillLocation})
+
+		wait 5 ticks
 	if getKitStats({_player}, "DeathDetector-Time") is not set:
 		deleteKitStats({_player}, "DeathDetector")
 
-function kitEffect_DeathDetector_Summon(player: player, loc: location):  # 死んだ際に発動する関数
+local function kitEffect_DeathDetector_Summon(player: player, loc: location):  # 死んだ際に発動する関数
 	stop if kitFakeCheck({_player}, {@machine-key}) is false
 
 	playSound("entity.wither_skeleton.death", 1, 1, {_loc})
@@ -72,24 +99,14 @@ function kitEffect_DeathDetector_Summon(player: player, loc: location):  # 死�
 		loop-block is air
 		block below loop-block is not passable
 		add location of loop-block to {_locs::*}
-	set {_num} to a random integer between 0 and 2
-	if {_num} is 0:
-		stop
-	kitEffectDescription({_player}, "§f呼骨")
-	loop {_num} times:
-		delete {_vengeful}
-		set {_c} to kitPercent({_player}, 10)
-		chance of {_c}%:
-			set {_vengeful} to true
-		set {_sumloc} to a random location out of {_locs::*}
-		if {_vengeful} is true:
-			kitSpawn_Necromancer_Vengeful({_player}, {_sumloc})
-		else:
-			set {_skeleton} to kitSpawn_Necromancer_Skeleton({_player}, {_sumloc})
-			set max health of {_skeleton} to 1
-	kitEffect_DeathDetector_Glowing({_player})
 
-local function kitEffect_DeathDetector_Glowing(player: player):
+	kitEffectDescription({_player}, "§f呼骨")
+	set {_sumloc} to a random location out of {_locs::*}
+	set {_skeleton} to kitSpawn_Necromancer_Skeleton({_player}, {_sumloc})
+	set max health of {_skeleton} to 1
+	kitEffect_DeathDetector_Glowing({_player}, 20)
+
+local function kitEffect_DeathDetector_Glowing(player: player, tick: number):
 	set {_machines::*} to kitFakeDisplays({_player}, {@machine-key})
 
 	loop {_machines::*}:
@@ -98,5 +115,85 @@ local function kitEffect_DeathDetector_Glowing(player: player):
 	
 	{_glowEntity} is set
 	set glowing of {_glowEntity} to true
-	wait 3 seconds
+	loop {_tick} times:
+		wait a tick
 	set glowing of {_glowEntity} to false
+
+# 左クリック処理
+on leftclick:
+	set {_player} to player
+	set {_tool} to tool of {_player}
+	kitItemAllChecker({_tool}, "Necromancer", "Skill", 6) is true
+	getKitStats({_player}, "DeathDetector") is set
+	checkCT({_player}, "Summon Vengeful") is true
+	kitCheckNecromance({_player}, {_tool}) is true
+
+	setCT({_player}, "Summon Vengeful", 10)
+	sendTimeBossbar_YELLOW({_player}, "§e§lSummon Vengeful §7- §9Cool Time", 200)
+	kitRemoveNecromance({_player}, {_tool})
+	kitMsg({_player}, "<##39090c>§l§oしぶとい霊<##382553>を呼び寄せます...")
+
+	set {_loc} to getKitStats({_player}, "DeathDetector")
+	particleCall({_loc})
+	soundCall({_loc})
+	kitEffect_DeathDetector_Glowing({_player}, 60)
+
+	loop all blocks in radius 3 around {_loc}:
+		loop-block is air
+		block below loop-block is not passable
+		add location of loop-block to {_locs::*}
+
+	loop {@vengeful-amount} times:
+		set {_sumloc} to a random location out of {_locs::*}
+		kitSpawn_Necromancer_Vengeful({_player}, {_sumloc})
+
+
+
+local function particleApply(entity: entity):
+	add rgb(81, 77, 82) to {_colors::*}
+	add rgb(47, 45, 49) to {_colors::*}
+	add rgb(43, 48, 49) to {_colors::*}
+
+	set {_count} to a random integer between 15 and 25
+	loop {_count} times:
+		set {_el} to aroundEffect({_entity})
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 0.5, {_el})
+	
+	set {_apply} to true
+	set {_item} to a bone
+	while {_apply} is true:
+		stop if getMetadata({_entity}, {@metadata-apply}) is not set
+
+		set {_count} to a random integer between 10 and 15
+		loop {_count} times:
+			set {_el} to aroundEffect({_entity})
+			spawnParticle_Item({_item}, {_el})
+		wait a second
+
+local function particleLaunch(loc: location):
+	set {_count} to a random integer between 10 and 20
+	loop {_count} times:
+		set {_v} to randomVector(0.5)
+		set {_el} to {_loc} ~ {_v}
+
+		set {_up} to a random number between 0.1 and 0.3
+		set {_upv} to vector(0, {_up}, 0)
+		spawnParticle_Vector(trial_spawner_detection_ominous, {_upv}, 0.2, {_el})
+
+local function particleCall(loc: location):
+	set {_count} to a random integer between 30 and 50
+	loop {_count} times:
+		set {_v} to randomVector(0.8)
+		set {_el} to {_loc} ~ {_v}
+
+		spawnParticle(trial_omen, {_el})
+
+local function soundApply(entity: entity):
+	playSound("entity.skeleton.ambient", 1, 0.7, {_entity})
+
+local function soundLaunch(loc: location):
+	playSound("entity.skeleton.hurt", 1, 1.4, {_loc})
+
+local function soundCall(loc: location):
+	playSound("entity.wither_skeleton.death", 1, 0.7, {_loc})

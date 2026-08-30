@@ -49,22 +49,15 @@ on death:
 
 		set {_summoner} to getPlayer({_necroEntity})
 		kitAddNecromance({_summoner}, 1)
-	else:  # プレイヤーが死んだ際の処理
-		getGameType(victim) is "Kit"
-		if {Class::%victim%} is "Necromancer":
-			if damage was caused by void:
-				if {-LastKiller::%victim%} is not set:
-					stop
-			if getKitStats(victim, "DumpSoul") is true:
+	else if {Class::%victim%} is "Necromancer":  # プレイヤーが死んだ際の処理
+		if damage was caused by void:
+			if {-LastKiller::%victim%} is not set:
 				stop
-			else:
-				kitAddNecromance(victim, 1)
-				kitSpawn_Necromancer_Ghost(victim, location of victim, true)
-		loop all players:
-			delete {_ddloc}
-			set {_ddloc} to getKitStats(loop-player, "DeathDetector")
-			continue if {_ddloc} is not set
-			kitEffect_DeathDetector_Summon(loop-player, {_ddloc})
+		if getKitStats(victim, "DumpSoul") is true:
+			stop
+		else:
+			kitAddNecromance(victim, 1)
+			kitSpawn_Necromancer_Ghost(victim, location of victim, true)
 
 on rightclick:
 	{Class::%player%} is "Necromancer"
