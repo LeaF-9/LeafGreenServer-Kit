@@ -1,4 +1,6 @@
 # skill-name: Rush Attack
+options:
+	effect-radius: 7
 
 function kitEffect_RushAttack(player: player):
 	nameCT({_player}, "Rush Attack")
@@ -12,7 +14,7 @@ function kitEffect_RushAttack(player: player):
 		if getKitStats({_player}, "RushAttack") is not {_now}:
 			continue
 		
-		loop all entities in radius 5 around {_player}:
+		loop all entities in radius {@effect-radius} around {_player}:
 			loop-entity is not {_player}
 			continue if checkEntityAlive(loop-entity) is false
 			kitDamage({_player}, loop-entity, 0.5, "乱撃")
@@ -39,8 +41,8 @@ local function kitParticle_RushAttack(player: player):
 		set {_baseloc} to location 1 meter above {_player}
 		loop 8 times:
 			set {_el} to {_baseloc}
-			add 5 * sin({_rad}) to x of {_el}
-			add 5 * cos({_rad}) to z of {_el}
+			add {@effect-radius} * sin({_rad}) to x of {_el}
+			add {@effect-radius} * cos({_rad}) to z of {_el}
 			add 45 to {_rad}
 			spawnParticle_Block(magma block, {_el})
 
