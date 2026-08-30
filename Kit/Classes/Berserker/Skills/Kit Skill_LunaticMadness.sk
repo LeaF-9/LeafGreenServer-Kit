@@ -139,6 +139,7 @@ local function kitEffect_LunaticMadness_Buff(player: player, effects: potion eff
 	applyEffect({_player}, regeneration, {_tier}, {_time})
 
 	kitMsg({_player}, "§5デバフを§4§l自分の力§5へと変換した...")
+	sendTimeBossbar_GREEN({_player}, "Lunatic Madness", {_time})
 
 local function kitEffect_LunaticMadness_Splash(player: player, effects: potion effects):
 	kitMsg({_player}, "§5デバフ§cを§4液体§cとして撒き散らします!")
@@ -187,7 +188,9 @@ local function kitEffect_LunaticMadness_Splash(player: player, effects: potion e
 			loop {_effect-types::*}:
 				set {_index} to loop-index
 				applyEffect(loop-player, {_effect-types::%{_index}%}, {_effect-tiers::%{_index}%}, {_time})
-			message "§4赤い液体に含まれていた§5§lデバフエフェクト§4を食らってしまった!" to loop-player
+			message formatted "§4赤い液体に含まれていた§5§lデバフエフェクト§4を食らってしまった!" to loop-player
+			sendTimeBossbar_RED(loop-player, "Lunatic Madness", {_time})
+			kitEffectDescription(loop-player, "§c§oデバフ")
 			kitParticle_LunaticMadness_Hit(loop-player)
 			deleteMetadata(loop-player, {@metadata-hit})
 		
