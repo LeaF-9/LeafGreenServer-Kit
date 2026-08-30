@@ -1,15 +1,22 @@
 # skill-name: Lunatic Madness
+options:
+	data-frag: "lunatic-madness-liquid"
+	metadata-hit: "lunatic madness - hit"
+
+	effect-tick: 200
 
 on damage of player:
 	damage was caused by projectile
 	projectile is a snowball
-	metadata value "lunatic madness - liquid" of projectile is set
-	set {_player} to metadata value "lunatic madness - liquid" of projectile
-	set metadata value "lunatic madness - hit" of victim to {_player}
+	set {_playerUUID} to getPersistentData(projectile, {@data-frag})
+	stop if {_playerUUID} is not set
+	set {_player} to getPlayer({_playerUUID})
+
+	setMetadata(victim, {@metadata-hit}, {_player})
 
 on projectile hit:
 	projectile is a snowball
-	metadata value "lunatic madness - liquid" of projectile is set
+	getPersistentData(projectile, {@data-frag}) is set
 	kitParticle_LunaticMadness_Splash(location of projectile)
 
 
@@ -35,7 +42,7 @@ function kitEffect_LunaticMadness(player: player):
 
 	# clear debuffs from player
 	loop {_debuff types::*}:
-		remove loop-value from {_player}
+		{_player}.removePotionEffect(loop-value)
 	
 	# enchanting item
 	loop all items in {_player}'s inventory:
@@ -50,7 +57,7 @@ function kitEffect_LunaticMadness(player: player):
 		loop all items in {_player}'s inventory:
 			kitItemAllChecker(loop-item, "Berserker", "Skill", 7) is true
 			set {_possess} to true
-		if {_possess} is not set:
+		if {_possess} is not set:  # player no longer have the item
 			set {_true} to false
 			continue
 
@@ -122,36 +129,22 @@ local function kitEffect_LunaticMadness_Execute(player: player, type: text):
 	setKitStats({_player}, "LunaticMadness", {_type})
 
 local function kitEffect_LunaticMadness_Buff(player: player, effects: potion effects):
-	set {_mintier} to 0
-	set {_mintime} to 0 seconds
-	loop {_effects::*}:
-		# tier
-		set {_tier} to effectTier(loop-value)
-		if {_tier} > 3:
-			set {_tier} to 3
-		
-		if {_tier} > {_mintier}:
-			set {_mintier} to {_tier}
-
-		# time
-		set {_time} to effectTime(loop-value)
-		if {_time} > 10 seconds:
-			set {_time} to 10 seconds
-		
-		if {_time} > {_mintime}:
-			set {_mintime} to {_time}
+	set {_tier} to size of {_effects::*}
+	set {_tier} to 3 if {_tier} > 3
+	set {_time} to {@effect-tick}
 	
 	kitParticle_LunaticMadness_Buff({_player})
-	
-	set {_mintick} to getTicks({_mintime})
-	applyEffect({_player}, strength, {_mintier}, {_mintick}, true)
-	applyEffect({_player}, regeneration, {_mintier}, {_mintick})
+
+	applyEffect({_player}, strength, {_tier}, {_time}, true)
+	applyEffect({_player}, regeneration, {_tier}, {_time})
 
 	kitMsg({_player}, "§5デバフを§4§l自分の力§5へと変換した...")
 
 local function kitEffect_LunaticMadness_Splash(player: player, effects: potion effects):
 	kitMsg({_player}, "§5デバフ§cを§4液体§cとして撒き散らします!")
 	playSound("item.bucket.empty_lava", 1, 0.85, {_player})
+
+	set {_time} to {@effect-tick}
 	loop {_effects::*}:
 		add 1 to {_count}
 
@@ -162,25 +155,25 @@ local function kitEffect_LunaticMadness_Splash(player: player, effects: potion e
 		# tier
 		set {_tier} to effectTier(loop-value)
 		set {_effect-tiers::%{_count}%} to {_tier}
-
-		# time
-		set {_time} to effectTime(loop-value)
-		if {_time} > 10 seconds:
-			set {_time} to 10 seconds
-		set {_time} to getTicks({_time})
-		set {_effect-times::%{_count}%} to {_time}
 	
 	set {_baseloc} to location 1.5 meters above {_player}
+	set {_basevec} to {_baseloc}.getDirection()
 	loop 20 times:
+		set {_add.x} to a random number between -0.3 and 0.3
+		set {_add.y} to a random number between -0.3 and 0.3
+		set {_add.z} to a random number between -0.3 and 0.3
+		set {_vec} to {_basevec} + vector({_add.x}, {_add.y}, {_add.z})
 		set {_fromshoot} to {_baseloc}
-		add a random number between -30 and 30 to yaw of {_fromshoot}
-		add a random number between -20 and 20 to pitch of {_fromshoot}
+		{_fromshoot}.setDirection({_vec})
 
 		shoot a snowball from {_fromshoot} at speed 0.75
-		setShooter(shot snowball, {_player})
-		set metadata value "lunatic madness - liquid" of shot snowball to {_player}
-		set item of shot snowball to magma block
-		kitParticle_LunaticMadness_Liquid(shot snowball)
+		set {_ball} to shot snowball
+		setShooter({_ball}, {_player})
+		set {_uuid} to uuid of {_player}
+		set {_uuidString} to "%{_uuid}%"
+		setPersistentData({_ball}, {@data-frag}, {_uuidString})
+		set item of {_ball} to magma block
+		kitParticle_LunaticMadness_Liquid({_ball})
 	
 	set {_enable} to true
 	loop 200 times:
@@ -189,18 +182,21 @@ local function kitEffect_LunaticMadness_Splash(player: player, effects: potion e
 
 		loop all players:
 			{_hit.%uuid of loop-player%} is not set
-			metadata value "lunatic madness - hit" of loop-player is {_player}
+			getMetadata(loop-player, {@metadata-hit}) is {_player}
 			set {_hit.%uuid of loop-player%} to true
 			loop {_effect-types::*}:
 				set {_index} to loop-index
-				applyEffect(loop-player, {_effect-types::%{_index}%}, {_effect-tiers::%{_index}%}, {_effect-times::%{_index}%})
+				applyEffect(loop-player, {_effect-types::%{_index}%}, {_effect-tiers::%{_index}%}, {_time})
 			message "§4赤い液体に含まれていた§5§lデバフエフェクト§4を食らってしまった!" to loop-player
 			kitParticle_LunaticMadness_Hit(loop-player)
-			delete metadata value "lunatic madness - hit" of loop-player
+			deleteMetadata(loop-player, {@metadata-hit})
 		
 		set {_projcount} to 0
 		loop all projectiles:
-			metadata value "lunatic madness - liquid" of loop-projectile is {_player}
+			set {_projData} to getPersistentData(loop-projectile, {@data-frag})
+			continue if {_projData} is not set
+			set {_projPlayer} to getPlayer({_projData})
+			{_projPlayer} is {_player}
 			add 1 to {_projcount}
 		if {_projcount} is 0:
 			set {_enable} to false
