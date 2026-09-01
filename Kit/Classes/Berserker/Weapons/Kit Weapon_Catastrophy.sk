@@ -38,24 +38,28 @@ local function kitEffect_Catastrophy(player: player):
 	set {_m} to 1
 	set {_throwloc} to {_baseloc}
 	set {_gravity} to vector(0, -0.03, 0)
+
+	set {_axisVec} to getVectorFromPitchAxis({_baseloc})
+	set {_directVec} to {_baseloc}.getDirection()
 	loop 100 times:
 		if {_enabled} is false:
 			wait a tick
 			continue
 		
 		# item display control
+
 		set {_throwvec} to setVector({_throwloc}, location {_m} meters in front of {_throwloc})
 		set {_throwvec} to {_throwvec} + {_gravity}
 		set {_throwloc} to setDirToVec({_throwloc}, {_throwvec})
 		set {_el} to location {_m} meters in front of {_throwloc}
 
-		set {_pitch.el} to pitch of {_el}
-		add 90 to {_pitch}
-		set pitch of {_el} to {_pitch}
+		set {_returnVec} to {_directVec}
+		rotate {_directVec} around {_axisVec} by 90
+		{_el}.setDirection({_directVec})
 		teleport {_itemdisplay} to {_el}
 		kitParticle_Catastrophy_Pickaxe({_el}, loop-number)	
 
-		set pitch of {_el} to {_pitch.el}
+		{_el}.setDirection({_returnVec})
 
 		# check hitting (entity)
 		loop all entities in radius 1.5 around {_el}:
@@ -71,7 +75,7 @@ local function kitEffect_Catastrophy(player: player):
 			if block at {_el} is not passable:
 				set {_enabled} to false
 				set {_hit.block} to {_throwloc}
-		
+
 		set {_throwloc} to {_el}
 
 		# hit processing
