@@ -20,14 +20,17 @@ local function kitEffect_Catastrophy(player: player):
 	set {_itemdisplay} to spawned item display
 
 	set {_item} to netherite pickaxe
-	set {_matrix} to getAdjustedMatrix4f(-0, 0, 1, 0, 0, 1, 0, 0, -1, 0, -0, 0, 0, 0, 0, 1)
+	set {_matrix::0} to getAdjustedMatrix4f(-0, 0, 1, 0, 0, 1, 0, 0, -1, 0, -0, 0, 0, 0, 0, 1)
+	set {_matrix::1} to getAdjustedMatrix4f(0, 0, 1, 0, 1, 0, -0, 0, -0, 1, 0, 0, 0, 0, 0, 1)
+	set {_matrix::2} to getAdjustedMatrix4f(0, 0, 1, 0, 0, -1, 0, 0, 1, 0, -0, 0, 0, 0, 0, 1)
+	set {_matrix::3} to getAdjustedMatrix4f(0, 0, 1, 0, -1, -0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1)
 
 	setBrightness({_itemdisplay})
 	{_itemdisplay}.setTeleportDuration(1)
 	{_itemdisplay}.setInterpolationDuration(1)
 	{_itemdisplay}.setViewRange(1000)
 	setDisplayItem({_itemdisplay}, {_item})
-	{_itemdisplay}.setTransformationMatrix({_matrix})
+	{_itemdisplay}.setTransformationMatrix({_matrix::0})
 
 	set {_now} to now
 	set metadata value "Catastrophy - player" of {_itemdisplay} to {_player}
@@ -36,30 +39,31 @@ local function kitEffect_Catastrophy(player: player):
 	# throwing
 	set {_enabled} to true
 	set {_m} to 1
+	set {_count} to 0
 	set {_throwloc} to {_baseloc}
+	set {_baseDirect} to {_baseloc}.getDirection()
 	set {_gravity} to vector(0, -0.03, 0)
-
-	set {_axisVec} to getVectorFromPitchAxis({_baseloc})
-	set {_directVec} to {_baseloc}.getDirection()
 	loop 100 times:
 		if {_enabled} is false:
 			wait a tick
 			continue
 		
 		# item display control
+		add 1 to {_count}
 
 		set {_throwvec} to setVector({_throwloc}, location {_m} meters in front of {_throwloc})
 		set {_throwvec} to {_throwvec} + {_gravity}
 		set {_throwloc} to setDirToVec({_throwloc}, {_throwvec})
 		set {_el} to location {_m} meters in front of {_throwloc}
 
-		set {_returnVec} to {_directVec}
-		rotate {_directVec} around {_axisVec} by 90
-		{_el}.setDirection({_directVec})
-		teleport {_itemdisplay} to {_el}
-		kitParticle_Catastrophy_Pickaxe({_el}, loop-number)	
+		set {_dirloc} to {_el}
+		{_dirloc}.setDirection({_baseDirect})
+		set {_modnum} to mod({_count}, 4)
+		set {_mat} to {_matrix::%{_modnum}%}
+		{_itemdisplay}.setTransformationMatrix({_mat})
+		teleport {_itemdisplay} to {_dirloc}
+		kitParticle_Catastrophy_Pickaxe({_dirloc}, loop-number)	
 
-		{_el}.setDirection({_returnVec})
 
 		# check hitting (entity)
 		loop all entities in radius 1.5 around {_el}:
