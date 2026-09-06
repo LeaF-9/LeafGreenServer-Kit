@@ -68,6 +68,7 @@ function kitEffect_DeathDetector(player: player):
 		loop all entities in radius {@machine-apply-radius} around {_SkillLocation}:
 			kitCheckTeam(loop-entity, {_player}, false) is true
 			getMetadata(loop-entity, {@metadata-apply}) is not set
+			add loop-entity to {_targets::*}
 			setMetadata(loop-entity, {@metadata-apply}, {_player})
 			
 			message formatted "§8骨を呼ぶ§5§o呪い§4が取り憑いた..." to loop-entity
@@ -81,6 +82,9 @@ function kitEffect_DeathDetector(player: player):
 		wait 5 ticks
 	if getKitStats({_player}, "DeathDetector-Time") is not set:
 		deleteKitStats({_player}, "DeathDetector")
+	for {_e} in {_targets::*}:
+		getMetadata({_e}, {@metadata-apply}) is {_player}
+		deleteMetadata({_e}, {@metadata-apply})
 
 local function kitEffect_DeathDetector_Summon(player: player, loc: location):  # 死んだ際に発動する関数
 	stop if kitFakeCheck({_player}, {@machine-key}) is false
