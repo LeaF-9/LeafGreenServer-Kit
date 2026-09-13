@@ -19,6 +19,38 @@ on death of player:
 		wait 3 ticks
 		set slot 1 of victim to air
 
+function kitSearchSpiritItem(player: player, name: text) :: item:
+	set {_tool} to {_player}'s tool
+	set {_toolname} to getItemName({_tool})
+	set {_toolname} to unformatted {_toolname}
+	set {_skill} to {_tool} if {_toolname} is {_name}
+
+	if {_skill} is not set:
+		loop all items in {_player}'s inventory:
+			set {_toolname} to getItemName(loop-item)
+			set {_toolname} to unformatted {_toolname}
+			if {_toolname} is {_name}:
+				set {_skill} to loop-item
+	stop if {_skill} is not set
+	return {_skill}
+
+function kitRequiredSpirit(skill: item) :: number:
+	set {_lore::*} to lore of {_skill}
+	loop {_lore::*}:
+		loop-value contains "§4Spirit§7:"
+		set {_spirit} to loop-value
+	replace every "§4Spirit§7: §5" with "" in {_spirit}
+	set {_spirit} to {_spirit} parsed as number
+	return {_spirit}
+
+function kitHasSpirit(player: player, number: number) :: boolean:
+	set {_hasSpirit} to kitGetSpirit({_player})
+	return true if {_hasSpirit} >= {_number}
+	return false
+
+function kitGetSpirit(player: player) :: number:
+	return {Kit-Spirits::%{_player}%}
+
 function kitCheckSpirit(player: player, name: text) :: boolean:
 	set {_tool} to {_player}'s tool
 	set {_toolname} to getItemName({_tool})
