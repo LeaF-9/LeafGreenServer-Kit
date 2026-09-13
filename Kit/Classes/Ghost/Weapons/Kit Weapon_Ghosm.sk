@@ -1,24 +1,35 @@
-# weapon-name: Ghost Book
+# weapon-name: Ghosm
 
-function kitEffect_GhostBook(player: player):
-	nameItemCT({_player}, "Ghost Book")
-	kitSound_GhostBook_Launch({_player})
-	set {_baseloc} to location of head of {_player}
+options:
+	required-spirit: 10
+
+	effect-tick: 60
+	beam-mps: 10
+	beam-meter: 10
+
+	enhanced-damage: 2.5
+	enhanced-mps: 40
+	enhanced-meter: 20
+
+function kitEffect_Ghosm(player: player):
+	nameItemCT({_player}, "Ghosm")
+	kitSound_Ghosm_Launch({_player})
+	set {_baseloc} to head of {_player}
 	set {_m} to 0
 	loop 20 times:
 		add 0.5 to {_m}
 		set {_effloc} to location {_m} meters in front of {_baseloc}
-		kitParticle_GhostBook_Beam({_effloc})
+		kitParticle_Ghosm_Beam({_effloc})
 		set {_hits::*} to checkHitEntities({_effloc})
 		loop {_hits::*}:
 			{_hit.%uuid of loop-value-2%} is not set
 			kitCheckTeam(loop-value-2, {_player}, false) is true
 			set {_hit.%uuid of loop-value-2%} to true
-			kitEffect_GhostBook_Hit({_player}, loop-value-2)
+			kitEffect_Ghosm_Hit({_player}, loop-value-2)
 		wait a tick
 
-local function kitEffect_GhostBook_Hit(player: player, target: entity):
-	kitParticle_GhostBook_Hit({_target})
+local function kitEffect_Ghosm_Hit(player: player, target: entity):
+	kitParticle_Ghosm_Hit({_target})
 	applyEffect({_target}, blindness, 1, 60)
 	if checkEntityType({_target}, player) is true:
 		set {_memsg} to kitGhostMessage("§5%{_target}% §0に暗黒効果を付与した...")
@@ -28,7 +39,7 @@ local function kitEffect_GhostBook_Hit(player: player, target: entity):
 
 
 
-local function kitParticle_GhostBook_Beam(loc: location):
+local function kitParticle_Ghosm_Beam(loc: location):
 	set {_rn} to a random integer between 1 and 3
 	if {_rn} is 1:
 		set {_color} to rgb(13, 0, 21)
@@ -45,7 +56,7 @@ local function kitParticle_GhostBook_Beam(loc: location):
 		spawnParticle_BlockData(falling_dust, black wool, {_el})
 
 
-local function kitParticle_GhostBook_Hit(entity: entity):
+local function kitParticle_Ghosm_Hit(entity: entity):
 	loop 10 times:
 		set {_el} to aroundEffect({_entity})
 		spawnParticle(smoke, {_el})
@@ -53,5 +64,5 @@ local function kitParticle_GhostBook_Hit(entity: entity):
 
 
 
-local function kitSound_GhostBook_Launch(player: player):
+local function kitSound_Ghosm_Launch(player: player):
 	playSound("entity.wither.shoot", 1, 0.85, {_player})
