@@ -62,6 +62,34 @@ function checkHitEntities(loc: location) :: entities:
 		add loop-entity to {_entities::*}
 	return {_entities::*}
 
+function checkHitEntities_Sphere(loc: location, radius: number) :: entities:
+	set {_rad} to {_radius} + 2
+	loop all entities in radius {_radius} around {_loc}:
+		delete {_continue}
+		if checkEntityType(loop-entity, armor stand) is true:
+			continue
+		if checkEntityType(loop-entity, block display) is true:
+			continue
+		if checkEntityType(loop-entity, item display) is true:
+			continue
+		if checkEntityType(loop-entity, text display) is true:
+			continue
+		if checkEntityType(loop-entity, falling block) is true:
+			continue
+
+		if getPersistentData(loop-entity, "shield-entity") is true:
+			if {_shield} is set:
+				continue
+			set {_shield} to true
+		
+		if {_continue} is true:
+			continue
+		checkHitting_Sphere(loop-entity, {_loc}, {_radius}) is true
+		add loop-entity to {_entities::*}
+	return {_entities::*}
+
+
+
 function checkHitting(entity: entity, loc: location) :: boolean:
 	set {_bool} to false
 	set {_BoundingBox} to {_entity}.getBoundingBox()
