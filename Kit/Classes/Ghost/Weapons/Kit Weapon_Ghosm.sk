@@ -4,6 +4,7 @@ options:
 	required-spirit: 10
 
 	effect-tick: 60
+
 	beam-mps: 10
 	beam-meter: 10
 
@@ -14,25 +15,50 @@ options:
 function kitEffect_Ghosm(player: player):
 	nameItemCT({_player}, "Ghosm")
 	kitSound_Ghosm_Launch({_player})
+	set {_enhance} to true if kitHasSpirit({_player}, {@required-spirit}) is true
+
 	set {_baseloc} to head of {_player}
 	set {_m} to 0
-	loop 20 times:
-		add 0.5 to {_m}
+	set {_addm} to 0.5
+	set {_await} to {@beam-mps} / 20
+	set {_await} to {@enhanced-mps} / 20 if {_enhance} is true
+
+	set {_count} to {@beam-meter} / {_addm}
+	set {_count} to {@enhanced-meter} / {_addm} if {_enhance} is true
+
+	loop {_count} times:
+		add {_addm} to {_m}
 		set {_effloc} to location {_m} meters in front of {_baseloc}
 		kitParticle_Ghosm_Beam({_effloc})
+		kitParticle_Ghosm_Smoke({_effloc}) if {_enhance} is true
 		set {_hits::*} to checkHitEntities({_effloc})
 		loop {_hits::*}:
 			{_hit.%uuid of loop-value-2%} is not set
 			kitCheckTeam(loop-value-2, {_player}, false) is true
 			set {_hit.%uuid of loop-value-2%} to true
+			if {_enhance} is true:
+				kitEffect_Ghosm_EnhanceHit({_player}, loop-value-2)
+				continue
 			kitEffect_Ghosm_Hit({_player}, loop-value-2)
-		wait a tick
+
+		wait a tick if mod({_m}, {_await}) = 0
 
 local function kitEffect_Ghosm_Hit(player: player, target: entity):
 	kitParticle_Ghosm_Hit({_target})
-	applyEffect({_target}, blindness, 1, 60)
+	applyEffect({_target}, blindness, 1, {@effect-tick})
+	applyEffect({_target}, wither, 1, {@effect-tick})
 	if checkEntityType({_target}, player) is true:
 		set {_memsg} to kitGhostMessage("§5%{_target}% §0に暗黒効果を付与した...")
+		set {_youmsg} to kitGhostMessage("§0??????????", true)
+		kitMsg({_player}, {_memsg})
+		message formatted {_youmsg} to {_tg}
+
+local function kitEffect_Ghosm_EnhanceHit(player: player, target: entity):
+	kitParticle_Ghosm_Hit({_target})
+	kitDamage({_player}, {_target}, {@enhanced-damage}, "暗雲")
+	applyEffect({_target}, blindness, 1, {@effect-tick})
+	if checkEntityType({_target}, player) is true:
+		set {_memsg} to kitGhostMessage("§5%{_target}% §0に暗雲効果を付与した...")
 		set {_youmsg} to kitGhostMessage("§0??????????", true)
 		kitMsg({_player}, {_memsg})
 		message formatted {_youmsg} to {_tg}
@@ -55,6 +81,17 @@ local function kitParticle_Ghosm_Beam(loc: location):
 		add a random number between -1 and 1 to z of {_el}
 		spawnParticle_BlockData(falling_dust, black wool, {_el})
 
+local function kitParticle_Ghosm_Smoke(loc: location):
+	add rgb(16, 15, 17) to {_colors::*}
+	add rgb(26, 26, 27) to {_colors::*}
+	add rgb(32, 15, 36) to {_colors::*}
+
+	set {_count} to a random integer between 3 and 8
+	loop {_count} times:
+		set {_v} to randomVector(1)
+		set {_el} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 0.5, {_el})
 
 local function kitParticle_Ghosm_Hit(entity: entity):
 	loop 10 times:
