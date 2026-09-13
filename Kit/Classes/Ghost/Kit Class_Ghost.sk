@@ -78,6 +78,13 @@ function kitCheckSpirit(player: player, name: text) :: boolean:
 	send action bar "§5§lSpiritが不足しています!" to {_player}
 	return false
 
+command /kit-spirit <number> <player=%player%>:
+	permission: sk.admin
+	trigger:
+		set {_player} to arg 2
+		set {Kit-Spirits::%{_player}%} to arg 1
+		message formatted "§6§l%{_player}% §eの§4Spirit値§eを §9§l%arg 1% §eに設定しました" to player
+
 function kitGhostMessage(text: text, bold: boolean = false) :: text:
 	set {_colors::*} to {_text} split at "§"
 	set {_finalstring} to ""
