@@ -1,67 +1,210 @@
 # Weapon-Name: Anima Massa
 
-function kitEffect_AnimaMassa_Sneak(player: player, event: object):
-	getKitStats({_player}, "SpareSoul") is not set
-	set {_num} to 0
-	set {_lore::*} to lore of {_tool}
-	loop {_lore::*}:
-		loop-value contains "§4Spirit§7:"
-		set {_spirit} to loop-value
-	replace every "§4Spirit§7: §5" with "" in {_spirit}
-	set {_spirit} to {_spirit} parsed as number
-	wait a tick
-	set {_true} to false
-	while {_true} is false:
-		set {_tool} to {_player}'s tool
-		if {_player} is not sneaking:
-			delete {_true}
-			continue
-		if kitItemAllChecker({_tool}, "Ghost", "Weapon", 2) is false:
-			delete {_true}
-			continue
-		if {Kit-Spirits::%{_player}%} < {_spirit}:
-			delete {_true}
-			continue
-		if getKitStats({_player}, "SpareSoul") is true:
-			delete {_true}
-			continue
-		if {_num} is 200:
-			set {_true} to true
-			continue
-		add 1 to {_num}
-		set {_linenum} to round({_num} / 4)
-		chargeActionBar({_player}, {_linenum}, 50)
-		# --- チャージ中の演出 ---
-		kitParticle_AnimaMassa_Charge({_player}, {_num})
-		# ------------------------------------
-		wait a tick
-	if {_true} is not set:
-		send action bar "§8チャージに失敗しました" to {_player}
-		stop
-	if kitCheckSpirit({_player}, "Anima Massa") is false:
-		stop
-	setKitStats({_player}, "SpareSoul", true)
-	setKitStats({_player}, "Resurrection", true)
-	set {_memsg} to kitGhostMessage("§5Spare Soul §8を獲得した...", true)
-	kitMsg({_player}, {_memsg})
-	kitParticle_AnimaMassa_Complete({_player})
+options:
+	required-spirit: 10
+	add-damage: 1.5
 
-function kitParticle_AnimaMassa_Charge(player: player, prog: number):
-	playSound("block.campfire.crackle", 0.5, 2, {_player})
-	set {_baseloc} to location of {_player}
-	set {_y} to {_prog} / 100
-	add {_y} to y of {_baseloc}
-	set {_rad} to 0
-	loop 10 times:
-		add 36 to {_rad}
-		set {_el} to {_baseloc}
-		add 0.5 * sin({_rad}) to x of {_el}
-		add 0.5 * cos({_rad}) to z of {_el}
+	charge-tick: 40
+	effect-meter: 10
+	effect-radius: 10
+	effect-damage: 6.6
+
+function kitEffect_AnimaMassa_AttackLow(player: player, object: event):
+	set {_victim} to {_event}.getEntity()
+	set {_attacker} to {_player}
+	stop if kitHasSpirit({_attacker}, {@required-spirit}) is false
+
+	setDamageModification_Add({_victim}, {@add-damage})
+	particleEnhance({_victim})
+	soundEnhance({_victim})
+
+function kitEffect_AnimaMassa(player: player):
+	if kitHasSpareSoul({_player}) is false:
+		send action bar "§5§lSpare Soul§c§lがありません" to {_player}
+		stop
+
+	soundCharge({_player})
+	set {_weaponTool} to tool of {_player}
+
+	set {_using} to true
+	set {_usingTick} to 0
+	set {_charging} to true
+	while {_charging} is true:
+		if checkEating({_player}) is false:
+			if {_usingTick} <= {@charge-tick}:
+				set {_charged} to true
+			delete {_using}
+		if kitHasSpareSoul({_player}) is false:
+			delete {_using}
+		set {_nowTool} to tool of {_player}
+		if {_nowTool} is not {_weaponTool}:
+			delete {_using}
+
+		continue if {_using} is not true
+
+		add 1 to {_usingTick}
+		particleCharge({_player})
+		wait a tick
+	
+	if {_charged} is not true:
+		soundCancel({_player})
+		stop
+
+	deleteKitStats({_player}, "SpareSoul")
+	effectLaunch({_player})
+
+local function effectLaunch(player: player):
+	particleLaunch({_player})
+	soundLaunch({_player})
+
+	set {_baseloc} to head of {_player}
+	set {_m} to 0
+	set {_count} to 10
+	set {_tickDelay} to 1
+	set {_addm} to {@effect-meter} / {_count}
+
+	loop {_count} times:
+		add {_addm} to {_m}
+		set {_v} to {_baseloc}.getDirection()
+		set {_v} to {_v} * vector({_m}, {_m}, {_m})
+		set {_el} to {_baseloc} ~ {_v}
+		particleTrail({_el})
+
+		wait a tick if mod({_m}, {_tickDelay}) is 0
+	
+	effectExplosion({_player}, {_el})
+
+local function effectExplosion(player: player, loc: location):
+	particleExplosion({_loc})
+	soundExplosion({_loc})
+
+	loop all entities in radius {@effect-radius} around {_loc}:
+		kitCheckTeam(loop-entity, {_player}, false, true) is true
+		kitDamage({_player}, loop-entity, {@effect-damage}, "魂爆")
+		kitEffectDescription(loop-entity, "§4❤%{@effect-damage}%")
+		particleHit(loop-entity)
+		soundHit(loop-entity)
+
+
+
+local function particleEnhance(entity: entity):
+	set {_count} to a random integer between 5 and 10
+	loop {_count} times:
+		set {_el} to aroundEffect({_entity})
 		spawnParticle(soul_fire_flame, {_el})
 
-function kitParticle_AnimaMassa_Complete(player: player):
-	playSound("entity.zombie_villager.converted", 1, 0.5, {_player})
-	set {_baseloc} to location of {_player}
-	add 1 to y of {_baseloc}
-	loop 20 times:
-		spawnParticle_Vector(soul, randomVector(), 0.5, {_baseloc})
+local function particleCharge(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_count} to a random integer between 3 and 5
+	loop {_count} times:
+		set {_pow} to a random number between 0.3 and 0.6
+		set {_v} to randomVector()
+		spawnParticle_Vector(sculk_soul, {_v}, {_pow}, {_baseloc})
+	
+	set {_count} to a random integer between 5 and 8
+	loop {_count} times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle(sculk_charge_pop, {_el})
+
+local function particleLaunch(player: player):
+	set {_baseloc} to head of {_player}
+
+	set {_basevec} to {_baseloc}.getDirection()
+	set {_rotatevec} to getVectorFromYawAxis({_baseloc}, 0.5)
+
+	set {_count} to 80
+	set {_rad} to 0
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		add {_addrad} to {_rad}
+		set {_v} to {_rotatevec}
+		rotate {_v} around {_basevec} by {_rad}
+		spawnParticle_Vector(trial_spawner_detection_omnious, {_v}, 0.6, {_baseloc})
+
+local function particleTrail(loc: location):
+	set {_basevec} to {_loc}.getDirection()
+	set {_rotatevec} to getVectorFromYawAxis({_loc})
+
+	add rgb(22, 18, 35) to {_colors::*}
+	add rgb(25, 8, 43) to {_colors::*}
+	add rgb(50, 14, 43) to {_colors::*}
+
+	set {_transColor} to rgb(10, 0, 15)
+
+	set {_count} to a random integer between 5 and 10
+	loop {_count} times:
+		set {_v} to randomVector(0.5)
+		set {_el} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_DustTransition({_color}, {_transColor}, 2.5, {_el})
+	
+	add rgb(20, 6, 67) to {_colors.spell::*}
+	add rgb(39, 4, 77) to {_colors.spell::*}
+	add rgb(70, 5, 72) to {_colors.spell::*}
+
+	set {_count} to 10
+	set {_rad} to 0
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		add {_addrad} to {_rad}
+		set {_v} to {_rotatevec}
+		rotate {_v} around {_basevec} by {_rad}
+		set {_el} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors.spell::*}
+		spawnParticle_Spell(effect, {_color}, 0.9, {_el})
+
+local function particleExplosion(loc: location):
+	add rgb(24, 19, 25) to {_colors::*}
+	add rgb(41, 27, 52) to {_colors::*}
+	add rgb(21, 17, 49) to {_colors::*}
+
+	set {_count} to a random integer between 150 and 220
+	loop {_count} times:
+		set {_v} to randomVector({@effect-radius})
+		set {_el} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors::*}
+		spanwParticle_Spell(instant_effect, {_color}, 0.3, {_el})
+	
+	set {_count} to a random integer between 90 and 120
+	loop {_count} times:
+		set {_pow} to a random number between 1 and 10
+		set {_v} to randomVector({_pow})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle_Block(black concrete, {_el})
+	
+	set {_count} to a random integer between 50 and 60
+	loop {_count} times:
+		set {_pow} to a random number between 0.4 and 0.65
+		set {_v} to randomVector({_pow})
+		spawnParticle_Vector(large_smoke, {_v}, 0.45, {_loc})
+
+local function particleHit(entity: entity):
+	add rgb(27, 11, 31) to {_colors::*}
+	add rgb(44, 11, 23) to {_colors::*}
+	add rgb(35, 3, 3) to {_colors::*}
+
+	set {_count} to a random integer between 10 and 20
+	loop {_count} times:
+		set {_el} to aroundEffect({_entity})
+		set {_color} to a random element out of {_colors::*}
+		set {_size} to a random number between 2.9 and 3.2
+		spawnParticle_Dust({_color}, {_size}, {_el})
+
+local function soundEnhance(entity: entity):
+	playSound("particle.soul_escape", 1, 1.15, {_entity})
+
+local function soundCharge(player: player):
+	playSound("block.respawn_anchor.charge", 1, 1.3, {_player})
+
+local function soundCancel(player: player):
+	playSound("entity.wither.break_block", 1, 1.7, {_player})
+
+local function soundLaunch(player: player):
+	playSound("entity.wither.shoot", 1, 0.8, {_player})
+
+local function soundExplosion(loc: location):
+	playSound("block.respawn_anchor.set_spawn", 1, 1.9, {_loc})
+	playSound("block.respawn_anchor.deplete", 1, 0.75, {_loc})
+
+local function soundHit(entity: entity):
+	playSound("entity.enderman.hurt", 1, 0.7, {_entity})
