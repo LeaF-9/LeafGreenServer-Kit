@@ -1,11 +1,20 @@
 # Weapon-Name: Poltergeist
 
+options:
+	required-spirit: 10
+
+	effect-damage: 1.5
+	enhance-damage: 2
+
+	enhance-tick: 60
+	enhance-metadata: "Poltergeist - Enhance"
+
 function kitEffect_Poltergeist(player: player):
 	nameItemCT({_player}, "Poltergeist")
 	set {_baseloc} to location of head of {_player}
 	set {_boost} to false
 	if {_player} is sneaking:
-		if kitCheckSpirit({_player}, "Poltergeist") is true:
+		if kitHasSpirit({_player}, {@required-spirit}) is true:
 			set {_boost} to true
 	kitParticle_Poltergeist_Beam({_baseloc}, {_boost})
 	set {_m} to 0
@@ -24,19 +33,22 @@ function kitEffect_Poltergeist(player: player):
 local function kitEffect_Poltergeist_Hit(player: player, target: entity, boost: boolean):
 	kitParticle_Poltergeist_Hit({_target})
 	if {_boost} is true:
-		kitDamage({_player}, {_target}, 2.5, "音の悪戯")
-		applyEffect({_target}, nausea, 1, 160, true)
+		kitDamage({_player}, {_target}, {@enhance-damage}, "音の悪戯")
+		set {_applyTick} to {@enhance-tick} + 40
+		applyEffect({_target}, nausea, 1, {_applyTick}, true)
 		if checkEntityType({_target}, player) is true:
-			set {_memsg} to kitGhostMessage("§5%{_target}% §4に音のいたずらを誘発する...")
-			set {_youmsg} to kitGhostMessage("§8不思議な音が鳴り響く...", true)
-			kitMsg({_player}, {_memsg})
-			message formatted {_youmsg} to {_target}
+			kitEffectDescription({_target}, "§3§l音の悪戯")
+			sendTimeBossbar_RED({_target}, "§3§l音の悪戯", {@enhance-tick})
 			kitEffect_Poltergeist_Sound({_target})
 		stop
-	kitDamage({_player}, {_target}, 1.5, "音の悪戯")
+	kitDamage({_player}, {_target}, {@effect-damage}, "音の悪戯")
 
 local function kitEffect_Poltergeist_Sound(target: player):
-	loop 100 times:
+	set {_uuid} to a random uuid
+	setMetadata({_target}, {@enhance-metadata}, {_uuid})
+	loop {@enhance-tick} times:
+		stop if getMetadata({_target}, {@enhance-metadata}) is not {_uuid}
+
 		if mod(loop-number, 2) is 0:
 			set {_yaw} to 5
 		else:
@@ -46,6 +58,9 @@ local function kitEffect_Poltergeist_Sound(target: player):
 			kitSound_Poltergeist_Foot({_target})
 		kitParticle_Poltergeist_Confuse({_target})
 		wait a tick
+	
+	if getMetadata({_target}, {@enhance-metadata}) is {_uuid}
+		deleteMetadata({_target}, {@enhance-metadata})
 
 
 local function kitParticle_Poltergeist_Beam(baseloc: location, boost: boolean):
