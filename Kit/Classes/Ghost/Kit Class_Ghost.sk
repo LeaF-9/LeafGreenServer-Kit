@@ -90,6 +90,19 @@ command /kit-spirit <number> <player=%player%>:
 		set {Kit-Spirits::%{_player}%} to arg 1
 		message formatted "§6§l%{_player}% §eの§4Spirit値§eを §9§l%arg 1% §eに設定しました" to player
 
+command /kit-sparesoul <boolean> <player=%player%>:
+	permission: sk.admin
+	trigger:
+		set {_player} to arg 2
+		if arg 1 is true:
+			setKitStats({_player}, "SpareSoul", true)
+			setKitStats({_player}, "Resurrection", true)
+			message formatted "§6§l%{_player}% §eの§4Spare Soul§eを§a§l有効化§eしました" to player
+			stop
+		deleteKitStats({_player}, "SpareSoul")
+		deleteKitStats({_player}, "Resurrection")
+		message formatted "§6§l%{_player}% §eの§4Spare Soul§eを§c§l無効化§eしました" to player
+
 function kitGhostMessage(text: text, bold: boolean = false) :: text:
 	set {_colors::*} to {_text} split at "§"
 	set {_finalstring} to ""
