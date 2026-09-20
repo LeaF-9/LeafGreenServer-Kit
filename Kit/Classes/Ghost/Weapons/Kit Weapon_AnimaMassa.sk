@@ -2,19 +2,19 @@
 
 options:
 	required-spirit: 10
-	add-damage: 1.5
+	add-damage: 1
 
 	charge-tick: 40
 	effect-meter: 10
 	effect-radius: 10
 	effect-damage: 6.6
 
-function kitEffect_AnimaMassa_AttackLow(player: player, object: event):
+function kitEffect_AnimaMassa_AttackLow(player: player, event: object):
 	set {_victim} to {_event}.getEntity()
 	set {_attacker} to {_player}
 	stop if kitHasSpirit({_attacker}, {@required-spirit}) is false
 
-	setDamageModification_Add({_victim}, {@add-damage})
+	setDamageModification_ADD({_victim}, {@add-damage})
 	particleEnhance({_victim})
 	soundEnhance({_victim})
 
@@ -31,18 +31,26 @@ function kitEffect_AnimaMassa(player: player):
 	set {_charging} to true
 	while {_charging} is true:
 		if checkEating({_player}) is false:
-			if {_usingTick} <= {@charge-tick}:
-				set {_charged} to true
 			delete {_using}
 		if kitHasSpareSoul({_player}) is false:
 			delete {_using}
+			delete {_charged}
 		set {_nowTool} to tool of {_player}
 		if {_nowTool} is not {_weaponTool}:
 			delete {_using}
+			delete {_charged}
 
-		continue if {_using} is not true
+		if {_using} is not true:
+			delete {_charging}
+			continue
 
 		add 1 to {_usingTick}
+		if all:
+			{_usingTick} >= {@charge-tick}
+			{_charged} is not set
+		then:
+			soundComplete({_player})
+			set {_charged} to true
 		particleCharge({_player})
 		wait a tick
 	
@@ -51,6 +59,7 @@ function kitEffect_AnimaMassa(player: player):
 		stop
 
 	deleteKitStats({_player}, "SpareSoul")
+	deleteKitStats({_player}, "Resurrection")
 	effectLaunch({_player})
 
 local function effectLaunch(player: player):
@@ -81,7 +90,7 @@ local function effectExplosion(player: player, loc: location):
 	loop all entities in radius {@effect-radius} around {_loc}:
 		kitCheckTeam(loop-entity, {_player}, false, true) is true
 		kitDamage({_player}, loop-entity, {@effect-damage}, "魂爆")
-		kitEffectDescription(loop-entity, "§4❤%{@effect-damage}%")
+		kitEffectDescription(loop-entity, "§4❤{@effect-damage}")
 		particleHit(loop-entity)
 		soundHit(loop-entity)
 
@@ -95,13 +104,13 @@ local function particleEnhance(entity: entity):
 
 local function particleCharge(player: player):
 	set {_baseloc} to location 1 meter above {_player}
-	set {_count} to a random integer between 3 and 5
+	set {_count} to a random integer between 1 and 2
 	loop {_count} times:
-		set {_pow} to a random number between 0.3 and 0.6
+		set {_pow} to a random number between 0.085 and 0.15
 		set {_v} to randomVector()
 		spawnParticle_Vector(sculk_soul, {_v}, {_pow}, {_baseloc})
 	
-	set {_count} to a random integer between 5 and 8
+	set {_count} to a random integer between 1 and 2
 	loop {_count} times:
 		set {_el} to aroundEffect({_player})
 		spawnParticle(sculk_charge_pop, {_el})
@@ -119,7 +128,7 @@ local function particleLaunch(player: player):
 		add {_addrad} to {_rad}
 		set {_v} to {_rotatevec}
 		rotate {_v} around {_basevec} by {_rad}
-		spawnParticle_Vector(trial_spawner_detection_omnious, {_v}, 0.6, {_baseloc})
+		spawnParticle_Vector(trial_spawner_detection_ominous, {_v}, 0.6, {_baseloc})
 
 local function particleTrail(loc: location):
 	set {_basevec} to {_loc}.getDirection()
@@ -158,25 +167,25 @@ local function particleExplosion(loc: location):
 	add rgb(41, 27, 52) to {_colors::*}
 	add rgb(21, 17, 49) to {_colors::*}
 
-	set {_count} to a random integer between 150 and 220
+	set {_count} to a random integer between 300 and 400
 	loop {_count} times:
 		set {_v} to randomVector({@effect-radius})
 		set {_el} to {_loc} ~ {_v}
 		set {_color} to a random element out of {_colors::*}
-		spanwParticle_Spell(instant_effect, {_color}, 0.3, {_el})
+		spawnParticle_Spell(instant_effect, {_color}, 0.3, {_el})
 	
-	set {_count} to a random integer between 90 and 120
+	set {_count} to a random integer between 150 and 200
 	loop {_count} times:
-		set {_pow} to a random number between 1 and 10
+		set {_pow} to a random number between 1 and {@effect-radius}
 		set {_v} to randomVector({_pow})
 		set {_el} to {_loc} ~ {_v}
 		spawnParticle_Block(black concrete, {_el})
 	
-	set {_count} to a random integer between 50 and 60
+	set {_count} to a random integer between 100 and 150
 	loop {_count} times:
 		set {_pow} to a random number between 0.4 and 0.65
 		set {_v} to randomVector({_pow})
-		spawnParticle_Vector(large_smoke, {_v}, 0.45, {_loc})
+		spawnParticle_Vector(large_smoke, {_v}, 0.75, {_loc})
 
 local function particleHit(entity: entity):
 	add rgb(27, 11, 31) to {_colors::*}
@@ -195,6 +204,9 @@ local function soundEnhance(entity: entity):
 
 local function soundCharge(player: player):
 	playSound("block.respawn_anchor.charge", 1, 1.3, {_player})
+
+local function soundComplete(player: player):
+	playSound("ui.button.click", 1, 0.65, {_player}, true)
 
 local function soundCancel(player: player):
 	playSound("entity.wither.break_block", 1, 1.7, {_player})
