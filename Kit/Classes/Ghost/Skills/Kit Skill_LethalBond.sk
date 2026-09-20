@@ -1,0 +1,157 @@
+# Lethal Bond
+options:
+	stats-applier: "LethalBondApplier"
+	stats-applied: "LethalBond"
+
+	absorption-level: 3
+	absorption-tick: 200
+
+function kitEffect_LethalBond(player: player):
+	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
+	if {_SkillTarget} is set:
+		send action bar "§c§l対象が存在しません!" to {_player}
+		stop
+
+	if kitCheckSpirit({_player}, "Lethal Bond") is false:
+		stop
+
+	nameCT({_player}, "Lethal Bond")
+	set {_tg} to {_SkillTarget}
+
+	setKitStats({_player}, {@stats-applier}, {_tg})
+	setKitStats({_tg}, {@stats-applied}, {_player})
+	soundApplied({_player})
+	soundApplied({_tg})
+	particleApply({_player}, {_tg})
+	set {_memsg} to kitGhostMessage("§5%{_tg}% §0と死の絆を結んだ...")
+	set {_youmsg} to kitGhostMessage("§4%{_player}% §5との道連れの絆が結ばれた...", true)
+	kitMsg({_player}, {_memsg})
+	message formatted {_youmsg} to {_tg}
+	kitEffectDescription({_tg}, "§4§l死の絆")
+
+
+
+on death of player:
+	if getKitStats(victim, {@stats-applier}) is set:
+		set {_player} to victim
+		set {_target} to getKitStats(victim, {@stats-applier})
+		deleteKitStats({_player}, {@stats-applier})
+		deleteKitStats({_target}, {@stats-applied})
+
+		if getKitClass({_target}) is "Ghost":
+			set {_memsg} to kitGhostMessage("§4死の絆が無効化されてしまった...")
+			set {_youmsg} to kitGhostMessage("§8即死効果を無効化しました", true)
+			kitMsg({_player}, {_memsg})
+			message formatted {_youmsg} to {_target}
+			stop
+
+		LastKiller({_target}, {_player})
+		set health of {_target} to 0
+		particleDeath({_player})
+		particleDeath({_target})
+		soundDeath({_player})
+		soundDeath({_target})
+		set {_memsg} to kitGhostMessage("§4死の絆§5によって§8%{_target}%§5を道連れにした...")
+		set {_youmsg} to kitGhostMessage("§5%{_player}%§4の道連れだ...", true)
+		kitMsg({_player}, {_memsg})
+		message formatted {_youmsg} to {_target}
+	
+	if getKitStats(victim, {@stats-applied}) is set:
+		set {_player} to getKitStats(victim, {@stats-applied})
+		set {_target} to victim
+		deleteKitStats({_player}, {@stats-applier})
+		deleteKitStats({_target}, {@stats-applied})
+
+		set {_memsg} to kitGhostMessage("§8%{_target}%§4の死力を吸収した...")
+		set {_youmsg} to kitGhostMessage("§5%{_player}%§8が§4死の糧§8によって§d治癒§8された...", true)
+		kitMsg({_player}, {_memsg})
+		message formatted {_youmsg} to {_target}
+
+		kitHeal({_player}, 20)
+		applyEffect({_player}, absorption, {@absorption-level}, {@absorption-tick})
+		particleHeal({_player})
+		soundHeal({_player})
+		particleAbsorb({_target})
+		soundAbsorb({_target})
+
+
+local function particleApply(player: player, target: player):
+	add rgb(0, 0, 0) to {_colors::*}
+	add rgb(26, 2, 43) to {_colors::*}
+	add rgb(11, 4, 48) to {_colors::*}
+
+	loop 5 times:
+		set {_baseloc} to location 1 meter above {_target}
+		set {_baseloc} to setDirToVec({_baseloc}, setVector({_baseloc}, location 1 meter above {_player}))
+		set {_distance} to distance between {_player} and {_target}
+		set {_count} to round({_distance}) * 2
+		set {_meter} to {_distance} / {_count}
+		loop {_count} times:
+			set {_loopnum.2} to loop-number-2
+			set {_el} to location ({_loopnum.2} * {_meter}) meters in front of {_baseloc}
+			set {_color} to a random element out of {_colors::*}
+			spawnParticle_Dust({_color}, 1.5, {_el})
+		wait a tick
+
+local function particleDeath(player: player):
+	add rgb(0, 0, 0) to {_colors::*}
+	add rgb(26, 2, 43) to {_colors::*}
+	add rgb(11, 4, 48) to {_colors::*}
+
+	set {_centerloc} to location 1 meter above {_player}
+	set {_count} to a random integer between 10 and 15
+	loop {_count} times:
+		set {_pow} to a random number between 0.4 and 0.65
+		set {_v} to randomVector({_pow})
+		spawnParticle_Vector(large_smoke, {_v}, 0.45, {_centerloc})
+	
+	set {_circle} to 10
+	set {_rad} to 0
+	set {_addrad} to 360 / {_circle}
+	set {_radius} to 0.5
+	set {_vec} to vector({_radius}, 0, 0)
+	set {_height} to 2
+	set {_y} to 0
+	set {_up} to 0.3
+	set {_upcount} to ceil({_height} / {_up})
+	set {_baseloc} to location of {_player}
+
+	loop {_upcount} times:
+		set {_base} to location {_y} meters above {_baseloc}
+		set {_rad} to 0
+		loop {_circle} times:
+			add {_addrad} to {_rad}
+			set {_v} to {_vec}
+			rotate {_v} around y-axis by {_rad}
+			set {_el} to {_base} ~ {_v}
+			set {_color} to a random element out of  {_colors::*}
+			spawnParticle_Spell(effect, {_color}, 1, {_el})
+
+		add {_up} to {_y}
+		wait a tick
+
+local function particleHeal(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_count} to a random integer between 10 and 15
+	loop {_count} times:
+		set {_pow} to a random number between 0.085 and 0.15
+		set {_v} to randomVector()
+		spawnParticle_Vector(sculk_soul, {_v}, {_pow}, {_baseloc})
+
+local function particleAbsorb(player: player):
+	set {_count} to a random integer between 30 and 40
+	loop {_count} times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle(raid_omen, {_el})
+
+local function soundApplied(player: player):
+	playSound("entity.elder_guardian.death", 1, 1, {_player})
+
+local function soundDeath(player: player):
+	playSound("entity.enderman.death", 1, 0.77, {_player})
+
+local function soundHeal(player: player):
+	playSound("entity.elder_guardian.ambient_land", 1, 0.7, {_player})
+
+local function soundAbsorb(player: player):
+	playSound("entity.enderman.death", 1, 1.7, {_player})
