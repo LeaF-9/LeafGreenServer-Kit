@@ -1,5 +1,9 @@
 # Death Curse
 
+options:
+	charge-tick: 20
+	effect-radius: 10
+
 function kitEffect_DeathCurse(player: player):
 	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
@@ -7,11 +11,11 @@ function kitEffect_DeathCurse(player: player):
 		stop
 
 	if (health of {_player}) is not (max health of {_player}):
-		send action bar "§c§l体力が不足しています!" to {_player}
+		send action bar "§c§l自身の体力が不足しています!" to {_player}
 		stop
 
-	if (block at {_player}) is not passable:
-		send action bar "§c§l発動地点が無効です!" to {_player}
+	if (health of {_SkillTarget}) is not (max health of {_SkillTarget}):
+		send action bar "§c§l対象の体力が不足しています!" to {_player}
 		stop
 
 	if kitCheckSpirit({_player}, "Death Curse") is false:
@@ -19,113 +23,239 @@ function kitEffect_DeathCurse(player: player):
 
 	nameCT({_player}, "Death Curse")
 	set {_tg} to {_SkillTarget}
+
 	set {_memsg1} to kitGhostMessage("§4%{_tg}% §5に死の呪いをかけた...")
-	set {_memsg2} to kitGhostMessage("§5呪術に体力を捧げます...", true)
 	set {_youmsg} to kitGhostMessage("§5%{_player}% §4に死の呪いをかけられてしまった!", true)
 	kitMsg({_player}, {_memsg1})
-	kitMsg({_player}, {_memsg2})
 	message formatted {_youmsg} to {_tg}
-	kitPalsy({_player}, 200, false)
-	applyEffect({_player}, glowing, 1, 200)
-	applyEffect({_player}, slowness, 3, 200)
-	setKitStats({_player}, "DeathCursing", {_tg})
-	set {_health} to 10
+	set {_health} to 11
+	set {_counting} to true
+	add {_player} to {_titlePlayers::*}
+	add {_tg} to {_titlePlayers::*}
 
 	loop 11 times:
-		continue if getKitStats({_player}, "DeathCursing") is not set
+		continue if {_counting} is false
 
-		set {_targetPlayer} to getKitStats({_player}, "DeathCursing")
-		if kitCheckAlive({_targetPlayer}) is false:
-			deleteKitStats({_player}, "DeathCursing")
-			set {_failMsg} to kitGhostMessage("§8対象が死亡したため呪術は解除されました", true)
-			kitMsg({_player}, {_failMsg})
-			stop
+		packetGlowing({_player}, {_tg})
+		packetGlowing({_tg}, {_player})
+		particleCounting({_player}, {_tg})
+		soundCounting({_player}, {_tg})
 
-		if getKitStats({_player}, "DeathCursing") is set:
-			kitParticle_DeathCurse_Targeting({_player}, {_tg})
-			if {_health} is 0:
-				set {_ok} to true
-			set health of {_player} to {_health}
-			kitMsg({_player}, "§0§l%{_health}%")
-			send title "§4§l§k! §5§l%{_health}% §4§l§k!" with subtitle "§6§l急いで §5§l%{_player}% §6§lを攻撃しよう!" to {_tg}
-			playSound("entity.wither.hurt", 2, 1, {_player})
-			loop loop-number * 2 times:
-				set {_el} to aroundEffect({_player})
-				spawnParticle_Dust(rgb(100, 0, 0), 1, {_el})
-			subtract 1 from {_health}
-			wait a second
+		subtract 1 from {_health}
+		set {_p.health} to health of {_player}
+		set {_t.health} to health of {_tg}
+		set health of {_player} to {_health} if {_p.health} > {_health}
+		set health of {_tg} to {_health} if {_t.health} > {_health}
+		LastKiller({_tg}, {_player})
+		set {_title} to "§4§l§k! §5§l%{_health}% §4§l§k!"
+		set {_subtitle} to kitGhostMessage("§0滅殺呪術発動中", true)
+		sendTitle({_titlePlayers::*}, {_title}, {_subtitle}, 1 second, 0.1 seconds, 0.1 seconds)
 
-	if {_ok} is not set:
-		set {_memsg} to kitGhostMessage("§7呪術は失敗した...")
-		set {_youmsg} to kitGhostMessage("§e呪術の解除に成功した!", true)
-		kitMsg({_player}, {_memsg})
-		message formatted {_youmsg} to {_tg}
-		stop
+		loop 20 times:
+			continue if {_counting} is false
+			# player check
+			if all:
+				kitCheckAlive({_player}) is false
+				getKitStats({_player}, "Heautoscopy") is not set
+			then:
+				set {_counting} to false
+				set {_l} to location of {_player}
+				add {_l} to {_deathPoints::*}
+			# target check
+			if all:
+				kitCheckAlive({_tg}) is false
+				getKitStats({_tg}, "Heautoscopy") is not set
+			then:
+				set {_counting} to false
+				set {_l} to location of {_tg}
+				add {_l} to {_deathPoints::*}
+			continue if {_counting} is false
+			wait a tick
 
-	set {_memsg} to kitGhostMessage("§4呪術は成功しました", true)
+	particleCharge({_deathPoints::*})
+	soundCharge({_deathPoints::*})
+
+	loop {@charge-tick} times:
+		wait a tick
+
+	for {_l} in {_deathPoints::*}:
+		effectExplosion({_player}, {_l})
+
+local function effectExplosion(player: player, loc: location):
+	particleExplosion({_loc})
+	soundExplosion({_loc})
+	set {_memsg} to kitGhostMessage("§4滅殺呪術 §0が発動しました", true)
 	message formatted {_memsg} to {_player}
-	playSound("entity.wither.death", 2, 0.5, {_player})
-	set {_baseloc} to location of {_tg}
-	LastKiller({_tg}, {_player})
-	set health of {_tg} to 0
-	if {Class::%{_player}%} is not "Ghost":
-		set {_youmsg} to kitGhostMessage("§5呪い殺されてしまった...", true)
-		message formatted {_youmsg} to {_tg}
-	else:
-		set {_youmsg} to kitGhostMessage("§8即死効果を無効化しました", true)
-		message formatted {_youmsg} to {_tg}
-	loop all entities in radius 10 around {_baseloc}:
-		loop-entity is not {_tg}
+
+	loop all entities in radius {@effect-radius} around {_loc}:
 		kitCheckTeam({_player}, loop-entity, false) is true
-		if type of loop-entity is a player:
-			if {Class::%loop-entity%} is not "Ghost":
-				LastKiller(loop-entity, {_player})
-				set {_youmsg} to kitGhostMessage("§5呪い殺されてしまった...", true)
-				message formatted {_youmsg} to loop-entity
-				set health of loop-entity to 0
-			else:
-				set {_youmsg} to kitGhostMessage("§8即死効果を無効化しました", true)
-				message formatted {_youmsg} to {_tg}
-			add location of loop-entity to {_cursed::*}
-		else:
+		particleCursed(loop-entity)
+		soundCursed(loop-entity)
+		
+		if checkEntityType(loop-entity, player) is false:
 			set health of loop-entity to 0
-	loop all blocks in radius 10 around {_baseloc}:
-		loop-block is passable
-		chance of 1%:
-			set {_elbase} to location of loop-block
-			set {_vector} to setVector({_baseloc}, {_elbase}, a random number between 1 and 3)
-			set {_sp} to a random number between 0.75 and 1.5
-			spawnParticle_Vector(smoke, {_vector}, {_sp}, {_elbase})
-	loop 10 times:
-		loop {_cursed::*}:
-			loop 3 times:
-				set {_l} to loop-value-2
-				set {_add.x} to a random number between -1 and 1
-				set {_add.z} to a random number between -1 and 1
-				set {_add.y} to a random number between 0 and 3
+			continue
 
-				add {_add.x} to x of {_l}
-				add {_add.z} to z of {_l}
-				add {_add.y} to y of {_l}
-				spawnParticle_Color(entity_effect, rgb(7, 4, 4), {_l})
-		wait a tick
+		if getKitClass({_player}) is "Ghost":
+			set {_youmsg} to kitGhostMessage("§8即死効果を無効化しました", true)
+			message formatted {_youmsg} to {_tg}
+			continue
 
-on damage of player:
-	getGameType(victim) is "Kit"
-	if getKitStats(victim, "DeathCursing") is true:
-		deleteKitStats(victim, "DeathCursing")
+		LastKiller(loop-entity, {_player})
+		set {_youmsg} to kitGhostMessage("§5呪い殺されてしまった...", true)
+		message formatted {_youmsg} to loop-entity
+		set health of loop-entity to 0
 
 
 
-local function kitParticle_DeathCurse_Targeting(player: player, target: player):
-	loop 20 times:
-		set {_baseloc} to location 1 meter above {_target}
-		set {_baseloc} to setDirToVec({_baseloc}, setVector({_baseloc}, location 1 meter above {_player}))
-		set {_distance} to distance between {_player} and {_target}
-		set {_count} to round({_distance}) * 2
-		set {_meter} to {_distance} / {_count}
+local function particleCounting(player: player, target: player):
+	add rgb(224, 29, 29) to {_colors.flash::*}
+	add rgb(192, 10, 55) to {_colors.flash::*}
+	add rgb(223, 59, 10) to {_colors.flash::*}
+
+	add rgb(80, 6, 6) to {_colors.dust::*}
+	add rgb(97, 13, 34) to {_colors.dust::*}
+	add rgb(112, 45, 24) to {_colors.dust::*}
+
+	add rgb(110, 17, 17) to {_colors.spell::*}
+	add rgb(121, 29, 52) to {_colors.spell::*}
+	add rgb(114, 46, 25) to {_colors.spell::*}
+
+	set {_baseloc.1} to location 1 meter above {_player}
+	set {_baseloc.2} to location 1 meter above {_target}
+
+	loop 2 times:
+		set {_base} to {_baseloc.%loop-number%}
+		set {_color} to a random element out of {_colors.flash::*}
+		spawnParticle_Color(flash, {_color}, {_base})
+
+		set {_count} to a random integer between 10 and 15
 		loop {_count} times:
-			set {_loopnum.2} to loop-number-2
-			set {_el} to location ({_loopnum.2} * {_meter}) meters in front of {_baseloc}
-			spawnParticle_Dust(rgb(0, 0, 0), 1.5, {_el})
+			set {_pow} to a random number between 0.5 and 1
+			set {_v} to randomVector({_pow})
+			set {_el} to {_base} ~ {_v}
+			set {_color} to a random element out of {_colors.dust::*}
+			set {_size} to a random number between 2.5 and 3.2
+			spawnParticle_Dust({_color}, {_size}, {_el})
+	
+	set {_addm} to 0.2
+	set {_countx} to 1 / {_addm}
+	set {_distance} to distance between {_baseloc.1} and {_baseloc.2}
+	set {_count} to round({_distance} * {_countx})
+	set {_basevec} to setVector({_baseloc.1}, {_baseloc.2}, 1)
+	set {_baseloc} to setDirToVec({_baseloc.1}, {_basevec})
+	set {_rotatevec} to getVectorFromYawAxis({_baseloc})
+	set {_circle} to 4
+	set {_addrad} to 360 / {_circle}
+	set {_plusrad} to 10
+
+	set {_m} to 0
+	set {_rad} to 0
+	loop {_count} times:
+		add {_addm} to {_m}
+		set {_vec} to {_basevec} * vector({_m}, {_m}, {_m})
+		set {_elbase} to {_baseloc} ~ {_vec}
+		set {_color} to a random element out of {_colors.dust::*}
+		spawnParticle_Dust({_color}, 2.75, {_elbase})
+
+		loop {_circle} times:
+			add {_addrad} to {_rad}
+			set {_v} to {_rotatevec}
+			rotate {_v} around {_basevec} by {_rad}
+			set {_el} to {_elbase} ~ {_v}
+			set {_color} to a random element out of {_colors.spell::*}
+			spawnParticle_SpellDot(instant_effect, {_color}, {_el})
+
+		add  {_plusrad} to {_rad}
+
+local function particleCharge(locs: locations):
+	add rgb(15, 15, 15) to {_colors::*}
+	add rgb(19, 7, 37) to {_colors::*}
+	add rgb(26, 13, 37) to {_colors::*}
+
+	loop {@charge-tick} times:
+		for {_l} in {_locs::*}:
+			set {_c} to a random integer between 30 and 80
+			loop {_c} times:
+				set {_c.2} to a random integer between 1 and 3
+				set {_p} to a random number between 0.5 and {@effect-radius}
+				set {_v} to randomVector({_p})
+				set {_block} to a black concrete
+				set {_el} to {_l} ~ {_v}
+				loop {_c.2} times:
+					spawnParticle_Block({_block}, {_el})
+		
+			set {_c} to a random integer between 50 and 100
+			loop {_c} times:
+				set {_c.2} to a random integer between 3 and 8
+				set {_p} to a random number between 0.5 and {@effect-radius}
+				set {_v} to randomVector({_p})
+				set {_color} to a random element out of {_colors::*}
+				set {_el} to {_l} ~ {_v}
+				loop {_c.2} times:
+					spawnParticle_Spell(effect, {_color}, 0.5, {_el})
+			
+			set {_c} to a random integer between 30 and 50
+			loop {_c} times:
+				set {_p} to a random number between 0.5 and {@effect-radius}
+				set {_v} to randomVector({_p})
+				set {_el} to {_l} ~ {_v}
+				set {_pv} to {_v} * vector(0.1, 0.1, 0.1)
+				spawnParticle_Vector(large_smoke, {_pv}, 0.75, {_el})
+
 		wait a tick
+
+local function particleExplosion(loc: location):
+	add rgb(18, 7, 49) to {_colors::*}
+	add rgb(10, 6, 70) to {_colors::*}
+	add rgb(18, 29, 63) to {_colors::*}
+
+	set {_count} to a random integer between 100 and 130
+	loop {_count} times:
+		set {_v} to randomVector()
+		spawnParticle_Vector(sculk_soul, {_v}, 0.25, {_loc})
+	
+	set {_count} to a random integer between 30 and 50
+	loop {_count} times:
+		set {_p} to a random number between 0.5 and {@effect-radius}
+		set {_v} to randomVector({_p})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle(sonic_boom, {_el})
+	
+	set {_count} to a random integer between 50 and 100
+	loop {_count} times:
+		set {_p} to a random number between 0.5 and {@effect-radius}
+		set {_v} to randomVector({_p})
+		set {_el} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors::*}
+		set {_size} to a random number between 3 and 3.5
+		spawnParticle_Dust({_color}, {_size}, {_el})
+	
+	set {_count} to a random integer between 100 and 130
+	loop {_count} times:
+		set {_p} to a random number between 0.5 and {@effect-radius}
+		set {_v} to randomVector({_p})
+		set {_el} to {_loc} ~ {_v}
+		set {_rv} to {_v} * vector(0.1, 0.1, 0.1)
+		spawnParticle_Vector(soul_fire_flame, {_rv}, 0.3, {_el})
+
+local function particleCursed(entity: entity):
+	set {_count} to a random integer between 20 and 30
+	set {_block} to a black concrete
+	loop {_count} times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle_BlockData(dust_pillar, {_block}, {_el})
+
+local function soundCounting(player: player, target: player):
+	playSound("entity.wither.hurt", 5, 1, {_player})
+	playSound("entity.wither.hurt", 5, 1, {_tg})
+
+local function soundCharge(locs: locations):
+	for {_l} in {_locs::*}:
+		playSound("entity.wither.ambient", 1, 0.65, {_l})
+
+local function soundExplosion(loc: location):
+	playSound("entity.wither.death", 2, 0.5, {_loc})
+
+local function soundCursed(entity: entity):
+	playSound("entity.wither_skeleton.hurt", 1, 1.35, {_entity})
