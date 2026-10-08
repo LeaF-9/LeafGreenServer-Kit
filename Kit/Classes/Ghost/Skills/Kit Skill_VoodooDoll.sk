@@ -4,18 +4,16 @@ import:
 	com.destroystokyo.paper.entity.Pathfinder
 	com.destroystokyo.paper.entity.Pathfinder$PathResult
 
+options:
+	data-voodoo-player: "voodoodoll-player"
+	data-voodoo-time: "voodoodoll-time"
+
+	effect-tick: 600
+
 function kitEffect_VoodooDoll(player: player):
 	set {_SkillTarget} to getKitStats({_player}, "SkillTarget")
 	if {_SkillTarget} is not set:
 		send action bar "§c§l対象が存在しません!" to {_player}
-		stop
-
-	# PathFinder
-	set {_canReach} to kitEffect_VoodooDoll_Pathfind({_player}, {_SkillTarget})
-	if {_canReach} is false:
-		send action bar "§c§l到達不可の地点には設置できません!" to {_player}
-		set {_tool} to tool of {_player}
-		set item cooldown of {_tool} for {_player} to 1 second
 		stop
 
 	if kitCheckSpirit({_player}, "Voodoo Doll") is false:
@@ -27,7 +25,7 @@ function kitEffect_VoodooDoll(player: player):
 		loop all entities:
 			type of loop-entity is an armor stand
 			getGameType(loop-entity) is "Kit"
-			metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
+			getPersistentData(loop-entity, {@data-voodoo-player}) is "%{_player}%"
 			delete loop-entity
 	set {_tg} to {_SkillTarget}
 	set {_memsg} to kitGhostMessage("§5%{_tg}% §2の藁人形を生成した...", true)
@@ -40,8 +38,8 @@ function kitEffect_VoodooDoll(player: player):
 	set {_now} to now
 	spawn an armor stand at location of {_player}
 	setGameType(spawned armor stand)
-	set metadata value "Kit-VoodooDoll" of spawned armor stand to "%{_player}%"
-	set metadata value "Kit-VoodooTime" of spawned armor stand to "%{_now}%"
+	setPersistentData(spawned armor stand, {@data-voodoo-player}, "%{_player}%")
+	setPersistentData(spawned armor stand, {@data-voodoo-time}, "%{_now}%")
 	set helmet of spawned armor stand to skull of {_tg}
 	setKitStats({_player}, "VoodooDoll", {_now})
 	set {_vector} to setVector(location of {_tg}, location of {_player})
@@ -52,20 +50,25 @@ function kitEffect_VoodooDoll(player: player):
 	loop {_t} times:
 		set {_el} to location loop-number meters in front of {_effbaseloc}
 		spawnParticle(end_rod, {_el})
-	while getKitStats({_player}, "VoodooDoll") is {_now}:
+	
+	loop {@effect-tick} times:
+		continue if getKitStats({_player}, "VoodooDoll") is not {_now}
+
 		delete {_exist}
 		if hasPotionEffect({_tg}, wither) is false:
-			applyEffect({_tg}, wither, 1, 200)
+			applyEffect({_tg}, wither, 1, {@effect-tick})
+
 		loop all entities:
 			type of loop-entity is an armor stand
 			getGameType(loop-entity) is "Kit"
-			metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
-			metadata value "Kit-VoodooTime" of loop-entity is "%{_now}%"
+			getPersistentData(loop-entity, {@data-voodoo-player}) is "%{_player}%"
+			getPersistentData(loop-entity, {@data-voodoo-time}) is "%{_now}%"
 			set {_exist} to true
 			set {_armortarget} to loop-entity
 			set {_id} to id of loop-entity
 			set {_el} to aroundEffect(loop-entity)
 			spawnParticle(soul, {_el})
+
 		if {Class::%{_tg}%} is not set:
 			delete {_exist}
 			deleteKitStats({_player}, "VoodooDoll")
@@ -79,126 +82,16 @@ function kitEffect_VoodooDoll(player: player):
 	loop all entities:
 		type of loop-entity is an armor stand
 		getGameType(loop-entity) is "Kit"
-		metadata value "Kit-VoodooDoll" of loop-entity is "%{_player}%"
-		metadata value "Kit-VoodooTime" of loop-entity is "%{_now}%"
+		getPersistentData(loop-entity, {@data-voodoo-player}) is "%{_player}%"
+		getPersistentData(loop-entity, {@data-voodoo-time}) is "%{_now}%"
 		delete loop-entity
 
 on damage of armor stand:
 	attacker is set
-	metadata value "Kit-VoodooDoll" of victim is set
-	set {_player} to metadata value "Kit-VoodooDoll" of victim parsed as player
+	getPersistentData(victim, {@data-voodoo-player}) is set
+	set {_player} to getPersistentData(victim, {@data-voodoo-player}) parsed as player
 	if kitCheckTeam(attacker, {_player}, false) is true:
 		deleteKitStats({_player}, "VoodooDoll")
 		set {_memsg} to kitGhostMessage("§5藁人形が破壊された!", true)
 		kitMsg({_player}, {_memsg})
 		delete victim
-
-local function kitEffect_VoodooDoll_Pathfind(player: player, target: player, count: number = 10000) :: boolean:
-	set {_start} to location of block at {_target}
-	set {_goal} to location of block at {_player}
-
-	if {_start} is {_goal}:
-		return true
-
-	set {_score} to h({_start}, {_goal})
-	set {_open::sorted::%{_score}%} to {_score}
-	set {_open::sorted::%{_score}%::%{_start}%} to {_start}
-	set {_open::list::%{_start}%} to true
-	set {_score::%{_start}%} to {_score}
-
-	while {_open::list::*} is set:
-		add 1 to {_process}
-		if {_process} > {_count}:
-			stop loop
-
-		if {_found} is set:
-			stop loop
-
-		set {_first} to first element out of {_open::sorted::*}
-		set {_parent} to first element out of {_open::sorted::%{_first}%::*}
-
-		set {_score} to {_score::%{_parent}%}
-		set {_h1} to h({_parent}, {_goal})
-		set {_g} to {_score} - {_h1}
-
-		delete {_open::list::%{_parent}%}
-		delete {_open::sorted::%{_first}%::%{_parent}%}
-		if {_open::sorted::%{_first}%::*} is not set:
-			delete {_open::sorted::%{_first}%}
-
-		set {_close::%{_parent}%} to {_score}
-
-		loop all blocks in radius 1.8 around {_parent}:
-			add 1 to {_process}
-			if {_process} > {_count}:
-				stop loop
-
-			set {_child} to location of loop-block
-			{_parent} is not {_child}
-
-			#conditions
-			if pass({_child}) is false:
-				continue
-
-			if pass(block above {_child}) is false:
-				continue
-
-			if pass(block under {_child}) is true:
-				if y of {_start} < y of {_child}:
-					continue
-
-				if pass(block under {_parent}) is true:
-					y of {_parent} <= y of {_child}
-					continue
-
-			if {_child} is {_goal}:
-				set {_found} to {_child}
-				stop loop
-
-			set {_h2} to h({_child}, {_goal})
-			set {_cost} to distance between {_parent} and {_child}
-
-			set {_v2} to {_g} + {_cost} + {_h2}
-			delete {_v1}
-			set {_v1} to {_score::%{_child}%}
-
-			if {_open::list::%{_child}%} is set:
-				if {_v2} < {_v1}:
-					set {_score} to {_score::%{_child}%}
-					delete {_open::sorted::%{_score}%::%{_child}%}
-					if {_open::sorted::%{_score}%::*} is not set:
-						delete {_open::sorted::%{_score}%}
-
-					set {_open::list::%{_child}%} to true
-					set {_open::sorted::%{_v2}%::%{_child}%} to {_child}
-					set {_open::sorted::%{_v2}%} to {_v2}
-					set {_score::%{_child}%} to {_v2}
-
-			else if {_close::%{_child}%} is set:
-				if {_v2} < {_v1}:
-					delete {_close::%{_child}%}
-
-					set {_open::list::%{_child}%} to true
-					set {_open::sorted::%{_v2}%::%{_child}%} to {_child}
-					set {_open::sorted::%{_v2}%} to {_v2}
-					set {_score::%{_child}%} to {_v2}
-
-			else:
-				set {_open::list::%{_child}%} to true
-				set {_open::sorted::%{_v2}%::%{_child}%} to {_child}
-				set {_open::sorted::%{_v2}%} to {_v2}
-				set {_score::%{_child}%} to {_v2}
-
-	if {_found} is set:
-		return true
-	return false
-
-local function h(n: location, m: location) :: number:
-	set {_v} to vector between {_n} and {_m}
-	set {_v} to {_v} * {_v}
-	return vector length of {_v} / 1.5
-
-local function pass(pos: location) :: boolean:
-	if block at {_pos} is passable:
-		return true
-	return false
