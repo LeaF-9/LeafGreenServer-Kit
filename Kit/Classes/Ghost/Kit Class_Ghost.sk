@@ -122,23 +122,81 @@ function kitGhostMessage(text: text, bold: boolean = false) :: text:
 				set {_finalstring} to "%{_finalstring}%%{_lasttext}%"
 	return {_finalstring}
 
+options:
+	spirit-timer-prefix: "SpiritTimer-"
+	spirit-max-distance: 30
+
 # Timer
 function kitTimerGhost(player: player):
 	set {Kit-Spirits::%{_player}%} to 0
 	set {Kit-NoCorpse::%{_player}%} to true
-	create bossbar titled "&4&lSpirit&0: &5&l%{Kit-Spirits::%{_player}%}%" and id "%{_player}%-Spirit" for {_player} with progress {Kit-Spirits::%{_player}%} with colors red with style segmented 10
+	startSpiritTimer({_player})
+
+local function startSpiritTimer(player: player):
+	set {_timer.id} to getSpiritTimerID({_player})
+	create bossbar titled "&4&lSpirit&0: &5&l%{Kit-Spirits::%{_player}%}%" and id {_timer.id} for {_player} with progress {Kit-Spirits::%{_player}%} with colors red with style segmented 10
 	while {Class::%{_player}%} is "Ghost":
-		add 1 to {_timer}
-		if {_timer} >= 20:
-			set {_timer} to 0
-		if {_timer} = 0:
-			delete {_spirit}
-			loop all players in radius 30 around {_player}:
-				kitCheckTeam(loop-player, {_player}, false) is true
-				set {_spirit} to true
-			if {_spirit} is true:
-				add 1 to {Kit-Spirits::%{_player}%}
-		set bossbar "%{_player}%-Spirit" title to "&4&lSpirit&0: &5&l%{Kit-Spirits::%{_player}%}%"
-		set bossbar "%{_player}%-Spirit" value to {Kit-Spirits::%{_player}%}
-		wait a tick
-	remove bossbar "%{_player}%-Spirit"
+		delete {_target}
+		set {_spiritDistance} to 50
+		loop all players in radius {@spirit-max-distance} around {_player}:
+			kitCheckTeam(loop-player, {_player}, false) is true
+			set {_distance} to distance between {_player} and loop-player
+			if {_spiritDistance} > {_distance}:
+				set {_spiritDistance} to {_distance}
+				set {_target} to loop-player
+
+		if {_spiritDistance} <= 30:
+			set {_spirit} to getSpiritGain({_spiritDistance})
+			add {_spirit} to {Kit-Spirits::%{_player}%}
+
+			set {_subtract} to getHealthSubtraction({_spiritDistance})
+			set {_health} to health of {_target}
+			subtract {_subtract} from {_health}
+			set health of {_target} to {_health}
+
+			particleSpirit({_player}, {_target}, {_spirit})
+
+		set bossbar {_timer.id} title to "&4&lSpirit&0: &5&l%{Kit-Spirits::%{_player}%}%"
+		set bossbar {_timer.id} value to {Kit-Spirits::%{_player}%}
+		wait a second
+	remove bossbar {_timer.id}
+
+local function getSpiritTimerID(player: player) :: text:
+	set {_id} to "{@spirit-timer-prefix}-%{_player}%"
+	return {_id}
+
+local function getSpiritGain(distance: number) :: number:
+	set {_calc} to {_distance} / 10
+	set {_calc} to ceil({_calc})
+	set {_calc} to 4 - {_calc}
+	return {_calc}
+
+local function getHealthSubtraction(distance: number) :: number:
+	set {_calc} to getSpiritGain({_distance})
+	set {_calc} to {_calc} * 0.1
+	return {_calc}
+
+local function particleSpirit(player: player, target: player, amount: number):
+	add rgb(20, 14, 25) to {_colors::*}
+	add rgb(19, 3, 40) to {_colors::*}
+	add rgb(1, 7, 40) to {_colors::*}
+
+	set {_from} to location 1 meter above {_target}
+	set {_to} to location 1 meter above {_player}
+	set {_vector} to setVector({_from}, {_to}, 0)
+
+	loop {_amount} times:
+		set {_pow} to a random number between 0.5 and 1
+		set {_randomV} to randomVector({_pow})
+		set {_el} to {_to} ~ {_randomV}
+		spawnParticle(soul, {_el})
+
+	set {_tick} to 10 ticks
+	set {_count} to {_amount} * 3
+	loop {_count} times:
+		set {_pow} to a random number between 0 and 1
+		set {_randomV} to randomVector({_pow})
+		set {_fromEff} to {_from} ~ {_randomV}
+		set {_toEff} to {_fromEff} ~ {_vector}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Trail({_color}, {_toEff}, {_tick}, {_fromEff})
