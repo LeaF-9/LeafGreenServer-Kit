@@ -29,14 +29,25 @@ on explode:
 	delete metadata value "kit-bomber" of {_entity}
 	delete metadata value "TrueTeam" of {_entity}
 
+options:
+	data-firework: "firework-projectile"
+	data-firework-shooter: "firework-shooter"
+
 on damage of player with priority LOWEST:
 	if damage was caused by block explosion or entity explosion:
-		if metadata value "firework" of projectile is true:
-			set {_attacker} to metadata value "firework - shooter" of projectile
+		if getPersistentData(projectile, {@data-firework}) is true:
+			set {_attackerUUID} to getPersistentData(projectile, {@data-firework-shooter})
+			set {_attacker} to getPlayer({_attackerUUID})
 			if kitCheckTeam({_attacker}, victim, true, true) is true:
 				cancel event
 			stop
 		cancel event
+
+function kitFireworkData() :: text:
+	return {@data-firework}
+
+function kitFireworkDataShooter() :: text:
+	return {@data-firework-shooter}
 
 function kitExplosion(attacker: player, power: number, loc: location, bool: boolean = false):
 	set {_values::player} to {_attacker}
