@@ -1,12 +1,23 @@
 # Pop Burst
 
+import:
+	org.bukkit.Material
+	org.bukkit.entity.EntityType
+	org.bukkit.inventory.ItemStack
+
+options:
+	data-pop: "popburst-tnt"
+	pop-first-tick: 10
+	pop-second-min-tick: 10
+	pop-second-max-tick: 30
+
 function kitEffect_PopBurst(player: player):
 	nameCT({_player}, "Pop Burst")
 	kitMsg({_player}, "§e弾ける爆弾を投げました!")
 	shoot a primed tnt from {_player} at speed 1
 	set metadata value "attacker" of shot primed tnt to "%{_player}%"
 	set metadata value "kit-bomber" of shot primed tnt to 2.5
-	set metadata value "pop" of shot primed tnt to "%{_player}%"
+	setPersistentData(shot primed tnt, {@data-pop}, false)
 	playSound("entity.tnt.primed", 1, 1.5, {_player})
 	kitParticle_PopBurst_Lava(shot primed tnt, 20 ticks)
 	setFuseTime(shot primed tnt, 40)
@@ -26,52 +37,117 @@ function kitEffect_PopBurst(player: player):
 				set {_vector} to normalized {_vector}
 				set velocity of loop-primed tnt to {_vector}
 				setFuseTime(loop-primed tnt, 5)
+				setPersistentData(loop-primed tnt, {@data-pop}, true)
 		wait a tick
 
 on explosion:
-	if metadata value "pop" of event-entity is set:
-		set {_act} to metadata value "pop" of event-entity
-		set {_act} to {_act} parsed as player
-		set {_loc} to event-location
-		wait a tick
-		set {_rum} to a random integer between 5 and 10
-		loop {_rum} times:
-			drop a cocoa beans named "%{_act}%" at event-location
-			setGameType(last dropped item)
-			set metadata value "pop-burst" of last dropped item to "%{_act}%"
-			kitParticle_PopBurst_Lava(last dropped item, 10 ticks)
-			push last dropped item upwards at speed 0.2
-			push last dropped item north at speed random number from -1 to 1
-			push last dropped item east at speed random number from -1 to 1
-		wait 10 ticks
-		loop all dropped items:
-			metadata value "pop-burst" of loop-dropped item is "%{_act}%"
-			add location of loop-dropped item to {_dloc::*}
-			delete loop-dropped item
-		loop {_dloc::*}:
-			kitExplosion({_act}, 1.5, loop-value)
-		wait a tick
-		loop {_dloc::*}:
-			set {_rum} to a random integer between 1 and 2
-			loop {_rum} times:
-				drop a cocoa beans named "%{_act}%" at event-location
-				setGameType(last dropped item)
-				set metadata value "pop-burst" of last dropped item to "%{_act}%"
-				kitParticle_PopBurst_Lava(last dropped item, 10 ticks)
-				push last dropped item upwards at speed 0.1
-				push last dropped item north at speed random number from -1 to 1
-				push last dropped item east at speed random number from -1 to 1
-		wait 10 ticks
-		delete {_dloc::*}
-		loop all dropped items:
-			metadata value "pop-burst" of loop-dropped item is "%{_act}%"
-			add location of loop-dropped item to {_dloc::*}
-			delete loop-dropped item
-		loop {_dloc::*}:
-			kitExplosion({_act}, 1.5, loop-value)
+	set {_pop} to getPersistentData(event-entity, {@data-pop})
+	stop if {_pop} is not set
+	stop if {_pop} is false
 
-function kitParticle_PopBurst_Lava(entity: entity, time: time span):
-	set {_ln} to convertTimeNumber({_time})
-	loop {_ln} times:
-		spawnParticle(lava, {_entity})
+	set {_act} to metadata value "attacker" of event-entity
+	set {_act} to {_act} parsed as player
+	set {_loc} to event-location
+	effectFirework({_act}, {_loc})
+
+local function effectFirework(player: player, loc: location):
+	set {_air} to false
+	set {_air} to true if block below {_loc} is passable
+
+	set {_rum} to a random integer between 8 and 10
+	loop {_rum} times:
+		set {_pow} to a random number between 3 and 8
+		set {_vector} to randomVector({_pow})
+		if all:
+			{_air} is true
+			(y of {_vector}) < 0
+		then:
+			set y of {_vector} to (y of {_vector}) * (-1)
+		set {_effloc} to {_loc} ~ {_vector}
+		effectBurst({_player}, {_loc}, {_effloc})
+
+local function effectBurst(player: player, from: location, to: location):
+	particleTrail({_from}, {_to})
+	loop {@pop-first-tick} times:
+		wait a tick
+	
+	set {_r} to a random integer between 0 and 255
+	set {_g} to a random integer between 0 and 255
+	set {_b} to a random integer between 0 and 255
+	set {_color} to rgb({_r}, {_g}, {_b})
+	set {_firework} to spawnFireworks_PLAYER({_player}, {_to}, 0, setFireWorksExplosion("ball", {_color}, {_color}, false, false))
+
+	set {_data.firework} to kitFireworkData()
+	set {_data.shooter} to kitFireworkDataShooter()
+	set {_uuid} to getUUIDString({_player})
+	setPersistentData({_firework}, {_data.firework}, true)
+	setPersistentData({_firework}, {_data.shooter}, {_uuid})
+	effectFragment({_player}, {_to})
+
+local function effectFragment(player: player, loc: location):
+	set {_rum} to a random integer between 1 and 2
+	loop {_rum} times:
+		effectStar({_player}, {_loc})
+
+local function effectStar(player: player, loc: location):
+	set {_material} to MATERIAL.FIREWORK_STAR
+	set {_itemstack} to new ItemStack({_material})
+	set {_EntityType} to EntityType.ITEM
+
+	set {_itemEntity} to spawnEntityType({_EntityType}, {_loc})
+	{_itemEntity}.setItemStack({_itemstack})
+
+	setGameType({_itemEntity})
+	setMetadata({_itemEntity}, "undelete", true)
+	set {_pow} to a random number between 0.5 and 1.5
+	set {_vector} to randomVector({_pow})
+	set velocity of {_itemEntity} to {_vector}
+
+	set {_tick} to a random integer between {@pop-second-min-tick} and {@pop-second-max-tick}
+	particleDust({_itemEntity}, {_tick})
+	loop {_tick} times:
+		wait a tick
+
+	set {_r} to a random integer between 0 and 255
+	set {_g} to a random integer between 0 and 255
+	set {_b} to a random integer between 0 and 255
+	set {_color} to rgb({_r}, {_g}, {_b})
+	set {_itemEntity} to spawnFireworks_PLAYER({_player}, {_to}, 0, setFireWorksExplosion("burst", {_color}, {_color}, false, false))
+
+	set {_data.firework} to kitFireworkData()
+	set {_data.shooter} to kitFireworkDataShooter()
+	set {_uuid} to getUUIDString({_player})
+	setPersistentData({_itemEntity}, {_data.firework}, true)
+	setPersistentData({_itemEntity}, {_data.shooter}, {_uuid})
+
+
+
+local function particleTrail(from: location, to: location):
+	set {_basevec} to setVector({_from}, {_to})
+	set {_distance} to distance between {_from} and {_to}
+	set {_multi} to 2
+	set {_addm} to {_distance} / ({@pop-first-tick} * {_multi})
+	set {_m} to 0
+
+	loop {@pop-first-tick} times:
+		loop {_multi} times:
+			add {_addm} to {_m}
+			set {_v} to {_basevec} * vector({_m}, {_m}, {_m})
+			set {_el} to {_from} ~ {_v}
+			spawnParticle(firework, {_el})
+		wait a tick
+
+local function particleDust(entity: entity, tick: number):
+	loop {_tick} times:
+		set {_baseloc} to location 0.5 meters above {_entity}
+		set {_pow} to a random number between 0 and 0.5
+		set {_v} to randomVector({_pow})
+
+		set {_el} to {_baseloc} ~ {_v}
+		chance of 10%:
+			spawnParticle(lava, {_el})
+			wait a tick
+			continue
+		
+		spawnParticle(smoke, {_el})
 		wait a tick
