@@ -132,6 +132,9 @@ function colorRandomizer(r: number, g: number, b: number, rr: number, rg: number
 local function particle(particle: object, loc: location, count: number, offsetX: number, offsetY: number, offsetZ: number, extra: number, data: object, force: boolean, players: players = all players):
 	if {_particle} is not instance of Particle:
 		set {_str} to "%{_particle}%"
+		# 例外処理
+		if {_str} contains "FIREWORK":
+			set {_str} to "firework"
 		replace " " with "_" in {_str}
 		set {_str} to {_str} in upper case
 		set {_particle} to Particle.valueOf({_str})
