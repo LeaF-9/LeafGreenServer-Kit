@@ -4,49 +4,51 @@ import:
 	org.bukkit.Material
 	org.bukkit.entity.EntityType
 	org.bukkit.inventory.ItemStack
+	org.bukkit.event.entity.EntityDamageByEntityEvent
 
 options:
 	data-pop: "popburst-tnt"
 	pop-first-tick: 10
 	pop-second-min-tick: 10
 	pop-second-max-tick: 30
+	data-firework: "popburst-firework"
+	firework-damage: 2
 
 function kitEffect_PopBurst(player: player):
 	nameCT({_player}, "Pop Burst")
 	kitMsg({_player}, "§e弾ける爆弾を投げました!")
 	shoot a primed tnt from {_player} at speed 1
-	set metadata value "attacker" of shot primed tnt to "%{_player}%"
-	set metadata value "kit-bomber" of shot primed tnt to 2.5
-	setPersistentData(shot primed tnt, {@data-pop}, false)
+	set {_tnt} to shot primed tnt
+	setMetadata({_tnt}, "attacker", "%{_player}%")
+	setMetadata({_tnt}, "kit-bomber", 2.5)
+	setPersistentData({_tnt}, {@data-pop}, false)
 	playSound("entity.tnt.primed", 1, 1.5, {_player})
-	kitParticle_PopBurst_Lava(shot primed tnt, 20 ticks)
-	setFuseTime(shot primed tnt, 40)
+	particleBomb({_tnt})
+	setFuseTime({_tnt}, 40)
 	loop 40 times:
 		{_alr} is not set
-		loop all primed tnts:
-			metadata value "pop" of loop-primed tnt is "%{_player}%"
-			loop all entities in radius 3 around loop-primed tnt:
-				kitCheckTeam(loop-entity-2, {_player}, false) is true
-				{_alr} is not set
-				set {_alr} to true
-				set {_to} to location of loop-primed tnt
-				set {_to} to vector of {_to}
-				set {_from} to location of loop-entity-2
-				set {_from} to vector of {_from}
-				set {_vector} to {_from} - {_to}
-				set {_vector} to normalized {_vector}
-				set velocity of loop-primed tnt to {_vector}
-				setFuseTime(loop-primed tnt, 5)
-				setPersistentData(loop-primed tnt, {@data-pop}, true)
+		loop all entities in radius 3 around {_tnt}:
+			kitCheckTeam(loop-entity, {_player}, false) is true
+			{_alr} is not set
+			set {_alr} to true
+			set {_to} to location of {_tnt}
+			set {_to} to vector of {_to}
+			set {_from} to location of loop-entity
+			set {_from} to vector of {_from}
+			set {_vector} to {_from} - {_to}
+			set {_vector} to normalized {_vector}
+			set velocity of {_tnt} to {_vector}
+			setFuseTime({_tnt}, 5)
+			setPersistentData({_tnt}, {@data-pop}, true)
 		wait a tick
 
-on explosion:
+on explosion with priority LOW:
 	set {_pop} to getPersistentData(event-entity, {@data-pop})
 	stop if {_pop} is not set
 	stop if {_pop} is false
 
-	set {_act} to metadata value "attacker" of event-entity
-	set {_act} to {_act} parsed as player
+	set {_preact} to metadata value "attacker" of event-entity
+	set {_act} to {_preact} parsed as player
 	set {_loc} to event-location
 	effectFirework({_act}, {_loc})
 
@@ -76,21 +78,20 @@ local function effectBurst(player: player, from: location, to: location):
 	set {_b} to a random integer between 0 and 255
 	set {_color} to rgb({_r}, {_g}, {_b})
 	set {_firework} to spawnFireworks_PLAYER({_player}, {_to}, 0, setFireWorksExplosion("ball", {_color}, {_color}, false, false))
+	setPersistentData({_firework}, {@data-firework}, true)
 
 	set {_data.firework} to kitFireworkData()
 	set {_data.shooter} to kitFireworkDataShooter()
 	set {_uuid} to getUUIDString({_player})
 	setPersistentData({_firework}, {_data.firework}, true)
 	setPersistentData({_firework}, {_data.shooter}, {_uuid})
-	effectFragment({_player}, {_to})
 
-local function effectFragment(player: player, loc: location):
 	set {_rum} to a random integer between 1 and 2
 	loop {_rum} times:
-		effectStar({_player}, {_loc})
+		effectFragment({_player}, {_to})
 
-local function effectStar(player: player, loc: location):
-	set {_material} to MATERIAL.FIREWORK_STAR
+local function effectFragment(player: player, loc: location):
+	set {_material} to Material.FIREWORK_STAR
 	set {_itemstack} to new ItemStack({_material})
 	set {_EntityType} to EntityType.ITEM
 
@@ -108,19 +109,50 @@ local function effectStar(player: player, loc: location):
 	loop {_tick} times:
 		wait a tick
 
+	set {_exloc} to location of {_itemEntity}
+	{_itemEntity}.remove()
+
 	set {_r} to a random integer between 0 and 255
 	set {_g} to a random integer between 0 and 255
 	set {_b} to a random integer between 0 and 255
 	set {_color} to rgb({_r}, {_g}, {_b})
-	set {_itemEntity} to spawnFireworks_PLAYER({_player}, {_to}, 0, setFireWorksExplosion("burst", {_color}, {_color}, false, false))
+	set {_firework} to spawnFireworks_PLAYER({_player}, {_exloc}, 0, setFireWorksExplosion("burst", {_color}, {_color}, false, false))
+	setPersistentData({_firework}, {@data-firework}, true)
 
 	set {_data.firework} to kitFireworkData()
 	set {_data.shooter} to kitFireworkDataShooter()
 	set {_uuid} to getUUIDString({_player})
-	setPersistentData({_itemEntity}, {_data.firework}, true)
-	setPersistentData({_itemEntity}, {_data.shooter}, {_uuid})
+	setPersistentData({_firework}, {_data.firework}, true)
+	setPersistentData({_firework}, {_data.shooter}, {_uuid})
+
+on EntityDamageByEntityEvent with priority LOW:
+	set {_victim} to event.getEntity()
+	set {_firework} to event.getDamager()
+
+	set {_data.firework} to kitFireworkData()
+	set {_metadata} to getPersistentData({_firework}, {_data.firework})
+	if {_metadata} is not true:
+		stop
+	set {_star} to getPersistentData({_firework}, {@data-firework})
+	if {_star} is not set:
+		stop
+	set {_attacker} to getSummonPlayer({_firework})
+	if {_attacker} is not set:
+		stop
+	if kitCheckTeam({_victim}, {_attacker}, false) is false:
+		stop
+
+	setDamageModification_SET({_victim}, {@firework-damage})
+	LastKiller({_victim}, {_attacker})
+	kitEffectDescription({_victim}, "§4❤2")
 
 
+
+local function particleBomb(entity: entity):
+	loop 40 times:
+		set {_baseloc} to location 0.5 meters above {_entity}
+		spawnParticle(lava, {_baseloc})
+		wait a tick
 
 local function particleTrail(from: location, to: location):
 	set {_basevec} to setVector({_from}, {_to})
