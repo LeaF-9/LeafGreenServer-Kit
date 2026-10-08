@@ -3,6 +3,7 @@
 options:
 	firework-lifetime: 30
 	firework-metadata: "Homing Star - Firework"
+	firework-star-data: "homingstar-star"
 	firework-damage: 1
 	search-radius: 50
 	min-speed: 0.25
@@ -34,6 +35,9 @@ on EntityDamageByEntityEvent with priority LOW:
 	set {_data.firework} to kitFireworkData()
 	set {_metadata} to getPersistentData({_firework}, {_data.firework})
 	if {_metadata} is not true:
+		stop
+	set {_star} to getPersistentData({_firework}, {@firework-star-data})
+	if {_star} is not set:
 		stop
 	set {_attacker} to getSummonPlayer({_firework})
 	if {_attacker} is not set:
@@ -148,6 +152,7 @@ local function kitEffect_HomingStar_Star(player: player, target: player, loc: lo
 local function kitEffect_HomingStar_Blast(player: player, target: player, loc: location):
 	set {_color} to kitTeamRGB(getTeam({_target}))
 	set {_firework} to spawnFireworks_PLAYER({_player}, {_loc}, 0, setFireWorksExplosion("star", {_color}, {_color}, true, false))
+	setPersistentData({_firework}, {@firework-star-data}, true)
 
 	set {_data.firework} to kitFireworkData()
 	set {_data.shooter} to kitFireworkDataShooter()
