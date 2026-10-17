@@ -1,66 +1,114 @@
 # Massive Bow
 
-on projectile hit:
-	metadata value "massivebow" of projectile is set
-	set metadata value "massivebow" of projectile to false
-	kitParticle_MassiveBow_Hit(location of projectile)
+options:
+	stats-drawing: "MassiveBow-Drawing"
+	metadata-projectile: "massivebow"
+
+	damage-multiplier: 1.2
 
 on damage with priority LOW:
-	set {_attacker} to getAttacker(victim)
-	checkEntityType({_attacker}, player) is true
 	damage was caused by projectile
-	metadata value "massivebow" of projectile is set
-	set {_dis} to distance between {_attacker} and victim
-	set {_dmg} to {_dis} / 10
-	setDamageModification_SET(victim, {_dmg})
+	set {_meta} to getMetadata(projectile, {@metadata-projectile})
+	stop if {_meta} is not true
+	setDamageModification_MUL(victim, {@damage-multiplier})
+	particleHurt(victim)
+	soundHurt(victim)
+
+on projectile hit:
+	getMetadata(projectile, {@metadata-projectile}) is true
+	wait a tick
+	deleteMetadata(projectile, {@metadata-projectile})
 
 
 
-function kitEffect_MassiveBow_Shoot(player: player, event: object):
-	getGameType({_player}) is "Kit"
-	{Class::%{_player}%} is "Archer"
-	{_player} is sneaking
+function kitEffect_MassiveBow(player: player): 
+	stop if {_player} is not sneaking
 
-	set {_proj} to {_event}.getEntity()
-	set metadata value "massivebow" of {_proj} to true
-	kitParticle_MassiveBow_Shoot({_player})
-	set {_baseloc} to location of {_player}
-	set {_v} to setVector(location of {_player}, location 10 meters in front of {_player})
-	set {_power} to 0
-	loop 100 times:
-		if metadata value "massivebow" of {_proj} is false:
-			continue
-		add 1 to {_power}
-		set {_pow} to {_power} / 5
-		set {_vector} to {_v} * vector({_pow}, {_pow}, {_pow})
-		set velocity of {_proj} to {_vector}
-		kitParticle_MassiveBow_Arrow({_baseloc}, location of {_proj})
+	set {_uuid} to a random uuid
+	setKitStats({_player}, {@stats-drawing}, {_uuid})
+
+	soundDraw({_player})
+	set {_drawing} to true
+	set {_count} to 0
+	while {_drawing} is true:
+		if {_player} is not sneaking:
+			delete {_drawing}
+			deleteKitStats({_player}, {@stats-drawing})
+			stop
+
+		set {_draw} to getKitStats({_player}, {@stats-drawing})
+		stop if {_draw} is not {_uuid}
+
+		add 1 to {_count}
+		particleDraw({_player}, {_count})
 		wait a tick
 
+function kitEffect_MassiveBow_Shoot(player: player, event: object):
+	set {_drawing} to getKitStats({_player}, {@stats-drawing})
+	deleteKitStats({_player}, {@stats-drawing})
+
+	stop if {_player} is not sneaking
+	stop if {_drawing} is not set
+
+	set {_proj} to {_event}.getEntity()
+	setMetadata({_proj}, {@metadata-projectile}, true)
+	particleProjectile({_proj})
+	soundLaunch({_player})
 
 
-# 爆発音と爆発Particle
-local function kitParticle_MassiveBow_Shoot(player: player):
-	playSound("entity.wither.shoot", 1, 2, {_player})
-	set {_baseloc} to location 1 meter above {_player}
-	loop 10 times:
-		spawnParticle_Vector(cloud, randomVector({_baseloc}), 0.75, {_baseloc})
 
-# 炎上の白いParticle
-local function kitParticle_MassiveBow_Arrow(vecloc: location, loc: location):
-	set yaw of {_loc} to yaw of {_vecloc}
-	set pitch of {_loc} to pitch of {_vecloc}
-	set {_circles::*} to particleLocation_CircleV({_loc}, 6, 0.3)
-	loop {_circles::*}:
-		spawnParticle_Dust(rgb(160, 216, 239), 0.7, loop-value)
+local function particleDraw(player: player, count: number):
+	set {_baseloc} to location of {_player}
+	set {_basevec} to vector(0.8, 0, 0)
+	set {_upvec} to vector(0, 1, 0)
+	set {_basenum} to 80
 
-# 地形破壊Particleと爆発音
-local function kitParticle_MassiveBow_Hit(loc: location):
-	playSound("entity.wither.break_block", 1, 2, {_loc})
-	loop all blocks in radius 3 around {_loc}:
-		loop-block is not passable
-		set {_material} to type of loop-block
-		loop all blocks in radius 1.5 around loop-block:
-			loop-block-2 is passable
-			set {_el} to location of loop-block-2
-			spawnParticle_Block({_material}, {_el})
+	set {_c} to mod({_count}, {_basenum})
+	set {_one} to 360 / {_basenum}
+	set {_plusbase} to 360 / 4
+
+	set {_ln} to 0
+	loop 4 times:
+		add 1 to {_ln}
+		set {_rad} to ({_c} * {_one}) + ({_plusbase} * {_ln})
+		set {_v} to {_basevec}
+		rotate {_v} around y-axis by {_rad}
+		set {_el} to {_baseloc} ~ {_v}
+		spawnParticle_Vector(dust_plume, {_upvec}, 0.3, {_el})
+
+local function particleProjectile(proj: projectile):
+	add rgb(92, 20, 20) to {_colors::*}
+	add rgb(139, 56, 36) to {_colors::*}
+	add rgb(133, 57, 12) to {_colors::*}
+
+	set {_ok} to true
+	loop 100 times:
+		wait a tick
+		set {_meta} to getMetadata({_proj}, {@metadata-projectile})
+		stop if {_meta} is not true
+
+		set {_el} to location of {_proj}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Dust({_color}, 2.5, {_el})
+
+local function particleHurt(entity: entity):
+	set {_baseloc} to location of {_entity}
+	set {_count} to a random integer between 10 and 15
+	loop {_count} times:
+		set {_m} to a random number between 0.5 and 0.85
+		set {_vec.h} to vector({_m}, 0, 0)
+		set {_up} to a random number between 0 and 0.5
+		set {_vec.v} to vector(0, {_up}, 0)
+		set {_el} to {_baseloc}
+		set {_el} to {_el} ~ {_vec.h}
+		set {_el} to {_el} ~ {_vec.v}
+		spawnParticle_BlockData(dust_pillar, redstone block, {_el})
+
+local function soundDraw(player: player):
+	playSound("entity.breeze.land", 1, 0.8, {_player})
+
+local function soundLaunch(player: player):
+	playSound("entity.breeze.shoot", 1, 0.9, {_player})
+
+local function soundHurt(entity: entity):
+	playSound("item.spear.hit", 1, 1.8, {_entity})
