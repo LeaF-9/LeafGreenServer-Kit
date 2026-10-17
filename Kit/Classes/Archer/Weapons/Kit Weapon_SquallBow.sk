@@ -1,0 +1,149 @@
+# weapon-name: Squall Bow
+
+options:
+	min-draw-tick: 24
+	max-draw-tick: 44
+
+	barrage-interval: 2
+
+	stats-drawing: "SquallBow-Drawing"
+	stats-counting: "SquallBow-DrawLevel"
+	metadata-arrow: "Squall Bow - Arrow"
+
+on projectile hit:
+	getMetadata(projectile, {@metadata-arrow}) is true
+	deleteMetadata(projectile, {@metadata-arrow})
+
+function kitEffect_SquallBow(player: player):
+	set {_uuid} to a random uuid
+	setKitStats({_player}, {@stats-drawing}, {_uuid})
+
+	set {_total} to {@max-draw-tick} - {@min-draw-tick}
+	set {_checktick} to {_total} / 4
+	set {_countbase} to {@min-draw-tick}
+
+	set {_count} to 0
+	set {_level} to 0
+	loop {@max-draw-tick} times:
+		stop if getKitStats({_player}, {@stats-drawing}) is not {_uuid}
+
+		add 1 to {_count}
+		if {_count} >= {_countbase}:
+			add 1 to {_level}
+			add {_checktick} to {_countbase}
+			soundCount({_player}, {_level})
+			setKitStats({_player}, {@stats-counting}, {_level})
+
+		wait a tick
+	particleMax({_player})
+
+function kitEffect_SquallBow_Shoot(player: player, event: object):
+	deleteKitStats({_player}, {@stats-drawing})
+	set {_count} to getKitStats({_player}, {@stats-counting})
+	deleteKitStats({_player}, {@stats-counting})
+	stop if {_count} is not set
+	
+	set {_proj} to {_event}.getEntity()
+	setMetadata({_proj}, {@metadata-arrow}, true)
+	particleSplash({_proj})
+	stop if {_count} is 0
+
+	if {_player} is sneaking:
+		effectHorizon({_player}, {_count})
+		stop
+	effectBarrage({_player}, {_count})
+
+local function effectBarrage(player: player, count: number):
+	set {_count} to {_count} - 1
+	
+	loop {_count} times:
+		loop {@barrage-interval} times:
+			wait a tick
+		
+		set {_loc} to location of {_player}
+		set {_vector} to {_loc}.getDirection()
+		set {_vector} to {_vector} * vector(2.5, 2.5, 2.5)
+		set {_basevec.h} to getVectorFromYawAxis({_loc})
+		set {_basevec.v} to getVectorFromPitchAxis({_loc})
+		set {_pow.h} to a random number between -5 and 5
+		set {_pow.v} to a random number between -5 and 5
+		set {_vec} to {_vector}
+		rotate {_vec} around {_basevec.h} by {_pow.h}
+		rotate {_vec} around {_basevec.v} by {_pow.v}
+
+		effectShoot({_player}, {_vec})
+		soundShoot({_player})
+
+local function effectHorizon(player: player, count: number):
+	set {_count} to {_count} - 1
+
+	set {_remain} to {_count}
+	set {_loop} to ceil({_count} / 2)
+	set {_ln} to 0
+	loop {_loop} times:
+		add 1 to {_ln}
+		loop {@barrage-interval} times:
+			wait a tick
+
+		soundShoot({_player})
+		set {_loc} to location of {_player}
+		set {_vector} to {_loc}.getDirection()
+		set {_vector} to {_vector} * vector(2.5, 2.5, 2.5)
+		if {_remain} is 1:
+			effectShoot({_player}, {_vector})
+			stop
+		
+		set {_deg.1} to (10 * {_ln})
+		set {_deg.2} to (10 * {_ln}) * (-1)
+		set {_basevec} to getVectorFromYawAxis({_loc})
+		set {_ln.2} to 0
+		loop 2 times:
+			add 1 to {_ln.2}
+			set {_vec} to {_vector}
+			rotate {_vec} around {_basevec} by {_deg.%{_ln.2}%}
+			effectShoot({_player}, {_vec})
+
+		subtract 2 from {_remain}
+
+local function effectShoot(player: player, vector: vector):
+	set {_baseloc} to head of {_player}
+
+	shoot an arrow from {_baseloc} at speed 0.1
+	set {_proj} to shot arrow
+	set velocity of {_proj} to {_vector}
+	setShooter({_proj}, {_player})
+	setMetadata({_proj}, {@metadata-arrow}, true)
+	particleSplash({_proj})
+
+
+
+local function particleMax(player: player):
+	add rgb(91, 213, 235) to {_colors::*}
+	add rgb(57, 214, 201) to {_colors::*}
+	add rgb(154, 230, 243) to {_colors::*}
+
+	set {_count} to a random integer between 30 and 40
+	loop {_count} times:
+		set {_el} to aroundEffect({_player})
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 0.5, {_el})
+
+local function particleSplash(proj: projectile):
+	loop 100 times:
+		stop if getMetadata({_proj}, {@metadata-arrow}) is not true
+
+		loop 10 times:
+			set {_el} to location of {_proj}
+			set {_v} to randomVector(0.1)
+			spawnParticle_Vector(fishing, {_v}, 0.5, {_el})
+		wait a tick
+
+local function soundCount(player: player, level: number):
+	set {_pitchplus} to {_level} - 1
+
+	set {_one} to 0.25
+	set {_pitch} to 1 + ({_one} * {_pitchplus})
+	playSound("block.wooden_button.click_on", 1, {_pitch}, {_player})
+
+local function soundShoot(player: player):
+	playSound("entity.arrow.shoot", 1, 1, {_player})
