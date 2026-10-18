@@ -39,14 +39,18 @@ function getBowDrawStart(player: player) :: date:
 
 
 
+options:
+	arrow-damage: "arrowdamage"
+	arrow-multiple: "arrowmultiple"
+
 on damage with priority LOW:
 	damage was caused by projectile
 	projectile is an arrow
-	if metadata value "arrowdamage" of projectile is set:
-		set {_damage} to metadata value "arrowdamage" of projectile
+	if metadata value {@arrow-damage} of projectile is set:
+		set {_damage} to getMetadata(projectile, {@arrow-damage})
 		setDamageModification_SET(victim, {_damage})
-	else if metadata value "arrowmultiple" of projectile is set:
-		set {_multiple} to metadata value "arrowmultiple" of projectile
+	else if metadata value {@arrow-multiple} of projectile is set:
+		set {_multiple} to getMetadata(projectile, {@arrow-multiple})
 		setDamageModification_MUL(victim, {_multiple})
 
 on shoot:
@@ -57,7 +61,13 @@ on shoot:
 
 	set {_pow} to getNamespacedKey({_tool}, "arrow-damage", "float")
 	stop if {_pow} is not set
-	set metadata value "arrowmultiple" of projectile to {_pow}
+	setArrowMultiple(event-projectile, {_pow})
+
+function setArrowDamage(proj: projectile, pow: number):
+	setMetadata({_proj}, {@arrow-damage}, {_pow})
+
+function setArrowMultiple(proj: projectile, pow: number):
+	setMetadata({_proj}, {@arrow-multiple}, {_pow})
 
 
 
