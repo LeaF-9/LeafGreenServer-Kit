@@ -1,0 +1,13 @@
+# get Loadout(item-key)
+function getPlayerLoadout(player: player, key: text) :: item:
+	set {_invs::*} to all items in {_player}'s inventory
+	for {_i} in {_invs::*}:
+		set {_k} to getItemKey({_i})
+		if {_k} is {_key}:
+			set {_loadout} to {_i}
+			exit loop
+	return {_loadout}
+
+function getItemKey(item: item) :: text:
+	set {_itemkey} to getNamespacedKey({_item}, "item-key", "string")
+	return {_itemkey}
