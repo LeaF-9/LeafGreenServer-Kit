@@ -1,0 +1,259 @@
+# Weapon-Name: Mechanical Bow
+options:
+	stats-boost: "MechanicalBow-Boost"
+	stats-temp: "MechanicalBow-Temp"
+	stats-timer: "MechanicalBow-Timer"
+
+	arrow-damage: 3
+	arrow-metadata: "Mechanical Bow - Arrow"
+
+	heat-value: 8
+	cool-tick: 3
+	cooldown-tick: 60
+	timer-prefix: "MechanicalBow-"
+
+on projectile hit:
+	getMetadata(projectile, {@arrow-metadata}) is true
+	deleteMetadata(projectile, {@arrow-metadata})
+
+function kitEffect_MechanicalBow(player: player):
+	stop if getKitStats({_player}, {@stats-boost}) is not set
+	effectHeat({_player})
+
+function kitEffect_MechanicalBow_Sneak(player: player, event: object):
+	set {_uuid} to a random uuid
+	setKitStats({_player}, {@stats-boost}, {_uuid})
+	set {_tool} to tool of {_player}
+	set {_enchants::*} to enchantments of {_tool}
+	enchant {_tool} with quick charge 5
+	set tool of {_player} to {_tool}
+	particlePrepare({_player})
+	soundPrepare({_player})
+
+	set {_ok} to true
+	set {_ln} to 0
+	while {_ok} is true:
+		wait a tick
+
+		set {_nowtool} to tool of {_player}
+		deleteKitStats({_player}, {@stats-boost}) if getItemKey({_nowtool}) is not "MechanicalBow"
+		deleteKitStats({_player}, {@stats-boost}) if {_player} is not sneaking	
+		if getKitStats({_player}, {@stats-boost}) is not {_uuid}:
+			delete {_ok}
+			continue
+		
+		particleBoost({_player})
+		soundBoost({_player}) if mod({_ln}, 4) is 0
+		add 1 to {_ln}
+	
+	set {_tool} to getPlayerLoadout({_player}, "MechanicalBow")
+	remove {_tool} from {_player}'s inventory
+	stop if {_tool} is not set
+
+	clear enchantments of {_tool}
+	for {_e} in {_enchants::*}:
+		enchant {_tool} with {_e}
+	give {_tool} to {_player}
+
+function kitEffect_MechanicalBow_Shoot(player: player, event: object):
+	stop if getKitStats({_player}, {@stats-boost}) is not set
+
+	soundLaunch({_player})
+	# 矢の処理
+	set {_proj} to {_event}.getEntity()
+	{_proj}.setFireTicks(1000000)
+	setArrowDamage({_proj}, {@arrow-damage})
+	setMetadata({_proj}, {@arrow-metadata}, true)
+	particleLaunch({_proj})
+
+	set {_vec} to {_player}.getLocation().getDirection()
+	set {_pow} to 20
+	set {_vec} to {_vec} * vector({_pow}, {_pow}, {_pow})
+	set velocity of {_proj} to {_vec}
+
+	effectHeat({_player})
+
+local function effectHeat(player: player):
+	set {_temp} to getKitStats({_player}, {@stats-temp})
+	add {@heat-value} to {_temp}
+	setKitStats({_player}, {@stats-temp}, {_temp})
+	particleHeat({_player})
+	effectTempTimer({_player})
+
+local function effectTempTimer(player: player):
+	stop if getKitStats({_player}, {@stats-timer}) is set
+
+	# Timer作成
+	setKitStats({_player}, {@stats-timer}, true)
+	set {_timer.title} to "§8§lMechanical Bow §7- §4Temperature"
+	set {_uuid} to uuid of {_player}
+	set {_timer.id} to {@timer-prefix} + "%{_uuid}%"
+	set {_timer.value} to getKitStats({_player}, {@stats-temp})
+	create bossbar titled {_timer.title} and id {_timer.id} for {_player} with progress {_timer.value} with colors red with style segmented 10
+
+	set {_cooltick} to {@cool-tick}
+	set {_timer.ok} to true
+	set {_timer.num} to 0
+	while {_timer.ok} is true:
+		wait a tick
+		set {_value} to getKitStats({_player}, {@stats-temp})
+
+		# 冷却完了
+		if {_value} <= 0:
+			deleteKitStats({_player}, {@stats-temp})
+			deleteKitStats({_player}, {@stats-timer})
+			remove bossbar {_timer.id}
+			delete {_timer.ok}
+			particleCool({_player})
+			soundCool({_player})
+			stop
+
+		# オーバーヒート
+		if {_value} >= 100:
+			deleteKitStats({_player}, {@stats-temp})
+			deleteKitStats({_player}, {@stats-timer})
+			effectOverheat({_player})  # Timerの動きもここで処理
+			delete {_timer.ok}
+			stop
+		
+		# 冷却処理
+		add 1 to {_timer.num}
+		if mod({_timer.num}, {_cooltick}) is 0:
+			subtract 1 from {_value}
+			setKitStats({_player}, {@stats-temp}, {_value})
+		
+		# タイマー処理
+		set bossbar {_timer.id} value to {_value}
+
+local function effectOverheat(player: player):
+	# オーバーヒート処理
+	particleOverheat({_player})
+	soundOverheat({_player})
+	kitMsg({_player}, "§4§l§nオーバーヒートした!")
+	setFireTick({_player}, {@cooldown-tick})
+	set {_tool} to getPlayerLoadout({_player}, "MechanicalBow")
+	effectItemCooldown({_player}, {_tool})
+
+	# タイマー処理
+	set {_uuid} to uuid of {_player}
+	set {_timer.id} to {@timer-prefix} + "%{_uuid}%"
+	set {_sub} to 100 / {@cooldown-tick}
+	set {_value} to 100
+	loop {@cooldown-tick} times:
+		set bossbar {_timer.id} value to {_value}
+		subtract {_sub} from {_value}
+		wait a tick
+	remove bossbar {_timer.id}
+
+local function effectItemCooldown(player: player, tool: item):
+	loop 10 times:
+		if {_player}.getCooldown({_tool}) <= 0:
+			{_player}.setCooldown({_tool}, {@cooldown-tick})
+		wait a tick
+
+
+
+local function particlePrepare(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_count} to a random integer between 20 and 30
+	loop {_count} times:
+		set {_pow} to a random number between 0.1 and 0.5
+		set {_vec} to randomVector({_pow})
+		spawnParticle_Vector(large_smoke, {_vec}, 0.6, {_baseloc})
+
+local function particleBoost(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	set {_el} to aroundEffect({_player})
+	set {_pow} to a random number between 0.1 and 0.35
+	set {_v} to setVector({_baseloc}, {_el}, {_pow})
+	spawnParticle_Vector(small_flame, {_v}, 0.5, {_el})
+
+local function particleLaunch(proj: projectile):
+	loop 100 times:
+		delete {_metadata}
+		set {_metadata} to getMetadata({_proj}, {@arrow-metadata})
+		stop if {_metadata} is not true
+		
+		wait a tick
+		set {_loc} to location of {_proj}
+		spawnParticle(lava, {_loc})
+		set {_proloc} to getProjectilePreviousLocation({_proj})
+		if {_proloc} is not set:
+			continue
+		
+		set {_distance} to distance between {_loc} and {_proloc}
+		set {_FM} to 0.1
+		set {_loopnum} to round({_distance} / {_FM})
+		set {_frontMeter} to 0
+		loop {_loopnum} times:
+			add {_FM} to {_frontMeter}
+			set {_el} to location {_frontMeter} meters in front of {_proloc}
+			spawnParticle(lava, {_el})
+
+local function particleHeat(player: player):
+	add rgb(161, 69, 7) to {_colors::*}
+	add rgb(194, 41, 14) to {_colors::*}
+	add rgb(124, 35, 23) to {_colors::*}
+
+	set {_count} to a random integer between 5 and 9
+	loop {_count} times:
+		set {_el} to aroundEffect({_player})
+		set {_color} to a random element out of {_colors::*}
+		set {_size} to a random number between 2 and 2.5
+		spawnParticle_Dust({_color}, {_size}, {_el})
+
+local function particleCool(player: player):
+	add rgb(148, 220, 230) to {_colors::*}
+	add rgb(87, 217, 221) to {_colors::*}
+	add rgb(125, 200, 230) to {_colors::*}
+
+	set {_count.dust} to a random integer between 30 and 40
+	loop {_count.dust} times:
+		set {_el} to aroundEffect({_player})
+		set {_color} to a random element out of {_colors::*}
+		set {_size} to a random number between 0.5 and 0.9
+		spawnParticle_Dust({_color}, {_size}, {_el})
+	
+	set {_count.snow} to a random integer between 8 and 13
+	set {_baseloc} to location 1 meter above {_player}
+	loop {_count.snow} times:
+		set {_pow} to a random number between 0.2 and 0.4
+		set {_v} to randomVector({_pow})
+		spawnParticle_Vector(snowflake, {_v}, 0.5, {_baseloc})
+
+local function particleOverheat(player: player):
+	set {_baseloc} to location 1 meter above {_player}
+	spawnParticle(explosion_emitter, {_baseloc})
+
+	set {_count.flame} to a random integer between 50 and 70
+	loop {_count.flame} times:
+		set {_pow} to a random number between 0.4 and 0.6
+		set {_v} to randomVector({_pow})
+		spawnParticle_Vector(flame, {_v}, 0.5, {_baseloc})
+	
+	set {_count.cloud} to a random integer between 10 and 15
+	loop {_count.cloud} times:
+		set {_el} to aroundEffect({_player})
+		spawnParticle(cloud, {_el})
+	
+	set {_count.lava} to a random integer between 30 and 40
+	loop {_count.lava} times:
+		set {_pow} to a random number between 1 and 7
+		set {_vec} to randomVector({_pow})
+		set {_el} to {_baseloc} ~ {_vec}
+		spawnParticle(lava, {_el})
+
+local function soundPrepare(player: player):
+	playSound("entity.blaze.ambient", 1, 1.8, {_player})
+
+local function soundBoost(player: player):
+	playSound("item.flintandsteel.use", 1, 1.6, {_player})
+
+local function soundLaunch(player: player):
+	playSound("entity.blaze.hurt", 1, 1.75, {_player})
+
+local function soundCool(player: player):
+	playSound("block.fire.extinguish", 1, 1.8, {_player})
+
+local function soundOverheat(player: player):
+	playSound("entity.generic.explode", 1, 1.85, {_player})
