@@ -1,5 +1,9 @@
 # Helical Luminary
 
+import:
+	io.papermc.paper.event.entity.EntityLoadCrossbowEvent
+	io.papermc.paper.event.player.PlayerStopUsingItemEvent
+
 options:
 	effect-tick: 200
 	force-count: 3
@@ -8,10 +12,14 @@ options:
 
 
 
-on rightclick holding a bow:
+on rightclick holding a bow or crossbow:
 	set {_HelicalLuminary} to getKitStats(player, "HelicalLuminary")
 	{_HelicalLuminary} is set
-	kitParticle_HelicalLuminary_Charge(player)
+	# 弓/クロスボウの判別 (装填済みクロスボウは発射なので除外)
+	set {_type} to type of player's tool
+	if {_type} is crossbow:
+		stop if isCrossbowCharged(player) is true
+	kitParticle_HelicalLuminary_Charge(player, {_type})
 
 
 
@@ -26,6 +34,27 @@ on shoot:
 
 	cancel event
 	kitEffect_HelicalLuminary_Shoot(shooter)
+
+# クロスボウは装填を常にキャンセルし、離した時に判定する
+on EntityLoadCrossbowEvent:
+	set {_player} to event.getEntity()
+	{_player} is a player
+	set {_HelicalLuminary} to getKitStats({_player}, "HelicalLuminary")
+	{_HelicalLuminary} is set
+	event.setCancelled(true)
+
+on PlayerStopUsingItemEvent:
+	set {_item} to event.getItem()
+	type of {_item} is crossbow
+	set {_player} to event.getPlayer()
+	set {_HelicalLuminary} to getKitStats({_player}, "HelicalLuminary")
+	{_HelicalLuminary} is set
+	set {_draw} to getBowDrawTime({_player}, 30)
+	if {_draw} < 30:
+		kitParticle_HelicalLuminary_Cancel({_player})
+		stop
+
+	kitEffect_HelicalLuminary_Shoot({_player})
 
 
 
@@ -151,7 +180,7 @@ local function kitParticle_HelicalLuminary_Force(player: player):
 		add {_addbaserad} to {_baserad}
 		wait a tick
 
-local function kitParticle_HelicalLuminary_Charge(player: player):
+local function kitParticle_HelicalLuminary_Charge(player: player, type: itemtype):
 	set {_rad.s} to 0
 	set {_addrad.s} to 90 / 20
 	set {_meter.s} to 0.5
@@ -179,9 +208,9 @@ local function kitParticle_HelicalLuminary_Charge(player: player):
 		wait a tick
 
 		set {_draw} to getBowDrawTime({_player}, 31)
-		if {_draw} is not set:
+		if getBowDrawStart({_player}) is not set:
 			stop
-		if type of (tool of {_player}) is not a bow:
+		if type of (tool of {_player}) is not {_type}:
 			stop
 		if getKitStats({_player}, "HelicalLuminary") is not {_count}:
 			stop
