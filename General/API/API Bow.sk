@@ -1,10 +1,19 @@
+import:
+	io.papermc.paper.event.entity.EntityLoadCrossbowEvent
+	io.papermc.paper.event.player.PlayerStopUsingItemEvent
+
 # memo:
 #	デフォルトのマックスチャージまでの時間は 24 ticks
+#	クロスボウはチャージ満了の時点(長押し中)で装填が確定する (EntityLoadCrossbowEvent)
+#	装填がキャンセルされた場合は毎tick再試行される
 options:
 	draw-time: "BOW-draw time"
 	draw-start: "BOW-draw start"
 
-on rightclick holding a bow:
+on rightclick holding a bow or crossbow:
+	# 装填済みクロスボウの右クリックは発射なので計測しない
+	stop if isCrossbowCharged(player) is true
+	set {_type} to type of player's tool
 	set {_time} to 0
 	set metadata value {@draw-time} of player to {_time}
 	set {_now} to now
@@ -14,7 +23,7 @@ on rightclick holding a bow:
 		wait a tick
 		if getBowDrawTime(player) is not set:
 			stop
-		if type of player's tool is not a bow:
+		if type of player's tool is not {_type}:
 			stop
 		if getBowDrawStart(player) is not {_now}:
 			stop
@@ -25,6 +34,26 @@ on shoot with priority MONITOR:
 	getBowDrawTime(shooter) is set
 	delete metadata value {@draw-time} of shooter
 	delete metadata value {@draw-start} of shooter
+
+on EntityLoadCrossbowEvent with priority MONITOR:
+	# skript-reflectのイベントはキャンセル済みでも実行されるため除外する
+	event.isCancelled() is false
+	set {_entity} to event.getEntity()
+	delete metadata value {@draw-time} of {_entity}
+	delete metadata value {@draw-start} of {_entity}
+
+# 装填されずに離した場合の計測終了
+on PlayerStopUsingItemEvent with priority MONITOR:
+	set {_item} to event.getItem()
+	type of {_item} is crossbow
+	set {_player} to event.getPlayer()
+	delete metadata value {@draw-time} of {_player}
+	delete metadata value {@draw-start} of {_player}
+
+function isCrossbowCharged(player: player) :: boolean:
+	type of (tool of {_player}) is crossbow
+	set {_item} to {_player}.getInventory().getItemInMainHand()
+	return {_item}.getItemMeta().hasChargedProjectiles()
 
 function getBowDrawTime(player: player, maxTime: number = 24) :: number:
 	set {_time} to metadata value {@draw-time} of {_player}
