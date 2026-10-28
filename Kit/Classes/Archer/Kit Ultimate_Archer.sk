@@ -58,50 +58,42 @@ local function kitEffect_HelicalLuminary_Shoot(player: player):
 	# 座標確認 (emerald作)
 	set {_loc} to location of {_player}
 	add 1.6 to y of {_loc}
-	set {_vector0} to {_loc}
-	set {_vector1} to {_loc}
-	set {_x} to x of {_loc}
-	set {_y} to y of {_loc}
-	set {_z} to z of {_loc}
+
+	# 基底ベクトル (vx: 右, vy: 視線に対する上, vz: 前)
+	set {_flatloc} to {_loc}
+	set pitch of {_flatloc} to 0
+	set {_vx} to getVectorFromPitchAxis({_flatloc}) * vector(-1, -1, -1)
+	set {_vy} to getVectorFromYawAxis({_loc}) * vector(-1, -1, -1)
+	set {_vz} to getVectorFromRollAxis({_loc})
 	set {_alpha} to 0
 
 	loop 37 time:
-		set {_vx1} to {_loc}
-		set pitch of {_vx1} to 0
-		set {_vx} to location 1 meters to the right of {_vx1}
-		set {_vy} to {_loc}
-		set {_y1p} to pitch of {_vy}
-		set {_y2p} to abs({_y1p}) - 90
-		if {_y1p} < 0:
-			set {_y3p} to yaw of {_loc}
-			if {_y3p} < 180:
-				add 180 to {_y3p}
-			else:
-				add -180 to {_y3p}
-			set yaw of {_vy} to {_y3p}
-		set pitch of {_vy} to {_y2p}
-		set {_vy} to location 1 meters in front of {_vy}
-		set {_vz} to location 1 meters in front of {_loc}
-
-		set {_vector0} to location (3 * {_alpha}) meters in front of {_loc}
-		set {_v0x} to x of {_vector0}
-		set {_v0y} to y of {_vector0}
-		set {_v0z} to z of {_vector0}
-		if ({_v0x} - {_x}) ^ 2 + ({_v0y} - {_y}) ^ 2 + ({_v0z} - {_z}) ^ 2 < 10201:
-			kitParticle_HelicalLuminary_Dust({_vector0})
-			playSound("item.trident.return", 1.5, 1.25, {_vector0})
+		set {_m} to 3 * {_alpha}
+		if {_m} < 101:
+			set {_dustloc} to {_loc} ~ ({_vz} * vector({_m}, {_m}, {_m}))
+			kitParticle_HelicalLuminary_Dust({_dustloc})
+			playSound("item.trident.return", 1.5, 1.25, {_dustloc})
 
 		set {_s} to 0
 		set {_t} to 0
 		loop 8 time:
 			add 1 to {_t}
+			# 半径と前方への距離
+			set {_r} to 0.5 * {_t}
+			set {_f} to 3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}
+			set {_vecf} to {_vz} * vector({_f}, {_f}, {_f})
 			loop 5 time:
-				set x of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x of {_vx} - {_x}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (x of {_vy} - {_x}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (x of {_vz} - {_x}) + {_x}
-				set y of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y of {_vx} - {_y}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (y of {_vy} - {_y}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (y of {_vz} - {_y}) + {_y}
-				set z of {_vector1} to (0.5 * {_t} * cos(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z of {_vx} - {_z}) + (0.5 * {_t} * sin(72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha})) * (z of {_vy} - {_z}) + (3 * 2 ^ ((8 - {_t}) / 4) - 9 + {_alpha}) * (z of {_vz} - {_z}) + {_z}
+				set {_theta} to 72 * {_s} + 14 * {_t} - 14 - 2 * {_alpha}
+				set {_a} to {_r} * cos({_theta})
+				set {_b} to {_r} * sin({_theta})
+				set {_vec} to ({_vx} * vector({_a}, {_a}, {_a})) + ({_vy} * vector({_b}, {_b}, {_b})) + {_vecf}
+				set {_helixloc} to {_loc} ~ {_vec}
 
-				spawnParticle_Dust(rgb(255, 255, 32 * {_t}), 1, {_vector1})
-				loop all entities in radius 1 around {_vector1}:
+				set {_blue} to (32 * {_t})
+				set {_blue} to 255 if {_blue} > 255
+				set {_color} to rgb(255, 255, {_blue})
+				spawnParticle_Dust({_color}, 1, {_helixloc})
+				loop all entities in radius 1 around {_helixloc}:
 					{_hit::%uuid of loop-entity%} is not set
 					kitCheckTeam(loop-entity, {_player}, false, true) is true
 
