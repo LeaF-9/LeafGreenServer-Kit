@@ -69,8 +69,9 @@ local function kitEffect_BoscageTwine(player: player):
 	set {_size} to size of {_hit::*}
 	kitMsg({_player}, "<##0be96f>§l%{_size}%<##0be96f>体<##075f33>捕獲!")
 
-	set {_coreloc} to {_loc.trail::0}
-	set {_reduceMeter} to {@move-per-second} / 20
+	set {_endln} to {_ln}
+	set {_coreloc} to {_loc.trail::%{_endln}%}
+	set {_addMeter} to {@move-per-second} / 20
 	set {_damage} to {@damage-per-second} / 2
 	set {_count} to {@effect-meter} * 2
 	set {_ln} to 0
@@ -81,16 +82,19 @@ local function kitEffect_BoscageTwine(player: player):
 		loop {_hit::*}:
 			set {_loop-player} to loop-value-2
 			set {_pm} to {_count.%{_loop-player}%}
-			subtract {_reduceMeter} from {_pm}
-			if {_pm} < 0:
-				kitParticle_BoscageTwine_Release({_loop-player})
-				remove {_loop-player} from {_hit::*}
-				continue
+			add {_addMeter} to {_pm}
+			set {_pm} to {_endln} if {_pm} > {_endln}
 			set {_teleportloc} to location 1 meter below {_loc.trail::%{_pm}%}
 			set yaw of {_teleportloc} to yaw of {_loop-player}
 			set pitch of {_teleportloc} to pitch of {_loop-player}
 			teleport {_loop-player} to {_teleportloc}
-			kitParticle_BoscageTwine_Catch({_loop-player}, {_loc.trail::*}, {_pm})
+
+			delete {_path::*}
+			set {_m} to {_pm}
+			while {_m} <= {_endln}:
+				add {_loc.trail::%{_m}%} to {_path::*}
+				add 0.5 to {_m}
+			kitParticle_BoscageTwine_Catch({_loop-player}, {_path::*})
 			set {_count.%{_loop-player}%} to {_pm}
 
 			if mod({_ln}, 5) is 0 or 5:
@@ -100,7 +104,7 @@ local function kitEffect_BoscageTwine(player: player):
 		wait a tick
 	stop if (size of {_hit::*}) is 0
 	loop {_hit::*}:
-		kitParticle_BoscageTwine_Release({_loop-player})
+		kitParticle_BoscageTwine_Release(loop-value)
 
 local function kitEffect_BoscageTwine_RayTrace(loc: location, vec: vector, d: number, p: number = 300) :: vector:
 	set {_vec} to (normalized {_vec}) / vector({_p}, {_p}, {_p})
@@ -194,7 +198,7 @@ local function kitParticle_BoscageTwine_Core(loc: location):
 		set {_el} to {_loc} ~ {_vec}
 		spawnParticle_BlockData(block_crumble, oak leaves, {_el})
 
-local function kitParticle_BoscageTwine_Catch(player: player, loc: locations, maxmeter: number):
+local function kitParticle_BoscageTwine_Catch(player: player, loc: locations):
 	chance of 10%:
 		playSound("entity.creaking.freeze", 1, 1, {_player})
 
@@ -219,18 +223,18 @@ local function kitParticle_BoscageTwine_Catch(player: player, loc: locations, ma
 			spawnParticle(composter, {_el})
 		add {_addy} to {_y}
 	
-	set {_ln} to {_maxmeter} * 2
-	set {_sub} to 1
-	loop ({_maxmeter} * 2) times:
-		set {_next} to {_ln} - {_sub}
-		stop if {_next} < 1
+	set {_size} to size of {_loc::*}
+	set {_ln} to 1
+	loop {_size} times:
+		set {_next} to {_ln} + 1
+		stop if {_next} > {_size}
 		set {_loc.from} to {_loc::%{_ln}%}
 		set {_loc.to} to {_loc::%{_next}%}
 
 		set {_color} to a random element out of {_colors.trail::*}
 		spawnParticle_Trail({_color}, {_loc.to}, 20 ticks, {_loc.from})
 
-		subtract {_sub} from {_ln}
+		add 1 to {_ln}
 
 local function kitParticle_BoscageTwine_Release(player: player):
 	playSound("entity.creaking.deactivate", 1, 1.4, {_player})
