@@ -1,41 +1,45 @@
 # Weapon-Name: Twinkle Star
 
-function kitEffect_TwinkleStar(player: player):
-	if {_player} has arrow:
-		load yml "plugins/skript-yaml/Kit Classes/Bomber.yml" as "firework.%{_player}%"
-		set {_Firework} to yml value "kititems.Firework" from "firework.%{_player}%"
-		unload yml "firework.%{_player}%"
-		set {_amoarrow} to amount of arrow in {_player}'s inventory
-		set {_hasFire} to offhand tool of {_player}
-		if {_hasFire} is not set:
-			set {_amofire} to 0
-		else:
-			set {_amofire} to item amount of {_hasFire}
-		if {_amofire} >= 64:
-			stop
+import:
+	io.papermc.paper.event.entity.EntityLoadCrossbowEvent
 
-		# 花火充填数
-		# 2倍処理時
-		# set {_loop.firework} to {_amoarrow} * 2 + {_amofire}
-		set {_loop.firework} to {_amoarrow} + {_amofire}
-		if {_loop.firework} >= 64:
-			set {_loop.firework} to 64
+# 装填完了時に装填物を花火へ変換する
+# EntityLoadCrossbowEventは装填前に呼ばれるため, 1tick後に差し替える
+on EntityLoadCrossbowEvent with priority MONITOR:
+	# skript-reflectのイベントはキャンセル済みでも実行されるため除外する
+	event.isCancelled() is false
+	set {_player} to event.getEntity()
+	{_player} is a player
+	getGameType({_player}) is "Kit"
 
-		set item amount of {_Firework} to {_loop.firework}
-		set offhand tool of {_player} to {_Firework}
+	wait a tick
+	kitEffect_TwinkleStar_Load({_player})
 
-		# arrow消費数
-		# 2倍処理時
-		# set {_loop.subtract} to 64 - ({_amofire} * 0.5)
-		set {_loop.subtract} to 64 - {_amofire}
+local function kitEffect_TwinkleStar_Load(player: player):
+	set {_item} to {_player}.getInventory().getItemInMainHand()
+	type of {_item} is crossbow
 
-		loop {_loop.subtract} times:
-			remove an arrow from {_player}'s inventory
+	set {_itemkey} to getNamespacedKey({_item}, "item-key", "string")
+	replace "'" with "" in {_itemkey}
+	{_itemkey} is "TwinkleStar"
+
+	set {_meta} to {_item}.getItemMeta()
+	{_meta}.hasChargedProjectiles() is true
+
+	load yml "plugins/skript-yaml/Kit Classes/Bomber.yml" as "firework.%{_player}%"
+	set {_Firework} to yml value "kititems.Firework" from "firework.%{_player}%"
+	unload yml "firework.%{_player}%"
+
+	{_meta}.setChargedProjectiles(null)
+	{_meta}.addChargedProjectile({_Firework})
+	{_item}.setItemMeta({_meta})
+
+	{_player}.getInventory().setItemInMainHand({_item})
 
 function kitEffect_TwinkleStar_Shoot(player: player, event: object):
 	getGameType({_player}) is "Kit"
 	{Class::%{_player}%} is "Bomber"
-	
+
 	set {_proj} to {_event}.getEntity()
 	set {_firework} to kitFireworkData()
 	set {_shooter} to kitFireworkDataShooter()
