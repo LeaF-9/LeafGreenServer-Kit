@@ -3,11 +3,12 @@
 function kitEffect_ShockGrenade(player: player):
 	subtract 1 from item amount of tool of {_player}
 	playSound("entity.arrow.shoot", 1, 0.5, {_player})
-	shoot a snowball from {_player} at speed 0.9
+	shoot a snowball from {_player} at speed 1.25
 	set metadata value "shockgrenade" of shot projectile to true
 	set item of shot projectile to beacon
 	set {_shotproj} to shot projectile
 	kitParticle_ShockGrenade_Projectile({_shotproj})
+	setKitStats({_player}, "ShockGrenade-Used", true)
 
 on projectile hit:
 	projectile is a snowball
@@ -28,9 +29,7 @@ on projectile hit:
 		set velocity of loop-entity to {_vector}
 		if type of loop-entity is a player:
 			setFallRemove(loop-entity)
-	set {_locs::*} to particleLocation_Sphere({_from}, 30, 5, 80)
-	loop {_locs::*}:
-		spawnParticle(enchanted_hit, loop-value)
+	particleSphere({_from})
 
 on death of player:
 	set {_killer} to getLastKiller(victim)
@@ -38,7 +37,11 @@ on death of player:
 	set {_grenade} to kitSkillItem("Knocker", 6)
 	set {_grenade} to kitItemTagChanger({_grenade}, "Knocker", "Skill", 6)
 	set {_grenade} to {_grenade}.asOne()
-	give {_grenade} to {_killer}'s inventory
+	if any:
+		getKitStats({_killer}, "ShockGrenade-Used") is true
+		{_killer}.getInventory().containsAtLeast({_grenade}, 1)
+	then:
+		give {_grenade} to {_killer}'s inventory
 
 
 
@@ -50,3 +53,23 @@ local function kitParticle_ShockGrenade_Projectile(proj: projectile):
 		set {_loc} to location of {_proj}
 		spawnParticle(end_rod, {_loc})
 		wait a tick
+
+local function particleSphere(loc: location):
+	add rgb(18, 184, 184) to {_colors::*}
+	add rgb(66, 236, 194) to {_colors::*}
+	add rgb(18, 164, 209) to {_colors::*}
+
+	set {_crit} to a random integer between 150 and 180
+	loop {_crit} times:
+		set {_m} to 5
+		set {_v} to randomVector({_m})
+		set {_el} to {_loc} ~ {_v}
+		spawnParticle(enchanted_hit, {_el})
+	
+	set {_magic} to a random integer between 50 and 70
+	loop {_magic} times:
+		set {_m} to a random number between 0.5 and 5
+		set {_v} to randomVector({_m})
+		set {_el} to {_loc} ~ {_v}
+		set {_color} to a random element out of {_colors::*}
+		spawnParticle_Spell(instant_effect, {_color}, 0.5, {_el})
