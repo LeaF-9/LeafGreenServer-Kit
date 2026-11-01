@@ -105,9 +105,6 @@ function kitEffect_ScatKnife_AttackLow(player: player, event: object):
 	set {_attacker} to {_player}
 
 	set {_hp} to health of {_victim}
-	if {_hp} <= 0.5:
-		setDamageModification_FIX({_victim}, 100)
-		stop
 
 	{_event}.setCancelled(true)
 	set {_uuid} to a random uuid
@@ -116,11 +113,18 @@ function kitEffect_ScatKnife_AttackLow(player: player, event: object):
 	set {_basedmg} to {_event}.getDamage()
 	set {_basedmg} to {_basedmg} * 0.5
 	set {_dmg} to getDamageModification_ALL({_victim}, {_basedmg})
-	
-	if {_hp} <= 1:
-		set {_behind} to effectCheckBehind({_attacker}, {_victim})
-		set {_dmg} to ({_dmg} * 2) if {_behind} is true
+	# キャンセルしたイベントはMONITORの消去処理を通らないため、ここで消去する (残すと次のダメージに再度適用される)
+	removeDamageModification_ADD({_victim})
+	removeDamageModification_MUL({_victim})
+	removeDamageModification_SET({_victim})
+	removeDamageModification_FIX({_victim})
 
+	set {_behind} to effectCheckBehind({_attacker}, {_victim})
+	set {_dmg} to ({_dmg} * 2) if {_behind} is true
+
+	# ダメージイベントの処理中にダメージを与えてキルするとdeathが二重に発生するため、イベント終了後に与える
+	wait a tick
+	stop if kitCheckAlive({_victim}) is false
 	kitDamageInstant({_attacker}, {_victim}, {_dmg}, "速断", true)
 	particleHurt({_victim})
 
