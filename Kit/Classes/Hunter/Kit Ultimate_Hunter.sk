@@ -3,7 +3,7 @@
 options:
 	effect-meter: 50
 	catch-radius: 3
-	damage-per-second: 2
+	damage-per-second: 1
 	move-per-second: 10
 
 import:
@@ -55,12 +55,14 @@ local function kitEffect_BoscageTwine(player: player):
 		set {_loc.trail::%{_ln}%} to {_baseloc}
 		kitParticle_BoscageTwine_Twine({_baseloc}, {_rad})
 
+		set {_tick} to ({@effect-meter} * 2)
 		loop all players in radius {@catch-radius} around {_baseloc}:
 			continue if kitCheckTeam(loop-player, {_player}, false, true) is false
 			continue if {_hit::*} contains loop-player
 			add loop-player to {_hit::*}
 			set {_count.%loop-player%} to {_ln}
 			message formatted "<##16c61e>§l捕獲の蔦<##248d5c>に掛かってしまった!" to loop-player
+			sendTimeBossbar_RED(loop-player, "捕獲の蔦", {_tick})
 
 		add {_addrad} to {_rad}
 		if mod({_ln}, 10) is 0 or 10:
@@ -99,6 +101,7 @@ local function kitEffect_BoscageTwine(player: player):
 
 			if mod({_ln}, 5) is 0 or 5:
 				kitDamage({_player}, {_loop-player}, {_damage}, "捕獲の蔦")
+				kitEffectDescription({_loop-player}, "§4❤%{_damage}%")
 
 		add 0.5 to {_ln}
 		wait a tick
