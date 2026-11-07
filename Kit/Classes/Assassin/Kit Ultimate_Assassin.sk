@@ -4,9 +4,8 @@ function kitUltAssassin(player: player):
 	setKitStats({_player}, "UltAssassin", true)
 	loop 200 times:
 		delete {_enemy}
-		loop all players in radius 5 around {_player}:
-			{Join::%loop-player%} is "Kit"
-			{TrueTeam::%{_player}%} is not {TrueTeam::%loop-player%}
+		loop all players in radius 10 around {_player}:
+			kitCheckTeam({_player}, loop-player, false, true) is true
 			set {_enemy} to true
 		if {_enemy} is not set:
 			if getInvisibleRemains({_player}) <= 3:
@@ -21,7 +20,7 @@ function kitUltAssassin(player: player):
 	deleteKitStats({_player}, "UltAssassin")
 
 on rightclick:
-	set {_UltAssassin} to getKitStats({_player}, "UltAssassin")
+	set {_UltAssassin} to getKitStats(player, "UltAssassin")
 	if {_UltAssassin} is true:
 		set {_tp} to target player
 		{_tp} is set
