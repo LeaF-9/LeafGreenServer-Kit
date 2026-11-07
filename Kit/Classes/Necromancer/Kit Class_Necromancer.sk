@@ -421,6 +421,8 @@ function kitTimerNecromancer(player: player):
 	if {Kit-Necromance::%{_player}%} is not set:
 		set {Kit-Necromance::%{_player}%} to 0
 	create bossbar titled "&5&lNecromance&0: &4&l%{Kit-Necromance::%{_player}%}%" and id "%{_player}%-Necromance" for {_player} with progress {Kit-Necromance::%{_player}%} with colors purple with style segmented 10
+
+	set {_playerUUID} to (uuid of {_player}).toString()
 	while {Class::%{_player}%} is "Necromancer":
 		add 1 to {_timer}  # Timer処理
 		# --- Undead処理 ---
@@ -428,12 +430,20 @@ function kitTimerNecromancer(player: player):
 			set {_timer} to 0
 		if {_timer} = 0:
 			loop all entities:
-				getPersistentData(loop-entity, "necromancer-entity-undead") is set
-				set {_undeadtime} to getPersistentData(loop-entity, "necromancer-entity-undead-timer")
-				add 1 to {_undeadtime}
-				setPersistentData(loop-entity, "necromancer-entity-undead-timer", {_undeadtime})
-				if mod({_undeadtime}, 10) = 0:
-					subtract 1.2 from loop-entity's health
+				getPersistentData(loop-entity, "necromancer-entity") is {_playerUUID}
+				# undeadの体力減少処理
+				if getPersistentData(loop-entity, "necromancer-entity-undead") is set:
+					set {_undeadtime} to getPersistentData(loop-entity, "necromancer-entity-undead-timer")
+					add 1 to {_undeadtime}
+					setPersistentData(loop-entity, "necromancer-entity-undead-timer", {_undeadtime})
+					if mod({_undeadtime}, 10) = 0:
+						subtract 1.2 from loop-entity's health
+
+				# 死霊馬のrider検知
+				if getPersistentData(loop-entity, "sally-fatalities") is set:
+					set {_riders} to loop-entity.getPassengers()
+					kill loop-entity if {_riders}.size() is 0
+
 		# -----------------
 		# --- Boss Bar処理 ---
 		set bossbar "%{_player}%-Necromance" title to "&5&lNecromance&0: &4&l%{Kit-Necromance::%{_player}%}%"

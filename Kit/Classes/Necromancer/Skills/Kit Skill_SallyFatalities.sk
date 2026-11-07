@@ -4,7 +4,6 @@ function kitEffect_SallyFatalities(player: player):
 	set {_tool} to kitNecromanceItem({_player}, "Sally Fatalities")
 	kitCheckNecromance({_player}, {_tool}) is true
 	nameCT({_player}, "Sally Fatalities")
-	sendTimeBossbar_GREEN({_player}, "Sally Fatalities", 200)
 	kitRemoveNecromance({_player}, {_tool})
 	kitMsg({_player}, "§4周辺のアンデッドに死霊馬を与える...")
 	playSound("entity.zombie_villager.cure", 1, 1.5, {_player})
@@ -17,6 +16,17 @@ function kitEffect_SallyFatalities(player: player):
 		{_uuidString} is {_playerUUID}
 		set {_type} to getPersistentData(loop-entity, "necromancer-entity-undead")
 		{_type} is set
+
+		# Undeadの回復
+		set health of loop-entity to max health of loop-entity
+
+		# 既に馬/剣を所持している場合は攻撃力上昇を付与
+		if all:
+			loop-entity's tool is a stone sword
+			loop-entity is riding
+		then:
+			kitEffect_SallyFatalities_Strength(loop-entity)
+			continue
 
 		# typeを基に召喚する馬の種類を決定
 		if {_type} is "zombie":
@@ -37,33 +47,19 @@ function kitEffect_SallyFatalities(player: player):
 		setAttribute({_undeadHorse}, "jump_strength", 0.6)
 
 		# 馬のPDC設定
+		set {_playerUUID} to (uuid of {_player}).toString()
+		setPersistentData({_undeadHorse}, "necromancer-entity", {_playerUUID})  # 召喚者のUUIDを格納
+
 		set {_entityUUID} to (uuid of loop-entity).toString()  # UndeadのUUIDを保存
 		setPersistentData({_undeadHorse}, "sally-fatalities", {_entityUUID})  # UndeadのUUIDを格納
-		add {_undeadHorse} to {_horses::*}
 
 		make loop-entity ride {_undeadHorse}
 		set loop-entity's tool to a stone sword
-	wait 10 seconds
-	loop {_horses::*}:
-		set {_loopHorse} to loop-value
-		kitParticle_SallyFatalities_Death({_loopHorse})
-		{_loopHorse}.remove()
 
-on death:
-	# NecromancerのUndeadであることを確認
-	set {_undead} to getPersistentData(victim, "necromancer-entity-undead")
-	stop if {_undead} is not set
-	kitEffect_SallyFatalities_Dead(victim)
-
-local function kitEffect_SallyFatalities_Dead(victim: entity):  # 馬に乗ったアンデッドが死亡した際に発火する関数
-	set {_player} to getSummonPlayer({_victim})
-	set {_uuid} to (uuid of {_victim}).toString()
-	loop all entities:
-		set {_checkUUID} to getPersistentData(loop-entity, "sally-fatalities")
-		continue if {_checkUUID} is not {_uuid}
-		kitParticle_SallyFatalities_Death(loop-entity)
-		delete loop-entity
-		kitAddNecromance({_player}, 1)
+local function kitEffect_SallyFatalities_Strength(undead: entity):
+	# applyEffectのstrengthはPlayer専用のためPotionEffectを直接付与
+	applyPotionEffect({_undead}, strength, 1, 200, false, "none")
+	kitParticle_SallyFatalities_Strength({_undead})
 
 
 
@@ -103,22 +99,15 @@ local function kitParticle_SallyFatalities_Skeleton(horse: entity):
 		add 0.175 to {_meter}
 		wait a tick
 
-local function kitParticle_SallyFatalities_Death(horse: entity):
-	playSound("entity.horse.eat", 1, 0.5, {_horse})
-	loop 10 times:
-		set {_randomloc} to aroundEffect({_horse})
-		add {_randomloc} to {_baselocs::*}
-	set {_size} to 0.5
-	set {_addy} to 0
-	loop 20 times:
-		loop {_randomlocs::*}:
-			set {_el} to loop-value-2
-			add {_addy} to y of {_el}
-			spawnParticle_DustTransition(rgb(73, 55, 89), rgb(0, 0, 0), {_size}, {_el})
-		add 0.1 to {_addy}
-		subtract 0.025 from {_size}
-		wait a tick
+local function kitParticle_SallyFatalities_Strength(undead: entity):  # 攻撃力上昇中: 体から立ち上る赤い光
+	playSound("entity.zombie.destroy_egg", 1, 1.9, {_undead})
+	loop 100 times:
+		stop if {_undead}.isDead() is true
+		loop 2 times:
+			set {_el} to aroundEffect({_undead}, 0.6)
+			spawnParticle_DustTransition(rgb(255, 60, 30), rgb(90, 0, 0), 1, {_el})
+		wait 2 ticks
 
 on damage:
-	set {_sally} to getPersistentData(victim, "sally-fatalities")
-	cancel event if {_sally} is set
+	getPersistentData(victim, "sally-fatalities") is set
+	set damage to 100
