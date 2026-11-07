@@ -13,7 +13,8 @@ on damage of player:
 on damage with priority LOW:
 	damage was caused by attack
 	set {_attacker} to getAttacker(victim)
-	{Class::%{_attacker}%} is "Assassin"
+	getKitClass({_attacker}) is "Assassin"
+	checkCT({_attacker}, "Assassination") is true
 
 	set {_tool} to tool of {_attacker}
 	set {_key} to getNamespacedKey({_tool}, "item-key", "string")
@@ -22,22 +23,53 @@ on damage with priority LOW:
 	set {_UltAssassin} to getKitStats({_player}, "UltAssassin")
 	{_UltAssassin} is not set
 
-	set {_dis} to distance between {_attacker} and victim
-	if {_dis} <= 1:
-		kitMsg({_attacker}, "§4近距離効果でダメージが2増えます!")
-		playSound("entity.arrow.hit_player", 1, 1.5, {_attacker}, true)
-		send action bar "§c接近されてしまった!" to victim
-		spawnParticle_Block(redstone block, victim)
-		setDamageModification_ADD(victim, 2)
-		setAssassination({_attacker}, "APPROACH")
+	set {_ok} to true if victim's facing is {_attacker}'s facing
+	stop if {_ok} is not true
 
-	if victim's facing is {_attacker}'s facing:
-		kitMsg({_attacker}, "§4不意打ち効果でダメージが2倍になった!")
-		playSound("entity.arrow.hit_player", 1, 0.75, {_attacker}, true)
-		send action bar "§c不意を突かれた!" to victim
-		spawnParticle_Block(redstone block, victim)
-		setDamageModification_MUL(victim, 2)
-		setAssassination({_attacker}, "BEHIND")
+	kitMsg({_attacker}, "§4不意打ち効果でダメージが2倍になった!")
+	playSound("entity.arrow.hit_player", 1, 0.75, {_attacker}, true)
+	send action bar "§c不意を突かれた!" to victim
+	particleAssassinationBehind(victim)
+
+	setDamageModification_MUL(victim, 2)
+	setAssassination({_attacker}, "BEHIND")
+
+	setAssassinationCoolTime({_attacker})
+
+	set {_dis} to distance between {_attacker} and victim
+	stop if {_dis} > 1
+
+	kitMsg({_attacker}, "§4近距離効果でダメージが増加します!")
+	soundAssassinationApproach({_attacker})
+	send action bar "§c接近されてしまった!" to victim
+	particleAssassinationApproach(victim)
+
+	set {_addDamage} to (1 - {_dis}) * 2
+	setDamageModification_ADD(victim, {_addDamage})
+	setAssassination({_attacker}, "APPROACH")
+
+local function setAssassinationCoolTime(player: player):
+	setCT({_player}, "Assassination", 5)
+	sendTimeBossbar_YELLOW({_player}, "§4§lAssassination §7- §9Cool Time", 100)
+
+local function particleAssassinationBehind(entity: entity):
+	loop 20 times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle_BlockData(dust_pillar, redstone block, {_el})
+
+local function particleAssassinationApproach(entity: entity):
+	loop 30 times:
+		set {_el} to aroundEffect({_entity})
+		spawnParticle_BlockData(block_crumble, magma block, {_el})
+
+local function soundAssassinationApproach(player: player):
+	set {_pitch} to 1.5
+	set {_addpitch} to 0.4
+	loop 3 times:
+		playSound("entity.arrow.hit_player", 1, {_pitch}, {_player}, true)
+		add {_addpitch} to {_pitch}
+		set {_pitch} to 2 if {_pitch} > 2
+		wait 2 ticks
 
 local function setAssassination(player: player, type: text):
 	set {_tag} to getAssassinationTag({_type})
