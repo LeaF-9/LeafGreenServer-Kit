@@ -62,14 +62,9 @@ function kitEffect_PhantomFang_AttackNormal(player: player, event: object):
 	set {_victim} to {_event}.getEntity()
 	set {_attacker} to {_player}
 
-	set {_tag.1} to "APPROACH"
-	set {_tag.2} to "BEHIND"
-	loop 2 times:
-		set {_num} to loop-number
-		set {_tag} to {_tag.%{_num}%}
-		set {_status} to getAssassinationStatus({_attacker}, {_tag})
-		set {_launched} to true if {_status} is true
-	stop if {_launched} is not set
+	set {_tag} to "BEHIND"
+	set {_status} to getAssassinationStatus({_attacker}, {_tag})
+	stop if {_status} is not true
 
 	kitInvisible({_attacker}, {@invisible-tick})
 	particleInvisible({_attacker})
