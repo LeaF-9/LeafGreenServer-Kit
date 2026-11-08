@@ -30,9 +30,9 @@ function kitEffect_Pursuit(player: player):
 		set {_damage} to 2
 		set {_Pursuit} to getKitStats({_tgplayer}, "Pursuit")
 		if {_Pursuit} is set:
-			add 2 * {_Pursuit} to {_damage}
+			add 2 to {_damage}
 		kitDamage({_player}, {_tgplayer}, {_damage}, "追斬撃", true)
-		kitMsg({_player}, "§1%{_tgplayer}% §4にクリーンヒット!")
+		kitMsg({_player}, "§1%{_tgplayer}% §cにクリーンヒット! §4❤%{_damage}%")
 		message formatted "§4§l痛い! §5斬撃がヒットした..." to {_tgplayer}
 		kitEffectDescription({_player}, "§4❤%{_damage}%")
 		playSound("entity.zombie.break_wooden_door", 1, 2, {_tgplayer})
@@ -40,15 +40,13 @@ function kitEffect_Pursuit(player: player):
 		kitParticle_Pursuit_2({_player}, {_tgplayer})
 		# --------------------------------
 
-function kitEffect_Pursuit_Prepare(victim: player, asn: number):
-	set {_now} to now
-	setKitStats({_victim}, "Pursuit", {_asn})
-	setKitStats({_victim}, "PursuitTime", {_now})
+function kitEffect_Pursuit_Prepare(victim: player):
+	set {_uuid} to a random uuid
+	setKitStats({_victim}, "Pursuit", {_uuid})
 	wait 3 seconds
-	set {_PursuitTime} to getKitStats({_victim}, "PursuitTime")
-	if {_PursuitTime} is {_now}:
+	set {_PursuitTime} to getKitStats({_victim}, "Pursuit")
+	if {_PursuitTime} is {_uuid}:
 		deleteKitStats({_victim}, "Pursuit")
-		deleteKitStats({_victim}, "PursuitTime")
 
 
 
