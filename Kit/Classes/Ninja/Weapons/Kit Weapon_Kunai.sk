@@ -1,84 +1,157 @@
 # Kunai
 
-function kitEffect_Kunai(player: player):
-	set {_tool} to {_player}'s tool
-	if getItemName({_tool}) contains "Kunai":
-		nameItemCT({_player}, "Kunai")
-		# --- Fudaの付与 ---
-		set {_fuda} to a name tag named "<##698AAB>Fuda" with lore (lore of {_tool})
-		set {_fuda} to kitItemTagChanger({_fuda}, "Ninja", "Weapon", 2)
-		set {_key} to "function-rightclick"
-		set {_fuda} to setNamespacedKey({_fuda}, "item-key", "string", "Kunai")
-		set {_fuda} to setNamespacedKey({_fuda}, {_key}, "boolean", true)
-		remove {_tool} from {_player}
-		give {_fuda} to {_player}
-		# -----------------
-		setKitStats({_player}, "Kunai-Shooting", true)
-		# --- クナイの発射 ---
-		shoot an arrow from {_player} at speed 3
-		set metadata value "kunai" of shot arrow to "%{_player}%"
-		set metadata value "arrowdamage" of shot arrow to 2
-		# ------------------
-		# --- クナイのパーティクル ---
-		kitParticle_Kunai(shot arrow)
-		# -------------------------
-		loop 60 times:
-			if {_player} has {_fuda}:
-				wait a tick
-		if {_player} has {_fuda}:
-			delete {_remain}
-			loop all item displays:
-				metadata value "kunai-remaining" of loop-item display is "%{_player}%"
-				set {_remaining} to true
-			if {_remaining} is not set:
-				deleteKitStats({_player}, "Kunai-Shooting")
-				# --- クナイの返還 ---
-				remove {_fuda} from {_player}
-				give {_tool} to {_player}
-				# ------------------
-	else if getItemName({_tool}) contains "Fuda":
-		if getKitStats({_player}, "Kunai-Remaining") is set:
-			deleteKitStats({_player}, "Kunai-Remaining")
-			loop all item displays:
-				metadata value "kunai-remaining" of loop-item display is "%{_player}%"
-				delete loop-item display
-			# --- クナイの返還 --
-			set {_kunai} to kitPlayerWeaponItem({_player}, "Ninja")
-			remove {_tool} from {_player}
-			give {_kunai} to {_player}
-			# ------------------
-		
+options:
+	kunai-key: "kunai-remaining"  # 残留クナイ判別用のmetadataキー
+	kunai-speed: 1                # 1tickあたりの移動距離(m) → 0.5秒(10tick)で10m
+	kunai-range: 10               # 最大飛距離(m)
+	kunai-step: 0.25              # 1tick内のヒット確認間隔(m)
+	kunai-damage: 0.5             # プレイヤーヒット時の与ダメージ(❤)
+	kunai-remain: 40              # 残留時間(tick) = 2秒
+	kunai-power: 2                # 爆風威力
+	kunai-scale: 0.75             # ディスプレイの大きさ
+	kunai-detonate-key: "kunai-detonating"  # 起爆待機中のクナイ判別用のmetadataキー
+	kunai-detonate-delay: 10      # 起爆ディレイ(tick) = 0.5秒
+	kunai-detonate-scale: 2     # 起爆待機中の拡大倍率 (kunai-scale基準)
+	kunai-spark-amount: 3         # 起爆待機中のfirework粒数 (1tickあたり)
+	kunai-spark-speed: 0.3        # 起爆待機中のfireworkの飛び散る速さ
 
-function kitParticle_Kunai(proj: entity):
-	loop 20 times:
-		set {_el} to location of {_proj}
-		spawnParticle(bubble_pop, {_el})
+# 右クリック: クナイの発射
+function kitEffect_Kunai(player: player):
+	nameItemCT({_player}, "Kunai")
+
+	set {_baseloc} to head of {_player}
+	set {_display} to kitKunai_SpawnDisplay(location 0.5 meters in front of {_baseloc})
+
+	# --- 発射音 ---
+	playSound("entity.arrow.shoot", 1, 1.5, {_player})
+	playSound("item.trident.throw", 0.6, 2, {_player})
+	# -------------
+
+	set {_steps} to {@kunai-speed} / {@kunai-step}
+	set {_dist} to 0
+	loop ({@kunai-range} / {@kunai-speed}) times:
+		if {_player} is not online:
+			{_display}.remove()
+			stop
+
+		# --- 1tick分の移動経路をヒット確認 ---
+		loop {_steps} times:
+			add {@kunai-step} to {_dist}
+			set {_checkloc} to location {_dist} meters in front of {_baseloc}
+
+			# エンティティヒット: ダメージを与えてクナイは消滅
+			set {_entities::*} to checkHitEntities({_checkloc})
+			for {_entity} in {_entities::*}:
+				kitCheckTeam({_player}, {_entity}, false) is true
+				{_display}.remove()
+				kitEffect_Kunai_Hit({_player}, {_entity}, {_checkloc})
+				stop
+
+			# ブロックヒット: 着弾地点にクナイを残留
+			if block at {_checkloc} is not passable:
+				set {_kunailoc} to kitKunai_GetSurface({_baseloc}, {_dist})
+				kitEffect_Kunai_Remain({_player}, {_display}, {_kunailoc})
+				stop
+		# ----------------------------------
+
+		teleport {_display} to location {_dist} meters in front of {_baseloc}
+		kitParticle_Kunai_Trail(location of {_display})
 		wait a tick
 
-on projectile hit:
-	projectile is an arrow
-	metadata value "kunai" of projectile is set
-	getKitStats(shooter, "Kunai-Shooting") is true
-	deleteKitStats(shooter, "Kunai-Shooting")
-	set {_baseloc} to location of projectile
-	set {_d} to 100
-	loop all blocks in radius 1.5 around {_baseloc}:
-		loop-block is not passable
-		distance between {_baseloc} and location of loop-block < {_d}
-		set {_d} to distance between {_baseloc} and location of loop-block
-		set {_baseblock} to loop-block
-	if {_baseblock} is not set:
-		stop
+	# 何にも当たらず最大飛距離に到達 → 消滅
+	kitParticle_Kunai_Vanish(location of {_display})
+	{_display}.remove()
 
-	# 座標確認
-	set {_v} to setVector({_baseloc}, {_baseblock}, 0.1)
-	set {_dirloc} to setDirToVec({_baseloc}, {_v})
-	set {_kunailoc} to {_dirloc} ~ {_v}
-	setKitStats(shooter, "Kunai-Remaining", {_kunailoc})
-	set {_item} to arrow
-	set {_matrix} to getAdjustedMatrix4f(0.7071, 0.7071, 0, 0, 0, 0, -1, 0, -0.7071, 0.7071, 0, 0, 0, 0, 0, 1)
+# スニーク + 左クリック: 残留クナイの起爆
+function kitEffect_Kunai_LeftClick(player: player, event: object):
+	{_player} is sneaking
 
-	spawn an item display at {_kunailoc}
+	set {_kunais::*} to kitKunai_GetRemaining({_player})
+	set {_count} to size of {_kunais::*}
+	stop if {_count} is 0
+
+	# --- クールタイム [クナイ個数]秒 ---
+	set {_tool} to {_player}'s tool
+	set {_ct} to "%{_count}% seconds" parsed as time span
+	set item cooldown of {_tool} for {_player} to {_ct}
+	# ---------------------------------
+
+	playSound("entity.tnt.primed", 1, 2, {_player}, true)
+
+	# --- 起爆待機: 光の矢に変化 & 発光 & 0.5秒かけて拡大 ---
+	set {_matrix} to kitKunai_GetMatrix({@kunai-scale} * {@kunai-detonate-scale})
+	for {_kunai} in {_kunais::*}:
+		delete metadata value {@kunai-key} of {_kunai}  # 再起爆の対象外にする
+		set metadata value {@kunai-detonate-key} of {_kunai} to true  # 2秒後消滅を無効化
+		setDisplayItem({_kunai}, spectral arrow)
+		{_kunai}.setGlowing(true)
+		{_kunai}.setInterpolationDelay(0)
+		{_kunai}.setInterpolationDuration({@kunai-detonate-delay})
+		{_kunai}.setTransformationMatrix({_matrix})
+	# ---------------------------------------------------
+
+	# --- 起爆待機中の演出 (毎tick) ---
+	loop {@kunai-detonate-delay} times:
+		for {_kunai} in {_kunais::*}:
+			kitParticle_Kunai_Detonating(location of {_kunai})
+		wait a tick
+	# ------------------------------
+
+	for {_kunai} in {_kunais::*}:
+		set {_loc} to location of {_kunai}
+		{_kunai}.remove()
+		kitExplosion({_player}, {@kunai-power}, {_loc}) if {_player} is online
+
+# --- 飛行中のヒット処理 ---
+local function kitEffect_Kunai_Hit(player: player, victim: entity, loc: location):
+	kitDamage({_player}, {_victim}, {@kunai-damage}, "苦無")
+	kitParticle_Kunai_Hit({_loc})
+	playSound("entity.arrow.hit_player", 1, 1.2, {_player}, true)
+
+# --- 残留処理 ---
+local function kitEffect_Kunai_Remain(player: player, display: entity, loc: location):
+	teleport {_display} to {_loc}
+	set metadata value {@kunai-key} of {_display} to "%uuid of {_player}%"
+	packetGlowing({_player}, {_display})
+	kitParticle_Kunai_Stick({_loc})
+
+	loop {@kunai-remain} times:
+		wait a tick
+		stop if {_display}.isValid() is false  # 起爆済み
+		stop if metadata value {@kunai-detonate-key} of {_display} is set  # 起爆待機中
+		if mod(loop-number, 10) is 0:
+			spawnParticle_Dust(rgb(183, 40, 46), 0.6, {_loc}, {_player})
+
+	# 残留時間経過 → 爆発せずに消滅
+	kitParticle_Kunai_Vanish({_loc})
+	{_display}.remove()
+
+# --- 着弾したブロック表面の座標を取得 ---
+# 0.05m刻みで手前に戻って表面を探し, 表面から少し奥 (ブロックに刺さった位置) を返す
+local function kitKunai_GetSurface(baseloc: location, dist: number) :: location:
+	set {_d} to {_dist}
+	loop 5 times:
+		set {_back} to {_d} - 0.05
+		block at (location {_back} meters in front of {_baseloc}) is not passable
+		set {_d} to {_back}
+	# {_d} = 最初に固体ブロックとなる距離
+	set {_d} to {_d} + 0.05
+	return location {_d} meters in front of {_baseloc}
+
+# --- 残留中のクナイ一覧を取得 ---
+local function kitKunai_GetRemaining(player: player) :: entities:
+	set {_uuid} to "%uuid of {_player}%"
+	loop all item displays:
+		metadata value {@kunai-key} of loop-item display is {_uuid}
+		add loop-item display to {_kunais::*}
+	return {_kunais::*}
+
+# --- クナイ(ディスプレイ)の生成 ---
+local function kitKunai_SpawnDisplay(loc: location) :: entity:
+	set {_item} to an arrow
+	set {_matrix} to kitKunai_GetMatrix({@kunai-scale})
+
+	spawn an item display at {_loc}
 	set {_itemdisplay} to spawned item display
 
 	setBrightness({_itemdisplay})
@@ -89,151 +162,37 @@ on projectile hit:
 	{_itemdisplay}.setTransformationMatrix({_matrix})
 
 	setGameType({_itemdisplay})
-	set metadata value "kunai-remaining" of {_itemdisplay} to "%shooter%"
-	packetGlowing(shooter, {_itemdisplay})
+	return {_itemdisplay}
 
-on death of player:
-	getKitStats(victim, "Kunai-Remaining") is set
-	loop all item displays:
-		metadata value "kunai-remaining" of loop-item display is "%victim%"
-		delete loop-item display
+# --- クナイ(ディスプレイ)の変形行列を取得 ---
+# 矢の先端が進行方向を向く回転 × 指定倍率
+local function kitKunai_GetMatrix(scale: number) :: object:
+	set {_a} to 0.7071 * {_scale}
+	set {_b} to {_scale} * -1
+	set {_matrix} to getAdjustedMatrix4f({_a}, {_a}, 0, 0, 0, 0, {_b}, 0, {_a} * -1, {_a}, 0, 0, 0, 0, 0, 1)
+	return {_matrix}
 
-function kunaiNinjutsu(player: player, type: text):
-	if getKitStats({_player}, "Kunai-Remaining") is set:
-		set {_loc} to getKitStats({_player}, "Kunai-Remaining")
-		# --- 隠身 ---
-		if {_type} is "Kakuremi":
-			loop all players in radius 5 around {_loc}:
-				{_player} is not loop-player
-				kitCheckTeam({_player}, loop-player, true) is true
-				setSupporter(loop-player, {_player})
-				kitInvisible(loop-player, 100)
-			# --- 音演出 ---
-			playSound("entity.wither.shoot", 1, 2, {_loc})
-			# -------------
-			# --- パーティクル演出 ---
-			loop 5 times:
-				add 1 to {_y}
-				loop 36 times:
-					add 10 to {_rad}
-					set {_vec} to vector(5, {_y}, 0)
-					rotate {_vec} around y-axis by {_rad}
-					set {_el} to {_loc} ~ {_vec}
-					spawnParticle_Dust(rgb(119, 136, 153), 2, {_el})
-				wait a tick
-			# ---------------------
-		# -----------
-		# --- 分身 ---
-		else if {_type} is "Bunshin":
-			# --- 音演出 ---
-			playSound("block.fire.extinguish", 1, 2, {_loc})
-			# -------------
-			loop 3 times:
-				set {_bunshin} to kitSpawnMob({_player}, zombie, {_loc})
+# --- 演出 ---
+local function kitParticle_Kunai_Trail(loc: location):
+	spawnParticle_Dust(rgb(183, 40, 46), 0.5, {_loc})
+	spawnParticle(enchanted_hit, {_loc})
 
-				{_bunshin}.setAdult()
-				{_bunshin}.setSilent(true)
-				setAttribute({_bunshin}, "movement speed", 0.6)
+local function kitParticle_Kunai_Hit(loc: location):
+	loop 8 times:
+		spawnParticle_Vector(enchanted_hit, randomVector(), 0.3, {_loc})
 
-				set {_head} to player head
-				set skull owner of {_head} to {_player}
+local function kitParticle_Kunai_Stick(loc: location):
+	playSound("entity.arrow.hit", 1, 1.2, {_loc})
+	playSound("block.chain.place", 1, 2, {_loc})
+	set {_block} to type of block at {_loc}
+	loop 5 times:
+		spawnParticle_Block({_block}, {_loc})
 
-				set {_chestplate} to leather chestplate
-				set {_color} to rgb(0, 0, 0).asBukkitColor()
+# 起爆待機中: クナイ位置を中心にfireworkが小さく弾ける
+local function kitParticle_Kunai_Detonating(loc: location):
+	loop {@kunai-spark-amount} times:
+		spawnParticle_Vector(firework, randomVector(1), {@kunai-spark-speed}, {_loc})
 
-				set {_meta} to {_chestplate}.getItemMeta()
-				{_meta}.setColor({_color})
-				{_chestplate}.setItemMeta({_meta})
-
-				setEntityArmor({_bunshin}, "helmet", {_head})
-				setEntityArmor({_bunshin}, "chestplate", {_chestplate})
-				setEntityArmor({_bunshin}, "leggings", air)
-				setEntityArmor({_bunshin}, "boots", air)
-				setEntityArmor({_bunshin}, "mainhand", air)
-				setEntityArmor({_bunshin}, "offhand", air)
-
-				applyEffect({_bunshin}, jump boost, 3, 12000, true, "none")
-
-				set metadata value "kunai-bunshin" of {_bunshin} to "%{_player}%"
-				add {_bunshin} to {_bunshins::*}
-			wait 5 seconds
-			loop {_bunshins::*}:
-				loop-value.remove()
-		# -----------
-		# --- 残像 ---
-		else if {_type} is "Zanzo":
-			# --- 音演出 ---
-			playSound("entity.bat.takeoff", 1, 1.5, {_loc})
-			# -------------
-			loop 100 times:
-				delete {_inow::*}
-				loop all players in radius 5 around {_loc}:
-					{Class::%loop-player%} is not "Ninja"
-					kitCheckTeam({_player}, loop-player, true) is true
-					add loop-player to {_inow::*}
-					if {_ined::*} does not contain loop-player:
-						add loop-player to {_ined::*}
-					setKitStats(loop-player, "Zanzo", true)
-				loop {_ined::*}:
-					{_inow::*} does not contain loop-value-2
-					deleteKitStats(loop-value-2, "Zanzo")
-					delete {_ined::%loop-index%}
-				# --- パーティクル演出 ---
-				loop all blocks in radius 5 around {_loc}:
-					loop-block is passable
-					block below loop-block is not passable
-					spawnParticle_ColorAlpha(entity_effect, 0, 0, 0, 100, location of loop-block)
-				# ---------------------
-				wait a tick
-			loop {_ined::*}:
-				deleteKitStats(loop-value, "Zanzo")
-		# -----------
-		# --- 鎌鼬 ---
-		else if {_type} is "Kamaitachi":
-			loop 100 times:
-				loop all entities in radius 5 around {_loc}:
-					kitCheckTeam({_player}, loop-entity, false) is true
-					kitDamage({_player}, loop-entity, 0.25, "鎌鼬の術")
-					set {_el} to location of loop-entity
-					add 1 to y-coordinate of {_el}
-					spawnParticle_Vector(cloud, randomVector(), 0.5, {_el})
-				set {_pitch} to a random number between 0.5 and 2
-				playSound("entity.player.player,sweep", 1, {_pitch}, {_loc})
-				loop all blocks in radius 5 around {_loc}:
-					loop-block is passable
-					chance of 1%:
-						spawnParticle(explosion, location of loop-block)
-				wait a tick
-		# -----------
-		# --- 忍術 [風] ---
-		else if {_type} is "Ninjutsu-KAZE":
-			kitNinjutsu_KAZE({_player}, {_loc})
-		# ----------------
-		# --- 忍術 [爆] ---
-		else if {_type} is "Ninjutsu-BAKU":
-			kitNinjutsu_BAKU({_player}, {_loc})
-		# ----------------
-		# --- 忍術 [木] ---
-		else if {_type} is "Ninjutsu-MOKU":
-			kitNinjutsu_MOKU({_player}, {_loc})
-		# ----------------
-		# --- 忍術 [水] ---
-		else if {_type} is "Ninjutsu-MIZU":
-			kitNinjutsu_MIZU({_player}, {_loc})
-		# ----------------
-		# --- 忍術 [火] ---
-		else if {_type} is "Ninjutsu-HONO":
-			kitNinjutsu_HONO({_player}, {_loc})
-		# ----------------
-		# --- 忍術 [氷] ---
-		else if {_type} is "Ninjutsu-HYOU":
-			kitNinjutsu_HYOU({_player}, {_loc})
-		# ----------------
-		# --- 忍術 [土] ---
-		else if {_type} is "Ninjutsu-TSUCHI":
-			kitNinjutsu_TSUCHI({_player}, {_loc})
-		# ----------------
-		# --- 忍術 [雷] ---
-		else if {_type} is "Ninjutsu-RAI":
-			kitNinjutsu_RAI({_player}, {_loc})
-		# ----------------
+local function kitParticle_Kunai_Vanish(loc: location):
+	spawnParticle(smoke, {_loc})
+	playSound("block.chain.break", 1, 2, {_loc})
