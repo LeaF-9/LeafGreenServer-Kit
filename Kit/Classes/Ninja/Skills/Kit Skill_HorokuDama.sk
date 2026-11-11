@@ -1,6 +1,7 @@
 # Horoku Dama
 
 function kitEffect_HorokuDama(player: player):
+	setKitStats({_player}, "HorokuDama-Used", true)
 	subtract 1 from item amount of tool of {_player}
 	shoot a small fireball from {_player} at speed 2
 	set {_proj} to shot projectile
@@ -28,6 +29,18 @@ on projectile hit:
 	particleHit({_l})
 	soundHit({_l})
 
+on death of player:
+	set {_killer} to getLastKiller(victim)
+	set {_class} to getKitClass({_killer})
+	{_class} is "Ninja"
+	set {_grenade} to kitSkillItem("Ninja", 1)
+	set {_grenade} to kitItemTagChanger({_grenade}, "Ninja", "Skill", 1)
+	set {_grenade} to {_grenade}.asOne()
+	if any:
+		getKitStats({_killer}, "HorokuDama-Used") is true
+		{_killer}.getInventory().containsAtLeast({_grenade}, 1)
+	then:
+		give {_grenade} to {_killer}'s inventory
 
 
 local function particleHit(loc: location):
