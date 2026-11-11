@@ -5,14 +5,14 @@ function kitEffect_Bunshin(player: player):
 	setCT({_player}, {_skill}, 10)
 	kitMsg({_player}, "§2忍法・分身の術!")
 	sendTimeBossbar_GREEN({_player}, "Bunshin", 100)
-	playSound("block.fire.extinguish", 1, 2, player)
+	playSound("block.fire.extinguish", 1, 2, {_player})
 	delete {_player}'s tool
 	loop 3 times:
 		set {_bunshin} to kitSpawnMob({_player}, zombie, location of {_player})
 
 		{_bunshin}.setAdult()
 		{_bunshin}.setSilent(true)
-		setAttribute({_bunshin}, "movement speed", 0.6)
+		setAttribute({_bunshin}, "movement speed", 0.4)
 
 		set {_head} to getPlayerSkull({_player})
 
@@ -32,7 +32,7 @@ function kitEffect_Bunshin(player: player):
 
 		applyEffect({_bunshin}, jump boost, 3, 12000, true, "none")
 
-		set metadata value "bunshin" of {_bunshin} to "%{_player}%"
+		setMetadata({_bunshin}, "bunshin", "%{_player}%")
 		add {_bunshin} to {_bunshins::*}
 	wait 5 seconds
 	loop {_bunshins::*}:
