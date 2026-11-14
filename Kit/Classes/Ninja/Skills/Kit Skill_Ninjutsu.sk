@@ -1,5 +1,24 @@
 # Ninjutsu
 
+options:
+	# --- Ninjutsu -風- ---
+	# 効果
+	kaze-duration: 5  # 竜巻の持続時間 (秒)
+	kaze-distance: 10  # 竜巻が持続時間中に進む距離 (m)
+	kaze-hit-radius: 5  # 吹き飛ばし範囲 (竜巻中心からの半径 m)
+	kaze-hit-interval: 1  # 同じ敵への再ヒット間隔 (秒)
+	kaze-launch-power: 1.1  # 打ち上げの上方向速度 (1.0で約6ブロック, 1.2で約8ブロック, 1.4で約11ブロック)
+	kaze-fall-damage: 1.5  # 吹き飛ばした敵(プレイヤー)の落下ダメージ (❤)
+	# 演出
+	kaze-tornado-height: 4  # 竜巻パーティクルの最大高さ (m)
+	kaze-tornado-radius: 4 # 竜巻パーティクルの最大半径 (頂上の半径 m)
+	kaze-tornado-min-radius: 0.5  # 竜巻パーティクルの最小半径 (根元の半径 m)
+	kaze-tornado-layers: 15  # 竜巻パーティクルの段数 (多いほど密)
+	kaze-tornado-arms: 4  # 竜巻パーティクルの螺旋の本数
+	kaze-particle-size: 1.2  # 竜巻パーティクルの大きさ
+	kaze-color-count: 3  # 召喚時にパレットから抽選する色の数
+	kaze-colors: rgb(0, 175, 204), rgb(110, 200, 230), rgb(161, 216, 226), rgb(187, 226, 241), rgb(210, 236, 245) and rgb(235, 246, 247)  # 色パレット (水色〜白)
+
 on load:
 	register item tag named "ninjutsu-dye" using orange dye, light blue dye, yellow dye, lime dye, gray dye, cyan dye, blue dye, red dye
 
@@ -39,7 +58,7 @@ function kitEffect_Ninjutsu_LeftClick(player: player):
 			deleteKitStats({_player}, "Ninjutsu2")
 			deleteKitStats({_player}, "Ninjutsu3")
 			if {_nin} is "L - L - L":
-				set {_player}'s tool to light blue dye named "§5Ninjutsu §9[§b風§9]" with lore "§f敵を吹き飛ばす風遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d現在地点§7に§e竜巻§7を§6§l設置 §b5秒", "§8- §d竜巻内§4の敵§7を§6§l吹き飛ばして§4❤0.5§c§lダメージ" and "§8- §3空中で発動時§7,§d上方向§7に§6§l大ジャンプ"
+				set {_player}'s tool to light blue dye named "§5Ninjutsu §9[§b風§9]" with lore "§f敵を吹き飛ばす風遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d前方{@kaze-distance}m§7まで進む§e竜巻§7を§6§l召喚 §b{@kaze-duration}秒", "§8- §d竜巻周辺{@kaze-hit-radius}m§7の§4敵§7を§d上方向§7に§6§l吹き飛ばす §b{@kaze-hit-interval}秒毎" and "§8- §3吹き飛ばした敵§7の§c落下ダメージ§7を§4❤{@kaze-fall-damage}§7に§6§l変更"
 			else if {_nin} is "L - R - L":
 				set {_player}'s tool to lime dye named "§5Ninjutsu §9[§2木§9]" with lore "§f生命力を奪う木遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §e根を張る植物§7を§d6方向§7に§6§l発射", "§8- §d着弾点周辺5m§7の§4敵§7に§6§l吸収効果 §b5秒" and "§8- §e根§7は§b5秒後§7に§6§l消滅"
 			else if {_nin} is "R - L - L":
@@ -136,41 +155,117 @@ on rightclick:
 			kitNinjutsu_RAI(player, {_loc})
 
 # Ninjutsu -風-
-function kitNinjutsu_KAZE(player: player, l: location):
-	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 風 -", 100)
-	playSound("entity.wither.shoot", 1, 0.5, {_player})
-	if block at location 0.1 meters below {_l} is passable:
-		set {_v} to setVector({_l}, location 5 meters above {_l})
-		set velocity of {_player} to {_v}
-	loop 20 times:
-		loop all entities in radius 5 around {_l}:
+# 前方へ進む竜巻を召喚し, 周囲の敵を上方向に吹き飛ばす (数値は options で変更)
+local function kitNinjutsu_KAZE(player: player, l: location):
+	set {_ticks} to round({@kaze-duration} * 20)
+	set {_step} to {@kaze-distance} / {_ticks}  # 1tickあたりの移動距離
+	set {_interval} to {@kaze-hit-interval} * 20  # 再ヒット間隔 (tick)
+	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 風 -", {_ticks})
+	# --- 竜巻の色を抽選 (パレットから重複なしで取り出す) ---
+	set {_pool::*} to {@kaze-colors}
+	loop {@kaze-color-count} times:
+		exit loop if size of {_pool::*} is 0
+		set {_i} to random element out of indices of {_pool::*}
+		add {_pool::%{_i}%} to {_colors::*}
+		delete {_pool::%{_i}%}
+	# ------------------------------------------------------
+	set {_loc} to {_l}
+	set pitch of {_loc} to 0  # 進行方向は水平方向のみ
+	kitParticle_Ninjutsu_KAZE_Summon({_loc})
+	set {_t} to 0
+	loop {_ticks} times:
+		add 1 to {_t}
+		# --- 竜巻の移動 (地形に沿う) ---
+		set {_loc} to location {_step} meters in front of {_loc}
+		if block at {_loc} is not passable:
+			# 段差: 1ブロック上に登ってブロック上面に合わせる
+			set {_loc} to location 1 meter above {_loc}
+			set y-coordinate of {_loc} to y-coordinate of block at {_loc}
+		else if block at location 0.1 meters below {_loc} is passable:
+			# 足場なし: 下に降り, 地面にめり込んだらブロック上面に合わせる
+			set {_loc} to location 0.25 meters below {_loc}
+			if block at {_loc} is not passable:
+				set y-coordinate of {_loc} to (y-coordinate of block at {_loc}) + 1
+		# -----------------------------------------------------
+		kitParticle_Ninjutsu_KAZE_Tornado({_loc}, {_t}, {_colors::*})
+		# --- 吹き飛ばし (同じ敵へは再ヒット間隔に1回まで) ---
+		loop all entities in radius {@kaze-hit-radius} around {_loc}:
 			kitCheckTeam({_player}, loop-entity, false) is true
-			kitDamage({_player}, loop-entity, 0.5, "風遁")
-			push loop-entity upwards at speed 0.1
-			set {_v} to setVector({_l}, location of loop-entity)
-			set velocity of loop-entity to {_v}
-		# --- 音演出 ---
-		playSound("entity.wither.shoot", 0.5, 1.5, {_l})
-		# -------------
-		# --- パーティクル演出 ---
-		loop 4 times:
-			set {_y} to 0
-			set {_m} to 0
-			loop 10 times:
-				add 9 to {_rad}
-				add 0.25 to {_y}
-				add 0.5 to {_m}
+			set {_id} to "%uuid of loop-entity%"
+			if {_hit::%{_id}%} is set:
+				continue if {_t} - {_hit::%{_id}%} < {_interval}
+			set {_hit::%{_id}%} to {_t}
+			set velocity of loop-entity to vector(0, {@kaze-launch-power}, 0)
+			if checkEntityType(loop-entity, player) is true:
+				LastKiller(loop-entity, {_player})
+				setFallDamage(loop-entity, {@kaze-fall-damage})
+				kitEffectDescription(loop-entity, "§b§l吹き飛ばし")
+			kitParticle_Ninjutsu_KAZE_Hit(loop-entity)
+		# ----------------------------------------
+		wait a tick
+	kitParticle_Ninjutsu_KAZE_End({_loc})
 
-				set {_vec} to vector({_m}, {_y}, 0)
-				rotate {_vec} around y-axis by {_rad}
-				set {_el} to {_l} ~ {_vec}
-				spawnParticle_DustTransition(rgb(0, 175, 204), rgb(161, 216, 226), 1.5, {_el})
-			add 10 to {_rad}
-		# ----------------------
-		wait 5 ticks
+local function kitParticle_Ninjutsu_KAZE_Summon(loc: location):  # 召喚演出
+	playSound("entity.wither.shoot", 1, 0.5, {_loc})
+	playSound("entity.ender_dragon.flap", 1, 0.8, {_loc})
+	loop 30 times:
+		set {_dl} to {_loc}
+		set yaw of {_dl} to a random number between 0 and 360
+		set {_v} to setVector({_dl}, location 1 meter in front of {_dl})
+		spawnParticle_Vector(cloud, {_v}, 0.4, location 0.3 meters above {_dl})
+
+local function kitParticle_Ninjutsu_KAZE_Tornado(loc: location, t: number, colors: colors):  # 竜巻演出 (毎tick)
+	# 音
+	if mod({_t}, 4) is 0:
+		playSound("entity.phantom.flap", 0.6, 0.5, {_loc})
+	chance of 10%:
+		set {_pitch} to a random number between 1 and 2
+		playSound("entity.wither.shoot", 0.4, {_pitch}, {_loc})
+	# 竜巻本体 (根元から頂上へ向けて広がる螺旋)
+	set {_baserad} to {_t} * 20
+	set {_dy} to {@kaze-tornado-height} / {@kaze-tornado-layers}
+	set {_dm} to ({@kaze-tornado-radius} - {@kaze-tornado-min-radius}) / {@kaze-tornado-layers}
+	set {_armrad} to 360 / {@kaze-tornado-arms}
+	loop {@kaze-tornado-layers} times:
+		set {_y} to {_dy} * loop-number-1
+		set {_m} to {@kaze-tornado-min-radius} + {_dm} * loop-number-1
+		loop {@kaze-tornado-arms} times:
+			set {_rad} to {_baserad} + {_armrad} * loop-number-2 + 25 * loop-number-1
+			set {_el} to {_loc}
+			add {_m} * sin({_rad}) to x of {_el}
+			add {_m} * cos({_rad}) to z of {_el}
+			add {_y} to y of {_el}
+			set {_from} to random element out of {_colors::*}
+			set {_to} to random element out of {_colors::*}
+			spawnParticle_DustTransition({_from}, {_to}, {@kaze-particle-size}, {_el})
+	# 足元の砂ぼこり
+	chance of 50%:
+		set {_el} to {_loc}
+		add a random number between -1 and 1 to x of {_el}
+		add a random number between -1 and 1 to z of {_el}
+		spawnParticle(cloud, {_el})
+
+local function kitParticle_Ninjutsu_KAZE_Hit(entity: entity):  # 吹き飛ばし演出
+	playSound("entity.player.attack.sweep", 1, 1.5, {_entity})
+	playSound("entity.phantom.flap", 1, 1.5, {_entity})
+	spawnParticle(sweep_attack, location 1 meter above {_entity})
+	loop 6 times:
+		set {_el} to location of {_entity}
+		add a random number between -0.5 and 0.5 to x of {_el}
+		add a random number between -0.5 and 0.5 to z of {_el}
+		spawnParticle_Vector(cloud, vector(0, 1, 0), 0.5, {_el})
+
+local function kitParticle_Ninjutsu_KAZE_End(loc: location):  # 消滅演出
+	playSound("entity.phantom.flap", 1, 0.5, {_loc})
+	loop 15 times:
+		set {_dl} to {_loc}
+		set yaw of {_dl} to a random number between 0 and 360
+		add a random number between 0 and 3 to y of {_dl}
+		set {_v} to setVector({_dl}, location 1 meter in front of {_dl})
+		spawnParticle_Vector(cloud, {_v}, 0.2, {_dl})
 
 # Ninjutsu -爆-
-function kitNinjutsu_BAKU(player: player, loc: location):
+local function kitNinjutsu_BAKU(player: player, loc: location):
 	set pitch of {_loc} to 0
 	playSound("entity.tnt.primed", 1, 0.8, {_loc})
 	loop 6 times:
@@ -225,7 +320,7 @@ on explosion:
 			kitExplosion({_act}, 1.5, loop-value)
 
 # Ninjutsu -木-
-function kitNinjutsu_MOKU(player: player, loc: location):
+local function kitNinjutsu_MOKU(player: player, loc: location):
 	playSound("block.cherry_leaves.break", 1, 0.5, {_loc})
 	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 木 -", 100)
 	# --- 草木フィールド展開 ---
@@ -285,7 +380,7 @@ function kitNinjutsu_MOKU(player: player, loc: location):
 		make all players see block at loop-value as air
 	playSound("block.rooted_dirt.break", 1, 0.5, {_loc})
 
-function kitParticle_Ninjutsu_MOKU(loc: location):
+local function kitParticle_Ninjutsu_MOKU(loc: location):
 	loop all blocks in radius 5 around {_loc}:
 		loop-block is passable
 		chance of 3%:
@@ -298,7 +393,7 @@ function kitParticle_Ninjutsu_MOKU(loc: location):
 		spawnParticle_Dust(rgb(46, 139, 87), 1, {_el})
 
 # Ninjutsu -水-
-function kitNinjutsu_MIZU(player: player, l: location):
+local function kitNinjutsu_MIZU(player: player, l: location):
 	# --- 座標の追加 ---
 	set {_y} to (y of (block at ({_player})))
 	loop all blocks in radius 5 around {_l}:
@@ -375,7 +470,7 @@ function kitNinjutsu_MIZU(player: player, l: location):
 	# -----------------------
 
 # Ninjutsu -火-
-function kitNinjutsu_HONO(player: player, loc: location):
+local function kitNinjutsu_HONO(player: player, loc: location):
 	playSound("entity.ghast.shoot", 1, 1, {_player})
 	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 火 -", 100)
 	applyEffect({_player}, fire resistance, 1, 100)
@@ -408,7 +503,7 @@ function kitNinjutsu_HONO(player: player, loc: location):
 		remove loop-value from {Block.%{_player}%::*}
 	extinguishFireTick({_player})
 
-function kitParticle_Ninjutsu_HONO_1(baseloc: location):
+local function kitParticle_Ninjutsu_HONO_1(baseloc: location):
 	set pitch of {_baseloc} to 0
 	loop 30 times:
 		set {_dl} to {_baseloc}
@@ -432,7 +527,7 @@ function kitParticle_Ninjutsu_HONO_1(baseloc: location):
 		add 10 to {_baserad}
 		wait a tick
 
-function kitParticle_Ninjutsu_HONO_2(loc: location):
+local function kitParticle_Ninjutsu_HONO_2(loc: location):
 	set pitch of {_loc} to 0
 	loop 5 times:
 		set {_el} to {_loc}
@@ -442,7 +537,7 @@ function kitParticle_Ninjutsu_HONO_2(loc: location):
 		spawnParticle_Vector(flame, {_v}, 0.1, {_el})
 
 # Ninjutsu -氷-
-function kitNinjutsu_HYOU(player: player, loc: location):
+local function kitNinjutsu_HYOU(player: player, loc: location):
 	kitParticle_Ninjutsu_HYOU_1({_loc})
 	wait a seconds
 	kitParticle_Ninjutsu_HYOU_2({_loc})
@@ -477,7 +572,7 @@ function kitNinjutsu_HYOU(player: player, loc: location):
 		{_eg::%loop-player%} is set
 		resetEffect(loop-player)
 
-function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出 1秒間
+local function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出 1秒間
 	add 1 to y of {_loc}
 	set {_rad.in} to 0
 	set {_rad.ex} to 45
@@ -502,7 +597,7 @@ function kitParticle_Ninjutsu_HYOU_1(loc: location):  # 発動前の溜め演出
 		subtract 0.25 from {_meter.ex}
 		wait a tick
 
-function kitParticle_Ninjutsu_HYOU_2(loc: location):  # 発動後の爆発とフィールド演出 5秒間
+local function kitParticle_Ninjutsu_HYOU_2(loc: location):  # 発動後の爆発とフィールド演出 5秒間
 	# 爆発演出
 	playSound("block.glass.break", 1, 0.5, {_loc})
 	loop all blocks in radius 5 around {_loc}:
@@ -534,14 +629,14 @@ function kitParticle_Ninjutsu_HYOU_2(loc: location):  # 発動後の爆発とフ
 				spawnParticle_BlockData(falling_dust, snow block, location of loop-block)
 		wait a tick
 
-function kitParticle_Ninjutsu_HYOU_3(player: player):  # フィールド内のプレイヤー演出
+local function kitParticle_Ninjutsu_HYOU_3(player: player):  # フィールド内のプレイヤー演出
 	playSound("block.snow.step", 0.1, 1.1, {_player}, true)
 	loop 3 times:
 		set {_el} to aroundEffect({_player})
 		spawnParticle_Block(snow block, {_el})
 
 # Ninjutsu -土-
-function kitNinjutsu_TSUCHI(player: player, l: location):
+local function kitNinjutsu_TSUCHI(player: player, l: location):
 	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 土 -", 110)
 	loop all entities in radius 5 around {_l}:
 		kitCheckTeam(loop-entity, {_player}, true) is true
@@ -583,7 +678,7 @@ function kitNinjutsu_TSUCHI(player: player, l: location):
 		playSound("block.grass.break", 0.5, 1.2, loop-value)
 
 # Ninjutsu -雷-
-function kitNinjutsu_RAI(player: player, loc: location):
+local function kitNinjutsu_RAI(player: player, loc: location):
 	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 雷 -", 100)
 	strike lightning effect at {_loc}
 	loop all players in radius 5 around {_loc}:
@@ -605,7 +700,7 @@ function kitNinjutsu_RAI(player: player, loc: location):
 				set velocity of loop-value-2 to {_vector}
 		wait a tick
 
-function kitParticle_Ninjutsu_RAI_1(loc: location):
+local function kitParticle_Ninjutsu_RAI_1(loc: location):
 	loop 36 times:
 		add 10 to {_rad}
 		set {_vec} to vector(5, 0, 0)
@@ -613,7 +708,7 @@ function kitParticle_Ninjutsu_RAI_1(loc: location):
 		set {_el} to {_loc} ~ {_vec}
 		spawnParticle(enchanted_hit, {_el})
 
-function kitParticle_Ninjutsu_RAI_2(player: player):
+local function kitParticle_Ninjutsu_RAI_2(player: player):
 	set {_baseloc} to location of {_player}
 	add 1 to y of {_baseloc}
 	loop 4 times:
@@ -623,7 +718,7 @@ function kitParticle_Ninjutsu_RAI_2(player: player):
 		set {_el} to {_baseloc} ~ {_vec}
 		spawnParticle(enchanted_hit, {_el})
 
-function kitParticle_Ninjutsu_RAI_3(toplayer: player, fromloc: location):
+local function kitParticle_Ninjutsu_RAI_3(toplayer: player, fromloc: location):
 	playSound("block.beehive.work", 1, 2, {_toplayer})
 	set {_vector} to setVector({_fromloc}, location 1 meter above {_toplayer})
 	set {_baseloc} to {_fromloc}
