@@ -19,6 +19,22 @@ options:
 	kaze-color-count: 3  # 召喚時にパレットから抽選する色の数
 	kaze-colors: rgb(0, 175, 204), rgb(110, 200, 230), rgb(161, 216, 226), rgb(187, 226, 241), rgb(210, 236, 245) and rgb(235, 246, 247)  # 色パレット (水色〜白)
 
+	# --- Ninjutsu -爆- ---
+	# 効果
+	baku-count: 10  # 召喚する星の数 (最後の1個は爆風)
+	baku-spacing: 1  # 星の間隔 (m)
+	baku-delay: 0.5  # 星を召喚してから爆発するまでの時間 (秒)
+	baku-random-power: 0.3  # 花火の爆発位置をずらす最大距離 (randomVectorのpower, 0〜この値でランダム)
+	baku-firework-damage: 2  # 花火1発ごとのダメージ (❤)
+	baku-explosion-power: 3  # 最後の星の爆風の威力 (kitExplosion)
+	baku-firework-data: "ninjutsu-baku-firework"  # 爆遁の花火を識別するPersistentDataのキー
+	# 演出
+	baku-sound-pitch-min: 1  # 1個目の星の召喚音のpitch
+	baku-sound-pitch-max: 1.9  # 最後の星の召喚音のpitch (星ごとに段階的に上がる)
+
+import:
+	org.bukkit.event.entity.EntityDamageByEntityEvent
+
 on load:
 	register item tag named "ninjutsu-dye" using orange dye, light blue dye, yellow dye, lime dye, gray dye, cyan dye, blue dye, red dye
 
@@ -104,7 +120,7 @@ function kitEffect_Ninjutsu(player: player):
 			deleteKitStats({_player}, "Ninjutsu3")
 			wait a tick
 			if {_nin} is "L - L - R":
-				set {_player}'s tool to gray dye named "§5Ninjutsu §9[§8爆§9]" with lore "§f木っ端微塵にする爆遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §b3秒後§7に§6爆発§7する§eTNT§7を§d6方向§7に§6§l投擲 §d6個", "§8- §3TNT爆発時§7,§d爆発地点§7に§b1秒後§e爆発する小爆弾§7を§6§l展開 §d2個" and "§8- §3小爆弾爆発時§7,§b1秒後§e爆発する火薬§7を§6§l展開 §b3個"
+				set {_player}'s tool to gray dye named "§5Ninjutsu §9[§8爆§9]" with lore "§f木っ端微塵にする爆遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d視線方向§7に§d{@baku-spacing}mおき§7に§e星§7を§6§l召喚 §d{@baku-count}個", "§8- §e星§7は§b{@baku-delay}秒後§7に§e花火§7となって§6§l爆発", "§8- §e花火§7に当たった§4敵§7に§4❤{@baku-firework-damage}§c§lダメージ §7(1発ごと)" and "§8- §d最後の星§7のみ§c§l爆風§7を発生 §6威力{@baku-explosion-power}"
 			else if {_nin} is "L - R - R":
 				set {_player}'s tool to blue dye named "§5Ninjutsu §9[§1水§9]" with lore "§f心身を癒やす水遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d周辺5m§7に§e水のベール§7を§6§l展開 §b5秒" and "§8- §dベール内の§2自身§dと§2味方§7を§6§l消火§7し§a再生能力 II§6§l付与"
 			else if {_nin} is "R - L - R":
@@ -127,7 +143,7 @@ on rightclick:
 			kitNinjutsu_KAZE(player, {_l})
 		else if "%type of {_n}%" is "gray dye":
 			kitMsg(player, "§8忍法・爆遁の術!")
-			set {_loc} to location of player
+			set {_loc} to location of player's head  # 視線方向に並べるため目の位置から
 			kitNinjutsu_BAKU(player, {_loc})
 		else if "%type of {_n}%" is "lime dye":
 			kitMsg(player, "§2忍法・木遁の術!")
@@ -265,59 +281,70 @@ local function kitParticle_Ninjutsu_KAZE_End(loc: location):  # 消滅演出
 		spawnParticle_Vector(cloud, {_v}, 0.2, {_dl})
 
 # Ninjutsu -爆-
+# 視線方向に1tickごとに星を並べ, 一定時間後に花火として爆発させる (最後の星のみ爆風)
 local function kitNinjutsu_BAKU(player: player, loc: location):
-	set pitch of {_loc} to 0
-	playSound("entity.tnt.primed", 1, 0.8, {_loc})
-	loop 6 times:
-		add 60 to yaw of {_loc}
-		shoot a primed tnt from {_loc} at speed 0.5 upwards
-		set metadata value "attacker" of shot primed tnt to "%{_player}%"
-		set metadata value "kit-bomber" of shot primed tnt to 2
-		set metadata value "ninjutsu-baku" of shot primed tnt to "%{_player}%"
-		setFuseTime(shot primed tnt, 60)
-		spawnParticle(lava, shot primed tnt)
+	set {_pitchstep} to ({@baku-sound-pitch-max} - {@baku-sound-pitch-min}) / max({@baku-count} - 1, 1)
+	loop {@baku-count} times:
+		set {_el} to location ({@baku-spacing} * loop-number) meters in front of {_loc}
+		set {_pitch} to {@baku-sound-pitch-min} + {_pitchstep} * (loop-number - 1)
+		if loop-number is {@baku-count}:
+			kitNinjutsu_BAKU_Star({_player}, {_el}, {_pitch}, true)
+		else:
+			kitNinjutsu_BAKU_Star({_player}, {_el}, {_pitch}, false)
+		wait a tick
 
-on explosion:
-	if metadata value "ninjutsu-baku" of event-entity is set:
-		set {_act} to metadata value "pop" of event-entity
-		set {_act} to {_act} parsed as player
-		set {_loc} to event-location
+# 星1個分の処理 (召喚 → 待機 → 花火 or 爆風)
+local function kitNinjutsu_BAKU_Star(player: player, loc: location, pitch: number, last: boolean):
+	playSound("entity.tnt.primed", 1, {_pitch}, {_loc})
+	loop round({@baku-delay} * 20) times:
+		kitParticle_Ninjutsu_BAKU_Star({_loc}, {_last})
 		wait a tick
-		loop 2 times:
-			drop a tnt named "%{_act}%" at event-location
-			setGameType(last dropped item)
-			set metadata value "ninjutsu-baku-2" of last dropped item to "%{_act}%"
-			set metadata value "undelete" of last dropped item to true
-			spawnParticle(flame, last dropped item)
-			push last dropped item upwards at speed 0.2
-			push last dropped item north at speed (random number from -1 to 1)
-			push last dropped item east at speed (random number from -1 to 1)
-		wait 20 ticks
-		loop all dropped items:
-			metadata value "ninjutsu-baku-2" of loop-dropped item is "%{_act}%"
-			add location of loop-dropped item to {_dloc::*}
-			delete loop-dropped item
-		loop {_dloc::*}:
-			kitExplosion({_act}, 1.8, loop-value)
-		wait a tick
-		loop {_dloc::*}:
-			loop 3 times:
-				drop a gunpowder named "%{_act}%" at loop-value-1
-				setGameType(last dropped item)
-				set metadata value "ninjutsu-baku-3" of last dropped item to "%{_act}%"
-				set metadata value "undelete" of last dropped item to true
-				spawnParticle(smoke, last dropped item)
-				push last dropped item upwards at speed 0.1
-				push last dropped item north at speed (random number from -1 to 1)
-				push last dropped item east at speed (random number from -1 to 1)
-		wait 20 ticks
-		delete {_dloc::*}
-		loop all dropped items:
-			metadata value "ninjutsu-baku-3" of loop-dropped item is "%{_act}%"
-			add location of loop-dropped item to {_dloc::*}
-			delete loop-dropped item
-		loop {_dloc::*}:
-			kitExplosion({_act}, 1.5, loop-value)
+	# 最後の星: 召喚場所で爆風
+	if {_last} is true:
+		kitExplosion({_player}, {@baku-explosion-power}, {_loc})
+		stop
+	# 花火: ランダムな方向にずらした位置で即爆発
+	set {_pow} to a random number between 0 and {@baku-random-power}
+	set {_flloc} to {_loc}
+	if {_pow} > 0:  # randomVector(0)は0〜2のランダムになるため除外
+		set {_flloc} to {_loc} ~ randomVector({_pow})
+	set {_r} to a random integer between 0 and 255
+	set {_g} to a random integer between 0 and 255
+	set {_b} to a random integer between 0 and 255
+	set {_color} to rgb({_r}, {_g}, {_b})
+	set {_explosion} to setFireWorksExplosion("ball", {_color}, {_color}, false, false)  # fadeColorは同色 (色を変化させない)
+	set {_firework} to spawnFireworks_PLAYER({_player}, {_flloc}, 0, {_explosion})
+	setPersistentData({_firework}, {@baku-firework-data}, true)
+	setPersistentData({_firework}, kitFireworkData(), true)
+	setPersistentData({_firework}, kitFireworkDataShooter(), getUUIDString({_player}))
+
+# 花火のダメージ処理 (花火1発ごとに固定ダメージ)
+on EntityDamageByEntityEvent with priority LOW:
+	set {_victim} to event.getEntity()
+	set {_firework} to event.getDamager()
+	if getPersistentData({_firework}, {@baku-firework-data}) is not true:
+		stop
+	set {_attacker} to getSummonPlayer({_firework})
+	if {_attacker} is not set:
+		stop
+	if kitCheckTeam({_victim}, {_attacker}, false) is false:
+		stop
+
+	setDamageModification_SET({_victim}, {@baku-firework-damage})
+	LastKiller({_victim}, {_attacker})
+	if checkEntityType({_victim}, player) is true:
+		kitEffectDescription({_victim}, "§4❤{@baku-firework-damage}")
+
+local function kitParticle_Ninjutsu_BAKU_Star(loc: location, last: boolean):  # 星の演出 (毎tick)
+	spawnParticle(wax_off, {_loc})
+	spawnParticle_Vector(firework, randomVector(1), 0.05, {_loc})
+	if {_last} is true:
+		# 爆風になる星は火の粉で区別
+		spawnParticle(flame, {_loc})
+		chance of 50%:
+			spawnParticle(lava, {_loc})
+	else:
+		spawnParticle_Dust(rgb(255, 230, 120), 0.8, {_loc})
 
 # Ninjutsu -木-
 local function kitNinjutsu_MOKU(player: player, loc: location):
