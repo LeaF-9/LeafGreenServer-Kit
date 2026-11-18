@@ -32,6 +32,18 @@ options:
 	baku-sound-pitch-min: 1  # 1個目の星の召喚音のpitch
 	baku-sound-pitch-max: 1.9  # 最後の星の召喚音のpitch (星ごとに段階的に上がる)
 
+	# --- Ninjutsu -木- ---
+	# 効果
+	moku-speed: 0.9  # 草の弾の発射速度
+	moku-max-flight: 1  # 草の弾が着弾しなかった場合に, その位置で着弾扱いにするまでの時間 (秒)
+	moku-charge: 1  # 着弾してから効果が発動するまでのチャージ時間 (秒)
+	moku-radius: 5  # 効果範囲 (着弾地点からの半径 m)
+	moku-heal: 2  # 味方(自分を含む)の回復量 (❤)
+	moku-invisible: 3  # 味方(自分を含む)に付与する透明化の時間 (秒)
+	moku-grass-time: 3  # 見た目だけの草ブロックを展開する時間 (秒)
+	moku-projectile-data: "ninjutsu-moku"  # 草の弾を識別するPersistentDataのキー
+	moku-landed-data: "Ninjutsu MOKU - Landed"  # 草の弾が着弾済みかを記録するmetadataのキー
+
 import:
 	org.bukkit.event.entity.EntityDamageByEntityEvent
 
@@ -76,7 +88,7 @@ function kitEffect_Ninjutsu_LeftClick(player: player):
 			if {_nin} is "L - L - L":
 				set {_player}'s tool to light blue dye named "§5Ninjutsu §9[§b風§9]" with lore "§f敵を吹き飛ばす風遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d前方{@kaze-distance}m§7まで進む§e竜巻§7を§6§l召喚 §b{@kaze-duration}秒", "§8- §d竜巻周辺{@kaze-hit-radius}m§7の§4敵§7を§d上方向§7に§6§l吹き飛ばす §b{@kaze-hit-interval}秒毎" and "§8- §3吹き飛ばした敵§7の§c落下ダメージ§7を§4❤{@kaze-fall-damage}§7に§6§l変更"
 			else if {_nin} is "L - R - L":
-				set {_player}'s tool to lime dye named "§5Ninjutsu §9[§2木§9]" with lore "§f生命力を奪う木遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §e根を張る植物§7を§d6方向§7に§6§l発射", "§8- §d着弾点周辺5m§7の§4敵§7に§6§l吸収効果 §b5秒" and "§8- §e根§7は§b5秒後§7に§6§l消滅"
+				set {_player}'s tool to lime dye named "§5Ninjutsu §9[§2木§9]" with lore "§f仲間を癒やし隠す木遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §e草の弾§7を§d前方§7に§6§l発射", "§8- §3着弾後§b{@moku-charge}秒§7で§d着弾点周辺{@moku-radius}m§7に§e草木§7を§6§l展開", "§8- §d範囲内§7の§2自身§7と§2味方§7を§a❤{@moku-heal}§6§l回復" and "§8- §d範囲内§7の§2自身§7と§2味方§7に§b透明化§7を§6§l付与 §b{@moku-invisible}秒"
 			else if {_nin} is "R - L - L":
 				set {_player}'s tool to red dye named "§5Ninjutsu §9[§4火§9]" with lore "§f周辺を燃やす火遁の術", "§5§m------------------------------", "§f[§d§l効果§f]", "§6§l忍術", "", "§3右クリック§7:", "§8- §d周辺5m§cの§4敵§7に§4❤2§c§lダメージ", "§8- §d周辺5m§7に§e炎上フィールド§7を§6§l展開 §b5秒" and "§8- §dフィールド内§cの§4敵§7を§6§l着火 §b5秒"
 			else if {_nin} is "R - R - L":
@@ -347,77 +359,159 @@ local function kitParticle_Ninjutsu_BAKU_Star(loc: location, last: boolean):  # 
 		spawnParticle_Dust(rgb(255, 230, 120), 0.8, {_loc})
 
 # Ninjutsu -木-
+# 草の弾を発射し, 着弾地点の周囲の味方(自分を含む)を回復・透明化する (数値は options で変更)
 local function kitNinjutsu_MOKU(player: player, loc: location):
-	playSound("block.cherry_leaves.break", 1, 0.5, {_loc})
-	sendTimeBossbar_GREEN({_player}, "Ninjutsu - 木 -", 100)
-	# --- 草木フィールド展開 ---
-	loop all blocks in radius 5 around {_loc}:
+	playSound("block.cherry_leaves.break", 1, 0.5, {_player})
+	playSound("entity.snowball.throw", 1, 0.8, {_player})
+	shoot a snowball from {_player} at speed {@moku-speed}
+	set {_proj} to shot snowball
+	setPersistentData({_proj}, {@moku-projectile-data}, true)
+	set metadata value {@moku-landed-data} of {_proj} to false
+	set item of {_proj} to oak leaves
+	# --- 飛行中の演出 ---
+	set {_prev} to location of {_proj}
+	loop round({@moku-max-flight} * 20) times:
+		wait a tick
+		stop if metadata value {@moku-landed-data} of {_proj} is true
+		set {_now} to location of {_proj}
+		kitParticle_Ninjutsu_MOKU_Trail({_prev}, {_now})
+		set {_prev} to {_now}
+	# --- 一定時間着弾しなかった場合: その位置で着弾扱い ---
+	stop if metadata value {@moku-landed-data} of {_proj} is true
+	set metadata value {@moku-landed-data} of {_proj} to true
+	set {_landloc} to location of {_proj}
+	{_proj}.remove()
+	kitNinjutsu_MOKU_Land({_player}, {_landloc})
+
+# 着弾 (ブロック・エンティティどちらでも)
+on projectile hit:
+	projectile is a snowball
+	getPersistentData(projectile, {@moku-projectile-data}) is true
+	metadata value {@moku-landed-data} of projectile is false
+	set metadata value {@moku-landed-data} of projectile to true
+	kitNinjutsu_MOKU_Land(shooter, location of projectile)
+
+# 草の弾が直撃した際の雪玉のノックバックを無効化
+on damage with priority LOW:
+	damage was caused by projectile
+	projectile is a snowball
+	getPersistentData(projectile, {@moku-projectile-data}) is true
+	cancel event
+
+# 着弾後: チャージ → 回復・透明化 → 草ブロック展開
+local function kitNinjutsu_MOKU_Land(player: player, loc: location):
+	# --- チャージ (円が徐々に広がる) ---
+	playSound("block.grass.place", 1, 0.8, {_loc})
+	set {_charge} to max(round({@moku-charge} * 20), 1)
+	loop {_charge} times:
+		set {_r} to {@moku-radius} * loop-number / {_charge}
+		kitParticle_Ninjutsu_MOKU_Charge({_loc}, {_r}, loop-number)
+		if mod(loop-number, 4) is 1:
+			playSound("block.azalea_leaves.place", 1, 0.5 + 1.5 * loop-number / {_charge}, {_loc})
+		wait a tick
+	# --- 発動: 範囲内の味方(自分を含む)を回復・透明化 ---
+	kitParticle_Ninjutsu_MOKU_Burst({_loc})
+	loop all players in radius {@moku-radius} around {_loc}:
+		kitCheckTeam(loop-player, {_player}, true) is true
+		setSupporter(loop-player, {_player})
+		kitHeal(loop-player, {@moku-heal})
+		kitInvisible(loop-player, round({@moku-invisible} * 20))
+		kitEffectDescription(loop-player, "§a❤{@moku-heal} §8& §b§l透明化")
+	# --- 草ブロック展開 (見た目のみ) ---
+	loop all blocks in radius {@moku-radius} around {_loc}:
 		loop-block is air
 		block below loop-block is not passable
 		add location of loop-block to {_grasses::*}
-		make all players see loop-block as short grass
-		chance of 30%:
-			spawnParticle(happy_villager, location of loop-block)
-	# -----------------------
-	loop 100 times:
-		kitParticle_Ninjutsu_MOKU({_loc})
-		delete {_nowentering::*}
-		loop all players in radius 5 around {_loc}:
-			if kitCheckTeam(loop-player, {_player}, true) is true:
-				add loop-player to {_nowentering::*}
-				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
-				if hasPotionEffect(loop-player, regeneration) is false:
-					applyEffect(loop-player, regeneration, 1, 100)
-				if getInvisibleStatus(loop-player) is true:
-					set {_noInvTimer.%loop-player%} to 20
-				else:
-					if {_noInvTimer.%loop-player%} is set:
-						subtract 1 from {_noInvTimer.%loop-player%}
-						if {_noInvTimer.%loop-player%} <= 0:
-							delete {_noInvTimer.%loop-player%}
-					else:
-						kitInvisible(loop-player, 100)
-						kitEffectDescription(loop-player, "§b§l透明化")
-			else:
-				add loop-player to {_nowentering::*}
-				add loop-player to {_entered::*} if {_entered::*} does not contain loop-player
-				if hasPotionEffect(loop-player, poison) is false:
-					applyEffect(loop-player, poison, 1, 100)
-					kitEffectDescription(loop-player, "§c§l毒")
-		loop {_entered::*}:
-			if {_nowentering::*} does not contain loop-value-2:
-				remove loop-value-2 from {_entered::*}
-				if kitCheckTeam(loop-value-2, {_player}, true) is true:
-					resetEffect(loop-value-2)
-					if getInvisibleStatus(loop-value-2) is true:
-						removeInvisible(loop-value-2)
-				else:
-					resetEffect(loop-value-2)
+	loop round({@moku-grass-time} * 20) times:
 		loop {_grasses::*}:
 			make all players see block at loop-value-2 as short grass
 		wait a tick
-	loop {_entered::*}:
-		if kitCheckTeam(loop-value, {_player}, true) is true:
-			resetEffect(loop-value)
-			if getInvisibleStatus(loop-value) is true:
-				removeInvisible(loop-value)
-		else:
-			resetEffect(loop-value)
 	loop {_grasses::*}:
 		make all players see block at loop-value as air
 	playSound("block.rooted_dirt.break", 1, 0.5, {_loc})
 
-local function kitParticle_Ninjutsu_MOKU(loc: location):
-	loop all blocks in radius 5 around {_loc}:
-		loop-block is passable
-		chance of 3%:
-			spawnParticle_Block(oak leaves, location of loop-block)
-	loop 36 times:
-		add 10 to {_rad}
+local function kitParticle_Ninjutsu_MOKU_Trail(from: location, to: location):  # 草の弾の軌跡 (毎tick, 前tickの位置との間を補間)
+	# 弾本体の周りに葉の塊をまとわせて大きく見せる
+	loop 6 times:
+		set {_el} to {_to} ~ randomVector(a random number between 0.1 and 0.35)
+		spawnParticle_DustTransition(rgb(34, 139, 34), rgb(124, 252, 0), 1.5, {_el})
+	spawnParticle_Block(oak leaves, {_to})
+	# 前tickの位置から現在位置までを0.25mおきに埋める
+	set {_distance} to distance between {_from} and {_to}
+	stop if {_distance} < 0.05
+	set {_base} to setDirToVec({_from}, setVector({_from}, {_to}))
+	set {_count} to max(round({_distance} / 0.25), 1)
+	loop {_count} times:
+		set {_el} to location ({_distance} * loop-number / {_count}) meters in front of {_base}
+		# 軌跡の芯 (緑 → 黄緑)
+		spawnParticle_DustTransition(rgb(46, 139, 87), rgb(173, 255, 47), 1.2, {_el})
+		# 舞い散る葉
+		chance of 50%:
+			set {_leafloc} to {_el} ~ randomVector(a random number between 0.1 and 0.5)
+			spawnParticle_Block(oak leaves, {_leafloc})
+		chance of 15%:
+			spawnParticle(happy_villager, {_el})
+
+local function kitParticle_Ninjutsu_MOKU_Charge(loc: location, r: number, t: number):  # チャージ演出 (毎tick)
+	# 広がる円
+	set {_count} to max(round({_r} * 8), 8)
+	set {_addrad} to 360 / {_count}
+	loop {_count} times:
+		set {_rad} to {_t} * 5 + {_addrad} * loop-number
 		set {_el} to {_loc}
-		add 5 * sin({_rad}) to x of {_el}
-		add 5 * cos({_rad}) to z of {_el}
-		spawnParticle_Dust(rgb(46, 139, 87), 1, {_el})
+		add {_r} * sin({_rad}) to x of {_el}
+		add {_r} * cos({_rad}) to z of {_el}
+		add 0.2 to y of {_el}
+		spawnParticle_DustTransition(rgb(46, 139, 87), rgb(124, 252, 0), 1, {_el})
+	# 中心から湧き上がる葉
+	spawnParticle(happy_villager, location 0.5 meters above {_loc})
+	chance of 50%:
+		spawnParticle_Block(oak leaves, location 0.5 meters above {_loc})
+
+local function kitParticle_Ninjutsu_MOKU_Burst(loc: location):  # 発動演出 (草木が破裂する)
+	set {_center} to location 0.5 meters above {_loc}
+	# --- 音 ---
+	playSound("block.amethyst_block.break", 1, 1.3, {_loc})
+	playSound("block.amethyst_block.break", 1, 1.1, {_loc})
+	playSound("block.amethyst_block.break", 1, 0.9, {_loc})
+	playSound("block.cherry_leaves.break", 1, 0.5, {_loc})
+	playSound("item.bone_meal.use", 1, 1, {_loc})
+	playSound("block.amethyst_block.chime", 1, 1.5, {_loc})
+	# --- 破裂: 中心から全方向へ飛び散る ---
+	loop 80 times:
+		spawnParticle_Vector(totem_of_undying, randomVector(1), a random number between 0.5 and 1, {_center})
+	loop 25 times:
+		spawnParticle_Vector(end_rod, randomVector(1), a random number between 0.2 and 0.4, {_center})
+	loop 30 times:  # 中心付近に舞う葉
+		set {_el} to {_center} ~ randomVector(a random number between 0.2 and 2)
+		spawnParticle_Block(oak leaves, {_el})
+	# --- キラキラ: 半径5mの球体内にまき散らす (緑 + 白い光) ---
+	loop 150 times:
+		set {_pow} to max({@moku-radius} * (a random number between 0 and 1) ^ (1 / 3), 0.1)  # 球内に均一に分布させる
+		set {_el} to {_center} ~ randomVector({_pow})
+		set {_rn} to a random integer between 1 and 10
+		if {_rn} <= 3:
+			spawnParticle(wax_off, {_el})
+		else if {_rn} <= 5:
+			spawnParticle(end_rod, {_el})
+		else if {_rn} <= 7:
+			spawnParticle(happy_villager, {_el})
+		else:
+			spawnParticle_DustTransition(rgb(124, 252, 0), rgb(255, 255, 255), 0.7, {_el})
+	# --- 衝撃波: 地面を広がる輪 (5tick) ---
+	loop 5 times:
+		set {_r} to {@moku-radius} * loop-number-1 / 5
+		set {_count} to max(round({_r} * 8), 8)
+		loop {_count} times:
+			set {_rad} to 360 / {_count} * loop-number-2
+			set {_el} to {_loc}
+			add {_r} * sin({_rad}) to x of {_el}
+			add {_r} * cos({_rad}) to z of {_el}
+			add 0.2 to y of {_el}
+			spawnParticle_DustTransition(rgb(34, 139, 34), rgb(173, 255, 47), 1.5, {_el})
+			chance of 20%:
+				spawnParticle_Block(oak leaves, {_el})
+		wait a tick
 
 # Ninjutsu -水-
 local function kitNinjutsu_MIZU(player: player, l: location):
